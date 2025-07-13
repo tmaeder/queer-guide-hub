@@ -27,6 +27,7 @@ import DMCA from "./pages/DMCA";
 import Auth from "./pages/Auth";
 import AdminContent from "./pages/AdminContent";
 import ContentEditor from "./pages/ContentEditor";
+import News from "./pages/News";
 import ProfileSettings from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
 
@@ -63,6 +64,7 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/admin/content" element={<AdminContent />} />
                 <Route path="/admin/content/:id" element={<ContentEditor />} />
+                <Route path="/news" element={<News />} />
                 <Route path="/profile/settings" element={<ProfileSettings />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

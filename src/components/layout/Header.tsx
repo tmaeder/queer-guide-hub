@@ -44,6 +44,9 @@ export function Header() {
           <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
             <Link to="/community">Community</Link>
           </Button>
+          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
+            <Link to="/news">News</Link>
+          </Button>
         </nav>
 
         <div className="flex items-center gap-4">
