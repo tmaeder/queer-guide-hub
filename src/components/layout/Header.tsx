@@ -39,6 +39,9 @@ export function Header() {
             <Link to="/directory">Directory</Link>
           </Button>
           <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
+            <Link to="/tags">Tags Wiki</Link>
+          </Button>
+          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
             <Link to="/community">Community</Link>
           </Button>
         </nav>
