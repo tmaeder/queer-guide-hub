@@ -98,7 +98,7 @@ export function useCommunity() {
         if (error) throw error;
         
         // Update likes count
-        await supabase.rpc('decrement_post_likes', { post_id: postId });
+        await (supabase.rpc as any)('decrement_post_likes', { post_id: postId });
         return { liked: false, error: null };
       } else {
         // Add like
@@ -108,7 +108,7 @@ export function useCommunity() {
         if (error) throw error;
         
         // Update likes count
-        await supabase.rpc('increment_post_likes', { post_id: postId });
+        await (supabase.rpc as any)('increment_post_likes', { post_id: postId });
         return { liked: true, error: null };
       }
     } catch (err) {
@@ -138,7 +138,7 @@ export function useCommunity() {
       if (error) throw error;
       
       // Update comments count
-      await supabase.rpc('increment_post_comments', { post_id: postId });
+      await (supabase.rpc as any)('increment_post_comments', { post_id: postId });
       return { data, error: null };
     } catch (err) {
       return { 
