@@ -2,6 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Modern Pride-inspired Color Palette */
+    --background: 340 5% 98%;
+    --foreground: 340 8% 8%;
+    --card: 340 4% 96%;
+    --card-foreground: 340 8% 12%;
+    --popover: 340 4% 98%;
+    --popover-foreground: 340 8% 8%;
+    
+    /* Primary: Deep Purple */
+    --primary: 280 85% 65%;
+    --primary-foreground: 340 5% 98%;
+    --primary-glow: 280 75% 75%;
+    
+    /* Secondary: Warm Pink */
+    --secondary: 340 65% 75%;
+    --secondary-foreground: 340 8% 8%;
+    
+    /* Muted: Soft Neutral */
+    --muted: 340 4% 94%;
+    --muted-foreground: 340 6% 45%;
+    
+    /* Accent: Vibrant Orange */
+    --accent: 25 95% 65%;
+    --accent-foreground: 340 8% 8%;
+    
+    /* Destructive: Bold Red */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 340 5% 98%;
+    
+    /* UI Elements */
+    --border: 340 8% 88%;
+    --input: 340 8% 88%;
+    --ring: 280 85% 65%;
+    --radius: 0.75rem;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--secondary)) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+    
+    /* Shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.15);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.2);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 340 8% 8%;
+    --foreground: 340 5% 92%;
+    --card: 340 8% 10%;
+    --card-foreground: 340 5% 92%;
+    --popover: 340 8% 8%;
+    --popover-foreground: 340 5% 92%;
+    
+    --primary: 280 85% 70%;
+    --primary-foreground: 340 8% 8%;
+    --primary-glow: 280 75% 80%;
+    
+    --secondary: 340 65% 20%;
+    --secondary-foreground: 340 5% 92%;
+    
+    --muted: 340 8% 12%;
+    --muted-foreground: 340 6% 55%;
+    
+    --accent: 25 95% 70%;
+    --accent-foreground: 340 8% 8%;
+    
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 340 5% 92%;
+    
+    --border: 340 8% 18%;
+    --input: 340 8% 18%;
+    --ring: 280 85% 70%;
+    
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--secondary)) 100%);
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
+  }
+
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+  
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
