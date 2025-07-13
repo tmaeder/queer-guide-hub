@@ -43,7 +43,7 @@ export const AdvancedSearchBar = () => {
       navigate(`/${searchCategory}?${params}`);
     }
     
-    setIsOpen(false);
+    // Keep the search bar open after search
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
