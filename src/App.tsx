@@ -12,6 +12,8 @@ import Events from "./pages/Events";
 import Marketplace from "./pages/Marketplace";
 import Community from "./pages/Community";
 import Directory from "./pages/Directory";
+import Auth from "./pages/Auth";
+import ProfileSettings from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => (
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/community" element={<Community />} />
             <Route path="/directory" element={<Directory />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/profile/settings" element={<ProfileSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

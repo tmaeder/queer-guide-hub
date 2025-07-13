@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Heart, Menu, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,6 +14,7 @@ import {
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
   return (
@@ -52,8 +53,9 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem>My Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/profile/settings')}>
+                  Profile Settings
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} className="text-destructive">
                   Sign Out

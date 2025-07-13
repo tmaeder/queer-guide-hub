@@ -2,8 +2,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, MapPin, Calendar, Store, Plane, Users } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
+  const { user } = useAuth();
+  
   const features = [
     {
       icon: MapPin,
@@ -56,8 +59,10 @@ const Index = () => {
             <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8" asChild>
               <Link to="/venues">Explore Venues</Link>
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8">
-              Join Community
+            <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+              <Link to={user ? "/community" : "/auth"}>
+                {user ? "Join Community" : "Sign Up"}
+              </Link>
             </Button>
           </div>
         </div>
