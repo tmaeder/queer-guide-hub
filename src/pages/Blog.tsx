@@ -1,120 +1,73 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useContent } from "@/hooks/useContent";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Calendar, User, Search, Heart, ArrowRight, Tag } from "lucide-react";
+import { format } from "date-fns";
 
 export default function Blog() {
+  const { content, categories, loading, searchContent } = useContent();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const featuredPost = {
-    id: 1,
-    title: "Building Safer Spaces: How We Verify LGBTQ+ Friendly Venues",
-    excerpt: "A deep dive into our verification process and why it matters for community safety. Learn how we work with local organizations and venue owners to ensure authentic, welcoming environments.",
-    author: "The Queer Guide Team",
-    date: "March 15, 2025",
-    readTime: "8 min read",
-    category: "Safety & Verification",
-    image: "/api/placeholder/600/300",
-    featured: true
-  };
-
-  const blogPosts = [
-    {
-      id: 2,
-      title: "Pride Month 2025: A Global Celebration Guide",
-      excerpt: "Discover Pride events happening worldwide and tips for celebrating safely no matter where you are.",
-      author: "Jordan Taylor",
-      date: "March 10, 2025",
-      readTime: "6 min read",
-      category: "Events & Culture",
-      image: "/api/placeholder/400/250"
-    },
-    {
-      id: 3,
-      title: "The Economics of LGBTQ+ Business: Supporting Our Community",
-      excerpt: "Why supporting LGBTQ+ owned businesses matters and how our marketplace helps connect community members with these entrepreneurs.",
-      author: "Sam Chen",
-      date: "March 8, 2025",
-      readTime: "5 min read",
-      category: "Business & Economics",
-      image: "/api/placeholder/400/250"
-    },
-    {
-      id: 4,
-      title: "Digital Safety for LGBTQ+ Youth: A Parent's Guide",
-      excerpt: "Essential tips for keeping LGBTQ+ young people safe online while allowing them to find community and support.",
-      author: "Alex Rivera",
-      date: "March 5, 2025",
-      readTime: "7 min read",
-      category: "Safety & Education",
-      image: "/api/placeholder/400/250"
-    },
-    {
-      id: 5,
-      title: "Travel Tips: Staying Safe as an LGBTQ+ Traveler",
-      excerpt: "Essential advice for LGBTQ+ travelers, from research tips to emergency planning and finding community abroad.",
-      author: "Community Contributors",
-      date: "March 1, 2025",
-      readTime: "10 min read",
-      category: "Travel & Safety",
-      image: "/api/placeholder/400/250"
-    },
-    {
-      id: 6,
-      title: "Community Spotlight: Local Heroes Making a Difference",
-      excerpt: "Meet the incredible individuals and organizations working to create safer, more inclusive spaces in their communities.",
-      author: "Jordan Taylor",
-      date: "February 25, 2025",
-      readTime: "4 min read",
-      category: "Community Stories",
-      image: "/api/placeholder/400/250"
-    },
-    {
-      id: 7,
-      title: "The Technology Behind The Queer Guide",
-      excerpt: "How we use technology to create secure, accessible, and inclusive experiences for our community members.",
-      author: "Sam Chen",
-      date: "February 20, 2025",
-      readTime: "6 min read",
-      category: "Technology",
-      image: "/api/placeholder/400/250"
-    }
-  ];
-
-  const categories = [
-    "All Posts",
-    "Safety & Verification",
-    "Events & Culture",
-    "Business & Economics",
-    "Safety & Education",
-    "Travel & Safety",
-    "Community Stories",
-    "Technology"
-  ];
-
+  // Filter for blog posts only
+  const blogPosts = content.filter(item => item.content_type === "blog_post");
+  const featuredPost = blogPosts.find(post => post.featured_image) || blogPosts[0];
   const recentPosts = blogPosts.slice(0, 4);
   const popularPosts = [...blogPosts].sort(() => 0.5 - Math.random()).slice(0, 3);
 
-  const filterPosts = (category: string) => {
-    if (category === "All Posts") return blogPosts;
-    return blogPosts.filter(post => post.category === category);
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const results = await searchContent(searchQuery);
+      const blogResults = results.filter(item => item.content_type === "blog_post");
+      setSearchResults(blogResults);
+    } catch (error) {
+      console.error("Search failed:", error);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      "Safety & Verification": "bg-red-100 text-red-800",
-      "Events & Culture": "bg-purple-100 text-purple-800",
-      "Business & Economics": "bg-green-100 text-green-800",
-      "Safety & Education": "bg-blue-100 text-blue-800",
-      "Travel & Safety": "bg-orange-100 text-orange-800",
-      "Community Stories": "bg-pink-100 text-pink-800",
-      "Technology": "bg-gray-100 text-gray-800"
-    };
-    return colors[category] || "bg-gray-100 text-gray-800";
+  const filterPosts = (category: string) => {
+    if (category === "All Posts") return blogPosts;
+    return blogPosts.filter(post => 
+      post.categories?.some(cat => cat.name === category)
+    );
   };
+
+  const getCategoryColor = (categoryName: string) => {
+    const category = categories.find(cat => cat.name === categoryName);
+    return category ? category.color : "#6366f1";
+  };
+
+  useEffect(() => {
+    if (searchQuery) {
+      const debounceTimer = setTimeout(handleSearch, 300);
+      return () => clearTimeout(debounceTimer);
+    } else {
+      setSearchResults([]);
+      setIsSearching(false);
+    }
+  }, [searchQuery]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center">Loading blog posts...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
@@ -152,73 +105,135 @@ export default function Blog() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Main Content */}
         <div className="lg:col-span-3">
-          {/* Featured Post */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">Featured Article</h2>
-            <Card className="overflow-hidden">
-              <div className="md:flex">
-                <div className="md:w-1/2">
-                  <div className="h-64 md:h-full bg-gradient-primary"></div>
-                </div>
-                <div className="md:w-1/2 p-6">
-                  <Badge className={getCategoryColor(featuredPost.category)}>
-                    {featuredPost.category}
-                  </Badge>
-                  <h3 className="text-2xl font-bold mt-3 mb-3">{featuredPost.title}</h3>
-                  <p className="text-muted-foreground mb-4">{featuredPost.excerpt}</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                    <div className="flex items-center gap-1">
-                      <User className="h-4 w-4" />
-                      {featuredPost.author}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {featuredPost.date}
-                    </div>
-                    <span>{featuredPost.readTime}</span>
-                  </div>
-                  <Button className="gap-2">
-                    Read More
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
+          {/* Search Results */}
+          {searchQuery && (
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold mb-6">
+                {isSearching ? "Searching..." : `Search Results for "${searchQuery}"`}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {searchResults.map((post) => (
+                  <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="h-48 bg-gradient-primary"></div>
+                    <CardContent className="p-6">
+                      {post.categories && post.categories.length > 0 && (
+                        <Badge 
+                          style={{ 
+                            backgroundColor: getCategoryColor(post.categories[0].name) + "20",
+                            color: getCategoryColor(post.categories[0].name)
+                          }}
+                        >
+                          {post.categories[0].name}
+                        </Badge>
+                      )}
+                      <h3 className="text-lg font-semibold mt-3 mb-2">{post.title}</h3>
+                      <p className="text-muted-foreground text-sm mb-4">{post.excerpt}</p>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                        <div className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          {post.author?.display_name || "The Queer Guide Team"}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {format(new Date(post.published_at || post.created_at), "MMM d, yyyy")}
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" className="gap-2">
+                        Read Article
+                        <ArrowRight className="h-3 w-3" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            </Card>
-          </section>
+              {searchResults.length === 0 && !isSearching && (
+                <p className="text-center text-muted-foreground">No articles found.</p>
+              )}
+            </section>
+          )}
+
+          {/* Featured Post */}
+          {!searchQuery && featuredPost && (
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold mb-6">Featured Article</h2>
+              <Card className="overflow-hidden">
+                <div className="md:flex">
+                  <div className="md:w-1/2">
+                    <div className="h-64 md:h-full bg-gradient-primary"></div>
+                  </div>
+                  <div className="md:w-1/2 p-6">
+                    {featuredPost.categories && featuredPost.categories.length > 0 && (
+                      <Badge 
+                        style={{ 
+                          backgroundColor: getCategoryColor(featuredPost.categories[0].name) + "20",
+                          color: getCategoryColor(featuredPost.categories[0].name)
+                        }}
+                      >
+                        {featuredPost.categories[0].name}
+                      </Badge>
+                    )}
+                    <h3 className="text-2xl font-bold mt-3 mb-3">{featuredPost.title}</h3>
+                    <p className="text-muted-foreground mb-4">{featuredPost.excerpt}</p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                      <div className="flex items-center gap-1">
+                        <User className="h-4 w-4" />
+                        {featuredPost.author?.display_name || "The Queer Guide Team"}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        {format(new Date(featuredPost.published_at || featuredPost.created_at), "MMM d, yyyy")}
+                      </div>
+                    </div>
+                    <Button className="gap-2">
+                      Read More
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </section>
+          )}
 
           {/* Articles by Category */}
-          <section>
-            <Tabs defaultValue="All Posts" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-8">
-                {categories.map((category) => (
-                  <TabsTrigger key={category} value={category} className="text-xs">
-                    {category.split(" ")[0]}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+          {!searchQuery && (
+            <section>
+              <Tabs defaultValue="All Posts" className="w-full">
+                <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-8">
+                  <TabsTrigger value="All Posts" className="text-xs">All</TabsTrigger>
+                  {categories.slice(0, 7).map((category) => (
+                    <TabsTrigger key={category.id} value={category.name} className="text-xs">
+                      {category.name.split(" ")[0]}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
 
-              {categories.map((category) => (
-                <TabsContent key={category} value={category}>
+                <TabsContent value="All Posts">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {filterPosts(category).map((post) => (
+                    {blogPosts.map((post) => (
                       <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                         <div className="h-48 bg-gradient-primary"></div>
                         <CardContent className="p-6">
-                          <Badge className={getCategoryColor(post.category)}>
-                            {post.category}
-                          </Badge>
+                          {post.categories && post.categories.length > 0 && (
+                            <Badge 
+                              style={{ 
+                                backgroundColor: getCategoryColor(post.categories[0].name) + "20",
+                                color: getCategoryColor(post.categories[0].name)
+                              }}
+                            >
+                              {post.categories[0].name}
+                            </Badge>
+                          )}
                           <h3 className="text-lg font-semibold mt-3 mb-2">{post.title}</h3>
                           <p className="text-muted-foreground text-sm mb-4">{post.excerpt}</p>
                           <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
                             <div className="flex items-center gap-1">
                               <User className="h-3 w-3" />
-                              {post.author}
+                              {post.author?.display_name || "The Queer Guide Team"}
                             </div>
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {post.date}
+                              {format(new Date(post.published_at || post.created_at), "MMM d, yyyy")}
                             </div>
-                            <span>{post.readTime}</span>
                           </div>
                           <Button variant="outline" size="sm" className="gap-2">
                             Read Article
@@ -229,9 +244,49 @@ export default function Blog() {
                     ))}
                   </div>
                 </TabsContent>
-              ))}
-            </Tabs>
-          </section>
+
+                {categories.map((category) => (
+                  <TabsContent key={category.id} value={category.name}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {filterPosts(category.name).map((post) => (
+                        <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                          <div className="h-48 bg-gradient-primary"></div>
+                          <CardContent className="p-6">
+                            {post.categories && post.categories.length > 0 && (
+                              <Badge 
+                                style={{ 
+                                  backgroundColor: getCategoryColor(post.categories[0].name) + "20",
+                                  color: getCategoryColor(post.categories[0].name)
+                                }}
+                              >
+                                {post.categories[0].name}
+                              </Badge>
+                            )}
+                            <h3 className="text-lg font-semibold mt-3 mb-2">{post.title}</h3>
+                            <p className="text-muted-foreground text-sm mb-4">{post.excerpt}</p>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                              <div className="flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                {post.author?.display_name || "The Queer Guide Team"}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {format(new Date(post.published_at || post.created_at), "MMM d, yyyy")}
+                              </div>
+                            </div>
+                            <Button variant="outline" size="sm" className="gap-2">
+                              Read Article
+                              <ArrowRight className="h-3 w-3" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </section>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -258,12 +313,14 @@ export default function Blog() {
             <CardContent className="p-6">
               <h3 className="font-semibold mb-4">Popular Articles</h3>
               <div className="space-y-4">
-                {popularPosts.map((post) => (
+                {recentPosts.map((post) => (
                   <div key={post.id} className="flex gap-3">
                     <div className="w-16 h-16 bg-gradient-primary rounded flex-shrink-0"></div>
                     <div className="flex-1">
                       <h4 className="font-medium text-sm leading-tight mb-1">{post.title}</h4>
-                      <p className="text-xs text-muted-foreground">{post.date}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(post.published_at || post.created_at), "MMM d, yyyy")}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -276,11 +333,11 @@ export default function Blog() {
             <CardContent className="p-6">
               <h3 className="font-semibold mb-4">Categories</h3>
               <div className="space-y-2">
-                {categories.slice(1).map((category) => (
-                  <div key={category} className="flex items-center justify-between">
-                    <span className="text-sm">{category}</span>
+                {categories.map((category) => (
+                  <div key={category.id} className="flex items-center justify-between">
+                    <span className="text-sm">{category.name}</span>
                     <Badge variant="secondary" className="text-xs">
-                      {filterPosts(category).length}
+                      {filterPosts(category.name).length}
                     </Badge>
                   </div>
                 ))}

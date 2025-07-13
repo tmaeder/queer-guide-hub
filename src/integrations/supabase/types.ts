@@ -177,6 +177,227 @@ export type Database = {
           },
         ]
       }
+      content: {
+        Row: {
+          author_id: string | null
+          content: string
+          content_type: Database["public"]["Enums"]["content_type"]
+          created_at: string
+          custom_fields: Json | null
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          meta_description: string | null
+          meta_keywords: string[] | null
+          published_at: string | null
+          seo_data: Json | null
+          slug: string
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          content: string
+          content_type: Database["public"]["Enums"]["content_type"]
+          created_at?: string
+          custom_fields?: Json | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_keywords?: string[] | null
+          published_at?: string | null
+          seo_data?: Json | null
+          slug: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          content?: string
+          content_type?: Database["public"]["Enums"]["content_type"]
+          created_at?: string
+          custom_fields?: Json | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_keywords?: string[] | null
+          published_at?: string | null
+          seo_data?: Json | null
+          slug?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      content_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      content_category_assignments: {
+        Row: {
+          category_id: string
+          content_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          category_id: string
+          content_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          category_id?: string
+          content_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_category_assignments_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "content_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_category_assignments_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_revisions: {
+        Row: {
+          content: string
+          content_id: string
+          created_at: string
+          created_by: string | null
+          excerpt: string | null
+          id: string
+          revision_number: number
+          title: string
+        }
+        Insert: {
+          content: string
+          content_id: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          id?: string
+          revision_number: number
+          title: string
+        }
+        Update: {
+          content?: string
+          content_id?: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          id?: string
+          revision_number?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_revisions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_tag_assignments: {
+        Row: {
+          content_id: string
+          created_at: string
+          id: string
+          tag_id: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          id?: string
+          tag_id: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_tag_assignments_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "content_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       continents: {
         Row: {
           code: string
@@ -993,7 +1214,13 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      content_status: "draft" | "published" | "archived"
+      content_type:
+        | "blog_post"
+        | "page"
+        | "legal_document"
+        | "press_release"
+        | "about_content"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1120,6 +1347,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      content_status: ["draft", "published", "archived"],
+      content_type: [
+        "blog_post",
+        "page",
+        "legal_document",
+        "press_release",
+        "about_content",
+      ],
+    },
   },
 } as const

@@ -59,6 +59,9 @@ export function Header() {
                 <DropdownMenuItem onClick={() => navigate('/profile/settings')}>
                   Profile Settings
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/admin/content')}>
+                  Content Management
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} className="text-destructive">
                   Sign Out
