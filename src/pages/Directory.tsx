@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDirectory } from "@/hooks/useDirectory";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import { DirectorySearch } from "@/components/directory/DirectorySearch";
+import { WeatherForecast } from "@/components/weather/WeatherForecast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -225,11 +226,20 @@ export default function Directory() {
       )}
 
       {viewMode === "country" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold">Cities in {selectedCountry?.name}</h2>
             <Badge variant="secondary">{countryCities.length}</Badge>
           </div>
+          
+          {/* Weather Forecast for Country */}
+          <WeatherForecast
+            latitude={selectedCountry?.latitude}
+            longitude={selectedCountry?.longitude}
+            cityName={selectedCountry?.capital || selectedCountry?.name}
+            className="mb-6"
+          />
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {countryCities.map((city) => (
               <DirectoryCard
@@ -295,12 +305,19 @@ export default function Directory() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {searchResults.cities.map((city: any) => (
-                  <DirectoryCard
-                    key={city.id}
-                    type="city"
-                    name={city.name}
-                    data={city}
-                  />
+                  <div key={city.id} className="space-y-4">
+                    <DirectoryCard
+                      type="city"
+                      name={city.name}
+                      data={city}
+                    />
+                    <WeatherForecast
+                      latitude={city.latitude}
+                      longitude={city.longitude}
+                      cityName={city.name}
+                      className="w-full"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
