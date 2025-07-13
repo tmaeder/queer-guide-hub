@@ -79,35 +79,49 @@ export function useBookings() {
 
   // Search flights
   const searchFlights = async (params: FlightSearchParams): Promise<{ flights: Flight[]; searchParams: FlightSearchParams }> => {
+    console.log('🔍 Starting flight search with params:', params);
+    
     const { data, error } = await supabase.functions.invoke('search-flights', {
       body: params
     });
 
+    console.log('✈️ Flight search response:', { data, error });
+
     if (error) {
+      console.error('❌ Flight search error:', error);
       throw new Error(error.message || 'Failed to search flights');
     }
 
     if (!data.success) {
+      console.error('❌ Flight search API error:', data.error);
       throw new Error(data.error || 'Failed to search flights');
     }
 
+    console.log('✅ Flight search successful:', data);
     return data;
   };
 
   // Search hotels
   const searchHotels = async (params: HotelSearchParams): Promise<{ hotels: Hotel[]; searchParams: HotelSearchParams }> => {
+    console.log('🔍 Starting hotel search with params:', params);
+    
     const { data, error } = await supabase.functions.invoke('search-hotels', {
       body: params
     });
 
+    console.log('🏨 Hotel search response:', { data, error });
+
     if (error) {
+      console.error('❌ Hotel search error:', error);
       throw new Error(error.message || 'Failed to search hotels');
     }
 
     if (!data.success) {
+      console.error('❌ Hotel search API error:', data.error);
       throw new Error(data.error || 'Failed to search hotels');
     }
 
+    console.log('✅ Hotel search successful:', data);
     return data;
   };
 
