@@ -2,43 +2,73 @@ import { Link } from "react-router-dom";
 import { Heart, Mail, Github, Twitter, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-
 export function Footer() {
   const currentYear = new Date().getFullYear();
-
-  const legalLinks = [
-    { href: "/terms", label: "Terms of Service" },
-    { href: "/privacy", label: "Privacy Policy" },
-    { href: "/cookies", label: "Cookie Policy" },
-    { href: "/dmca", label: "DMCA" },
-  ];
-
-  const helpLinks = [
-    { href: "/about", label: "About Us" },
-    { href: "/vision", label: "Our Vision" },
-    { href: "/values", label: "Our Values" },
-    { href: "/contact", label: "Contact" },
-    { href: "/press", label: "Press" },
-    { href: "/blog", label: "Blog" },
-    { href: "/directory", label: "Directory" },
-    { href: "/tags", label: "Tags Wiki" },
-  ];
-
-  const communityLinks = [
-    { href: "/venues", label: "Venues" },
-    { href: "/events", label: "Events" },
-    { href: "/marketplace", label: "Marketplace" },
-    { href: "/community", label: "Community" },
-  ];
-
-  const socialLinks = [
-    { href: "#", icon: Twitter, label: "Twitter" },
-    { href: "#", icon: Instagram, label: "Instagram" },
-    { href: "#", icon: Github, label: "GitHub" },
-  ];
-
-  return (
-    <footer className="bg-card border-t mt-auto">
+  const legalLinks = [{
+    href: "/terms",
+    label: "Terms of Service"
+  }, {
+    href: "/privacy",
+    label: "Privacy Policy"
+  }, {
+    href: "/cookies",
+    label: "Cookie Policy"
+  }, {
+    href: "/dmca",
+    label: "DMCA"
+  }];
+  const helpLinks = [{
+    href: "/about",
+    label: "About Us"
+  }, {
+    href: "/vision",
+    label: "Our Vision"
+  }, {
+    href: "/values",
+    label: "Our Values"
+  }, {
+    href: "/contact",
+    label: "Contact"
+  }, {
+    href: "/press",
+    label: "Press"
+  }, {
+    href: "/blog",
+    label: "Blog"
+  }, {
+    href: "/directory",
+    label: "Directory"
+  }, {
+    href: "/tags",
+    label: "Tags Wiki"
+  }];
+  const communityLinks = [{
+    href: "/venues",
+    label: "Venues"
+  }, {
+    href: "/events",
+    label: "Events"
+  }, {
+    href: "/marketplace",
+    label: "Marketplace"
+  }, {
+    href: "/community",
+    label: "Community"
+  }];
+  const socialLinks = [{
+    href: "#",
+    icon: Twitter,
+    label: "Twitter"
+  }, {
+    href: "#",
+    icon: Instagram,
+    label: "Instagram"
+  }, {
+    href: "#",
+    icon: Github,
+    label: "GitHub"
+  }];
+  return <footer className="bg-card border-t mt-auto">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Section */}
@@ -52,19 +82,11 @@ export function Footer() {
               Building a more inclusive world, one connection at a time.
             </p>
             <div className="flex items-center gap-2">
-              {socialLinks.map((social) => (
-                <Button
-                  key={social.label}
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className="h-8 w-8 p-0"
-                >
+              {socialLinks.map(social => <Button key={social.label} variant="ghost" size="sm" asChild className="h-8 w-8 p-0">
                   <a href={social.href} aria-label={social.label}>
                     <social.icon className="h-4 w-4" />
                   </a>
-                </Button>
-              ))}
+                </Button>)}
             </div>
           </div>
 
@@ -72,16 +94,11 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Community</h3>
             <ul className="space-y-2">
-              {communityLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+              {communityLinks.map(link => <li key={link.href}>
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     {link.label}
                   </Link>
-                </li>
-              ))}
+                </li>)}
             </ul>
           </div>
 
@@ -89,16 +106,11 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Help & Support</h3>
             <ul className="space-y-2">
-              {helpLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+              {helpLinks.map(link => <li key={link.href}>
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     {link.label}
                   </Link>
-                </li>
-              ))}
+                </li>)}
             </ul>
           </div>
 
@@ -106,16 +118,11 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
-              {legalLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+              {legalLinks.map(link => <li key={link.href}>
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     {link.label}
                   </Link>
-                </li>
-              ))}
+                </li>)}
             </ul>
           </div>
         </div>
@@ -136,14 +143,10 @@ export function Footer() {
           
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <a href="mailto:hello@thequeerguide.com" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                <span className="text-sm">hello@thequeerguide.com</span>
-              </a>
+              
             </Button>
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 }
