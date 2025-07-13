@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      cities: {
+        Row: {
+          country_id: string
+          created_at: string
+          id: string
+          is_capital: boolean | null
+          is_major_city: boolean | null
+          latitude: number | null
+          longitude: number | null
+          name: string
+          population: number | null
+          region_name: string | null
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          country_id: string
+          created_at?: string
+          id?: string
+          is_capital?: boolean | null
+          is_major_city?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          population?: number | null
+          region_name?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          country_id?: string
+          created_at?: string
+          id?: string
+          is_capital?: boolean | null
+          is_major_city?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          population?: number | null
+          region_name?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cities_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comment_likes: {
         Row: {
           comment_id: string
@@ -121,6 +174,99 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      continents: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      countries: {
+        Row: {
+          area_km2: number | null
+          capital: string | null
+          code: string
+          continent_id: string
+          created_at: string
+          currency: string | null
+          id: string
+          languages: string[] | null
+          latitude: number | null
+          longitude: number | null
+          name: string
+          population: number | null
+          region_id: string | null
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          area_km2?: number | null
+          capital?: string | null
+          code: string
+          continent_id: string
+          created_at?: string
+          currency?: string | null
+          id?: string
+          languages?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          population?: number | null
+          region_id?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          area_km2?: number | null
+          capital?: string | null
+          code?: string
+          continent_id?: string
+          created_at?: string
+          currency?: string | null
+          id?: string
+          languages?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          population?: number | null
+          region_id?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "countries_continent_id_fkey"
+            columns: ["continent_id"]
+            isOneToOne: false
+            referencedRelation: "continents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "countries_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -594,6 +740,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      regions: {
+        Row: {
+          continent_id: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          continent_id: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          continent_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regions_continent_id_fkey"
+            columns: ["continent_id"]
+            isOneToOne: false
+            referencedRelation: "continents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_follows: {
         Row: {
