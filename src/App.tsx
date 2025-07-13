@@ -9,6 +9,7 @@ import { Header } from "@/components/layout/Header";
 import Index from "./pages/Index";
 import Venues from "./pages/Venues";
 import Events from "./pages/Events";
+import Marketplace from "./pages/Marketplace";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/venues" element={<Venues />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/marketplace" element={<Marketplace />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

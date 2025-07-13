@@ -173,6 +173,188 @@ export type Database = {
           },
         ]
       }
+      marketplace_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_favorites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      marketplace_listings: {
+        Row: {
+          business_name: string
+          business_type: string | null
+          category: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          featured: boolean | null
+          id: string
+          images: string[] | null
+          location: string | null
+          price: number | null
+          price_type: string | null
+          shipping_available: boolean | null
+          shipping_info: string | null
+          social_media: Json | null
+          status: string | null
+          subcategory: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          views_count: number | null
+          website: string | null
+        }
+        Insert: {
+          business_name: string
+          business_type?: string | null
+          category: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          featured?: boolean | null
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          price?: number | null
+          price_type?: string | null
+          shipping_available?: boolean | null
+          shipping_info?: string | null
+          social_media?: Json | null
+          status?: string | null
+          subcategory?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          views_count?: number | null
+          website?: string | null
+        }
+        Update: {
+          business_name?: string
+          business_type?: string | null
+          category?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          featured?: boolean | null
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          price?: number | null
+          price_type?: string | null
+          shipping_available?: boolean | null
+          shipping_info?: string | null
+          social_media?: Json | null
+          status?: string | null
+          subcategory?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          views_count?: number | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      marketplace_reviews: {
+        Row: {
+          content: string | null
+          created_at: string
+          helpful_count: number | null
+          id: string
+          listing_id: string
+          purchase_verified: boolean | null
+          rating: number
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          listing_id: string
+          purchase_verified?: boolean | null
+          rating: number
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          listing_id?: string
+          purchase_verified?: boolean | null
+          rating?: number
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_reviews_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
