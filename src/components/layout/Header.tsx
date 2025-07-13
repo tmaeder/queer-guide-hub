@@ -32,6 +32,9 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => navigate('/my-bookings')}>
+                  My Bookings
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/profile/settings')}>
                   Profile Settings
                 </DropdownMenuItem>

@@ -43,6 +43,9 @@ export function Footer() {
     label: "Tags Wiki"
   }];
   const communityLinks = [{
+    href: "/travel",
+    label: "Travel"
+  }, {
     href: "/venues",
     label: "Venues"
   }, {

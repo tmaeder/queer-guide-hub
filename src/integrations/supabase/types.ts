@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          arrival_airport: string | null
+          booking_reference: string
+          booking_type: string
+          check_in_date: string | null
+          check_out_date: string | null
+          created_at: string
+          currency: string | null
+          departure_airport: string | null
+          departure_date: string | null
+          flight_data: Json | null
+          guests: number | null
+          hotel_data: Json | null
+          hotel_location: string | null
+          hotel_name: string | null
+          id: string
+          passengers: number | null
+          payment_status: string | null
+          return_date: string | null
+          rooms: number | null
+          status: string
+          total_price: number | null
+          traveler_details: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          arrival_airport?: string | null
+          booking_reference: string
+          booking_type: string
+          check_in_date?: string | null
+          check_out_date?: string | null
+          created_at?: string
+          currency?: string | null
+          departure_airport?: string | null
+          departure_date?: string | null
+          flight_data?: Json | null
+          guests?: number | null
+          hotel_data?: Json | null
+          hotel_location?: string | null
+          hotel_name?: string | null
+          id?: string
+          passengers?: number | null
+          payment_status?: string | null
+          return_date?: string | null
+          rooms?: number | null
+          status?: string
+          total_price?: number | null
+          traveler_details?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          arrival_airport?: string | null
+          booking_reference?: string
+          booking_type?: string
+          check_in_date?: string | null
+          check_out_date?: string | null
+          created_at?: string
+          currency?: string | null
+          departure_airport?: string | null
+          departure_date?: string | null
+          flight_data?: Json | null
+          guests?: number | null
+          hotel_data?: Json | null
+          hotel_location?: string | null
+          hotel_name?: string | null
+          id?: string
+          passengers?: number | null
+          payment_status?: string | null
+          return_date?: string | null
+          rooms?: number | null
+          status?: string
+          total_price?: number | null
+          traveler_details?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cities: {
         Row: {
           country_id: string
