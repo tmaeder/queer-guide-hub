@@ -116,12 +116,13 @@ export function useBookings() {
       throw new Error(error.message || 'Failed to search hotels');
     }
 
-    if (!data.success) {
-      console.error('❌ Hotel search API error:', data.error);
-      throw new Error(data.error || 'Failed to search hotels');
+    if (!data || !data.success) {
+      console.error('❌ Hotel search API error:', data?.error || 'No data returned');
+      throw new Error(data?.error || 'Failed to search hotels');
     }
 
     console.log('✅ Hotel search successful:', data);
+    console.log('🏨 Number of hotels found:', data.hotels?.length || 0);
     return data;
   };
 
