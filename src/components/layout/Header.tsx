@@ -30,7 +30,8 @@ export function Header() {
             <Link to="/marketplace">Marketplace</Link>
           </Button>
           <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
-            <Link to="/directory">Directory</Link>
+            <Link to="/directory">Locations
+          </Link>
           </Button>
           <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
             <Link to="/tags">Wiki</Link>
