@@ -3,6 +3,7 @@ import { useDirectory } from "@/hooks/useDirectory";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import { DirectorySearch } from "@/components/directory/DirectorySearch";
 import { WeatherForecast } from "@/components/weather/WeatherForecast";
+import { LocationInfo } from "@/components/location/LocationInfo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -255,6 +256,13 @@ export default function Directory() {
             <Badge variant="secondary">{countryCities.length}</Badge>
           </div>
           
+          {/* Country Information */}
+          <LocationInfo
+            name={selectedCountry?.name}
+            type="country"
+            className="mb-6"
+          />
+          
           {/* Weather Forecast for Country */}
           <WeatherForecast
             latitude={selectedCountry?.latitude}
@@ -279,8 +287,8 @@ export default function Directory() {
 
       {viewMode === "city" && (
         <div className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* City Information Card */}
+          <div className="grid gap-6">
+            {/* City Header */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h2 className="text-2xl font-bold">{selectedCity?.name}</h2>
@@ -312,15 +320,19 @@ export default function Directory() {
               </div>
             </div>
 
+            {/* City Information */}
+            <LocationInfo
+              name={selectedCity?.name}
+              type="city"
+            />
+
             {/* Weather Forecast */}
-            <div>
-              <WeatherForecast
-                latitude={selectedCity?.latitude}
-                longitude={selectedCity?.longitude}
-                cityName={selectedCity?.name}
-                className="h-fit"
-              />
-            </div>
+            <WeatherForecast
+              latitude={selectedCity?.latitude}
+              longitude={selectedCity?.longitude}
+              cityName={selectedCity?.name}
+              className="h-fit"
+            />
           </div>
         </div>
       )}
