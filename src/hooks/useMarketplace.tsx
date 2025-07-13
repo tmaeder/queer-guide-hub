@@ -130,7 +130,7 @@ export function useMarketplace() {
 
   const incrementViews = async (listingId: string) => {
     try {
-      const { error } = await supabase.rpc('increment_listing_views', { listing_id: listingId });
+      const { error } = await (supabase as any).rpc('increment_listing_views', { listing_id: listingId });
       if (error) console.warn('Failed to increment views:', error);
     } catch (err) {
       console.warn('Failed to increment views:', err);
