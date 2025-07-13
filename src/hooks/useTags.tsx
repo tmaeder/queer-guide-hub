@@ -28,7 +28,43 @@ export const useTags = () => {
     try {
       setLoading(true);
       
-      // Fetch tags from all tables that have tags
+      // First, try to get tags from the centralized tags table
+      const { data: centralizedTags, error: centralizedError } = await supabase
+        .from("tags")
+        .select("*")
+        .eq("is_active", true);
+
+      if (!centralizedError && centralizedTags && centralizedTags.length > 0) {
+        // Use centralized tags if available
+        const allTagsArray: Tag[] = centralizedTags.map(tag => ({
+          name: tag.name,
+          total_count: tag.usage_count,
+          categories: [tag.category],
+          description: tag.description
+        }));
+
+        setAllTags(allTagsArray);
+
+        // Group by category
+        const categorized: Record<string, Tag[]> = {};
+        centralizedTags.forEach(tag => {
+          if (!categorized[tag.category]) {
+            categorized[tag.category] = [];
+          }
+          categorized[tag.category].push({
+            name: tag.name,
+            total_count: tag.usage_count,
+            categories: [tag.category],
+            description: tag.description
+          });
+        });
+
+        setTagsByCategory(categorized);
+        setLoading(false);
+        return;
+      }
+
+      // Fallback to legacy tag aggregation if no centralized tags
       const [eventsResult, venuesResult, marketplaceResult, communityResult] = await Promise.all([
         supabase
           .from("events")

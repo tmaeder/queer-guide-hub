@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useTags } from "@/hooks/useTags";
+import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 import { TagCard } from "@/components/directory/TagCard";
 import { DirectorySearch } from "@/components/directory/DirectorySearch";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain } from "lucide-react";
 
 type ViewMode = "overview" | "category" | "search" | "tag-detail";
 
@@ -13,12 +13,10 @@ export default function TagsDirectory() {
   const { 
     allTags, 
     tagsByCategory, 
-    tagDetails,
     loading, 
-    error,
-    searchTags,
-    getTagDetails
-  } = useTags();
+    error, 
+    searchTags
+  } = useCentralizedTags();
 
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -30,10 +28,9 @@ export default function TagsDirectory() {
     setViewMode("category");
   };
 
-  const handleTagClick = async (tag: any) => {
+  const handleTagClick = (tag: any) => {
     setSelectedTag(tag);
     setViewMode("tag-detail");
-    await getTagDetails(tag.name);
   };
 
   const handleSearch = async (query: string) => {
@@ -79,6 +76,8 @@ export default function TagsDirectory() {
       case "venues": return MapPin;
       case "marketplace": return ShoppingBag;
       case "community": return Users;
+      case "gender-identity": return Heart;
+      case "health": return Brain;
       default: return Tag;
     }
   };
@@ -152,15 +151,17 @@ export default function TagsDirectory() {
                 </div>
               </div>
             </div>
-            {Object.entries(tagsByCategory).map(([category, tags]) => {
-              const IconComponent = getCategoryIcon(category);
+            {tagsByCategory.map((categoryData) => {
+              const IconComponent = getCategoryIcon(categoryData.category);
               return (
-                <div key={category} className="bg-card rounded-lg p-4 border">
+                <div key={categoryData.category} className="bg-card rounded-lg p-4 border">
                   <div className="flex items-center gap-2">
                     <IconComponent className="h-5 w-5 text-primary" />
                     <div>
-                      <p className="text-2xl font-bold">{tags.length}</p>
-                      <p className="text-sm text-muted-foreground capitalize">{category}</p>
+                      <p className="text-2xl font-bold">{categoryData.count}</p>
+                      <p className="text-sm text-muted-foreground capitalize">
+                        {categoryData.category.replace('-', ' ')}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -175,12 +176,12 @@ export default function TagsDirectory() {
                 <Tag className="h-4 w-4" />
                 All Tags
               </TabsTrigger>
-              {Object.keys(tagsByCategory).map((category) => {
-                const IconComponent = getCategoryIcon(category);
+              {tagsByCategory.map((categoryData) => {
+                const IconComponent = getCategoryIcon(categoryData.category);
                 return (
-                  <TabsTrigger key={category} value={category} className="flex items-center gap-2">
+                  <TabsTrigger key={categoryData.category} value={categoryData.category} className="flex items-center gap-2">
                     <IconComponent className="h-4 w-4" />
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                    {categoryData.category.charAt(0).toUpperCase() + categoryData.category.slice(1).replace('-', ' ')}
                   </TabsTrigger>
                 );
               })}
@@ -193,29 +194,65 @@ export default function TagsDirectory() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {allTags.map((tag, index) => (
-                  <TagCard
-                    key={`${tag.name}-${index}`}
-                    tag={tag}
+                  <div
+                    key={`${tag.id}-${index}`}
+                    className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors"
                     onClick={() => handleTagClick(tag)}
-                  />
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <span className="font-medium">{tag.name}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {tag.category}
+                      </Badge>
+                    </div>
+                    {tag.description && (
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {tag.description}
+                      </p>
+                    )}
+                    <div className="text-xs text-muted-foreground">
+                      Used {tag.usage_count} times
+                    </div>
+                  </div>
                 ))}
               </div>
             </TabsContent>
 
-            {Object.entries(tagsByCategory).map(([category, tags]) => (
+            {tagsByCategory.map(({ category, tags, count }) => (
               <TabsContent key={category} value={category} className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-semibold capitalize">{category} Tags</h2>
-                  <Badge variant="secondary">{tags.length}</Badge>
+                  <h2 className="text-xl font-semibold capitalize">
+                    {category.replace('-', ' ')} Tags
+                  </h2>
+                  <Badge variant="secondary">{count}</Badge>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tags.map((tag, index) => (
-                    <TagCard
-                      key={`${tag.name}-${index}`}
-                      tag={tag}
-                      category={category}
+                    <div
+                      key={`${tag.id}-${index}`}
+                      className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors"
                       onClick={() => handleTagClick(tag)}
-                    />
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: tag.color }}
+                        />
+                        <span className="font-medium">{tag.name}</span>
+                      </div>
+                      {tag.description && (
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {tag.description}
+                        </p>
+                      )}
+                      <div className="text-xs text-muted-foreground">
+                        Used {tag.usage_count} times
+                      </div>
+                    </div>
                   ))}
                 </div>
               </TabsContent>
@@ -281,11 +318,11 @@ export default function TagsDirectory() {
               </div>
             </div>
 
-            {tagDetails && tagDetails.related_tags && tagDetails.related_tags.length > 0 && (
+            {selectedTag?.related_tags && selectedTag.related_tags.length > 0 && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Related Tags</h3>
                 <div className="flex flex-wrap gap-2">
-                  {tagDetails.related_tags.map((relatedTag: string) => (
+                  {selectedTag.related_tags.map((relatedTag: string) => (
                     <Button
                       key={relatedTag}
                       variant="outline"
