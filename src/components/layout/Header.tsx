@@ -5,6 +5,7 @@ import { Heart, Menu, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AdvancedSearchBar } from '@/components/search/AdvancedSearchBar';
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const navigate = useNavigate();
@@ -19,30 +20,7 @@ export function Header() {
           <h1 className="text-xl font-bold gradient-text">The Queer Guide</h1>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
-          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
-            <Link to="/venues">Venues</Link>
-          </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
-            <Link to="/events">Events</Link>
-          </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
-            <Link to="/marketplace">Marketplace</Link>
-          </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
-            <Link to="/directory">Locations
-          </Link>
-          </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
-            <Link to="/tags">Wiki</Link>
-          </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
-            <Link to="/community">Community</Link>
-          </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
-            <Link to="/news">News</Link>
-          </Button>
-        </nav>
+        <AdvancedSearchBar />
 
         <div className="flex items-center gap-4">
           {user ? <DropdownMenu>
