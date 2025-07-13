@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Globe, MapPin, Building2, Users } from "lucide-react";
 
-type ViewMode = "overview" | "continent" | "country" | "search";
+type ViewMode = "overview" | "continent" | "country" | "city" | "search";
 
 export default function Directory() {
   const { 
@@ -25,6 +25,7 @@ export default function Directory() {
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [selectedContinent, setSelectedContinent] = useState<any>(null);
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
+  const [selectedCity, setSelectedCity] = useState<any>(null);
   const [continentCountries, setContinentCountries] = useState<any[]>([]);
   const [countryCities, setCountryCities] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any>({ continents: [], countries: [], cities: [] });
@@ -34,6 +35,11 @@ export default function Directory() {
     setViewMode("continent");
     const countries = await fetchCountriesByContinent(continent.id);
     setContinentCountries(countries);
+  };
+
+  const handleCityClick = (city: any) => {
+    setSelectedCity(city);
+    setViewMode("city");
   };
 
   const handleCountryClick = async (country: any) => {
@@ -55,7 +61,9 @@ export default function Directory() {
   };
 
   const handleBack = () => {
-    if (viewMode === "country") {
+    if (viewMode === "city") {
+      setViewMode("country");
+    } else if (viewMode === "country") {
       setViewMode("continent");
     } else if (viewMode === "continent") {
       setViewMode("overview");
@@ -99,6 +107,9 @@ export default function Directory() {
             {viewMode === "country" && selectedCountry && (
               <p className="text-muted-foreground">Cities in {selectedCountry.name}</p>
             )}
+            {viewMode === "city" && selectedCity && (
+              <p className="text-muted-foreground">{selectedCity.name} Details</p>
+            )}
           </div>
         </div>
       </div>
@@ -126,7 +137,18 @@ export default function Directory() {
           {selectedCountry && (
             <>
               <span>/</span>
-              <span className="text-foreground">{selectedCountry.name}</span>
+              <button 
+                onClick={() => setViewMode("country")} 
+                className="hover:text-foreground"
+              >
+                {selectedCountry.name}
+              </button>
+            </>
+          )}
+          {selectedCity && (
+            <>
+              <span>/</span>
+              <span className="text-foreground">{selectedCity.name}</span>
             </>
           )}
         </div>
@@ -193,12 +215,13 @@ export default function Directory() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {cities.map((city) => (
-                <DirectoryCard
-                  key={city.id}
-                  type="city"
-                  name={city.name}
-                  data={city}
-                />
+                  <DirectoryCard
+                    key={city.id}
+                    type="city"
+                    name={city.name}
+                    data={city}
+                    onClick={() => handleCityClick(city)}
+                  />
               ))}
             </div>
           </TabsContent>
@@ -247,8 +270,57 @@ export default function Directory() {
                 type="city"
                 name={city.name}
                 data={city}
+                onClick={() => handleCityClick(city)}
               />
             ))}
+          </div>
+        </div>
+      )}
+
+      {viewMode === "city" && (
+        <div className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* City Information Card */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl font-bold">{selectedCity?.name}</h2>
+                {selectedCity?.is_capital && (
+                  <Badge variant="secondary">Capital</Badge>
+                )}
+                {selectedCity?.is_major_city && (
+                  <Badge variant="outline">Major City</Badge>
+                )}
+              </div>
+              
+              <div className="space-y-2 text-sm text-muted-foreground">
+                {selectedCity?.region_name && (
+                  <p><span className="font-medium">Region:</span> {selectedCity.region_name}</p>
+                )}
+                {selectedCity?.population && (
+                  <p className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span className="font-medium">Population:</span> 
+                    {selectedCity.population.toLocaleString()}
+                  </p>
+                )}
+                {selectedCity?.timezone && (
+                  <p><span className="font-medium">Timezone:</span> {selectedCity.timezone}</p>
+                )}
+                {selectedCity?.latitude && selectedCity?.longitude && (
+                  <p><span className="font-medium">Coordinates:</span> {selectedCity.latitude}°, {selectedCity.longitude}°</p>
+                )}
+              </div>
+            </div>
+
+            {/* Weather Forecast */}
+            <div>
+              <WeatherForecast
+                latitude={selectedCity?.latitude}
+                longitude={selectedCity?.longitude}
+                cityName={selectedCity?.name}
+                className="h-fit"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -310,6 +382,7 @@ export default function Directory() {
                       type="city"
                       name={city.name}
                       data={city}
+                      onClick={() => handleCityClick(city)}
                     />
                     <WeatherForecast
                       latitude={city.latitude}
