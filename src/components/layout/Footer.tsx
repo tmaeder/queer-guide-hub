@@ -15,7 +15,11 @@ export function Footer() {
 
   const helpLinks = [
     { href: "/about", label: "About Us" },
+    { href: "/vision", label: "Our Vision" },
+    { href: "/values", label: "Our Values" },
     { href: "/contact", label: "Contact" },
+    { href: "/press", label: "Press" },
+    { href: "/blog", label: "Blog" },
     { href: "/directory", label: "Directory" },
     { href: "/tags", label: "Tags Wiki" },
   ];
