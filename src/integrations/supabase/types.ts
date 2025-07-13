@@ -53,6 +53,149 @@ export type Database = {
         }
         Relationships: []
       }
+      venue_reviews: {
+        Row: {
+          content: string | null
+          created_at: string
+          helpful_count: number | null
+          id: string
+          rating: number
+          title: string | null
+          updated_at: string
+          user_id: string
+          venue_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          rating: number
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          venue_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          rating?: number
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "venue_reviews_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venues: {
+        Row: {
+          address: string
+          amenities: string[] | null
+          category: string
+          city: string
+          country: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          email: string | null
+          featured: boolean | null
+          hours: Json | null
+          id: string
+          images: string[] | null
+          instagram: string | null
+          latitude: number | null
+          longitude: number | null
+          name: string
+          phone: string | null
+          postal_code: string | null
+          price_range: number | null
+          state: string | null
+          tags: string[] | null
+          updated_at: string
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          address: string
+          amenities?: string[] | null
+          category: string
+          city: string
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          email?: string | null
+          featured?: boolean | null
+          hours?: Json | null
+          id?: string
+          images?: string[] | null
+          instagram?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          phone?: string | null
+          postal_code?: string | null
+          price_range?: number | null
+          state?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          amenities?: string[] | null
+          category?: string
+          city?: string
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          email?: string | null
+          featured?: boolean | null
+          hours?: Json | null
+          id?: string
+          images?: string[] | null
+          instagram?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          phone?: string | null
+          postal_code?: string | null
+          price_range?: number | null
+          state?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, MapPin, Calendar, Store, Plane, Users } from 'lucide-react';
@@ -52,8 +53,8 @@ const Index = () => {
             connecting with community, and building safe spaces together.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8">
-              Explore Venues
+            <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8" asChild>
+              <Link to="/venues">Explore Venues</Link>
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8">
               Join Community

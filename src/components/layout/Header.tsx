@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Heart, Menu, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,14 +19,14 @@ export function Header() {
   return (
     <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <Heart className="h-8 w-8 text-primary fill-current" />
           <h1 className="text-xl font-bold gradient-text">The Queer Guide</h1>
-        </div>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          <Button variant="ghost" className="text-muted-foreground hover:text-primary">
-            Venues
+          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
+            <Link to="/venues">Venues</Link>
           </Button>
           <Button variant="ghost" className="text-muted-foreground hover:text-primary">
             Events
