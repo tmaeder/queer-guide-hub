@@ -18,7 +18,7 @@ export function Header() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <Heart className="h-8 w-8 text-primary fill-current" />
-          <h1 className="text-xl font-bold gradient-text">The Queer Guide</h1>
+          <h1 className="text-xl font-bold gradient-text">Queer Guide</h1>
         </Link>
 
         <AdvancedSearchBar />

@@ -48,7 +48,7 @@ const Index = () => {
           <div className="flex items-center justify-center gap-3 mb-6">
             <Heart className="h-12 w-12 text-primary fill-current" />
             <h1 className="text-5xl md:text-6xl font-bold gradient-text">
-              The Queer Guide
+              Queer Guide
             </h1>
           </div>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">

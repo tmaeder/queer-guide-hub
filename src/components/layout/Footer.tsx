@@ -75,7 +75,7 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-4">
               <Heart className="h-8 w-8 text-primary fill-current" />
-              <h2 className="text-xl font-bold gradient-text">The Queer Guide</h2>
+              <h2 className="text-xl font-bold gradient-text">Queer Guide</h2>
             </Link>
             <p className="text-muted-foreground mb-4 max-w-sm">
               Connecting the LGBTQ+ community with safe spaces, events, businesses, and each other. 
@@ -132,7 +132,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex flex-col md:flex-row items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © {currentYear} The Queer Guide. All rights reserved.
+              © {currentYear} Queer Guide. All rights reserved.
             </p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>Made with</span>
