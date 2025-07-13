@@ -4,21 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Heart, Menu, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-
-  return (
-    <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+  const {
+    user,
+    signOut
+  } = useAuth();
+  return <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <Heart className="h-8 w-8 text-primary fill-current" />
@@ -39,7 +33,7 @@ export function Header() {
             <Link to="/directory">Directory</Link>
           </Button>
           <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
-            <Link to="/tags">Tags Wiki</Link>
+            <Link to="/tags">Wiki</Link>
           </Button>
           <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
             <Link to="/community">Community</Link>
@@ -50,8 +44,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
-          {user ? (
-            <DropdownMenu>
+          {user ? <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
                   <User className="h-4 w-4" />
@@ -70,15 +63,9 @@ export function Header() {
                   Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button 
-              onClick={() => setAuthDialogOpen(true)}
-              className="bg-gradient-primary hover:opacity-90 transition-opacity"
-            >
+            </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} className="bg-gradient-primary hover:opacity-90 transition-opacity">
               Sign In
-            </Button>
-          )}
+            </Button>}
           
           <Button variant="ghost" size="sm" className="md:hidden">
             <Menu className="h-4 w-4" />
@@ -87,6 +74,5 @@ export function Header() {
       </div>
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
-    </header>
-  );
+    </header>;
 }
