@@ -28,8 +28,8 @@ export function Header() {
           <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
             <Link to="/venues">Venues</Link>
           </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-primary">
-            Events
+          <Button variant="ghost" className="text-muted-foreground hover:text-primary" asChild>
+            <Link to="/events">Events</Link>
           </Button>
           <Button variant="ghost" className="text-muted-foreground hover:text-primary">
             Marketplace

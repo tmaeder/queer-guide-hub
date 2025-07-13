@@ -14,6 +14,165 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_attendees: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attendees_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          address: string | null
+          age_restriction: string | null
+          city: string
+          country: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          event_type: string
+          featured: boolean | null
+          id: string
+          images: string[] | null
+          is_free: boolean | null
+          is_recurring: boolean | null
+          latitude: number | null
+          longitude: number | null
+          max_attendees: number | null
+          organizer_contact: string | null
+          organizer_name: string | null
+          price_max: number | null
+          price_min: number | null
+          recurrence_pattern: string | null
+          start_date: string
+          state: string | null
+          status: string | null
+          tags: string[] | null
+          ticket_url: string | null
+          title: string
+          updated_at: string
+          venue_id: string | null
+          venue_name: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          age_restriction?: string | null
+          city: string
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          event_type: string
+          featured?: boolean | null
+          id?: string
+          images?: string[] | null
+          is_free?: boolean | null
+          is_recurring?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          max_attendees?: number | null
+          organizer_contact?: string | null
+          organizer_name?: string | null
+          price_max?: number | null
+          price_min?: number | null
+          recurrence_pattern?: string | null
+          start_date: string
+          state?: string | null
+          status?: string | null
+          tags?: string[] | null
+          ticket_url?: string | null
+          title: string
+          updated_at?: string
+          venue_id?: string | null
+          venue_name?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          age_restriction?: string | null
+          city?: string
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          event_type?: string
+          featured?: boolean | null
+          id?: string
+          images?: string[] | null
+          is_free?: boolean | null
+          is_recurring?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          max_attendees?: number | null
+          organizer_contact?: string | null
+          organizer_name?: string | null
+          price_max?: number | null
+          price_min?: number | null
+          recurrence_pattern?: string | null
+          start_date?: string
+          state?: string | null
+          status?: string | null
+          tags?: string[] | null
+          ticket_url?: string | null
+          title?: string
+          updated_at?: string
+          venue_id?: string | null
+          venue_name?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "events_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
