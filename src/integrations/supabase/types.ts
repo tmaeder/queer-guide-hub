@@ -707,37 +707,55 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string
+          date_of_birth: string | null
           display_name: string | null
           id: string
           is_business: boolean | null
           location: string | null
+          phone: string | null
+          preferences: Json | null
+          privacy_settings: Json | null
           pronouns: string | null
+          social_links: Json | null
           updated_at: string
           user_id: string
+          website: string | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          date_of_birth?: string | null
           display_name?: string | null
           id?: string
           is_business?: boolean | null
           location?: string | null
+          phone?: string | null
+          preferences?: Json | null
+          privacy_settings?: Json | null
           pronouns?: string | null
+          social_links?: Json | null
           updated_at?: string
           user_id: string
+          website?: string | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          date_of_birth?: string | null
           display_name?: string | null
           id?: string
           is_business?: boolean | null
           location?: string | null
+          phone?: string | null
+          preferences?: Json | null
+          privacy_settings?: Json | null
           pronouns?: string | null
+          social_links?: Json | null
           updated_at?: string
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }
