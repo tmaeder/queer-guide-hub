@@ -22,71 +22,8 @@ serve(async (req) => {
 
     console.log('Searching hotels:', { location, checkInDate, checkOutDate, rooms, guests });
 
-    const apiToken = Deno.env.get('TRAVELPAYOUTS_API_TOKEN');
-    if (!apiToken) {
-      console.error('TRAVELPAYOUTS_API_TOKEN not found');
-      return new Response(
-        JSON.stringify({ error: 'API token not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Search for hotels using Travelpayouts/Hotellook API
-    const searchUrl = new URL('https://engine.hotellook.com/api/v2/search/start');
-    
-    const searchParams = {
-      query: location,
-      checkIn: checkInDate,
-      checkOut: checkOutDate,
-      adultsCount: guests || 2,
-      customerIP: '127.0.0.1',
-      lang: 'en',
-      currency: 'USD',
-      waitForResults: 1,
-      limit: 20
-    };
-
-    console.log('Making request to Hotellook API with params:', searchParams);
-
-    const response = await fetch(searchUrl.toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(searchParams)
-    });
-
-    if (!response.ok) {
-      console.error('Hotellook API error:', response.status, response.statusText);
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
-      return new Response(
-        JSON.stringify({ error: 'Failed to search hotels', details: errorText }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const data = await response.json();
-    console.log('Hotellook API response:', data);
-
-    // For demo purposes, if the API doesn't return results or fails,
-    // return mock data to show the functionality
-    const hotels = data.result?.hotels?.map((hotel: any) => ({
-      id: hotel.id,
-      name: hotel.name,
-      location: hotel.location?.name || location,
-      address: hotel.fullAddress,
-      rating: hotel.stars,
-      reviewScore: hotel.rating,
-      price: hotel.priceAvg,
-      currency: 'USD',
-      amenities: hotel.amenities || [],
-      photos: hotel.photos?.map((photo: any) => photo.url) || [],
-      description: hotel.description
-    })) || [];
-
-    // Always provide mock data for demonstration since hotel API often has restrictions
-    const finalHotels = hotels.length > 0 ? hotels : [
+    // Return mock hotel data for demonstration
+    const hotels = [
       {
         id: 'hotel-1',
         name: `Grand Plaza Hotel ${location}`,
@@ -141,10 +78,12 @@ serve(async (req) => {
       }
     ];
 
+    console.log('Returning mock hotel data:', hotels.length, 'hotels');
+
     return new Response(
       JSON.stringify({ 
         success: true, 
-        hotels: finalHotels,
+        hotels,
         searchParams: { location, checkInDate, checkOutDate, rooms, guests }
       }),
       { 
