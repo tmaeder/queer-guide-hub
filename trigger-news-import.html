@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trigger News Import</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>News Import Trigger</h1>
+    <button id="importBtn">Import News Now</button>
+    <div id="result"></div>
+    
+    <script>
+        const { createClient } = supabase;
+        
+        const supabaseClient = createClient(
+            'https://xqeacpakadqfxjxjcewc.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8'
+        );
+        
+        document.getElementById('importBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Importing news articles...';
+            
+            try {
+                const { data, error } = await supabaseClient.functions.invoke('fetch-news', {
+                    body: { manual_trigger: true }
+                });
+                
+                if (error) {
+                    resultDiv.innerHTML = `Error: ${error.message}`;
+                } else {
+                    resultDiv.innerHTML = `Success! Processed ${data.articlesProcessed} articles from ${data.sources} sources.`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `Error: ${err.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -6,7 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Newspaper, TrendingUp, Star, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Newspaper, TrendingUp, Star, Globe, Download } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function News() {
   const { 
@@ -23,6 +26,28 @@ export default function News() {
   const [featuredArticles, setFeaturedArticles] = useState<any[]>([]);
   const [trendingTags, setTrendingTags] = useState<{ tag: string; count: number }[]>([]);
   const [activeTab, setActiveTab] = useState("all");
+  const [isImporting, setIsImporting] = useState(false);
+
+  const handleImportNews = async () => {
+    setIsImporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-news', {
+        body: { manual_trigger: true }
+      });
+      
+      if (error) {
+        toast.error(`Import failed: ${error.message}`);
+      } else {
+        toast.success(`Successfully imported ${data.articlesProcessed} articles from ${data.sources} sources!`);
+        // Refresh the articles
+        fetchArticles();
+      }
+    } catch (err: any) {
+      toast.error(`Import error: ${err.message}`);
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   useEffect(() => {
     const loadAdditionalData = async () => {
@@ -87,9 +112,18 @@ export default function News() {
             LGBTQ+ News Hub
           </h1>
         </div>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
           Stay informed with the latest news, developments, and stories from the LGBTQ+ community worldwide
         </p>
+        <Button 
+          onClick={handleImportNews} 
+          disabled={isImporting}
+          variant="outline"
+          className="gap-2"
+        >
+          <Download className="h-4 w-4" />
+          {isImporting ? "Importing..." : "Import Latest News"}
+        </Button>
       </div>
 
       {/* Stats Cards */}
