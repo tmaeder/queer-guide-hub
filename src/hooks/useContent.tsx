@@ -34,7 +34,7 @@ export const useContent = () => {
         .select(`
           *,
           profiles:author_id (display_name, avatar_url),
-          content_category_assignments!inner (
+          content_category_assignments (
             content_categories (*)
           ),
           content_tag_assignments (
@@ -46,22 +46,19 @@ export const useContent = () => {
         query = query.eq("content_type", filters.type);
       }
 
-      if (filters?.status) {
+      if (filters?.status !== undefined) {
         query = query.eq("status", filters.status);
-      } else {
-        // Default to published content for public access
-        query = query.eq("status", "published");
       }
 
       if (filters?.category) {
-        query = query.eq("content_category_assignments.content_categories.slug", filters.category);
+        query = query.eq("content_category_assignments.category_id", filters.category);
       }
 
       if (filters?.limit) {
         query = query.limit(filters.limit);
       }
 
-      query = query.order("published_at", { ascending: false });
+      query = query.order("created_at", { ascending: false });
 
       const { data, error } = await query;
 
