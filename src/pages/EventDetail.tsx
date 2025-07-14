@@ -258,7 +258,7 @@ export default function EventDetail() {
               <Badge className={getEventTypeColor(event.event_type)}>
                 {event.event_type}
               </Badge>
-              <Badge variant="outline" className={event.is_free ? 'text-green-600' : ''}>
+              <Badge variant="outline" className={event.is_free ? 'text-accent' : ''}>
                 {getPriceDisplay()}
               </Badge>
               {event.age_restriction && (

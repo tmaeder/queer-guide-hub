@@ -102,7 +102,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
               {event.event_type}
             </Badge>
             {event.is_free ? (
-              <Badge variant="outline" className="text-green-600">
+              <Badge variant="outline" className="text-accent">
                 Free
               </Badge>
             ) : (

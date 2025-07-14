@@ -124,6 +124,23 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  
+  /* Remove colored fonts - use semantic tokens only */
+  .text-success {
+    @apply text-accent;
+  }
+  
+  .text-warning {
+    @apply text-secondary;
+  }
+  
+  .text-error {
+    @apply text-destructive;
+  }
+  
+  .text-info {
+    @apply text-primary;
+  }
 }
 
 /* Animation Utilities */

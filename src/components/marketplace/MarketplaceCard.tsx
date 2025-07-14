@@ -86,7 +86,7 @@ export function MarketplaceCard({
           size="sm"
           variant="ghost"
           className={`absolute top-2 right-2 z-10 h-8 w-8 p-0 ${
-            isFavorited ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'
+            isFavorited ? 'text-destructive hover:text-destructive/80' : 'text-muted-foreground hover:text-destructive'
           }`}
           onClick={(e) => {
             e.stopPropagation();

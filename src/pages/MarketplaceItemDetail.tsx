@@ -269,7 +269,7 @@ export default function MarketplaceItemDetail() {
 
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleToggleFavorite}>
-              <Heart className={`h-4 w-4 mr-2 ${isFavorited ? 'fill-current text-red-500' : ''}`} />
+              <Heart className={`h-4 w-4 mr-2 ${isFavorited ? 'fill-current text-destructive' : ''}`} />
               {isFavorited ? 'Favorited' : 'Favorite'}
             </Button>
             <Button variant="outline" size="sm">

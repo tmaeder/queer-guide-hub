@@ -239,7 +239,7 @@ export function PostCard({
           <Button
             variant="ghost"
             size="sm"
-            className={`flex-1 gap-2 ${isLiked ? 'text-red-500 hover:text-red-600' : ''}`}
+            className={`flex-1 gap-2 ${isLiked ? 'text-destructive hover:text-destructive/80' : ''}`}
             onClick={() => onLike?.(post.id)}
           >
             <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
