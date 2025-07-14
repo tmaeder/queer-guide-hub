@@ -91,17 +91,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Community Links */}
-          <div>
-            <h3 className="font-semibold mb-4">Community</h3>
-            <ul className="space-y-2">
-              {communityLinks.map(link => <li key={link.href}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {link.label}
-                  </Link>
-                </li>)}
-            </ul>
-          </div>
 
           {/* Help Links */}
           <div>
