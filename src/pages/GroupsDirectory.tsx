@@ -43,7 +43,19 @@ const GroupsDirectory = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-destructive">Error: {error}</div>
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center">
+            <h2 className="text-lg font-semibold text-destructive mb-2">Failed to load groups</h2>
+            <p className="text-destructive/80 mb-4">{error}</p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline"
+              className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              Refresh Page
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

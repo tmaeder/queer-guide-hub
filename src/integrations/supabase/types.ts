@@ -1861,6 +1861,10 @@ export type Database = {
         Args: { post_id: string }
         Returns: undefined
       }
+      is_group_member_or_admin: {
+        Args: { group_id: string; check_admin?: boolean }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
