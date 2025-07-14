@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useEvents } from '@/hooks/useEvents';
 import { EventCard } from '@/components/events/EventCard';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,7 @@ const commonTags = [
 ];
 
 const Events = () => {
+  const navigate = useNavigate();
   const { events, loading, error, fetchEvents, updateAttendance } = useEvents();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -141,7 +143,10 @@ const Events = () => {
               Discover and join community events in your area
             </p>
           </div>
-          <Button className="bg-gradient-primary gap-2">
+          <Button 
+            className="bg-gradient-primary gap-2"
+            onClick={() => navigate('/admin/events')}
+          >
             <Plus className="h-4 w-4" />
             Create Event
           </Button>
@@ -289,7 +294,10 @@ const Events = () => {
               <p className="text-muted-foreground mb-4">
                 We couldn't find any events matching your criteria. Try adjusting your filters or be the first to create an event!
               </p>
-              <Button className="bg-gradient-primary">
+              <Button 
+                className="bg-gradient-primary"
+                onClick={() => navigate('/admin/events')}
+              >
                 Create the First Event
               </Button>
             </CardContent>
