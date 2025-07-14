@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { VenueCard } from '@/components/venues/VenueCard';
@@ -11,6 +12,7 @@ import { Database } from '@/integrations/supabase/types';
 type Venue = Database['public']['Tables']['venues']['Row'];
 
 const Venues = () => {
+  const navigate = useNavigate();
   const { venues, loading, error, fetchVenues } = useVenues();
   const { events } = useEvents();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
@@ -53,7 +55,10 @@ const Venues = () => {
               Discover queer-friendly venues in your area
             </p>
           </div>
-          <Button className="bg-gradient-primary gap-2">
+          <Button 
+            className="bg-gradient-primary gap-2"
+            onClick={() => navigate('/admin/venues')}
+          >
             <Plus className="h-4 w-4" />
             Add Venue
           </Button>
@@ -81,7 +86,10 @@ const Venues = () => {
               <p className="text-muted-foreground mb-4">
                 We couldn't find any venues matching your criteria. Try adjusting your filters or be the first to add a venue in this area!
               </p>
-              <Button className="bg-gradient-primary">
+              <Button 
+                className="bg-gradient-primary"
+                onClick={() => navigate('/admin/venues')}
+              >
                 Add the First Venue
               </Button>
             </CardContent>
