@@ -157,6 +157,39 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
         const pubDate = pubDateMatch ? pubDateMatch[1] : new Date().toISOString();
         const author = authorMatch ? (authorMatch[1] || authorMatch[2] || '').replace(/<[^>]*>/g, '').trim() : undefined;
         
+        // Extract image URL from multiple sources
+        let imageUrl = null;
+        
+        // Try to find image in enclosure tag (common in RSS)
+        const enclosureMatch = item.match(/<enclosure[^>]*url="([^"]*)"[^>]*type="image[^"]*"/);
+        if (enclosureMatch) {
+          imageUrl = enclosureMatch[1];
+        }
+        
+        // Try to find image in media:content tag
+        if (!imageUrl) {
+          const mediaContentMatch = item.match(/<media:content[^>]*url="([^"]*)"[^>]*medium="image"/);
+          if (mediaContentMatch) {
+            imageUrl = mediaContentMatch[1];
+          }
+        }
+        
+        // Try to find image in content or description
+        if (!imageUrl) {
+          const imgTagMatch = description.match(/<img[^>]*src="([^"]*)"[^>]*>/);
+          if (imgTagMatch) {
+            imageUrl = imgTagMatch[1];
+          }
+        }
+        
+        // Try to find image in media:thumbnail
+        if (!imageUrl) {
+          const mediaThumbnailMatch = item.match(/<media:thumbnail[^>]*url="([^"]*)"[^>]*>/);
+          if (mediaThumbnailMatch) {
+            imageUrl = mediaThumbnailMatch[1];
+          }
+        }
+        
         // Validate URL
         try {
           new URL(url);
@@ -173,6 +206,7 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
           content: description.trim(),
           excerpt: description.trim().slice(0, 300) + '...',
           url: url.trim(),
+          image_url: imageUrl,
           author,
           published_at: new Date(pubDate).toISOString(),
           category,

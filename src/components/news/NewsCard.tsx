@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Eye, Calendar, MapPin, Tag } from "lucide-react";
+import { ExternalLink, Eye, Calendar, MapPin, Tag, Newspaper } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Tables } from "@/integrations/supabase/types";
 
@@ -48,22 +48,29 @@ export const NewsCard = ({ article, onViewArticle, showFullContent = false }: Ne
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 border border-border/50 hover:border-border">
       <CardHeader className="space-y-3">
-        {article.image_url && (
-          <div className="relative overflow-hidden rounded-md">
-            <img
-              src={article.image_url}
-              alt={article.title}
-              className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            {article.is_featured && (
-              <Badge 
-                className="absolute top-2 left-2 bg-primary text-primary-foreground"
-              >
-                Featured
-              </Badge>
-            )}
-          </div>
-        )}
+        <div className="relative overflow-hidden rounded-md">
+          <img
+            src={article.image_url || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400&h=300&fit=crop"}
+            alt={article.title}
+            className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400&h=300&fit=crop";
+            }}
+          />
+          {article.is_featured && (
+            <Badge 
+              className="absolute top-2 left-2 bg-primary text-primary-foreground"
+            >
+              Featured
+            </Badge>
+          )}
+          {!article.image_url && (
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+              <Newspaper className="h-12 w-12 text-primary/60" />
+            </div>
+          )}
+        </div>
         
         <div className="flex items-start justify-between gap-3">
           <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
