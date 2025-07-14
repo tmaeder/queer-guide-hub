@@ -65,7 +65,7 @@ export const useTags = () => {
       }
 
       // Fallback to legacy tag aggregation if no centralized tags
-      const [eventsResult, venuesResult, marketplaceResult, communityResult] = await Promise.all([
+      const [eventsResult, venuesResult, marketplaceResult] = await Promise.all([
         supabase
           .from("events")
           .select("tags")
@@ -76,10 +76,6 @@ export const useTags = () => {
           .not("tags", "is", null),
         supabase
           .from("marketplace_listings")
-          .select("tags")
-          .not("tags", "is", null),
-        supabase
-          .from("community_posts")
           .select("tags")
           .not("tags", "is", null)
       ]);
@@ -108,7 +104,6 @@ export const useTags = () => {
       processTags(eventsResult, "events");
       processTags(venuesResult, "venues");
       processTags(marketplaceResult, "marketplace");
-      processTags(communityResult, "community");
 
       // Convert to array format
       const allTagsArray: Tag[] = Object.entries(tagCounts)
@@ -165,7 +160,7 @@ export const useTags = () => {
       setLoading(true);
 
       // Fetch detailed information about a specific tag
-      const [eventsResult, venuesResult, marketplaceResult, communityResult] = await Promise.all([
+      const [eventsResult, venuesResult, marketplaceResult] = await Promise.all([
         supabase
           .from("events")
           .select("id, title, tags, created_at")
@@ -183,12 +178,6 @@ export const useTags = () => {
           .select("id, title, tags, created_at")
           .contains("tags", [tagName])
           .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("community_posts")
-          .select("id, content, tags, created_at")
-          .contains("tags", [tagName])
-          .order("created_at", { ascending: false })
           .limit(5)
       ]);
 
@@ -196,13 +185,12 @@ export const useTags = () => {
       const usage_by_category = [
         { category: "events", count: eventsResult.data?.length || 0 },
         { category: "venues", count: venuesResult.data?.length || 0 },
-        { category: "marketplace", count: marketplaceResult.data?.length || 0 },
-        { category: "community", count: communityResult.data?.length || 0 }
+        { category: "marketplace", count: marketplaceResult.data?.length || 0 }
       ].filter(item => item.count > 0);
 
       // Find related tags (tags that appear together with this tag)
       const relatedTagsSet = new Set<string>();
-      [eventsResult, venuesResult, marketplaceResult, communityResult].forEach(result => {
+      [eventsResult, venuesResult, marketplaceResult].forEach(result => {
         if (result.data) {
           result.data.forEach((item: any) => {
             if (item.tags && Array.isArray(item.tags)) {
@@ -219,8 +207,7 @@ export const useTags = () => {
       const recent_items = [
         ...(eventsResult.data?.map(item => ({ ...item, type: "event" })) || []),
         ...(venuesResult.data?.map(item => ({ ...item, type: "venue" })) || []),
-        ...(marketplaceResult.data?.map(item => ({ ...item, type: "marketplace" })) || []),
-        ...(communityResult.data?.map(item => ({ ...item, type: "community" })) || [])
+        ...(marketplaceResult.data?.map(item => ({ ...item, type: "marketplace" })) || [])
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
        .slice(0, 10);
 

@@ -14,12 +14,10 @@ import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import Marketplace from "./pages/Marketplace";
 import MarketplaceItemDetail from "./pages/MarketplaceItemDetail";
-import Community from "./pages/Community";
+
 import Directory from "./pages/Directory";
 import TagsDirectory from "./pages/TagsDirectory";
 import UserDirectory from "./pages/UserDirectory";
-import GroupsDirectory from "./pages/GroupsDirectory";
-import GroupDetail from "./pages/GroupDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import OurVision from "./pages/OurVision";
@@ -67,11 +65,9 @@ const App = () => (
                 <Route path="/events/:id" element={<EventDetail />} />
                 <Route path="/marketplace" element={<Marketplace />} />
                 <Route path="/marketplace/:id" element={<MarketplaceItemDetail />} />
-                <Route path="/community" element={<Community />} />
+                
                 <Route path="/directory" element={<Directory />} />
                 <Route path="/users" element={<UserDirectory />} />
-                <Route path="/groups" element={<GroupsDirectory />} />
-                <Route path="/groups/:id" element={<GroupDetail />} />
                 <Route path="/tags" element={<TagsDirectory />} />
                 <Route path="/tags/:tagName" element={<TagsDirectory />} />
                 <Route path="/about" element={<About />} />

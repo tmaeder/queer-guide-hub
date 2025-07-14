@@ -141,10 +141,9 @@ export const TagSelector = ({
 
             {/* Category Tabs */}
             <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="gender-identity">Gender</TabsTrigger>
-                <TabsTrigger value="community">Community</TabsTrigger>
               </TabsList>
 
               <ScrollArea className="h-[300px] mt-4">

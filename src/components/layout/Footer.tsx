@@ -54,9 +54,6 @@ export function Footer() {
   }, {
     href: "/marketplace",
     label: "Marketplace"
-  }, {
-    href: "/community",
-    label: "Community"
   }];
   const socialLinks = [{
     href: "#",
