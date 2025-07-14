@@ -94,7 +94,7 @@ export const ContentStats = ({ content }: ContentStatsProps) => {
                   <p className="text-xs text-muted-foreground mt-1">{stat.subtitle}</p>
                 )}
               </div>
-              <div className={`p-2 rounded-full ${stat.bgColor}`}>
+              <div className={`p-2 ${stat.bgColor}`}>
                 <stat.icon className={`h-5 w-5 ${stat.color}`} />
               </div>
             </div>

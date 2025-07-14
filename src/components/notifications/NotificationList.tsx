@@ -76,7 +76,7 @@ export const NotificationList = () => {
             >
               <div className="flex items-start gap-3">
                 <div className={cn(
-                  "p-1 rounded-full",
+                  "p-1",
                   notification.type === 'message' && "bg-primary/10 text-primary",
                   notification.type === 'event' && "bg-accent/10 text-accent",
                   notification.type === 'system' && "bg-secondary/10 text-secondary"
@@ -94,7 +94,7 @@ export const NotificationList = () => {
                     </h4>
                     <div className="flex items-center gap-1 ml-2">
                       {!notification.read && (
-                        <div className="w-2 h-2 bg-primary rounded-full" />
+                        <div className="w-2 h-2 bg-primary" />
                       )}
                     </div>
                   </div>

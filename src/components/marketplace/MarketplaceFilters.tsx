@@ -112,7 +112,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
   };
 
   return (
-    <div className="space-y-4 p-4 bg-card rounded-lg border">
+    <div className="space-y-4 p-4 bg-card">
       {/* Search Bar */}
       <div className="flex gap-2">
         <div className="relative flex-1">

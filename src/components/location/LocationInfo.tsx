@@ -102,7 +102,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="aspect-video rounded-lg" />
+                <Skeleton key={i} className="aspect-video" />
               ))}
             </div>
           </CardContent>
@@ -171,10 +171,10 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                   <img
                     src={image.thumbnail}
                     alt={image.alt || `Photo of ${name}`}
-                    className="w-full aspect-video object-cover rounded-lg transition-transform group-hover:scale-105"
+                    className="w-full aspect-video object-cover transition-transform group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-end p-3">
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                     <div className="text-primary-foreground text-xs">
                       <p className="font-medium">Photo by</p>
                       <a

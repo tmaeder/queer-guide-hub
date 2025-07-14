@@ -145,14 +145,14 @@ export const ContentEditor = ({
             <div>
               <Label htmlFor="slug">URL Slug *</Label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">
+                <span className="inline-flex items-center px-3 bg-muted text-muted-foreground text-sm">
                   /
                 </span>
                 <Input
                   id="slug"
                   value={formData.slug}
                   onChange={(e) => onChange({ ...formData, slug: e.target.value })}
-                  className="rounded-l-none"
+                  className=""
                   placeholder="url-friendly-slug"
                   required
                 />
@@ -262,7 +262,7 @@ export const ContentEditor = ({
                         <img 
                           src={formData.featured_image} 
                           alt="Featured" 
-                          className="w-full max-w-sm h-40 object-cover rounded-lg border"
+                          className="w-full max-w-sm h-40 object-cover"
                         />
                       </div>
                     )}
@@ -375,7 +375,7 @@ export const ContentEditor = ({
                     className="flex items-center gap-2 cursor-pointer flex-1"
                   >
                     <div 
-                      className="w-3 h-3 rounded-full" 
+                      className="w-3 h-3" 
                       style={{ backgroundColor: category.color || "#6366f1" }}
                     />
                     {category.name}

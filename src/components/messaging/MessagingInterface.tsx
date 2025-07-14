@@ -47,7 +47,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
         
         <div className="relative">
           <div
-            className={`px-4 py-2 rounded-lg ${
+            className={`px-4 py-2 ${
               isOwn
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted'
@@ -72,7 +72,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
           </div>
 
           {showReactions && (
-            <div className="absolute top-full mt-1 bg-popover border rounded-md p-2 shadow-md z-10">
+            <div className="absolute top-full mt-1 bg-popover p-2 shadow-md z-10">
               <div className="flex gap-1">
                 {commonEmojis.map(emoji => (
                   <Button
@@ -277,7 +277,7 @@ export const MessagingInterface = () => {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 bg-primary mx-auto mb-4"></div>
+          <div className="animate-spin h-8 w-8 bg-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading messages...</p>
         </div>
       </div>
@@ -285,7 +285,7 @@ export const MessagingInterface = () => {
   }
 
   return (
-    <div className="flex h-[600px] border rounded-lg overflow-hidden">
+    <div className="flex h-[600px] overflow-hidden">
       {/* Conversation List */}
       <div className="w-1/3 bg-background">
         <div className="p-4">

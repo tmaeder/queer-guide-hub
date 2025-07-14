@@ -151,7 +151,7 @@ export const TagSelector = ({
                   {getTagsToShow().map((tag) => (
                     <div
                       key={tag.id}
-                      className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-colors ${
+                      className={`flex items-center justify-between p-2 cursor-pointer transition-colors ${
                         selectedTags.includes(tag.name)
                           ? 'bg-primary/10'
                           : 'hover:bg-muted'
@@ -160,7 +160,7 @@ export const TagSelector = ({
                     >
                       <div className="flex items-center gap-2 flex-1">
                         <div
-                          className="w-3 h-3 rounded-full"
+                          className="w-3 h-3"
                           style={{ backgroundColor: tag.color }}
                         />
                         <div className="flex-1">

@@ -73,7 +73,7 @@ export const TagCard = ({ tag, category, onClick }: TagCardProps) => {
           </div>
           
           {tag.usage_by_category && tag.usage_by_category.length > 0 && (
-            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-muted h-2 overflow-hidden">
               <div className="h-full flex">
                 {tag.usage_by_category.map((usage, index) => {
                   const percentage = (usage.count / tag.total_count) * 100;
