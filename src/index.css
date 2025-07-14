@@ -33,11 +33,11 @@
     --destructive: 0 0% 0%;
     --destructive-foreground: 0 0% 100%;
     
-    /* UI Elements - No borders */
-    --border: transparent;
+    /* UI Elements */
+    --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: transparent;
-    --radius: 0px;
+    --ring: 0 0% 80%;
+    --radius: 8px;
     
     /* Sidebar */
     --sidebar-background: 0 0% 95%;
@@ -46,8 +46,8 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 90%;
     --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: transparent;
-    --sidebar-ring: transparent;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 0 0% 80%;
     
     /* Gradients - Black to White */
     --gradient-primary: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 20%));
@@ -86,9 +86,9 @@
     --destructive: 0 0% 100%;
     --destructive-foreground: 0 0% 0%;
     
-    --border: transparent;
+    --border: 0 0% 15%;
     --input: 0 0% 10%;
-    --ring: transparent;
+    --ring: 0 0% 20%;
     
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 100%;
@@ -96,8 +96,8 @@
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 0 0% 10%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: transparent;
-    --sidebar-ring: transparent;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 0 0% 20%;
     
     --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 50%) 50%, hsl(0 0% 0%) 100%);
     --shadow-elegant: none;
@@ -105,7 +105,7 @@
   }
 
   * {
-    border: none !important;
+    @apply border-border;
   }
   
   body {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -23,14 +24,15 @@ export function Header() {
 
         <AdvancedSearchBar />
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           {user ? <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
                   <User className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-screen left-0 right-0 p-2">
+              <DropdownMenuContent align="end" className="w-screen left-0 right-0 p-2 bg-background border border-border">
                 <div className="flex justify-center space-x-4">
                   <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/my-bookings')}>
                     <CreditCard className="h-4 w-4 mb-1" />
@@ -74,7 +76,7 @@ export function Header() {
 
       {/* Mobile Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-background z-50 shadow-lg">
+        <div className="absolute top-16 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
           <nav className="container mx-auto px-4 py-4">
             <div className="flex justify-center space-x-4">
               <Link 
