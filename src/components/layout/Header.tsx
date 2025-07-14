@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, User, X } from 'lucide-react';
+import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -69,48 +69,54 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="absolute top-16 left-0 right-0 bg-background z-50 shadow-lg">
           <nav className="container mx-auto px-4 py-4">
-            <div className="flex flex-col space-y-2">
+            <div className="flex justify-center space-x-4">
               <Link 
                 to="/venues" 
-                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Venues
+                <MapPin className="h-6 w-6 mb-1" />
+                <span className="text-xs">Venues</span>
               </Link>
               <Link 
                 to="/events" 
-                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Events
+                <Calendar className="h-6 w-6 mb-1" />
+                <span className="text-xs">Events</span>
               </Link>
               <Link 
                 to="/marketplace" 
-                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Marketplace
+                <Store className="h-6 w-6 mb-1" />
+                <span className="text-xs">Market</span>
               </Link>
               <Link 
                 to="/directory" 
-                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Wiki
+                <Globe className="h-6 w-6 mb-1" />
+                <span className="text-xs">Wiki</span>
               </Link>
               <Link 
                 to="/travel" 
-                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Locations
+                <Plane className="h-6 w-6 mb-1" />
+                <span className="text-xs">Travel</span>
               </Link>
               <Link 
                 to="/news" 
-                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                News
+                <Newspaper className="h-6 w-6 mb-1" />
+                <span className="text-xs">News</span>
               </Link>
             </div>
           </nav>
