@@ -74,25 +74,40 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
+  // Create safe CSS content by sanitizing and validating inputs
+  const createSafeCSS = (id: string, colorConfig: Array<[string, any]>) => {
+    // Sanitize the chart ID to prevent CSS injection
+    const safeId = id.replace(/[^a-zA-Z0-9-_]/g, '');
+    
+    return Object.entries(THEMES)
+      .map(([theme, prefix]) => {
+        const safePrefix = prefix.replace(/[^a-zA-Z0-9-_.\s]/g, '');
+        const colorRules = colorConfig
+          .map(([key, itemConfig]) => {
+            // Sanitize the key
+            const safeKey = key.replace(/[^a-zA-Z0-9-_]/g, '');
+            const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+            
+            // Validate that color is a safe CSS color value
+            if (color && /^#[0-9A-Fa-f]{3,6}$|^rgb\(|^rgba\(|^hsl\(|^hsla\(|^[a-zA-Z]+$/.test(color)) {
+              return `  --color-${safeKey}: ${color};`;
+            }
+            return null;
+          })
+          .filter(Boolean)
+          .join('\n');
+        
+        return `${safePrefix} [data-chart="${safeId}"] {\n${colorRules}\n}`;
+      })
+      .join('\n');
+  };
+
+  const safeCSS = createSafeCSS(id, colorConfig);
+
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
+        __html: safeCSS,
       }}
     />
   )

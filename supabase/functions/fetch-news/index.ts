@@ -22,7 +22,32 @@ interface NewsArticle {
 // RSS Feed parser
 async function parseRSSFeed(url: string, sourceId: string, category: string): Promise<NewsArticle[]> {
   try {
-    const response = await fetch(url);
+    // Validate URL to prevent SSRF attacks
+    const urlObj = new URL(url);
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      throw new Error('Invalid URL protocol');
+    }
+    
+    // Prevent access to internal/private networks
+    const hostname = urlObj.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || 
+        hostname.startsWith('192.168.') || hostname.startsWith('10.') ||
+        hostname.startsWith('172.')) {
+      throw new Error('Access to internal networks not allowed');
+    }
+    
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'LovableNewsBot/1.0'
+      },
+      // Add timeout and size limits
+      signal: AbortSignal.timeout(10000) // 10 second timeout
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
     const text = await response.text();
     
     // Simple RSS parsing (in production, you'd use a proper XML parser)
@@ -37,11 +62,19 @@ async function parseRSSFeed(url: string, sourceId: string, category: string): Pr
       const authorMatch = item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>|<author>(.*?)<\/author>/);
       
       if (titleMatch && linkMatch) {
-        const title = titleMatch[1] || titleMatch[2];
-        const url = linkMatch[1];
-        const description = descMatch ? (descMatch[1] || descMatch[2]) : '';
+        // Sanitize extracted data to prevent XSS
+        const title = (titleMatch[1] || titleMatch[2] || '').replace(/<[^>]*>/g, '').trim();
+        const url = (linkMatch[1] || '').trim();
+        const description = (descMatch ? (descMatch[1] || descMatch[2]) : '').replace(/<[^>]*>/g, '').trim();
         const pubDate = pubDateMatch ? pubDateMatch[1] : new Date().toISOString();
-        const author = authorMatch ? (authorMatch[1] || authorMatch[2]) : undefined;
+        const author = authorMatch ? (authorMatch[1] || authorMatch[2] || '').replace(/<[^>]*>/g, '').trim() : undefined;
+        
+        // Validate URL
+        try {
+          new URL(url);
+        } catch {
+          continue; // Skip invalid URLs
+        }
         
         // Generate tags based on LGBTQ+ keywords
         const lgbtqKeywords = [

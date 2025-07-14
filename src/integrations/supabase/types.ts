@@ -1325,6 +1325,33 @@ export type Database = {
           },
         ]
       }
+      user_role_audit_log: {
+        Row: {
+          action_type: string
+          admin_user_id: string
+          id: string
+          role_changed: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+          timestamp: string
+        }
+        Insert: {
+          action_type: string
+          admin_user_id: string
+          id?: string
+          role_changed: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+          timestamp?: string
+        }
+        Update: {
+          action_type?: string
+          admin_user_id?: string
+          id?: string
+          role_changed?: Database["public"]["Enums"]["app_role"]
+          target_user_id?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1497,6 +1524,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_user_role: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
+          action_type?: string
+        }
+        Returns: boolean
+      }
       decrement_post_likes: {
         Args: { post_id: string }
         Returns: undefined

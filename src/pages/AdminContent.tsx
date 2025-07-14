@@ -95,14 +95,24 @@ export default function AdminContent() {
       return;
     }
 
-    if (!rolesLoading && !canManageContent()) {
-      navigate("/");
-      return;
+    // Add additional security check with loading state
+    if (!rolesLoading) {
+      if (!canManageContent()) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to access the admin panel.",
+          variant: "destructive"
+        });
+        navigate("/");
+        return;
+      }
     }
 
-    // Fetch all content including drafts for admin view
-    fetchContent({ status: undefined });
-  }, [user, rolesLoading, canManageContent]);
+    // Only fetch content if user has proper permissions
+    if (!rolesLoading && canManageContent()) {
+      fetchContent({ status: undefined });
+    }
+  }, [user, rolesLoading, canManageContent, navigate, toast, fetchContent]);
 
   const filteredContent = content.filter(item => {
     const matchesSearch = 
