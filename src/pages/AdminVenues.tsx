@@ -34,7 +34,7 @@ export default function AdminVenues() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { canManageContent, loading: rolesLoading } = useAdminRoles();
-  const { venues, loading, createVenue } = useVenues();
+  const { venues, loading, createVenue, updateVenue, deleteVenue, refetch } = useVenues();
   const { toast } = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -121,21 +121,76 @@ export default function AdminVenues() {
         created_by: user?.id
       };
 
-      const { error } = await createVenue(venueData);
+      let error;
+      if (editingVenue) {
+        ({ error } = await updateVenue(editingVenue.id, venueData));
+      } else {
+        ({ error } = await createVenue(venueData));
+      }
       
       if (error) throw new Error(error);
 
       toast({
         title: "Success",
-        description: "Venue created successfully"
+        description: editingVenue ? "Venue updated successfully" : "Venue created successfully"
       });
 
       resetForm();
       setIsCreateDialogOpen(false);
+      refetch();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create venue",
+        description: editingVenue ? "Failed to update venue" : "Failed to create venue",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleEditVenue = (venue: any) => {
+    setEditingVenue(venue);
+    setFormData({
+      name: venue.name || "",
+      description: venue.description || "",
+      category: venue.category || "",
+      address: venue.address || "",
+      city: venue.city || "",
+      state: venue.state || "",
+      country: venue.country || "US",
+      postal_code: venue.postal_code || "",
+      phone: venue.phone || "",
+      email: venue.email || "",
+      website: venue.website || "",
+      instagram: venue.instagram || "",
+      price_range: venue.price_range?.toString() || "1",
+      featured: venue.featured || false,
+      verified: venue.verified || false,
+      latitude: venue.latitude?.toString() || "",
+      longitude: venue.longitude?.toString() || "",
+      amenities: venue.amenities || [],
+      tags: venue.tags || []
+    });
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleDeleteVenue = async (venue: any) => {
+    if (!confirm(`Are you sure you want to delete "${venue.name}"?`)) return;
+
+    try {
+      const { error } = await deleteVenue(venue.id);
+      
+      if (error) throw new Error(error);
+
+      toast({
+        title: "Success",
+        description: "Venue deleted successfully"
+      });
+
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete venue",
         variant: "destructive"
       });
     }
@@ -197,7 +252,7 @@ export default function AdminVenues() {
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add New Venue</DialogTitle>
+              <DialogTitle>{editingVenue ? 'Edit Venue' : 'Add New Venue'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Info */}
@@ -390,7 +445,7 @@ export default function AdminVenues() {
               </div>
 
               <Button type="submit" className="w-full">
-                Add Venue
+                {editingVenue ? 'Update Venue' : 'Add Venue'}
               </Button>
             </form>
           </DialogContent>
@@ -519,14 +574,14 @@ export default function AdminVenues() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {/* TODO: implement edit */}}
+                    onClick={() => handleEditVenue(venue)}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => {/* TODO: implement delete */}}
+                    onClick={() => handleDeleteVenue(venue)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

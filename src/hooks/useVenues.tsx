@@ -72,6 +72,41 @@ export function useVenues() {
     }
   };
 
+  const updateVenue = async (id: string, venue: Partial<VenueInsert>) => {
+    try {
+      const { data, error } = await supabase
+        .from('venues')
+        .update(venue)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (err) {
+      return { 
+        data: null, 
+        error: err instanceof Error ? err.message : 'Failed to update venue' 
+      };
+    }
+  };
+
+  const deleteVenue = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('venues')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (err) {
+      return { 
+        error: err instanceof Error ? err.message : 'Failed to delete venue' 
+      };
+    }
+  };
+
   useEffect(() => {
     fetchVenues();
   }, []);
@@ -82,6 +117,8 @@ export function useVenues() {
     error,
     fetchVenues,
     createVenue,
+    updateVenue,
+    deleteVenue,
     refetch: () => fetchVenues(),
   };
 }
