@@ -9,10 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Plus, Loader, Search, Filter, X } from 'lucide-react';
+import { Calendar, Plus, Loader, Search, Filter, X, CalendarIcon } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
@@ -56,13 +60,21 @@ const Events = () => {
   const [city, setCity] = useState('');
   const [eventType, setEventType] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
 
   const handleFiltersChange = () => {
+    const dateRange = startDate && endDate ? {
+      start: startDate.toISOString(),
+      end: endDate.toISOString()
+    } : undefined;
+
     fetchEvents({
       search: search || undefined,
       city: city || undefined,
       eventType: (eventType && eventType !== 'all') ? eventType : undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
+      dateRange,
     });
   };
 
@@ -78,6 +90,8 @@ const Events = () => {
     setCity('');
     setEventType('all');
     setSelectedTags([]);
+    setStartDate(undefined);
+    setEndDate(undefined);
     fetchEvents();
   };
 
@@ -113,7 +127,7 @@ const Events = () => {
     console.log('View event details:', event);
   };
 
-  const hasActiveFilters = search || city || eventType || selectedTags.length > 0;
+  const hasActiveFilters = search || city || eventType || selectedTags.length > 0 || startDate || endDate;
 
   if (error) {
     return (
@@ -182,7 +196,7 @@ const Events = () => {
           {/* Extended Filters */}
           {showFilters && (
             <div className="space-y-4 pt-4 border-t">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="city">City</Label>
                   <Input
@@ -207,6 +221,59 @@ const Events = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Start Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !startDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {startDate ? format(startDate, "PPP") : <span>Pick start date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={startDate}
+                        onSelect={setStartDate}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <Label>End Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !endDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {endDate ? format(endDate, "PPP") : <span>Pick end date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={endDate}
+                        onSelect={setEndDate}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                        disabled={(date) => startDate ? date < startDate : false}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 
@@ -262,6 +329,18 @@ const Events = () => {
                 <Badge variant="secondary" className="gap-1">
                   {eventType}
                   <X className="h-3 w-3 cursor-pointer" onClick={() => setEventType('')} />
+                </Badge>
+              )}
+              {startDate && (
+                <Badge variant="secondary" className="gap-1">
+                  From: {format(startDate, "MMM d, yyyy")}
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => setStartDate(undefined)} />
+                </Badge>
+              )}
+              {endDate && (
+                <Badge variant="secondary" className="gap-1">
+                  To: {format(endDate, "MMM d, yyyy")}
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => setEndDate(undefined)} />
                 </Badge>
               )}
               {selectedTags.map((tag) => (
