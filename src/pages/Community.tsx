@@ -1,8 +1,11 @@
 import React from 'react';
 import { useState } from 'react';
 import { useCommunity } from '@/hooks/useCommunity';
+import { useGroups } from '@/hooks/useGroups';
 import { CreatePost } from '@/components/community/CreatePost';
 import { PostCard } from '@/components/community/PostCard';
+import { GroupCard } from '@/components/community/GroupCard';
+import { CreateGroup } from '@/components/community/CreateGroup';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,7 +19,8 @@ import {
   Search, 
   Filter,
   Loader,
-  MessageSquare
+  MessageSquare,
+  Plus
 } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,6 +38,7 @@ const Community = () => {
     toggleLike, 
     addComment 
   } = useCommunity();
+  const { groups, myGroups, loading: groupsLoading } = useGroups();
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -41,6 +46,7 @@ const Community = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
 
   // Popular tags (in a real app, these would come from the backend)
   const popularTags = [
@@ -245,7 +251,7 @@ const Community = () => {
 
             {/* Feed Tabs */}
             <Tabs value={activeTab} onValueChange={handleTabChange}>
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="recent" className="gap-2">
                   <Clock className="h-4 w-4" />
                   Recent
@@ -258,9 +264,13 @@ const Community = () => {
                   <Users className="h-4 w-4" />
                   Following
                 </TabsTrigger>
+                <TabsTrigger value="groups" className="gap-2">
+                  <Users className="h-4 w-4" />
+                  Groups
+                </TabsTrigger>
               </TabsList>
 
-              <TabsContent value={activeTab} className="mt-6">
+              <TabsContent value="recent" className="mt-6">
                 {/* Loading State */}
                 {loading && (
                   <div className="flex items-center justify-center py-12">
@@ -301,6 +311,89 @@ const Community = () => {
                     ))}
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="trending" className="mt-6">
+                <div className="text-center py-8">
+                  <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-semibold">Trending Posts</h3>
+                  <p className="text-muted-foreground">
+                    Most popular posts from the community
+                  </p>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="following" className="mt-6">
+                <div className="text-center py-8">
+                  <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-semibold">Following Feed</h3>
+                  <p className="text-muted-foreground">
+                    Posts from people you follow will appear here
+                  </p>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="groups" className="mt-6">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-semibold">Community Groups</h2>
+                      <p className="text-muted-foreground">Join groups to connect with like-minded people</p>
+                    </div>
+                    {user && (
+                      <Button onClick={() => setIsCreateGroupOpen(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Group
+                      </Button>
+                    )}
+                  </div>
+
+                  {user && myGroups.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">My Groups</h3>
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {myGroups.map((group) => (
+                          <GroupCard key={group.id} group={group} showJoinButton={false} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">All Groups</h3>
+                    {groupsLoading ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {[1, 2, 3].map((i) => (
+                          <Card key={i} className="h-48 animate-pulse">
+                            <CardContent className="p-6">
+                              <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                              <div className="h-3 bg-muted rounded w-1/2"></div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : groups.length > 0 ? (
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {groups.map((group) => (
+                          <GroupCard key={group.id} group={group} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+                        <h3 className="mt-4 text-lg font-semibold">No Groups Yet</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Be the first to create a community group
+                        </p>
+                        {user && (
+                          <Button onClick={() => setIsCreateGroupOpen(true)}>
+                            Create First Group
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
 
@@ -375,6 +468,11 @@ const Community = () => {
           </div>
         </div>
       </div>
+
+      <CreateGroup 
+        open={isCreateGroupOpen}
+        onOpenChange={setIsCreateGroupOpen}
+      />
     </div>
   );
 };
