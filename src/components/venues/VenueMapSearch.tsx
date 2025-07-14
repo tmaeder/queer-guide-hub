@@ -20,20 +20,12 @@ export function VenueMapSearch({ className }: VenueMapSearchProps) {
   const map = useRef<mapboxgl.Map | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [showTokenInput, setShowTokenInput] = useState(true);
+  const mapboxToken = 'pk.eyJ1IjoidG1hZWRlciIsImEiOiJjazh4Ym9wOTEwN3F4M21zN3FqdnM4MHE2In0.24RlCLiCNxxX-c6h_4rwWw';
   
   const { venues, loading, fetchVenues } = useVenues();
 
-  const handleTokenSubmit = () => {
-    if (mapboxToken.trim()) {
-      setShowTokenInput(false);
-      initializeMap();
-    }
-  };
-
   const initializeMap = () => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (!mapContainer.current) return;
 
     mapboxgl.accessToken = mapboxToken;
     
@@ -88,6 +80,7 @@ export function VenueMapSearch({ className }: VenueMapSearchProps) {
   };
 
   useEffect(() => {
+    initializeMap();
     return () => {
       map.current?.remove();
     };
@@ -139,43 +132,6 @@ export function VenueMapSearch({ className }: VenueMapSearchProps) {
       }
     }
   }, [venues]);
-
-  if (showTokenInput) {
-    return (
-      <Card className={className}>
-        <CardContent className="p-6 text-center">
-          <MapPin className="h-12 w-12 mx-auto mb-4 text-primary" />
-          <h3 className="text-lg font-semibold mb-2">Map Search Setup</h3>
-          <p className="text-muted-foreground mb-4">
-            Enter your Mapbox access token to enable venue map search
-          </p>
-          <div className="flex gap-2 max-w-md mx-auto">
-            <Input
-              type="password"
-              placeholder="Mapbox access token"
-              value={mapboxToken}
-              onChange={(e) => setMapboxToken(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleTokenSubmit()}
-            />
-            <Button onClick={handleTokenSubmit} disabled={!mapboxToken.trim()}>
-              Enable Map
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Get your token at{' '}
-            <a 
-              href="https://mapbox.com/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              mapbox.com
-            </a>
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <div className={className}>
