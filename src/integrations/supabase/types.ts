@@ -734,6 +734,42 @@ export type Database = {
           },
         ]
       }
+      event_tag_assignments: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_tag_assignments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           address: string | null
@@ -882,6 +918,42 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_tag_assignments: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_tag_assignments_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
             referencedColumns: ["id"]
           },
         ]
@@ -1065,6 +1137,42 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      marketplace_tag_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_tag_assignments_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1317,6 +1425,42 @@ export type Database = {
         }
         Relationships: []
       }
+      news_tag_assignments: {
+        Row: {
+          article_id: string
+          created_at: string
+          id: string
+          tag_id: string
+        }
+        Insert: {
+          article_id: string
+          created_at?: string
+          id?: string
+          tag_id: string
+        }
+        Update: {
+          article_id?: string
+          created_at?: string
+          id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_tag_assignments_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -1447,6 +1591,42 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      post_tag_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_tag_assignments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1706,6 +1886,42 @@ export type Database = {
           },
           {
             foreignKeyName: "venue_reviews_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_tag_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          tag_id: string
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tag_id: string
+          venue_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tag_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venue_tag_assignments_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
             referencedRelation: "venues"

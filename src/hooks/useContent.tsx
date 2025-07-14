@@ -4,12 +4,12 @@ import { Tables } from "@/integrations/supabase/types";
 
 export type Content = Tables<"content"> & {
   categories?: Tables<"content_categories">[];
-  tags?: Tables<"content_tags">[];
+  tags?: Tables<"tags">[]; // Use centralized tags
   author?: Tables<"profiles">;
 };
 
 export type ContentCategory = Tables<"content_categories">;
-export type ContentTag = Tables<"content_tags">;
+export type ContentTag = Tables<"tags">; // Use centralized tags
 export type ContentType = "blog_post" | "page" | "legal_document" | "press_release" | "about_content";
 export type ContentStatus = "draft" | "published" | "archived";
 
@@ -38,7 +38,7 @@ export const useContent = () => {
             content_categories (*)
           ),
           content_tag_assignments (
-            content_tags (*)
+            tags (*)
           )
         `);
 
@@ -68,7 +68,7 @@ export const useContent = () => {
       const transformedData = data?.map((item: any) => ({
         ...item,
         categories: item.content_category_assignments?.map((ca: any) => ca.content_categories) || [],
-        tags: item.content_tag_assignments?.map((ta: any) => ta.content_tags) || [],
+        tags: item.content_tag_assignments?.map((ta: any) => ta.tags) || [],
         author: item.profiles
       })) || [];
 
@@ -93,7 +93,7 @@ export const useContent = () => {
             content_categories (*)
           ),
           content_tag_assignments (
-            content_tags (*)
+            tags (*)
           )
         `)
         .eq("slug", slug)
@@ -106,7 +106,7 @@ export const useContent = () => {
         return {
           ...data,
           categories: data.content_category_assignments?.map((ca: any) => ca.content_categories) || [],
-          tags: data.content_tag_assignments?.map((ta: any) => ta.content_tags) || [],
+          tags: data.content_tag_assignments?.map((ta: any) => ta.tags) || [],
           author: data.profiles
         };
       }
@@ -137,8 +137,9 @@ export const useContent = () => {
   const fetchTags = async () => {
     try {
       const { data, error } = await supabase
-        .from("content_tags")
+        .from("tags")
         .select("*")
+        .eq("is_active", true)
         .order("name");
 
       if (error) throw error;
@@ -270,7 +271,7 @@ export const useContent = () => {
             content_categories (*)
           ),
           content_tag_assignments (
-            content_tags (*)
+            tags (*)
           )
         `)
         .eq("status", "published")
@@ -282,7 +283,7 @@ export const useContent = () => {
       const transformedData = data?.map((item: any) => ({
         ...item,
         categories: item.content_category_assignments?.map((ca: any) => ca.content_categories) || [],
-        tags: item.content_tag_assignments?.map((ta: any) => ta.content_tags) || [],
+        tags: item.content_tag_assignments?.map((ta: any) => ta.tags) || [],
         author: item.profiles
       })) || [];
 
