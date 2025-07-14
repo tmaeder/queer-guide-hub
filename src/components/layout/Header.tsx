@@ -31,7 +31,7 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-screen left-0 right-0 p-2">
-                <div className="flex space-x-1">
+                <div className="flex justify-center space-x-4">
                   <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/my-bookings')}>
                     <CreditCard className="h-4 w-4 mb-1" />
                     <span className="text-xs">Bookings</span>
