@@ -13,12 +13,14 @@ type Venue = Database['public']['Tables']['venues']['Row'];
 
 interface VenueMapSearchProps {
   className?: string;
+  externalSearchTerm?: string;
+  onSearchChange?: (term: string) => void;
 }
 
-export function VenueMapSearch({ className }: VenueMapSearchProps) {
+export function VenueMapSearch({ className, externalSearchTerm = '', onSearchChange }: VenueMapSearchProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const mapboxToken = 'pk.eyJ1IjoidG1hZWRlciIsImEiOiJjazh4Ym9wOTEwN3F4M21zN3FqdnM4MHE2In0.24RlCLiCNxxX-c6h_4rwWw';
   
@@ -71,6 +73,7 @@ export function VenueMapSearch({ className }: VenueMapSearchProps) {
 
   const handleSearch = () => {
     fetchVenues({ search: searchTerm });
+    onSearchChange?.(searchTerm);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -133,6 +136,16 @@ export function VenueMapSearch({ className }: VenueMapSearchProps) {
     }
   }, [venues]);
 
+  // Sync with external search term
+  useEffect(() => {
+    if (externalSearchTerm !== searchTerm) {
+      setSearchTerm(externalSearchTerm);
+      if (externalSearchTerm) {
+        fetchVenues({ search: externalSearchTerm });
+      }
+    }
+  }, [externalSearchTerm]);
+
   return (
     <div className={className}>
       <Card>
@@ -163,58 +176,27 @@ export function VenueMapSearch({ className }: VenueMapSearchProps) {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Map */}
-              <div className="h-[400px] rounded-lg overflow-hidden border">
-                <div ref={mapContainer} className="w-full h-full" />
-              </div>
-
-              {/* Selected Venue or List */}
-              <div className="space-y-4">
-                {selectedVenue ? (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold">Selected Venue</h4>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setSelectedVenue(null)}
-                      >
-                        ✕
-                      </Button>
-                    </div>
-                    <VenueCard venue={selectedVenue} />
-                  </div>
-                ) : (
-                  <div>
-                    <h4 className="font-semibold mb-2">
-                      Found Venues ({venues.length})
-                    </h4>
-                    <div className="space-y-2 max-h-[350px] overflow-y-auto">
-                      {venues.slice(0, 3).map((venue) => (
-                        <div 
-                          key={venue.id}
-                          className="p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                          onClick={() => setSelectedVenue(venue)}
-                        >
-                          <h5 className="font-medium">{venue.name}</h5>
-                          <p className="text-sm text-muted-foreground">
-                            {venue.category} • {venue.city}, {venue.state}
-                          </p>
-                        </div>
-                      ))}
-                      {venues.length > 3 && (
-                        <div className="text-center pt-2">
-                          <Button variant="outline" size="sm" asChild>
-                            <a href="/venues">View All {venues.length} Venues</a>
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+            <div className="h-[500px] w-full rounded-lg overflow-hidden border">
+              <div ref={mapContainer} className="w-full h-full" />
             </div>
+
+            {selectedVenue && (
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold">Selected Venue</h4>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setSelectedVenue(null)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+                <div className="max-w-md">
+                  <VenueCard venue={selectedVenue} />
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
