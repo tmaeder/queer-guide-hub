@@ -9,6 +9,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import Index from "./pages/Index";
 import Venues from "./pages/Venues";
+import VenueDetail from "./pages/VenueDetail";
 import Events from "./pages/Events";
 import Marketplace from "./pages/Marketplace";
 import Community from "./pages/Community";
@@ -55,6 +56,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/venues" element={<Venues />} />
+                <Route path="/venues/:id" element={<VenueDetail />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/marketplace" element={<Marketplace />} />
                 <Route path="/community" element={<Community />} />

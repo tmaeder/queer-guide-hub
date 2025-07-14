@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Star, MapPin, Phone, Globe, Instagram } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { VenueEvents } from './VenueEvents';
+import { Link } from 'react-router-dom';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
@@ -38,8 +39,7 @@ export function VenueCard({ venue, events = [], onViewDetails }: VenueCardProps)
   };
 
   return (
-    <Card className="group hover:shadow-elegant transition-all duration-300 cursor-pointer" 
-          onClick={() => onViewDetails?.(venue)}>
+    <Card className="group hover:shadow-elegant transition-all duration-300">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -126,9 +126,11 @@ export function VenueCard({ venue, events = [], onViewDetails }: VenueCardProps)
             )}
           </div>
           
-          <Button size="sm" variant="outline" className="text-xs">
-            View Details
-          </Button>
+          <Link to={`/venues/${venue.id}`}>
+            <Button size="sm" variant="outline" className="text-xs">
+              View Details
+            </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>
