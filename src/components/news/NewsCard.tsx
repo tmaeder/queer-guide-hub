@@ -12,10 +12,11 @@ type NewsArticle = Tables<'news_articles'> & {
 interface NewsCardProps {
   article: NewsArticle;
   onViewArticle?: (articleId: string) => void;
+  onTagClick?: (tag: string) => void;
   showFullContent?: boolean;
 }
 
-export const NewsCard = ({ article, onViewArticle, showFullContent = false }: NewsCardProps) => {
+export const NewsCard = ({ article, onViewArticle, onTagClick, showFullContent = false }: NewsCardProps) => {
   const handleViewClick = () => {
     onViewArticle?.(article.id);
     window.open(article.url, '_blank');
@@ -123,7 +124,12 @@ export const NewsCard = ({ article, onViewArticle, showFullContent = false }: Ne
           <div className="flex items-center gap-2 flex-wrap">
             <Tag className="h-4 w-4 text-muted-foreground" />
             {article.tags.slice(0, 5).map((tag, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
+              <Badge 
+                key={index} 
+                variant="secondary" 
+                className={`text-xs ${onTagClick ? 'cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors' : ''}`}
+                onClick={() => onTagClick?.(tag)}
+              >
                 {tag}
               </Badge>
             ))}

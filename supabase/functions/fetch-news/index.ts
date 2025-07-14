@@ -37,6 +37,53 @@ function extractTags(title: string, content: string): string[] {
   return lgbtqKeywords.filter(keyword => text.includes(keyword));
 }
 
+// Standardize tags using the centralized tags table
+async function standardizeTags(extractedTags: string[], supabaseClient: any): Promise<string[]> {
+  if (extractedTags.length === 0) return [];
+  
+  // Get all active tags from the centralized tags table
+  const { data: centralizedTags } = await supabaseClient
+    .from('tags')
+    .select('name, description')
+    .eq('is_active', true);
+  
+  if (!centralizedTags) return extractedTags;
+  
+  const standardizedTags: string[] = [];
+  const tagMap = new Map(centralizedTags.map(tag => [tag.name.toLowerCase(), tag.name]));
+  
+  // Map extracted tags to standardized ones
+  extractedTags.forEach(tag => {
+    const lowerTag = tag.toLowerCase();
+    
+    // Direct match
+    if (tagMap.has(lowerTag)) {
+      standardizedTags.push(tagMap.get(lowerTag)!);
+      return;
+    }
+    
+    // Fuzzy matching for common variations
+    const mappings: { [key: string]: string[] } = {
+      'LGBTQ+': ['lgbt', 'lgbtq', 'lgbtq+', 'gay', 'lesbian', 'bisexual', 'transgender', 'queer'],
+      'Pride': ['pride', 'rainbow'],
+      'Inclusive': ['inclusive', 'diversity', 'equality'],
+      'Mental Health': ['healthcare', 'health', 'mental health'],
+      'Education': ['education', 'school', 'learning'],
+      'Awareness': ['activism', 'advocate', 'awareness'],
+      'Safe Space': ['safe space', 'discrimination', 'hate crime']
+    };
+    
+    for (const [standardTag, variations] of Object.entries(mappings)) {
+      if (variations.includes(lowerTag) && tagMap.has(standardTag.toLowerCase())) {
+        standardizedTags.push(tagMap.get(standardTag.toLowerCase())!);
+        break;
+      }
+    }
+  });
+  
+  return [...new Set(standardizedTags)]; // Remove duplicates
+}
+
 // Extract geographic information from article text
 async function extractGeoInfo(title: string, content: string, sourceUrl: string, supabaseClient: any) {
   const text = `${title} ${content}`.toLowerCase();
@@ -198,7 +245,8 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
         }
         
         // Generate enhanced tags and geo info
-        const tags = extractTags(title, description);
+        const extractedTags = extractTags(title, description);
+        const standardizedTags = await standardizeTags(extractedTags, supabaseClient);
         const geoInfo = await extractGeoInfo(title, description, url, supabaseClient);
         
         articles.push({
@@ -210,7 +258,7 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
           author,
           published_at: new Date(pubDate).toISOString(),
           category,
-          tags,
+          tags: standardizedTags,
           source_id: sourceId,
           country_ids: geoInfo.country_ids,
           city_ids: geoInfo.city_ids

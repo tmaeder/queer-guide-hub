@@ -72,6 +72,12 @@ export default function News() {
     incrementViews(articleId);
   };
 
+  const handleTagClick = (tag: string) => {
+    // Filter articles by the clicked tag
+    fetchArticles({ tags: [tag] });
+    toast.success(`Filtering by tag: ${tag}`);
+  };
+
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     if (value === "all") {
@@ -222,6 +228,7 @@ export default function News() {
                       key={article.id}
                       article={article}
                       onViewArticle={handleViewArticle}
+                      onTagClick={handleTagClick}
                     />
                   ))}
                 </div>
