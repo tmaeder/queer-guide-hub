@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -63,7 +64,12 @@ export function GroupCard({ group, showJoinButton = true }: GroupCardProps) {
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-lg truncate">{group.name}</CardTitle>
+              <Link 
+                to={`/groups/${group.id}`}
+                className="text-lg font-semibold truncate hover:text-primary transition-colors"
+              >
+                {group.name}
+              </Link>
               {group.is_private ? (
                 <Lock className="h-4 w-4 text-muted-foreground" />
               ) : (
