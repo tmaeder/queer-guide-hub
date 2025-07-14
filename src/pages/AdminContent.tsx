@@ -159,14 +159,10 @@ export default function AdminContent() {
     <div className="container mx-auto p-6 max-w-7xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Content Management System</h1>
-          <p className="text-muted-foreground">Manage all your website content, tags, locations, venues, events, and marketplace</p>
-        </div>
-        <Button onClick={() => navigate("/admin/content/new")} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Create Content
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold">Content Management System</h1>
+        <p className="text-muted-foreground">Manage all your website content, tags, locations, venues, events, and marketplace</p>
+      </div>
       </div>
 
       {/* Main Content Tabs */}
@@ -292,7 +288,13 @@ export default function AdminContent() {
           {/* Content List */}
           <Card>
             <CardHeader>
-              <CardTitle>Content Items ({filteredContent.length})</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Content Items ({filteredContent.length})</CardTitle>
+                <Button onClick={() => navigate("/admin/content/new")} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create Content
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
