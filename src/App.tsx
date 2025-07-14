@@ -41,6 +41,7 @@ import News from "./pages/News";
 import Travel from "./pages/Travel";
 import MyBookings from "./pages/MyBookings";
 import ProfileSettings from "./pages/ProfileSettings";
+import UnifiedCMS from "./pages/UnifiedCMS";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,6 +81,7 @@ const App = () => (
                 <Route path="/dmca" element={<DMCA />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/cms" element={<UnifiedCMS />} />
                 <Route path="/admin/content" element={<AdminContent />} />
                 <Route path="/admin/content/:id" element={<ContentEditor />} />
                 <Route path="/admin/content/new" element={<ContentEditor />} />

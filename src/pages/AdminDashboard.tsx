@@ -54,6 +54,13 @@ export default function AdminDashboard() {
 
   const adminSections = [
     {
+      title: "Unified CMS",
+      description: "All-in-one content management for everything",
+      icon: Settings,
+      path: "/admin/cms",
+      color: "bg-gradient-to-r from-purple-500 to-pink-500"
+    },
+    {
       title: "Content Management",
       description: "Manage website content, pages, and blog posts",
       icon: FileText,
