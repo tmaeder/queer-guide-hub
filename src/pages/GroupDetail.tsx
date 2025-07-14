@@ -247,7 +247,11 @@ const GroupDetail = () => {
                 )}
                 
                 {canManage && (
-                  <Button variant="outline" size="icon">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => toast.info('Group settings coming soon!')}
+                  >
                     <Settings className="h-4 w-4" />
                   </Button>
                 )}
