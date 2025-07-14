@@ -38,7 +38,9 @@ import {
   Tag,
   MapPin,
   Building,
-  ShoppingBag
+  ShoppingBag,
+  Globe,
+  Flag
 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -59,7 +61,7 @@ export default function AdminContent() {
   
   // Hooks for other content types
   const { allTags: centralizedTags, loading: tagsLoading, createTag, updateTag, deleteTag } = useCentralizedTags();
-  const { cities, countries, loading: dirLoading } = useDirectory();
+  const { cities, countries, continents, loading: dirLoading } = useDirectory();
   const { venues, loading: venuesLoading, createVenue } = useVenues();
   const { events, loading: eventsLoading, createEvent } = useEvents();
   const { listings, loading: marketplaceLoading, createListing } = useMarketplace();
@@ -484,14 +486,178 @@ export default function AdminContent() {
           </Card>
         </TabsContent>
 
-        {/* Placeholder content for other tabs */}
-        <TabsContent value="locations">
+        <TabsContent value="locations" className="space-y-6">
+          {/* Locations Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-2xl font-bold">{continents.length}</p>
+                    <p className="text-sm text-muted-foreground">Continents</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2">
+                  <Flag className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <p className="text-2xl font-bold">{countries.length}</p>
+                    <p className="text-sm text-muted-foreground">Countries</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="text-2xl font-bold">{cities.length}</p>
+                    <p className="text-sm text-muted-foreground">Cities</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Add New City */}
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Manage Cities</h3>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add City
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New City</DialogTitle>
+                </DialogHeader>
+                <form className="space-y-4">
+                  <div>
+                    <Label htmlFor="city-name">City Name</Label>
+                    <Input
+                      id="city-name"
+                      placeholder="Enter city name..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="city-country">Country</Label>
+                    <select className="w-full px-3 py-2 border rounded-md">
+                      <option value="">Select Country</option>
+                      {countries.map((country) => (
+                        <option key={country.id} value={country.id}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="city-population">Population</Label>
+                      <Input
+                        id="city-population"
+                        type="number"
+                        placeholder="Enter population..."
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="city-timezone">Timezone</Label>
+                      <Input
+                        id="city-timezone"
+                        placeholder="e.g. America/New_York"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="city-lat">Latitude</Label>
+                      <Input
+                        id="city-lat"
+                        type="number"
+                        step="any"
+                        placeholder="Enter latitude..."
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="city-lng">Longitude</Label>
+                      <Input
+                        id="city-lng"
+                        type="number"
+                        step="any"
+                        placeholder="Enter longitude..."
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" />
+                      <span className="text-sm">Is Capital</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" />
+                      <span className="text-sm">Is Major City</span>
+                    </label>
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Add City
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Cities Grid */}
           <Card>
             <CardHeader>
-              <CardTitle>Locations Management</CardTitle>
+              <CardTitle>Cities ({cities.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Cities: {cities.length} | Countries: {countries.length}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {cities.map((city) => (
+                  <div key={city.id} className="border rounded-lg p-4 hover:bg-muted/50">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold">{city.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {city.countries?.name}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      {city.population && (
+                        <div>Population: {city.population.toLocaleString()}</div>
+                      )}
+                      {city.timezone && (
+                        <div>Timezone: {city.timezone}</div>
+                      )}
+                      {(city.is_capital || city.is_major_city) && (
+                        <div className="flex gap-1">
+                          {city.is_capital && (
+                            <Badge variant="outline" className="text-xs">Capital</Badge>
+                          )}
+                          {city.is_major_city && (
+                            <Badge variant="outline" className="text-xs">Major City</Badge>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
