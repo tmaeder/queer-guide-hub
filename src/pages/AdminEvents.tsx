@@ -40,7 +40,7 @@ export default function AdminEvents() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { canManageContent, loading: rolesLoading } = useAdminRoles();
-  const { events, loading, createEvent } = useEvents();
+  const { events, loading, createEvent, updateEvent, deleteEvent, refetch } = useEvents();
   const { venues, loading: venuesLoading } = useVenues();
   const { toast } = useToast();
 
@@ -140,17 +140,27 @@ export default function AdminEvents() {
         created_by: user?.id
       };
 
-      const { error } = await createEvent(eventData);
-      
-      if (error) throw new Error(error);
-
-      toast({
-        title: "Success",
-        description: "Event created successfully"
-      });
+      if (editingEvent) {
+        const { error } = await updateEvent(editingEvent.id, eventData);
+        if (error) throw new Error(error);
+        
+        toast({
+          title: "Success",
+          description: "Event updated successfully"
+        });
+      } else {
+        const { error } = await createEvent(eventData);
+        if (error) throw new Error(error);
+        
+        toast({
+          title: "Success",
+          description: "Event created successfully"
+        });
+      }
 
       resetForm();
       setIsCreateDialogOpen(false);
+      refetch();
     } catch (error) {
       toast({
         title: "Error",
@@ -220,6 +230,62 @@ export default function AdminEvents() {
     }
   };
 
+  const handleEditEvent = (event: any) => {
+    setFormData({
+      title: event.title,
+      description: event.description || "",
+      event_type: event.event_type,
+      venue_id: event.venue_id || "",
+      venue_name: event.venue_name || "",
+      address: event.address || "",
+      city: event.city,
+      state: event.state || "",
+      country: event.country,
+      start_date: "",
+      end_date: "",
+      price_min: event.price_min?.toString() || "",
+      price_max: event.price_max?.toString() || "",
+      is_free: event.is_free,
+      max_attendees: event.max_attendees?.toString() || "",
+      age_restriction: event.age_restriction || "",
+      website: event.website || "",
+      ticket_url: event.ticket_url || "",
+      organizer_name: event.organizer_name || "",
+      organizer_contact: event.organizer_contact || "",
+      featured: event.featured,
+      tags: event.tags || []
+    });
+    setStartDate(new Date(event.start_date));
+    setEndDate(event.end_date ? new Date(event.end_date) : undefined);
+    setEditingEvent(event);
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!confirm("Are you sure you want to delete this event?")) {
+      return;
+    }
+
+    try {
+      const { error } = await deleteEvent(eventId);
+      
+      if (error) throw new Error(error);
+
+      toast({
+        title: "Success",
+        description: "Event deleted successfully"
+      });
+
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete event",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (rolesLoading || loading || venuesLoading) {
     return (
       <div className="container mx-auto p-6">
@@ -251,7 +317,7 @@ export default function AdminEvents() {
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Event</DialogTitle>
+              <DialogTitle>{editingEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Info */}
@@ -549,7 +615,7 @@ export default function AdminEvents() {
               </div>
 
               <Button type="submit" className="w-full">
-                Create Event
+                {editingEvent ? 'Update Event' : 'Create Event'}
               </Button>
             </form>
           </DialogContent>
@@ -684,14 +750,14 @@ export default function AdminEvents() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {/* TODO: implement edit */}}
+                    onClick={() => handleEditEvent(event)}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => {/* TODO: implement delete */}}
+                    onClick={() => handleDeleteEvent(event.id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

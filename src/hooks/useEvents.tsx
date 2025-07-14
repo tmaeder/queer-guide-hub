@@ -92,6 +92,41 @@ export function useEvents() {
     }
   };
 
+  const updateEvent = async (eventId: string, eventData: Partial<EventInsert>) => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .update(eventData)
+        .eq('id', eventId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (err) {
+      return { 
+        data: null, 
+        error: err instanceof Error ? err.message : 'Failed to update event' 
+      };
+    }
+  };
+
+  const deleteEvent = async (eventId: string) => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (err) {
+      return { 
+        error: err instanceof Error ? err.message : 'Failed to delete event' 
+      };
+    }
+  };
+
   const updateAttendance = async (eventId: string, status: 'going' | 'interested' | 'not_going') => {
     try {
       const { error } = await supabase
@@ -121,6 +156,8 @@ export function useEvents() {
     error,
     fetchEvents,
     createEvent,
+    updateEvent,
+    deleteEvent,
     updateAttendance,
     refetch: () => fetchEvents(),
   };
