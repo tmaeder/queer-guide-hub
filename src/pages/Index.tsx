@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, MapPin, Calendar, Store, Plane, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { VenueMapSearch } from '@/components/venues/VenueMapSearch';
 
 const Index = () => {
   const { user } = useAuth();
@@ -65,6 +66,13 @@ const Index = () => {
               </Link>
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Venue Map Search */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <VenueMapSearch />
         </div>
       </section>
 
