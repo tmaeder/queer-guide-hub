@@ -27,6 +27,12 @@ import DMCA from "./pages/DMCA";
 import Auth from "./pages/Auth";
 import AdminContent from "./pages/AdminContent";
 import ContentEditor from "./pages/ContentEditor";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminTags from "./pages/AdminTags";
+import AdminCities from "./pages/AdminCities";
+import AdminVenues from "./pages/AdminVenues";
+import AdminEvents from "./pages/AdminEvents";
+import AdminMarketplace from "./pages/AdminMarketplace";
 import News from "./pages/News";
 import Travel from "./pages/Travel";
 import MyBookings from "./pages/MyBookings";
@@ -64,8 +70,14 @@ const App = () => (
                 <Route path="/cookies" element={<CookiePolicy />} />
                 <Route path="/dmca" element={<DMCA />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/content" element={<AdminContent />} />
                 <Route path="/admin/content/:id" element={<ContentEditor />} />
+                <Route path="/admin/tags" element={<AdminTags />} />
+                <Route path="/admin/cities" element={<AdminCities />} />
+                <Route path="/admin/venues" element={<AdminVenues />} />
+                <Route path="/admin/events" element={<AdminEvents />} />
+                <Route path="/admin/marketplace" element={<AdminMarketplace />} />
                 <Route path="/news" element={<News />} />
                 <Route path="/travel" element={<Travel />} />
                 <Route path="/my-bookings" element={<MyBookings />} />

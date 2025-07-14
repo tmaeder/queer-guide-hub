@@ -1,0 +1,68 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { Database } from '@/integrations/supabase/types';
+
+type UserRole = Database['public']['Tables']['user_roles']['Row'];
+type AppRole = Database['public']['Enums']['app_role'];
+
+export function useAdminRoles() {
+  const { user } = useAuth();
+  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserRoles();
+    } else {
+      setUserRoles([]);
+      setIsAdmin(false);
+      setIsModerator(false);
+      setLoading(false);
+    }
+  }, [user]);
+
+  const fetchUserRoles = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setUserRoles(data || []);
+      
+      const roles = (data || []).map(r => r.role);
+      setIsAdmin(roles.includes('admin'));
+      setIsModerator(roles.includes('moderator'));
+    } catch (error) {
+      console.error('Error fetching user roles:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const hasRole = (role: AppRole): boolean => {
+    return userRoles.some(r => r.role === role);
+  };
+
+  const canManageContent = (): boolean => {
+    return isAdmin || isModerator;
+  };
+
+  return {
+    userRoles,
+    loading,
+    isAdmin,
+    isModerator,
+    hasRole,
+    canManageContent,
+    refetch: fetchUserRoles
+  };
+}
