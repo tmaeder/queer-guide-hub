@@ -59,29 +59,45 @@ export default function ContentEditor() {
 
   const loadContent = async (contentId: string) => {
     try {
-      const contentItem = content.find(c => c.id === contentId);
-      if (contentItem) {
-        setExistingContent(contentItem);
-        setFormData({
-          title: contentItem.title,
-          slug: contentItem.slug,
-          content_type: contentItem.content_type as ContentType,
-          status: contentItem.status as ContentStatus,
-          excerpt: contentItem.excerpt || "",
-          content: contentItem.content,
-          meta_description: contentItem.meta_description || "",
-          meta_keywords: contentItem.meta_keywords || [],
-          featured_image: contentItem.featured_image || "",
-          categoryIds: contentItem.categories?.map(c => c.id) || [],
-          tagIds: contentItem.tags?.map(t => t.id) || []
+      setIsLoading(true);
+      // First try to find in already loaded content
+      let contentItem = content.find(c => c.id === contentId);
+      
+      // If not found, we need to fetch it from the database
+      if (!contentItem) {
+        // This would require a new function in useContent hook to fetch by ID
+        // For now, let's show an error
+        toast({
+          title: "Content not found",
+          description: "The content you're trying to edit could not be found.",
+          variant: "destructive"
         });
+        navigate("/admin/content");
+        return;
       }
+      
+      setExistingContent(contentItem);
+      setFormData({
+        title: contentItem.title,
+        slug: contentItem.slug,
+        content_type: contentItem.content_type as ContentType,
+        status: contentItem.status as ContentStatus,
+        excerpt: contentItem.excerpt || "",
+        content: contentItem.content,
+        meta_description: contentItem.meta_description || "",
+        meta_keywords: contentItem.meta_keywords || [],
+        featured_image: contentItem.featured_image || "",
+        categoryIds: contentItem.categories?.map(c => c.id) || [],
+        tagIds: contentItem.tags?.map(t => t.id) || []
+      });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to load content",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
