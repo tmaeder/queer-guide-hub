@@ -91,16 +91,23 @@ export function Footer() {
             </div>
           </div>
 
-
-          {/* Help Links */}
+          {/* Community Links */}
           <div>
-            <h3 className="font-semibold mb-4">Help & Support</h3>
+            
             <ul className="space-y-2">
-              {helpLinks.map(link => <li key={link.href}>
+              {communityLinks.map(link => <li key={link.href}>
                   <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     {link.label}
                   </Link>
                 </li>)}
+            </ul>
+          </div>
+
+          {/* Help Links */}
+          <div>
+            
+            <ul className="space-y-2">
+              {helpLinks.map(link => {})}
             </ul>
           </div>
 
