@@ -159,7 +159,7 @@ export default function TagsDirectory() {
 
           {/* Categories */}
           <Tabs defaultValue="all" className="space-y-4">
-            <TabsList>
+            <TabsList className="w-full flex-wrap h-auto justify-start gap-2">
               <TabsTrigger value="all" className="flex items-center gap-2">
                 <Tag className="h-4 w-4" />
                 All Tags
