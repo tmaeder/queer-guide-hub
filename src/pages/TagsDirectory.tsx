@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 import { TagCard } from "@/components/directory/TagCard";
 import { DirectorySearch } from "@/components/directory/DirectorySearch";
@@ -10,6 +11,7 @@ import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain } fr
 type ViewMode = "overview" | "category" | "search" | "tag-detail";
 
 export default function TagsDirectory() {
+  const { tagName } = useParams<{ tagName: string }>();
   const { 
     allTags, 
     tagsByCategory, 
@@ -22,6 +24,20 @@ export default function TagsDirectory() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedTag, setSelectedTag] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+
+  // Handle route parameter for individual tag pages
+  useEffect(() => {
+    if (tagName && allTags.length > 0) {
+      const decodedTagName = decodeURIComponent(tagName);
+      const foundTag = allTags.find(tag => 
+        tag.name.toLowerCase() === decodedTagName.toLowerCase()
+      );
+      if (foundTag) {
+        setSelectedTag(foundTag);
+        setViewMode("tag-detail");
+      }
+    }
+  }, [tagName, allTags]);
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);

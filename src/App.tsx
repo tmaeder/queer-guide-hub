@@ -67,6 +67,7 @@ const App = () => (
                 <Route path="/directory" element={<Directory />} />
                 <Route path="/users" element={<UserDirectory />} />
                 <Route path="/tags" element={<TagsDirectory />} />
+                <Route path="/tags/:tagName" element={<TagsDirectory />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/vision" element={<OurVision />} />
