@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { AccessibilityProvider } from "@/hooks/useAccessibility";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import Index from "./pages/Index";
@@ -43,6 +44,7 @@ import MyBookings from "./pages/MyBookings";
 import ProfileSettings from "./pages/ProfileSettings";
 import UnifiedCMS from "./pages/UnifiedCMS";
 import Messages from "./pages/Messages";
+import AccessibilityHub from "./pages/AccessibilityHub";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -74,7 +76,8 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <AccessibilityProvider>
+        <AuthProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -156,6 +159,7 @@ const App = () => {
                   <Route path="/admin/marketplace" element={<AdminMarketplace />} />
                   <Route path="/news" element={<News />} />
                   <Route path="/travel" element={<Travel />} />
+                  <Route path="/accessibility" element={<AccessibilityHub />} />
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/my-bookings" element={<MyBookings />} />
                   <Route path="/profile/settings" element={<ProfileSettings />} />
@@ -167,7 +171,8 @@ const App = () => {
             </div>
           </BrowserRouter>
         </TooltipProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </AccessibilityProvider>
     </QueryClientProvider>
   );
 };

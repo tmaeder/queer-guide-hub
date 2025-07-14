@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut } from 'lucide-react';
+import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -126,6 +126,14 @@ export function Header() {
               >
                 <Newspaper className="h-6 w-6 mb-1" />
                 <span className="text-xs">News</span>
+              </Link>
+              <Link 
+                to="/accessibility" 
+                className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Accessibility className="h-6 w-6 mb-1" />
+                <span className="text-xs">Access</span>
               </Link>
             </div>
           </nav>
