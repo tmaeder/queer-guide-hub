@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Users, Clock, DollarSign, ExternalLink } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -75,8 +76,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
   };
 
   return (
-    <Card className="group hover:shadow-elegant transition-all duration-300 cursor-pointer" 
-          onClick={() => onViewDetails?.(event)}>
+    <Card className="group hover:shadow-elegant transition-all duration-300">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -181,9 +181,11 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
                 </a>
               </Button>
             )}
-            <Button size="sm" variant="outline" className="text-xs">
-              View Details
-            </Button>
+            <Link to={`/events/${event.id}`}>
+              <Button size="sm" variant="outline" className="text-xs">
+                View Details
+              </Button>
+            </Link>
           </div>
         </div>
 

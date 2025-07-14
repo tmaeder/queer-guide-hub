@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import Venues from "./pages/Venues";
 import VenueDetail from "./pages/VenueDetail";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Marketplace from "./pages/Marketplace";
 import Community from "./pages/Community";
 import Directory from "./pages/Directory";
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/venues" element={<Venues />} />
                 <Route path="/venues/:id" element={<VenueDetail />} />
                 <Route path="/events" element={<Events />} />
+                <Route path="/events/:id" element={<EventDetail />} />
                 <Route path="/marketplace" element={<Marketplace />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/directory" element={<Directory />} />
