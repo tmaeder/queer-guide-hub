@@ -17,10 +17,98 @@ interface NewsArticle {
   category: string;
   tags: string[];
   source_id: string;
+  country_ids?: string[];
+  city_ids?: string[];
+}
+
+// Enhanced keyword extraction to generate tags with geo-detection
+function extractTags(title: string, content: string): string[] {
+  const text = `${title} ${content}`.toLowerCase();
+  const lgbtqKeywords = [
+    'lgbt', 'lgbtq', 'gay', 'lesbian', 'bisexual', 'transgender', 'queer',
+    'pride', 'rainbow', 'equality', 'rights', 'discrimination', 'marriage',
+    'community', 'activism', 'advocate', 'inclusive', 'diversity', 'trans',
+    'non-binary', 'pansexual', 'asexual', 'intersex', 'homophobia', 'transphobia',
+    'coming out', 'drag', 'pronouns', 'gender identity', 'sexual orientation',
+    'same-sex', 'civil union', 'adoption', 'healthcare', 'sports', 'legislation',
+    'hate crime', 'conversion therapy', 'workplace', 'military', 'school'
+  ];
+  
+  return lgbtqKeywords.filter(keyword => text.includes(keyword));
+}
+
+// Extract geographic information from article text
+async function extractGeoInfo(title: string, content: string, sourceUrl: string, supabaseClient: any) {
+  const text = `${title} ${content}`.toLowerCase();
+  
+  // Country mappings based on source domains
+  const countryMappings: { [key: string]: string[] } = {
+    'theguardian.com': ['united kingdom', 'uk', 'britain'],
+    'washingtonblade.com': ['united states', 'usa', 'america'],
+    'buzzfeed.com': ['united states', 'usa', 'america'],
+    'reddit.com': ['united states', 'usa', 'america'],
+    'thepinknews.com': ['united kingdom', 'uk', 'britain'],
+    'sfgate.com': ['united states', 'usa', 'america'],
+    'oii.org.au': ['australia'],
+    'lgbtqnation.com': ['united states', 'usa', 'america'],
+    'outsports.com': ['united states', 'usa', 'america'],
+    'ilga-europe.org': ['europe'],
+    'tgeu.org': ['europe'],
+    'ilga.org': ['international'],
+    'eur-lex.europa.eu': ['european union', 'europe'],
+    'queerty.com': ['united states', 'usa', 'america'],
+    'out.com': ['united states', 'usa', 'america']
+  };
+  
+  // Extract source-based country
+  let sourceCountries: string[] = [];
+  for (const [domain, countries] of Object.entries(countryMappings)) {
+    if (sourceUrl.includes(domain)) {
+      sourceCountries = countries;
+      break;
+    }
+  }
+  
+  // Look for country and city names in the database
+  const { data: countries } = await supabaseClient
+    .from('countries')
+    .select('id, name, code');
+    
+  const { data: cities } = await supabaseClient
+    .from('cities')
+    .select('id, name, country_id');
+  
+  const detectedCountryIds: string[] = [];
+  const detectedCityIds: string[] = [];
+  
+  // Match countries from text and source
+  if (countries) {
+    for (const country of countries) {
+      const countryName = country.name.toLowerCase();
+      if (text.includes(countryName) || sourceCountries.some(sc => sc.includes(countryName))) {
+        detectedCountryIds.push(country.id);
+      }
+    }
+  }
+  
+  // Match cities from text
+  if (cities) {
+    for (const city of cities) {
+      const cityName = city.name.toLowerCase();
+      if (text.includes(cityName)) {
+        detectedCityIds.push(city.id);
+      }
+    }
+  }
+  
+  return {
+    country_ids: detectedCountryIds.slice(0, 3), // Limit to 3 countries
+    city_ids: detectedCityIds.slice(0, 3) // Limit to 3 cities
+  };
 }
 
 // RSS Feed parser
-async function parseRSSFeed(url: string, sourceId: string, category: string): Promise<NewsArticle[]> {
+async function parseRSSFeed(url: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
     // Validate URL to prevent SSRF attacks
     const urlObj = new URL(url);
@@ -76,15 +164,9 @@ async function parseRSSFeed(url: string, sourceId: string, category: string): Pr
           continue; // Skip invalid URLs
         }
         
-        // Generate tags based on LGBTQ+ keywords
-        const lgbtqKeywords = [
-          'lgbtq', 'lgbt', 'gay', 'lesbian', 'bisexual', 'transgender', 'queer', 'pride',
-          'rainbow', 'equality', 'rights', 'discrimination', 'marriage', 'adoption',
-          'healthcare', 'transition', 'pronoun', 'identity', 'orientation', 'community'
-        ];
-        
-        const content = (title + ' ' + description).toLowerCase();
-        const tags = lgbtqKeywords.filter(keyword => content.includes(keyword));
+        // Generate enhanced tags and geo info
+        const tags = extractTags(title, description);
+        const geoInfo = await extractGeoInfo(title, description, url, supabaseClient);
         
         articles.push({
           title: title.trim(),
@@ -95,7 +177,9 @@ async function parseRSSFeed(url: string, sourceId: string, category: string): Pr
           published_at: new Date(pubDate).toISOString(),
           category,
           tags,
-          source_id: sourceId
+          source_id: sourceId,
+          country_ids: geoInfo.country_ids,
+          city_ids: geoInfo.city_ids
         });
       }
     }
@@ -184,7 +268,7 @@ serve(async (req) => {
       let articles: NewsArticle[] = [];
       
       if (source.source_type === 'rss') {
-        articles = await parseRSSFeed(source.url, source.id, source.category);
+        articles = await parseRSSFeed(source.url, source.id, source.category, supabaseClient);
       } else if (source.source_type === 'api' && source.name === 'NewsAPI') {
         const apiKey = Deno.env.get("NEWS_API_KEY");
         if (apiKey) {
