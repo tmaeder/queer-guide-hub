@@ -7,6 +7,7 @@ import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AdvancedSearchBar } from '@/components/search/AdvancedSearchBar';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export function Header() {
         <AdvancedSearchBar />
 
         <div className="flex items-center gap-4">
+          {user && <NotificationBell />}
           {user ? <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">

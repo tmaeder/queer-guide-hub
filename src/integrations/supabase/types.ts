@@ -1236,6 +1236,48 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          action_url: string | null
+          content: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          read: boolean
+          related_id: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          read?: boolean
+          related_id?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          read?: boolean
+          related_id?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string
@@ -1694,6 +1736,18 @@ export type Database = {
           action_type?: string
         }
         Returns: boolean
+      }
+      create_notification: {
+        Args: {
+          target_user_id: string
+          notification_type: string
+          notification_title: string
+          notification_content?: string
+          notification_action_url?: string
+          notification_related_id?: string
+          notification_metadata?: Json
+        }
+        Returns: string
       }
       decrement_post_likes: {
         Args: { post_id: string }
