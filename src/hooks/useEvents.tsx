@@ -23,7 +23,18 @@ export function useEvents() {
         .from('events')
         .select(`
           *,
-          event_attendees(status)
+          event_attendees(status),
+          venues(
+            id,
+            name,
+            address,
+            city,
+            state,
+            country,
+            phone,
+            website,
+            email
+          )
         `)
         .eq('status', 'active')
         .gte('start_date', new Date().toISOString())

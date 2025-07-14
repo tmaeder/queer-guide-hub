@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useVenues } from '@/hooks/useVenues';
+import { useEvents } from '@/hooks/useEvents';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { VenueFilters } from '@/components/venues/VenueFilters';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ type Venue = Database['public']['Tables']['venues']['Row'];
 
 const Venues = () => {
   const { venues, loading, error, fetchVenues } = useVenues();
+  const { events } = useEvents();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
 
   const handleFiltersChange = (filters: any) => {
@@ -100,6 +102,7 @@ const Venues = () => {
                 <VenueCard
                   key={venue.id}
                   venue={venue}
+                  events={events}
                   onViewDetails={handleViewDetails}
                 />
               ))}

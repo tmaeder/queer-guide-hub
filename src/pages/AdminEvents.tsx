@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { useAuth } from "@/hooks/useAuth";
 import { useEvents } from "@/hooks/useEvents";
+import { useVenues } from "@/hooks/useVenues";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +41,7 @@ export default function AdminEvents() {
   const { user } = useAuth();
   const { canManageContent, loading: rolesLoading } = useAdminRoles();
   const { events, loading, createEvent } = useEvents();
+  const { venues, loading: venuesLoading } = useVenues();
   const { toast } = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,6 +55,7 @@ export default function AdminEvents() {
     title: "",
     description: "",
     event_type: "",
+    venue_id: "",
     venue_name: "",
     address: "",
     city: "",
@@ -127,6 +130,7 @@ export default function AdminEvents() {
     try {
       const eventData = {
         ...formData,
+        venue_id: formData.venue_id || null,
         start_date: startDate.toISOString(),
         end_date: endDate?.toISOString() || null,
         price_min: formData.price_min ? parseFloat(formData.price_min) : null,
@@ -160,6 +164,7 @@ export default function AdminEvents() {
       title: "",
       description: "",
       event_type: "",
+      venue_id: "",
       venue_name: "",
       address: "",
       city: "",
@@ -184,7 +189,34 @@ export default function AdminEvents() {
     setEditingEvent(null);
   };
 
-  if (rolesLoading || loading) {
+  const handleVenueSelect = (venueId: string) => {
+    setFormData(prev => ({ ...prev, venue_id: venueId }));
+    
+    if (venueId) {
+      const selectedVenue = venues.find(v => v.id === venueId);
+      if (selectedVenue) {
+        setFormData(prev => ({
+          ...prev,
+          venue_name: selectedVenue.name,
+          address: selectedVenue.address,
+          city: selectedVenue.city,
+          state: selectedVenue.state || "",
+          country: selectedVenue.country
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        venue_name: "",
+        address: "",
+        city: "",
+        state: "",
+        country: "US"
+      }));
+    }
+  };
+
+  if (rolesLoading || loading || venuesLoading) {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center">Loading...</div>
@@ -324,49 +356,73 @@ export default function AdminEvents() {
               {/* Location */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Location</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
-                    <Label htmlFor="venue_name">Venue Name</Label>
-                    <Input
-                      id="venue_name"
-                      value={formData.venue_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, venue_name: e.target.value }))}
-                    />
+                    <Label htmlFor="venue_id">Select Venue (Optional)</Label>
+                    <Select value={formData.venue_id} onValueChange={handleVenueSelect}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose existing venue or enter custom location" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Custom Location</SelectItem>
+                        {venues.map((venue) => (
+                          <SelectItem key={venue.id} value={venue.id}>
+                            {venue.name} - {venue.city}, {venue.state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="address">Address</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                    />
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="venue_name">Venue Name</Label>
+                      <Input
+                        id="venue_name"
+                        value={formData.venue_name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, venue_name: e.target.value }))}
+                        disabled={!!formData.venue_id}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="address">Address</Label>
+                      <Input
+                        id="address"
+                        value={formData.address}
+                        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                        disabled={!!formData.venue_id}
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">State</Label>
-                    <Input
-                      id="state"
-                      value={formData.state}
-                      onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="country">Country</Label>
-                    <Input
-                      id="country"
-                      value={formData.country}
-                      onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
-                    />
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="city">City</Label>
+                      <Input
+                        id="city"
+                        value={formData.city}
+                        onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                        required
+                        disabled={!!formData.venue_id}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="state">State</Label>
+                      <Input
+                        id="state"
+                        value={formData.state}
+                        onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                        disabled={!!formData.venue_id}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="country">Country</Label>
+                      <Input
+                        id="country"
+                        value={formData.country}
+                        onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                        disabled={!!formData.venue_id}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

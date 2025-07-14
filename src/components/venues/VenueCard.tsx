@@ -3,17 +3,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Phone, Globe, Instagram } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
+import { VenueEvents } from './VenueEvents';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
+type Event = Database['public']['Tables']['events']['Row'];
 
 interface VenueCardProps {
   venue: Venue & {
     venue_reviews?: Array<{ rating: number }>;
   };
+  events?: Event[];
   onViewDetails?: (venue: Venue) => void;
 }
 
-export function VenueCard({ venue, onViewDetails }: VenueCardProps) {
+export function VenueCard({ venue, events = [], onViewDetails }: VenueCardProps) {
   const averageRating = venue.venue_reviews?.length 
     ? venue.venue_reviews.reduce((sum, review) => sum + review.rating, 0) / venue.venue_reviews.length
     : 0;
@@ -92,6 +95,16 @@ export function VenueCard({ venue, onViewDetails }: VenueCardProps) {
               </Badge>
             )}
           </div>
+        )}
+
+        {/* Upcoming Events */}
+        {events.length > 0 && (
+          <VenueEvents 
+            venueId={venue.id} 
+            venueName={venue.name}
+            events={events}
+            compact={true}
+          />
         )}
 
         <div className="flex items-center justify-between pt-2">

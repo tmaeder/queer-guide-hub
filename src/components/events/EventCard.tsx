@@ -6,7 +6,19 @@ import { Calendar, MapPin, Users, Clock, DollarSign, ExternalLink } from 'lucide
 import { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 
-type Event = Database['public']['Tables']['events']['Row'];
+type Event = Database['public']['Tables']['events']['Row'] & {
+  venues?: {
+    id: string;
+    name: string;
+    address: string;
+    city: string;
+    state: string | null;
+    country: string;
+    phone: string | null;
+    website: string | null;
+    email: string | null;
+  } | null;
+};
 
 interface EventCardProps {
   event: Event & {
@@ -113,9 +125,18 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
         <div className="flex items-center gap-2 text-muted-foreground">
           <MapPin className="h-3 w-3" />
           <span className="text-sm">
-            {event.venue_name || 'Location TBA'} • {event.city}, {event.state}
+            {event.venues?.name || event.venue_name || 'Location TBA'} • {event.city}, {event.state}
           </span>
         </div>
+
+        {event.venues && (
+          <div className="text-xs text-muted-foreground">
+            {event.venues.address}
+            {event.venues.phone && (
+              <span className="ml-2">• {event.venues.phone}</span>
+            )}
+          </div>
+        )}
 
         {event.tags && event.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
@@ -146,6 +167,13 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
           </div>
           
           <div className="flex gap-1">
+            {event.venues?.website && (
+              <Button size="sm" variant="outline" className="h-6 w-6 p-0" asChild>
+                <a href={event.venues.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </Button>
+            )}
             {event.ticket_url && (
               <Button size="sm" variant="outline" className="h-6 w-6 p-0" asChild>
                 <a href={event.ticket_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
