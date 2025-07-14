@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, User } from 'lucide-react';
+import { Heart, Menu, User, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -10,6 +10,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const {
     user,
@@ -60,11 +61,68 @@ export function Header() {
           
           <ThemeToggle />
           
-          <Button variant="ghost" size="sm" className="md:hidden">
-            <Menu className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
         </div>
       </div>
+
+      {/* Mobile Navigation Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-16 left-0 right-0 bg-background z-40">
+          <nav className="container mx-auto px-4 py-4">
+            <div className="flex flex-col space-y-2">
+              <Link 
+                to="/venues" 
+                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Venues
+              </Link>
+              <Link 
+                to="/events" 
+                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Events
+              </Link>
+              <Link 
+                to="/marketplace" 
+                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Marketplace
+              </Link>
+              <Link 
+                to="/directory" 
+                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Wiki
+              </Link>
+              <Link 
+                to="/travel" 
+                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Locations
+              </Link>
+              <Link 
+                to="/news" 
+                className="px-4 py-2 text-foreground hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                News
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </header>;
