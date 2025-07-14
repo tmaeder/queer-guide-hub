@@ -61,7 +61,7 @@ const Events = () => {
     fetchEvents({
       search: search || undefined,
       city: city || undefined,
-      eventType: eventType || undefined,
+      eventType: (eventType && eventType !== 'all') ? eventType : undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
     });
   };
@@ -76,7 +76,7 @@ const Events = () => {
   const clearFilters = () => {
     setSearch('');
     setCity('');
-    setEventType('');
+    setEventType('all');
     setSelectedTags([]);
     fetchEvents();
   };
@@ -199,7 +199,7 @@ const Events = () => {
                       <SelectValue placeholder="Select event type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Types</SelectItem>
+                      <SelectItem value="all">All Types</SelectItem>
                       {eventTypes.map((type) => (
                         <SelectItem key={type} value={type}>
                           {type.charAt(0).toUpperCase() + type.slice(1)}

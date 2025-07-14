@@ -130,7 +130,8 @@ export default function AdminEvents() {
     try {
       const eventData = {
         ...formData,
-        venue_id: formData.venue_id || null,
+        venue_id: (formData.venue_id === 'custom' || !formData.venue_id) ? null : formData.venue_id,
+        age_restriction: formData.age_restriction === 'none' ? null : formData.age_restriction,
         start_date: startDate.toISOString(),
         end_date: endDate?.toISOString() || null,
         price_min: formData.price_min ? parseFloat(formData.price_min) : null,
@@ -190,29 +191,32 @@ export default function AdminEvents() {
   };
 
   const handleVenueSelect = (venueId: string) => {
-    setFormData(prev => ({ ...prev, venue_id: venueId }));
-    
-    if (venueId) {
-      const selectedVenue = venues.find(v => v.id === venueId);
-      if (selectedVenue) {
-        setFormData(prev => ({
-          ...prev,
-          venue_name: selectedVenue.name,
-          address: selectedVenue.address,
-          city: selectedVenue.city,
-          state: selectedVenue.state || "",
-          country: selectedVenue.country
-        }));
-      }
-    } else {
-      setFormData(prev => ({
-        ...prev,
+    if (venueId === 'custom') {
+      setFormData(prev => ({ 
+        ...prev, 
+        venue_id: "",
         venue_name: "",
         address: "",
         city: "",
         state: "",
         country: "US"
       }));
+    } else {
+      setFormData(prev => ({ ...prev, venue_id: venueId }));
+      
+      if (venueId) {
+        const selectedVenue = venues.find(v => v.id === venueId);
+        if (selectedVenue) {
+          setFormData(prev => ({
+            ...prev,
+            venue_name: selectedVenue.name,
+            address: selectedVenue.address,
+            city: selectedVenue.city,
+            state: selectedVenue.state || "",
+            country: selectedVenue.country
+          }));
+        }
+      }
     }
   };
 
@@ -364,7 +368,7 @@ export default function AdminEvents() {
                         <SelectValue placeholder="Choose existing venue or enter custom location" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Custom Location</SelectItem>
+                        <SelectItem value="custom">Custom Location</SelectItem>
                         {venues.map((venue) => (
                           <SelectItem key={venue.id} value={venue.id}>
                             {venue.name} - {venue.city}, {venue.state}
@@ -484,7 +488,7 @@ export default function AdminEvents() {
                         <SelectValue placeholder="Select restriction" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No Restriction</SelectItem>
+                        <SelectItem value="none">No Restriction</SelectItem>
                         <SelectItem value="18+">18+</SelectItem>
                         <SelectItem value="21+">21+</SelectItem>
                         <SelectItem value="all_ages">All Ages</SelectItem>
