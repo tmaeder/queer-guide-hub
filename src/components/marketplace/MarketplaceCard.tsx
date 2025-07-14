@@ -34,8 +34,6 @@ export function MarketplaceCard({
     const colors: Record<string, string> = {
       products: 'bg-primary/10 text-primary',
       services: 'bg-accent/10 text-accent',
-      classes: 'bg-secondary/10 text-secondary',
-      events: 'bg-destructive/10 text-destructive',
     };
     return colors[category] || 'bg-muted/10 text-muted-foreground';
   };

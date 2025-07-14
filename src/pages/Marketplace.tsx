@@ -68,8 +68,6 @@ const Marketplace = () => {
     { id: 'all', label: 'All', count: listings.length },
     { id: 'products', label: 'Products', count: listings.filter(l => l.category === 'products').length },
     { id: 'services', label: 'Services', count: listings.filter(l => l.category === 'services').length },
-    { id: 'classes', label: 'Classes', count: listings.filter(l => l.category === 'classes').length },
-    { id: 'events', label: 'Events', count: listings.filter(l => l.category === 'events').length },
   ];
 
   if (error) {
@@ -97,7 +95,7 @@ const Marketplace = () => {
               Marketplace
             </h1>
             <p className="text-lg text-muted-foreground">
-              Discover and support queer-owned businesses and services
+              Discover and support local businesses offering products and services
             </p>
           </div>
           <Button className="bg-gradient-primary gap-2">
@@ -114,7 +112,7 @@ const Marketplace = () => {
         {/* Category Tabs & View Toggle */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <TabsList className="grid w-full max-w-md grid-cols-5">
+            <TabsList className="grid w-full max-w-md grid-cols-3">
               {categories.map((category) => (
                 <TabsTrigger key={category.id} value={category.id} className="text-xs">
                   {category.label}

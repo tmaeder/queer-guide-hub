@@ -27,20 +27,12 @@ interface MarketplaceFiltersProps {
 
 const categories = [
   'products',
-  'services', 
-  'classes',
-  'events',
-  'consulting',
-  'digital'
+  'services'
 ];
 
 const subcategories: Record<string, string[]> = {
-  products: ['clothing', 'jewelry', 'art', 'books', 'food', 'crafts', 'beauty'],
-  services: ['photography', 'design', 'marketing', 'therapy', 'legal', 'financial'],
-  classes: ['fitness', 'art', 'music', 'cooking', 'language', 'tech'],
-  events: ['workshops', 'parties', 'networking', 'fundraising', 'social'],
-  consulting: ['business', 'career', 'wellness', 'relationships', 'legal'],
-  digital: ['apps', 'websites', 'courses', 'templates', 'software']
+  products: ['clothing', 'jewelry', 'art', 'books', 'food', 'crafts', 'beauty', 'electronics', 'home-goods', 'handmade'],
+  services: ['photography', 'design', 'marketing', 'therapy', 'legal', 'financial', 'consulting', 'wellness', 'creative', 'professional']
 };
 
 const businessTypes = [
