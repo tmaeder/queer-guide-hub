@@ -68,7 +68,7 @@ export function Header() {
 
       {/* Mobile Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 bg-background z-40">
+        <div className="absolute top-16 left-0 right-0 bg-background z-50 shadow-lg">
           <nav className="container mx-auto px-4 py-4">
             <div className="flex flex-col space-y-2">
               <Link 
