@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 import { TagCard } from "@/components/directory/TagCard";
@@ -25,6 +25,9 @@ export default function TagsDirectory() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedTag, setSelectedTag] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [scrollY, setScrollY] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle route parameter for individual tag pages
   useEffect(() => {
@@ -37,6 +40,31 @@ export default function TagsDirectory() {
       }
     }
   }, [tagName, allTags]);
+
+  // Mouse and scroll tracking for background animation
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setMousePosition({
+        x: (e.clientX - rect.left) / rect.width,
+        y: (e.clientY - rect.top) / rect.height
+      });
+    }
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    setScrollY(window.scrollY);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleMouseMove, handleScroll]);
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
     setViewMode("category");
@@ -92,7 +120,25 @@ export default function TagsDirectory() {
         return Tag;
     }
   };
-  return <div className="container mx-auto p-6 space-y-6">
+  return <div ref={containerRef} className="relative min-h-screen">
+      {/* Animated Rainbow Background */}
+      <div
+        className="fixed inset-0 opacity-20 pointer-events-none z-0"
+        style={{
+          background: `radial-gradient(
+            circle at ${mousePosition.x * 100}% ${mousePosition.y * 100}%,
+            hsl(${(mousePosition.x * 360 + scrollY * 0.1) % 360}, 70%, 85%) 0%,
+            hsl(${(mousePosition.x * 360 + 60 + scrollY * 0.1) % 360}, 60%, 90%) 25%,
+            hsl(${(mousePosition.x * 360 + 120 + scrollY * 0.1) % 360}, 65%, 88%) 50%,
+            hsl(${(mousePosition.x * 360 + 180 + scrollY * 0.1) % 360}, 55%, 92%) 75%,
+            transparent 100%
+          )`,
+          filter: 'blur(120px)',
+          transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
+      />
+      
+      <div className="container mx-auto p-6 space-y-6 relative z-10">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -280,5 +326,6 @@ export default function TagsDirectory() {
               </div>}
           </div>
         </div>}
+      </div>
     </div>;
 }
