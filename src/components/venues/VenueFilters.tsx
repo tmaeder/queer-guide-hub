@@ -58,7 +58,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
     onFiltersChange({
       search: search || undefined,
       city: city || undefined,
-      category: category || undefined,
+      category: category === 'all' ? undefined : category || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
     });
   };
@@ -78,7 +78,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
     onFiltersChange({});
   };
 
-  const hasActiveFilters = search || city || category || selectedTags.length > 0;
+  const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0;
 
   return (
     <div className="space-y-4 p-4 bg-card rounded-lg border">
@@ -127,7 +127,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -186,7 +186,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               <X className="h-3 w-3 cursor-pointer" onClick={() => setCity('')} />
             </Badge>
           )}
-          {category && (
+          {category && category !== 'all' && (
             <Badge variant="secondary" className="gap-1">
               {category}
               <X className="h-3 w-3 cursor-pointer" onClick={() => setCategory('')} />

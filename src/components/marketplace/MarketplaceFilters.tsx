@@ -83,10 +83,10 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
 
     onFiltersChange({
       search: search || undefined,
-      category: category || undefined,
-      subcategory: subcategory || undefined,
+      category: category === 'all' ? undefined : category || undefined,
+      subcategory: subcategory === 'all' ? undefined : subcategory || undefined,
       location: location || undefined,
-      businessType: businessType || undefined,
+      businessType: businessType === 'all' ? undefined : businessType || undefined,
       priceRange,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
     });
@@ -111,7 +111,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
     onFiltersChange({});
   };
 
-  const hasActiveFilters = search || category || subcategory || location || businessType || minPrice || maxPrice || selectedTags.length > 0;
+  const hasActiveFilters = search || (category && category !== 'all') || (subcategory && subcategory !== 'all') || location || (businessType && businessType !== 'all') || minPrice || maxPrice || selectedTags.length > 0;
 
   // Reset subcategory when category changes
   const handleCategoryChange = (newCategory: string) => {
@@ -157,7 +157,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -174,7 +174,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                   <SelectValue placeholder="Select subcategory" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Subcategories</SelectItem>
+                  <SelectItem value="all">All Subcategories</SelectItem>
                   {category && subcategories[category]?.map((subcat) => (
                     <SelectItem key={subcat} value={subcat}>
                       {subcat.charAt(0).toUpperCase() + subcat.slice(1)}
@@ -191,7 +191,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   {businessTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -279,13 +279,13 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
               <X className="h-3 w-3 cursor-pointer" onClick={() => setSearch('')} />
             </Badge>
           )}
-          {category && (
+          {category && category !== 'all' && (
             <Badge variant="secondary" className="gap-1">
               {category}
               <X className="h-3 w-3 cursor-pointer" onClick={() => setCategory('')} />
             </Badge>
           )}
-          {subcategory && (
+          {subcategory && subcategory !== 'all' && (
             <Badge variant="secondary" className="gap-1">
               {subcategory}
               <X className="h-3 w-3 cursor-pointer" onClick={() => setSubcategory('')} />
@@ -297,7 +297,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
               <X className="h-3 w-3 cursor-pointer" onClick={() => setLocation('')} />
             </Badge>
           )}
-          {businessType && (
+          {businessType && businessType !== 'all' && (
             <Badge variant="secondary" className="gap-1">
               {businessType}
               <X className="h-3 w-3 cursor-pointer" onClick={() => setBusinessType('')} />
