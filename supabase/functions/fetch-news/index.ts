@@ -52,32 +52,13 @@ async function standardizeTags(extractedTags: string[], supabaseClient: any): Pr
   const standardizedTags: string[] = [];
   const tagMap = new Map(centralizedTags.map(tag => [tag.name.toLowerCase(), tag.name]));
   
-  // Map extracted tags to standardized ones
+  // Map extracted tags to standardized ones (direct match only)
   extractedTags.forEach(tag => {
     const lowerTag = tag.toLowerCase();
     
-    // Direct match
+    // Direct match only
     if (tagMap.has(lowerTag)) {
       standardizedTags.push(tagMap.get(lowerTag)!);
-      return;
-    }
-    
-    // Fuzzy matching for common variations
-    const mappings: { [key: string]: string[] } = {
-      'LGBTQ+': ['lgbt', 'lgbtq', 'lgbtq+', 'gay', 'lesbian', 'bisexual', 'transgender', 'queer'],
-      'Pride': ['pride', 'rainbow'],
-      'Inclusive': ['inclusive', 'diversity', 'equality'],
-      'Mental Health': ['healthcare', 'health', 'mental health'],
-      'Education': ['education', 'school', 'learning'],
-      'Awareness': ['activism', 'advocate', 'awareness'],
-      'Safe Space': ['safe space', 'discrimination', 'hate crime']
-    };
-    
-    for (const [standardTag, variations] of Object.entries(mappings)) {
-      if (variations.includes(lowerTag) && tagMap.has(standardTag.toLowerCase())) {
-        standardizedTags.push(tagMap.get(standardTag.toLowerCase())!);
-        break;
-      }
     }
   });
   
