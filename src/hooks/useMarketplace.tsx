@@ -26,7 +26,8 @@ export function useMarketplace() {
         .select(`
           *,
           marketplace_reviews(rating),
-          marketplace_favorites(id)
+          marketplace_favorites(id),
+          venues(name, address, city)
         `)
         .eq('status', 'active')
         .order('featured', { ascending: false })

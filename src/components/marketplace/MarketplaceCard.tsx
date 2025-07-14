@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, Heart, MapPin, Globe, Phone, Mail, ExternalLink, Eye } from 'lucide-react';
+import { Star, Heart, MapPin, Globe, Phone, Mail, ExternalLink, Eye, Building } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { Link } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ interface MarketplaceCardProps {
   listing: MarketplaceListing & {
     marketplace_reviews?: Array<{ rating: number }>;
     marketplace_favorites?: Array<{ id: string }>;
+    venues?: { name: string; address: string; city: string } | null;
   };
   onViewDetails?: (listing: MarketplaceListing) => void;
   onToggleFavorite?: (listingId: string) => void;
@@ -111,7 +112,13 @@ export function MarketplaceCard({
               <span className="font-medium text-sm">{listing.business_name}</span>
               {listing.business_type && getBusinessTypeIcon(listing.business_type)}
             </div>
-            {listing.location && (
+            {listing.venues && (
+              <div className="flex items-center gap-1 mt-1 text-muted-foreground">
+                <Building className="h-3 w-3" />
+                <span className="text-sm">{listing.venues.name}, {listing.venues.city}</span>
+              </div>
+            )}
+            {!listing.venues && listing.location && (
               <div className="flex items-center gap-1 mt-1 text-muted-foreground">
                 <MapPin className="h-3 w-3" />
                 <span className="text-sm">{listing.location}</span>

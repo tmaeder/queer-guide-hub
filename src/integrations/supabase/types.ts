@@ -1019,6 +1019,7 @@ export type Database = {
           tags: string[] | null
           title: string
           updated_at: string
+          venue_id: string | null
           views_count: number | null
           website: string | null
         }
@@ -1046,6 +1047,7 @@ export type Database = {
           tags?: string[] | null
           title: string
           updated_at?: string
+          venue_id?: string | null
           views_count?: number | null
           website?: string | null
         }
@@ -1073,6 +1075,7 @@ export type Database = {
           tags?: string[] | null
           title?: string
           updated_at?: string
+          venue_id?: string | null
           views_count?: number | null
           website?: string | null
         }
@@ -1083,6 +1086,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
