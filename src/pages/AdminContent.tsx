@@ -662,35 +662,327 @@ export default function AdminContent() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="venues">
+        <TabsContent value="venues" className="space-y-6">
+          {/* Add New Venue */}
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Manage Venues</h3>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Venue
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Add New Venue</DialogTitle>
+                </DialogHeader>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="venue-name">Venue Name</Label>
+                      <Input id="venue-name" placeholder="Enter venue name..." />
+                    </div>
+                    <div>
+                      <Label htmlFor="venue-category">Category</Label>
+                      <Input id="venue-category" placeholder="e.g. Restaurant, Hotel..." />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="venue-description">Description</Label>
+                    <Textarea id="venue-description" placeholder="Enter venue description..." />
+                  </div>
+                  <div>
+                    <Label htmlFor="venue-address">Address</Label>
+                    <Input id="venue-address" placeholder="Enter full address..." />
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="venue-city">City</Label>
+                      <Input id="venue-city" placeholder="Enter city..." />
+                    </div>
+                    <div>
+                      <Label htmlFor="venue-state">State</Label>
+                      <Input id="venue-state" placeholder="Enter state..." />
+                    </div>
+                    <div>
+                      <Label htmlFor="venue-country">Country</Label>
+                      <Input id="venue-country" placeholder="Enter country..." />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="venue-phone">Phone</Label>
+                      <Input id="venue-phone" placeholder="Enter phone number..." />
+                    </div>
+                    <div>
+                      <Label htmlFor="venue-website">Website</Label>
+                      <Input id="venue-website" placeholder="Enter website URL..." />
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Add Venue
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>Venues Management</CardTitle>
+              <CardTitle>Venues ({venues.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Total Venues: {venues.length}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {venues.map((venue) => (
+                  <div key={venue.id} className="border rounded-lg p-4 hover:bg-muted/50">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold">{venue.name}</h3>
+                        <p className="text-sm text-muted-foreground">{venue.category}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <div>{venue.city}, {venue.country}</div>
+                      {venue.phone && <div>📞 {venue.phone}</div>}
+                      {venue.website && <div>🌐 {venue.website}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="events">
+        <TabsContent value="events" className="space-y-6">
+          {/* Add New Event */}
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Manage Events</h3>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Event
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Add New Event</DialogTitle>
+                </DialogHeader>
+                <form className="space-y-4">
+                  <div>
+                    <Label htmlFor="event-title">Event Title</Label>
+                    <Input id="event-title" placeholder="Enter event title..." />
+                  </div>
+                  <div>
+                    <Label htmlFor="event-description">Description</Label>
+                    <Textarea id="event-description" placeholder="Enter event description..." />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="event-type">Event Type</Label>
+                      <Input id="event-type" placeholder="e.g. Concert, Workshop..." />
+                    </div>
+                    <div>
+                      <Label htmlFor="event-venue">Venue</Label>
+                      <Input id="event-venue" placeholder="Enter venue name..." />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="event-start">Start Date & Time</Label>
+                      <Input id="event-start" type="datetime-local" />
+                    </div>
+                    <div>
+                      <Label htmlFor="event-end">End Date & Time</Label>
+                      <Input id="event-end" type="datetime-local" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="event-city">City</Label>
+                      <Input id="event-city" placeholder="Enter city..." />
+                    </div>
+                    <div>
+                      <Label htmlFor="event-state">State</Label>
+                      <Input id="event-state" placeholder="Enter state..." />
+                    </div>
+                    <div>
+                      <Label htmlFor="event-country">Country</Label>
+                      <Input id="event-country" placeholder="Enter country..." />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="event-price-min">Min Price</Label>
+                      <Input id="event-price-min" type="number" placeholder="0" />
+                    </div>
+                    <div>
+                      <Label htmlFor="event-price-max">Max Price</Label>
+                      <Input id="event-price-max" type="number" placeholder="100" />
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Add Event
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>Events Management</CardTitle>
+              <CardTitle>Events ({events.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Total Events: {events.length}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {events.map((event) => (
+                  <div key={event.id} className="border rounded-lg p-4 hover:bg-muted/50">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold">{event.title}</h3>
+                        <p className="text-sm text-muted-foreground">{event.event_type}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <div>📍 {event.city}, {event.country}</div>
+                      <div>📅 {format(new Date(event.start_date), "MMM d, yyyy")}</div>
+                      {event.venue_name && <div>🏢 {event.venue_name}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="marketplace">
+        <TabsContent value="marketplace" className="space-y-6">
+          {/* Add New Listing */}
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Manage Marketplace</h3>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Listing
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Add New Marketplace Listing</DialogTitle>
+                </DialogHeader>
+                <form className="space-y-4">
+                  <div>
+                    <Label htmlFor="listing-title">Listing Title</Label>
+                    <Input id="listing-title" placeholder="Enter listing title..." />
+                  </div>
+                  <div>
+                    <Label htmlFor="listing-business">Business Name</Label>
+                    <Input id="listing-business" placeholder="Enter business name..." />
+                  </div>
+                  <div>
+                    <Label htmlFor="listing-description">Description</Label>
+                    <Textarea id="listing-description" placeholder="Enter listing description..." />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="listing-category">Category</Label>
+                      <Input id="listing-category" placeholder="e.g. Food, Services..." />
+                    </div>
+                    <div>
+                      <Label htmlFor="listing-subcategory">Subcategory</Label>
+                      <Input id="listing-subcategory" placeholder="Enter subcategory..." />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="listing-price">Price</Label>
+                      <Input id="listing-price" type="number" placeholder="0.00" />
+                    </div>
+                    <div>
+                      <Label htmlFor="listing-currency">Currency</Label>
+                      <Input id="listing-currency" placeholder="USD" />
+                    </div>
+                    <div>
+                      <Label htmlFor="listing-price-type">Price Type</Label>
+                      <select className="w-full px-3 py-2 border rounded-md">
+                        <option value="fixed">Fixed</option>
+                        <option value="negotiable">Negotiable</option>
+                        <option value="hourly">Hourly</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="listing-email">Contact Email</Label>
+                      <Input id="listing-email" type="email" placeholder="contact@business.com" />
+                    </div>
+                    <div>
+                      <Label htmlFor="listing-phone">Contact Phone</Label>
+                      <Input id="listing-phone" placeholder="Enter phone number..." />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="listing-location">Location</Label>
+                    <Input id="listing-location" placeholder="Enter location..." />
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Add Listing
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>Marketplace Management</CardTitle>
+              <CardTitle>Marketplace Listings ({listings.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Total Listings: {listings.length}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {listings.map((listing) => (
+                  <div key={listing.id} className="border rounded-lg p-4 hover:bg-muted/50">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold">{listing.title}</h3>
+                        <p className="text-sm text-muted-foreground">{listing.business_name}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <div>📂 {listing.category}</div>
+                      {listing.price && (
+                        <div>💰 {listing.currency || 'USD'} {listing.price}</div>
+                      )}
+                      {listing.location && <div>📍 {listing.location}</div>}
+                      <div>👁️ {listing.views_count || 0} views</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
