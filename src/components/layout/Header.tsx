@@ -41,6 +41,9 @@ export function Header() {
                 <DropdownMenuItem onClick={() => navigate('/users')}>
                   User Directory
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/messages')}>
+                  Messages
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/admin/content')}>
                   Content Management
                 </DropdownMenuItem>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, MapPin, Calendar, Users } from "lucide-react";
+import { StartConversationButton } from "@/components/messaging/StartConversationButton";
 import { Tables } from "@/integrations/supabase/types";
 
 type Profile = Tables<"profiles">;
@@ -116,8 +117,9 @@ const UserDirectory = () => {
                   </div>
                 </div>
 
-                {profile.website && (
-                  <div className="mt-4">
+                
+                <div className="mt-4 flex items-center justify-between">
+                  {profile.website && (
                     <a
                       href={profile.website}
                       target="_blank"
@@ -126,8 +128,15 @@ const UserDirectory = () => {
                     >
                       Visit Website
                     </a>
-                  </div>
-                )}
+                  )}
+                  
+                  <StartConversationButton
+                    userId={profile.user_id}
+                    userName={profile.display_name || "Anonymous User"}
+                    variant="outline"
+                    size="sm"
+                  />
+                </div>
               </Card>
             ))}
           </div>

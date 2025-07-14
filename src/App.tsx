@@ -42,6 +42,7 @@ import Travel from "./pages/Travel";
 import MyBookings from "./pages/MyBookings";
 import ProfileSettings from "./pages/ProfileSettings";
 import UnifiedCMS from "./pages/UnifiedCMS";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -92,6 +93,7 @@ const App = () => (
                 <Route path="/admin/marketplace" element={<AdminMarketplace />} />
                 <Route path="/news" element={<News />} />
                 <Route path="/travel" element={<Travel />} />
+                <Route path="/messages" element={<Messages />} />
                 <Route path="/my-bookings" element={<MyBookings />} />
                 <Route path="/profile/settings" element={<ProfileSettings />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
