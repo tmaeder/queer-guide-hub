@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, Heart, MapPin, Globe, Phone, Mail, ExternalLink, Eye } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
+import { Link } from 'react-router-dom';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -78,8 +79,7 @@ export function MarketplaceCard({
   };
 
   return (
-    <Card className="group hover:shadow-elegant transition-all duration-300 cursor-pointer relative" 
-          onClick={() => onViewDetails?.(listing)}>
+    <Card className="group hover:shadow-elegant transition-all duration-300 relative">
       
       {/* Favorite Button */}
       {showFavoriteButton && onToggleFavorite && (
@@ -205,9 +205,11 @@ export function MarketplaceCard({
             )}
           </div>
           
-          <Button size="sm" variant="outline" className="text-xs">
-            View Details
-          </Button>
+          <Link to={`/marketplace/${listing.id}`}>
+            <Button size="sm" variant="outline" className="text-xs">
+              View Details
+            </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>
