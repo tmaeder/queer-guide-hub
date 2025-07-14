@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper } from 'lucide-react';
+import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -30,26 +30,33 @@ export function Header() {
                   <User className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => navigate('/my-bookings')}>
-                  My Bookings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/profile/settings')}>
-                  Profile Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/users')}>
-                  User Directory
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/messages')}>
-                  Messages
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/admin/content')}>
-                  Content Management
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-destructive">
-                  Sign Out
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-auto p-2">
+                <div className="flex space-x-1">
+                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/my-bookings')}>
+                    <CreditCard className="h-4 w-4 mb-1" />
+                    <span className="text-xs">Bookings</span>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/profile/settings')}>
+                    <Settings className="h-4 w-4 mb-1" />
+                    <span className="text-xs">Settings</span>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/users')}>
+                    <Users className="h-4 w-4 mb-1" />
+                    <span className="text-xs">Users</span>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/messages')}>
+                    <MessageSquare className="h-4 w-4 mb-1" />
+                    <span className="text-xs">Messages</span>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/admin/content')}>
+                    <FileText className="h-4 w-4 mb-1" />
+                    <span className="text-xs">Admin</span>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto text-destructive" onClick={signOut}>
+                    <LogOut className="h-4 w-4 mb-1" />
+                    <span className="text-xs">Logout</span>
+                  </Button>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} className="bg-gradient-primary hover:opacity-90 transition-opacity h-9 w-9 px-0">
               <User className="h-4 w-4" />
