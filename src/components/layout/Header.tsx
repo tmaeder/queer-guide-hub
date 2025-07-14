@@ -38,6 +38,9 @@ export function Header() {
                 <DropdownMenuItem onClick={() => navigate('/profile/settings')}>
                   Profile Settings
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/users')}>
+                  User Directory
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/admin/content')}>
                   Content Management
                 </DropdownMenuItem>

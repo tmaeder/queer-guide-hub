@@ -14,6 +14,7 @@ import Marketplace from "./pages/Marketplace";
 import Community from "./pages/Community";
 import Directory from "./pages/Directory";
 import TagsDirectory from "./pages/TagsDirectory";
+import UserDirectory from "./pages/UserDirectory";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import OurVision from "./pages/OurVision";
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/marketplace" element={<Marketplace />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/directory" element={<Directory />} />
+                <Route path="/users" element={<UserDirectory />} />
                 <Route path="/tags" element={<TagsDirectory />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
