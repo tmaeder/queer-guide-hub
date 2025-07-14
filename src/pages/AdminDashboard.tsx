@@ -137,7 +137,7 @@ export default function AdminDashboard() {
           <Card key={section.path} className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${section.color} text-white`}>
+                <div className={`p-2 rounded-lg ${section.color} text-primary-foreground`}>
                   <section.icon className="h-5 w-5" />
                 </div>
                 <CardTitle className="text-lg">{section.title}</CardTitle>
@@ -168,19 +168,19 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">-</div>
+                <div className="text-2xl font-bold text-primary">-</div>
                 <div className="text-sm text-muted-foreground">Total Content</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">-</div>
+                <div className="text-2xl font-bold text-accent">-</div>
                 <div className="text-sm text-muted-foreground">Active Venues</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">-</div>
+                <div className="text-2xl font-bold text-secondary">-</div>
                 <div className="text-sm text-muted-foreground">Upcoming Events</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">-</div>
+                <div className="text-2xl font-bold text-primary">-</div>
                 <div className="text-sm text-muted-foreground">Marketplace Items</div>
               </div>
             </div>

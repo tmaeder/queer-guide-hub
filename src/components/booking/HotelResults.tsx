@@ -86,10 +86,10 @@ export function HotelResults({ hotels, searchParams }: HotelResultsProps) {
                     {hotel.rating > 0 && (
                       <div className="flex items-center gap-1">
                         {[...Array(hotel.rating)].map((_, i) => (
-                          <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          <Star key={i} className="h-3 w-3 fill-current text-accent" />
                         ))}
                         {[...Array(5 - hotel.rating)].map((_, i) => (
-                          <Star key={i} className="h-3 w-3 text-gray-300" />
+                          <Star key={i} className="h-3 w-3 text-muted-foreground" />
                         ))}
                       </div>
                     )}

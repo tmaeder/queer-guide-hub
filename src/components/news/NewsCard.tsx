@@ -97,7 +97,7 @@ export const NewsCard = ({ article, onViewArticle, showFullContent = false }: Ne
         <div className="flex items-center gap-2">
           <Badge 
             style={{ backgroundColor: getCategoryColor(article.category) }}
-            className="text-white"
+            className="text-primary-foreground"
           >
             {article.category.replace('-', ' ')}
           </Badge>

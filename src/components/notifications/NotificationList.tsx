@@ -77,9 +77,9 @@ export const NotificationList = () => {
               <div className="flex items-start gap-3">
                 <div className={cn(
                   "p-1 rounded-full",
-                  notification.type === 'message' && "bg-blue-100 text-blue-600",
-                  notification.type === 'event' && "bg-green-100 text-green-600",
-                  notification.type === 'system' && "bg-yellow-100 text-yellow-600"
+                  notification.type === 'message' && "bg-primary/10 text-primary",
+                  notification.type === 'event' && "bg-accent/10 text-accent",
+                  notification.type === 'system' && "bg-secondary/10 text-secondary"
                 )}>
                   {getNotificationIcon(notification.type)}
                 </div>

@@ -49,7 +49,7 @@ export const ContentCard = ({
       case "page": return "bg-secondary/10 text-secondary border-secondary/20";
       case "legal_document": return "bg-destructive/10 text-destructive border-destructive/20";
       case "press_release": return "bg-accent/10 text-accent-foreground border-accent/20";
-      case "about_content": return "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-700";
+      case "about_content": return "bg-secondary/10 text-secondary border-secondary/20 dark:bg-secondary/20 dark:text-secondary dark:border-secondary/30";
       default: return "bg-muted text-muted-foreground border-muted-foreground/20";
     }
   };

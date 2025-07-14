@@ -97,7 +97,7 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
             <div className="flex items-center gap-2">
               <Badge variant="outline">{event.event_type}</Badge>
               {event.is_free ? (
-                <Badge variant="outline" className="text-green-600">Free</Badge>
+                <Badge variant="outline" className="text-accent">Free</Badge>
               ) : (
                 <span className="text-sm font-medium">
                   {event.price_min ? `$${event.price_min}` : 'Price TBA'}

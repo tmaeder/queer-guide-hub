@@ -175,7 +175,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-end p-3">
-                    <div className="text-white text-xs">
+                    <div className="text-primary-foreground text-xs">
                       <p className="font-medium">Photo by</p>
                       <a
                         href={image.photographer_url}

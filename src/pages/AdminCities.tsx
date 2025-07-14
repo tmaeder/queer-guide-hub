@@ -394,7 +394,7 @@ export default function AdminCities() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <Building className="h-5 w-5 text-green-600" />
+              <Building className="h-5 w-5 text-accent" />
               <div>
                 <p className="text-2xl font-bold">{cities.filter(c => c.is_capital).length}</p>
                 <p className="text-sm text-muted-foreground">Capital Cities</p>
@@ -405,7 +405,7 @@ export default function AdminCities() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <Building className="h-5 w-5 text-blue-600" />
+              <Building className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-2xl font-bold">{cities.filter(c => c.is_major_city).length}</p>
                 <p className="text-sm text-muted-foreground">Major Cities</p>
@@ -416,7 +416,7 @@ export default function AdminCities() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-orange-600" />
+              <MapPin className="h-5 w-5 text-secondary" />
               <div>
                 <p className="text-2xl font-bold">{countries.length}</p>
                 <p className="text-sm text-muted-foreground">Countries</p>
@@ -439,12 +439,12 @@ export default function AdminCities() {
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="font-semibold">{city.name}</h3>
                     {city.is_capital && (
-                      <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded">
+                      <span className="text-xs px-2 py-1 bg-secondary/10 text-secondary rounded">
                         Capital
                       </span>
                     )}
                     {city.is_major_city && (
-                      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                      <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
                         Major City
                       </span>
                     )}

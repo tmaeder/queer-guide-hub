@@ -440,7 +440,7 @@ export default function MarketplaceItemDetail() {
               </div>
 
               {listing.shipping_available && (
-                <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded">
+                <div className="flex items-center gap-2 text-sm text-accent bg-accent/10 p-2 rounded">
                   <Truck className="h-4 w-4" />
                   Shipping available
                 </div>

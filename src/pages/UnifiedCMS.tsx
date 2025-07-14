@@ -171,42 +171,42 @@ export default function UnifiedCMS() {
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
         <Card className="hover-scale">
           <CardContent className="p-4 text-center">
-            <FileText className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+            <FileText className="h-6 w-6 text-primary mx-auto mb-2" />
             <div className="text-2xl font-bold">{totalStats.content}</div>
             <div className="text-xs text-muted-foreground">Content</div>
           </CardContent>
         </Card>
         <Card className="hover-scale">
           <CardContent className="p-4 text-center">
-            <Building className="h-6 w-6 text-green-600 mx-auto mb-2" />
+            <Building className="h-6 w-6 text-accent mx-auto mb-2" />
             <div className="text-2xl font-bold">{totalStats.venues}</div>
             <div className="text-xs text-muted-foreground">Venues</div>
           </CardContent>
         </Card>
         <Card className="hover-scale">
           <CardContent className="p-4 text-center">
-            <Calendar className="h-6 w-6 text-orange-600 mx-auto mb-2" />
+            <Calendar className="h-6 w-6 text-secondary mx-auto mb-2" />
             <div className="text-2xl font-bold">{totalStats.events}</div>
             <div className="text-xs text-muted-foreground">Events</div>
           </CardContent>
         </Card>
         <Card className="hover-scale">
           <CardContent className="p-4 text-center">
-            <ShoppingBag className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+            <ShoppingBag className="h-6 w-6 text-primary mx-auto mb-2" />
             <div className="text-2xl font-bold">{totalStats.marketplace}</div>
             <div className="text-xs text-muted-foreground">Marketplace</div>
           </CardContent>
         </Card>
         <Card className="hover-scale">
           <CardContent className="p-4 text-center">
-            <Tags className="h-6 w-6 text-pink-600 mx-auto mb-2" />
+            <Tags className="h-6 w-6 text-accent mx-auto mb-2" />
             <div className="text-2xl font-bold">{totalStats.tags}</div>
             <div className="text-xs text-muted-foreground">Tags</div>
           </CardContent>
         </Card>
         <Card className="hover-scale">
           <CardContent className="p-4 text-center">
-            <Newspaper className="h-6 w-6 text-red-600 mx-auto mb-2" />
+            <Newspaper className="h-6 w-6 text-destructive mx-auto mb-2" />
             <div className="text-2xl font-bold">{totalStats.news}</div>
             <div className="text-xs text-muted-foreground">News</div>
           </CardContent>
@@ -302,15 +302,15 @@ export default function UnifiedCMS() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <FileText className="h-4 w-4 text-blue-600" />
+                    <FileText className="h-4 w-4 text-primary" />
                     <span className="text-sm">5 new content pieces this week</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-4 w-4 text-orange-600" />
+                    <Calendar className="h-4 w-4 text-secondary" />
                     <span className="text-sm">3 upcoming events</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <ShoppingBag className="h-4 w-4 text-purple-600" />
+                    <ShoppingBag className="h-4 w-4 text-primary" />
                     <span className="text-sm">2 new marketplace listings</span>
                   </div>
                 </div>

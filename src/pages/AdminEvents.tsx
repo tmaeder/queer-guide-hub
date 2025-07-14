@@ -670,7 +670,7 @@ export default function AdminEvents() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
+              <Clock className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-2xl font-bold">
                   {events.filter(e => new Date(e.start_date) > new Date()).length}
@@ -683,7 +683,7 @@ export default function AdminEvents() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-green-600" />
+              <Users className="h-5 w-5 text-accent" />
               <div>
                 <p className="text-2xl font-bold">{events.filter(e => e.featured).length}</p>
                 <p className="text-sm text-muted-foreground">Featured</p>
@@ -694,7 +694,7 @@ export default function AdminEvents() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-orange-600" />
+              <MapPin className="h-5 w-5 text-secondary" />
               <div>
                 <p className="text-2xl font-bold">{new Set(events.map(e => e.city)).size}</p>
                 <p className="text-sm text-muted-foreground">Cities</p>
@@ -718,10 +718,10 @@ export default function AdminEvents() {
                     <h3 className="font-semibold">{event.title}</h3>
                     <Badge variant="outline">{event.event_type}</Badge>
                     {event.featured && (
-                      <Badge className="bg-yellow-100 text-yellow-800">Featured</Badge>
+                      <Badge className="bg-secondary/10 text-secondary">Featured</Badge>
                     )}
                     {event.is_free && (
-                      <Badge className="bg-green-100 text-green-800">Free</Badge>
+                      <Badge className="bg-accent/10 text-accent">Free</Badge>
                     )}
                   </div>
                   

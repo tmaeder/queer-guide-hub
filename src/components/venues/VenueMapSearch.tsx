@@ -103,7 +103,7 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
             .setHTML(`
               <div class="p-2">
                 <h3 class="font-semibold">${venue.name}</h3>
-                <p class="text-sm text-gray-600">${venue.category}</p>
+                <p class="text-sm text-muted-foreground">${venue.category}</p>
                 <p class="text-xs">${venue.city}, ${venue.state}</p>
               </div>
             `);
@@ -130,7 +130,7 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
               .setHTML(`
                 <div class="p-2">
                   <h3 class="font-semibold">${restroom.name}</h3>
-                  <p class="text-sm text-gray-600">Restroom</p>
+                  <p class="text-sm text-muted-foreground">Restroom</p>
                   <p class="text-xs">${restroom.city}, ${restroom.state}</p>
                   <div class="flex gap-2 mt-1">
                     ${restroom.accessible ? '<span class="text-xs bg-blue-100 px-1 rounded">Accessible</span>' : ''}

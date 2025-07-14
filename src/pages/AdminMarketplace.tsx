@@ -463,7 +463,7 @@ export default function AdminMarketplace() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-yellow-600" />
+              <Star className="h-5 w-5 text-accent" />
               <div>
                 <p className="text-2xl font-bold">{listings.filter(l => l.featured).length}</p>
                 <p className="text-sm text-muted-foreground">Featured</p>
@@ -474,7 +474,7 @@ export default function AdminMarketplace() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <Eye className="h-5 w-5 text-blue-600" />
+              <Eye className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-2xl font-bold">
                   {listings.reduce((total, listing) => total + (listing.views_count || 0), 0)}
@@ -487,7 +487,7 @@ export default function AdminMarketplace() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-600" />
+              <DollarSign className="h-5 w-5 text-accent" />
               <div>
                 <p className="text-2xl font-bold">{new Set(categories).size}</p>
                 <p className="text-sm text-muted-foreground">Categories</p>
@@ -513,7 +513,7 @@ export default function AdminMarketplace() {
                       {listing.category.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())}
                     </Badge>
                     {listing.featured && (
-                      <Badge className="bg-yellow-100 text-yellow-800">Featured</Badge>
+                      <Badge className="bg-secondary/10 text-secondary">Featured</Badge>
                     )}
                   </div>
                   
