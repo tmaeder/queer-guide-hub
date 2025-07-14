@@ -26,9 +26,8 @@ export function Header() {
         <div className="flex items-center gap-4">
           {user ? <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
+                <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
                   <User className="h-4 w-4" />
-                  Profile
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
