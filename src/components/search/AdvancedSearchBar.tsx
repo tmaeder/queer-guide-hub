@@ -76,7 +76,7 @@ export const AdvancedSearchBar = () => {
                 className="h-10 px-3"
                 onClick={() => setIsOpen(true)}
               >
-                <CategoryIcon className="h-4 w-4" />
+                <Filter className="h-4 w-4" />
               </Button>
               <Input
                 placeholder="Search venues, events, news..."
