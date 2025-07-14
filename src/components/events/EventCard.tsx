@@ -190,7 +190,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
         </div>
 
         {onUpdateAttendance && (
-          <div className="flex gap-2 pt-2 border-t">
+          <div className="flex gap-2 pt-2">
             <Button 
               size="sm" 
               variant="outline" 

@@ -139,7 +139,7 @@ export const ContentFilters = ({
 
           {/* Advanced Filters */}
           {showAdvanced && (
-            <div className="space-y-4 pt-4 border-t">
+            <div className="space-y-4 pt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Category Filter */}
                 <div>

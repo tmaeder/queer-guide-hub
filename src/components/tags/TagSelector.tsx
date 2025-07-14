@@ -153,8 +153,8 @@ export const TagSelector = ({
                       key={tag.id}
                       className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-colors ${
                         selectedTags.includes(tag.name)
-                          ? 'bg-primary/10 border-primary'
-                          : 'hover:bg-muted border-transparent'
+                          ? 'bg-primary/10'
+                          : 'hover:bg-muted'
                       }`}
                       onClick={() => addTag(tag.name)}
                     >
@@ -189,7 +189,7 @@ export const TagSelector = ({
 
             {/* Custom Tag Input (if enabled) */}
             {allowCustomTags && (
-              <div className="border-t pt-4">
+              <div className="pt-4">
                 <Label className="text-sm">Create custom tag</Label>
                 <div className="flex gap-2 mt-2">
                   <Input

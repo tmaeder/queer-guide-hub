@@ -133,8 +133,8 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
                   <p class="text-sm text-muted-foreground">Restroom</p>
                   <p class="text-xs">${restroom.city}, ${restroom.state}</p>
                   <div class="flex gap-2 mt-1">
-                    ${restroom.accessible ? '<span class="text-xs bg-blue-100 px-1 rounded">Accessible</span>' : ''}
-                    ${restroom.unisex ? '<span class="text-xs bg-purple-100 px-1 rounded">Unisex</span>' : ''}
+                     ${restroom.accessible ? '<span class="text-xs bg-muted px-1 rounded">Accessible</span>' : ''}
+                     ${restroom.unisex ? '<span class="text-xs bg-muted px-1 rounded">Unisex</span>' : ''}
                   </div>
                 </div>
               `);
@@ -220,7 +220,7 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
                 <span className="text-sm">Venues</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <div className="w-3 h-3 rounded-full bg-muted-foreground"></div>
                 <span className="text-sm">Restrooms</span>
               </div>
               <Button
@@ -260,14 +260,14 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
                         </p>
                         <div className="flex gap-2 mt-2">
                           {selectedItem.accessible && (
-                            <span className="text-xs bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">
-                              Accessible
-                            </span>
-                          )}
-                          {selectedItem.unisex && (
-                            <span className="text-xs bg-purple-100 dark:bg-purple-900 px-2 py-1 rounded">
-                              Unisex
-                            </span>
+                             <span className="text-xs bg-muted px-2 py-1 rounded">
+                               Accessible
+                             </span>
+                           )}
+                           {selectedItem.unisex && (
+                             <span className="text-xs bg-muted px-2 py-1 rounded">
+                               Unisex
+                             </span>
                           )}
                         </div>
                       </CardContent>

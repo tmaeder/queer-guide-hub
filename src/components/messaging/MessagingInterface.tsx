@@ -205,7 +205,7 @@ const MessageInput = ({ onSend, disabled }: MessageInputProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t">
+    <form onSubmit={handleSubmit} className="flex gap-2 p-4">
       <Input
         value={message}
         onChange={(e) => setMessage(e.target.value)}
@@ -277,7 +277,7 @@ export const MessagingInterface = () => {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 bg-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading messages...</p>
         </div>
       </div>
@@ -287,8 +287,8 @@ export const MessagingInterface = () => {
   return (
     <div className="flex h-[600px] border rounded-lg overflow-hidden">
       {/* Conversation List */}
-      <div className="w-1/3 border-r bg-background">
-        <div className="p-4 border-b">
+      <div className="w-1/3 bg-background">
+        <div className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold">Messages</h2>
             <Button size="sm" variant="outline">
@@ -332,7 +332,7 @@ export const MessagingInterface = () => {
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b">
+            <div className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar>

@@ -58,49 +58,49 @@ export default function AdminDashboard() {
       description: "All-in-one content management for everything",
       icon: Settings,
       path: "/admin/cms",
-      color: "bg-gradient-to-r from-purple-500 to-pink-500"
+      color: "bg-primary"
     },
     {
       title: "Content Management",
       description: "Manage website content, pages, and blog posts",
       icon: FileText,
       path: "/admin/content",
-      color: "bg-blue-500"
+      color: "bg-muted"
     },
     {
       title: "Tags Management",
       description: "Create and manage tags for content organization",
       icon: Tags,
       path: "/admin/tags",
-      color: "bg-purple-500"
+      color: "bg-muted"
     },
     {
       title: "Cities Management",
       description: "Add and manage cities in the directory",
       icon: MapPin,
       path: "/admin/cities",
-      color: "bg-green-500"
+      color: "bg-muted"
     },
     {
       title: "Venues Management",
       description: "Manage venues and locations",
       icon: Building,
       path: "/admin/venues",
-      color: "bg-orange-500"
+      color: "bg-muted"
     },
     {
       title: "Events Management",
       description: "Create and manage events",
       icon: Calendar,
       path: "/admin/events",
-      color: "bg-red-500"
+      color: "bg-muted"
     },
     {
       title: "Marketplace Management",
       description: "Manage marketplace listings and products",
       icon: ShoppingBag,
       path: "/admin/marketplace",
-      color: "bg-pink-500"
+      color: "bg-muted"
     }
   ];
 
@@ -111,14 +111,14 @@ export default function AdminDashboard() {
         description: "Manage user roles and permissions",
         icon: Users,
         path: "/admin/users",
-        color: "bg-gray-500"
+        color: "bg-muted"
       },
       {
         title: "Analytics",
         description: "View site analytics and reports",
         icon: BarChart3,
         path: "/admin/analytics",
-        color: "bg-indigo-500"
+        color: "bg-muted"
       }
     );
   }

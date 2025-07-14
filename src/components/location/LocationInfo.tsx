@@ -134,7 +134,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
               <p>{wikipediaInfo.content}</p>
             </div>
             
-            <div className="flex items-center justify-between pt-4 border-t">
+            <div className="flex items-center justify-between pt-4">
               <a
                 href={wikipediaInfo.pageUrl}
                 target="_blank"
@@ -191,7 +191,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
               ))}
             </div>
             
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4">
               <p className="text-xs text-muted-foreground text-center">
                 Photos provided by{' '}
                 <a

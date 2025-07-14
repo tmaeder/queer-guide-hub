@@ -47,7 +47,7 @@ export const NewsCard = ({ article, onViewArticle, showFullContent = false }: Ne
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 border border-border/50 hover:border-border">
+    <Card className="group hover:shadow-lg transition-all duration-300">
       <CardHeader className="space-y-3">
         {article.image_url && (
           <div className="relative overflow-hidden rounded-md">

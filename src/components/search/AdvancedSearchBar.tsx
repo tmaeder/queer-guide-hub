@@ -73,7 +73,7 @@ export const AdvancedSearchBar = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-10 px-3 border-r rounded-r-none"
+                className="h-10 px-3 rounded-r-none"
                 onClick={() => setIsOpen(true)}
               >
                 <CategoryIcon className="h-4 w-4" />

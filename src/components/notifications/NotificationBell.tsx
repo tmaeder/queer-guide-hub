@@ -32,7 +32,7 @@ export const NotificationBell = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <div className="p-3 border-b">
+        <div className="p-3">
           <div className="flex items-center justify-between">
             <h4 className="font-semibold">Notifications</h4>
             {unreadCount > 0 && (

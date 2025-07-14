@@ -50,7 +50,7 @@ export const NotificationList = () => {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between p-2 border-b">
+      <div className="flex items-center justify-between p-2">
         <span className="text-sm font-medium">Recent</span>
         <Button
           variant="ghost"

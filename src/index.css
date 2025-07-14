@@ -4,108 +4,108 @@
 
 @layer base {
   :root {
-    /* Modern Pride-inspired Color Palette */
-    --background: 340 5% 98%;
-    --foreground: 340 8% 8%;
-    --card: 340 4% 96%;
-    --card-foreground: 340 8% 12%;
-    --popover: 340 4% 98%;
-    --popover-foreground: 340 8% 8%;
+    /* Black and White Only Color Palette */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 95%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
     
-    /* Primary: Deep Purple */
-    --primary: 280 85% 65%;
-    --primary-foreground: 340 5% 98%;
-    --primary-glow: 280 75% 75%;
+    /* Primary: Black */
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 0 0% 20%;
     
-    /* Secondary: Warm Pink */
-    --secondary: 340 65% 75%;
-    --secondary-foreground: 340 8% 8%;
+    /* Secondary: Gray */
+    --secondary: 0 0% 80%;
+    --secondary-foreground: 0 0% 0%;
     
-    /* Muted: Soft Neutral */
-    --muted: 340 4% 94%;
-    --muted-foreground: 340 6% 45%;
+    /* Muted: Light Gray */
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 40%;
     
-    /* Accent: Vibrant Orange */
-    --accent: 25 95% 65%;
-    --accent-foreground: 340 8% 8%;
+    /* Accent: Dark Gray */
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 100%;
     
-    /* Destructive: Bold Red */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 340 5% 98%;
+    /* Destructive: Black */
+    --destructive: 0 0% 0%;
+    --destructive-foreground: 0 0% 100%;
     
-    /* UI Elements */
-    --border: 340 8% 88%;
-    --input: 340 8% 88%;
-    --ring: 280 85% 65%;
-    --radius: 0.75rem;
+    /* UI Elements - No borders */
+    --border: transparent;
+    --input: 0 0% 90%;
+    --ring: transparent;
+    --radius: 0rem;
     
     /* Sidebar */
-    --sidebar-background: 340 4% 96%;
-    --sidebar-foreground: 340 8% 12%;
-    --sidebar-primary: 280 85% 65%;
-    --sidebar-primary-foreground: 340 5% 98%;
-    --sidebar-accent: 340 4% 94%;
-    --sidebar-accent-foreground: 340 8% 12%;
-    --sidebar-border: 340 8% 88%;
-    --sidebar-ring: 280 85% 65%;
+    --sidebar-background: 0 0% 95%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 0 0% 0%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 90%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: transparent;
+    --sidebar-ring: transparent;
     
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--secondary)) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+    /* Gradients - Black to White */
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 20%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0%) 0%, hsl(0 0% 50%) 50%, hsl(0 0% 100%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 90%));
     
-    /* Shadows */
-    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.15);
-    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.2);
+    /* Shadows - Removed */
+    --shadow-elegant: none;
+    --shadow-glow: none;
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 340 8% 8%;
-    --foreground: 340 5% 92%;
-    --card: 340 8% 10%;
-    --card-foreground: 340 5% 92%;
-    --popover: 340 8% 8%;
-    --popover-foreground: 340 5% 92%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
     
-    --primary: 280 85% 70%;
-    --primary-foreground: 340 8% 8%;
-    --primary-glow: 280 75% 80%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --primary-glow: 0 0% 80%;
     
-    --secondary: 340 65% 30%;
-    --secondary-foreground: 340 5% 92%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 100%;
     
-    --muted: 340 8% 12%;
-    --muted-foreground: 340 6% 55%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
     
-    --accent: 25 95% 70%;
-    --accent-foreground: 340 8% 8%;
+    --accent: 0 0% 80%;
+    --accent-foreground: 0 0% 0%;
     
-    --destructive: 0 84% 65%;
-    --destructive-foreground: 340 5% 92%;
+    --destructive: 0 0% 100%;
+    --destructive-foreground: 0 0% 0%;
     
-    --border: 340 8% 18%;
-    --input: 340 8% 18%;
-    --ring: 280 85% 70%;
+    --border: transparent;
+    --input: 0 0% 10%;
+    --ring: transparent;
     
-    --sidebar-background: 340 8% 10%;
-    --sidebar-foreground: 340 5% 92%;
-    --sidebar-primary: 280 85% 70%;
-    --sidebar-primary-foreground: 340 8% 8%;
-    --sidebar-accent: 340 8% 12%;
-    --sidebar-accent-foreground: 340 5% 92%;
-    --sidebar-border: 340 8% 18%;
-    --sidebar-ring: 280 85% 70%;
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: transparent;
+    --sidebar-ring: transparent;
     
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--secondary)) 100%);
-    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
-    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 50%) 50%, hsl(0 0% 0%) 100%);
+    --shadow-elegant: none;
+    --shadow-glow: none;
   }
 
   * {
-    @apply border-border;
+    border: none !important;
   }
   
   body {
@@ -119,27 +119,24 @@
   }
   
   .gradient-text {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: hsl(var(--foreground));
   }
   
-  /* Remove colored fonts - use semantic tokens only */
+  /* All text uses only black/white/gray semantic tokens */
   .text-success {
-    @apply text-accent;
+    @apply text-foreground;
   }
   
   .text-warning {
-    @apply text-secondary;
+    @apply text-muted-foreground;
   }
   
   .text-error {
-    @apply text-destructive;
+    @apply text-foreground;
   }
   
   .text-info {
-    @apply text-primary;
+    @apply text-foreground;
   }
 }
 
