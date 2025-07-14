@@ -6,7 +6,20 @@ import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, FileText, Tag, Search, Filter } from "lucide-react";
+import { 
+  Plus, 
+  FileText, 
+  Tag, 
+  Search, 
+  Filter,
+  Info,
+  Mail,
+  HelpCircle,
+  Heart,
+  BookOpen,
+  Newspaper,
+  Globe
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ContentCard } from "@/components/content/ContentCard";
 import { ContentFilters } from "@/components/content/ContentFilters";
@@ -71,6 +84,11 @@ export default function AdminContent() {
     };
   });
 
+  const getFilteredContentByType = (type: string) => {
+    if (type === 'all') return filteredContent;
+    return filteredContent.filter(item => item.content_type === type);
+  };
+
   const filteredContent = content.filter(item => {
     const matchesSearch = searchQuery === "" || 
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -87,6 +105,40 @@ export default function AdminContent() {
 
     return matchesSearch && matchesType && matchesStatus && matchesCategory && matchesTags && matchesAuthor;
   });
+
+  const renderContentList = (contentList: any[]) => (
+    contentList.length === 0 ? (
+      <Card>
+        <CardContent className="p-12 text-center">
+          <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No content found</h3>
+          <p className="text-muted-foreground mb-4">
+            Get started by creating your first piece of content
+          </p>
+          <Button onClick={() => navigate("/admin/content/new")} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create Content
+          </Button>
+        </CardContent>
+      </Card>
+    ) : (
+      <div className={
+        viewMode === "grid" 
+          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+          : "space-y-4"
+      }>
+        {contentList.map((item) => (
+          <ContentCard
+            key={item.id}
+            content={item}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+            compact={viewMode === "list"}
+          />
+        ))}
+      </div>
+    )
+  );
 
   const handleDelete = async (id: string) => {
     try {
@@ -159,12 +211,56 @@ export default function AdminContent() {
         </Button>
       </div>
 
+      {/* Quick Create Buttons */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+        <Button variant="outline" onClick={() => navigate("/admin/content/new?type=page&template=about")} className="flex flex-col h-20 gap-2">
+          <Info className="h-5 w-5" />
+          <span className="text-xs">About Page</span>
+        </Button>
+        <Button variant="outline" onClick={() => navigate("/admin/content/new?type=page&template=contact")} className="flex flex-col h-20 gap-2">
+          <Mail className="h-5 w-5" />
+          <span className="text-xs">Contact Page</span>
+        </Button>
+        <Button variant="outline" onClick={() => navigate("/admin/content/new?type=page&template=help")} className="flex flex-col h-20 gap-2">
+          <HelpCircle className="h-5 w-5" />
+          <span className="text-xs">Help & Support</span>
+        </Button>
+        <Button variant="outline" onClick={() => navigate("/admin/content/new?type=page&template=vision")} className="flex flex-col h-20 gap-2">
+          <Heart className="h-5 w-5" />
+          <span className="text-xs">Our Vision</span>
+        </Button>
+        <Button variant="outline" onClick={() => navigate("/admin/content/new?type=blog_post")} className="flex flex-col h-20 gap-2">
+          <BookOpen className="h-5 w-5" />
+          <span className="text-xs">Blog Article</span>
+        </Button>
+        <Button variant="outline" onClick={() => navigate("/admin/content/new?type=press_release")} className="flex flex-col h-20 gap-2">
+          <Newspaper className="h-5 w-5" />
+          <span className="text-xs">Press Release</span>
+        </Button>
+      </div>
+
       {/* Tabs for different management sections */}
       <Tabs defaultValue="content" className="space-y-6">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="content" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Content
+            All Content
+          </TabsTrigger>
+          <TabsTrigger value="pages" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Pages
+          </TabsTrigger>
+          <TabsTrigger value="blog" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            Blog
+          </TabsTrigger>
+          <TabsTrigger value="press" className="flex items-center gap-2">
+            <Newspaper className="h-4 w-4" />
+            Press
+          </TabsTrigger>
+          <TabsTrigger value="legal" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Legal
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <Search className="h-4 w-4" />
@@ -256,6 +352,62 @@ export default function AdminContent() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        {/* Pages Tab */}
+        <TabsContent value="pages" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">
+              Pages ({getFilteredContentByType('page').length})
+            </h2>
+            <Button onClick={() => navigate("/admin/content/new?type=page")} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Create Page
+            </Button>
+          </div>
+          {renderContentList(getFilteredContentByType('page'))}
+        </TabsContent>
+
+        {/* Blog Tab */}
+        <TabsContent value="blog" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">
+              Blog Articles ({getFilteredContentByType('blog_post').length})
+            </h2>
+            <Button onClick={() => navigate("/admin/content/new?type=blog_post")} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Create Article
+            </Button>
+          </div>
+          {renderContentList(getFilteredContentByType('blog_post'))}
+        </TabsContent>
+
+        {/* Press Tab */}
+        <TabsContent value="press" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">
+              Press Releases ({getFilteredContentByType('press_release').length})
+            </h2>
+            <Button onClick={() => navigate("/admin/content/new?type=press_release")} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Create Press Release
+            </Button>
+          </div>
+          {renderContentList(getFilteredContentByType('press_release'))}
+        </TabsContent>
+
+        {/* Legal Tab */}
+        <TabsContent value="legal" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">
+              Legal Documents ({getFilteredContentByType('legal_document').length})
+            </h2>
+            <Button onClick={() => navigate("/admin/content/new?type=legal_document")} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Create Legal Document
+            </Button>
+          </div>
+          {renderContentList(getFilteredContentByType('legal_document'))}
         </TabsContent>
 
         {/* Analytics Tab */}
