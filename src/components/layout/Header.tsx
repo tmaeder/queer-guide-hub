@@ -6,8 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AdvancedSearchBar } from '@/components/search/AdvancedSearchBar';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,7 +24,6 @@ export function Header() {
         <AdvancedSearchBar />
 
         <div className="flex items-center gap-4">
-          {user && <NotificationBell />}
           {user ? <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
@@ -58,13 +55,10 @@ export function Header() {
             </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} className="bg-gradient-primary hover:opacity-90 transition-opacity h-9 w-9 px-0">
               <User className="h-4 w-4" />
             </Button>}
-          
-          <ThemeToggle />
-          
+           
           <Button 
             variant="ghost" 
-            size="sm" 
-            className="md:hidden"
+            size="sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}

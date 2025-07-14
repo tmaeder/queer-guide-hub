@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Heart, Mail, Github, Twitter, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const legalLinks = [{
@@ -142,9 +143,7 @@ export function Footer() {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              
-            </Button>
+            <ThemeToggle />
           </div>
         </div>
       </div>
