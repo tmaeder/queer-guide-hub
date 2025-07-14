@@ -83,6 +83,11 @@ export default function AdminContent() {
   const [tagFormData, setTagFormData] = useState({
     name: "", category: "", description: "", color: "#6366f1"
   });
+  const [editingTag, setEditingTag] = useState<any>(null);
+  const [editingCity, setEditingCity] = useState<any>(null);
+  const [editingVenue, setEditingVenue] = useState<any>(null);
+  const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [editingListing, setEditingListing] = useState<any>(null);
 
   useEffect(() => {
     if (!user) {
@@ -462,10 +467,34 @@ export default function AdminContent() {
                         <h3 className="font-semibold">{tag.name}</h3>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            setEditingTag(tag);
+                            setTagFormData({
+                              name: tag.name,
+                              category: tag.category,
+                              description: tag.description || "",
+                              color: tag.color || "#6366f1"
+                            });
+                          }}
+                        >
                           <Edit className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            if (confirm(`Delete tag "${tag.name}"?`)) {
+                              deleteTag(tag.id);
+                              toast({
+                                title: "Tag deleted",
+                                description: `"${tag.name}" has been deleted.`,
+                              });
+                            }
+                          }}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -631,10 +660,31 @@ export default function AdminContent() {
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            setEditingCity(city);
+                            toast({
+                              title: "Edit functionality",
+                              description: "City editing will be implemented soon.",
+                            });
+                          }}
+                        >
                           <Edit className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            if (confirm(`Delete city "${city.name}"?`)) {
+                              toast({
+                                title: "Delete functionality",
+                                description: "City deletion will be implemented soon.",
+                              });
+                            }
+                          }}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -744,10 +794,31 @@ export default function AdminContent() {
                         <p className="text-sm text-muted-foreground">{venue.category}</p>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            setEditingVenue(venue);
+                            toast({
+                              title: "Edit functionality",
+                              description: "Venue editing will be implemented soon.",
+                            });
+                          }}
+                        >
                           <Edit className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            if (confirm(`Delete venue "${venue.name}"?`)) {
+                              toast({
+                                title: "Delete functionality",
+                                description: "Venue deletion will be implemented soon.",
+                              });
+                            }
+                          }}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -854,10 +925,31 @@ export default function AdminContent() {
                         <p className="text-sm text-muted-foreground">{event.event_type}</p>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            setEditingEvent(event);
+                            toast({
+                              title: "Edit functionality",
+                              description: "Event editing will be implemented soon.",
+                            });
+                          }}
+                        >
                           <Edit className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            if (confirm(`Delete event "${event.title}"?`)) {
+                              toast({
+                                title: "Delete functionality",
+                                description: "Event deletion will be implemented soon.",
+                              });
+                            }
+                          }}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -966,10 +1058,31 @@ export default function AdminContent() {
                         <p className="text-sm text-muted-foreground">{listing.business_name}</p>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            setEditingListing(listing);
+                            toast({
+                              title: "Edit functionality",
+                              description: "Marketplace listing editing will be implemented soon.",
+                            });
+                          }}
+                        >
                           <Edit className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            if (confirm(`Delete listing "${listing.title}"?`)) {
+                              toast({
+                                title: "Delete functionality",
+                                description: "Marketplace listing deletion will be implemented soon.",
+                              });
+                            }
+                          }}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
