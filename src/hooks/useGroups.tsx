@@ -178,6 +178,14 @@ export function useGroups() {
     }
   };
 
+  const refetch = async () => {
+    setError(null);
+    await fetchGroups();
+    if (user) {
+      await fetchMyGroups();
+    }
+  };
+
   useEffect(() => {
     fetchGroups();
     if (user) {
@@ -194,6 +202,6 @@ export function useGroups() {
     joinGroup,
     leaveGroup,
     checkMembership,
-    refetch: fetchGroups,
+    refetch,
   };
 }
