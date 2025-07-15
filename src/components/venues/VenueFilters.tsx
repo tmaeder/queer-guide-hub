@@ -9,8 +9,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, Check, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface VenueFiltersProps {
   onFiltersChange: (filters: {
@@ -92,6 +106,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [servicesOpen, setServicesOpen] = useState(false);
   const [showAllFilters, setShowAllFilters] = useState(false);
 
   const handleSearch = () => {
@@ -233,18 +248,59 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           {/* Services */}
           <div className="space-y-2">
             <Label>Services</Label>
-            <div className="flex flex-wrap gap-2">
-              {commonServices.map((service) => (
-                <Badge
-                  key={service}
-                  variant={selectedServices.includes(service) ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary/10 transition-colors"
-                  onClick={() => handleServiceToggle(service)}
+            <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={servicesOpen}
+                  className="w-full justify-between"
                 >
-                  {service}
-                </Badge>
-              ))}
-            </div>
+                  {selectedServices.length > 0
+                    ? `${selectedServices.length} service${selectedServices.length !== 1 ? 's' : ''} selected`
+                    : "Select services..."}
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search services..." />
+                  <CommandList>
+                    <CommandEmpty>No services found.</CommandEmpty>
+                    <CommandGroup>
+                      {commonServices.map((service) => (
+                        <CommandItem
+                          key={service}
+                          value={service}
+                          onSelect={() => handleServiceToggle(service)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedServices.includes(service) ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {service}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {selectedServices.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {selectedServices.map((service) => (
+                  <Badge key={service} variant="secondary" className="gap-1">
+                    {service}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => handleServiceToggle(service)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
