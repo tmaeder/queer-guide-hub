@@ -15,9 +15,10 @@ interface VenueCardProps {
   };
   events?: Event[];
   onViewDetails?: (venue: Venue) => void;
+  onAmenityClick?: (amenity: string) => void;
 }
 
-export function VenueCard({ venue, events = [], onViewDetails }: VenueCardProps) {
+export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick }: VenueCardProps) {
   const averageRating = venue.venue_reviews?.length 
     ? venue.venue_reviews.reduce((sum, review) => sum + review.rating, 0) / venue.venue_reviews.length
     : 0;
@@ -94,6 +95,29 @@ export function VenueCard({ venue, events = [], onViewDetails }: VenueCardProps)
                 +{venue.tags.length - 3} more
               </Badge>
             )}
+          </div>
+        )}
+
+        {venue.amenities && venue.amenities.length > 0 && (
+          <div className="space-y-1">
+            <span className="text-xs font-medium text-muted-foreground">Amenities:</span>
+            <div className="flex flex-wrap gap-1">
+              {venue.amenities.slice(0, 4).map((amenity, index) => (
+                <Badge 
+                  key={index} 
+                  variant="secondary" 
+                  className="text-xs cursor-pointer hover:bg-accent/20 transition-colors"
+                  onClick={() => onAmenityClick?.(amenity)}
+                >
+                  {amenity}
+                </Badge>
+              ))}
+              {venue.amenities.length > 4 && (
+                <Badge variant="secondary" className="text-xs">
+                  +{venue.amenities.length - 4} more
+                </Badge>
+              )}
+            </div>
           </div>
         )}
 

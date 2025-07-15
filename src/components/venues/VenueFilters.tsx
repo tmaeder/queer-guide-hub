@@ -18,6 +18,7 @@ interface VenueFiltersProps {
     city?: string;
     category?: string;
     tags?: string[];
+    amenities?: string[];
   }) => void;
 }
 
@@ -47,11 +48,30 @@ const commonTags = [
   'bear-friendly'
 ];
 
+const commonAmenities = [
+  'wifi',
+  'parking',
+  'wheelchair-accessible',
+  'outdoor-seating',
+  'pet-friendly',
+  'live-music',
+  'happy-hour',
+  'food-service',
+  'full-bar',
+  'cocktails',
+  'beer-garden',
+  'private-rooms',
+  'dance-floor',
+  'pool-table',
+  'trivia-nights'
+];
+
 export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
   const [category, setCategory] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
 
   const handleSearch = () => {
@@ -60,6 +80,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
       city: city || undefined,
       category: category === 'all' ? undefined : category || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
+      amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
     });
   };
 
@@ -70,15 +91,23 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
     setSelectedTags(newTags);
   };
 
+  const handleAmenityToggle = (amenity: string) => {
+    const newAmenities = selectedAmenities.includes(amenity)
+      ? selectedAmenities.filter(a => a !== amenity)
+      : [...selectedAmenities, amenity];
+    setSelectedAmenities(newAmenities);
+  };
+
   const clearFilters = () => {
     setSearch('');
     setCity('');
     setCategory('');
     setSelectedTags([]);
+    setSelectedAmenities([]);
     onFiltersChange({});
   };
 
-  const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0;
+  const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0 || selectedAmenities.length > 0;
 
   return (
     <div className="space-y-4 p-4 bg-card rounded-lg border">
@@ -155,6 +184,23 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             </div>
           </div>
 
+          {/* Amenities */}
+          <div className="space-y-2">
+            <Label>Amenities</Label>
+            <div className="flex flex-wrap gap-2">
+              {commonAmenities.map((amenity) => (
+                <Badge
+                  key={amenity}
+                  variant={selectedAmenities.includes(amenity) ? "default" : "outline"}
+                  className="cursor-pointer hover:bg-accent/10 transition-colors"
+                  onClick={() => handleAmenityToggle(amenity)}
+                >
+                  {amenity}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
             <Button onClick={handleSearch} className="bg-gradient-primary">
@@ -198,6 +244,15 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               <X
                 className="h-3 w-3 cursor-pointer"
                 onClick={() => handleTagToggle(tag)}
+              />
+            </Badge>
+          ))}
+          {selectedAmenities.map((amenity) => (
+            <Badge key={amenity} variant="secondary" className="gap-1">
+              {amenity}
+              <X
+                className="h-3 w-3 cursor-pointer"
+                onClick={() => handleAmenityToggle(amenity)}
               />
             </Badge>
           ))}
