@@ -9,12 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Plus, Loader, Search, Filter, X, CalendarIcon } from 'lucide-react';
+import { Calendar, Plus, Loader, Search, Filter, X, CalendarIcon, Check, ChevronDown } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -60,6 +61,7 @@ const Events = () => {
   const [city, setCity] = useState('');
   const [eventType, setEventType] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tagsOpen, setTagsOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
 
@@ -280,18 +282,59 @@ const Events = () => {
               {/* Tags */}
               <div className="space-y-2">
                 <Label>Tags</Label>
-                <div className="flex flex-wrap gap-2">
-                  {commonTags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant={selectedTags.includes(tag) ? "default" : "outline"}
-                      className="cursor-pointer hover:bg-primary/10 transition-colors"
-                      onClick={() => handleTagToggle(tag)}
+                <Popover open={tagsOpen} onOpenChange={setTagsOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={tagsOpen}
+                      className="w-full justify-between"
                     >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+                      {selectedTags.length > 0
+                        ? `${selectedTags.length} tag${selectedTags.length !== 1 ? 's' : ''} selected`
+                        : "Select tags..."}
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Search tags..." />
+                      <CommandList>
+                        <CommandEmpty>No tags found.</CommandEmpty>
+                        <CommandGroup>
+                          {commonTags.map((tag) => (
+                            <CommandItem
+                              key={tag}
+                              value={tag}
+                              onSelect={() => handleTagToggle(tag)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedTags.includes(tag) ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {tag}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {selectedTags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedTags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="gap-1">
+                        {tag}
+                        <X
+                          className="h-3 w-3 cursor-pointer"
+                          onClick={() => handleTagToggle(tag)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
