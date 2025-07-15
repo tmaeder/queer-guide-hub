@@ -126,8 +126,47 @@ export default function EventDetail() {
         description: `You're now marked as ${status.replace('_', ' ')} for this event`,
       });
 
-      // Refresh event data to update attendee counts
-      window.location.reload();
+      // Refresh event data by re-fetching
+      if (id) {
+        const fetchEvent = async () => {
+          try {
+            const { data: eventData, error: eventError } = await supabase
+              .from('events')
+              .select(`
+                *,
+                venues (
+                  id,
+                  name,
+                  address,
+                  city,
+                  state,
+                  country,
+                  phone,
+                  website,
+                  email
+                ),
+                event_attendees (
+                  id,
+                  status,
+                  user_id,
+                  profiles:user_id (
+                    display_name,
+                    avatar_url
+                  )
+                )
+              `)
+              .eq('id', id)
+              .single();
+
+            if (eventError) throw eventError;
+            setEvent(eventData);
+          } catch (error) {
+            console.error('Error refreshing event:', error);
+          }
+        };
+        
+        fetchEvent();
+      }
     } catch (error) {
       console.error('Error updating attendance:', error);
       toast({

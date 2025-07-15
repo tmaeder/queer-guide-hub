@@ -129,8 +129,8 @@ export default function AdminCities() {
       resetForm();
       setIsCreateDialogOpen(false);
       setEditingCity(null);
-      // Refresh cities list
-      window.location.reload();
+      // Refresh cities list by re-mounting the component via navigation
+      navigate("/admin/cities", { replace: true });
     } catch (error) {
       toast({
         title: "Error",
@@ -171,8 +171,8 @@ export default function AdminCities() {
           description: "City deleted successfully"
         });
         
-        // Refresh cities list
-        window.location.reload();
+        // Refresh cities list by re-mounting the component via navigation
+        navigate("/admin/cities", { replace: true });
       } catch (error) {
         toast({
           title: "Error",

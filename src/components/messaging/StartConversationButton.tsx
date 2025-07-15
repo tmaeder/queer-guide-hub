@@ -4,6 +4,7 @@ import { MessageCircle } from "lucide-react";
 import { useMessaging } from "@/hooks/useMessaging";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface StartConversationButtonProps {
   userId: string;
@@ -23,6 +24,7 @@ export const StartConversationButton = ({
   const { user } = useAuth();
   const { startConversation } = useMessaging();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handleStartConversation = async () => {
@@ -39,8 +41,7 @@ export const StartConversationButton = ({
         });
         
         // Navigate to messages page with the conversation selected
-        // You can implement navigation logic here
-        window.location.href = `/messages?conversation=${conversationId}`;
+        navigate(`/messages?conversation=${conversationId}`);
       }
     } catch (error) {
       console.error('Error starting conversation:', error);

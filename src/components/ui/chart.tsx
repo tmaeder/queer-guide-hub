@@ -104,13 +104,16 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 
   const safeCSS = createSafeCSS(id, colorConfig);
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: safeCSS,
-      }}
-    />
-  )
+  // Use ref to safely inject CSS instead of dangerouslySetInnerHTML
+  const styleRef = React.useRef<HTMLStyleElement>(null);
+  
+  React.useEffect(() => {
+    if (styleRef.current) {
+      styleRef.current.textContent = safeCSS;
+    }
+  }, [safeCSS]);
+
+  return <style ref={styleRef} />
 }
 
 const ChartTooltip = RechartsPrimitive.Tooltip
