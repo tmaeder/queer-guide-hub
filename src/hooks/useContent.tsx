@@ -31,13 +31,10 @@ export const useContent = () => {
       setLoading(true);
       setError(null);
       
-      // Optimize query with proper indexing and fewer joins
+      // Fetch content without author join to avoid foreign key issues
       let query = supabase
         .from("content")
-        .select(`
-          *,
-          profiles:author_id (display_name, avatar_url)
-        `);
+        .select("*");
 
       if (filters?.type) {
         query = query.eq("content_type", filters.type);
@@ -57,15 +54,34 @@ export const useContent = () => {
 
       if (contentError) throw contentError;
 
-      // Fetch categories and tags separately to avoid complex joins
+      // Fetch author information separately if needed
+      let enhancedContent = contentData || [];
+      if (contentData && contentData.length > 0) {
+        const authorIds = contentData
+          .map(item => item.author_id)
+          .filter(Boolean);
+        
+        if (authorIds.length > 0) {
+          const { data: authors } = await supabase
+            .from("profiles")
+            .select("user_id, display_name, avatar_url")
+            .in("user_id", authorIds);
+
+          enhancedContent = contentData.map(item => ({
+            ...item,
+            author: authors?.find(author => author.user_id === item.author_id)
+          }));
+        }
+      }
+
       const contentIds = contentData?.map(item => item.id) || [];
       
-      let categoriesData: any[] = [];
-      let tagsData: any[] = [];
+      let categoryAssignments: any[] = [];
+      let tagAssignments: any[] = [];
 
       if (contentIds.length > 0) {
         // Fetch categories for these content items
-        const { data: categoryAssignments } = await supabase
+        const { data: categoryData } = await supabase
           .from("content_category_assignments")
           .select(`
             content_id,
@@ -74,7 +90,7 @@ export const useContent = () => {
           .in("content_id", contentIds);
 
         // Fetch tags for these content items  
-        const { data: tagAssignments } = await supabase
+        const { data: tagData } = await supabase
           .from("content_tag_assignments")
           .select(`
             content_id,
@@ -82,30 +98,23 @@ export const useContent = () => {
           `)
           .in("content_id", contentIds);
 
-        categoriesData = categoryAssignments || [];
-        tagsData = tagAssignments || [];
+        categoryAssignments = categoryData || [];
+        tagAssignments = tagData || [];
       }
 
-      // Transform the data to flatten relationships efficiently
-      const transformedData = contentData?.map((item: any) => {
-        const itemCategories = categoriesData
-          .filter(ca => ca.content_id === item.id)
-          .map(ca => ca.content_categories);
-        
-        const itemTags = tagsData
-          .filter(ta => ta.content_id === item.id)
-          .map(ta => ta.tags);
+      // Process content with separated data fetching
+      const processedContent = enhancedContent.map(item => ({
+        ...item,
+        categories: categoryAssignments
+          .filter(assignment => assignment.content_id === item.id)
+          .map(assignment => assignment.content_categories),
+        tags: tagAssignments
+          .filter(assignment => assignment.content_id === item.id)
+          .map(assignment => assignment.tags)
+      }));
 
-        return {
-          ...item,
-          categories: itemCategories,
-          tags: itemTags,
-          author: item.profiles
-        };
-      }) || [];
-
-      setContent(transformedData);
-      return transformedData;
+      setContent(processedContent);
+      return processedContent;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch content";
       setError(errorMessage);
@@ -118,34 +127,46 @@ export const useContent = () => {
 
   const fetchContentBySlug = async (slug: string) => {
     try {
-      const { data, error } = await supabase
+      // Fetch content without problematic joins
+      const { data: contentData, error: contentError } = await supabase
         .from("content")
-        .select(`
-          *,
-          profiles:author_id (display_name, avatar_url),
-          content_category_assignments (
-            content_categories (*)
-          ),
-          content_tag_assignments (
-            tags (*)
-          )
-        `)
+        .select("*")
         .eq("slug", slug)
         .eq("status", "published")
         .single();
 
-      if (error) throw error;
+      if (contentError) throw contentError;
+      if (!contentData) return null;
 
-      if (data) {
-        return {
-          ...data,
-          categories: data.content_category_assignments?.map((ca: any) => ca.content_categories) || [],
-          tags: data.content_tag_assignments?.map((ta: any) => ta.tags) || [],
-          author: data.profiles
-        };
+      // Fetch author separately
+      let author = null;
+      if (contentData.author_id) {
+        const { data: authorData } = await supabase
+          .from("profiles")
+          .select("user_id, display_name, avatar_url")
+          .eq("user_id", contentData.author_id)
+          .single();
+        author = authorData;
       }
 
-      return null;
+      // Fetch categories and tags separately  
+      const [categoriesResponse, tagsResponse] = await Promise.all([
+        supabase
+          .from("content_category_assignments")
+          .select("content_categories (*)")
+          .eq("content_id", contentData.id),
+        supabase
+          .from("content_tag_assignments") 
+          .select("tags (*)")
+          .eq("content_id", contentData.id)
+      ]);
+
+      return {
+        ...contentData,
+        author,
+        categories: categoriesResponse.data?.map(item => item.content_categories) || [],
+        tags: tagsResponse.data?.map(item => item.tags) || []
+      };
     } catch (err) {
       setError(err instanceof Error ? err.message : "Content not found");
       return null;
@@ -296,32 +317,52 @@ export const useContent = () => {
 
   const searchContent = async (query: string) => {
     try {
-      const { data, error } = await supabase
+      // Search without problematic joins
+      const { data: searchData, error } = await supabase
         .from("content")
-        .select(`
-          *,
-          profiles:author_id (display_name, avatar_url),
-          content_category_assignments (
-            content_categories (*)
-          ),
-          content_tag_assignments (
-            tags (*)
-          )
-        `)
+        .select("*")
         .eq("status", "published")
         .or(`title.ilike.%${query}%, content.ilike.%${query}%, excerpt.ilike.%${query}%`)
-        .order("published_at", { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      const transformedData = data?.map((item: any) => ({
-        ...item,
-        categories: item.content_category_assignments?.map((ca: any) => ca.content_categories) || [],
-        tags: item.content_tag_assignments?.map((ta: any) => ta.tags) || [],
-        author: item.profiles
-      })) || [];
+      // Enhance with author data
+      const authorIds = searchData
+        .map(item => item.author_id)
+        .filter(Boolean);
+      
+      let authors = [];
+      if (authorIds.length > 0) {
+        const { data: authorData } = await supabase
+          .from("profiles") 
+          .select("user_id, display_name, avatar_url")
+          .in("user_id", authorIds);
+        authors = authorData || [];
+      }
 
-      return transformedData;
+      // Fetch categories and tags for search results
+      const [categoriesResponse, tagsResponse] = await Promise.all([
+        supabase
+          .from("content_category_assignments")
+          .select("content_id, content_categories (*)")
+          .in("content_id", searchData.map(item => item.id)),
+        supabase
+          .from("content_tag_assignments")
+          .select("content_id, tags (*)")
+          .in("content_id", searchData.map(item => item.id))
+      ]);
+
+      return searchData.map(item => ({
+        ...item,
+        author: authors.find(author => author.user_id === item.author_id),
+        categories: categoriesResponse.data
+          ?.filter(assignment => assignment.content_id === item.id)
+          .map(assignment => assignment.content_categories) || [],
+        tags: tagsResponse.data
+          ?.filter(assignment => assignment.content_id === item.id)
+          .map(assignment => assignment.tags) || []
+      }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       return [];
