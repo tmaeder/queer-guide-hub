@@ -49,7 +49,7 @@ export default function About() {
   ];
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="w-full p-6">
       <div className="text-center mb-12">
         <div className="flex items-center justify-center gap-3 mb-4">
           <Heart className="h-12 w-12 text-primary fill-current" />

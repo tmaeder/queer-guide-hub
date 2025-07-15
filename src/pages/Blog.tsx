@@ -70,7 +70,7 @@ export default function Blog() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className="w-full p-6">
       {/* Hero Section */}
       <div className="text-center mb-12">
         <div className="flex items-center justify-center gap-3 mb-4">

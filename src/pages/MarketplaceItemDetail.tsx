@@ -214,7 +214,7 @@ export default function MarketplaceItemDetail() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="w-full px-4 py-8">
       {/* Header */}
       <div className="mb-6">
         <Link to="/marketplace" className="inline-flex items-center text-muted-foreground hover:text-primary mb-4">

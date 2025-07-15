@@ -100,7 +100,7 @@ export default function Contact() {
   ];
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="w-full p-6">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

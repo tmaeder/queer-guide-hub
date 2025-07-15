@@ -6,7 +6,7 @@ import { Accessibility, Heart, Shield, Users } from 'lucide-react';
 
 export default function AccessibilityHub() {
   return (
-    <div className="container mx-auto p-6 max-w-4xl space-y-8">
+    <div className="w-full p-6 space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="flex justify-center">

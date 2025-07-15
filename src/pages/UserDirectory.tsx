@@ -33,8 +33,8 @@ const UserDirectory = () => {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="w-full px-4 py-8">
+      <div className="w-full">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">User Directory</h1>
           <p className="text-lg text-muted-foreground mb-6">

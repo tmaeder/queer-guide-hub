@@ -49,7 +49,7 @@ export default function OurVision() {
   ];
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="w-full p-6">
       {/* Hero Section */}
       <div className="text-center mb-16">
         <div className="flex items-center justify-center gap-3 mb-6">

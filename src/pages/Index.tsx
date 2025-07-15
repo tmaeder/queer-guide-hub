@@ -45,7 +45,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-subtle">
       {/* Hero Section */}
       <section className="py-20 px-4">
-        <div className="container mx-auto text-center">
+        <div className="w-full text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
             <Heart className="h-12 w-12 text-primary fill-current" />
             <h1 className="text-5xl md:text-6xl font-bold gradient-text">
@@ -71,14 +71,14 @@ const Index = () => {
 
       {/* Venue Map Search */}
       <section className="py-16 px-4">
-        <div className="container mx-auto">
+        <div className="w-full">
           <VenueMapSearch />
         </div>
       </section>
 
       {/* Features Grid */}
       <section className="py-16 px-4">
-        <div className="container mx-auto">
+        <div className="w-full">
           <h2 className="text-3xl font-bold text-center mb-12">
             Everything You Need in One Place
           </h2>
@@ -98,7 +98,7 @@ const Index = () => {
 
       {/* CTA Section */}
       <section className="py-16 px-4 bg-card/30">
-        <div className="container mx-auto text-center">
+        <div className="w-full text-center">
           <h2 className="text-3xl font-bold mb-4">
             Ready to Connect with Your Community?
           </h2>

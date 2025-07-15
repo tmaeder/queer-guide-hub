@@ -104,7 +104,7 @@ export default function News() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+     <div className="w-full px-4 py-8">
       {/* Header */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-3 mb-4">
