@@ -17,9 +17,17 @@ interface VenueMapSearchProps {
   className?: string;
   externalSearchTerm?: string;
   onSearchChange?: (term: string) => void;
+  filters?: {
+    city?: string;
+    category?: string;
+    tags?: string[];
+    amenities?: string[];
+    services?: string[];
+    search?: string;
+  };
 }
 
-export function VenueMapSearch({ className, externalSearchTerm = '', onSearchChange }: VenueMapSearchProps) {
+export function VenueMapSearch({ className, externalSearchTerm = '', onSearchChange, filters }: VenueMapSearchProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
@@ -49,7 +57,11 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
   };
 
   const handleSearch = () => {
-    fetchVenues({ search: searchTerm });
+    const searchFilters = {
+      ...filters,
+      search: searchTerm
+    };
+    fetchVenues(searchFilters);
     onSearchChange?.(searchTerm);
     
     // Also fetch restrooms for the current map bounds
@@ -83,6 +95,13 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
       map.current?.remove();
     };
   }, []);
+
+  // Apply filters when they change
+  useEffect(() => {
+    if (filters) {
+      fetchVenues(filters);
+    }
+  }, [filters]);
 
   useEffect(() => {
     if (map.current && (venues.length > 0 || restrooms.length > 0)) {
@@ -179,10 +198,14 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
     if (externalSearchTerm !== searchTerm) {
       setSearchTerm(externalSearchTerm);
       if (externalSearchTerm) {
-        fetchVenues({ search: externalSearchTerm });
+        const searchFilters = {
+          ...filters,
+          search: externalSearchTerm
+        };
+        fetchVenues(searchFilters);
       }
     }
-  }, [externalSearchTerm]);
+  }, [externalSearchTerm, filters]);
 
   return (
     <div className={className}>

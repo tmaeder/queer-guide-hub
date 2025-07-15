@@ -18,8 +18,10 @@ const Venues = () => {
   const { venues, loading, error, fetchVenues } = useVenues();
   const { events } = useEvents();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [currentFilters, setCurrentFilters] = useState<any>({});
 
   const handleFiltersChange = (filters: any) => {
+    setCurrentFilters(filters);
     fetchVenues(filters);
   };
 
@@ -157,7 +159,7 @@ const Venues = () => {
 
           <TabsContent value="map" className="space-y-4">
             <div className="h-[600px] w-full">
-              <VenueMapSearch />
+              <VenueMapSearch filters={currentFilters} />
             </div>
           </TabsContent>
         </Tabs>
