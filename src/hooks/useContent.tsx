@@ -4,12 +4,12 @@ import { Tables } from "@/integrations/supabase/types";
 
 export type Content = Tables<"content"> & {
   categories?: Tables<"content_categories">[];
-  tags?: Tables<"tags">[]; // Use centralized tags
+  tags?: Tables<"content_tags">[]; // Use content_tags table
   author?: Tables<"profiles">;
 };
 
 export type ContentCategory = Tables<"content_categories">;
-export type ContentTag = Tables<"tags">; // Use centralized tags
+export type ContentTag = Tables<"content_tags">; // Use content_tags table
 export type ContentType = "blog_post" | "page" | "legal_document" | "press_release" | "about_content";
 export type ContentStatus = "draft" | "published" | "archived";
 
@@ -58,6 +58,16 @@ export const useContent = () => {
     try {
       return await operation();
     } catch (err) {
+      // Don't retry on schema errors or auth errors
+      if (err instanceof Error) {
+        if (err.message.includes("Could not find a relationship") || 
+            err.message.includes("PGRST200") ||
+            err.message.includes("Authentication") ||
+            err.message.includes("permission")) {
+          throw err; // Don't retry these errors
+        }
+      }
+      
       if (attempt < MAX_RETRY_ATTEMPTS) {
         const delay = RETRY_DELAY * Math.pow(2, attempt);
         console.log(`Retrying operation in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRY_ATTEMPTS})`);
@@ -94,8 +104,8 @@ export const useContent = () => {
         return [];
       }
 
-      // Cancel previous request if still pending
-      if (abortControllerRef.current) {
+      // Only cancel if there's a new request and the old one is still pending
+      if (abortControllerRef.current && !abortControllerRef.current.signal.aborted) {
         abortControllerRef.current.abort();
       }
       
@@ -200,7 +210,7 @@ export const useContent = () => {
             .from("content_tag_assignments")
             .select(`
               content_id,
-              tags (*)
+              content_tags (*)
             `)
             .in("content_id", contentIds)
             .abortSignal(signal);
@@ -226,7 +236,7 @@ export const useContent = () => {
           .map(assignment => assignment.content_categories),
         tags: tagAssignments
           .filter(assignment => assignment.content_id === item.id)
-          .map(assignment => assignment.tags)
+          .map(assignment => assignment.content_tags)
       }));
 
       setContent(processedContent);
@@ -281,7 +291,7 @@ export const useContent = () => {
           .eq("content_id", contentData.id),
         supabase
           .from("content_tag_assignments") 
-          .select("tags (*)")
+          .select("content_tags (*)")
           .eq("content_id", contentData.id)
       ]);
 
@@ -289,7 +299,7 @@ export const useContent = () => {
         ...contentData,
         author,
         categories: categoriesResponse.data?.map(item => item.content_categories) || [],
-        tags: tagsResponse.data?.map(item => item.tags) || []
+        tags: tagsResponse.data?.map(item => item.content_tags) || []
       };
     } catch (err) {
       setError(err instanceof Error ? err.message : "Content not found");
@@ -316,9 +326,8 @@ export const useContent = () => {
   const fetchTags = async () => {
     try {
       const { data, error } = await supabase
-        .from("tags")
+        .from("content_tags")
         .select("*")
-        .eq("is_active", true)
         .order("name");
 
       if (error) throw error;
@@ -443,7 +452,7 @@ export const useContent = () => {
       if (sanitizedData.tagIds && sanitizedData.tagIds.length > 0) {
         // Validate tag IDs exist
         const { data: validTags } = await supabase
-          .from("tags")
+          .from("content_tags")
           .select("id")
           .in("id", sanitizedData.tagIds);
         
@@ -535,27 +544,27 @@ export const useContent = () => {
       }
 
       // Fetch categories and tags for search results
-      const [categoriesResponse, tagsResponse] = await Promise.all([
-        supabase
-          .from("content_category_assignments")
-          .select("content_id, content_categories (*)")
-          .in("content_id", searchData.map(item => item.id)),
-        supabase
-          .from("content_tag_assignments")
-          .select("content_id, tags (*)")
-          .in("content_id", searchData.map(item => item.id))
-      ]);
+        const [categoriesResponse, tagsResponse] = await Promise.all([
+          supabase
+            .from("content_category_assignments")
+            .select("content_id, content_categories (*)")
+            .in("content_id", searchData.map(item => item.id)),
+          supabase
+            .from("content_tag_assignments")
+            .select("content_id, content_tags (*)")
+            .in("content_id", searchData.map(item => item.id))
+        ]);
 
-      return searchData.map(item => ({
-        ...item,
-        author: authors.find(author => author.user_id === item.author_id),
-        categories: categoriesResponse.data
-          ?.filter(assignment => assignment.content_id === item.id)
-          .map(assignment => assignment.content_categories) || [],
-        tags: tagsResponse.data
-          ?.filter(assignment => assignment.content_id === item.id)
-          .map(assignment => assignment.tags) || []
-      }));
+        return searchData.map(item => ({
+          ...item,
+          author: authors.find(author => author.user_id === item.author_id),
+          categories: categoriesResponse.data
+            ?.filter(assignment => assignment.content_id === item.id)
+            .map(assignment => assignment.content_categories) || [],
+          tags: tagsResponse.data
+            ?.filter(assignment => assignment.content_id === item.id)
+            .map(assignment => assignment.content_tags) || []
+        }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       return [];
@@ -565,7 +574,7 @@ export const useContent = () => {
   // Cleanup effect
   useEffect(() => {
     return () => {
-      if (abortControllerRef.current) {
+      if (abortControllerRef.current && !abortControllerRef.current.signal.aborted) {
         abortControllerRef.current.abort();
       }
       if (retryTimeoutRef.current) {
