@@ -15,6 +15,7 @@ export function useVenues() {
     category?: string;
     tags?: string[];
     amenities?: string[];
+    services?: string[];
     search?: string;
   }) => {
     try {
@@ -42,6 +43,10 @@ export function useVenues() {
 
       if (filters?.amenities && filters.amenities.length > 0) {
         query = query.overlaps('amenities', filters.amenities);
+      }
+
+      if (filters?.services && filters.services.length > 0) {
+        query = query.overlaps('services', filters.services);
       }
 
       if (filters?.search) {

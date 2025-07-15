@@ -25,6 +25,10 @@ const Venues = () => {
     fetchVenues({ amenities: [amenity] });
   };
 
+  const handleServiceClick = (service: string) => {
+    fetchVenues({ services: [service] });
+  };
+
   const handleViewDetails = (venue: Venue) => {
     setSelectedVenue(venue);
     // In a real app, this would navigate to a detailed venue page
@@ -117,6 +121,7 @@ const Venues = () => {
                   events={events}
                   onViewDetails={handleViewDetails}
                   onAmenityClick={handleAmenityClick}
+                  onServiceClick={handleServiceClick}
                 />
               ))}
             </div>

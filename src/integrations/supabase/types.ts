@@ -1961,6 +1961,7 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           price_range: number | null
+          services: string[] | null
           state: string | null
           tags: string[] | null
           updated_at: string
@@ -1988,6 +1989,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           price_range?: number | null
+          services?: string[] | null
           state?: string | null
           tags?: string[] | null
           updated_at?: string
@@ -2015,6 +2017,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           price_range?: number | null
+          services?: string[] | null
           state?: string | null
           tags?: string[] | null
           updated_at?: string

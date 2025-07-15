@@ -19,6 +19,7 @@ interface VenueFiltersProps {
     category?: string;
     tags?: string[];
     amenities?: string[];
+    services?: string[];
   }) => void;
 }
 
@@ -66,12 +67,31 @@ const commonAmenities = [
   'trivia-nights'
 ];
 
+const commonServices = [
+  'event-hosting',
+  'private-parties',
+  'catering',
+  'drag-shows',
+  'karaoke-nights',
+  'live-entertainment',
+  'dj-services',
+  'theme-nights',
+  'workshops',
+  'community-events',
+  'support-groups',
+  'dating-events',
+  'trivia-hosting',
+  'comedy-shows',
+  'art-exhibitions'
+];
+
 export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
   const [category, setCategory] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
 
   const handleSearch = () => {
@@ -81,6 +101,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
       category: category === 'all' ? undefined : category || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
+      services: selectedServices.length > 0 ? selectedServices : undefined,
     });
   };
 
@@ -98,16 +119,24 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
     setSelectedAmenities(newAmenities);
   };
 
+  const handleServiceToggle = (service: string) => {
+    const newServices = selectedServices.includes(service)
+      ? selectedServices.filter(s => s !== service)
+      : [...selectedServices, service];
+    setSelectedServices(newServices);
+  };
+
   const clearFilters = () => {
     setSearch('');
     setCity('');
     setCategory('');
     setSelectedTags([]);
     setSelectedAmenities([]);
+    setSelectedServices([]);
     onFiltersChange({});
   };
 
-  const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0 || selectedAmenities.length > 0;
+  const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0 || selectedAmenities.length > 0 || selectedServices.length > 0;
 
   return (
     <div className="space-y-4 p-4 bg-card rounded-lg border">
@@ -201,6 +230,23 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             </div>
           </div>
 
+          {/* Services */}
+          <div className="space-y-2">
+            <Label>Services</Label>
+            <div className="flex flex-wrap gap-2">
+              {commonServices.map((service) => (
+                <Badge
+                  key={service}
+                  variant={selectedServices.includes(service) ? "default" : "outline"}
+                  className="cursor-pointer hover:bg-primary/10 transition-colors"
+                  onClick={() => handleServiceToggle(service)}
+                >
+                  {service}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
             <Button onClick={handleSearch} className="bg-gradient-primary">
@@ -253,6 +299,15 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               <X
                 className="h-3 w-3 cursor-pointer"
                 onClick={() => handleAmenityToggle(amenity)}
+              />
+            </Badge>
+          ))}
+          {selectedServices.map((service) => (
+            <Badge key={service} variant="secondary" className="gap-1">
+              {service}
+              <X
+                className="h-3 w-3 cursor-pointer"
+                onClick={() => handleServiceToggle(service)}
               />
             </Badge>
           ))}

@@ -16,9 +16,10 @@ interface VenueCardProps {
   events?: Event[];
   onViewDetails?: (venue: Venue) => void;
   onAmenityClick?: (amenity: string) => void;
+  onServiceClick?: (service: string) => void;
 }
 
-export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick }: VenueCardProps) {
+export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick, onServiceClick }: VenueCardProps) {
   const averageRating = venue.venue_reviews?.length 
     ? venue.venue_reviews.reduce((sum, review) => sum + review.rating, 0) / venue.venue_reviews.length
     : 0;
@@ -115,6 +116,29 @@ export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick }:
               {venue.amenities.length > 4 && (
                 <Badge variant="secondary" className="text-xs">
                   +{venue.amenities.length - 4} more
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
+        {venue.services && venue.services.length > 0 && (
+          <div className="space-y-1">
+            <span className="text-xs font-medium text-muted-foreground">Services:</span>
+            <div className="flex flex-wrap gap-1">
+              {venue.services.slice(0, 4).map((service, index) => (
+                <Badge 
+                  key={index} 
+                  variant="outline" 
+                  className="text-xs cursor-pointer hover:bg-primary/10 transition-colors"
+                  onClick={() => onServiceClick?.(service)}
+                >
+                  {service}
+                </Badge>
+              ))}
+              {venue.services.length > 4 && (
+                <Badge variant="outline" className="text-xs">
+                  +{venue.services.length - 4} more
                 </Badge>
               )}
             </div>
