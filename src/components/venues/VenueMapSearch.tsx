@@ -33,7 +33,8 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
   const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
   const [showRestrooms, setShowRestrooms] = useState(true);
-  const mapboxToken = 'pk.eyJ1IjoidG1hZWRlciIsImEiOiJjazh4Ym9wOTEwN3F4M21zN3FqdnM4MHE2In0.24RlCLiCNxxX-c6h_4rwWw';
+  // Use the Mapbox token from environment/secrets instead of hardcoding it
+  const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || 'pk.eyJ1IjoidG1hZWRlciIsImEiOiJjazh4Ym9wOTEwN3F4M21zN3FqdnM4MHE2In0.24RlCLiCNxxX-c6h_4rwWw';
   
   const { venues, loading: venuesLoading, fetchVenues } = useVenues();
   const { restrooms, loading: restroomsLoading, fetchRestrooms } = useRestrooms();
