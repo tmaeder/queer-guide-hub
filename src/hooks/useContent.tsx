@@ -29,17 +29,14 @@ export const useContent = () => {
   }) => {
     try {
       setLoading(true);
+      setError(null);
+      
+      // Optimize query with proper indexing and fewer joins
       let query = supabase
         .from("content")
         .select(`
           *,
-          profiles:author_id (display_name, avatar_url),
-          content_category_assignments (
-            content_categories (*)
-          ),
-          content_tag_assignments (
-            tags (*)
-          )
+          profiles:author_id (display_name, avatar_url)
         `);
 
       if (filters?.type) {
@@ -50,32 +47,69 @@ export const useContent = () => {
         query = query.eq("status", filters.status);
       }
 
-      if (filters?.category) {
-        query = query.eq("content_category_assignments.category_id", filters.category);
-      }
-
       if (filters?.limit) {
         query = query.limit(filters.limit);
       }
 
       query = query.order("created_at", { ascending: false });
 
-      const { data, error } = await query;
+      const { data: contentData, error: contentError } = await query;
 
-      if (error) throw error;
+      if (contentError) throw contentError;
 
-      // Transform the data to flatten relationships
-      const transformedData = data?.map((item: any) => ({
-        ...item,
-        categories: item.content_category_assignments?.map((ca: any) => ca.content_categories) || [],
-        tags: item.content_tag_assignments?.map((ta: any) => ta.tags) || [],
-        author: item.profiles
-      })) || [];
+      // Fetch categories and tags separately to avoid complex joins
+      const contentIds = contentData?.map(item => item.id) || [];
+      
+      let categoriesData: any[] = [];
+      let tagsData: any[] = [];
+
+      if (contentIds.length > 0) {
+        // Fetch categories for these content items
+        const { data: categoryAssignments } = await supabase
+          .from("content_category_assignments")
+          .select(`
+            content_id,
+            content_categories (*)
+          `)
+          .in("content_id", contentIds);
+
+        // Fetch tags for these content items  
+        const { data: tagAssignments } = await supabase
+          .from("content_tag_assignments")
+          .select(`
+            content_id,
+            tags (*)
+          `)
+          .in("content_id", contentIds);
+
+        categoriesData = categoryAssignments || [];
+        tagsData = tagAssignments || [];
+      }
+
+      // Transform the data to flatten relationships efficiently
+      const transformedData = contentData?.map((item: any) => {
+        const itemCategories = categoriesData
+          .filter(ca => ca.content_id === item.id)
+          .map(ca => ca.content_categories);
+        
+        const itemTags = tagsData
+          .filter(ta => ta.content_id === item.id)
+          .map(ta => ta.tags);
+
+        return {
+          ...item,
+          categories: itemCategories,
+          tags: itemTags,
+          author: item.profiles
+        };
+      }) || [];
 
       setContent(transformedData);
       return transformedData;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch content";
+      setError(errorMessage);
+      console.error("Content fetch error:", err);
       return [];
     } finally {
       setLoading(false);
@@ -295,9 +329,20 @@ export const useContent = () => {
   };
 
   useEffect(() => {
-    fetchContent();
-    fetchCategories();
-    fetchTags();
+    // Use Promise.all to fetch data in parallel for better performance
+    const fetchInitialData = async () => {
+      try {
+        await Promise.all([
+          fetchContent(),
+          fetchCategories(),
+          fetchTags()
+        ]);
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
+      }
+    };
+
+    fetchInitialData();
   }, []);
 
   return {
