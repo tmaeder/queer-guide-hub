@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ContentCard } from "@/components/content/ContentCard";
 import { ContentFilters } from "@/components/content/ContentFilters";
 import { ContentStats } from "@/components/content/ContentStats";
+import { ContentErrorBoundary } from "@/components/content/ContentErrorBoundary";
 
 export default function AdminContent() {
   const navigate = useNavigate();
@@ -34,8 +35,12 @@ export default function AdminContent() {
     categories, 
     tags, 
     loading, 
+    error,
+    retryCount,
+    authValidated,
     fetchContent, 
-    deleteContent 
+    deleteContent,
+    validateAuth
   } = useContent();
   const { toast } = useToast();
 
@@ -173,20 +178,65 @@ export default function AdminContent() {
 
   if (loading || rolesLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full p-6">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading content management system...</p>
+            <p className="text-muted-foreground">
+              Loading content management system...
+              {retryCount > 0 && (
+                <span className="block text-sm mt-2">
+                  Retry attempt: {retryCount}/3
+                </span>
+              )}
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
+  // Enhanced error handling
+  if (error && !authValidated) {
+    return (
+      <div className="w-full p-6">
+        <Card className="border-destructive">
+          <CardContent className="p-6 text-center">
+            <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={() => navigate("/auth")}>
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full p-6">
+        <Card className="border-destructive">
+          <CardContent className="p-6 text-center">
+            <h2 className="text-xl font-semibold mb-2">Error Loading Content</h2>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={() => fetchContent()} variant="outline">
+                Retry
+              </Button>
+              <Button onClick={() => window.location.reload()}>
+                Reload Page
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!canManageContent()) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full p-6">
         <Card>
           <CardContent className="p-6 text-center">
             <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
@@ -198,7 +248,8 @@ export default function AdminContent() {
   }
 
   return (
-    <div className="w-full p-6">
+    <ContentErrorBoundary>
+      <div className="w-full p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -424,6 +475,7 @@ export default function AdminContent() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </ContentErrorBoundary>
   );
 }
