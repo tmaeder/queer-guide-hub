@@ -62,8 +62,12 @@ const Events = () => {
   const [eventType, setEventType] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagsOpen, setTagsOpen] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+
+  // Get unique cities from events for auto-suggest
+  const availableCities = Array.from(new Set(events.map(event => event.city).filter(Boolean))).sort();
 
   const handleFiltersChange = () => {
     const dateRange = startDate && endDate ? {
@@ -201,12 +205,53 @@ const Events = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    placeholder="Enter city..."
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                  />
+                  <Popover open={cityOpen} onOpenChange={setCityOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={cityOpen}
+                        className="w-full justify-between"
+                      >
+                        {city || "Select city..."}
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput 
+                          placeholder="Search cities..." 
+                          value={city}
+                          onValueChange={setCity}
+                        />
+                        <CommandList>
+                          <CommandEmpty>No cities found.</CommandEmpty>
+                          <CommandGroup>
+                            {availableCities
+                              .filter(c => c.toLowerCase().includes(city.toLowerCase()))
+                              .map((cityName) => (
+                              <CommandItem
+                                key={cityName}
+                                value={cityName}
+                                onSelect={(value) => {
+                                  setCity(value === city ? "" : value);
+                                  setCityOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    city === cityName ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {cityName}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="eventType">Event Type</Label>
