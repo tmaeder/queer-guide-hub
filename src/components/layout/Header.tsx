@@ -50,6 +50,10 @@ export function Header() {
                     <MessageSquare className="h-4 w-4 mb-1" />
                     <span className="text-xs">Messages</span>
                   </Button>
+                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/accessibility')}>
+                    <Accessibility className="h-4 w-4 mb-1" />
+                    <span className="text-xs">Access</span>
+                  </Button>
                   <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/admin/content')}>
                     <FileText className="h-4 w-4 mb-1" />
                     <span className="text-xs">Admin</span>
@@ -126,14 +130,6 @@ export function Header() {
               >
                 <Newspaper className="h-6 w-6 mb-1" />
                 <span className="text-xs">News</span>
-              </Link>
-              <Link 
-                to="/accessibility" 
-                className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Accessibility className="h-6 w-6 mb-1" />
-                <span className="text-xs">Access</span>
               </Link>
             </div>
           </nav>
