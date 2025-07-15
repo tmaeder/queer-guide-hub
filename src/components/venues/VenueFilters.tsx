@@ -106,6 +106,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [amenitiesOpen, setAmenitiesOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [showAllFilters, setShowAllFilters] = useState(false);
 
@@ -231,18 +232,59 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           {/* Amenities */}
           <div className="space-y-2">
             <Label>Amenities</Label>
-            <div className="flex flex-wrap gap-2">
-              {commonAmenities.map((amenity) => (
-                <Badge
-                  key={amenity}
-                  variant={selectedAmenities.includes(amenity) ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-accent/10 transition-colors"
-                  onClick={() => handleAmenityToggle(amenity)}
+            <Popover open={amenitiesOpen} onOpenChange={setAmenitiesOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={amenitiesOpen}
+                  className="w-full justify-between"
                 >
-                  {amenity}
-                </Badge>
-              ))}
-            </div>
+                  {selectedAmenities.length > 0
+                    ? `${selectedAmenities.length} amenity${selectedAmenities.length !== 1 ? 'ies' : ''} selected`
+                    : "Select amenities..."}
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search amenities..." />
+                  <CommandList>
+                    <CommandEmpty>No amenities found.</CommandEmpty>
+                    <CommandGroup>
+                      {commonAmenities.map((amenity) => (
+                        <CommandItem
+                          key={amenity}
+                          value={amenity}
+                          onSelect={() => handleAmenityToggle(amenity)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedAmenities.includes(amenity) ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {amenity}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {selectedAmenities.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {selectedAmenities.map((amenity) => (
+                  <Badge key={amenity} variant="secondary" className="gap-1">
+                    {amenity}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => handleAmenityToggle(amenity)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Services */}
