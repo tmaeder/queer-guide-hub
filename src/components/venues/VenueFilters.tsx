@@ -106,6 +106,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [tagsOpen, setTagsOpen] = useState(false);
   const [amenitiesOpen, setAmenitiesOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [showAllFilters, setShowAllFilters] = useState(false);
@@ -215,18 +216,59 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           {/* Tags */}
           <div className="space-y-2">
             <Label>Tags</Label>
-            <div className="flex flex-wrap gap-2">
-              {commonTags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant={selectedTags.includes(tag) ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary/10 transition-colors"
-                  onClick={() => handleTagToggle(tag)}
+            <Popover open={tagsOpen} onOpenChange={setTagsOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={tagsOpen}
+                  className="w-full justify-between"
                 >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+                  {selectedTags.length > 0
+                    ? `${selectedTags.length} tag${selectedTags.length !== 1 ? 's' : ''} selected`
+                    : "Select tags..."}
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search tags..." />
+                  <CommandList>
+                    <CommandEmpty>No tags found.</CommandEmpty>
+                    <CommandGroup>
+                      {commonTags.map((tag) => (
+                        <CommandItem
+                          key={tag}
+                          value={tag}
+                          onSelect={() => handleTagToggle(tag)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedTags.includes(tag) ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {tag}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {selectedTags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {selectedTags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="gap-1">
+                    {tag}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => handleTagToggle(tag)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Amenities */}
