@@ -4,9 +4,11 @@ import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { VenueFilters } from '@/components/venues/VenueFilters';
+import { VenueMapSearch } from '@/components/venues/VenueMapSearch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, Plus, Loader } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MapPin, Plus, Loader, Grid, Map } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -77,6 +79,21 @@ const Venues = () => {
           <VenueFilters onFiltersChange={handleFiltersChange} />
         </div>
 
+        {/* Tabs for Grid and Map View */}
+        <Tabs defaultValue="grid" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="grid" className="flex items-center gap-2">
+              <Grid className="h-4 w-4" />
+              Grid View
+            </TabsTrigger>
+            <TabsTrigger value="map" className="flex items-center gap-2">
+              <Map className="h-4 w-4" />
+              Map View
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="grid" className="space-y-8">
+
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-12">
@@ -128,14 +145,22 @@ const Venues = () => {
           </>
         )}
 
-        {/* Load More */}
-        {!loading && venues.length > 0 && (
-          <div className="text-center mt-12">
-            <Button variant="outline" size="lg">
-              Load More Venues
-            </Button>
-          </div>
-        )}
+            {/* Load More */}
+            {!loading && venues.length > 0 && (
+              <div className="text-center mt-12">
+                <Button variant="outline" size="lg">
+                  Load More Venues
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="map" className="space-y-4">
+            <div className="h-[600px] w-full">
+              <VenueMapSearch />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
