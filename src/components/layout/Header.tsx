@@ -90,7 +90,8 @@ export function Header() {
               </Link>
               <Link to="/directory" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                 <Globe className="h-6 w-6 mb-1" />
-                <span className="text-xs">Directory</span>
+                <span className="text-xs">Locations
+            </span>
               </Link>
               <Link to="/travel" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                 <Plane className="h-6 w-6 mb-1" />
