@@ -10,47 +10,55 @@ import { Store, Plus, Loader, Heart, Grid, List } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
-
 const Marketplace = () => {
-  const { listings, loading, error, fetchListings, toggleFavorite, incrementViews } = useMarketplace();
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const {
+    listings,
+    loading,
+    error,
+    fetchListings,
+    toggleFavorite,
+    incrementViews
+  } = useMarketplace();
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState('all');
-
   const handleFiltersChange = (filters: any) => {
     fetchListings(filters);
   };
-
   const handleToggleFavorite = async (listingId: string) => {
     if (!user) {
       toast({
         title: "Sign in required",
         description: "Please sign in to save favorites.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
-    const { favorited, error } = await toggleFavorite(listingId);
+    const {
+      favorited,
+      error
+    } = await toggleFavorite(listingId);
     if (error) {
       toast({
         title: "Error",
         description: error,
-        variant: "destructive",
+        variant: "destructive"
       });
     } else {
       toast({
         title: favorited ? "Added to favorites" : "Removed from favorites",
-        description: favorited ? "You can find this in your favorites list." : "Item removed from your favorites.",
+        description: favorited ? "You can find this in your favorites list." : "Item removed from your favorites."
       });
       fetchListings(); // Refresh to show updated favorites
     }
   };
-
   const handleViewDetails = (listing: MarketplaceListing) => {
     setSelectedListing(listing);
     incrementViews(listing.id);
@@ -63,16 +71,21 @@ const Marketplace = () => {
     if (!category || category === 'all') return listings;
     return listings.filter(listing => listing.category === category);
   };
-
-  const categories = [
-    { id: 'all', label: 'All', count: listings.length },
-    { id: 'products', label: 'Products', count: listings.filter(l => l.category === 'products').length },
-    { id: 'services', label: 'Services', count: listings.filter(l => l.category === 'services').length },
-  ];
-
+  const categories = [{
+    id: 'all',
+    label: 'All',
+    count: listings.length
+  }, {
+    id: 'products',
+    label: 'Products',
+    count: listings.filter(l => l.category === 'products').length
+  }, {
+    id: 'services',
+    label: 'Services',
+    count: listings.filter(l => l.category === 'services').length
+  }];
   if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-subtle">
+    return <div className="min-h-screen bg-gradient-subtle">
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <CardContent>
@@ -81,13 +94,10 @@ const Marketplace = () => {
             </CardContent>
           </Card>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <div className="w-full px-4 py-8">
+  return <div className="min-h-screen bg-gradient-subtle">
+      <div className="w-full px-4 py-8 bg-slate-50">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -113,43 +123,30 @@ const Marketplace = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <TabsList className="grid w-full max-w-md grid-cols-3">
-              {categories.map((category) => (
-                <TabsTrigger key={category.id} value={category.id} className="text-xs">
+              {categories.map(category => <TabsTrigger key={category.id} value={category.id} className="text-xs">
                   {category.label}
                   <span className="ml-1 text-xs opacity-60">({category.count})</span>
-                </TabsTrigger>
-              ))}
+                </TabsTrigger>)}
             </TabsList>
             
             <div className="flex gap-2">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
+              <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')}>
                 <Grid className="h-4 w-4" />
               </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
+              <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')}>
                 <List className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
           {/* Loading State */}
-          {loading && (
-            <div className="flex items-center justify-center py-12">
+          {loading && <div className="flex items-center justify-center py-12">
               <Loader className="h-8 w-8 animate-spin text-primary" />
               <span className="ml-2 text-muted-foreground">Loading marketplace...</span>
-            </div>
-          )}
+            </div>}
 
           {/* Empty State */}
-          {!loading && listings.length === 0 && (
-            <Card className="p-8 text-center">
+          {!loading && listings.length === 0 && <Card className="p-8 text-center">
               <CardContent>
                 <Store className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold mb-2">No listings found</h3>
@@ -160,41 +157,24 @@ const Marketplace = () => {
                   List Your Business
                 </Button>
               </CardContent>
-            </Card>
-          )}
+            </Card>}
 
           {/* Tab Contents */}
-          {categories.map((category) => (
-            <TabsContent key={category.id} value={category.id}>
-              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length > 0 && (
-                <>
+          {categories.map(category => <TabsContent key={category.id} value={category.id} className="bg-slate-50">
+              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length > 0 && <>
                   <div className="flex items-center justify-between mb-6">
                     <p className="text-muted-foreground">
                       Found {getFilteredListings(category.id === 'all' ? undefined : category.id).length} listing{getFilteredListings(category.id === 'all' ? undefined : category.id).length !== 1 ? 's' : ''}
                     </p>
                   </div>
                   
-                  <div className={
-                    viewMode === 'grid' 
-                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                      : "space-y-4"
-                  }>
-                    {getFilteredListings(category.id === 'all' ? undefined : category.id).map((listing) => (
-                      <MarketplaceCard
-                        key={listing.id}
-                        listing={listing}
-                        onViewDetails={handleViewDetails}
-                        onToggleFavorite={user ? handleToggleFavorite : undefined}
-                        showFavoriteButton={!!user}
-                      />
-                    ))}
+                  <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}>
+                    {getFilteredListings(category.id === 'all' ? undefined : category.id).map(listing => <MarketplaceCard key={listing.id} listing={listing} onViewDetails={handleViewDetails} onToggleFavorite={user ? handleToggleFavorite : undefined} showFavoriteButton={!!user} />)}
                   </div>
-                </>
-              )}
+                </>}
 
               {/* Category-specific empty state */}
-              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length === 0 && listings.length > 0 && (
-                <Card className="p-8 text-center">
+              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length === 0 && listings.length > 0 && <Card className="p-8 text-center">
                   <CardContent>
                     <Store className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-xl font-semibold mb-2">No {category.label.toLowerCase()} found</h3>
@@ -205,23 +185,17 @@ const Marketplace = () => {
                       Clear Filters
                     </Button>
                   </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-          ))}
+                </Card>}
+            </TabsContent>)}
         </Tabs>
 
         {/* Load More */}
-        {!loading && listings.length > 0 && (
-          <div className="text-center mt-12">
+        {!loading && listings.length > 0 && <div className="text-center mt-12">
             <Button variant="outline" size="lg">
               Load More Listings
             </Button>
-          </div>
-        )}
+          </div>}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Marketplace;
