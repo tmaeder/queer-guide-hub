@@ -22,7 +22,7 @@ const defaultSettings: AccessibilitySettings = {
   highContrast: false,
   reduceMotion: false,
   screenReaderOptimized: false,
-  focusIndicators: true,
+  focusIndicators: false,
 };
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
