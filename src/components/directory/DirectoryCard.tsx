@@ -101,6 +101,50 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
     return population.toString();
   };
 
+  const getCountryFallbackImage = (countryName: string) => {
+    // Country-specific fallback images using Unsplash with country-specific photo IDs
+    const countryImages: { [key: string]: string } = {
+      'France': 'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop', // Eiffel Tower
+      'Italy': 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=400&h=300&fit=crop', // Colosseum
+      'Spain': 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=400&h=300&fit=crop', // Sagrada Familia
+      'Germany': 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=400&h=300&fit=crop', // Brandenburg Gate
+      'United Kingdom': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop', // Big Ben
+      'UK': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop', // Big Ben
+      'Japan': 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&h=300&fit=crop', // Mount Fuji
+      'United States': 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop', // Statue of Liberty
+      'USA': 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop', // Statue of Liberty
+      'China': 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&h=300&fit=crop', // Great Wall
+      'India': 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=400&h=300&fit=crop', // Taj Mahal
+      'Brazil': 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=400&h=300&fit=crop', // Christ the Redeemer
+      'Australia': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop', // Sydney Opera House
+      'Canada': 'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=400&h=300&fit=crop', // Canadian landscape
+      'Russia': 'https://images.unsplash.com/photo-1520637836862-4d197d17c88a?w=400&h=300&fit=crop', // Red Square
+      'Greece': 'https://images.unsplash.com/photo-1555993539-1732b0258092?w=400&h=300&fit=crop', // Parthenon
+      'Egypt': 'https://images.unsplash.com/photo-1539650116574-75c0c6d0c620?w=400&h=300&fit=crop', // Pyramids
+      'Thailand': 'https://images.unsplash.com/photo-1528181304800-259b08848526?w=400&h=300&fit=crop', // Thai temple
+      'Turkey': 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=400&h=300&fit=crop', // Hagia Sophia
+      'Mexico': 'https://images.unsplash.com/photo-1518105779142-d975f22f1b0f?w=400&h=300&fit=crop', // Mexican pyramid
+      'Netherlands': 'https://images.unsplash.com/photo-1534313314376-aeb2a73810d4?w=400&h=300&fit=crop', // Amsterdam canals
+      'Switzerland': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop', // Swiss Alps
+      'South Korea': 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=400&h=300&fit=crop', // Korean palace
+      'Norway': 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=300&fit=crop', // Norwegian fjords
+      'Sweden': 'https://images.unsplash.com/photo-1509356843151-3e7d96241e11?w=400&h=300&fit=crop', // Stockholm
+      'Denmark': 'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=400&h=300&fit=crop', // Copenhagen
+      'Portugal': 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=400&h=300&fit=crop', // Lisbon
+      'Argentina': 'https://images.unsplash.com/photo-1589909202802-8f4aadce1849?w=400&h=300&fit=crop', // Buenos Aires
+      'Chile': 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&h=300&fit=crop', // Chilean landscape
+      'Peru': 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=400&h=300&fit=crop', // Machu Picchu
+      'South Africa': 'https://images.unsplash.com/photo-1484318571209-661cf29a69ea?w=400&h=300&fit=crop', // Table Mountain
+      'New Zealand': 'https://images.unsplash.com/photo-1469521669194-babb45599def?w=400&h=300&fit=crop', // New Zealand landscape
+      'Iceland': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop', // Iceland landscape
+      'Ireland': 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop', // Irish cliffs
+      'Morocco': 'https://images.unsplash.com/photo-1489749798305-4fea3ae436d3?w=400&h=300&fit=crop', // Moroccan architecture
+    };
+
+    // Return country-specific image or generic landscape fallback
+    return countryImages[countryName] || 'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=400&h=300&fit=crop';
+  };
+
   const getIcon = () => {
     switch (type) {
       case "continent":
@@ -184,12 +228,12 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
             </div>
           ) : (
             <img 
-              src={countryImage || `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`}
+              src={countryImage || getCountryFallbackImage(name)}
               alt={`${name} landscape`}
               className="w-full h-full object-cover"
               onError={(e) => {
                 // Fallback to default image if Pexels image fails to load
-                e.currentTarget.src = `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`;
+                e.currentTarget.src = getCountryFallbackImage(name);
               }}
             />
           )}
