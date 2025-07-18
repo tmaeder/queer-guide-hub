@@ -221,37 +221,39 @@ export default function TagsDirectory() {
                   {processingImages ? 'Processing...' : 'Reimport All Images'}
                 </Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {allTags.map((tag, index) => (
-                  <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                    <div className="mb-3 rounded-md overflow-hidden h-40 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                      {tag.image_url ? (
-                        <img 
-                          src={tag.image_url} 
-                          alt={`${tag.name} themed image`} 
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = '/placeholder.svg';
-                          }}
-                        />
-                      ) : (
-                        <div className="text-center text-muted-foreground">
-                          <Tag className="h-8 w-8 mx-auto mb-2" />
-                          <span className="text-sm">No image</span>
+                  <div 
+                    key={`${tag.id}-${index}`} 
+                    className="cursor-pointer transition-all hover:shadow-md hover:scale-105"
+                    onClick={() => handleTagClick(tag)}
+                  >
+                    <div className="bg-card rounded-lg border overflow-hidden">
+                      <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                        {tag.image_url ? (
+                          <img 
+                            src={tag.image_url} 
+                            alt={`${tag.name} themed image`} 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder.svg';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Tag className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
+                          <span className="text-sm font-medium truncate">{tag.name}</span>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
-                      <span className="font-medium">{tag.name}</span>
-                    </div>
-                    {tag.description && (
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {tag.description}
-                      </p>
-                    )}
-                    <div className="text-xs text-muted-foreground">
-                      Used {tag.usage_count} times
+                        <div className="text-xs text-muted-foreground">
+                          {tag.usage_count} uses
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -269,24 +271,39 @@ export default function TagsDirectory() {
                   </h2>
                   <Badge variant="secondary">{count}</Badge>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {tags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                      {tag.image_url && <div className="mb-3 rounded-md overflow-hidden h-32">
-                          <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover" />
-                        </div>}
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-3 h-3 rounded-full" style={{
-                  backgroundColor: tag.color
-                }} />
-                        <span className="font-medium">{tag.name}</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {tags.map((tag, index) => (
+                    <div 
+                      key={`${tag.id}-${index}`} 
+                      className="cursor-pointer transition-all hover:shadow-md hover:scale-105"
+                      onClick={() => handleTagClick(tag)}
+                    >
+                      <div className="bg-card rounded-lg border overflow-hidden">
+                        <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                          {tag.image_url ? (
+                            <img 
+                              src={tag.image_url} 
+                              alt={`${tag.name} themed image`} 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Tag className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
+                            <span className="text-sm font-medium truncate">{tag.name}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {tag.usage_count} uses
+                          </div>
+                        </div>
                       </div>
-                      {tag.description && <p className="text-sm text-muted-foreground mb-2">
-                          {tag.description}
-                        </p>}
-                      <div className="text-xs text-muted-foreground">
-                        Used {tag.usage_count} times
-                      </div>
-                    </div>)}
+                    </div>
+                  ))}
                 </div>
               </TabsContent>)}
           </Tabs>
