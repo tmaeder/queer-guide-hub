@@ -148,7 +148,7 @@ export default function TagsDirectory() {
       </div>
 
       {/* Search */}
-      <DirectorySearch onSearch={handleSearch} placeholder="Search tags, categories, descriptions..." />
+      <DirectorySearch onSearch={handleSearch} onFiltersChange={() => {}} placeholder="Search tags, categories, descriptions..." />
 
       {/* Breadcrumb */}
       {viewMode !== "overview" && viewMode !== "search" && <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -185,7 +185,9 @@ export default function TagsDirectory() {
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {allTags.map((tag, index) => {})}
+                {allTags.map((tag, index) => (
+                  <TagCard key={`${tag.id}-${index}`} tag={{...tag, total_count: tag.usage_count}} onClick={() => handleTagClick(tag)} />
+                ))}
               </div>
             </TabsContent>
 
