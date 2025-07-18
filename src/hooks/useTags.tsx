@@ -159,63 +159,41 @@ export const useTags = () => {
     try {
       setLoading(true);
 
-      // Fetch detailed information about a specific tag
-      const [eventsResult, venuesResult, marketplaceResult] = await Promise.all([
+      // Use unified tag system for detailed information
+      const [assignments] = await Promise.all([
         supabase
-          .from("events")
-          .select("id, title, tags, created_at")
-          .contains("tags", [tagName])
+          .from("unified_tag_assignments")
+          .select(`
+            entity_id,
+            entity_type,
+            created_at,
+            unified_tags (name)
+          `)
+          .eq('unified_tags.name', tagName)
           .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("venues")
-          .select("id, name, tags, created_at")
-          .contains("tags", [tagName])
-          .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("marketplace_listings")
-          .select("id, title, tags, created_at")
-          .contains("tags", [tagName])
-          .order("created_at", { ascending: false })
-          .limit(5)
+          .limit(10)
       ]);
 
-      // Calculate usage by category
-      const usage_by_category = [
-        { category: "events", count: eventsResult.data?.length || 0 },
-        { category: "venues", count: venuesResult.data?.length || 0 },
-        { category: "marketplace", count: marketplaceResult.data?.length || 0 }
-      ].filter(item => item.count > 0);
-
-      // Find related tags (tags that appear together with this tag)
-      const relatedTagsSet = new Set<string>();
-      [eventsResult, venuesResult, marketplaceResult].forEach(result => {
-        if (result.data) {
-          result.data.forEach((item: any) => {
-            if (item.tags && Array.isArray(item.tags)) {
-              item.tags.forEach((tag: string) => {
-                if (tag !== tagName) {
-                  relatedTagsSet.add(tag);
-                }
-              });
-            }
-          });
-        }
+      // Calculate usage by category from unified assignments
+      const entityTypeCounts: Record<string, number> = {};
+      assignments.data?.forEach(assignment => {
+        entityTypeCounts[assignment.entity_type] = (entityTypeCounts[assignment.entity_type] || 0) + 1;
       });
 
-      const recent_items = [
-        ...(eventsResult.data?.map(item => ({ ...item, type: "event" })) || []),
-        ...(venuesResult.data?.map(item => ({ ...item, type: "venue" })) || []),
-        ...(marketplaceResult.data?.map(item => ({ ...item, type: "marketplace" })) || [])
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-       .slice(0, 10);
+      const usage_by_category = Object.entries(entityTypeCounts).map(([category, count]) => ({
+        category,
+        count
+      })).filter(item => item.count > 0);
+
+      // For recent items, we'll need to fetch the actual entities
+      const recent_items: any[] = [];
+      // This would require separate queries for each entity type based on assignments
 
       const details: TagDetails = {
         name: tagName,
         total_count: usage_by_category.reduce((sum, item) => sum + item.count, 0),
         usage_by_category,
-        related_tags: Array.from(relatedTagsSet).slice(0, 10),
+        related_tags: [], // Will implement later with unified system
         recent_items
       };
 

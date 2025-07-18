@@ -497,23 +497,7 @@ export default function EventDetail() {
             </CardContent>
           </Card>
 
-          {/* Tags */}
-          {event.tags && event.tags.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Tags</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {event.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Tags - will be implemented with unified tag system */}
 
           {/* Links */}
           <Card>

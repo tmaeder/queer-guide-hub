@@ -173,16 +173,11 @@ export const useNews = () => {
         throw fetchError;
       }
 
+      // Tags are now handled via unified tag assignments
       const tagCounts: Record<string, number> = {};
-      data?.forEach(article => {
-        article.tags?.forEach(tag => {
-          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-        });
-      });
-
-      return Object.entries(tagCounts)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 20)
+      // Will implement unified tag trending later
+      
+      return []
         .map(([tag, count]) => ({ tag, count }));
     } catch (err) {
       console.error('Error fetching trending tags:', err);

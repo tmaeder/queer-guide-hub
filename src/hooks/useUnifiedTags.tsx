@@ -1,48 +1,61 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-export type UnifiedTag = Tables<"tags">;
-
-export interface TagAssignment {
+export interface UnifiedTag {
   id: string;
-  tag: UnifiedTag;
+  name: string;
+  slug: string;
+  description?: string;
+  color: string;
+  image_url?: string;
+  usage_count: number;
+  category?: string;
   created_at: string;
+  updated_at: string;
 }
 
-export interface TagUsage {
-  total_count: number;
-  events: number;
-  venues: number;
-  marketplace: number;
-  posts: number;
-  groups: number;
-  news: number;
-  content: number;
+export interface UnifiedTagAssignment {
+  id: string;
+  tag_id: string;
+  entity_id: string;
+  entity_type: string;
+  created_at: string;
+  tag?: UnifiedTag;
 }
 
 export const useUnifiedTags = () => {
-  const [allTags, setAllTags] = useState<UnifiedTag[]>([]);
+  const [tags, setTags] = useState<UnifiedTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const fetchTags = async () => {
+  const fetchTags = async (category?: string) => {
     try {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from("tags")
-        .select("*")
-        .eq("is_active", true)
-        .order("usage_count", { ascending: false });
+      let query = supabase
+        .from('unified_tags')
+        .select('*')
+        .order('usage_count', { ascending: false });
 
-      if (fetchError) throw fetchError;
+      if (category) {
+        query = query.eq('category', category);
+      }
 
-      setAllTags(data || []);
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setTags(data || []);
     } catch (err) {
-      console.error("Error fetching unified tags:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch tags");
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch tags';
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -51,346 +64,247 @@ export const useUnifiedTags = () => {
   const searchTags = async (query: string, category?: string): Promise<UnifiedTag[]> => {
     try {
       let queryBuilder = supabase
-        .from("tags")
-        .select("*")
-        .eq("is_active", true)
-        .ilike("name", `%${query}%`);
+        .from('unified_tags')
+        .select('*')
+        .ilike('name', `%${query}%`);
 
       if (category) {
-        queryBuilder = queryBuilder.eq("category", category);
+        queryBuilder = queryBuilder.eq('category', category);
       }
 
       const { data, error } = await queryBuilder
-        .order("usage_count", { ascending: false })
+        .order('usage_count', { ascending: false })
         .limit(20);
 
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.error("Error searching tags:", err);
+      console.error('Error searching tags:', err);
       return [];
     }
   };
 
-  const getTagsByCategory = (category: string): UnifiedTag[] => {
-    return allTags.filter(tag => tag.category === category);
-  };
-
-  const getPopularTags = (limit: number = 10): UnifiedTag[] => {
-    return allTags
-      .filter(tag => tag.usage_count > 0)
-      .slice(0, limit);
-  };
-
   const createTag = async (tagData: {
     name: string;
-    category: string;
     description?: string;
     color?: string;
-  }): Promise<UnifiedTag | null> => {
+    category?: string;
+  }) => {
     try {
+      const slug = tagData.name.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+
       const { data, error } = await supabase
-        .from("tags")
-        .insert([tagData])
+        .from('unified_tags')
+        .insert([{
+          ...tagData,
+          slug,
+          color: tagData.color || '#6366f1'
+        }])
         .select()
         .single();
 
       if (error) throw error;
 
-      await fetchTags();
+      setTags(prev => [...prev, data]);
+      toast({
+        title: "Success",
+        description: "Tag created successfully",
+      });
+
       return data;
     } catch (err) {
-      console.error("Error creating tag:", err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create tag';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
       throw err;
     }
   };
 
-  const updateTag = async (id: string, updates: Partial<UnifiedTag>): Promise<void> => {
+  const updateTag = async (id: string, updates: Partial<UnifiedTag>) => {
     try {
-      const { error } = await supabase
-        .from("tags")
+      const { data, error } = await supabase
+        .from('unified_tags')
         .update(updates)
-        .eq("id", id);
+        .eq('id', id)
+        .select()
+        .single();
 
       if (error) throw error;
 
-      await fetchTags();
+      setTags(prev => prev.map(tag => tag.id === id ? data : tag));
+      toast({
+        title: "Success",
+        description: "Tag updated successfully",
+      });
+
+      return data;
     } catch (err) {
-      console.error("Error updating tag:", err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update tag';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
       throw err;
     }
   };
 
-  const deleteTag = async (id: string): Promise<void> => {
+  const deleteTag = async (id: string) => {
     try {
       const { error } = await supabase
-        .from("tags")
-        .update({ is_active: false })
-        .eq("id", id);
+        .from('unified_tags')
+        .delete()
+        .eq('id', id);
 
       if (error) throw error;
 
-      await fetchTags();
+      setTags(prev => prev.filter(tag => tag.id !== id));
+      toast({
+        title: "Success",
+        description: "Tag deleted successfully",
+      });
     } catch (err) {
-      console.error("Error deleting tag:", err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete tag';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
       throw err;
     }
   };
 
-  // Tag assignment functions for different entity types
-  const assignTagsToEvent = async (eventId: string, tagIds: string[]): Promise<void> => {
+  const assignTag = async (tagId: string, entityId: string, entityType: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('unified_tag_assignments')
+        .insert([{
+          tag_id: tagId,
+          entity_id: entityId,
+          entity_type: entityType
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Tag assigned successfully",
+      });
+
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to assign tag';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw err;
+    }
+  };
+
+  const unassignTag = async (tagId: string, entityId: string, entityType: string) => {
+    try {
+      const { error } = await supabase
+        .from('unified_tag_assignments')
+        .delete()
+        .eq('tag_id', tagId)
+        .eq('entity_id', entityId)
+        .eq('entity_type', entityType);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Tag unassigned successfully",
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to unassign tag';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw err;
+    }
+  };
+
+  const getEntityTags = async (entityId: string, entityType: string): Promise<UnifiedTag[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('unified_tag_assignments')
+        .select(`
+          tag_id,
+          unified_tags (*)
+        `)
+        .eq('entity_id', entityId)
+        .eq('entity_type', entityType);
+
+      if (error) throw error;
+
+      return data?.map(assignment => (assignment as any).unified_tags).filter(Boolean) || [];
+    } catch (err) {
+      console.error('Failed to fetch entity tags:', err);
+      return [];
+    }
+  };
+
+  const assignTagsToEntity = async (entityId: string, entityType: string, tagIds: string[]) => {
     try {
       // Remove existing assignments
       await supabase
-        .from("event_tag_assignments")
+        .from('unified_tag_assignments')
         .delete()
-        .eq("event_id", eventId);
+        .eq('entity_id', entityId)
+        .eq('entity_type', entityType);
 
       // Add new assignments
       if (tagIds.length > 0) {
         const assignments = tagIds.map(tagId => ({
-          event_id: eventId,
-          tag_id: tagId
+          tag_id: tagId,
+          entity_id: entityId,
+          entity_type: entityType
         }));
 
         const { error } = await supabase
-          .from("event_tag_assignments")
+          .from('unified_tag_assignments')
           .insert(assignments);
 
         if (error) throw error;
       }
 
-      await updateTagUsageCounts();
+      toast({
+        title: "Success",
+        description: "Tags updated successfully",
+      });
     } catch (err) {
-      console.error("Error assigning tags to event:", err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update tags';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
       throw err;
     }
   };
 
-  const assignTagsToVenue = async (venueId: string, tagIds: string[]): Promise<void> => {
-    try {
-      await supabase
-        .from("venue_tag_assignments")
-        .delete()
-        .eq("venue_id", venueId);
-
-      if (tagIds.length > 0) {
-        const assignments = tagIds.map(tagId => ({
-          venue_id: venueId,
-          tag_id: tagId
-        }));
-
-        const { error } = await supabase
-          .from("venue_tag_assignments")
-          .insert(assignments);
-
-        if (error) throw error;
-      }
-
-      await updateTagUsageCounts();
-    } catch (err) {
-      console.error("Error assigning tags to venue:", err);
-      throw err;
-    }
+  const getTagsByCategory = (category: string): UnifiedTag[] => {
+    return tags.filter(tag => tag.category === category);
   };
 
-  const assignTagsToMarketplaceListing = async (listingId: string, tagIds: string[]): Promise<void> => {
-    try {
-      await supabase
-        .from("marketplace_tag_assignments")
-        .delete()
-        .eq("listing_id", listingId);
-
-      if (tagIds.length > 0) {
-        const assignments = tagIds.map(tagId => ({
-          listing_id: listingId,
-          tag_id: tagId
-        }));
-
-        const { error } = await supabase
-          .from("marketplace_tag_assignments")
-          .insert(assignments);
-
-        if (error) throw error;
-      }
-
-      await updateTagUsageCounts();
-    } catch (err) {
-      console.error("Error assigning tags to marketplace listing:", err);
-      throw err;
-    }
-  };
-
-  const assignTagsToPost = async (postId: string, tagIds: string[]): Promise<void> => {
-    try {
-      await supabase
-        .from("post_tag_assignments")
-        .delete()
-        .eq("post_id", postId);
-
-      if (tagIds.length > 0) {
-        const assignments = tagIds.map(tagId => ({
-          post_id: postId,
-          tag_id: tagId
-        }));
-
-        const { error } = await supabase
-          .from("post_tag_assignments")
-          .insert(assignments);
-
-        if (error) throw error;
-      }
-
-      await updateTagUsageCounts();
-    } catch (err) {
-      console.error("Error assigning tags to post:", err);
-      throw err;
-    }
-  };
-
-  const assignTagsToGroup = async (groupId: string, tagIds: string[]): Promise<void> => {
-    try {
-      await supabase
-        .from("group_tag_assignments")
-        .delete()
-        .eq("group_id", groupId);
-
-      if (tagIds.length > 0) {
-        const assignments = tagIds.map(tagId => ({
-          group_id: groupId,
-          tag_id: tagId
-        }));
-
-        const { error } = await supabase
-          .from("group_tag_assignments")
-          .insert(assignments);
-
-        if (error) throw error;
-      }
-
-      await updateTagUsageCounts();
-    } catch (err) {
-      console.error("Error assigning tags to group:", err);
-      throw err;
-    }
-  };
-
-  const assignTagsToNewsArticle = async (articleId: string, tagIds: string[]): Promise<void> => {
-    try {
-      await supabase
-        .from("news_tag_assignments")
-        .delete()
-        .eq("article_id", articleId);
-
-      if (tagIds.length > 0) {
-        const assignments = tagIds.map(tagId => ({
-          article_id: articleId,
-          tag_id: tagId
-        }));
-
-        const { error } = await supabase
-          .from("news_tag_assignments")
-          .insert(assignments);
-
-        if (error) throw error;
-      }
-
-      await updateTagUsageCounts();
-    } catch (err) {
-      console.error("Error assigning tags to news article:", err);
-      throw err;
-    }
-  };
-
-  // Get tags for different entity types
-  const getTagsForEvent = async (eventId: string): Promise<TagAssignment[]> => {
-    const { data, error } = await supabase
-      .from("event_tag_assignments")
-      .select(`
-        id,
-        created_at,
-        tags (*)
-      `)
-      .eq("event_id", eventId);
-
-    if (error) throw error;
-    return data?.map(item => ({ ...item, tag: item.tags })) || [];
-  };
-
-  const getTagsForVenue = async (venueId: string): Promise<TagAssignment[]> => {
-    const { data, error } = await supabase
-      .from("venue_tag_assignments")
-      .select(`
-        id,
-        created_at,
-        tags (*)
-      `)
-      .eq("venue_id", venueId);
-
-    if (error) throw error;
-    return data?.map(item => ({ ...item, tag: item.tags })) || [];
-  };
-
-  const updateTagUsageCounts = async (): Promise<void> => {
-    try {
-      // For now, just refresh tags - usage counts are updated by the database trigger
-      await fetchTags();
-    } catch (err) {
-      console.error("Error updating tag usage counts:", err);
-    }
-  };
-
-  const getTagUsage = async (tagId: string): Promise<TagUsage> => {
-    try {
-      const [
-        eventCount,
-        venueCount,
-        marketplaceCount,
-        postCount,
-        groupCount,
-        newsCount,
-        contentCount
-      ] = await Promise.all([
-        supabase.from("event_tag_assignments").select("id", { count: "exact" }).eq("tag_id", tagId),
-        supabase.from("venue_tag_assignments").select("id", { count: "exact" }).eq("tag_id", tagId),
-        supabase.from("marketplace_tag_assignments").select("id", { count: "exact" }).eq("tag_id", tagId),
-        supabase.from("post_tag_assignments").select("id", { count: "exact" }).eq("tag_id", tagId),
-        supabase.from("group_tag_assignments").select("id", { count: "exact" }).eq("tag_id", tagId),
-        supabase.from("news_tag_assignments").select("id", { count: "exact" }).eq("tag_id", tagId),
-        supabase.from("content_tag_assignments").select("id", { count: "exact" }).eq("tag_id", tagId)
-      ]);
-
-      const events = eventCount.count || 0;
-      const venues = venueCount.count || 0;
-      const marketplace = marketplaceCount.count || 0;
-      const posts = postCount.count || 0;
-      const groups = groupCount.count || 0;
-      const news = newsCount.count || 0;
-      const content = contentCount.count || 0;
-
-      return {
-        total_count: events + venues + marketplace + posts + groups + news + content,
-        events,
-        venues,
-        marketplace,
-        posts,
-        groups,
-        news,
-        content
-      };
-    } catch (err) {
-      console.error("Error getting tag usage:", err);
-      return {
-        total_count: 0,
-        events: 0,
-        venues: 0,
-        marketplace: 0,
-        posts: 0,
-        groups: 0,
-        news: 0,
-        content: 0
-      };
-    }
+  const getPopularTags = (limit: number = 10): UnifiedTag[] => {
+    return tags
+      .filter(tag => tag.usage_count > 0)
+      .slice(0, limit);
   };
 
   useEffect(() => {
@@ -398,25 +312,22 @@ export const useUnifiedTags = () => {
   }, []);
 
   return {
-    allTags,
+    tags,
+    allTags: tags, // For backwards compatibility
     loading,
     error,
+    fetchTags,
     searchTags,
-    getTagsByCategory,
-    getPopularTags,
     createTag,
     updateTag,
     deleteTag,
-    assignTagsToEvent,
-    assignTagsToVenue,
-    assignTagsToMarketplaceListing,
-    assignTagsToPost,
-    assignTagsToGroup,
-    assignTagsToNewsArticle,
-    getTagsForEvent,
-    getTagsForVenue,
-    updateTagUsageCounts,
-    getTagUsage,
-    refreshTags: fetchTags
+    assignTag,
+    unassignTag,
+    getEntityTags,
+    assignTagsToEntity,
+    getTagsByCategory,
+    getPopularTags,
+    refresh: () => fetchTags(),
+    refreshTags: () => fetchTags()
   };
 };

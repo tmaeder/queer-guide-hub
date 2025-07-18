@@ -120,26 +120,7 @@ export const NewsCard = ({ article, onViewArticle, showFullContent = false }: Ne
           </div>
         )}
 
-        {article.tags && article.tags.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <Tag className="h-4 w-4 text-muted-foreground" />
-            {article.tags.slice(0, 5).map((tag, index) => (
-              <Link key={index} to={`/tags/${encodeURIComponent(tag)}`}>
-                <Badge 
-                  variant="secondary" 
-                  className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  {tag}
-                </Badge>
-              </Link>
-            ))}
-            {article.tags.length > 5 && (
-              <Badge variant="secondary" className="text-xs">
-                +{article.tags.length - 5} more
-              </Badge>
-            )}
-          </div>
-        )}
+        {/* Tags will be loaded via unified tag assignments - remove for now */}
 
         {(article.country_ids?.length > 0 || article.city_ids?.length > 0) && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

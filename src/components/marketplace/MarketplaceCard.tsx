@@ -168,20 +168,7 @@ export function MarketplaceCard({
           )}
         </div>
 
-        {listing.tags && listing.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {listing.tags.slice(0, 3).map((tag, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {listing.tags.length > 3 && (
-              <Badge variant="outline" className="text-xs">
-                +{listing.tags.length - 3} more
-              </Badge>
-            )}
-          </div>
-        )}
+        {/* Tags will be loaded via unified tag assignments - remove for now */}
 
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">

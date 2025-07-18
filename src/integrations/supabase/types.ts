@@ -195,7 +195,6 @@ export type Database = {
           member_count: number
           name: string
           rules: string | null
-          tags: string[] | null
           updated_at: string
         }
         Insert: {
@@ -208,7 +207,6 @@ export type Database = {
           member_count?: number
           name: string
           rules?: string | null
-          tags?: string[] | null
           updated_at?: string
         }
         Update: {
@@ -221,7 +219,6 @@ export type Database = {
           member_count?: number
           name?: string
           rules?: string | null
-          tags?: string[] | null
           updated_at?: string
         }
         Relationships: []
@@ -243,7 +240,6 @@ export type Database = {
           referenced_id: string | null
           referenced_type: string | null
           shares_count: number | null
-          tags: string[] | null
           updated_at: string
           user_id: string
           visibility: string | null
@@ -264,7 +260,6 @@ export type Database = {
           referenced_id?: string | null
           referenced_type?: string | null
           shares_count?: number | null
-          tags?: string[] | null
           updated_at?: string
           user_id: string
           visibility?: string | null
@@ -285,7 +280,6 @@ export type Database = {
           referenced_id?: string | null
           referenced_type?: string | null
           shares_count?: number | null
-          tags?: string[] | null
           updated_at?: string
           user_id?: string
           visibility?: string | null
@@ -805,7 +799,6 @@ export type Database = {
           start_date: string
           state: string | null
           status: string | null
-          tags: string[] | null
           ticket_url: string | null
           title: string
           updated_at: string
@@ -839,7 +832,6 @@ export type Database = {
           start_date: string
           state?: string | null
           status?: string | null
-          tags?: string[] | null
           ticket_url?: string | null
           title: string
           updated_at?: string
@@ -873,7 +865,6 @@ export type Database = {
           start_date?: string
           state?: string | null
           status?: string | null
-          tags?: string[] | null
           ticket_url?: string | null
           title?: string
           updated_at?: string
@@ -1024,7 +1015,6 @@ export type Database = {
           social_media: Json | null
           status: string | null
           subcategory: string | null
-          tags: string[] | null
           title: string
           updated_at: string
           venue_id: string | null
@@ -1052,7 +1042,6 @@ export type Database = {
           social_media?: Json | null
           status?: string | null
           subcategory?: string | null
-          tags?: string[] | null
           title: string
           updated_at?: string
           venue_id?: string | null
@@ -1080,7 +1069,6 @@ export type Database = {
           social_media?: Json | null
           status?: string | null
           subcategory?: string | null
-          tags?: string[] | null
           title?: string
           updated_at?: string
           venue_id?: string | null
@@ -1298,7 +1286,6 @@ export type Database = {
           published_at: string
           sentiment: string | null
           source_id: string
-          tags: string[] | null
           title: string
           updated_at: string
           url: string
@@ -1318,7 +1305,6 @@ export type Database = {
           published_at: string
           sentiment?: string | null
           source_id: string
-          tags?: string[] | null
           title: string
           updated_at?: string
           url: string
@@ -1338,7 +1324,6 @@ export type Database = {
           published_at?: string
           sentiment?: string | null
           source_id?: string
-          tags?: string[] | null
           title?: string
           updated_at?: string
           url?: string
@@ -1773,6 +1758,77 @@ export type Database = {
           name?: string
           updated_at?: string
           usage_count?: number
+        }
+        Relationships: []
+      }
+      unified_tag_assignments: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unified_tags: {
+        Row: {
+          category: string | null
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          slug: string
+          updated_at: string
+          usage_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          slug: string
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          slug?: string
+          updated_at?: string
+          usage_count?: number | null
         }
         Relationships: []
       }
