@@ -69,7 +69,10 @@ export const AdvancedSearchBar = () => {
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <div className="relative">
-            <div className="flex items-center bg-background/50 backdrop-blur-sm">
+            <div 
+              className="flex items-center bg-background/50 backdrop-blur-sm"
+              onMouseEnter={() => setIsOpen(true)}
+            >
               <Button
                 variant="ghost"
                 size="sm"
@@ -81,9 +84,13 @@ export const AdvancedSearchBar = () => {
               <Input
                 placeholder="Search venues, events, news..."
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setIsOpen(true);
+                }}
                 onKeyPress={handleKeyPress}
                 onFocus={() => setIsOpen(true)}
+                onClick={() => setIsOpen(true)}
                 className="focus-visible:ring-0"
               />
               <Button
