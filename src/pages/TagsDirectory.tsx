@@ -206,9 +206,7 @@ export default function TagsDirectory() {
                   backgroundColor: tag.color
                 }} />
                       <span className="font-medium">{tag.name}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {tag.category}
-                      </Badge>
+                      
                     </div>
                     {tag.description && <p className="text-sm text-muted-foreground mb-2">
                         {tag.description}
