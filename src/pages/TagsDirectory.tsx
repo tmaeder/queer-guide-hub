@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 type ViewMode = "overview" | "category" | "search" | "tag-detail";
 export default function TagsDirectory() {
   const {
@@ -39,7 +39,10 @@ export default function TagsDirectory() {
       console.log(`Processing ${tagsWithoutImages.length} tags without images`);
       
       if (tagsWithoutImages.length === 0) {
-        toast.success('All tags already have images!');
+        toast({
+          title: "All images present",
+          description: "All tags already have images!",
+        });
         setProcessingImages(false);
         return;
       }
@@ -58,25 +61,47 @@ export default function TagsDirectory() {
           
           if (error) {
             console.error(`Error for tag ${tag.name}:`, error);
-            toast.error(`Failed to fetch image for ${tag.name}: ${error.message}`);
+            toast({
+              title: "Image fetch failed",
+              description: `Failed to fetch image for ${tag.name}: ${error.message}`,
+              variant: "destructive",
+            });
           } else if (data?.success) {
             console.log(`Successfully stored image for tag: ${tag.name}`);
-            toast.success(`Image stored for ${tag.name}`);
+            toast({
+              title: "Image stored",
+              description: `Image stored for ${tag.name}`,
+            });
           } else {
             console.log(`No success flag for tag ${tag.name}:`, data);
-            toast.warning(`Unexpected response for ${tag.name}`);
+            toast({
+              title: "Unexpected response",
+              description: `Unexpected response for ${tag.name}`,
+              variant: "destructive",
+            });
           }
         } catch (err) {
           console.error(`Failed to store image for tag ${tag.name}:`, err);
-          toast.error(`Failed to store image for ${tag.name}`);
+          toast({
+            title: "Error",
+            description: `Failed to store image for ${tag.name}`,
+            variant: "destructive",
+          });
         }
       }
 
-      toast.success('Image processing complete! Refreshing page...');
+      toast({
+        title: "Processing complete",
+        description: "Image processing complete! Refreshing page...",
+      });
       setTimeout(() => window.location.reload(), 2000);
     } catch (error) {
       console.error('Error processing tag images:', error);
-      toast.error('Error processing tag images');
+      toast({
+        title: "Error",
+        description: "Error processing tag images",
+        variant: "destructive",
+      });
     } finally {
       setProcessingImages(false);
     }
