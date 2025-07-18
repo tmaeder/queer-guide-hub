@@ -93,7 +93,10 @@ export default function AdminTags() {
           description: "Tag updated successfully"
         });
       } else {
-        await createTag(formData);
+        await createTag({
+          ...formData,
+          slug: formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+        });
         toast({
           title: "Success", 
           description: "Tag created successfully"

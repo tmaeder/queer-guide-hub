@@ -33,7 +33,7 @@ export default function AdminContent() {
   const { 
     content, 
     categories, 
-    tags, 
+     
     loading, 
     error,
     retryCount,

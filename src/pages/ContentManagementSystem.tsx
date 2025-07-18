@@ -43,7 +43,7 @@ export default function ContentManagementSystem() {
   const { 
     content, 
     categories, 
-    tags, 
+     
     loading, 
     error,
     deleteContent,
@@ -236,7 +236,7 @@ export default function ContentManagementSystem() {
         <Card>
           <CardContent className="p-4 text-center">
             <Tag className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold">{tags.length}</div>
+            <div className="text-2xl font-bold">0</div>
             <div className="text-xs text-muted-foreground">Tags</div>
           </CardContent>
         </Card>

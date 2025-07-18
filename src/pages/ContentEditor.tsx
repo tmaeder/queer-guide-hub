@@ -9,6 +9,7 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ContentType, ContentStatus } from "@/hooks/useContent";
 import { ContentEditor as ContentEditorComponent } from "@/components/content/ContentEditor";
+import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 
 export default function ContentEditor() {
   const { id } = useParams();
@@ -18,11 +19,11 @@ export default function ContentEditor() {
   const { 
     content, 
     categories, 
-    tags, 
     createContent, 
     updateContent, 
     deleteContent 
   } = useContent();
+  const { allTags } = useCentralizedTags();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -90,7 +91,7 @@ export default function ContentEditor() {
         meta_keywords: contentItem.meta_keywords || [],
         featured_image: contentItem.featured_image || "",
         categoryIds: contentItem.categories?.map(c => c.id) || [],
-        tagIds: contentItem.tags?.map(t => t.id) || []
+        tagIds: [] // Will be loaded from tag assignments
       });
     } catch (error) {
       toast({
@@ -209,7 +210,7 @@ export default function ContentEditor() {
         onSave={handleSave}
         onPreview={formData.status === "published" ? handlePreview : undefined}
         categories={categories}
-        tags={tags}
+        
         isLoading={isLoading}
         isEditing={!!existingContent}
       />

@@ -32,7 +32,7 @@ export const useTags = () => {
       const { data: centralizedTags, error: centralizedError } = await supabase
         .from("unified_tags")
         .select("*")
-        .eq("usage_count", ">", 0);
+        .gt("usage_count", 0);
 
       if (!centralizedError && centralizedTags && centralizedTags.length > 0) {
         // Use centralized tags if available
