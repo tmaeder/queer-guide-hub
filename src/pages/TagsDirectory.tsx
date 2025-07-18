@@ -192,9 +192,25 @@ export default function TagsDirectory() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {allTags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                    {tag.image_url && <div className="mb-3 rounded-md overflow-hidden h-32">
-                        <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover" />
-                      </div>}
+                    <div className="mb-3 rounded-md overflow-hidden h-40 bg-muted">
+                      {tag.image_url ? (
+                        <img 
+                          src={tag.image_url} 
+                          alt={`${tag.name} themed image`} 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => {
+                            e.currentTarget.src = `https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=200&fit=crop`;
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
+                          <div className="text-center">
+                            <Tag className="h-8 w-8 mx-auto mb-2 text-primary/50" />
+                            <p className="text-sm text-muted-foreground">No image</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-3 h-3 rounded-full" style={{
                   backgroundColor: tag.color
@@ -223,9 +239,25 @@ export default function TagsDirectory() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                      {tag.image_url && <div className="mb-3 rounded-md overflow-hidden h-32">
-                          <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover" />
-                        </div>}
+                      <div className="mb-3 rounded-md overflow-hidden h-40 bg-muted">
+                        {tag.image_url ? (
+                          <img 
+                            src={tag.image_url} 
+                            alt={`${tag.name} themed image`} 
+                            className="w-full h-full object-cover" 
+                            onError={(e) => {
+                              e.currentTarget.src = `https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=200&fit=crop`;
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
+                            <div className="text-center">
+                              <Tag className="h-8 w-8 mx-auto mb-2 text-primary/50" />
+                              <p className="text-sm text-muted-foreground">No image</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-3 h-3 rounded-full" style={{
                   backgroundColor: tag.color
