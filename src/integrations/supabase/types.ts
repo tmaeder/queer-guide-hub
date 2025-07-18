@@ -1398,54 +1398,99 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accessibility_needs: string | null
+          age_range: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
           date_of_birth: string | null
           display_name: string | null
+          education: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          first_name: string | null
+          gender_identity: string | null
           id: string
+          interests: Json | null
           is_business: boolean | null
+          languages: Json | null
+          last_name: string | null
           location: string | null
+          looking_for: string[] | null
+          occupation: string | null
           phone: string | null
           preferences: Json | null
           privacy_settings: Json | null
           pronouns: string | null
+          relationship_status: string | null
+          sexual_orientation: string | null
           social_links: Json | null
           updated_at: string
           user_id: string
           website: string | null
         }
         Insert: {
+          accessibility_needs?: string | null
+          age_range?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           date_of_birth?: string | null
           display_name?: string | null
+          education?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          first_name?: string | null
+          gender_identity?: string | null
           id?: string
+          interests?: Json | null
           is_business?: boolean | null
+          languages?: Json | null
+          last_name?: string | null
           location?: string | null
+          looking_for?: string[] | null
+          occupation?: string | null
           phone?: string | null
           preferences?: Json | null
           privacy_settings?: Json | null
           pronouns?: string | null
+          relationship_status?: string | null
+          sexual_orientation?: string | null
           social_links?: Json | null
           updated_at?: string
           user_id: string
           website?: string | null
         }
         Update: {
+          accessibility_needs?: string | null
+          age_range?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           date_of_birth?: string | null
           display_name?: string | null
+          education?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          first_name?: string | null
+          gender_identity?: string | null
           id?: string
+          interests?: Json | null
           is_business?: boolean | null
+          languages?: Json | null
+          last_name?: string | null
           location?: string | null
+          looking_for?: string[] | null
+          occupation?: string | null
           phone?: string | null
           preferences?: Json | null
           privacy_settings?: Json | null
           pronouns?: string | null
+          relationship_status?: string | null
+          sexual_orientation?: string | null
           social_links?: Json | null
           updated_at?: string
           user_id?: string

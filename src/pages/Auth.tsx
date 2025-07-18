@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -31,7 +32,14 @@ export default function Auth() {
     email: '',
     password: '',
     confirmPassword: '',
-    displayName: ''
+    displayName: '',
+    firstName: '',
+    lastName: '',
+    location: '',
+    ageRange: '',
+    pronouns: '',
+    genderIdentity: '',
+    lookingFor: [] as string[]
   });
 
   // Redirect authenticated users
@@ -98,7 +106,14 @@ export default function Auth() {
 
     try {
       const { error } = await signUp(signupData.email, signupData.password, {
-        display_name: signupData.displayName
+        display_name: signupData.displayName,
+        first_name: signupData.firstName,
+        last_name: signupData.lastName,
+        location: signupData.location,
+        age_range: signupData.ageRange,
+        pronouns: signupData.pronouns,
+        gender_identity: signupData.genderIdentity,
+        looking_for: signupData.lookingFor
       });
       
       if (error) {
@@ -214,16 +229,101 @@ export default function Auth() {
                   />
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first-name">First Name</Label>
+                    <Input
+                      id="first-name"
+                      type="text"
+                      placeholder="Your first name"
+                      value={signupData.firstName}
+                      onChange={(e) => setSignupData({ ...signupData, firstName: e.target.value })}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last-name">Last Name</Label>
+                    <Input
+                      id="last-name"
+                      type="text"
+                      placeholder="Your last name"
+                      value={signupData.lastName}
+                      onChange={(e) => setSignupData({ ...signupData, lastName: e.target.value })}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="display-name">Display Name (Optional)</Label>
+                  <Label htmlFor="display-name">Display Name</Label>
                   <Input
                     id="display-name"
                     type="text"
-                    placeholder="How you'd like to be called"
+                    placeholder="How you'd like to be called publicly"
                     value={signupData.displayName}
                     onChange={(e) => setSignupData({ ...signupData, displayName: e.target.value })}
                     disabled={isLoading}
+                    required
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      type="text"
+                      placeholder="City, Country"
+                      value={signupData.location}
+                      onChange={(e) => setSignupData({ ...signupData, location: e.target.value })}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="pronouns">Pronouns</Label>
+                    <Input
+                      id="pronouns"
+                      type="text"
+                      placeholder="they/them, she/her, he/him"
+                      value={signupData.pronouns}
+                      onChange={(e) => setSignupData({ ...signupData, pronouns: e.target.value })}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="age-range">Age Range</Label>
+                    <Select 
+                      value={signupData.ageRange} 
+                      onValueChange={(value) => setSignupData({ ...signupData, ageRange: value })}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select age range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="18-24">18-24</SelectItem>
+                        <SelectItem value="25-34">25-34</SelectItem>
+                        <SelectItem value="35-44">35-44</SelectItem>
+                        <SelectItem value="45-54">45-54</SelectItem>
+                        <SelectItem value="55-64">55-64</SelectItem>
+                        <SelectItem value="65+">65+</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gender-identity">Gender Identity</Label>
+                    <Input
+                      id="gender-identity"
+                      type="text"
+                      placeholder="How you identify"
+                      value={signupData.genderIdentity}
+                      onChange={(e) => setSignupData({ ...signupData, genderIdentity: e.target.value })}
+                      disabled={isLoading}
+                    />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">

@@ -25,12 +25,27 @@ export default function ProfileSettings() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [formData, setFormData] = useState({
     display_name: profile?.display_name || '',
+    first_name: (profile as any)?.first_name || '',
+    last_name: (profile as any)?.last_name || '',
     bio: profile?.bio || '',
     location: profile?.location || '',
     pronouns: profile?.pronouns || '',
     phone: profile?.phone || '',
     website: profile?.website || '',
     date_of_birth: profile?.date_of_birth || '',
+    age_range: (profile as any)?.age_range || '',
+    gender_identity: (profile as any)?.gender_identity || '',
+    sexual_orientation: (profile as any)?.sexual_orientation || '',
+    relationship_status: (profile as any)?.relationship_status || '',
+    occupation: (profile as any)?.occupation || '',
+    education: (profile as any)?.education || '',
+    languages: (profile as any)?.languages || [],
+    interests: (profile as any)?.interests || [],
+    looking_for: (profile as any)?.looking_for || [],
+    accessibility_needs: (profile as any)?.accessibility_needs || '',
+    emergency_contact_name: (profile as any)?.emergency_contact_name || '',
+    emergency_contact_phone: (profile as any)?.emergency_contact_phone || '',
+    emergency_contact_relationship: (profile as any)?.emergency_contact_relationship || '',
     privacy_settings: {
       profile_visibility: (profile?.privacy_settings as any)?.profile_visibility || 'public',
       email_visible: (profile?.privacy_settings as any)?.email_visible || false,
@@ -115,12 +130,27 @@ export default function ProfileSettings() {
     
     const updates = {
       display_name: formData.display_name,
+      first_name: formData.first_name,
+      last_name: formData.last_name,
       bio: formData.bio,
       location: formData.location,
       pronouns: formData.pronouns,
       phone: formData.phone,
       website: formData.website,
       date_of_birth: formData.date_of_birth || null,
+      age_range: formData.age_range,
+      gender_identity: formData.gender_identity,
+      sexual_orientation: formData.sexual_orientation,
+      relationship_status: formData.relationship_status,
+      occupation: formData.occupation,
+      education: formData.education,
+      languages: formData.languages,
+      interests: formData.interests,
+      looking_for: formData.looking_for,
+      accessibility_needs: formData.accessibility_needs,
+      emergency_contact_name: formData.emergency_contact_name,
+      emergency_contact_phone: formData.emergency_contact_phone,
+      emergency_contact_relationship: formData.emergency_contact_relationship,
       privacy_settings: formData.privacy_settings
     };
 
@@ -198,7 +228,25 @@ export default function ProfileSettings() {
           <CardTitle>Basic Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="first_name">First Name</Label>
+              <Input
+                id="first_name"
+                value={formData.first_name}
+                onChange={(e) => handleInputChange('first_name', e.target.value)}
+                placeholder="Your first name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="last_name">Last Name</Label>
+              <Input
+                id="last_name"
+                value={formData.last_name}
+                onChange={(e) => handleInputChange('last_name', e.target.value)}
+                placeholder="Your last name"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="display_name">Display Name</Label>
               <Input
@@ -206,16 +254,6 @@ export default function ProfileSettings() {
                 value={formData.display_name}
                 onChange={(e) => handleInputChange('display_name', e.target.value)}
                 placeholder="How you'd like to be called"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="pronouns">Pronouns</Label>
-              <Input
-                id="pronouns"
-                value={formData.pronouns}
-                onChange={(e) => handleInputChange('pronouns', e.target.value)}
-                placeholder="e.g., they/them, she/her, he/him"
               />
             </div>
           </div>
@@ -241,7 +279,18 @@ export default function ProfileSettings() {
                 placeholder="City, Country"
               />
             </div>
-            
+            <div className="space-y-2">
+              <Label htmlFor="pronouns">Pronouns</Label>
+              <Input
+                id="pronouns"
+                value={formData.pronouns}
+                onChange={(e) => handleInputChange('pronouns', e.target.value)}
+                placeholder="e.g., they/them, she/her, he/him"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date_of_birth">Date of Birth</Label>
               <Input
@@ -251,6 +300,89 @@ export default function ProfileSettings() {
                 onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="age_range">Age Range</Label>
+              <Select value={formData.age_range} onValueChange={(value) => handleInputChange('age_range', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select age range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="18-24">18-24</SelectItem>
+                  <SelectItem value="25-34">25-34</SelectItem>
+                  <SelectItem value="35-44">35-44</SelectItem>
+                  <SelectItem value="45-54">45-54</SelectItem>
+                  <SelectItem value="55-64">55-64</SelectItem>
+                  <SelectItem value="65+">65+</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Identity & Demographics */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Identity & Demographics</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="gender_identity">Gender Identity</Label>
+              <Input
+                id="gender_identity"
+                value={formData.gender_identity}
+                onChange={(e) => handleInputChange('gender_identity', e.target.value)}
+                placeholder="How you identify"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sexual_orientation">Sexual Orientation</Label>
+              <Input
+                id="sexual_orientation"
+                value={formData.sexual_orientation}
+                onChange={(e) => handleInputChange('sexual_orientation', e.target.value)}
+                placeholder="Your orientation"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="relationship_status">Relationship Status</Label>
+              <Select value={formData.relationship_status} onValueChange={(value) => handleInputChange('relationship_status', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="single">Single</SelectItem>
+                  <SelectItem value="partnered">Partnered</SelectItem>
+                  <SelectItem value="married">Married</SelectItem>
+                  <SelectItem value="polyamorous">Polyamorous</SelectItem>
+                  <SelectItem value="its-complicated">It's Complicated</SelectItem>
+                  <SelectItem value="prefer-not-to-say">Prefer Not to Say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="occupation">Occupation</Label>
+              <Input
+                id="occupation"
+                value={formData.occupation}
+                onChange={(e) => handleInputChange('occupation', e.target.value)}
+                placeholder="Your job or profession"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="education">Education</Label>
+            <Input
+              id="education"
+              value={formData.education}
+              onChange={(e) => handleInputChange('education', e.target.value)}
+              placeholder="Your educational background"
+            />
           </div>
         </CardContent>
       </Card>
@@ -290,6 +422,56 @@ export default function ProfileSettings() {
               Email: {user.email} (managed through account settings)
             </AlertDescription>
           </Alert>
+        </CardContent>
+      </Card>
+
+      {/* Accessibility & Emergency Contact */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Accessibility & Emergency Contact</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="accessibility_needs">Accessibility Needs</Label>
+            <Textarea
+              id="accessibility_needs"
+              value={formData.accessibility_needs}
+              onChange={(e) => handleInputChange('accessibility_needs', e.target.value)}
+              placeholder="Any accessibility accommodations you need at events or venues"
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="emergency_contact_name">Emergency Contact Name</Label>
+              <Input
+                id="emergency_contact_name"
+                value={formData.emergency_contact_name}
+                onChange={(e) => handleInputChange('emergency_contact_name', e.target.value)}
+                placeholder="Full name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="emergency_contact_phone">Emergency Contact Phone</Label>
+              <Input
+                id="emergency_contact_phone"
+                type="tel"
+                value={formData.emergency_contact_phone}
+                onChange={(e) => handleInputChange('emergency_contact_phone', e.target.value)}
+                placeholder="+1 (555) 987-6543"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="emergency_contact_relationship">Relationship</Label>
+              <Input
+                id="emergency_contact_relationship"
+                value={formData.emergency_contact_relationship}
+                onChange={(e) => handleInputChange('emergency_contact_relationship', e.target.value)}
+                placeholder="Parent, Partner, Friend, etc."
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
