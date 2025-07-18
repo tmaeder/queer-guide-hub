@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 import { TagCard } from "@/components/directory/TagCard";
 import { DirectorySearch } from "@/components/directory/DirectorySearch";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,39 @@ export default function TagsDirectory() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedTag, setSelectedTag] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [tagImages, setTagImages] = useState<Record<string, string>>({});
+
+  // Fetch images for tags
+  useEffect(() => {
+    const fetchTagImages = async () => {
+      if (allTags.length === 0) return;
+      
+      const imageMap: Record<string, string> = {};
+      
+      // Fetch images for a subset of tags to avoid hitting API limits
+      const tagsToFetch = allTags.slice(0, 20); // Limit to first 20 tags
+      
+      for (const tag of tagsToFetch) {
+        try {
+          const { data, error } = await supabase.functions.invoke('get-pexels-images', {
+            body: { query: tag.name, type: 'tag' }
+          });
+          
+          if (!error && data?.success && data.images?.[0]) {
+            imageMap[tag.name] = data.images[0].thumbnail;
+          }
+        } catch (err) {
+          console.error(`Failed to fetch image for tag ${tag.name}:`, err);
+        }
+      }
+      
+      setTagImages(imageMap);
+    };
+
+    if (allTags.length > 0) {
+      fetchTagImages();
+    }
+  }, [allTags]);
 
   // Handle route parameter for individual tag pages
   useEffect(() => {
@@ -153,6 +187,15 @@ export default function TagsDirectory() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {allTags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
+                    {tagImages[tag.name] && (
+                      <div className="mb-3 rounded-md overflow-hidden h-32">
+                        <img 
+                          src={tagImages[tag.name]} 
+                          alt={`${tag.name} themed image`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-3 h-3 rounded-full" style={{
                   backgroundColor: tag.color
@@ -165,7 +208,9 @@ export default function TagsDirectory() {
                     {tag.description && <p className="text-sm text-muted-foreground mb-2">
                         {tag.description}
                       </p>}
-                    
+                    <div className="text-xs text-muted-foreground">
+                      Used {tag.usage_count} times
+                    </div>
                   </div>)}
               </div>
             </TabsContent>
@@ -183,6 +228,15 @@ export default function TagsDirectory() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
+                      {tagImages[tag.name] && (
+                        <div className="mb-3 rounded-md overflow-hidden h-32">
+                          <img 
+                            src={tagImages[tag.name]} 
+                            alt={`${tag.name} themed image`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-3 h-3 rounded-full" style={{
                   backgroundColor: tag.color

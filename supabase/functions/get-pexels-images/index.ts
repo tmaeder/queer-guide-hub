@@ -38,9 +38,15 @@ serve(async (req) => {
       searchQuery = `${query} landscape architecture landmarks`;
     } else if (type === 'city') {
       searchQuery = `${query} city skyline architecture`;
+    } else if (type === 'tag') {
+      // For tags, create queer-themed searches with relevant keywords
+      const queerKeywords = ['lgbtq', 'pride', 'rainbow', 'diverse', 'inclusive', 'community', 'celebration', 'colorful', 'flags', 'people'];
+      const additionalKeywords = getTagSpecificKeywords(query);
+      searchQuery = `${query} ${queerKeywords.join(' ')} ${additionalKeywords}`.trim();
     }
 
-    const pexelsUrl = `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=6&orientation=landscape`;
+    const perPage = type === 'tag' ? 1 : 6; // Only need 1 image per tag
+    const pexelsUrl = `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=${perPage}&orientation=landscape`;
     
     const response = await fetch(pexelsUrl, {
       headers: {
@@ -86,3 +92,36 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to get tag-specific keywords for better image search
+function getTagSpecificKeywords(tagName: string): string {
+  const tag = tagName.toLowerCase();
+  
+  if (tag.includes('pride') || tag.includes('flag')) {
+    return 'flag parade march celebration';
+  } else if (tag.includes('transgender') || tag.includes('trans')) {
+    return 'transgender trans pink blue white';
+  } else if (tag.includes('lesbian')) {
+    return 'lesbian orange pink flag women';
+  } else if (tag.includes('gay') || tag.includes('men')) {
+    return 'gay men blue green flag';
+  } else if (tag.includes('bisexual') || tag.includes('bi')) {
+    return 'bisexual purple pink blue';
+  } else if (tag.includes('pansexual') || tag.includes('pan')) {
+    return 'pansexual pink yellow blue';
+  } else if (tag.includes('non-binary') || tag.includes('nonbinary')) {
+    return 'non-binary yellow purple black white';
+  } else if (tag.includes('queer')) {
+    return 'queer community diverse people';
+  } else if (tag.includes('event') || tag.includes('party')) {
+    return 'celebration party event colorful';
+  } else if (tag.includes('venue') || tag.includes('space')) {
+    return 'safe space welcoming inclusive venue';
+  } else if (tag.includes('health') || tag.includes('mental')) {
+    return 'health wellness support care';
+  } else if (tag.includes('community') || tag.includes('group')) {
+    return 'community group people together';
+  } else {
+    return 'inclusive diverse community colorful';
+  }
+}
