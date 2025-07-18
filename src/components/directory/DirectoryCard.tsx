@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Users, Globe, Building2 } from "lucide-react";
+import { MapPin, Users, Globe, Building2, Loader2, ImageIcon } from "lucide-react";
 import { Country, City } from "@/hooks/useDirectory";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCityImages } from "@/hooks/useCityImages";
+
 interface DirectoryCardProps {
   type: "continent" | "country" | "city";
   name: string;
@@ -19,6 +21,11 @@ export const DirectoryCard = ({
   const [countryImage, setCountryImage] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [imageKey, setImageKey] = useState(0); // Force refresh mechanism
+  
+  // City images hook
+  const { fetchCityImage, loading: cityImageLoading } = useCityImages();
+  const [cityImageUrl, setCityImageUrl] = useState<string | null>(data?.image_url || null);
+  const [cityImageError, setCityImageError] = useState(false);
 
   useEffect(() => {
     if (type === "country" && name) {
@@ -89,6 +96,31 @@ export const DirectoryCard = ({
     }
   }, [type, name, imageKey]); // Include imageKey to trigger refresh
 
+  // Fetch city image if it's a city and doesn't have an image
+  useEffect(() => {
+    if (type === "city" && !cityImageUrl && !cityImageError && data?.id) {
+      const loadCityImage = async () => {
+        try {
+          const result = await fetchCityImage(
+            data.id, 
+            name, 
+            data.countries?.name || data.country_name
+          );
+          if (result?.image_url) {
+            setCityImageUrl(result.image_url);
+          } else {
+            setCityImageError(true);
+          }
+        } catch (error) {
+          console.error('Failed to load city image:', error);
+          setCityImageError(true);
+        }
+      };
+      
+      loadCityImage();
+    }
+  }, [type, data?.id, name, cityImageUrl, cityImageError, fetchCityImage, data?.countries?.name, data?.country_name]);
+
   const refreshImage = () => {
     setImageKey(prev => prev + 1);
   };
@@ -149,6 +181,7 @@ export const DirectoryCard = ({
     return null;
   };
   return <Card className={`cursor-pointer transition-all hover:shadow-md hover:scale-105 ${onClick ? "hover:bg-accent/50" : ""}`} onClick={onClick}>
+      {/* Country Image */}
       {type === "country" && <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
           {imageLoading ? <div className="w-full h-full flex items-center justify-center">
               <div className="animate-pulse bg-muted-foreground/20 w-full h-full"></div>
@@ -157,13 +190,35 @@ export const DirectoryCard = ({
         e.currentTarget.src = `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`;
       }} />}
         </div>}
-      <CardHeader className={type === "country" ? "pb-2 pt-3 px-3" : "pb-3"}>
-        <CardTitle className={`flex items-center justify-between ${type === "country" ? "text-sm" : ""}`}>
+      
+      {/* City Image */}
+      {type === "city" && (
+        <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
+          {cityImageLoading ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : cityImageUrl && !cityImageError ? (
+            <img
+              src={cityImageUrl}
+              alt={`${name} cityscape`}
+              className="w-full h-full object-cover"
+              onError={() => setCityImageError(true)}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageIcon className="h-8 w-8 text-muted-foreground" />
+            </div>
+          )}
+        </div>
+      )}
+      <CardHeader className={(type === "country" || type === "city") ? "pb-2 pt-3 px-3" : "pb-3"}>
+        <CardTitle className={`flex items-center justify-between ${(type === "country" || type === "city") ? "text-sm" : ""}`}>
           <div className="flex items-center gap-2">
-            {type !== "country" && getIcon()}
-            <span className={type === "country" ? "text-sm font-medium" : "text-lg"}>{name}</span>
+            {(type !== "country" && type !== "city") && getIcon()}
+            <span className={(type === "country" || type === "city") ? "text-sm font-medium" : "text-lg"}>{name}</span>
           </div>
-          {type !== "country" && getStats()}
+          {(type !== "country" && type !== "city") && getStats()}
         </CardTitle>
       </CardHeader>
       {getSubtitle() && <CardContent className="pt-0">

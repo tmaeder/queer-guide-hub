@@ -127,6 +127,8 @@ export type Database = {
           country_id: string
           created_at: string
           id: string
+          image_metadata: Json | null
+          image_url: string | null
           is_capital: boolean | null
           is_major_city: boolean | null
           latitude: number | null
@@ -141,6 +143,8 @@ export type Database = {
           country_id: string
           created_at?: string
           id?: string
+          image_metadata?: Json | null
+          image_url?: string | null
           is_capital?: boolean | null
           is_major_city?: boolean | null
           latitude?: number | null
@@ -155,6 +159,8 @@ export type Database = {
           country_id?: string
           created_at?: string
           id?: string
+          image_metadata?: Json | null
+          image_url?: string | null
           is_capital?: boolean | null
           is_major_city?: boolean | null
           latitude?: number | null
