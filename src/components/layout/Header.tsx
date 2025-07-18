@@ -86,7 +86,7 @@ export function Header() {
               </Link>
               <Link to="/tags" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                 <Tags className="h-6 w-6 mb-1" />
-                <span className="text-xs">Tags</span>
+                <span className="text-xs">Wiki</span>
               </Link>
               <Link to="/directory" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                 <Globe className="h-6 w-6 mb-1" />
