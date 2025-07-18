@@ -30,7 +30,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import DMCA from "./pages/DMCA";
 import Auth from "./pages/Auth";
-import AdminContent from "./pages/AdminContent";
+import ContentManagementSystem from "./pages/ContentManagementSystem";
 import ContentEditor from "./pages/ContentEditor";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminTags from "./pages/AdminTags";
@@ -149,7 +149,7 @@ const App = () => {
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/cms" element={<UnifiedCMS />} />
-                  <Route path="/admin/content" element={<AdminContent />} />
+                  <Route path="/admin/content" element={<ContentManagementSystem />} />
                   <Route path="/admin/content/:id" element={<ContentEditor />} />
                   <Route path="/admin/content/new" element={<ContentEditor />} />
                   <Route path="/admin/tags" element={<AdminTags />} />
