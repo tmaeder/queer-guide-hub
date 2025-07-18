@@ -124,11 +124,6 @@ export const AdvancedSearchBar = () => {
         
         <PopoverContent className="w-80 p-0" align="start">
           <Command>
-            <CommandInput
-              placeholder="Type to search..."
-              value={query}
-              onValueChange={setQuery}
-            />
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               
