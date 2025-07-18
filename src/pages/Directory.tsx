@@ -211,7 +211,7 @@ export default function Directory() {
                       <h3 className="text-lg font-semibold text-primary">{continent.name}</h3>
                       <Badge variant="outline">{continentCountries.length} countries</Badge>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 pl-8">
                       {continentCountries.map((country) => (
                         <DirectoryCard
                           key={country.id}
@@ -254,7 +254,7 @@ export default function Directory() {
             <h2 className="text-xl font-semibold">Countries in {selectedContinent?.name}</h2>
             <Badge variant="secondary">{continentCountries.length}</Badge>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {continentCountries.map((country) => (
               <DirectoryCard
                 key={country.id}
@@ -290,7 +290,7 @@ export default function Directory() {
             className="mb-6"
           />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {countryCities.map((city) => (
               <DirectoryCard
                 key={city.id}

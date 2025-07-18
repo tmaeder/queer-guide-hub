@@ -145,7 +145,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       onClick={onClick}
     >
       {type === "country" && (
-        <div className="aspect-video w-full overflow-hidden rounded-t-lg bg-muted">
+        <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
           {imageLoading ? (
             <div className="w-full h-full flex items-center justify-center">
               <div className="animate-pulse bg-muted-foreground/20 w-full h-full"></div>
@@ -163,13 +163,13 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           )}
         </div>
       )}
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between">
+      <CardHeader className={type === "country" ? "pb-2 pt-3 px-3" : "pb-3"}>
+        <CardTitle className={`flex items-center justify-between ${type === "country" ? "text-sm" : ""}`}>
           <div className="flex items-center gap-2">
-            {getIcon()}
-            <span className="text-lg">{name}</span>
+            {type !== "country" && getIcon()}
+            <span className={type === "country" ? "text-sm font-medium" : "text-lg"}>{name}</span>
           </div>
-          {getStats()}
+          {type !== "country" && getStats()}
         </CardTitle>
       </CardHeader>
       {getSubtitle() && (
