@@ -21,16 +21,18 @@ serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('PEXELS_API_KEY');
-    if (!apiKey) {
-      console.error('PEXELS_API_KEY not found');
+    const pexelsApiKey = Deno.env.get('PEXELS_API_KEY');
+    const unsplashApiKey = Deno.env.get('UNSPLASH_ACCESS_KEY');
+    
+    if (!pexelsApiKey && !unsplashApiKey) {
+      console.error('Neither PEXELS_API_KEY nor UNSPLASH_ACCESS_KEY found');
       return new Response(
-        JSON.stringify({ error: 'Pexels API key not configured' }),
+        JSON.stringify({ error: 'No image API keys configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Fetching Pexels images for:', { query, type });
+    console.log('Fetching images for:', { query, type });
 
     // Create search query based on type
     let searchQuery = query;
@@ -45,41 +47,82 @@ serve(async (req) => {
       searchQuery = `${query} ${queerKeywords.join(' ')} ${additionalKeywords}`.trim();
     }
 
-    const perPage = type === 'tag' ? 1 : 6; // Only need 1 image per tag
-    const pexelsUrl = `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=${perPage}&orientation=landscape`;
-    
-    const response = await fetch(pexelsUrl, {
-      headers: {
-        'Authorization': apiKey,
-      },
-    });
+    const allImages: any[] = [];
+    const perPage = type === 'tag' ? 1 : 3; // Fetch fewer from each source
 
-    if (!response.ok) {
-      console.error('Pexels API error:', response.status, response.statusText);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch images from Pexels' }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Fetch from Pexels if API key is available
+    if (pexelsApiKey) {
+      try {
+        console.log('Fetching from Pexels...');
+        const pexelsUrl = `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=${perPage}&orientation=landscape`;
+        
+        const pexelsResponse = await fetch(pexelsUrl, {
+          headers: {
+            'Authorization': pexelsApiKey,
+          },
+        });
+
+        if (pexelsResponse.ok) {
+          const pexelsData = await pexelsResponse.json();
+          const pexelsImages = pexelsData.photos?.map((photo: any) => ({
+            id: `pexels-${photo.id}`,
+            url: photo.src.large,
+            thumbnail: photo.src.medium,
+            alt: photo.alt,
+            photographer: photo.photographer,
+            photographer_url: photo.photographer_url,
+            source: 'pexels'
+          })) || [];
+          allImages.push(...pexelsImages);
+          console.log('Pexels images fetched successfully:', pexelsImages.length, 'images');
+        } else {
+          console.error('Pexels API error:', pexelsResponse.status, pexelsResponse.statusText);
+        }
+      } catch (error) {
+        console.error('Pexels fetch error:', error);
+      }
     }
 
-    const data = await response.json();
-    
-    const images = data.photos?.map((photo: any) => ({
-      id: photo.id,
-      url: photo.src.large,
-      thumbnail: photo.src.medium,
-      alt: photo.alt,
-      photographer: photo.photographer,
-      photographer_url: photo.photographer_url
-    })) || [];
+    // Fetch from Unsplash if API key is available
+    if (unsplashApiKey) {
+      try {
+        console.log('Fetching from Unsplash...');
+        const unsplashUrl = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=${perPage}&orientation=landscape`;
+        
+        const unsplashResponse = await fetch(unsplashUrl, {
+          headers: {
+            'Authorization': `Client-ID ${unsplashApiKey}`,
+          },
+        });
 
-    console.log('Pexels images fetched successfully:', images.length, 'images');
+        if (unsplashResponse.ok) {
+          const unsplashData = await unsplashResponse.json();
+          const unsplashImages = unsplashData.results?.map((photo: any) => ({
+            id: `unsplash-${photo.id}`,
+            url: photo.urls.regular,
+            thumbnail: photo.urls.small,
+            alt: photo.alt_description || photo.description || query,
+            photographer: photo.user.name,
+            photographer_url: photo.user.links.html,
+            source: 'unsplash'
+          })) || [];
+          allImages.push(...unsplashImages);
+          console.log('Unsplash images fetched successfully:', unsplashImages.length, 'images');
+        } else {
+          console.error('Unsplash API error:', unsplashResponse.status, unsplashResponse.statusText);
+        }
+      } catch (error) {
+        console.error('Unsplash fetch error:', error);
+      }
+    }
+
+    console.log('Total images fetched:', allImages.length);
 
     return new Response(
       JSON.stringify({
         success: true,
-        images,
-        total: data.total_results
+        images: allImages,
+        total: allImages.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
