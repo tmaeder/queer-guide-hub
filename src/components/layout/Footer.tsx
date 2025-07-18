@@ -104,11 +104,21 @@ export function Footer() {
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Stay Connected</h4>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="text-xs">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => window.open('mailto:newsletter@queerguide.com?subject=Newsletter Signup', '_blank')}
+                >
                   <Mail className="h-3 w-3 mr-1" />
                   Newsletter
                 </Button>
-                <Button variant="outline" size="sm" className="text-xs">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => navigate('/news')}
+                >
                   <Globe className="h-3 w-3 mr-1" />
                   Updates
                 </Button>
