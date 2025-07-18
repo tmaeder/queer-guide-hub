@@ -10,7 +10,6 @@ import {
   Plane, 
   Users, 
   Shield, 
-  Star,
   ArrowRight,
   CheckCircle,
   Sparkles
@@ -72,23 +71,6 @@ const Index = () => {
     { number: '1K+', label: 'Weekly Events' }
   ];
 
-  const testimonials = [
-    {
-      quote: "Finally found safe spaces to be myself. This platform changed how I explore my city.",
-      author: "Alex",
-      role: "Community Member"
-    },
-    {
-      quote: "As a business owner, being part of this network has connected me with my community.",
-      author: "Jordan",
-      role: "Business Owner"
-    },
-    {
-      quote: "The events here helped me find my chosen family. Forever grateful.",
-      author: "Sam",
-      role: "Event Organizer"
-    }
-  ];
 
   return (
     <div className="min-h-screen">
@@ -190,42 +172,6 @@ const Index = () => {
                     Learn More
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-20 px-4 bg-primary/5">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Trusted by Our 
-              <span className="text-primary"> Community</span>
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Real stories from real people making a difference
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-background/80 backdrop-blur border-0 shadow-xl">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-primary text-primary" />
-                    ))}
-                  </div>
-                  <blockquote className="text-lg mb-6 italic">
-                    "{testimonial.quote}"
-                  </blockquote>
-                  <div className="border-t pt-4">
-                    <div className="font-semibold">{testimonial.author}</div>
-                    <div className="text-sm text-muted-foreground">{testimonial.role}</div>
-                  </div>
                 </CardContent>
               </Card>
             ))}
