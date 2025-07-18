@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store, Info, Eye, FileText, Phone, Newspaper, Users, Globe, Tag } from "lucide-react";
+import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store, Info, Eye, FileText, Phone, Newspaper, Users, Globe, Tag, Shield, Lock, Cookie, Copyright } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -7,16 +7,20 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
   const legalLinks = [{
     href: "/terms",
-    label: "Terms of Service"
+    label: "Terms of Service",
+    icon: FileText
   }, {
     href: "/privacy",
-    label: "Privacy Policy"
+    label: "Privacy Policy",
+    icon: Shield
   }, {
     href: "/cookies",
-    label: "Cookie Policy"
+    label: "Cookie Policy",
+    icon: Cookie
   }, {
     href: "/dmca",
-    label: "DMCA"
+    label: "DMCA",
+    icon: Copyright
   }];
   const helpLinks = [{
     href: "/about",
@@ -134,7 +138,8 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
               {legalLinks.map(link => <li key={link.href}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                    <link.icon className="h-4 w-4" />
                     {link.label}
                   </Link>
                 </li>)}
