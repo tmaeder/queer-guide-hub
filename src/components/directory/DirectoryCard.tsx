@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, Globe, Building2 } from "lucide-react";
 import { Country, City } from "@/hooks/useDirectory";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DirectoryCardProps {
   type: "continent" | "country" | "city";
@@ -11,6 +13,37 @@ interface DirectoryCardProps {
 }
 
 export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps) => {
+  const [countryImage, setCountryImage] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
+
+  useEffect(() => {
+    if (type === "country" && name) {
+      setImageLoading(true);
+      const fetchCountryImage = async () => {
+        try {
+          const { data: imageData, error } = await supabase.functions.invoke('get-pexels-images', {
+            body: { query: name, type: 'country' }
+          });
+
+          if (error) {
+            console.error('Error fetching country image:', error);
+            return;
+          }
+
+          if (imageData?.images && imageData.images.length > 0) {
+            setCountryImage(imageData.images[0].url);
+          }
+        } catch (error) {
+          console.error('Error fetching country image:', error);
+        } finally {
+          setImageLoading(false);
+        }
+      };
+
+      fetchCountryImage();
+    }
+  }, [type, name]);
+
   const formatPopulation = (population?: number | null) => {
     if (!population) return null;
     if (population >= 1000000) {
@@ -97,12 +130,22 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       onClick={onClick}
     >
       {type === "country" && (
-        <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-          <img 
-            src={`https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`}
-            alt={`${name} landscape`}
-            className="w-full h-full object-cover"
-          />
+        <div className="aspect-video w-full overflow-hidden rounded-t-lg bg-muted">
+          {imageLoading ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="animate-pulse bg-muted-foreground/20 w-full h-full"></div>
+            </div>
+          ) : (
+            <img 
+              src={countryImage || `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`}
+              alt={`${name} landscape`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to default image if Pexels image fails to load
+                e.currentTarget.src = `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`;
+              }}
+            />
+          )}
         </div>
       )}
       <CardHeader className="pb-3">
