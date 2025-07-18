@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Heart, Mail, Github, Twitter, Instagram } from "lucide-react";
+import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store, Info, Eye, FileText, Phone, Newspaper, Users, Globe, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -20,41 +20,53 @@ export function Footer() {
   }];
   const helpLinks = [{
     href: "/about",
-    label: "About Us"
+    label: "About Us",
+    icon: Info
   }, {
     href: "/vision",
-    label: "Our Vision"
+    label: "Our Vision",
+    icon: Eye
   }, {
     href: "/values",
-    label: "Our Values"
+    label: "Our Values",
+    icon: Heart
   }, {
     href: "/contact",
-    label: "Contact"
+    label: "Contact",
+    icon: Phone
   }, {
     href: "/press",
-    label: "Press"
+    label: "Press",
+    icon: Newspaper
   }, {
     href: "/blog",
-    label: "Blog"
+    label: "Blog",
+    icon: FileText
   }, {
     href: "/directory",
-    label: "Directory"
+    label: "Directory",
+    icon: Users
   }, {
     href: "/tags",
-    label: "Tags Wiki"
+    label: "Tags Wiki",
+    icon: Tag
   }];
   const communityLinks = [{
     href: "/travel",
-    label: "Travel"
+    label: "Travel",
+    icon: Plane
   }, {
     href: "/venues",
-    label: "Venues"
+    label: "Venues",
+    icon: MapPin
   }, {
     href: "/events",
-    label: "Events"
+    label: "Events",
+    icon: Calendar
   }, {
     href: "/marketplace",
-    label: "Marketplace"
+    label: "Marketplace",
+    icon: Store
   }];
   const socialLinks = [{
     href: "#",
@@ -96,7 +108,8 @@ export function Footer() {
             
             <ul className="space-y-2">
               {communityLinks.map(link => <li key={link.href}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                    <link.icon className="h-4 w-4" />
                     {link.label}
                   </Link>
                 </li>)}
@@ -108,7 +121,8 @@ export function Footer() {
             
             <ul className="space-y-2">
               {helpLinks.map(link => <li key={link.href}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                    <link.icon className="h-4 w-4" />
                     {link.label}
                   </Link>
                 </li>)}
