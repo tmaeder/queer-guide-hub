@@ -50,9 +50,13 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           const specificQuery = countrySpecificQueries[name as keyof typeof countrySpecificQueries];
           const query = specificQuery || `${name} famous landmarks architecture cityscape`;
           
+          // Add a small random element to ensure different images for each country
+          const randomSeed = Math.floor(Math.random() * 5) + 1;
+          const finalQuery = `${query} ${randomSeed}`;
+          
           const { data: imageData, error } = await supabase.functions.invoke('get-pexels-images', {
             body: { 
-              query: query, 
+              query: finalQuery, 
               type: 'country',
               page: 1 // Use first page for most relevant results
             }
@@ -64,8 +68,13 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           }
 
           if (imageData?.images && imageData.images.length > 0) {
-            // Use the first (most relevant) image instead of random
-            setCountryImage(imageData.images[0].url);
+            // Use a deterministic but unique index based on country name
+            const countryHash = name.split('').reduce((a, b) => {
+              a = ((a << 5) - a) + b.charCodeAt(0);
+              return a & a;
+            }, 0);
+            const imageIndex = Math.abs(countryHash) % imageData.images.length;
+            setCountryImage(imageData.images[imageIndex].url);
           }
         } catch (error) {
           console.error('Error fetching country image:', error);
