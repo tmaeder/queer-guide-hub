@@ -163,12 +163,12 @@ export const DirectoryCard = ({
       return <div className="space-y-1">
           {city.countries && <p className="text-sm text-muted-foreground">{city.countries.name}</p>}
           <div className="flex gap-2">
-            {city.is_capital && <Badge variant="default" className="text-xs">
-                Capital
-              </Badge>}
-            {city.is_major_city && <Badge variant="secondary" className="text-xs">
-                Major City
-              </Badge>}
+            {city.is_capital && <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                <Crown className="h-3 w-3 text-primary" />
+              </div>}
+            {city.is_major_city && <div className="flex items-center justify-center w-6 h-6 rounded-full bg-secondary/10">
+                <Building2 className="h-3 w-3 text-secondary-foreground" />
+              </div>}
           </div>
         </div>;
     }
