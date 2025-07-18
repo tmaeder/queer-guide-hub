@@ -130,33 +130,6 @@ export default function TagsDirectory() {
 
       {/* Content based on view mode */}
       {viewMode === "overview" && <div className="space-y-6">
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-card rounded-lg p-4 border">
-              <div className="flex items-center gap-2">
-                <Tag className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-2xl font-bold">{allTags.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Tags</p>
-                </div>
-              </div>
-            </div>
-            {tagsByCategory.map(categoryData => {
-          const IconComponent = getCategoryIcon(categoryData.category);
-          return <div key={categoryData.category} className="bg-card rounded-lg p-4 border">
-                  <div className="flex items-center gap-2">
-                    <IconComponent className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-2xl font-bold">{categoryData.count}</p>
-                      <p className="text-sm text-muted-foreground capitalize">
-                        {categoryData.category.replace('-', ' ')}
-                      </p>
-                    </div>
-                  </div>
-                </div>;
-        })}
-          </div>
-
           {/* Categories */}
           <Tabs defaultValue="all" className="space-y-4">
             <TabsList className="w-full flex-wrap h-auto justify-start gap-2">
