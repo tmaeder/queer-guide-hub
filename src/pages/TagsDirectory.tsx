@@ -30,24 +30,14 @@ export default function TagsDirectory() {
   const [tagImages, setTagImages] = useState<Record<string, string>>({});
   const [processingImages, setProcessingImages] = useState(false);
 
-  // Store images for tags without images
+  // Store images for all tags (reimport all)
   const storeTagImages = async () => {
     if (allTags.length === 0) return;
     setProcessingImages(true);
     try {
-      const tagsWithoutImages = allTags.filter(tag => !tag.image_url);
-      console.log(`Processing ${tagsWithoutImages.length} tags without images`);
-      
-      if (tagsWithoutImages.length === 0) {
-        toast({
-          title: "All images present",
-          description: "All tags already have images!",
-        });
-        setProcessingImages(false);
-        return;
-      }
+      console.log(`Processing ${allTags.length} tags (reimporting all images)`);
 
-      for (const tag of tagsWithoutImages) {
+      for (const tag of allTags) {
         try {
           console.log(`Calling store-tag-images for tag: ${tag.name}`);
           const { data, error } = await supabase.functions.invoke('store-tag-images', {
@@ -228,7 +218,7 @@ export default function TagsDirectory() {
                 </div>
                 <Button onClick={storeTagImages} disabled={processingImages} variant="outline" size="sm">
                   <Upload className="h-4 w-4 mr-2" />
-                  {processingImages ? 'Processing...' : 'Store Missing Images'}
+                  {processingImages ? 'Processing...' : 'Reimport All Images'}
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

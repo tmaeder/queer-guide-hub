@@ -29,24 +29,7 @@ serve(async (req) => {
 
     console.log('Processing tag:', { tagId, tagName });
 
-    // Check if tag already has an image
-    const { data: existingTag } = await supabase
-      .from('unified_tags')
-      .select('image_url')
-      .eq('id', tagId)
-      .single();
-
-    if (existingTag?.image_url) {
-      console.log('Tag already has image:', existingTag.image_url);
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Tag already has image',
-          image_url: existingTag.image_url 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // Force reimport - skip existing image check
 
     const pexelsApiKey = Deno.env.get('PEXELS_API_KEY');
     const unsplashApiKey = Deno.env.get('UNSPLASH_ACCESS_KEY');
