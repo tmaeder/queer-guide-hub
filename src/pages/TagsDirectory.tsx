@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 import { TagCard } from "@/components/directory/TagCard";
-import { DirectorySearch, type DirectoryFilters } from "@/components/directory/DirectorySearch";
+import { DirectorySearch } from "@/components/directory/DirectorySearch";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -94,12 +94,6 @@ export default function TagsDirectory() {
       setSearchResults([]);
     }
   };
-
-  const handleFiltersChange = (newFilters: DirectoryFilters) => {
-    // For tags directory, filters might not be immediately applicable
-    // This can be expanded later if needed
-  };
-
   const handleBack = () => {
     if (viewMode === "tag-detail") {
       setViewMode(selectedCategory ? "category" : "overview");
@@ -154,7 +148,7 @@ export default function TagsDirectory() {
       </div>
 
       {/* Search */}
-      <DirectorySearch onSearch={handleSearch} onFiltersChange={handleFiltersChange} placeholder="Search tags, categories, descriptions..." />
+      <DirectorySearch onSearch={handleSearch} placeholder="Search tags, categories, descriptions..." />
 
       {/* Breadcrumb */}
       {viewMode !== "overview" && viewMode !== "search" && <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -191,38 +185,7 @@ export default function TagsDirectory() {
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {allTags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                    <div className="mb-3 rounded-md overflow-hidden h-40 bg-muted">
-                      {tag.image_url ? (
-                        <img 
-                          src={tag.image_url} 
-                          alt={`${tag.name} themed image`} 
-                          className="w-full h-full object-cover" 
-                          onError={(e) => {
-                            e.currentTarget.src = `https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=200&fit=crop`;
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
-                          <div className="text-center">
-                            <Tag className="h-8 w-8 mx-auto mb-2 text-primary/50" />
-                            <p className="text-sm text-muted-foreground">No image</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-3 h-3 rounded-full" style={{
-                  backgroundColor: tag.color
-                }} />
-                      <span className="font-medium">{tag.name}</span>
-                      
-                    </div>
-                    {tag.description && <p className="text-sm text-muted-foreground mb-2">
-                        {tag.description}
-                      </p>}
-                    
-                  </div>)}
+                {allTags.map((tag, index) => {})}
               </div>
             </TabsContent>
 
@@ -239,25 +202,9 @@ export default function TagsDirectory() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                      <div className="mb-3 rounded-md overflow-hidden h-40 bg-muted">
-                        {tag.image_url ? (
-                          <img 
-                            src={tag.image_url} 
-                            alt={`${tag.name} themed image`} 
-                            className="w-full h-full object-cover" 
-                            onError={(e) => {
-                              e.currentTarget.src = `https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=200&fit=crop`;
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
-                            <div className="text-center">
-                              <Tag className="h-8 w-8 mx-auto mb-2 text-primary/50" />
-                              <p className="text-sm text-muted-foreground">No image</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      {tag.image_url && <div className="mb-3 rounded-md overflow-hidden h-32">
+                          <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover" />
+                        </div>}
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-3 h-3 rounded-full" style={{
                   backgroundColor: tag.color
