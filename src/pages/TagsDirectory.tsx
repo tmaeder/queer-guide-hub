@@ -37,29 +37,46 @@ export default function TagsDirectory() {
     try {
       const tagsWithoutImages = allTags.filter(tag => !tag.image_url);
       console.log(`Processing ${tagsWithoutImages.length} tags without images`);
+      
+      if (tagsWithoutImages.length === 0) {
+        toast.success('All tags already have images!');
+        setProcessingImages(false);
+        return;
+      }
+
       for (const tag of tagsWithoutImages) {
         try {
-          const {
-            data,
-            error
-          } = await supabase.functions.invoke('store-tag-images', {
+          console.log(`Calling store-tag-images for tag: ${tag.name}`);
+          const { data, error } = await supabase.functions.invoke('store-tag-images', {
             body: {
               tagId: tag.id,
               tagName: tag.name
             }
           });
-          if (!error && data?.success) {
+          
+          console.log(`Response for ${tag.name}:`, { data, error });
+          
+          if (error) {
+            console.error(`Error for tag ${tag.name}:`, error);
+            toast.error(`Failed to fetch image for ${tag.name}: ${error.message}`);
+          } else if (data?.success) {
             console.log(`Successfully stored image for tag: ${tag.name}`);
+            toast.success(`Image stored for ${tag.name}`);
+          } else {
+            console.log(`No success flag for tag ${tag.name}:`, data);
+            toast.warning(`Unexpected response for ${tag.name}`);
           }
         } catch (err) {
           console.error(`Failed to store image for tag ${tag.name}:`, err);
+          toast.error(`Failed to store image for ${tag.name}`);
         }
       }
 
-      // Refetch tags to get updated image URLs
-      window.location.reload();
+      toast.success('Image processing complete! Refreshing page...');
+      setTimeout(() => window.location.reload(), 2000);
     } catch (error) {
       console.error('Error processing tag images:', error);
+      toast.error('Error processing tag images');
     } finally {
       setProcessingImages(false);
     }
