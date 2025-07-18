@@ -15,14 +15,23 @@ interface DirectoryCardProps {
 export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps) => {
   const [countryImage, setCountryImage] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
+  const [imageKey, setImageKey] = useState(0); // Force refresh mechanism
 
   useEffect(() => {
     if (type === "country" && name) {
       setImageLoading(true);
       const fetchCountryImage = async () => {
         try {
+          // Add random keywords to get different images each time
+          const randomKeywords = ['landscape', 'architecture', 'landmarks', 'nature', 'tourism', 'culture', 'historic', 'scenic'];
+          const randomKeyword = randomKeywords[Math.floor(Math.random() * randomKeywords.length)];
+          
           const { data: imageData, error } = await supabase.functions.invoke('get-pexels-images', {
-            body: { query: name, type: 'country' }
+            body: { 
+              query: `${name} ${randomKeyword}`, 
+              type: 'country',
+              page: Math.floor(Math.random() * 3) + 1 // Random page to get different results
+            }
           });
 
           if (error) {
@@ -31,7 +40,9 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           }
 
           if (imageData?.images && imageData.images.length > 0) {
-            setCountryImage(imageData.images[0].url);
+            // Pick a random image from the results
+            const randomIndex = Math.floor(Math.random() * imageData.images.length);
+            setCountryImage(imageData.images[randomIndex].url);
           }
         } catch (error) {
           console.error('Error fetching country image:', error);
@@ -42,7 +53,11 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
 
       fetchCountryImage();
     }
-  }, [type, name]);
+  }, [type, name, imageKey]); // Include imageKey to trigger refresh
+
+  const refreshImage = () => {
+    setImageKey(prev => prev + 1);
+  };
 
   const formatPopulation = (population?: number | null) => {
     if (!population) return null;

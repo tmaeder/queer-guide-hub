@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { query, type } = await req.json();
+    const { query, type, page = 1 } = await req.json();
     
     if (!query) {
       return new Response(
@@ -54,7 +54,7 @@ serve(async (req) => {
     if (pexelsApiKey) {
       try {
         console.log('Fetching from Pexels...');
-        const pexelsUrl = `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=${perPage}&orientation=landscape`;
+        const pexelsUrl = `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=${perPage}&page=${page}&orientation=landscape`;
         
         const pexelsResponse = await fetch(pexelsUrl, {
           headers: {
@@ -87,7 +87,7 @@ serve(async (req) => {
     if (unsplashApiKey) {
       try {
         console.log('Fetching from Unsplash...');
-        const unsplashUrl = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=${perPage}&orientation=landscape`;
+        const unsplashUrl = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=${perPage}&page=${page}&orientation=landscape`;
         
         const unsplashResponse = await fetch(unsplashUrl, {
           headers: {
