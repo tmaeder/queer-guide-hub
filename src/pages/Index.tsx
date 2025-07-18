@@ -1,9 +1,21 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, MapPin, Calendar, Store, Plane, Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Heart, 
+  MapPin, 
+  Calendar, 
+  Store, 
+  Plane, 
+  Users, 
+  Shield, 
+  Star,
+  ArrowRight,
+  CheckCircle,
+  Sparkles
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { VenueMapSearch } from '@/components/venues/VenueMapSearch';
 
 const Index = () => {
   const { user } = useAuth();
@@ -11,84 +23,173 @@ const Index = () => {
   const features = [
     {
       icon: MapPin,
-      title: 'Venue Directory',
-      description: 'Discover queer-friendly venues in your area',
-      color: 'text-primary'
+      title: 'Safe Venues',
+      description: 'Discover verified queer-friendly venues worldwide',
+      color: 'text-primary',
+      gradient: 'bg-gradient-to-br from-primary/10 to-primary/5'
     },
     {
       icon: Calendar,
-      title: 'Events Calendar',
-      description: 'Find and share community events',
-      color: 'text-accent'
+      title: 'Community Events',
+      description: 'Connect through local and virtual events',
+      color: 'text-secondary',
+      gradient: 'bg-gradient-to-br from-secondary/10 to-secondary/5'
     },
     {
       icon: Store,
-      title: 'Marketplace',
-      description: 'Support queer-owned businesses',
-      color: 'text-secondary'
+      title: 'Queer Marketplace',
+      description: 'Support LGBTQ+ owned businesses and creators',
+      color: 'text-accent',
+      gradient: 'bg-gradient-to-br from-accent/10 to-accent/5'
     },
     {
       icon: Plane,
-      title: 'Travel Planner',
-      description: 'Plan safe and inclusive travel',
-      color: 'text-primary'
+      title: 'Travel Planning',
+      description: 'Plan inclusive trips with confidence',
+      color: 'text-primary',
+      gradient: 'bg-gradient-to-br from-primary/10 to-primary/5'
     },
     {
       icon: Users,
       title: 'Community Hub',
-      description: 'Connect with your community',
-      color: 'text-accent'
+      description: 'Build lasting connections and friendships',
+      color: 'text-secondary',
+      gradient: 'bg-gradient-to-br from-secondary/10 to-secondary/5'
+    },
+    {
+      icon: Shield,
+      title: 'Safe Spaces',
+      description: 'Verified inclusive and welcoming environments',
+      color: 'text-accent',
+      gradient: 'bg-gradient-to-br from-accent/10 to-accent/5'
+    }
+  ];
+
+  const stats = [
+    { number: '10K+', label: 'Verified Venues' },
+    { number: '50K+', label: 'Community Members' },
+    { number: '200+', label: 'Cities Worldwide' },
+    { number: '1K+', label: 'Weekly Events' }
+  ];
+
+  const testimonials = [
+    {
+      quote: "Finally found safe spaces to be myself. This platform changed how I explore my city.",
+      author: "Alex",
+      role: "Community Member"
+    },
+    {
+      quote: "As a business owner, being part of this network has connected me with my community.",
+      author: "Jordan",
+      role: "Business Owner"
+    },
+    {
+      quote: "The events here helped me find my chosen family. Forever grateful.",
+      author: "Sam",
+      role: "Event Organizer"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="w-full text-center">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <Heart className="h-12 w-12 text-primary fill-current" />
-            <h1 className="text-5xl md:text-6xl font-bold gradient-text">
-              Queer Guide
-            </h1>
-          </div>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Your comprehensive platform for discovering queer-friendly venues, 
-            connecting with community, and building safe spaces together.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8" asChild>
-              <Link to="/venues">Explore Venues</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8" asChild>
-              <Link to={user ? "/community" : "/auth"}>
-                {user ? "Join Community" : "Sign Up"}
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        <div className="relative container mx-auto px-4 py-20 lg:py-28">
+          <div className="text-center max-w-5xl mx-auto">
+            {/* Badge */}
+            <Badge variant="secondary" className="mb-6 px-4 py-2">
+              <Sparkles className="h-4 w-4 mr-2" />
+              Building Safe Communities Since 2024
+            </Badge>
 
-      {/* Venue Map Search */}
-      <section className="py-16 px-4">
-        <div className="w-full">
-          <VenueMapSearch />
+            {/* Main Headline */}
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <Heart className="h-16 w-16 text-primary fill-current animate-pulse" />
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold">
+                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  Queer Guide
+                </span>
+              </h1>
+            </div>
+
+            {/* Subtitle */}
+            <p className="text-xl md:text-2xl lg:text-3xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
+              Your comprehensive platform for discovering safe spaces, 
+              connecting with community, and building an inclusive world together.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Button 
+                size="lg" 
+                className="text-lg px-8 py-6 bg-gradient-primary hover:opacity-90 shadow-lg hover:shadow-xl transition-all" 
+                asChild
+              >
+                <Link to="/venues">
+                  Explore Venues
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg px-8 py-6 hover:bg-primary/10 border-2" 
+                asChild
+              >
+                <Link to={user ? "/events" : "/auth"}>
+                  {user ? "Browse Events" : "Join Community"}
+                </Link>
+              </Button>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+                    {stat.number}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-16 px-4">
-        <div className="w-full">
-          <h2 className="text-3xl font-bold text-center mb-12">
-            Everything You Need in One Place
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/20">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Everything You Need in 
+              <span className="text-primary"> One Place</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Comprehensive tools and resources designed by and for the LGBTQ+ community
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="group hover:shadow-elegant transition-all duration-300 animate-fade-in">
-                <CardContent className="p-6 text-center">
-                  <feature.icon className={`h-12 w-12 mx-auto mb-4 ${feature.color} group-hover:scale-110 transition-transform`} />
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
+              <Card 
+                key={index} 
+                className={`group hover:shadow-2xl transition-all duration-300 animate-fade-in hover:-translate-y-2 border-0 ${feature.gradient}`}
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <CardContent className="p-8 text-center h-full flex flex-col">
+                  <div className={`h-16 w-16 mx-auto mb-6 rounded-full bg-background shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <feature.icon className={`h-8 w-8 ${feature.color}`} />
+                  </div>
+                  <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>
+                  <p className="text-muted-foreground flex-grow">{feature.description}</p>
+                  <Button variant="ghost" size="sm" className="mt-4 group-hover:bg-background/50">
+                    Learn More
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -96,18 +197,92 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 px-4 bg-card/30">
-        <div className="w-full text-center">
-          <h2 className="text-3xl font-bold mb-4">
-            Ready to Connect with Your Community?
+      {/* Testimonials */}
+      <section className="py-20 px-4 bg-primary/5">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Trusted by Our 
+              <span className="text-primary"> Community</span>
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Real stories from real people making a difference
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="bg-background/80 backdrop-blur border-0 shadow-xl">
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-1 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 fill-primary text-primary" />
+                    ))}
+                  </div>
+                  <blockquote className="text-lg mb-6 italic">
+                    "{testimonial.quote}"
+                  </blockquote>
+                  <div className="border-t pt-4">
+                    <div className="font-semibold">{testimonial.author}</div>
+                    <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-20 px-4 bg-gradient-primary relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+        <div className="container mx-auto text-center relative z-10">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+            Ready to Build Something Beautiful?
           </h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of community members who are building a more inclusive world together.
+          <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
+            Join our growing community of advocates, allies, and changemakers. 
+            Together, we're creating a world where everyone belongs.
           </p>
-          <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8">
-            Get Started Today
-          </Button>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <Button 
+              size="lg" 
+              variant="secondary"
+              className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90"
+              asChild
+            >
+              <Link to={user ? "/community" : "/auth"}>
+                <CheckCircle className="mr-2 h-5 w-5" />
+                {user ? "Explore Community" : "Get Started Free"}
+              </Link>
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg px-8 py-6 border-white text-white hover:bg-white/10"
+              asChild
+            >
+              <Link to="/about">
+                Learn Our Story
+              </Link>
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-center gap-6 text-white/80 text-sm">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Free to join
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Safe & inclusive
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Community-driven
+            </div>
+          </div>
         </div>
       </section>
     </div>
