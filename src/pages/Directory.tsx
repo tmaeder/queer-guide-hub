@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Globe, MapPin, Building2, Users } from "lucide-react";
 
-type ViewMode = "overview" | "continent" | "country" | "city" | "search";
+type ViewMode = "overview" | "country" | "city" | "search";
 
 export default function Directory() {
   const { 
@@ -24,19 +24,10 @@ export default function Directory() {
   } = useDirectory();
 
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
-  const [selectedContinent, setSelectedContinent] = useState<any>(null);
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
   const [selectedCity, setSelectedCity] = useState<any>(null);
-  const [continentCountries, setContinentCountries] = useState<any[]>([]);
   const [countryCities, setCountryCities] = useState<any[]>([]);
-  const [searchResults, setSearchResults] = useState<any>({ continents: [], countries: [], cities: [] });
-
-  const handleContinentClick = async (continent: any) => {
-    setSelectedContinent(continent);
-    setViewMode("continent");
-    const countries = await fetchCountriesByContinent(continent.id);
-    setContinentCountries(countries);
-  };
+  const [searchResults, setSearchResults] = useState<any>({ countries: [], cities: [] });
 
   const handleCityClick = (city: any) => {
     setSelectedCity(city);
@@ -53,22 +44,18 @@ export default function Directory() {
   const handleSearch = async (query: string) => {
     if (query.trim()) {
       const results = await searchLocations(query);
-      setSearchResults(results);
+      setSearchResults({ countries: results.countries, cities: results.cities });
       setViewMode("search");
     } else {
       setViewMode("overview");
-      setSearchResults({ continents: [], countries: [], cities: [] });
+      setSearchResults({ countries: [], cities: [] });
     }
   };
 
   const handleBack = () => {
     if (viewMode === "city") {
       setViewMode("country");
-    } else if (viewMode === "country") {
-      setViewMode("continent");
-    } else if (viewMode === "continent") {
-      setViewMode("overview");
-    } else if (viewMode === "search") {
+    } else if (viewMode === "country" || viewMode === "search") {
       setViewMode("overview");
     }
   };
@@ -102,9 +89,6 @@ export default function Directory() {
           )}
           <div>
             <h1 className="text-3xl font-bold">Geographic Directory</h1>
-            {viewMode === "continent" && selectedContinent && (
-              <p className="text-muted-foreground">Exploring {selectedContinent.name}</p>
-            )}
             {viewMode === "country" && selectedCountry && (
               <p className="text-muted-foreground">Cities in {selectedCountry.name}</p>
             )}
@@ -124,17 +108,6 @@ export default function Directory() {
           <button onClick={() => setViewMode("overview")} className="hover:text-foreground">
             Directory
           </button>
-          {selectedContinent && (
-            <>
-              <span>/</span>
-              <button 
-                onClick={() => setViewMode("continent")} 
-                className="hover:text-foreground"
-              >
-                {selectedContinent.name}
-              </button>
-            </>
-          )}
           {selectedCountry && (
             <>
               <span>/</span>
@@ -157,12 +130,8 @@ export default function Directory() {
 
       {/* Content based on view mode */}
       {viewMode === "overview" && (
-        <Tabs defaultValue="continents" className="space-y-4">
+        <Tabs defaultValue="countries" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="continents" className="flex items-center gap-2">
-              <Globe className="h-4 w-4" />
-              Continents
-            </TabsTrigger>
             <TabsTrigger value="countries" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               Countries
@@ -172,24 +141,6 @@ export default function Directory() {
               Major Cities
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="continents" className="space-y-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">Continents</h2>
-              <Badge variant="secondary">{continents.length}</Badge>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {continents.map((continent) => (
-                <DirectoryCard
-                  key={continent.id}
-                  type="continent"
-                  name={continent.name}
-                  data={continent}
-                  onClick={() => handleContinentClick(continent)}
-                />
-              ))}
-            </div>
-          </TabsContent>
 
           <TabsContent value="countries" className="space-y-4">
             <div className="flex items-center gap-2">
@@ -248,25 +199,6 @@ export default function Directory() {
         </Tabs>
       )}
 
-      {viewMode === "continent" && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">Countries in {selectedContinent?.name}</h2>
-            <Badge variant="secondary">{continentCountries.length}</Badge>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {continentCountries.map((country) => (
-              <DirectoryCard
-                key={country.id}
-                type="country"
-                name={country.name}
-                data={country}
-                onClick={() => handleCountryClick(country)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
 
       {viewMode === "country" && (
         <div className="space-y-6">
@@ -360,26 +292,6 @@ export default function Directory() {
         <div className="space-y-6">
           <h2 className="text-xl font-semibold">Search Results</h2>
           
-          {searchResults.continents.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-medium">Continents</h3>
-                <Badge variant="secondary">{searchResults.continents.length}</Badge>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {searchResults.continents.map((continent: any) => (
-                  <DirectoryCard
-                    key={continent.id}
-                    type="continent"
-                    name={continent.name}
-                    data={continent}
-                    onClick={() => handleContinentClick(continent)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
           {searchResults.countries.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
@@ -427,8 +339,7 @@ export default function Directory() {
             </div>
           )}
 
-          {searchResults.continents.length === 0 && 
-           searchResults.countries.length === 0 && 
+          {searchResults.countries.length === 0 && 
            searchResults.cities.length === 0 && (
             <div className="text-center text-muted-foreground py-8">
               No results found. Try a different search term.
