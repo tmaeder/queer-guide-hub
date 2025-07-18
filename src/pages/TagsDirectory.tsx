@@ -33,19 +33,21 @@ export default function TagsDirectory() {
   // Store images for tags without images
   const storeTagImages = async () => {
     if (allTags.length === 0) return;
-    
     setProcessingImages(true);
-    
     try {
       const tagsWithoutImages = allTags.filter(tag => !tag.image_url);
       console.log(`Processing ${tagsWithoutImages.length} tags without images`);
-      
       for (const tag of tagsWithoutImages) {
         try {
-          const { data, error } = await supabase.functions.invoke('store-tag-images', {
-            body: { tagId: tag.id, tagName: tag.name }
+          const {
+            data,
+            error
+          } = await supabase.functions.invoke('store-tag-images', {
+            body: {
+              tagId: tag.id,
+              tagName: tag.name
+            }
           });
-          
           if (!error && data?.success) {
             console.log(`Successfully stored image for tag: ${tag.name}`);
           }
@@ -53,7 +55,7 @@ export default function TagsDirectory() {
           console.error(`Failed to store image for tag ${tag.name}:`, err);
         }
       }
-      
+
       // Refetch tags to get updated image URLs
       window.location.reload();
     } catch (error) {
@@ -189,27 +191,16 @@ export default function TagsDirectory() {
                   <h2 className="text-xl font-semibold">All Tags</h2>
                   <Badge variant="secondary">{allTags.length}</Badge>
                 </div>
-                <Button 
-                  onClick={storeTagImages} 
-                  disabled={processingImages}
-                  variant="outline"
-                  size="sm"
-                >
+                <Button onClick={storeTagImages} disabled={processingImages} variant="outline" size="sm">
                   <Upload className="h-4 w-4 mr-2" />
                   {processingImages ? 'Processing...' : 'Store Missing Images'}
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {allTags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                    {tag.image_url && (
-                      <div className="mb-3 rounded-md overflow-hidden h-32">
-                        <img 
-                          src={tag.image_url} 
-                          alt={`${tag.name} themed image`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
+                    {tag.image_url && <div className="mb-3 rounded-md overflow-hidden h-32">
+                        <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover" />
+                      </div>}
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-3 h-3 rounded-full" style={{
                   backgroundColor: tag.color
@@ -222,9 +213,7 @@ export default function TagsDirectory() {
                     {tag.description && <p className="text-sm text-muted-foreground mb-2">
                         {tag.description}
                       </p>}
-                    <div className="text-xs text-muted-foreground">
-                      Used {tag.usage_count} times
-                    </div>
+                    
                   </div>)}
               </div>
             </TabsContent>
@@ -242,15 +231,9 @@ export default function TagsDirectory() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                      {tag.image_url && (
-                        <div className="mb-3 rounded-md overflow-hidden h-32">
-                          <img 
-                            src={tag.image_url} 
-                            alt={`${tag.name} themed image`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
+                      {tag.image_url && <div className="mb-3 rounded-md overflow-hidden h-32">
+                          <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover" />
+                        </div>}
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-3 h-3 rounded-full" style={{
                   backgroundColor: tag.color
