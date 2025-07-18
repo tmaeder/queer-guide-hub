@@ -94,6 +94,11 @@ export default function TagsDirectory() {
       setSearchResults([]);
     }
   };
+
+  const handleFiltersChange = (filters: any) => {
+    // For now, just a placeholder since tags don't use these specific filters
+    console.log('Filters changed:', filters);
+  };
   const handleBack = () => {
     if (viewMode === "tag-detail") {
       setViewMode(selectedCategory ? "category" : "overview");
@@ -148,7 +153,7 @@ export default function TagsDirectory() {
       </div>
 
       {/* Search */}
-      <DirectorySearch onSearch={handleSearch} placeholder="Search tags, categories, descriptions..." />
+      <DirectorySearch onSearch={handleSearch} onFiltersChange={handleFiltersChange} placeholder="Search tags, categories, descriptions..." />
 
       {/* Breadcrumb */}
       {viewMode !== "overview" && viewMode !== "search" && <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -185,7 +190,39 @@ export default function TagsDirectory() {
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {allTags.map((tag, index) => {})}
+                {allTags.map((tag, index) => (
+                  <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
+                    <div className="mb-3 rounded-md overflow-hidden h-40 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                      {tag.image_url ? (
+                        <img 
+                          src={tag.image_url} 
+                          alt={`${tag.name} themed image`} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder.svg';
+                          }}
+                        />
+                      ) : (
+                        <div className="text-center text-muted-foreground">
+                          <Tag className="h-8 w-8 mx-auto mb-2" />
+                          <span className="text-sm">No image</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
+                      <span className="font-medium">{tag.name}</span>
+                    </div>
+                    {tag.description && (
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {tag.description}
+                      </p>
+                    )}
+                    <div className="text-xs text-muted-foreground">
+                      Used {tag.usage_count} times
+                    </div>
+                  </div>
+                ))}
               </div>
             </TabsContent>
 
