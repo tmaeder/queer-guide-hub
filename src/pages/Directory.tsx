@@ -197,7 +197,7 @@ export default function Directory() {
               <h2 className="text-xl font-semibold">Major Cities</h2>
               <Badge variant="secondary">{cities.length}</Badge>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {cities.map((city) => (
                   <DirectoryCard
                     key={city.id}
