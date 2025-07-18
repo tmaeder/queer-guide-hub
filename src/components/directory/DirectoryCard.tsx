@@ -22,15 +22,39 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       setImageLoading(true);
       const fetchCountryImage = async () => {
         try {
-          // Add random keywords to get different images each time
-          const randomKeywords = ['landscape', 'architecture', 'landmarks', 'nature', 'tourism', 'culture', 'historic', 'scenic'];
-          const randomKeyword = randomKeywords[Math.floor(Math.random() * randomKeywords.length)];
+          // Create more specific country queries for better representative images
+          const countrySpecificQueries = {
+            'France': 'France Eiffel Tower Paris landmarks',
+            'Italy': 'Italy Colosseum Rome landmarks',
+            'Japan': 'Japan Mount Fuji Tokyo landmarks',
+            'United States': 'USA Statue of Liberty New York landmarks',
+            'United Kingdom': 'UK Big Ben London landmarks',
+            'Germany': 'Germany Brandenburg Gate Berlin landmarks',
+            'Spain': 'Spain Sagrada Familia Barcelona landmarks',
+            'China': 'China Great Wall Beijing landmarks',
+            'India': 'India Taj Mahal Delhi landmarks',
+            'Brazil': 'Brazil Christ Redeemer Rio landmarks',
+            'Australia': 'Australia Sydney Opera House landmarks',
+            'Canada': 'Canada CN Tower Toronto landmarks',
+            'Russia': 'Russia Red Square Moscow landmarks',
+            'Greece': 'Greece Parthenon Athens landmarks',
+            'Egypt': 'Egypt Pyramids Cairo landmarks',
+            'Thailand': 'Thailand Bangkok temples landmarks',
+            'Turkey': 'Turkey Hagia Sophia Istanbul landmarks',
+            'Mexico': 'Mexico Chichen Itza landmarks',
+            'Netherlands': 'Netherlands Amsterdam canals landmarks',
+            'Switzerland': 'Switzerland Alps Matterhorn landmarks'
+          };
+
+          // Use specific query if available, otherwise use generic country query
+          const specificQuery = countrySpecificQueries[name as keyof typeof countrySpecificQueries];
+          const query = specificQuery || `${name} famous landmarks architecture cityscape`;
           
           const { data: imageData, error } = await supabase.functions.invoke('get-pexels-images', {
             body: { 
-              query: `${name} ${randomKeyword}`, 
+              query: query, 
               type: 'country',
-              page: Math.floor(Math.random() * 3) + 1 // Random page to get different results
+              page: 1 // Use first page for most relevant results
             }
           });
 
@@ -40,9 +64,8 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           }
 
           if (imageData?.images && imageData.images.length > 0) {
-            // Pick a random image from the results
-            const randomIndex = Math.floor(Math.random() * imageData.images.length);
-            setCountryImage(imageData.images[randomIndex].url);
+            // Use the first (most relevant) image instead of random
+            setCountryImage(imageData.images[0].url);
           }
         } catch (error) {
           console.error('Error fetching country image:', error);
