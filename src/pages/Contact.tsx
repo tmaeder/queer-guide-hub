@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail, MapPin, Phone, Clock, MessageCircle, Shield, Bug } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
 export default function Contact() {
   const [formData, setFormData] = useState({
     name: "",
@@ -17,20 +16,19 @@ export default function Contact() {
     message: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate form submission
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
     toast({
       title: "Message sent!",
-      description: "We'll get back to you within 24 hours.",
+      description: "We'll get back to you within 24 hours."
     });
-    
     setFormData({
       name: "",
       email: "",
@@ -40,67 +38,54 @@ export default function Contact() {
     });
     setIsSubmitting(false);
   };
-
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
-
-  const contactMethods = [
-    {
-      icon: Mail,
-      title: "Email Support",
-      description: "Get help with your account or technical issues",
-      contact: "support@thequeerguide.com",
-      responseTime: "24 hours"
-    },
-    {
-      icon: Shield,
-      title: "Safety & Moderation",
-      description: "Report safety concerns or content violations",
-      contact: "safety@thequeerguide.com",
-      responseTime: "6 hours"
-    },
-    {
-      icon: MessageCircle,
-      title: "Partnerships",
-      description: "Business partnerships and collaboration inquiries",
-      contact: "partnerships@thequeerguide.com",
-      responseTime: "48 hours"
-    },
-    {
-      icon: Bug,
-      title: "Bug Reports",
-      description: "Report technical issues or suggest improvements",
-      contact: "bugs@thequeerguide.com",
-      responseTime: "72 hours"
-    }
-  ];
-
-  const faqs = [
-    {
-      question: "How do I add my business to The Queer Guide?",
-      answer: "You can add your business by creating an account and navigating to the Venues section. Click 'Add Venue' and fill out the required information. All submissions are reviewed before being published."
-    },
-    {
-      question: "How do you verify that venues are LGBTQ+ friendly?",
-      answer: "We use a combination of community reviews, direct outreach to businesses, and verification from local ambassadors. Venues with verified status have been confirmed through multiple sources."
-    },
-    {
-      question: "Can I report inappropriate content or behavior?",
-      answer: "Yes, absolutely. We have a zero-tolerance policy for harassment, discrimination, or inappropriate content. Use the report button on any post or contact our safety team directly."
-    },
-    {
-      question: "How can I become a local ambassador?",
-      answer: "Local ambassadors are community volunteers who help us maintain accurate information for their regions. Contact us through partnerships@thequeerguide.com if you're interested."
-    },
-    {
-      question: "Is my personal information secure?",
-      answer: "Yes, we take privacy seriously. Please review our Privacy Policy for detailed information about how we collect, use, and protect your data."
-    }
-  ];
-
-  return (
-    <div className="w-full p-6">
+  const contactMethods = [{
+    icon: Mail,
+    title: "Email Support",
+    description: "Get help with your account or technical issues",
+    contact: "support@thequeerguide.com",
+    responseTime: "24 hours"
+  }, {
+    icon: Shield,
+    title: "Safety & Moderation",
+    description: "Report safety concerns or content violations",
+    contact: "safety@thequeerguide.com",
+    responseTime: "6 hours"
+  }, {
+    icon: MessageCircle,
+    title: "Partnerships",
+    description: "Business partnerships and collaboration inquiries",
+    contact: "partnerships@thequeerguide.com",
+    responseTime: "48 hours"
+  }, {
+    icon: Bug,
+    title: "Bug Reports",
+    description: "Report technical issues or suggest improvements",
+    contact: "bugs@thequeerguide.com",
+    responseTime: "72 hours"
+  }];
+  const faqs = [{
+    question: "How do I add my business to The Queer Guide?",
+    answer: "You can add your business by creating an account and navigating to the Venues section. Click 'Add Venue' and fill out the required information. All submissions are reviewed before being published."
+  }, {
+    question: "How do you verify that venues are LGBTQ+ friendly?",
+    answer: "We use a combination of community reviews, direct outreach to businesses, and verification from local ambassadors. Venues with verified status have been confirmed through multiple sources."
+  }, {
+    question: "Can I report inappropriate content or behavior?",
+    answer: "Yes, absolutely. We have a zero-tolerance policy for harassment, discrimination, or inappropriate content. Use the report button on any post or contact our safety team directly."
+  }, {
+    question: "How can I become a local ambassador?",
+    answer: "Local ambassadors are community volunteers who help us maintain accurate information for their regions. Contact us through partnerships@thequeerguide.com if you're interested."
+  }, {
+    question: "Is my personal information secure?",
+    answer: "Yes, we take privacy seriously. Please review our Privacy Policy for detailed information about how we collect, use, and protect your data."
+  }];
+  return <div className="w-full p-6">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -121,29 +106,17 @@ export default function Contact() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
-                      required
-                    />
+                    <Input id="name" type="text" value={formData.name} onChange={e => handleInputChange("name", e.target.value)} required />
                   </div>
                   <div>
                     <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      required
-                    />
+                    <Input id="email" type="email" value={formData.email} onChange={e => handleInputChange("email", e.target.value)} required />
                   </div>
                 </div>
 
                 <div>
                   <Label htmlFor="category">Category</Label>
-                  <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
+                  <Select value={formData.category} onValueChange={value => handleInputChange("category", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
@@ -161,25 +134,12 @@ export default function Contact() {
 
                 <div>
                   <Label htmlFor="subject">Subject</Label>
-                  <Input
-                    id="subject"
-                    type="text"
-                    value={formData.subject}
-                    onChange={(e) => handleInputChange("subject", e.target.value)}
-                    required
-                  />
+                  <Input id="subject" type="text" value={formData.subject} onChange={e => handleInputChange("subject", e.target.value)} required />
                 </div>
 
                 <div>
                   <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    rows={6}
-                    value={formData.message}
-                    onChange={(e) => handleInputChange("message", e.target.value)}
-                    placeholder="Please provide as much detail as possible..."
-                    required
-                  />
+                  <Textarea id="message" rows={6} value={formData.message} onChange={e => handleInputChange("message", e.target.value)} placeholder="Please provide as much detail as possible..." required />
                 </div>
 
                 <Button type="submit" disabled={isSubmitting} className="w-full">
@@ -221,23 +181,7 @@ export default function Contact() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 gap-4">
-            {contactMethods.map((method, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <method.icon className="h-5 w-5 text-primary mt-1" />
-                    <div className="flex-1">
-                      <h4 className="font-medium">{method.title}</h4>
-                      <p className="text-sm text-muted-foreground mb-2">{method.description}</p>
-                      <p className="text-sm font-mono text-primary">{method.contact}</p>
-                      <p className="text-xs text-muted-foreground">Response time: {method.responseTime}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          
         </div>
       </div>
 
@@ -245,16 +189,13 @@ export default function Contact() {
       <section>
         <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {faqs.map((faq, index) => (
-            <Card key={index}>
+          {faqs.map((faq, index) => <Card key={index}>
               <CardContent className="p-6">
                 <h3 className="font-semibold mb-3">{faq.question}</h3>
                 <p className="text-muted-foreground text-sm">{faq.answer}</p>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </section>
-    </div>
-  );
+    </div>;
 }
