@@ -96,6 +96,15 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       }`}
       onClick={onClick}
     >
+      {type === "country" && (
+        <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+          <img 
+            src={`https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`}
+            alt={`${name} landscape`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
