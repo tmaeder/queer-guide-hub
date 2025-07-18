@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 type ViewMode = "overview" | "category" | "search" | "tag-detail";
 export default function TagsDirectory() {
   const {
@@ -37,71 +37,29 @@ export default function TagsDirectory() {
     try {
       const tagsWithoutImages = allTags.filter(tag => !tag.image_url);
       console.log(`Processing ${tagsWithoutImages.length} tags without images`);
-      
-      if (tagsWithoutImages.length === 0) {
-        toast({
-          title: "All images present",
-          description: "All tags already have images!",
-        });
-        setProcessingImages(false);
-        return;
-      }
-
       for (const tag of tagsWithoutImages) {
         try {
-          console.log(`Calling store-tag-images for tag: ${tag.name}`);
-          const { data, error } = await supabase.functions.invoke('store-tag-images', {
+          const {
+            data,
+            error
+          } = await supabase.functions.invoke('store-tag-images', {
             body: {
               tagId: tag.id,
               tagName: tag.name
             }
           });
-          
-          console.log(`Response for ${tag.name}:`, { data, error });
-          
-          if (error) {
-            console.error(`Error for tag ${tag.name}:`, error);
-            toast({
-              title: "Image fetch failed",
-              description: `Failed to fetch image for ${tag.name}: ${error.message}`,
-              variant: "destructive",
-            });
-          } else if (data?.success) {
+          if (!error && data?.success) {
             console.log(`Successfully stored image for tag: ${tag.name}`);
-            toast({
-              title: "Image stored",
-              description: `Image stored for ${tag.name}`,
-            });
-          } else {
-            console.log(`No success flag for tag ${tag.name}:`, data);
-            toast({
-              title: "Unexpected response",
-              description: `Unexpected response for ${tag.name}`,
-              variant: "destructive",
-            });
           }
         } catch (err) {
           console.error(`Failed to store image for tag ${tag.name}:`, err);
-          toast({
-            title: "Error",
-            description: `Failed to store image for ${tag.name}`,
-            variant: "destructive",
-          });
         }
       }
 
-      toast({
-        title: "Processing complete",
-        description: "Image processing complete! Refreshing page...",
-      });
-      setTimeout(() => window.location.reload(), 2000);
+      // Refetch tags to get updated image URLs
+      window.location.reload();
     } catch (error) {
       console.error('Error processing tag images:', error);
-      toast({
-        title: "Error",
-        description: "Error processing tag images",
-        variant: "destructive",
-      });
     } finally {
       setProcessingImages(false);
     }
@@ -135,11 +93,6 @@ export default function TagsDirectory() {
       setViewMode("overview");
       setSearchResults([]);
     }
-  };
-
-  const handleFiltersChange = (filters: any) => {
-    // For now, just a placeholder since tags don't use these specific filters
-    console.log('Filters changed:', filters);
   };
   const handleBack = () => {
     if (viewMode === "tag-detail") {
@@ -195,7 +148,7 @@ export default function TagsDirectory() {
       </div>
 
       {/* Search */}
-      <DirectorySearch onSearch={handleSearch} onFiltersChange={handleFiltersChange} placeholder="Search tags, categories, descriptions..." />
+      <DirectorySearch onSearch={handleSearch} placeholder="Search tags, categories, descriptions..." />
 
       {/* Breadcrumb */}
       {viewMode !== "overview" && viewMode !== "search" && <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -232,39 +185,7 @@ export default function TagsDirectory() {
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {allTags.map((tag, index) => (
-                  <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                    <div className="mb-3 rounded-md overflow-hidden h-40 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                      {tag.image_url ? (
-                        <img 
-                          src={tag.image_url} 
-                          alt={`${tag.name} themed image`} 
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = '/placeholder.svg';
-                          }}
-                        />
-                      ) : (
-                        <div className="text-center text-muted-foreground">
-                          <Tag className="h-8 w-8 mx-auto mb-2" />
-                          <span className="text-sm">No image</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
-                      <span className="font-medium">{tag.name}</span>
-                    </div>
-                    {tag.description && (
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {tag.description}
-                      </p>
-                    )}
-                    <div className="text-xs text-muted-foreground">
-                      Used {tag.usage_count} times
-                    </div>
-                  </div>
-                ))}
+                {allTags.map((tag, index) => {})}
               </div>
             </TabsContent>
 
@@ -324,7 +245,7 @@ export default function TagsDirectory() {
               </div>
             </div>
             
-            {selectedTag.description && <p className="text-muted-foreground mb-4">{selectedTag.description}</p>}
+            {selectedTag.description}
 
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Usage by Category</h3>
