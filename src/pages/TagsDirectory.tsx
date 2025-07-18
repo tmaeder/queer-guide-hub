@@ -171,19 +171,7 @@ export default function TagsDirectory() {
       {viewMode === "overview" && <div className="space-y-6">
           {/* Categories */}
           <Tabs defaultValue="all" className="space-y-4">
-            <TabsList className="w-full flex-wrap h-auto justify-start gap-2">
-              <TabsTrigger value="all" className="flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                All Tags
-              </TabsTrigger>
-              {tagsByCategory.map(categoryData => {
-            const IconComponent = getCategoryIcon(categoryData.category);
-            return <TabsTrigger key={categoryData.category} value={categoryData.category} className="flex items-center gap-2">
-                    <IconComponent className="h-4 w-4" />
-                    {categoryData.category.charAt(0).toUpperCase() + categoryData.category.slice(1).replace('-', ' ')}
-                  </TabsTrigger>;
-          })}
-            </TabsList>
+            
 
             <TabsContent value="all" className="space-y-4">
               <div className="flex items-center justify-between">
