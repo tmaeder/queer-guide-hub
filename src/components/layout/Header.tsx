@@ -82,7 +82,7 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="absolute top-16 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
           <nav className="container mx-auto px-4 py-4">
-            <div className="flex justify-center space-x-4">
+            <div className="flex justify-between px-4">
               <Link 
                 to="/venues" 
                 className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg"
