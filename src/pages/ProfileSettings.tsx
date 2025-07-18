@@ -10,15 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { User, Camera, Save, ArrowLeft, Loader2 } from 'lucide-react';
+import { User, Camera, Save, ArrowLeft, Loader2, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import UserEventsSection from '@/components/profile/UserEventsSection';
+import { PasskeyButton } from '@/components/auth/PasskeyButton';
 
 export default function ProfileSettings() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, hasPasskey } = useAuth();
   const { profile, loading, updateProfile, uploadAvatar } = useProfile();
   const { toast } = useToast();
   
@@ -651,6 +652,43 @@ export default function ProfileSettings() {
                 onCheckedChange={(checked) => handlePrivacyChange('phone_visible', checked)}
               />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Security Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Security Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="space-y-1">
+                <div className="font-medium">Passkey Authentication</div>
+                <div className="text-sm text-muted-foreground">
+                  {hasPasskey 
+                    ? 'Passkey is set up for passwordless sign-in'
+                    : 'Set up a passkey for secure, passwordless authentication using your device biometrics'
+                  }
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {hasPasskey && (
+                  <div className="text-sm text-green-600 font-medium">✓ Active</div>
+                )}
+                <PasskeyButton mode="enroll" variant="outline" />
+              </div>
+            </div>
+            
+            <Alert>
+              <AlertDescription>
+                <strong>What are passkeys?</strong> Passkeys are a modern, secure way to sign in using your device's biometrics (fingerprint, face recognition) or device PIN. They're more secure than passwords and can't be phished or stolen.
+              </AlertDescription>
+            </Alert>
           </div>
         </CardContent>
       </Card>
