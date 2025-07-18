@@ -1401,100 +1401,244 @@ export type Database = {
           accessibility_needs: string | null
           age_range: string | null
           avatar_url: string | null
+          background_check: boolean | null
           bio: string | null
+          body_type: string | null
+          causes_supported: string[] | null
+          communication_style: string | null
+          community_involvement: string[] | null
+          company: string | null
           created_at: string
           date_of_birth: string | null
+          diet_preferences: string[] | null
           display_name: string | null
+          drinking_preference: string | null
           education: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           emergency_contact_relationship: string | null
+          ethnicity: string | null
+          exercise_frequency: string | null
+          eye_color: string | null
+          favorite_books: string[] | null
+          favorite_movies: string[] | null
+          favorite_music_genres: string[] | null
           first_name: string | null
+          food_preferences: string[] | null
           gender_identity: string | null
+          hair_color: string | null
+          has_children: boolean | null
+          has_pets: boolean | null
+          height_cm: number | null
+          hobbies: string[] | null
           id: string
+          income_range: string | null
+          industry: string | null
           interests: Json | null
           is_business: boolean | null
+          job_title: string | null
           languages: Json | null
+          last_active_at: string | null
           last_name: string | null
+          life_philosophy: string | null
           location: string | null
           looking_for: string[] | null
+          medication_status: string | null
+          mental_health_advocacy: boolean | null
+          neighborhood_preference: string | null
           occupation: string | null
+          personality_type: string | null
+          pet_preferences: string | null
           phone: string | null
+          political_views: string | null
           preferences: Json | null
           privacy_settings: Json | null
+          profile_completion_percentage: number | null
           pronouns: string | null
+          relationship_goals: string[] | null
           relationship_status: string | null
+          religious_beliefs: string | null
+          response_time_preference: string | null
           sexual_orientation: string | null
+          sleep_schedule: string | null
+          smoking_preference: string | null
           social_links: Json | null
+          therapy_friendly: boolean | null
+          transportation_method: string | null
+          travel_preferences: Json | null
           updated_at: string
           user_id: string
+          verified_email: boolean | null
+          verified_identity: boolean | null
+          verified_phone: boolean | null
+          volunteer_work: string[] | null
+          wants_children: string | null
           website: string | null
+          willing_to_relocate: boolean | null
+          work_schedule: string | null
+          zodiac_sign: string | null
         }
         Insert: {
           accessibility_needs?: string | null
           age_range?: string | null
           avatar_url?: string | null
+          background_check?: boolean | null
           bio?: string | null
+          body_type?: string | null
+          causes_supported?: string[] | null
+          communication_style?: string | null
+          community_involvement?: string[] | null
+          company?: string | null
           created_at?: string
           date_of_birth?: string | null
+          diet_preferences?: string[] | null
           display_name?: string | null
+          drinking_preference?: string | null
           education?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
+          ethnicity?: string | null
+          exercise_frequency?: string | null
+          eye_color?: string | null
+          favorite_books?: string[] | null
+          favorite_movies?: string[] | null
+          favorite_music_genres?: string[] | null
           first_name?: string | null
+          food_preferences?: string[] | null
           gender_identity?: string | null
+          hair_color?: string | null
+          has_children?: boolean | null
+          has_pets?: boolean | null
+          height_cm?: number | null
+          hobbies?: string[] | null
           id?: string
+          income_range?: string | null
+          industry?: string | null
           interests?: Json | null
           is_business?: boolean | null
+          job_title?: string | null
           languages?: Json | null
+          last_active_at?: string | null
           last_name?: string | null
+          life_philosophy?: string | null
           location?: string | null
           looking_for?: string[] | null
+          medication_status?: string | null
+          mental_health_advocacy?: boolean | null
+          neighborhood_preference?: string | null
           occupation?: string | null
+          personality_type?: string | null
+          pet_preferences?: string | null
           phone?: string | null
+          political_views?: string | null
           preferences?: Json | null
           privacy_settings?: Json | null
+          profile_completion_percentage?: number | null
           pronouns?: string | null
+          relationship_goals?: string[] | null
           relationship_status?: string | null
+          religious_beliefs?: string | null
+          response_time_preference?: string | null
           sexual_orientation?: string | null
+          sleep_schedule?: string | null
+          smoking_preference?: string | null
           social_links?: Json | null
+          therapy_friendly?: boolean | null
+          transportation_method?: string | null
+          travel_preferences?: Json | null
           updated_at?: string
           user_id: string
+          verified_email?: boolean | null
+          verified_identity?: boolean | null
+          verified_phone?: boolean | null
+          volunteer_work?: string[] | null
+          wants_children?: string | null
           website?: string | null
+          willing_to_relocate?: boolean | null
+          work_schedule?: string | null
+          zodiac_sign?: string | null
         }
         Update: {
           accessibility_needs?: string | null
           age_range?: string | null
           avatar_url?: string | null
+          background_check?: boolean | null
           bio?: string | null
+          body_type?: string | null
+          causes_supported?: string[] | null
+          communication_style?: string | null
+          community_involvement?: string[] | null
+          company?: string | null
           created_at?: string
           date_of_birth?: string | null
+          diet_preferences?: string[] | null
           display_name?: string | null
+          drinking_preference?: string | null
           education?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
+          ethnicity?: string | null
+          exercise_frequency?: string | null
+          eye_color?: string | null
+          favorite_books?: string[] | null
+          favorite_movies?: string[] | null
+          favorite_music_genres?: string[] | null
           first_name?: string | null
+          food_preferences?: string[] | null
           gender_identity?: string | null
+          hair_color?: string | null
+          has_children?: boolean | null
+          has_pets?: boolean | null
+          height_cm?: number | null
+          hobbies?: string[] | null
           id?: string
+          income_range?: string | null
+          industry?: string | null
           interests?: Json | null
           is_business?: boolean | null
+          job_title?: string | null
           languages?: Json | null
+          last_active_at?: string | null
           last_name?: string | null
+          life_philosophy?: string | null
           location?: string | null
           looking_for?: string[] | null
+          medication_status?: string | null
+          mental_health_advocacy?: boolean | null
+          neighborhood_preference?: string | null
           occupation?: string | null
+          personality_type?: string | null
+          pet_preferences?: string | null
           phone?: string | null
+          political_views?: string | null
           preferences?: Json | null
           privacy_settings?: Json | null
+          profile_completion_percentage?: number | null
           pronouns?: string | null
+          relationship_goals?: string[] | null
           relationship_status?: string | null
+          religious_beliefs?: string | null
+          response_time_preference?: string | null
           sexual_orientation?: string | null
+          sleep_schedule?: string | null
+          smoking_preference?: string | null
           social_links?: Json | null
+          therapy_friendly?: boolean | null
+          transportation_method?: string | null
+          travel_preferences?: Json | null
           updated_at?: string
           user_id?: string
+          verified_email?: boolean | null
+          verified_identity?: boolean | null
+          verified_phone?: boolean | null
+          volunteer_work?: string[] | null
+          wants_children?: string | null
           website?: string | null
+          willing_to_relocate?: boolean | null
+          work_schedule?: string | null
+          zodiac_sign?: string | null
         }
         Relationships: []
       }
@@ -1870,6 +2014,42 @@ export type Database = {
           },
         ]
       }
+      wrappers_fdw_stats: {
+        Row: {
+          bytes_in: number | null
+          bytes_out: number | null
+          create_times: number | null
+          created_at: string
+          fdw_name: string
+          metadata: Json | null
+          rows_in: number | null
+          rows_out: number | null
+          updated_at: string
+        }
+        Insert: {
+          bytes_in?: number | null
+          bytes_out?: number | null
+          create_times?: number | null
+          created_at?: string
+          fdw_name: string
+          metadata?: Json | null
+          rows_in?: number | null
+          rows_out?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bytes_in?: number | null
+          bytes_out?: number | null
+          create_times?: number | null
+          created_at?: string
+          fdw_name?: string
+          metadata?: Json | null
+          rows_in?: number | null
+          rows_out?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       tag_usage_summary: {
@@ -1891,6 +2071,23 @@ export type Database = {
       }
     }
     Functions: {
+      airtable_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      airtable_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      airtable_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
       assign_user_role: {
         Args: {
           target_user_id: string
@@ -1898,6 +2095,74 @@ export type Database = {
           action_type?: string
         }
         Returns: boolean
+      }
+      auth0_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      auth0_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      auth0_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
+      big_query_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      big_query_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      big_query_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
+      click_house_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      click_house_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      click_house_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
+      cognito_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      cognito_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      cognito_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
       }
       create_notification: {
         Args: {
@@ -1915,6 +2180,40 @@ export type Database = {
         Args: { post_id: string }
         Returns: undefined
       }
+      duckdb_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      duckdb_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      duckdb_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
+      firebase_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      firebase_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      firebase_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
       get_or_create_direct_conversation: {
         Args: { user1_id: string; user2_id: string }
         Returns: string
@@ -1925,6 +2224,40 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      hello_world_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      hello_world_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      hello_world_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
+      iceberg_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      iceberg_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      iceberg_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
       }
       increment_article_views: {
         Args: { article_id: string }
@@ -1945,6 +2278,108 @@ export type Database = {
       is_group_member_or_admin: {
         Args: { group_id: string; check_admin?: boolean }
         Returns: boolean
+      }
+      logflare_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      logflare_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      logflare_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
+      mssql_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      mssql_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      mssql_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
+      redis_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      redis_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      redis_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
+      s3_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      s3_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      s3_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
+      stripe_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      stripe_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      stripe_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
+      }
+      wasm_fdw_handler: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      wasm_fdw_meta: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          name: string
+          version: string
+          author: string
+          website: string
+        }[]
+      }
+      wasm_fdw_validator: {
+        Args: { options: string[]; catalog: unknown }
+        Returns: undefined
       }
     }
     Enums: {
