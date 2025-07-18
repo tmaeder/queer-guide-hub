@@ -193,19 +193,38 @@ export default function Directory() {
 
           <TabsContent value="countries" className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">Countries</h2>
+              <h2 className="text-xl font-semibold">Countries by Continent</h2>
               <Badge variant="secondary">{countries.length}</Badge>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {countries.map((country) => (
-                <DirectoryCard
-                  key={country.id}
-                  type="country"
-                  name={country.name}
-                  data={country}
-                  onClick={() => handleCountryClick(country)}
-                />
-              ))}
+            <div className="space-y-8">
+              {continents.map((continent) => {
+                const continentCountries = countries.filter(country => 
+                  country.continent_id === continent.id
+                );
+                
+                if (continentCountries.length === 0) return null;
+                
+                return (
+                  <div key={continent.id} className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <Globe className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold text-primary">{continent.name}</h3>
+                      <Badge variant="outline">{continentCountries.length} countries</Badge>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-8">
+                      {continentCountries.map((country) => (
+                        <DirectoryCard
+                          key={country.id}
+                          type="country"
+                          name={country.name}
+                          data={country}
+                          onClick={() => handleCountryClick(country)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </TabsContent>
 
