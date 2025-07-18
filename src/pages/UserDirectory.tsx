@@ -40,12 +40,12 @@ const UserDirectory = () => {
   const [filters, setFilters] = useState<UserFilters>({
     searchQuery: "",
     location: "",
-    ageRange: "",
-    relationshipStatus: "",
+    ageRange: "all",
+    relationshipStatus: "all",
     occupation: "",
-    education: "",
+    education: "all",
     interests: [],
-    genderIdentity: "",
+    genderIdentity: "all",
     isVerified: false,
     isBusiness: false,
     hasChildren: false,
@@ -67,12 +67,12 @@ const UserDirectory = () => {
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (filters.location) count++;
-    if (filters.ageRange) count++;
-    if (filters.relationshipStatus) count++;
+    if (filters.ageRange && filters.ageRange !== 'all') count++;
+    if (filters.relationshipStatus && filters.relationshipStatus !== 'all') count++;
     if (filters.occupation) count++;
-    if (filters.education) count++;
+    if (filters.education && filters.education !== 'all') count++;
     if (filters.interests.length > 0) count++;
-    if (filters.genderIdentity) count++;
+    if (filters.genderIdentity && filters.genderIdentity !== 'all') count++;
     if (filters.isVerified) count++;
     if (filters.isBusiness) count++;
     if (filters.hasChildren) count++;
@@ -98,12 +98,12 @@ const UserDirectory = () => {
       }
 
       // Age range filter
-      if (filters.ageRange) {
+      if (filters.ageRange && filters.ageRange !== 'all') {
         query = query.eq('age_range', filters.ageRange);
       }
 
       // Relationship status filter
-      if (filters.relationshipStatus) {
+      if (filters.relationshipStatus && filters.relationshipStatus !== 'all') {
         query = query.eq('relationship_status', filters.relationshipStatus);
       }
 
@@ -113,12 +113,12 @@ const UserDirectory = () => {
       }
 
       // Education filter
-      if (filters.education) {
+      if (filters.education && filters.education !== 'all') {
         query = query.eq('education', filters.education);
       }
 
       // Gender identity filter
-      if (filters.genderIdentity) {
+      if (filters.genderIdentity && filters.genderIdentity !== 'all') {
         query = query.eq('gender_identity', filters.genderIdentity);
       }
 
@@ -181,12 +181,12 @@ const UserDirectory = () => {
     setFilters({
       searchQuery: "",
       location: "",
-      ageRange: "",
-      relationshipStatus: "",
+      ageRange: "all",
+      relationshipStatus: "all",
       occupation: "",
-      education: "",
+      education: "all",
       interests: [],
-      genderIdentity: "",
+      genderIdentity: "all",
       isVerified: false,
       isBusiness: false,
       hasChildren: false,
@@ -273,7 +273,7 @@ const UserDirectory = () => {
                           <SelectValue placeholder="Select age range" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All ages</SelectItem>
+                          <SelectItem value="all">All ages</SelectItem>
                           {ageRanges.map((range) => (
                             <SelectItem key={range} value={range}>{range}</SelectItem>
                           ))}
@@ -289,7 +289,7 @@ const UserDirectory = () => {
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any status</SelectItem>
+                          <SelectItem value="all">Any status</SelectItem>
                           {relationshipStatuses.map((status) => (
                             <SelectItem key={status} value={status}>{status}</SelectItem>
                           ))}
@@ -315,7 +315,7 @@ const UserDirectory = () => {
                           <SelectValue placeholder="Select education" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any education</SelectItem>
+                          <SelectItem value="all">Any education</SelectItem>
                           {educationLevels.map((level) => (
                             <SelectItem key={level} value={level}>{level}</SelectItem>
                           ))}
@@ -331,7 +331,7 @@ const UserDirectory = () => {
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any gender</SelectItem>
+                          <SelectItem value="all">Any gender</SelectItem>
                           {genderIdentities.map((gender) => (
                             <SelectItem key={gender} value={gender}>{gender}</SelectItem>
                           ))}
@@ -463,10 +463,10 @@ const UserDirectory = () => {
                     <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, location: "" }))} />
                   </Badge>
                 )}
-                {filters.ageRange && (
+                {filters.ageRange && filters.ageRange !== 'all' && (
                   <Badge variant="secondary" className="gap-1">
                     Age: {filters.ageRange}
-                    <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, ageRange: "" }))} />
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, ageRange: "all" }))} />
                   </Badge>
                 )}
                 {filters.interests.map((interest) => (
