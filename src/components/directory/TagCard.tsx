@@ -65,6 +65,11 @@ export const TagCard = ({
         })}
           </div>}
 
+        {tag.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {tag.description}
+          </p>
+        )}
         
       </CardContent>
     </Card>;
