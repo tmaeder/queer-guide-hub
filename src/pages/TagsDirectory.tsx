@@ -322,7 +322,7 @@ export default function TagsDirectory() {
       {viewMode === "tag-detail" && selectedTag && <div className="space-y-6">
           <div className="bg-card rounded-lg p-6 border">
             <div className="flex items-center gap-3 mb-4">
-              <Badge variant="outline" className="text-lg px-3 py-1">
+              <Badge variant="outline" className="text-2xl px-4 py-2">
                 #{selectedTag.name}
               </Badge>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
