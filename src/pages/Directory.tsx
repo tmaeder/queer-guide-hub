@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useDirectory } from "@/hooks/useDirectory";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
-import { DirectorySearch } from "@/components/directory/DirectorySearch";
+import { DirectorySearch, type DirectoryFilters } from "@/components/directory/DirectorySearch";
 import { WeatherForecast } from "@/components/weather/WeatherForecast";
 import { LocationInfo } from "@/components/location/LocationInfo";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,14 @@ export default function Directory() {
   const [selectedCity, setSelectedCity] = useState<any>(null);
   const [countryCities, setCountryCities] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any>({ countries: [], cities: [] });
+  const [filters, setFilters] = useState<DirectoryFilters>({
+    continent: "all",
+    populationRange: "all",
+    isCapital: "all",
+    isMajorCity: "all",
+    sortBy: "name",
+    sortOrder: "asc"
+  });
 
   const handleCityClick = (city: any) => {
     setSelectedCity(city);
@@ -50,6 +58,11 @@ export default function Directory() {
       setViewMode("overview");
       setSearchResults({ countries: [], cities: [] });
     }
+  };
+
+  const handleFiltersChange = (newFilters: DirectoryFilters) => {
+    setFilters(newFilters);
+    // You can implement filter logic here when needed
   };
 
   const handleBack = () => {
@@ -100,7 +113,7 @@ export default function Directory() {
       </div>
 
       {/* Search */}
-      <DirectorySearch onSearch={handleSearch} />
+      <DirectorySearch onSearch={handleSearch} onFiltersChange={handleFiltersChange} />
 
       {/* Breadcrumb */}
       {viewMode !== "overview" && viewMode !== "search" && (

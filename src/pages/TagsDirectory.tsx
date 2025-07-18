@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 import { TagCard } from "@/components/directory/TagCard";
-import { DirectorySearch } from "@/components/directory/DirectorySearch";
+import { DirectorySearch, type DirectoryFilters } from "@/components/directory/DirectorySearch";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -94,6 +94,12 @@ export default function TagsDirectory() {
       setSearchResults([]);
     }
   };
+
+  const handleFiltersChange = (newFilters: DirectoryFilters) => {
+    // For tags directory, filters might not be immediately applicable
+    // This can be expanded later if needed
+  };
+
   const handleBack = () => {
     if (viewMode === "tag-detail") {
       setViewMode(selectedCategory ? "category" : "overview");
@@ -148,7 +154,7 @@ export default function TagsDirectory() {
       </div>
 
       {/* Search */}
-      <DirectorySearch onSearch={handleSearch} placeholder="Search tags, categories, descriptions..." />
+      <DirectorySearch onSearch={handleSearch} onFiltersChange={handleFiltersChange} placeholder="Search tags, categories, descriptions..." />
 
       {/* Breadcrumb */}
       {viewMode !== "overview" && viewMode !== "search" && <div className="flex items-center gap-2 text-sm text-muted-foreground">
