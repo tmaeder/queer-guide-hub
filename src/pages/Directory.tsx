@@ -194,19 +194,62 @@ export default function Directory() {
 
           <TabsContent value="cities" className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">Major Cities</h2>
+              <h2 className="text-xl font-semibold">Cities by Continent & Country</h2>
               <Badge variant="secondary">{cities.length}</Badge>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {cities.map((city) => (
-                  <DirectoryCard
-                    key={city.id}
-                    type="city"
-                    name={city.name}
-                    data={city}
-                    onClick={() => handleCityClick(city)}
-                  />
-              ))}
+            <div className="space-y-8">
+              {continents.map((continent) => {
+                const continentCountries = countries.filter(country => 
+                  country.continent_id === continent.id
+                );
+                
+                // Filter cities for this continent
+                const continentCities = cities.filter(city => 
+                  continentCountries.some(country => country.id === city.country_id)
+                );
+                
+                if (continentCities.length === 0) return null;
+                
+                return (
+                  <div key={continent.id} className="space-y-6">
+                    <div className="flex items-center gap-3">
+                      <Globe className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold text-primary">{continent.name}</h3>
+                      <Badge variant="outline">{continentCities.length} cities</Badge>
+                    </div>
+                    <div className="space-y-6 pl-8">
+                      {continentCountries.map((country) => {
+                        const countryCities = cities.filter(city => 
+                          city.country_id === country.id
+                        );
+                        
+                        if (countryCities.length === 0) return null;
+                        
+                        return (
+                          <div key={country.id} className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-muted-foreground" />
+                              <h4 className="text-base font-medium text-muted-foreground">{country.name}</h4>
+                              <Badge variant="secondary" className="text-xs">{countryCities.length}</Badge>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 pl-6">
+                              {countryCities.map((city) => (
+                                <DirectoryCard
+                                  key={city.id}
+                                  type="city"
+                                  name={city.name}
+                                  data={city}
+                                  onClick={() => handleCityClick(city)}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </TabsContent>
         </Tabs>
