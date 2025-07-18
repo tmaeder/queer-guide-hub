@@ -102,43 +102,55 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
   };
 
   const getCountryFallbackImage = (countryName: string) => {
-    // Country-specific fallback images using Unsplash with country-specific photo IDs
+    // Country-specific fallback images using Unsplash with unique country-specific photo IDs
     const countryImages: { [key: string]: string } = {
-      'France': 'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop', // Eiffel Tower
-      'Italy': 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=400&h=300&fit=crop', // Colosseum
-      'Spain': 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=400&h=300&fit=crop', // Sagrada Familia
-      'Germany': 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=400&h=300&fit=crop', // Brandenburg Gate
-      'United Kingdom': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop', // Big Ben
-      'UK': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop', // Big Ben
+      'France': 'https://images.unsplash.com/photo-1502602898536-47ad22581b52?w=400&h=300&fit=crop', // Eiffel Tower Paris
+      'Italy': 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=400&h=300&fit=crop', // Colosseum Rome
+      'Spain': 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=400&h=300&fit=crop', // Sagrada Familia Barcelona
+      'Germany': 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=400&h=300&fit=crop', // Brandenburg Gate Berlin
+      'United Kingdom': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop', // Big Ben London
+      'UK': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop', // Big Ben London
       'Japan': 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&h=300&fit=crop', // Mount Fuji
-      'United States': 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop', // Statue of Liberty
-      'USA': 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop', // Statue of Liberty
+      'United States': 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop', // Statue of Liberty NYC
+      'USA': 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop', // Statue of Liberty NYC
       'China': 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&h=300&fit=crop', // Great Wall
       'India': 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=400&h=300&fit=crop', // Taj Mahal
-      'Brazil': 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=400&h=300&fit=crop', // Christ the Redeemer
+      'Brazil': 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=400&h=300&fit=crop', // Christ the Redeemer Rio
       'Australia': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop', // Sydney Opera House
-      'Canada': 'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=400&h=300&fit=crop', // Canadian landscape
-      'Russia': 'https://images.unsplash.com/photo-1520637836862-4d197d17c88a?w=400&h=300&fit=crop', // Red Square
-      'Greece': 'https://images.unsplash.com/photo-1555993539-1732b0258092?w=400&h=300&fit=crop', // Parthenon
-      'Egypt': 'https://images.unsplash.com/photo-1539650116574-75c0c6d0c620?w=400&h=300&fit=crop', // Pyramids
-      'Thailand': 'https://images.unsplash.com/photo-1528181304800-259b08848526?w=400&h=300&fit=crop', // Thai temple
-      'Turkey': 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=400&h=300&fit=crop', // Hagia Sophia
-      'Mexico': 'https://images.unsplash.com/photo-1518105779142-d975f22f1b0f?w=400&h=300&fit=crop', // Mexican pyramid
+      'Canada': 'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=400&h=300&fit=crop', // Canadian Rockies
+      'Russia': 'https://images.unsplash.com/photo-1520637836862-4d197d17c88a?w=400&h=300&fit=crop', // Red Square Moscow
+      'Greece': 'https://images.unsplash.com/photo-1555993539-1732b0258092?w=400&h=300&fit=crop', // Parthenon Athens
+      'Egypt': 'https://images.unsplash.com/photo-1539650116574-75c0c6d0c620?w=400&h=300&fit=crop', // Pyramids Giza
+      'Thailand': 'https://images.unsplash.com/photo-1528181304800-259b08848526?w=400&h=300&fit=crop', // Thai Buddhist temple
+      'Turkey': 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=400&h=300&fit=crop', // Hagia Sophia Istanbul
+      'Mexico': 'https://images.unsplash.com/photo-1518105779142-d975f22f1b0f?w=400&h=300&fit=crop', // Chichen Itza pyramid
       'Netherlands': 'https://images.unsplash.com/photo-1534313314376-aeb2a73810d4?w=400&h=300&fit=crop', // Amsterdam canals
-      'Switzerland': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop', // Swiss Alps
-      'South Korea': 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=400&h=300&fit=crop', // Korean palace
+      'Switzerland': 'https://images.unsplash.com/photo-1527668752968-14dc92a47da8?w=400&h=300&fit=crop', // Matterhorn Swiss Alps
+      'South Korea': 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=400&h=300&fit=crop', // Gyeongbokgung Palace Seoul
       'Norway': 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=300&fit=crop', // Norwegian fjords
-      'Sweden': 'https://images.unsplash.com/photo-1509356843151-3e7d96241e11?w=400&h=300&fit=crop', // Stockholm
-      'Denmark': 'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=400&h=300&fit=crop', // Copenhagen
-      'Portugal': 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=400&h=300&fit=crop', // Lisbon
-      'Argentina': 'https://images.unsplash.com/photo-1589909202802-8f4aadce1849?w=400&h=300&fit=crop', // Buenos Aires
-      'Chile': 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&h=300&fit=crop', // Chilean landscape
+      'Sweden': 'https://images.unsplash.com/photo-1509356843151-3e7d96241e11?w=400&h=300&fit=crop', // Stockholm archipelago
+      'Denmark': 'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=400&h=300&fit=crop', // Copenhagen Nyhavn
+      'Portugal': 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=400&h=300&fit=crop', // Lisbon trams
+      'Argentina': 'https://images.unsplash.com/photo-1589909202802-8f4aadce1849?w=400&h=300&fit=crop', // Buenos Aires colorful buildings
+      'Chile': 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&h=300&fit=crop', // Torres del Paine
       'Peru': 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=400&h=300&fit=crop', // Machu Picchu
-      'South Africa': 'https://images.unsplash.com/photo-1484318571209-661cf29a69ea?w=400&h=300&fit=crop', // Table Mountain
-      'New Zealand': 'https://images.unsplash.com/photo-1469521669194-babb45599def?w=400&h=300&fit=crop', // New Zealand landscape
-      'Iceland': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop', // Iceland landscape
-      'Ireland': 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop', // Irish cliffs
-      'Morocco': 'https://images.unsplash.com/photo-1489749798305-4fea3ae436d3?w=400&h=300&fit=crop', // Moroccan architecture
+      'South Africa': 'https://images.unsplash.com/photo-1484318571209-661cf29a69ea?w=400&h=300&fit=crop', // Table Mountain Cape Town
+      'New Zealand': 'https://images.unsplash.com/photo-1469521669194-babb45599def?w=400&h=300&fit=crop', // Milford Sound fjord
+      'Iceland': 'https://images.unsplash.com/photo-1476673160081-cf065607f449?w=400&h=300&fit=crop', // Iceland Northern Lights
+      'Ireland': 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=300&fit=crop', // Cliffs of Moher
+      'Morocco': 'https://images.unsplash.com/photo-1489749798305-4fea3ae436d3?w=400&h=300&fit=crop', // Marrakech medina
+      'Finland': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop', // Finland Aurora Borealis
+      'Austria': 'https://images.unsplash.com/photo-1516550893923-42d28e5677af?w=400&h=300&fit=crop', // Hallstatt Austria
+      'Belgium': 'https://images.unsplash.com/photo-1559113202-c916b8e44373?w=400&h=300&fit=crop', // Bruges medieval buildings
+      'Poland': 'https://images.unsplash.com/photo-1578836537282-3171d77f8632?w=400&h=300&fit=crop', // Krakow Main Square
+      'Czech Republic': 'https://images.unsplash.com/photo-1519677100203-a0e668c92439?w=400&h=300&fit=crop', // Prague Castle
+      'Hungary': 'https://images.unsplash.com/photo-1541849546-216549ae216d?w=400&h=300&fit=crop', // Budapest Parliament
+      'Croatia': 'https://images.unsplash.com/photo-1555990538-c7237dd4d8b3?w=400&h=300&fit=crop', // Dubrovnik old town
+      'Vietnam': 'https://images.unsplash.com/photo-1559592413-7cec4d0d638b?w=400&h=300&fit=crop', // Ha Long Bay
+      'Indonesia': 'https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=400&h=300&fit=crop', // Borobudur temple
+      'Philippines': 'https://images.unsplash.com/photo-1571756142259-dc9e2b69e86d?w=400&h=300&fit=crop', // Palawan islands
+      'Malaysia': 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=400&h=300&fit=crop', // Petronas Towers KL
+      'Singapore': 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400&h=300&fit=crop', // Marina Bay Sands
     };
 
     // Return country-specific image or generic landscape fallback
