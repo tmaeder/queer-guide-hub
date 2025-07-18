@@ -37,7 +37,7 @@ serve(async (req) => {
     // Create search query based on type
     let searchQuery = query;
     if (type === 'country') {
-      searchQuery = `${query} landscape architecture landmarks`;
+      searchQuery = getCountrySpecificKeywords(query);
     } else if (type === 'city') {
       searchQuery = `${query} city skyline architecture`;
     } else if (type === 'tag') {
@@ -135,6 +135,101 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to get country-specific keywords for better image search
+function getCountrySpecificKeywords(countryName: string): string {
+  const country = countryName.toLowerCase();
+  
+  // Map countries to their most recognizable landmarks, cities, and features
+  const countryKeywords: { [key: string]: string } = {
+    // Europe
+    'france': 'france eiffel tower paris french countryside provence',
+    'italy': 'italy rome colosseum venice tuscany italian',
+    'spain': 'spain madrid barcelona sagrada familia spanish',
+    'germany': 'germany berlin brandenburg gate bavarian castle',
+    'united kingdom': 'uk london big ben british england scotland',
+    'uk': 'uk london big ben british england scotland',
+    'england': 'england london big ben british countryside',
+    'scotland': 'scotland edinburgh highlands castle scottish',
+    'netherlands': 'netherlands amsterdam dutch windmills tulips',
+    'sweden': 'sweden stockholm scandinavian nordic architecture',
+    'norway': 'norway oslo fjords nordic scandinavian mountains',
+    'denmark': 'denmark copenhagen scandinavian nordic',
+    'greece': 'greece athens parthenon santorini greek islands',
+    'portugal': 'portugal lisbon porto portuguese architecture',
+    'switzerland': 'switzerland alps swiss mountains zurich',
+    'austria': 'austria vienna salzburg austrian alps',
+    'poland': 'poland warsaw krakow polish architecture',
+    'czech republic': 'czech republic prague bohemian castle',
+    'hungary': 'hungary budapest hungarian parliament danube',
+    'croatia': 'croatia dubrovnik split adriatic coast',
+    'ireland': 'ireland dublin green countryside irish cliffs',
+    'belgium': 'belgium brussels bruges belgian architecture',
+    'finland': 'finland helsinki finnish nordic lake',
+    'iceland': 'iceland reykjavik icelandic geysers northern lights',
+    
+    // North America
+    'united states': 'usa america american landmarks statue liberty',
+    'usa': 'usa america american landmarks statue liberty',
+    'canada': 'canada toronto vancouver canadian maple leaf',
+    'mexico': 'mexico mexican aztec maya cancun mexico city',
+    
+    // Asia
+    'japan': 'japan tokyo kyoto japanese temple mount fuji',
+    'china': 'china beijing great wall chinese forbidden city',
+    'india': 'india taj mahal delhi mumbai indian temple',
+    'south korea': 'south korea seoul korean temple hanbok',
+    'thailand': 'thailand bangkok thai temple wat pho',
+    'indonesia': 'indonesia jakarta bali indonesian temple',
+    'vietnam': 'vietnam hanoi ho chi minh vietnamese',
+    'philippines': 'philippines manila filipino tropical islands',
+    'singapore': 'singapore marina bay singaporean skyline',
+    'malaysia': 'malaysia kuala lumpur malaysian petronas towers',
+    'turkey': 'turkey istanbul hagia sophia turkish bosphorus',
+    'israel': 'israel jerusalem israeli western wall',
+    'iran': 'iran tehran persian iranian mosque',
+    'iraq': 'iraq baghdad iraqi mesopotamian',
+    'saudi arabia': 'saudi arabia riyadh mecca saudi arabian',
+    'united arab emirates': 'uae dubai abu dhabi burj khalifa',
+    'uae': 'uae dubai abu dhabi burj khalifa',
+    
+    // Africa
+    'egypt': 'egypt cairo pyramids giza egyptian sphinx',
+    'south africa': 'south africa cape town johannesburg african safari',
+    'morocco': 'morocco marrakech casablanca moroccan medina',
+    'kenya': 'kenya nairobi kenyan safari masai mara',
+    'tanzania': 'tanzania dar es salaam kilimanjaro tanzanian safari',
+    'nigeria': 'nigeria lagos abuja nigerian african',
+    'ghana': 'ghana accra ghanaian african gold coast',
+    'ethiopia': 'ethiopia addis ababa ethiopian african',
+    
+    // South America
+    'brazil': 'brazil rio de janeiro sao paulo brazilian christ redeemer',
+    'argentina': 'argentina buenos aires argentinian tango',
+    'chile': 'chile santiago chilean andes mountains',
+    'peru': 'peru lima machu picchu peruvian inca',
+    'colombia': 'colombia bogota cartagena colombian',
+    'venezuela': 'venezuela caracas venezuelan angel falls',
+    'ecuador': 'ecuador quito galapagos ecuadorian',
+    'uruguay': 'uruguay montevideo uruguayan',
+    
+    // Oceania
+    'australia': 'australia sydney melbourne australian outback opera house',
+    'new zealand': 'new zealand auckland wellington kiwi hobbiton',
+    'fiji': 'fiji suva fijian tropical pacific islands',
+    'papua new guinea': 'papua new guinea port moresby melanesian',
+  };
+  
+  // Check for exact matches first
+  for (const [key, keywords] of Object.entries(countryKeywords)) {
+    if (country.includes(key)) {
+      return keywords;
+    }
+  }
+  
+  // Fallback to general search with country name + common landmarks
+  return `${countryName} landmarks architecture famous places national symbol`;
+}
 
 // Helper function to get tag-specific keywords for better image search
 function getTagSpecificKeywords(tagName: string): string {
