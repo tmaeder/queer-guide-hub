@@ -7,7 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain } from "lucide-react";
+import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload } from "lucide-react";
+import { toast } from "sonner";
 type ViewMode = "overview" | "category" | "search" | "tag-detail";
 export default function TagsDirectory() {
   const {
@@ -27,38 +28,40 @@ export default function TagsDirectory() {
   const [selectedTag, setSelectedTag] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [tagImages, setTagImages] = useState<Record<string, string>>({});
+  const [processingImages, setProcessingImages] = useState(false);
 
-  // Fetch images for tags
-  useEffect(() => {
-    const fetchTagImages = async () => {
-      if (allTags.length === 0) return;
+  // Store images for tags without images
+  const storeTagImages = async () => {
+    if (allTags.length === 0) return;
+    
+    setProcessingImages(true);
+    
+    try {
+      const tagsWithoutImages = allTags.filter(tag => !tag.image_url);
+      console.log(`Processing ${tagsWithoutImages.length} tags without images`);
       
-      const imageMap: Record<string, string> = {};
-      
-      // Fetch images for a subset of tags to avoid hitting API limits
-      const tagsToFetch = allTags.slice(0, 20); // Limit to first 20 tags
-      
-      for (const tag of tagsToFetch) {
+      for (const tag of tagsWithoutImages) {
         try {
-          const { data, error } = await supabase.functions.invoke('get-pexels-images', {
-            body: { query: tag.name, type: 'tag' }
+          const { data, error } = await supabase.functions.invoke('store-tag-images', {
+            body: { tagId: tag.id, tagName: tag.name }
           });
           
-          if (!error && data?.success && data.images?.[0]) {
-            imageMap[tag.name] = data.images[0].thumbnail;
+          if (!error && data?.success) {
+            console.log(`Successfully stored image for tag: ${tag.name}`);
           }
         } catch (err) {
-          console.error(`Failed to fetch image for tag ${tag.name}:`, err);
+          console.error(`Failed to store image for tag ${tag.name}:`, err);
         }
       }
       
-      setTagImages(imageMap);
-    };
-
-    if (allTags.length > 0) {
-      fetchTagImages();
+      // Refetch tags to get updated image URLs
+      window.location.reload();
+    } catch (error) {
+      console.error('Error processing tag images:', error);
+    } finally {
+      setProcessingImages(false);
     }
-  }, [allTags]);
+  };
 
   // Handle route parameter for individual tag pages
   useEffect(() => {
@@ -181,16 +184,27 @@ export default function TagsDirectory() {
             </TabsList>
 
             <TabsContent value="all" className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold">All Tags</h2>
-                <Badge variant="secondary">{allTags.length}</Badge>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold">All Tags</h2>
+                  <Badge variant="secondary">{allTags.length}</Badge>
+                </div>
+                <Button 
+                  onClick={storeTagImages} 
+                  disabled={processingImages}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  {processingImages ? 'Processing...' : 'Store Missing Images'}
+                </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {allTags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                    {tagImages[tag.name] && (
+                    {tag.image_url && (
                       <div className="mb-3 rounded-md overflow-hidden h-32">
                         <img 
-                          src={tagImages[tag.name]} 
+                          src={tag.image_url} 
                           alt={`${tag.name} themed image`}
                           className="w-full h-full object-cover"
                         />
@@ -228,10 +242,10 @@ export default function TagsDirectory() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tags.map((tag, index) => <div key={`${tag.id}-${index}`} className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors" onClick={() => handleTagClick(tag)}>
-                      {tagImages[tag.name] && (
+                      {tag.image_url && (
                         <div className="mb-3 rounded-md overflow-hidden h-32">
                           <img 
-                            src={tagImages[tag.name]} 
+                            src={tag.image_url} 
                             alt={`${tag.name} themed image`}
                             className="w-full h-full object-cover"
                           />

@@ -1,1 +1,97 @@
 project_id = "xqeacpakadqfxjxjcewc"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54324
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = true
+email_double_confirm_changes = true
+enable_manual_linking = false
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+template = "Your code is {{ .Code }}"
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[realtime]
+enabled = true
+port = 54323
+ip_version = "ipv4"
+
+[studio]
+enabled = true
+port = 54324
+api_url = "http://localhost:54321"
+
+[inbucket]
+enabled = true
+port = 54325
+smtp_port = 54326
+pop3_port = 54327
+
+[storage]
+enabled = true
+port = 54328
+file_size_limit = "50MiB"
+file_transform_limit = "20MiB"
+
+[analytics]
+enabled = false
+port = 54327
+vector_port = 54328
+gcp_project_id = ""
+gcp_project_number = ""
+gcp_jwt_path = "supabase/gcp.json"
+
+[functions.create-booking]
+verify_jwt = false
+
+[functions.fetch-news]
+verify_jwt = false
+
+[functions.get-pexels-images]
+verify_jwt = false
+
+[functions.get-refuge-restrooms]
+verify_jwt = false
+
+[functions.get-weather-forecast]
+verify_jwt = false
+
+[functions.get-wikipedia-info]
+verify_jwt = false
+
+[functions.search-flights]
+verify_jwt = false
+
+[functions.search-hotels]
+verify_jwt = false
+
+[functions.store-tag-images]
+verify_jwt = false
