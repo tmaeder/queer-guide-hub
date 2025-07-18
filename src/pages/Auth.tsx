@@ -315,14 +315,33 @@ export default function Auth() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="gender-identity">Gender Identity</Label>
-                    <Input
-                      id="gender-identity"
-                      type="text"
-                      placeholder="How you identify"
-                      value={signupData.genderIdentity}
-                      onChange={(e) => setSignupData({ ...signupData, genderIdentity: e.target.value })}
+                    <Select 
+                      value={signupData.genderIdentity} 
+                      onValueChange={(value) => setSignupData({ ...signupData, genderIdentity: value })}
                       disabled={isLoading}
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="How you identify" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="woman">Woman</SelectItem>
+                        <SelectItem value="man">Man</SelectItem>
+                        <SelectItem value="non-binary">Non-binary</SelectItem>
+                        <SelectItem value="genderfluid">Genderfluid</SelectItem>
+                        <SelectItem value="transgender-woman">Transgender Woman</SelectItem>
+                        <SelectItem value="transgender-man">Transgender Man</SelectItem>
+                        <SelectItem value="agender">Agender</SelectItem>
+                        <SelectItem value="genderqueer">Genderqueer</SelectItem>
+                        <SelectItem value="two-spirit">Two-Spirit</SelectItem>
+                        <SelectItem value="demiboy">Demiboy</SelectItem>
+                        <SelectItem value="demigirl">Demigirl</SelectItem>
+                        <SelectItem value="bigender">Bigender</SelectItem>
+                        <SelectItem value="pangender">Pangender</SelectItem>
+                        <SelectItem value="questioning">Questioning</SelectItem>
+                        <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 
