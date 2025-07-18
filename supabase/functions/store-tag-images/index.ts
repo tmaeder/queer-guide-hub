@@ -55,10 +55,9 @@ serve(async (req) => {
       throw new Error('No image API keys configured');
     }
 
-    // Build search query with queer-friendly keywords
-    const queerKeywords = ['lgbtq', 'pride', 'rainbow', 'diverse', 'inclusive', 'community', 'celebration', 'colorful'];
+    // Build search query focused on the tag content
     const additionalKeywords = getTagSpecificKeywords(tagName);
-    const searchQuery = `${tagName} ${queerKeywords.join(' ')} ${additionalKeywords}`.trim();
+    const searchQuery = `${tagName} ${additionalKeywords}`.trim();
 
     let imageUrl = null;
     let imageBlob = null;
@@ -190,31 +189,43 @@ serve(async (req) => {
 function getTagSpecificKeywords(tagName: string): string {
   const tag = tagName.toLowerCase();
   
+  // Only add specific keywords for identity/orientation tags
   if (tag.includes('pride') || tag.includes('flag')) {
-    return 'flag parade march celebration';
+    return 'flag celebration';
   } else if (tag.includes('transgender') || tag.includes('trans')) {
-    return 'transgender trans pink blue white';
+    return 'transgender';
   } else if (tag.includes('lesbian')) {
-    return 'lesbian orange pink flag women';
-  } else if (tag.includes('gay') || tag.includes('men')) {
-    return 'gay men blue green flag';
+    return 'lesbian women';
+  } else if (tag.includes('gay')) {
+    return 'gay';
   } else if (tag.includes('bisexual') || tag.includes('bi')) {
-    return 'bisexual purple pink blue';
+    return 'bisexual';
   } else if (tag.includes('pansexual') || tag.includes('pan')) {
-    return 'pansexual pink yellow blue';
+    return 'pansexual';
   } else if (tag.includes('non-binary') || tag.includes('nonbinary')) {
-    return 'non-binary yellow purple black white';
-  } else if (tag.includes('queer')) {
-    return 'queer community diverse people';
+    return 'non-binary';
   } else if (tag.includes('event') || tag.includes('party')) {
-    return 'celebration party event colorful';
+    return 'event party';
   } else if (tag.includes('venue') || tag.includes('space')) {
-    return 'safe space welcoming inclusive venue';
+    return 'venue space';
   } else if (tag.includes('health') || tag.includes('mental')) {
-    return 'health wellness support care';
+    return 'health wellness';
   } else if (tag.includes('community') || tag.includes('group')) {
-    return 'community group people together';
+    return 'community group';
+  } else if (tag.includes('travel')) {
+    return 'travel destination';
+  } else if (tag.includes('food') || tag.includes('restaurant')) {
+    return 'food restaurant';
+  } else if (tag.includes('music') || tag.includes('art')) {
+    return 'music art creative';
+  } else if (tag.includes('sport') || tag.includes('fitness')) {
+    return 'sport fitness exercise';
+  } else if (tag.includes('book') || tag.includes('reading')) {
+    return 'book reading literature';
+  } else if (tag.includes('tech') || tag.includes('gaming')) {
+    return 'technology gaming';
   } else {
-    return 'inclusive diverse community colorful';
+    // For other tags, don't add extra keywords - let the tag speak for itself
+    return '';
   }
 }
