@@ -14,6 +14,7 @@ import { User, Camera, Save, ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
+import UserEventsSection from '@/components/profile/UserEventsSection';
 
 export default function ProfileSettings() {
   const navigate = useNavigate();
@@ -347,6 +348,9 @@ export default function ProfileSettings() {
           </div>
         </CardContent>
       </Card>
+
+      {/* User Events */}
+      <UserEventsSection />
 
       {/* Save Button */}
       <div className="flex justify-end">
