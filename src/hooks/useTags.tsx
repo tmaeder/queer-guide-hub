@@ -30,9 +30,9 @@ export const useTags = () => {
       
       // First, try to get tags from the centralized tags table
       const { data: centralizedTags, error: centralizedError } = await supabase
-        .from("tags")
+        .from("unified_tags")
         .select("*")
-        .eq("is_active", true);
+        .eq("usage_count", ">", 0);
 
       if (!centralizedError && centralizedTags && centralizedTags.length > 0) {
         // Use centralized tags if available

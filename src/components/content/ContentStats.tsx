@@ -29,8 +29,7 @@ export const ContentStats = ({ content }: ContentStatsProps) => {
       return createdDate.getMonth() === now.getMonth() && 
              createdDate.getFullYear() === now.getFullYear();
     }).length,
-    uniqueAuthors: new Set(content.map(c => c.author_id).filter(Boolean)).size,
-    uniqueTags: new Set(content.flatMap(c => c.tags?.map(t => t.id) || [])).size
+    uniqueAuthors: new Set(content.map(c => c.author_id).filter(Boolean)).size
   };
 
   const publishRate = stats.total > 0 ? Math.round((stats.published / stats.total) * 100) : 0;

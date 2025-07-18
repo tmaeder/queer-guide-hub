@@ -104,8 +104,7 @@ export default function AdminContent() {
     const matchesStatus = selectedStatus === "all" || item.status === selectedStatus;
     const matchesCategory = selectedCategory === "all" || 
       (item.categories && item.categories.some(cat => cat.id === selectedCategory));
-    const matchesTags = selectedTags.length === 0 || 
-      (item.tags && selectedTags.some(tagId => item.tags?.some(tag => tag.id === tagId)));
+    const matchesTags = selectedTags.length === 0; // Remove tag filtering for now
     const matchesAuthor = selectedAuthor === "all" || item.author_id === selectedAuthor;
 
     return matchesSearch && matchesType && matchesStatus && matchesCategory && matchesTags && matchesAuthor;
@@ -334,13 +333,10 @@ export default function AdminContent() {
             onStatusChange={setSelectedStatus}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
-            selectedTags={selectedTags}
-            onTagsChange={setSelectedTags}
-            selectedAuthor={selectedAuthor}
-            onAuthorChange={setSelectedAuthor}
-            categories={categories}
-            tags={tags}
-            authors={authors}
+          selectedAuthor={selectedAuthor}
+          onAuthorChange={setSelectedAuthor}
+          categories={categories}
+          authors={authors}
             onClearFilters={clearFilters}
             resultsCount={filteredContent.length}
           />

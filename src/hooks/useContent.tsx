@@ -4,19 +4,16 @@ import { Tables } from "@/integrations/supabase/types";
 
 export type Content = Tables<"content"> & {
   categories?: Tables<"content_categories">[];
-  tags?: Tables<"content_tags">[]; // Use content_tags table
   author?: Tables<"profiles">;
 };
 
 export type ContentCategory = Tables<"content_categories">;
-export type ContentTag = Tables<"content_tags">; // Use content_tags table
 export type ContentType = "blog_post" | "page" | "legal_document" | "press_release" | "about_content";
 export type ContentStatus = "draft" | "published" | "archived";
 
 export const useContent = () => {
   const [content, setContent] = useState<Content[]>([]);
   const [categories, setCategories] = useState<ContentCategory[]>([]);
-  const [tags, setTags] = useState<ContentTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -187,7 +184,6 @@ export const useContent = () => {
       const contentIds = contentData?.map(item => item.id) || [];
       
       let categoryAssignments: any[] = [];
-      let tagAssignments: any[] = [];
 
       if (contentIds.length > 0) {
         // Fetch categories and tags with retry mechanism
@@ -205,27 +201,11 @@ export const useContent = () => {
           return categoryData || [];
         };
 
-        const tagOperation = async () => {
-          const { data: tagData, error: tagError } = await supabase
-            .from("content_tag_assignments")
-            .select(`
-              content_id,
-              content_tags (*)
-            `)
-            .in("content_id", contentIds)
-            .abortSignal(signal);
-            
-          if (tagError) throw tagError;
-          return tagData || [];
-        };
-
-        const [categoryData, tagData] = await Promise.all([
-          retryWithBackoff(categoryOperation),
-          retryWithBackoff(tagOperation)
+        const [categoryData] = await Promise.all([
+          retryWithBackoff(categoryOperation)
         ]);
 
         categoryAssignments = categoryData;
-        tagAssignments = tagData;
       }
 
       // Process content with separated data fetching
@@ -233,10 +213,7 @@ export const useContent = () => {
         ...item,
         categories: categoryAssignments
           .filter(assignment => assignment.content_id === item.id)
-          .map(assignment => assignment.content_categories),
-        tags: tagAssignments
-          .filter(assignment => assignment.content_id === item.id)
-          .map(assignment => assignment.content_tags)
+          .map(assignment => assignment.content_categories)
       }));
 
       setContent(processedContent);
@@ -283,23 +260,16 @@ export const useContent = () => {
         author = authorData;
       }
 
-      // Fetch categories and tags separately  
-      const [categoriesResponse, tagsResponse] = await Promise.all([
-        supabase
-          .from("content_category_assignments")
-          .select("content_categories (*)")
-          .eq("content_id", contentData.id),
-        supabase
-          .from("content_tag_assignments") 
-          .select("content_tags (*)")
-          .eq("content_id", contentData.id)
-      ]);
+      // Fetch categories separately  
+      const categoriesResponse = await supabase
+        .from("content_category_assignments")
+        .select("content_categories (*)")
+        .eq("content_id", contentData.id);
 
       return {
         ...contentData,
         author,
-        categories: categoriesResponse.data?.map(item => item.content_categories) || [],
-        tags: tagsResponse.data?.map(item => item.content_tags) || []
+        categories: categoriesResponse.data?.map(item => item.content_categories) || []
       };
     } catch (err) {
       setError(err instanceof Error ? err.message : "Content not found");
@@ -323,22 +293,6 @@ export const useContent = () => {
     }
   };
 
-  const fetchTags = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("content_tags")
-        .select("*")
-        .order("name");
-
-      if (error) throw error;
-      setTags(data || []);
-      return data || [];
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-      return [];
-    }
-  };
-
   const createContent = async (contentData: {
     title: string;
     slug: string;
@@ -350,7 +304,6 @@ export const useContent = () => {
     featured_image?: string;
     status?: ContentStatus;
     categoryIds?: string[];
-    tagIds?: string[];
   }) => {
     try {
       // Enhanced validation and authentication
@@ -389,8 +342,7 @@ export const useContent = () => {
         meta_keywords: contentData.meta_keywords?.slice(0, 10), // Limit to 10 keywords
         featured_image: contentData.featured_image?.trim(),
         status: contentData.status || "draft",
-        categoryIds: contentData.categoryIds?.slice(0, 5), // Limit categories
-        tagIds: contentData.tagIds?.slice(0, 10) // Limit tags
+        categoryIds: contentData.categoryIds?.slice(0, 5) // Limit categories
       };
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -445,27 +397,6 @@ export const useContent = () => {
           await supabase
             .from("content_category_assignments")
             .insert(categoryAssignments);
-        }
-      }
-
-      // Add tag assignments with validation
-      if (sanitizedData.tagIds && sanitizedData.tagIds.length > 0) {
-        // Validate tag IDs exist
-        const { data: validTags } = await supabase
-          .from("content_tags")
-          .select("id")
-          .in("id", sanitizedData.tagIds);
-        
-        const validTagIds = validTags?.map(t => t.id) || [];
-        if (validTagIds.length > 0) {
-          const tagAssignments = validTagIds.map(tagId => ({
-            content_id: contentRecord.id,
-            tag_id: tagId
-          }));
-
-          await supabase
-            .from("content_tag_assignments")
-            .insert(tagAssignments);
         }
       }
 
@@ -543,27 +474,18 @@ export const useContent = () => {
         authors = authorData || [];
       }
 
-      // Fetch categories and tags for search results
-        const [categoriesResponse, tagsResponse] = await Promise.all([
-          supabase
-            .from("content_category_assignments")
-            .select("content_id, content_categories (*)")
-            .in("content_id", searchData.map(item => item.id)),
-          supabase
-            .from("content_tag_assignments")
-            .select("content_id, content_tags (*)")
-            .in("content_id", searchData.map(item => item.id))
-        ]);
+      // Fetch categories for search results
+        const categoriesResponse = await supabase
+          .from("content_category_assignments")
+          .select("content_id, content_categories (*)")
+          .in("content_id", searchData.map(item => item.id));
 
         return searchData.map(item => ({
           ...item,
           author: authors.find(author => author.user_id === item.author_id),
           categories: categoriesResponse.data
             ?.filter(assignment => assignment.content_id === item.id)
-            .map(assignment => assignment.content_categories) || [],
-          tags: tagsResponse.data
-            ?.filter(assignment => assignment.content_id === item.id)
-            .map(assignment => assignment.content_tags) || []
+            .map(assignment => assignment.content_categories) || []
         }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -596,8 +518,7 @@ export const useContent = () => {
         // Use staggered loading for better UX
         await Promise.allSettled([
           fetchContent(),
-          fetchCategories(),
-          fetchTags()
+          fetchCategories()
         ]);
       } catch (error) {
         console.error("Error fetching initial data:", error);
@@ -613,7 +534,6 @@ export const useContent = () => {
   return {
     content,
     categories,
-    tags,
     loading,
     error,
     retryCount,
@@ -621,7 +541,6 @@ export const useContent = () => {
     fetchContent,
     fetchContentBySlug,
     fetchCategories,
-    fetchTags,
     createContent,
     updateContent,
     deleteContent,

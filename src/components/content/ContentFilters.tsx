@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Filter, X, Calendar, Tag, User } from "lucide-react";
-import { ContentType, ContentStatus, ContentCategory, ContentTag } from "@/hooks/useContent";
+import { ContentType, ContentStatus, ContentCategory } from "@/hooks/useContent";
 
 interface ContentFiltersProps {
   searchQuery: string;
@@ -16,12 +16,9 @@ interface ContentFiltersProps {
   onStatusChange: (status: string) => void;
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
-  selectedTags: string[];
-  onTagsChange: (tags: string[]) => void;
   selectedAuthor: string;
   onAuthorChange: (author: string) => void;
   categories: ContentCategory[];
-  tags: ContentTag[];
   authors: Array<{ id: string; name: string }>;
   onClearFilters: () => void;
   resultsCount: number;
@@ -36,12 +33,9 @@ export const ContentFilters = ({
   onStatusChange,
   selectedCategory,
   onCategoryChange,
-  selectedTags,
-  onTagsChange,
   selectedAuthor,
   onAuthorChange,
   categories,
-  tags,
   authors,
   onClearFilters,
   resultsCount
@@ -52,18 +46,9 @@ export const ContentFilters = ({
     selectedType !== "all",
     selectedStatus !== "all",
     selectedCategory !== "all",
-    selectedTags.length > 0,
     selectedAuthor !== "all",
     searchQuery.length > 0
   ].filter(Boolean).length;
-
-  const toggleTag = (tagId: string) => {
-    if (selectedTags.includes(tagId)) {
-      onTagsChange(selectedTags.filter(id => id !== tagId));
-    } else {
-      onTagsChange([...selectedTags, tagId]);
-    }
-  };
 
   return (
     <Card>
@@ -190,22 +175,6 @@ export const ContentFilters = ({
                 </div>
               </div>
 
-              {/* Tags Filter */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Tags</label>
-                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                  {tags.map((tag) => (
-                    <Badge
-                      key={tag.id}
-                      variant={selectedTags.includes(tag.id) ? "default" : "outline"}
-                      className="cursor-pointer hover:shadow-sm transition-shadow"
-                      onClick={() => toggleTag(tag.id)}
-                    >
-                      {tag.name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
         </div>

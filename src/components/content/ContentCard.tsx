@@ -214,20 +214,7 @@ export const ContentCard = ({
             )}
           </div>
           
-          {content.tags && content.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {content.tags.slice(0, 3).map((tag) => (
-                <Badge key={tag.id} variant="secondary" className="text-xs">
-                  {tag.name}
-                </Badge>
-              ))}
-              {content.tags.length > 3 && (
-                <Badge variant="secondary" className="text-xs">
-                  +{content.tags.length - 3}
-                </Badge>
-              )}
-            </div>
-          )}
+          {/* Remove tags section as they no longer exist on content */}
         </div>
       </CardContent>
     </Card>

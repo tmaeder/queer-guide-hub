@@ -20,7 +20,7 @@ import {
   Settings,
   Image as ImageIcon
 } from "lucide-react";
-import { ContentType, ContentStatus, ContentCategory, ContentTag } from "@/hooks/useContent";
+import { ContentType, ContentStatus, ContentCategory } from "@/hooks/useContent";
 
 interface ContentEditorProps {
   formData: {
@@ -34,13 +34,11 @@ interface ContentEditorProps {
     meta_keywords: string[];
     featured_image: string;
     categoryIds: string[];
-    tagIds: string[];
   };
   onChange: (data: any) => void;
   onSave: () => void;
   onPreview?: () => void;
   categories: ContentCategory[];
-  tags: ContentTag[];
   isLoading?: boolean;
   isEditing?: boolean;
 }
@@ -51,7 +49,6 @@ export const ContentEditor = ({
   onSave,
   onPreview,
   categories,
-  tags,
   isLoading = false,
   isEditing = false
 }: ContentEditorProps) => {
@@ -93,19 +90,11 @@ export const ContentEditor = ({
   };
 
   const toggleCategory = (categoryId: string) => {
-    const newCategoryIds = formData.categoryIds.includes(categoryId)
-      ? formData.categoryIds.filter(id => id !== categoryId)
-      : [...formData.categoryIds, categoryId];
-    
-    onChange({ ...formData, categoryIds: newCategoryIds });
-  };
-
-  const toggleTag = (tagId: string) => {
-    const newTagIds = formData.tagIds.includes(tagId)
-      ? formData.tagIds.filter(id => id !== tagId)
-      : [...formData.tagIds, tagId];
-    
-    onChange({ ...formData, tagIds: newTagIds });
+    const currentIds = formData.categoryIds || [];
+    const newIds = currentIds.includes(categoryId)
+      ? currentIds.filter(id => id !== categoryId)
+      : [...currentIds, categoryId];
+    onChange({ categoryIds: newIds });
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -381,27 +370,6 @@ export const ContentEditor = ({
                     {category.name}
                   </Label>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tags */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Tags</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant={formData.tagIds.includes(tag.id) ? "default" : "outline"}
-                  className="cursor-pointer hover:shadow-sm transition-shadow"
-                  onClick={() => toggleTag(tag.id)}
-                >
-                  {tag.name}
-                </Badge>
               ))}
             </div>
           </CardContent>

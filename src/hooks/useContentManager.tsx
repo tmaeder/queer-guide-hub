@@ -4,19 +4,16 @@ import { Tables } from "@/integrations/supabase/types";
 
 export type Content = Tables<"content"> & {
   categories?: Tables<"content_categories">[];
-  tags?: Tables<"content_tags">[];
   author?: Tables<"profiles">;
 };
 
 export type ContentCategory = Tables<"content_categories">;
-export type ContentTag = Tables<"content_tags">;
 export type ContentType = "blog_post" | "page" | "legal_document" | "press_release" | "about_content";
 export type ContentStatus = "draft" | "published" | "archived";
 
 export const useContentManager = () => {
   const [content, setContent] = useState<Content[]>([]);
   const [categories, setCategories] = useState<ContentCategory[]>([]);
-  const [tags, setTags] = useState<ContentTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,19 +74,10 @@ export const useContentManager = () => {
             `)
             .eq("content_id", item.id);
 
-          // Fetch tags
-          const { data: tagData } = await supabase
-            .from("content_tag_assignments")
-            .select(`
-              content_tags (*)
-            `)
-            .eq("content_id", item.id);
-
           return {
             ...item,
             author,
-            categories: categoryData?.map(cat => cat.content_categories).filter(Boolean) || [],
-            tags: tagData?.map(tag => tag.content_tags).filter(Boolean) || []
+            categories: categoryData?.map(cat => cat.content_categories).filter(Boolean) || []
           };
         })
       );
@@ -122,21 +110,6 @@ export const useContentManager = () => {
     }
   }, []);
 
-  const fetchTags = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from("content_tags")
-        .select("*")
-        .order("name");
-
-      if (error) throw error;
-      setTags(data || []);
-      return data || [];
-    } catch (err) {
-      console.error("Tags fetch error:", err);
-      return [];
-    }
-  }, []);
 
   const createContent = useCallback(async (contentData: {
     title: string;
@@ -149,7 +122,6 @@ export const useContentManager = () => {
     featured_image?: string;
     status?: ContentStatus;
     categoryIds?: string[];
-    tagIds?: string[];
   }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -198,18 +170,6 @@ export const useContentManager = () => {
           .insert(categoryAssignments);
       }
 
-      // Add tag assignments
-      if (contentData.tagIds && contentData.tagIds.length > 0) {
-        const tagAssignments = contentData.tagIds.map(tagId => ({
-          content_id: contentRecord.id,
-          tag_id: tagId
-        }));
-
-        await supabase
-          .from("content_tag_assignments")
-          .insert(tagAssignments);
-      }
-
       await fetchContent();
       return contentRecord;
     } catch (err) {
@@ -242,9 +202,8 @@ export const useContentManager = () => {
 
   const deleteContent = useCallback(async (id: string) => {
     try {
-      // Delete related assignments first
+      // Delete category assignments first
       await supabase.from("content_category_assignments").delete().eq("content_id", id);
-      await supabase.from("content_tag_assignments").delete().eq("content_id", id);
       
       // Delete content
       const { error } = await supabase
@@ -282,25 +241,6 @@ export const useContentManager = () => {
     }
   }, [fetchCategories]);
 
-  const createTag = useCallback(async (tagData: {
-    name: string;
-    slug: string;
-  }) => {
-    try {
-      const { data, error } = await supabase
-        .from("content_tags")
-        .insert(tagData)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      await fetchTags();
-      return data;
-    } catch (err) {
-      throw err;
-    }
-  }, [fetchTags]);
 
   // Initial data load
   useEffect(() => {
@@ -308,8 +248,7 @@ export const useContentManager = () => {
       setLoading(true);
       await Promise.all([
         fetchContent(),
-        fetchCategories(),
-        fetchTags()
+        fetchCategories()
       ]);
       setLoading(false);
     };
@@ -320,7 +259,6 @@ export const useContentManager = () => {
   return {
     content,
     categories,
-    tags,
     loading,
     error,
     fetchContent,
@@ -328,7 +266,6 @@ export const useContentManager = () => {
     updateContent,
     deleteContent,
     createCategory,
-    createTag,
-    refresh: () => Promise.all([fetchContent(), fetchCategories(), fetchTags()])
+    refresh: () => Promise.all([fetchContent(), fetchCategories()])
   };
 };

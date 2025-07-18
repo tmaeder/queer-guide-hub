@@ -4,12 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 export interface CentralizedTag {
   id: string;
   name: string;
-  category: string;
+  category?: string;
   description?: string;
-  color: string;
+  color?: string;
   usage_count: number;
-  is_active: boolean;
   image_url?: string;
+  slug: string;
   created_at: string;
   updated_at: string;
 }
@@ -32,9 +32,8 @@ export const useCentralizedTags = () => {
       setError(null);
 
       const { data, error: fetchError } = await supabase
-        .from("tags")
+        .from("unified_tags")
         .select("*")
-        .eq("is_active", true)
         .order("usage_count", { ascending: false });
 
       if (fetchError) {
@@ -47,10 +46,11 @@ export const useCentralizedTags = () => {
       const categoryMap = new Map<string, CentralizedTag[]>();
       
       (data || []).forEach((tag) => {
-        if (!categoryMap.has(tag.category)) {
-          categoryMap.set(tag.category, []);
+        const category = tag.category || 'general';
+        if (!categoryMap.has(category)) {
+          categoryMap.set(category, []);
         }
-        categoryMap.get(tag.category)!.push(tag);
+        categoryMap.get(category)!.push(tag);
       });
 
       const categories: TagCategory[] = Array.from(categoryMap.entries()).map(([category, tags]) => ({
@@ -71,9 +71,8 @@ export const useCentralizedTags = () => {
   const searchTags = async (query: string, category?: string): Promise<CentralizedTag[]> => {
     try {
       let queryBuilder = supabase
-        .from("tags")
+        .from("unified_tags")
         .select("*")
-        .eq("is_active", true)
         .ilike("name", `%${query}%`);
 
       if (category) {
@@ -93,7 +92,7 @@ export const useCentralizedTags = () => {
   };
 
   const getTagsByCategory = (category: string): CentralizedTag[] => {
-    return allTags.filter(tag => tag.category === category);
+    return allTags.filter(tag => tag.category === category || (!tag.category && category === 'general'));
   };
 
   const getPopularTags = (limit: number = 10): CentralizedTag[] => {
@@ -104,14 +103,18 @@ export const useCentralizedTags = () => {
 
   const createTag = async (tagData: {
     name: string;
-    category: string;
+    slug: string;
+    category?: string;
     description?: string;
     color?: string;
   }): Promise<CentralizedTag | null> => {
     try {
       const { data, error } = await supabase
-        .from("tags")
-        .insert([tagData])
+        .from("unified_tags")
+        .insert([{
+          ...tagData,
+          slug: tagData.slug || tagData.name.toLowerCase().replace(/\s+/g, '-')
+        }])
         .select()
         .single();
 
@@ -129,7 +132,7 @@ export const useCentralizedTags = () => {
   const updateTag = async (id: string, updates: Partial<CentralizedTag>): Promise<void> => {
     try {
       const { error } = await supabase
-        .from("tags")
+        .from("unified_tags")
         .update(updates)
         .eq("id", id);
 
@@ -146,8 +149,8 @@ export const useCentralizedTags = () => {
   const deleteTag = async (id: string): Promise<void> => {
     try {
       const { error } = await supabase
-        .from("tags")
-        .update({ is_active: false })
+        .from("unified_tags")
+        .delete()
         .eq("id", id);
 
       if (error) throw error;
