@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -25,7 +24,6 @@ export function Header() {
         <AdvancedSearchBar />
 
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           {user ? <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
