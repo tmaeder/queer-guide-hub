@@ -46,6 +46,7 @@ import ProfileSettings from "./pages/ProfileSettings";
 import Messages from "./pages/Messages";
 import AccessibilityHub from "./pages/AccessibilityHub";
 import NotFound from "./pages/NotFound";
+import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 
 const queryClient = new QueryClient();
 
@@ -148,16 +149,52 @@ const App = () => {
                   <Route path="/cookies" element={<CookiePolicy />} />
                   <Route path="/dmca" element={<DMCA />} />
                   <Route path="/auth" element={<Auth />} />
-                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin" element={
+                    <AdminRouteGuard>
+                      <AdminDashboard />
+                    </AdminRouteGuard>
+                  } />
                   
-                  <Route path="/admin/content" element={<ContentManagementSystem />} />
-                  <Route path="/admin/content/:id" element={<ContentEditor />} />
-                  <Route path="/admin/content/new" element={<ContentEditor />} />
-                  <Route path="/admin/tags" element={<AdminTags />} />
-                  <Route path="/admin/cities" element={<AdminCities />} />
-                  <Route path="/admin/venues" element={<AdminVenues />} />
-                  <Route path="/admin/events" element={<AdminEvents />} />
-                  <Route path="/admin/marketplace" element={<AdminMarketplace />} />
+                  <Route path="/admin/content" element={
+                    <AdminRouteGuard>
+                      <ContentManagementSystem />
+                    </AdminRouteGuard>
+                  } />
+                  <Route path="/admin/content/:id" element={
+                    <AdminRouteGuard>
+                      <ContentEditor />
+                    </AdminRouteGuard>
+                  } />
+                  <Route path="/admin/content/new" element={
+                    <AdminRouteGuard>
+                      <ContentEditor />
+                    </AdminRouteGuard>
+                  } />
+                  <Route path="/admin/tags" element={
+                    <AdminRouteGuard>
+                      <AdminTags />
+                    </AdminRouteGuard>
+                  } />
+                  <Route path="/admin/cities" element={
+                    <AdminRouteGuard>
+                      <AdminCities />
+                    </AdminRouteGuard>
+                  } />
+                  <Route path="/admin/venues" element={
+                    <AdminRouteGuard>
+                      <AdminVenues />
+                    </AdminRouteGuard>
+                  } />
+                  <Route path="/admin/events" element={
+                    <AdminRouteGuard>
+                      <AdminEvents />
+                    </AdminRouteGuard>
+                  } />
+                  <Route path="/admin/marketplace" element={
+                    <AdminRouteGuard>
+                      <AdminMarketplace />
+                    </AdminRouteGuard>
+                  } />
                   <Route path="/news" element={<News />} />
                   <Route path="/travel" element={<Travel />} />
                   <Route path="/accessibility" element={<AccessibilityHub />} />
