@@ -15,9 +15,11 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useStats } from '@/hooks/useStats';
 
 const Index = () => {
   const { user } = useAuth();
+  const { stats: realStats, loading } = useStats();
   
   const features = [
     {
@@ -64,11 +66,23 @@ const Index = () => {
     }
   ];
 
-  const stats = [
-    { number: '10K+', label: 'Verified Venues' },
-    { number: '50K+', label: 'Community Members' },
-    { number: '200+', label: 'Cities Worldwide' },
-    { number: '1K+', label: 'Weekly Events' }
+  const formatNumber = (num: number) => {
+    if (num >= 1000) {
+      return `${Math.floor(num / 1000)}K+`;
+    }
+    return num.toString();
+  };
+
+  const stats = loading ? [
+    { number: '---', label: 'Verified Venues' },
+    { number: '---', label: 'Community Members' },
+    { number: '---', label: 'Cities Worldwide' },
+    { number: '---', label: 'Weekly Events' }
+  ] : [
+    { number: formatNumber(realStats.venues), label: 'Verified Venues' },
+    { number: formatNumber(realStats.members), label: 'Community Members' },
+    { number: formatNumber(realStats.cities), label: 'Cities Worldwide' },
+    { number: formatNumber(realStats.weeklyEvents), label: 'Weekly Events' }
   ];
 
 
