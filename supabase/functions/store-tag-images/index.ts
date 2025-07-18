@@ -31,7 +31,7 @@ serve(async (req) => {
 
     // Check if tag already has an image
     const { data: existingTag } = await supabase
-      .from('tags')
+      .from('unified_tags')
       .select('image_url')
       .eq('id', tagId)
       .single();
@@ -152,7 +152,7 @@ serve(async (req) => {
 
     // Update tag with image URL
     const { error: updateError } = await supabase
-      .from('tags')
+      .from('unified_tags')
       .update({ image_url: storedImageUrl })
       .eq('id', tagId);
 
