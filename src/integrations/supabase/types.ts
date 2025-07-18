@@ -2235,6 +2235,10 @@ export type Database = {
         Args: { options: string[]; catalog: unknown }
         Returns: undefined
       }
+      assign_admin_by_id: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       assign_first_admin: {
         Args: { user_email: string }
         Returns: boolean
