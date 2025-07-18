@@ -123,7 +123,8 @@ const App = () => {
               />
               <Header />
               <main className="flex-1 relative z-10">
-                <Routes>
+                <div className="container mx-auto px-4">
+                  <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/venues" element={<Venues />} />
                   <Route path="/venues/:id" element={<VenueDetail />} />
@@ -165,7 +166,8 @@ const App = () => {
                   <Route path="/profile/settings" element={<ProfileSettings />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
-                </Routes>
+                  </Routes>
+                </div>
               </main>
               <Footer />
             </div>
