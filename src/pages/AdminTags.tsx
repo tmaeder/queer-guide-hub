@@ -46,7 +46,9 @@ export default function AdminTags() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [filteredTags, setFilteredTags] = useState(tags);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<any>(null);
+  const [bulkEditTags, setBulkEditTags] = useState<{[key: string]: string}>({});
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -154,6 +156,61 @@ export default function AdminTags() {
     setEditingTag(null);
   };
 
+  const handleBulkEdit = async () => {
+    const tagsWithoutDescriptions = tags.filter(tag => !tag.description || tag.description.trim() === '');
+    const initialDescriptions: {[key: string]: string} = {};
+    
+    // Pre-populate with suggested descriptions based on tag names
+    tagsWithoutDescriptions.forEach(tag => {
+      initialDescriptions[tag.id] = getSuggestedDescription(tag.name, tag.category);
+    });
+    
+    setBulkEditTags(initialDescriptions);
+    setIsBulkEditOpen(true);
+  };
+
+  const getSuggestedDescription = (name: string, category: string): string => {
+    const suggestions: {[key: string]: string} = {
+      'Business': 'Business-related content, services, and commercial activities',
+      'Community': 'Community events, groups, and local gatherings',
+      'Events': 'Special events, celebrations, and organized activities',
+      'Guide': 'Helpful guides, tutorials, and informational content',
+      'LGBTQ+': 'LGBTQ+ community resources, events, and support',
+      'News': 'Latest news, updates, and current events',
+      'Safety': 'Safety information, tips, and emergency resources',
+      'Technology': 'Technology-related content, digital tools, and innovations',
+      'Tips': 'Helpful tips, advice, and recommendations',
+      'Updates': 'System updates, announcements, and changes'
+    };
+    
+    return suggestions[name] || `${name} related to ${category}`;
+  };
+
+  const saveBulkDescriptions = async () => {
+    try {
+      const updates = Object.entries(bulkEditTags).map(([tagId, description]) => {
+        const tag = tags.find(t => t.id === tagId);
+        return updateTag(tagId, { ...tag, description });
+      });
+
+      await Promise.all(updates);
+      
+      toast({
+        title: "Success",
+        description: `Updated descriptions for ${Object.keys(bulkEditTags).length} tags`
+      });
+      
+      setIsBulkEditOpen(false);
+      setBulkEditTags({});
+    } catch (error) {
+      toast({
+        title: "Error", 
+        description: "Failed to update tag descriptions",
+        variant: "destructive"
+      });
+    }
+  };
+
   const uniqueCategories = Array.from(new Set(tags.map(tag => tag.category))).sort();
 
   if (rolesLoading || loading) {
@@ -178,13 +235,18 @@ export default function AdminTags() {
             <p className="text-muted-foreground">Create and manage content tags</p>
           </div>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Tag
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleBulkEdit}>
+            <Edit className="h-4 w-4 mr-2" />
+            Bulk Edit Descriptions
+          </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Tag
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingTag ? "Edit Tag" : "Create New Tag"}</DialogTitle>
@@ -241,6 +303,64 @@ export default function AdminTags() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Bulk Edit Dialog */}
+        <Dialog open={isBulkEditOpen} onOpenChange={setIsBulkEditOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Bulk Edit Tag Descriptions</DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                Add descriptions to tags that don't have them. Suggestions are pre-filled based on tag names.
+              </p>
+            </DialogHeader>
+            <div className="space-y-4">
+              {Object.entries(bulkEditTags).map(([tagId, description]) => {
+                const tag = tags.find(t => t.id === tagId);
+                if (!tag) return null;
+                
+                return (
+                  <div key={tagId} className="border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <span className="font-medium">{tag.name}</span>
+                      <Badge variant="outline">{tag.category}</Badge>
+                    </div>
+                    <Textarea
+                      value={description}
+                      onChange={(e) => setBulkEditTags(prev => ({
+                        ...prev,
+                        [tagId]: e.target.value
+                      }))}
+                      placeholder="Enter description for this tag..."
+                      rows={2}
+                    />
+                  </div>
+                );
+              })}
+              
+              {Object.keys(bulkEditTags).length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">All tags already have descriptions!</p>
+                </div>
+              )}
+              
+              {Object.keys(bulkEditTags).length > 0 && (
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={saveBulkDescriptions} className="flex-1">
+                    Save All Descriptions ({Object.keys(bulkEditTags).length} tags)
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsBulkEditOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+        </div>
       </div>
 
       {/* Filters */}
