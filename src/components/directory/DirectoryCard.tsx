@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Users, Globe, Building2, Loader2, ImageIcon } from "lucide-react";
+import { MapPin, Users, Globe, Building2, Loader2, ImageIcon, Crown } from "lucide-react";
 import { Country, City } from "@/hooks/useDirectory";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -149,7 +149,10 @@ export const DirectoryCard = ({
     if (type === "country" && data) {
       const country = data as Country;
       return <div className="space-y-1">
-          {country.capital && <p className="text-sm text-muted-foreground">Capital: {country.capital}</p>}
+          {country.capital && <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Crown className="h-4 w-4" />
+            <span>{country.capital}</span>
+          </div>}
           {country.regions && <Badge variant="secondary" className="text-xs">
               {country.regions.name}
             </Badge>}
