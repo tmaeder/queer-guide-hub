@@ -22,6 +22,7 @@ export function Header() {
           
         </Link>
 
+        <AdvancedSearchBar />
 
         <div className="flex items-center gap-2">
           <ThemeToggle />

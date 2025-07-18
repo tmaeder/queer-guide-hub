@@ -3,7 +3,6 @@ import { Heart, Mail, Github, Twitter, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { AdvancedSearchBar } from "@/components/search/AdvancedSearchBar";
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const legalLinks = [{
@@ -127,12 +126,6 @@ export function Footer() {
                 </li>)}
             </ul>
           </div>
-        </div>
-
-        <Separator className="my-8" />
-        
-        <div className="flex justify-center mb-8">
-          <AdvancedSearchBar />
         </div>
 
         <Separator className="my-8" />
