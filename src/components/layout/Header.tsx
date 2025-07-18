@@ -84,6 +84,10 @@ export function Header() {
                 <Store className="h-6 w-6 mb-1" />
                 <span className="text-xs">Market</span>
               </Link>
+              <Link to="/users" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                <Users className="h-6 w-6 mb-1" />
+                <span className="text-xs">Users</span>
+              </Link>
               <Link to="/tags" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                 <Tags className="h-6 w-6 mb-1" />
                 <span className="text-xs">Wiki</span>
