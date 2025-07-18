@@ -5,6 +5,7 @@ import { Star, MapPin, Phone, Globe, Instagram } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { VenueEvents } from './VenueEvents';
 import { Link } from 'react-router-dom';
+import { FavoriteButton } from '@/components/ui/favorite-button';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
@@ -157,6 +158,7 @@ export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick, o
 
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
+            <FavoriteButton itemId={venue.id} type="venue" />
             {venue.phone && (
               <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
                 <Phone className="h-3 w-3" />

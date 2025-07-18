@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Star, Heart, MapPin, Globe, Phone, Mail, ExternalLink, Eye, Building } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { Link } from 'react-router-dom';
+import { FavoriteButton } from '@/components/ui/favorite-button';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -172,6 +173,7 @@ export function MarketplaceCard({
 
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
+            <FavoriteButton itemId={listing.id} type="marketplace" />
             {listing.contact_phone && (
               <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
                 <Phone className="h-3 w-3" />

@@ -5,6 +5,7 @@ import { ExternalLink, Eye, Calendar, MapPin, Tag, Newspaper } from "lucide-reac
 import { formatDistanceToNow } from "date-fns";
 import { Tables } from "@/integrations/supabase/types";
 import { Link } from "react-router-dom";
+import { FavoriteButton } from "@/components/ui/favorite-button";
 
 type NewsArticle = Tables<'news_articles'> & {
   news_sources: Tables<'news_sources'>;
@@ -136,6 +137,9 @@ export const NewsCard = ({ article, onViewArticle, showFullContent = false }: Ne
         )}
 
         <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-2">
+            <FavoriteButton itemId={article.id} type="news" />
+          </div>
           <Button
             onClick={handleViewClick}
             className="flex items-center gap-2"

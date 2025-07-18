@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Tag {
+  id?: string;
   name: string;
   total_count: number;
   categories?: string[];
@@ -37,6 +38,7 @@ export const useTags = () => {
       if (!centralizedError && centralizedTags && centralizedTags.length > 0) {
         // Use centralized tags if available
         const allTagsArray: Tag[] = centralizedTags.map(tag => ({
+          id: tag.id,
           name: tag.name,
           total_count: tag.usage_count,
           categories: [tag.category],
@@ -52,6 +54,7 @@ export const useTags = () => {
             categorized[tag.category] = [];
           }
           categorized[tag.category].push({
+            id: tag.id,
             name: tag.name,
             total_count: tag.usage_count,
             categories: [tag.category],

@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tag as TagIcon, Calendar, MapPin, ShoppingBag, Users } from "lucide-react";
 import { Tag } from "@/hooks/useTags";
+import { FavoriteButton } from "@/components/ui/favorite-button";
 interface TagCardProps {
   tag: Tag;
   category?: string;
@@ -44,9 +45,12 @@ export const TagCard = ({
               #{tag.name}
             </Badge>
           </div>
-          <Badge variant="secondary" className="text-xs">
-            {tag.total_count}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <FavoriteButton itemId={tag.id || tag.name} type="tag" size="sm" />
+            <Badge variant="secondary" className="text-xs">
+              {tag.total_count}
+            </Badge>
+          </div>
         </div>
 
         {tag.categories && tag.categories.length > 1 && <div className="flex flex-wrap gap-1 mb-3">

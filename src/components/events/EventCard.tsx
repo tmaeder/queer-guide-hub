@@ -6,6 +6,7 @@ import { Calendar, MapPin, Users, Clock, DollarSign, ExternalLink } from 'lucide
 import { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { FavoriteButton } from '@/components/ui/favorite-button';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -142,6 +143,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
 
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
+            <FavoriteButton itemId={event.id} type="event" />
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Users className="h-3 w-3" />
               <span>{attendeeCount} going</span>
