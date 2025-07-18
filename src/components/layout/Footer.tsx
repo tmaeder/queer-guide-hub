@@ -163,9 +163,8 @@ export function Footer() {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/admin/content')}>
-              <FileText className="h-4 w-4 mb-1" />
-              <span className="text-xs">Admin</span>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate('/admin/content')}>
+              <FileText className="h-4 w-4" />
             </Button>
             <ThemeToggle />
           </div>
