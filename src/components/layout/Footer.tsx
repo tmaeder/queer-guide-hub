@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store, Info, Eye, FileText, Phone, Newspaper, Users, Globe, Tag, Shield, Lock, Cookie, Copyright } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 export function Footer() {
+  const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const legalLinks = [{
     href: "/terms",
@@ -162,6 +163,10 @@ export function Footer() {
           </div>
           
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/admin/content')}>
+              <FileText className="h-4 w-4 mb-1" />
+              <span className="text-xs">Admin</span>
+            </Button>
             <ThemeToggle />
           </div>
         </div>

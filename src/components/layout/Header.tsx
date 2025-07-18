@@ -52,10 +52,6 @@ export function Header() {
                     <Accessibility className="h-4 w-4 mb-1" />
                     <span className="text-xs">Access</span>
                   </Button>
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/admin/content')}>
-                    <FileText className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Admin</span>
-                  </Button>
                   <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto text-destructive" onClick={signOut}>
                     <LogOut className="h-4 w-4 mb-1" />
                     <span className="text-xs">Logout</span>
