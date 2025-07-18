@@ -3,13 +3,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEvents } from '@/hooks/useEvents';
 import { EventCard } from '@/components/events/EventCard';
+import { EventsCalendarView } from '@/components/events/EventsCalendarView';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Plus, Loader, Search, Filter, X, CalendarIcon, Check, ChevronDown } from 'lucide-react';
+import { Calendar, Plus, Loader, Search, Filter, X, CalendarIcon, Check, ChevronDown, Grid, List } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -55,6 +56,7 @@ const Events = () => {
   const { toast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid');
   
   // Filter states
   const [search, setSearch] = useState('');
@@ -163,13 +165,36 @@ const Events = () => {
               Discover and join community events in your area
             </p>
           </div>
-          <Button 
-            className="bg-gradient-primary gap-2"
-            onClick={() => navigate('/admin/events')}
-          >
-            <Plus className="h-4 w-4" />
-            Create Event
-          </Button>
+          <div className="flex items-center gap-4">
+            {/* View Toggle */}
+            <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="gap-2"
+              >
+                <Grid className="h-4 w-4" />
+                Grid
+              </Button>
+              <Button
+                variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('calendar')}
+                className="gap-2"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                Calendar
+              </Button>
+            </div>
+            <Button 
+              className="bg-gradient-primary gap-2"
+              onClick={() => navigate('/admin/events')}
+            >
+              <Plus className="h-4 w-4" />
+              Create Event
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -471,7 +496,7 @@ const Events = () => {
           </Card>
         )}
 
-        {/* Events Grid */}
+        {/* Event Content */}
         {!loading && events.length > 0 && (
           <>
             <div className="flex items-center justify-between mb-6">
@@ -480,16 +505,24 @@ const Events = () => {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  onViewDetails={handleViewDetails}
-                  onUpdateAttendance={user ? handleAttendanceUpdate : undefined}
-                />
-              ))}
-            </div>
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {events.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onViewDetails={handleViewDetails}
+                    onUpdateAttendance={user ? handleAttendanceUpdate : undefined}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EventsCalendarView
+                events={events}
+                onEventSelect={handleViewDetails}
+                onAttendanceUpdate={handleAttendanceUpdate}
+              />
+            )}
           </>
         )}
 
