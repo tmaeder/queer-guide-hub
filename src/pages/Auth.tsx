@@ -281,14 +281,25 @@ export default function Auth() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="pronouns">Pronouns</Label>
-                    <Input
-                      id="pronouns"
-                      type="text"
-                      placeholder="they/them, she/her, he/him"
-                      value={signupData.pronouns}
-                      onChange={(e) => setSignupData({ ...signupData, pronouns: e.target.value })}
+                    <Select 
+                      value={signupData.pronouns} 
+                      onValueChange={(value) => setSignupData({ ...signupData, pronouns: value })}
                       disabled={isLoading}
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select pronouns" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        <SelectItem value="they/them">they/them</SelectItem>
+                        <SelectItem value="she/her">she/her</SelectItem>
+                        <SelectItem value="he/him">he/him</SelectItem>
+                        <SelectItem value="she/they">she/they</SelectItem>
+                        <SelectItem value="he/they">he/they</SelectItem>
+                        <SelectItem value="any">any pronouns</SelectItem>
+                        <SelectItem value="ask">ask me</SelectItem>
+                        <SelectItem value="other">other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
