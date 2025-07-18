@@ -8,6 +8,7 @@ export interface Tag {
   categories?: string[];
   usage_by_category?: { category: string; count: number }[];
   description?: string;
+  image_url?: string;
 }
 
 export interface TagDetails {
@@ -42,7 +43,8 @@ export const useTags = () => {
           name: tag.name,
           total_count: tag.usage_count,
           categories: [tag.category],
-          description: tag.description
+          description: tag.description,
+          image_url: tag.image_url
         }));
 
         setAllTags(allTagsArray);
@@ -58,7 +60,8 @@ export const useTags = () => {
             name: tag.name,
             total_count: tag.usage_count,
             categories: [tag.category],
-            description: tag.description
+            description: tag.description,
+            image_url: tag.image_url
           });
         });
 

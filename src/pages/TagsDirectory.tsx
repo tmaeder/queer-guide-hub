@@ -321,17 +321,36 @@ export default function TagsDirectory() {
 
       {viewMode === "tag-detail" && selectedTag && <div className="space-y-6">
           <div className="bg-card rounded-lg p-6 border">
-            <div className="flex items-center gap-3 mb-4">
-              <Badge variant="outline" className="text-2xl px-4 py-2">
-                #{selectedTag.name}
-              </Badge>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>{selectedTag.total_count} uses</span>
-                <span>{selectedTag.categories?.length || 1} categories</span>
+            <div className="flex flex-col lg:flex-row gap-6 mb-6">
+              {/* Tag Image */}
+              {selectedTag.image_url && (
+                <div className="lg:w-64 lg:flex-shrink-0">
+                  <img 
+                    src={selectedTag.image_url} 
+                    alt={`${selectedTag.name} tag`}
+                    className="w-full h-48 lg:h-64 object-cover rounded-lg border"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+              
+              {/* Tag Info */}
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge variant="outline" className="text-2xl px-4 py-2">
+                    #{selectedTag.name}
+                  </Badge>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span>{selectedTag.total_count} uses</span>
+                    <span>{selectedTag.categories?.length || 1} categories</span>
+                  </div>
+                </div>
+                
+                {selectedTag.description && <p className="text-muted-foreground mb-4">{selectedTag.description}</p>}
               </div>
             </div>
-            
-            {selectedTag.description && <p className="text-muted-foreground mb-4">{selectedTag.description}</p>}
 
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Usage by Category</h3>
