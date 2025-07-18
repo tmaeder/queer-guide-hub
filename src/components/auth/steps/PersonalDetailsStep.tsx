@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import type { SignupData } from '../MultiStepSignup';
 
 interface PersonalDetailsStepProps {
@@ -168,12 +169,10 @@ export default function PersonalDetailsStep({ data, updateData, isIdentityStep }
 
       <div className="space-y-2">
         <Label htmlFor="location">Location</Label>
-        <Input
-          id="location"
-          type="text"
-          placeholder="City, State/Province, Country"
+        <LocationAutocomplete
           value={data.location}
-          onChange={(e) => updateData({ location: e.target.value })}
+          onChange={(value) => updateData({ location: value })}
+          placeholder="City, State/Province, Country"
         />
       </div>
     </div>
