@@ -1674,6 +1674,36 @@ export type Database = {
           },
         ]
       }
+      security_events: {
+        Row: {
+          created_at: string
+          details: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       unified_tag_assignments: {
         Row: {
           created_at: string
@@ -2278,6 +2308,10 @@ export type Database = {
       is_group_member_or_admin: {
         Args: { group_id: string; check_admin?: boolean }
         Returns: boolean
+      }
+      log_security_event: {
+        Args: { event_type: string; user_id_param: string; details?: Json }
+        Returns: undefined
       }
       logflare_fdw_handler: {
         Args: Record<PropertyKey, never>
