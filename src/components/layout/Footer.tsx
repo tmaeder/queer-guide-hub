@@ -47,14 +47,6 @@ export function Footer() {
     href: "/blog",
     label: "Blog",
     icon: FileText
-  }, {
-    href: "/directory",
-    label: "Directory",
-    icon: Users
-  }, {
-    href: "/tags",
-    label: "Tags Wiki",
-    icon: Tag
   }];
   const communityLinks = [{
     href: "/travel",
