@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility } from 'lucide-react';
+import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -84,7 +84,14 @@ export function Header() {
                 <Store className="h-6 w-6 mb-1" />
                 <span className="text-xs">Market</span>
               </Link>
-              
+              <Link to="/tags" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                <Tags className="h-6 w-6 mb-1" />
+                <span className="text-xs">Tags</span>
+              </Link>
+              <Link to="/directory" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                <Globe className="h-6 w-6 mb-1" />
+                <span className="text-xs">Directory</span>
+              </Link>
               <Link to="/travel" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                 <Plane className="h-6 w-6 mb-1" />
                 <span className="text-xs">Travel</span>
