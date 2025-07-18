@@ -466,63 +466,6 @@ export type Database = {
           },
         ]
       }
-      content_tag_assignments: {
-        Row: {
-          content_id: string
-          created_at: string
-          id: string
-          tag_id: string
-        }
-        Insert: {
-          content_id: string
-          created_at?: string
-          id?: string
-          tag_id: string
-        }
-        Update: {
-          content_id?: string
-          created_at?: string
-          id?: string
-          tag_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "content_tag_assignments_content_id_fkey"
-            columns: ["content_id"]
-            isOneToOne: false
-            referencedRelation: "content"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "content_tag_assignments_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "content_tags"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      content_tags: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-          slug: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          slug: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          slug?: string
-        }
-        Relationships: []
-      }
       continents: {
         Row: {
           code: string
@@ -736,42 +679,6 @@ export type Database = {
           },
         ]
       }
-      event_tag_assignments: {
-        Row: {
-          created_at: string
-          event_id: string
-          id: string
-          tag_id: string
-        }
-        Insert: {
-          created_at?: string
-          event_id: string
-          id?: string
-          tag_id: string
-        }
-        Update: {
-          created_at?: string
-          event_id?: string
-          id?: string
-          tag_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "event_tag_assignments_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_tag_assignments_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       events: {
         Row: {
           address: string | null
@@ -917,42 +824,6 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "community_groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      group_tag_assignments: {
-        Row: {
-          created_at: string
-          group_id: string
-          id: string
-          tag_id: string
-        }
-        Insert: {
-          created_at?: string
-          group_id: string
-          id?: string
-          tag_id: string
-        }
-        Update: {
-          created_at?: string
-          group_id?: string
-          id?: string
-          tag_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_tag_assignments_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "community_groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_tag_assignments_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
             referencedColumns: ["id"]
           },
         ]
@@ -1143,42 +1014,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      marketplace_tag_assignments: {
-        Row: {
-          created_at: string
-          id: string
-          listing_id: string
-          tag_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          listing_id: string
-          tag_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          listing_id?: string
-          tag_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "marketplace_tag_assignments_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "marketplace_listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "marketplace_tag_assignments_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -1428,42 +1263,6 @@ export type Database = {
         }
         Relationships: []
       }
-      news_tag_assignments: {
-        Row: {
-          article_id: string
-          created_at: string
-          id: string
-          tag_id: string
-        }
-        Insert: {
-          article_id: string
-          created_at?: string
-          id?: string
-          tag_id: string
-        }
-        Update: {
-          article_id?: string
-          created_at?: string
-          id?: string
-          tag_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "news_tag_assignments_article_id_fkey"
-            columns: ["article_id"]
-            isOneToOne: false
-            referencedRelation: "news_articles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "news_tag_assignments_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       notifications: {
         Row: {
           action_url: string | null
@@ -1597,42 +1396,6 @@ export type Database = {
           },
         ]
       }
-      post_tag_assignments: {
-        Row: {
-          created_at: string
-          id: string
-          post_id: string
-          tag_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          post_id: string
-          tag_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          post_id?: string
-          tag_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "post_tag_assignments_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "community_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_tag_assignments_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1722,45 +1485,6 @@ export type Database = {
           },
         ]
       }
-      tags: {
-        Row: {
-          category: string
-          color: string | null
-          created_at: string
-          description: string | null
-          id: string
-          image_url: string | null
-          is_active: boolean
-          name: string
-          updated_at: string
-          usage_count: number
-        }
-        Insert: {
-          category: string
-          color?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          is_active?: boolean
-          name: string
-          updated_at?: string
-          usage_count?: number
-        }
-        Update: {
-          category?: string
-          color?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          is_active?: boolean
-          name?: string
-          updated_at?: string
-          usage_count?: number
-        }
-        Relationships: []
-      }
       unified_tag_assignments: {
         Row: {
           created_at: string
@@ -1784,6 +1508,13 @@ export type Database = {
           tag_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "unified_tag_assignments_tag_id_fkey"
             columns: ["tag_id"]
@@ -1991,13 +1722,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "venue_tag_assignments_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "venue_tag_assignments_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
@@ -2103,7 +1827,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      tag_usage_summary: {
+        Row: {
+          category: string | null
+          content_count: number | null
+          event_count: number | null
+          group_count: number | null
+          id: string | null
+          marketplace_count: number | null
+          name: string | null
+          news_count: number | null
+          post_count: number | null
+          slug: string | null
+          usage_count: number | null
+          venue_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_user_role: {
