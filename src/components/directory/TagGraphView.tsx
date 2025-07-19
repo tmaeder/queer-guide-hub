@@ -22,7 +22,7 @@ interface TagData {
   name: string;
   color?: string;
   usage_count?: number;
-  categories?: string[];
+  category?: string;
   related_tags?: string[];
   image_url?: string;
 }
@@ -44,18 +44,11 @@ const TagNode = ({ data }: { data: any }) => {
         />
         <span className="text-sm font-medium truncate">{data.name}</span>
       </div>
-      {data.categories && data.categories.length > 0 && (
+      {data.category && (
         <div className="flex flex-wrap gap-1">
-          {data.categories.slice(0, 2).map((category: string) => (
-            <Badge key={category} variant="secondary" className="text-xs px-1 py-0">
-              {category}
-            </Badge>
-          ))}
-          {data.categories.length > 2 && (
-            <Badge variant="secondary" className="text-xs px-1 py-0">
-              +{data.categories.length - 2}
-            </Badge>
-          )}
+          <Badge variant="secondary" className="text-xs px-1 py-0">
+            {data.category}
+          </Badge>
         </div>
       )}
     </div>
@@ -135,33 +128,27 @@ export const TagGraphView = ({ tags, onTagClick, selectedTag }: TagGraphViewProp
     // Fallback: If no computed relationships exist, use category-based connections
     if (relationships.length === 0) {
       tags.forEach((tag) => {
-        // Connect tags in the same categories
-        if (tag.categories) {
+        // Connect tags in the same category
+        if (tag.category) {
           tags.forEach((otherTag) => {
-            if (tag.id !== otherTag.id && otherTag.categories) {
-              const sharedCategories = tag.categories.filter(cat => 
-                otherTag.categories?.includes(cat)
-              );
+            if (tag.id !== otherTag.id && otherTag.category && tag.category === otherTag.category) {
+              const edgeId = `${tag.id}-${otherTag.id}`;
+              const reverseEdgeId = `${otherTag.id}-${tag.id}`;
               
-              if (sharedCategories.length > 0) {
-                const edgeId = `${tag.id}-${otherTag.id}`;
-                const reverseEdgeId = `${otherTag.id}-${tag.id}`;
-                
-                if (!edgeSet.has(edgeId) && !edgeSet.has(reverseEdgeId)) {
-                  edgeArray.push({
-                    id: edgeId,
-                    source: tag.id,
-                    target: otherTag.id,
-                    type: 'smoothstep',
-                    style: { 
-                      stroke: 'hsl(var(--muted-foreground))', 
-                      strokeWidth: Math.min(sharedCategories.length * 2, 6),
-                      opacity: 0.6,
-                    },
-                    animated: false,
-                  });
-                  edgeSet.add(edgeId);
-                }
+              if (!edgeSet.has(edgeId) && !edgeSet.has(reverseEdgeId)) {
+                edgeArray.push({
+                  id: edgeId,
+                  source: tag.id,
+                  target: otherTag.id,
+                  type: 'smoothstep',
+                  style: { 
+                    stroke: 'hsl(var(--muted-foreground))', 
+                    strokeWidth: 3,
+                    opacity: 0.6,
+                  },
+                  animated: false,
+                });
+                edgeSet.add(edgeId);
               }
             }
           });

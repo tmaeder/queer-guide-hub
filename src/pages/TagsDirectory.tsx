@@ -377,7 +377,7 @@ export default function TagsDirectory() {
                     #{selectedTag.name}
                   </Badge>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{selectedTag.categories?.length || 1} categories</span>
+                    <span>Category: {selectedTag.category || 'Uncategorized'}</span>
                   </div>
                 </div>
                 

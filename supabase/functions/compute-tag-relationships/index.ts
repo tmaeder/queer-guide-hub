@@ -11,7 +11,7 @@ interface TagData {
   id: string;
   name: string;
   description?: string;
-  categories?: string[];
+  category?: string;
 }
 
 interface TagRelationship {
@@ -110,7 +110,7 @@ serve(async (req) => {
     // Fetch all tags from the database
     const { data: tags, error: fetchError } = await supabase
       .from('unified_tags')
-      .select('id, name, description, categories')
+      .select('id, name, description, category')
       .order('name');
 
     if (fetchError) {
@@ -139,7 +139,7 @@ serve(async (req) => {
         id: tag.id,
         name: tag.name,
         description: tag.description,
-        categories: tag.categories || []
+        category: tag.category
       });
     }
 
@@ -168,14 +168,12 @@ serve(async (req) => {
         let similarity = cosineSimilarity(vectors[i], vectors[j]);
         
         // Check for shared categories and boost similarity
-        const sharedCategories = tag1.categories?.filter(cat => 
-          tag2.categories?.includes(cat)
-        ) || [];
+        const hasSameCategory = tag1.category && tag2.category && tag1.category === tag2.category;
         
         let relationshipType: 'semantic' | 'categorical' = 'semantic';
         
-        if (sharedCategories.length > 0) {
-          similarity += categoryBonus * sharedCategories.length;
+        if (hasSameCategory) {
+          similarity += categoryBonus;
           relationshipType = 'categorical';
         }
         
