@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { query } = await req.json()
+    const { query, isReverseGeocode = false } = await req.json()
     
     if (!query) {
       return new Response(
@@ -35,7 +35,15 @@ serve(async (req) => {
       )
     }
 
-    const mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxToken}&types=place,locality,neighborhood,address&limit=5`
+    let mapboxUrl: string;
+    
+    if (isReverseGeocode) {
+      // For reverse geocoding, query should be "longitude,latitude"
+      mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxToken}&types=place,locality,neighborhood,address&limit=1`
+    } else {
+      // For forward geocoding
+      mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxToken}&types=place,locality,neighborhood,address&limit=5`
+    }
     
     const mapboxResponse = await fetch(mapboxUrl)
     

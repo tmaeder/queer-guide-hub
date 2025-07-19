@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Command, CommandItem, CommandList } from '@/components/ui/command';
-import { MapPin } from 'lucide-react';
+import { MapPin, Navigation, Loader2 } from 'lucide-react';
 
 interface LocationSuggestion {
   id: string;
@@ -26,6 +27,7 @@ export function LocationAutocomplete({
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   const searchLocations = async (query: string) => {
@@ -80,6 +82,50 @@ export function LocationAutocomplete({
     setIsOpen(false);
   };
 
+  const detectLocation = async () => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser');
+      return;
+    }
+
+    setIsDetectingLocation(true);
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000, // 5 minutes
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      
+      // Use reverse geocoding to get the location name
+      const response = await fetch('/functions/v1/mapbox-geocoding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          query: `${longitude},${latitude}`,
+          isReverseGeocode: true
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.features && data.features.length > 0) {
+          onChange(data.features[0].place_name);
+        }
+      }
+    } catch (error) {
+      console.error('Error detecting location:', error);
+    } finally {
+      setIsDetectingLocation(false);
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -89,15 +135,40 @@ export function LocationAutocomplete({
   }, []);
 
   return (
-    <div className="relative">
-      <Input
-        value={value}
-        onChange={(e) => handleInputChange(e.target.value)}
-        placeholder={placeholder}
-        className={className}
-        onFocus={() => value.length >= 3 && setIsOpen(true)}
-        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-      />
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Input
+            value={value}
+            onChange={(e) => handleInputChange(e.target.value)}
+            placeholder={placeholder}
+            className={className}
+            onFocus={() => value.length >= 3 && setIsOpen(true)}
+            onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+          />
+          
+          {isLoading && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            </div>
+          )}
+        </div>
+        
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={detectLocation}
+          disabled={isDetectingLocation}
+          title="Detect my location"
+        >
+          {isDetectingLocation ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Navigation className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
       
       {isOpen && suggestions.length > 0 && (
         <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border border-border rounded-md shadow-md">
@@ -120,12 +191,6 @@ export function LocationAutocomplete({
               ))}
             </CommandList>
           </Command>
-        </div>
-      )}
-      
-      {isLoading && (
-        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
         </div>
       )}
     </div>
