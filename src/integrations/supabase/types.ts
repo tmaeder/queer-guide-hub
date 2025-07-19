@@ -124,51 +124,111 @@ export type Database = {
       }
       cities: {
         Row: {
+          area_codes: string[] | null
+          area_km2: number | null
+          best_time_to_visit: string | null
+          climate_type: string | null
+          cost_of_living: Json | null
           country_id: string
           created_at: string
+          demographics: Json | null
+          description: string | null
+          economy_sectors: string[] | null
+          elevation_m: number | null
+          founded_year: number | null
           id: string
           image_metadata: Json | null
           image_url: string | null
           is_capital: boolean | null
           is_major_city: boolean | null
           latitude: number | null
+          lgbt_friendly_rating: number | null
+          local_customs: string | null
+          local_language: string | null
           longitude: number | null
+          mayor: string | null
           name: string
+          notable_landmarks: string[] | null
+          official_website: string | null
           population: number | null
+          postal_codes: string[] | null
           region_name: string | null
+          sister_cities: string[] | null
           timezone: string | null
+          transportation_info: Json | null
+          universities: string[] | null
           updated_at: string
         }
         Insert: {
+          area_codes?: string[] | null
+          area_km2?: number | null
+          best_time_to_visit?: string | null
+          climate_type?: string | null
+          cost_of_living?: Json | null
           country_id: string
           created_at?: string
+          demographics?: Json | null
+          description?: string | null
+          economy_sectors?: string[] | null
+          elevation_m?: number | null
+          founded_year?: number | null
           id?: string
           image_metadata?: Json | null
           image_url?: string | null
           is_capital?: boolean | null
           is_major_city?: boolean | null
           latitude?: number | null
+          lgbt_friendly_rating?: number | null
+          local_customs?: string | null
+          local_language?: string | null
           longitude?: number | null
+          mayor?: string | null
           name: string
+          notable_landmarks?: string[] | null
+          official_website?: string | null
           population?: number | null
+          postal_codes?: string[] | null
           region_name?: string | null
+          sister_cities?: string[] | null
           timezone?: string | null
+          transportation_info?: Json | null
+          universities?: string[] | null
           updated_at?: string
         }
         Update: {
+          area_codes?: string[] | null
+          area_km2?: number | null
+          best_time_to_visit?: string | null
+          climate_type?: string | null
+          cost_of_living?: Json | null
           country_id?: string
           created_at?: string
+          demographics?: Json | null
+          description?: string | null
+          economy_sectors?: string[] | null
+          elevation_m?: number | null
+          founded_year?: number | null
           id?: string
           image_metadata?: Json | null
           image_url?: string | null
           is_capital?: boolean | null
           is_major_city?: boolean | null
           latitude?: number | null
+          lgbt_friendly_rating?: number | null
+          local_customs?: string | null
+          local_language?: string | null
           longitude?: number | null
+          mayor?: string | null
           name?: string
+          notable_landmarks?: string[] | null
+          official_website?: string | null
           population?: number | null
+          postal_codes?: string[] | null
           region_name?: string | null
+          sister_cities?: string[] | null
           timezone?: string | null
+          transportation_info?: Json | null
+          universities?: string[] | null
           updated_at?: string
         }
         Relationships: [
@@ -607,54 +667,129 @@ export type Database = {
       countries: {
         Row: {
           area_km2: number | null
+          calling_code: string | null
           capital: string | null
+          capital_coordinates: Json | null
+          climate_zones: string[] | null
           code: string
           continent_id: string
           created_at: string
           currency: string | null
+          description: string | null
+          driving_side: string | null
+          exports: string[] | null
+          flag_emoji: string | null
+          gdp_per_capita_usd: number | null
+          gdp_usd: number | null
+          government_type: string | null
+          human_development_index: number | null
           id: string
+          imports: string[] | null
+          internet_tld: string | null
           languages: string[] | null
           latitude: number | null
+          lgbt_legal_status: string | null
+          lgbt_rights_status: string | null
+          life_expectancy: number | null
+          literacy_rate: number | null
           longitude: number | null
+          major_industries: string[] | null
+          major_religions: string[] | null
           name: string
+          national_anthem: string | null
+          national_day: string | null
+          national_symbols: Json | null
+          natural_resources: string[] | null
           population: number | null
           region_id: string | null
           timezone: string | null
+          unesco_sites: string[] | null
           updated_at: string
+          visa_requirements: Json | null
         }
         Insert: {
           area_km2?: number | null
+          calling_code?: string | null
           capital?: string | null
+          capital_coordinates?: Json | null
+          climate_zones?: string[] | null
           code: string
           continent_id: string
           created_at?: string
           currency?: string | null
+          description?: string | null
+          driving_side?: string | null
+          exports?: string[] | null
+          flag_emoji?: string | null
+          gdp_per_capita_usd?: number | null
+          gdp_usd?: number | null
+          government_type?: string | null
+          human_development_index?: number | null
           id?: string
+          imports?: string[] | null
+          internet_tld?: string | null
           languages?: string[] | null
           latitude?: number | null
+          lgbt_legal_status?: string | null
+          lgbt_rights_status?: string | null
+          life_expectancy?: number | null
+          literacy_rate?: number | null
           longitude?: number | null
+          major_industries?: string[] | null
+          major_religions?: string[] | null
           name: string
+          national_anthem?: string | null
+          national_day?: string | null
+          national_symbols?: Json | null
+          natural_resources?: string[] | null
           population?: number | null
           region_id?: string | null
           timezone?: string | null
+          unesco_sites?: string[] | null
           updated_at?: string
+          visa_requirements?: Json | null
         }
         Update: {
           area_km2?: number | null
+          calling_code?: string | null
           capital?: string | null
+          capital_coordinates?: Json | null
+          climate_zones?: string[] | null
           code?: string
           continent_id?: string
           created_at?: string
           currency?: string | null
+          description?: string | null
+          driving_side?: string | null
+          exports?: string[] | null
+          flag_emoji?: string | null
+          gdp_per_capita_usd?: number | null
+          gdp_usd?: number | null
+          government_type?: string | null
+          human_development_index?: number | null
           id?: string
+          imports?: string[] | null
+          internet_tld?: string | null
           languages?: string[] | null
           latitude?: number | null
+          lgbt_legal_status?: string | null
+          lgbt_rights_status?: string | null
+          life_expectancy?: number | null
+          literacy_rate?: number | null
           longitude?: number | null
+          major_industries?: string[] | null
+          major_religions?: string[] | null
           name?: string
+          national_anthem?: string | null
+          national_day?: string | null
+          national_symbols?: Json | null
+          natural_resources?: string[] | null
           population?: number | null
           region_id?: string | null
           timezone?: string | null
+          unesco_sites?: string[] | null
           updated_at?: string
+          visa_requirements?: Json | null
         }
         Relationships: [
           {

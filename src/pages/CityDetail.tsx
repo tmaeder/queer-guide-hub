@@ -1,0 +1,618 @@
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  ArrowLeft, 
+  MapPin, 
+  Globe, 
+  Users, 
+  Calendar,
+  Building,
+  Star,
+  Heart,
+  ExternalLink,
+  Clock,
+  Thermometer,
+  Mountain,
+  Phone,
+  Mail,
+  Bus,
+  Plane,
+  Train,
+  DollarSign,
+  GraduationCap,
+  Landmark,
+  Info
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useCityImages } from "@/hooks/useCityImages";
+
+type CityWithCountry = {
+  id: string;
+  name: string;
+  region_name?: string;
+  population?: number;
+  latitude?: number;
+  longitude?: number;
+  timezone?: string;
+  is_capital: boolean;
+  is_major_city: boolean;
+  elevation_m?: number;
+  climate_type?: string;
+  founded_year?: number;
+  area_km2?: number;
+  local_language?: string;
+  official_website?: string;
+  mayor?: string;
+  postal_codes?: string[];
+  area_codes?: string[];
+  sister_cities?: string[];
+  notable_landmarks?: string[];
+  economy_sectors?: string[];
+  universities?: string[];
+  transportation_info?: any;
+  demographics?: any;
+  cost_of_living?: any;
+  lgbt_friendly_rating?: number;
+  description?: string;
+  best_time_to_visit?: string;
+  local_customs?: string;
+  image_url?: string;
+  countries?: {
+    id: string;
+    name: string;
+    flag_emoji?: string;
+    currency?: string;
+  };
+};
+
+export default function CityDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { toggleFavorite, isFavorite } = useFavorites();
+  const { getCityImageUrl } = useCityImages();
+
+  const [city, setCity] = useState<CityWithCountry | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [imageUrl, setImageUrl] = useState<string>("");
+
+  useEffect(() => {
+    if (id) {
+      fetchCityDetails();
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (city) {
+      loadCityImage();
+    }
+  }, [city]);
+
+  const fetchCityDetails = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('cities')
+        .select(`
+          *,
+          countries (
+            id,
+            name,
+            flag_emoji,
+            currency
+          )
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      setCity(data);
+    } catch (error) {
+      console.error('Error fetching city details:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load city details",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCityImage = async () => {
+    if (!city) return;
+    
+    try {
+      const url = await getCityImageUrl(city.name, city.countries?.name || '');
+      setImageUrl(url || '');
+    } catch (error) {
+      console.error('Error loading city image:', error);
+    }
+  };
+
+  const handleFavoriteToggle = async () => {
+    if (!city) return;
+    
+    try {
+      await toggleFavorite(city.id, 'city');
+      toast({
+        title: isFavorite(city.id, 'city') ? "Removed from favorites" : "Added to favorites",
+        description: `${city.name} ${isFavorite(city.id, 'city') ? 'removed from' : 'added to'} your favorites`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update favorites",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const renderLGBTRating = () => {
+    if (!city?.lgbt_friendly_rating) return null;
+    
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">LGBTQ+ Friendly:</span>
+        <div className="flex">
+          {Array.from({ length: 5 }, (_, i) => (
+            <Star
+              key={i}
+              className={`h-4 w-4 ${
+                i < city.lgbt_friendly_rating! ? 'fill-primary text-primary' : 'text-muted-foreground'
+              }`}
+            />
+          ))}
+        </div>
+        <span className="text-sm text-muted-foreground">
+          ({city.lgbt_friendly_rating}/5)
+        </span>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">Loading city details...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!city) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">City Not Found</h1>
+            <Button onClick={() => navigate('/directory')}>Back to Directory</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <Button variant="outline" onClick={() => navigate('/directory')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Directory
+          </Button>
+          <Button variant="outline" onClick={handleFavoriteToggle}>
+            <Heart className={`h-4 w-4 mr-2 ${isFavorite(city.id, 'city') ? 'fill-primary text-primary' : ''}`} />
+            {isFavorite(city.id, 'city') ? 'Remove from Favorites' : 'Add to Favorites'}
+          </Button>
+        </div>
+
+        {/* Hero Section */}
+        <Card className="mb-8">
+          <CardContent className="p-0">
+            {imageUrl && (
+              <div className="relative h-64 w-full overflow-hidden rounded-t-lg">
+                <img 
+                  src={imageUrl} 
+                  alt={city.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <div className="flex items-center gap-2 mb-2">
+                    {city.countries?.flag_emoji && (
+                      <span className="text-2xl">{city.countries.flag_emoji}</span>
+                    )}
+                    <h1 className="text-3xl font-bold">{city.name}</h1>
+                  </div>
+                  <p className="text-lg opacity-90">
+                    {city.region_name && `${city.region_name}, `}{city.countries?.name}
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            <div className="p-6">
+              {!imageUrl && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    {city.countries?.flag_emoji && (
+                      <span className="text-2xl">{city.countries.flag_emoji}</span>
+                    )}
+                    <h1 className="text-3xl font-bold">{city.name}</h1>
+                  </div>
+                  <p className="text-lg text-muted-foreground">
+                    {city.region_name && `${city.region_name}, `}{city.countries?.name}
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex flex-wrap gap-2 mb-4">
+                {city.is_capital && (
+                  <Badge variant="secondary">
+                    <Building className="h-3 w-3 mr-1" />
+                    Capital City
+                  </Badge>
+                )}
+                {city.is_major_city && (
+                  <Badge variant="outline">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    Major City
+                  </Badge>
+                )}
+              </div>
+
+              {city.description && (
+                <p className="text-muted-foreground leading-relaxed">{city.description}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="demographics">Demographics</TabsTrigger>
+            <TabsTrigger value="economy">Economy</TabsTrigger>
+            <TabsTrigger value="culture">Culture & Life</TabsTrigger>
+            <TabsTrigger value="travel">Travel Info</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Basic Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Info className="h-5 w-5" />
+                    Basic Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {city.population && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Population</span>
+                      <span className="font-medium">{city.population.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {city.founded_year && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Founded</span>
+                      <span className="font-medium">{city.founded_year}</span>
+                    </div>
+                  )}
+                  {city.area_km2 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Area</span>
+                      <span className="font-medium">{city.area_km2} km²</span>
+                    </div>
+                  )}
+                  {city.elevation_m && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Elevation</span>
+                      <span className="font-medium">{city.elevation_m} m</span>
+                    </div>
+                  )}
+                  {city.timezone && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Timezone</span>
+                      <span className="font-medium">{city.timezone}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Climate & Geography */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Thermometer className="h-5 w-5" />
+                    Climate & Geography
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {city.climate_type && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Climate</span>
+                      <span className="font-medium">{city.climate_type}</span>
+                    </div>
+                  )}
+                  {city.latitude && city.longitude && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Coordinates</span>
+                      <span className="font-medium text-xs">
+                        {city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}
+                      </span>
+                    </div>
+                  )}
+                  {city.best_time_to_visit && (
+                    <div>
+                      <span className="text-sm text-muted-foreground block mb-1">Best Time to Visit</span>
+                      <span className="font-medium">{city.best_time_to_visit}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Contact & Administration */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building className="h-5 w-5" />
+                    Administration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {city.mayor && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Mayor</span>
+                      <span className="font-medium">{city.mayor}</span>
+                    </div>
+                  )}
+                  {city.local_language && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Local Language</span>
+                      <span className="font-medium">{city.local_language}</span>
+                    </div>
+                  )}
+                  {city.official_website && (
+                    <div>
+                      <span className="text-sm text-muted-foreground block mb-1">Official Website</span>
+                      <a 
+                        href={city.official_website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline flex items-center gap-1"
+                      >
+                        Visit Website <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  )}
+                  <div className="mt-4">
+                    {renderLGBTRating()}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="demographics" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Demographics & Population</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {city.demographics && Object.keys(city.demographics).length > 0 ? (
+                  <div className="space-y-4">
+                    {Object.entries(city.demographics).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground capitalize">
+                          {key.replace(/_/g, ' ')}
+                        </span>
+                        <span className="font-medium">{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">No demographic data available.</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="economy" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Economy Sectors */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5" />
+                    Economy Sectors
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {city.economy_sectors && city.economy_sectors.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {city.economy_sectors.map((sector, index) => (
+                        <Badge key={index} variant="outline">{sector}</Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No economy sector information available.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Cost of Living */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Cost of Living</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {city.cost_of_living && Object.keys(city.cost_of_living).length > 0 ? (
+                    <div className="space-y-3">
+                      {Object.entries(city.cost_of_living).map(([key, value]) => (
+                        <div key={key} className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground capitalize">
+                            {key.replace(/_/g, ' ')}
+                          </span>
+                          <span className="font-medium">{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No cost of living data available.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="culture" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Universities & Education */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5" />
+                    Universities & Education
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {city.universities && city.universities.length > 0 ? (
+                    <ul className="space-y-2">
+                      {city.universities.map((university, index) => (
+                        <li key={index} className="text-sm">• {university}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-muted-foreground">No university information available.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Notable Landmarks */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Landmark className="h-5 w-5" />
+                    Notable Landmarks
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {city.notable_landmarks && city.notable_landmarks.length > 0 ? (
+                    <ul className="space-y-2">
+                      {city.notable_landmarks.map((landmark, index) => (
+                        <li key={index} className="text-sm">• {landmark}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-muted-foreground">No landmark information available.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Local Customs */}
+              {city.local_customs && (
+                <Card className="md:col-span-2">
+                  <CardHeader>
+                    <CardTitle>Local Customs & Culture</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground leading-relaxed">{city.local_customs}</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Sister Cities */}
+              {city.sister_cities && city.sister_cities.length > 0 && (
+                <Card className="md:col-span-2">
+                  <CardHeader>
+                    <CardTitle>Sister Cities</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {city.sister_cities.map((sisterCity, index) => (
+                        <Badge key={index} variant="secondary">{sisterCity}</Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="travel" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Transportation */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bus className="h-5 w-5" />
+                    Transportation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {city.transportation_info && Object.keys(city.transportation_info).length > 0 ? (
+                    <div className="space-y-3">
+                      {Object.entries(city.transportation_info).map(([key, value]) => (
+                        <div key={key}>
+                          <span className="text-sm font-medium capitalize block mb-1">
+                            {key.replace(/_/g, ' ')}
+                          </span>
+                          <span className="text-sm text-muted-foreground">{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No transportation information available.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Contact Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Phone className="h-5 w-5" />
+                    Contact Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {city.area_codes && city.area_codes.length > 0 && (
+                    <div>
+                      <span className="text-sm text-muted-foreground block mb-1">Area Codes</span>
+                      <div className="flex flex-wrap gap-1">
+                        {city.area_codes.map((code, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">{code}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {city.postal_codes && city.postal_codes.length > 0 && (
+                    <div>
+                      <span className="text-sm text-muted-foreground block mb-1">Postal Codes</span>
+                      <div className="flex flex-wrap gap-1">
+                        {city.postal_codes.map((code, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">{code}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
