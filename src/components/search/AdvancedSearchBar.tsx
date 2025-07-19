@@ -163,13 +163,19 @@ export const AdvancedSearchBar = () => {
                 placeholder="Search venues, events, news..."
                 value={query}
                 onChange={(e) => {
-                  setQuery(e.target.value);
+                  const newValue = e.target.value;
+                  setQuery(newValue);
                   setIsOpen(true);
                 }}
-                onKeyPress={handleKeyPress}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
                 onFocus={() => setIsOpen(true)}
                 onClick={() => setIsOpen(true)}
-                className="focus-visible:ring-0"
+                className="focus-visible:ring-0 border-0 bg-transparent"
+                autoComplete="off"
               />
               <Button
                 variant="ghost"
