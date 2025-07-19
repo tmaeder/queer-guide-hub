@@ -115,14 +115,16 @@ export const useGroupPosts = (groupId: string) => {
     enabled: !!user && !!groupId
   });
 
-  // Fetch group members for @mentions
+  // Fetch group members for @mentions and member list
   const { data: groupMembers = [] } = useQuery({
     queryKey: ['group-members', groupId],
     queryFn: async () => {
       const { data: memberships, error } = await supabase
         .from('group_memberships')
-        .select('user_id')
-        .eq('group_id', groupId);
+        .select('user_id, role, joined_at')
+        .eq('group_id', groupId)
+        .order('role', { ascending: true })
+        .order('joined_at', { ascending: true });
 
       if (error) throw error;
 
@@ -132,16 +134,18 @@ export const useGroupPosts = (groupId: string) => {
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
 
-      return userIds.map(userId => {
-        const profile = profiles?.find(p => p.user_id === userId);
+      return memberships?.map(membership => {
+        const profile = profiles?.find(p => p.user_id === membership.user_id);
         return {
-          user_id: userId,
+          user_id: membership.user_id,
+          role: membership.role,
+          joined_at: membership.joined_at,
           profiles: {
             display_name: profile?.display_name || 'Unknown User',
             avatar_url: profile?.avatar_url || ''
           }
         };
-      });
+      }) || [];
     },
     enabled: !!user && !!groupId
   });

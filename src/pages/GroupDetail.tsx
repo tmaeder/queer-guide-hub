@@ -30,6 +30,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { GroupPostCard } from '@/components/groups/GroupPostCard';
 import { CreatePostDialog } from '@/components/groups/CreatePostDialog';
+import { GroupMembersList } from '@/components/groups/GroupMembersList';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -303,9 +304,23 @@ export default function GroupDetail() {
               <CardTitle>Members ({group.member_count})</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-center py-8">
-                Member list functionality coming soon. Members can see other group members and their roles.
-              </p>
+              {groupMembers.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">
+                  No members found.
+                </p>
+              ) : (
+                <GroupMembersList 
+                  members={groupMembers}
+                  canManage={canManage}
+                  onStartConversation={(userId) => {
+                    // TODO: Implement conversation starting
+                    toast({
+                      title: "Feature coming soon",
+                      description: "Direct messaging will be available soon."
+                    });
+                  }}
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
