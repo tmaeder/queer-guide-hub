@@ -1,8 +1,9 @@
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, Lock, Globe, UserPlus, UserMinus, Settings } from "lucide-react";
+import { Users, Lock, Globe, UserPlus, UserMinus, Settings, ExternalLink } from "lucide-react";
 import { Group } from "@/hooks/useGroups";
 
 interface GroupCardProps {
@@ -37,9 +38,11 @@ export const GroupCard = ({
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <CardTitle className="text-lg line-clamp-1 group-hover:text-primary transition-colors">
-                {group.name}
-              </CardTitle>
+              <Link to={`/groups/${group.id}`} className="flex-1">
+                <CardTitle className="text-lg line-clamp-1 group-hover:text-primary transition-colors hover:underline">
+                  {group.name}
+                </CardTitle>
+              </Link>
               {group.is_private ? (
                 <Lock className="h-4 w-4 text-muted-foreground" />
               ) : (
@@ -79,6 +82,13 @@ export const GroupCard = ({
         )}
 
         <div className="flex gap-2">
+          <Button asChild variant="ghost" size="sm" className="flex-1">
+            <Link to={`/groups/${group.id}`} className="flex items-center">
+              <ExternalLink className="h-4 w-4 mr-2" />
+              View Group
+            </Link>
+          </Button>
+          
           {!group.is_member ? (
             <Button
               onClick={() => onJoin?.(group.id)}
@@ -87,7 +97,7 @@ export const GroupCard = ({
               size="sm"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              {isJoining ? "Joining..." : "Join Group"}
+              {isJoining ? "Joining..." : "Join"}
             </Button>
           ) : (
             <Button
@@ -98,7 +108,7 @@ export const GroupCard = ({
               size="sm"
             >
               <UserMinus className="h-4 w-4 mr-2" />
-              {isLeaving ? "Leaving..." : "Leave Group"}
+              {isLeaving ? "Leaving..." : "Leave"}
             </Button>
           )}
         </div>

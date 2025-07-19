@@ -45,6 +45,7 @@ import ProfileSettings from "./pages/ProfileSettings";
 
 import Messages from "./pages/Messages";
 import Groups from "./pages/Groups";
+import GroupDetail from "./pages/GroupDetail";
 import AccessibilityHub from "./pages/AccessibilityHub";
 import NotFound from "./pages/NotFound";
 import SearchResults from "./pages/SearchResults";
@@ -199,9 +200,10 @@ const App = () => {
                   } />
                    <Route path="/news" element={<News />} />
                    <Route path="/search" element={<SearchResults />} />
-                  <Route path="/travel" element={<Travel />} />
-                  <Route path="/groups" element={<Groups />} />
-                  <Route path="/accessibility" element={<AccessibilityHub />} />
+                   <Route path="/travel" element={<Travel />} />
+                   <Route path="/groups" element={<Groups />} />
+                   <Route path="/groups/:groupId" element={<GroupDetail />} />
+                   <Route path="/accessibility" element={<AccessibilityHub />} />
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/my-bookings" element={<MyBookings />} />
                   <Route path="/profile/settings" element={<ProfileSettings />} />
