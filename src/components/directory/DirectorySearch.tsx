@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, X, Filter, ChevronDown, SortAsc, SortDesc } from "lucide-react";
+import { Search, X, Filter, ChevronDown, SortAsc, SortDesc, Navigation, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,16 +18,19 @@ export interface DirectoryFilters {
 interface DirectorySearchProps {
   onSearch: (query: string) => void;
   onFiltersChange: (filters: DirectoryFilters) => void;
+  onNearMeSearch?: (userLocation: { latitude: number; longitude: number }) => void;
   placeholder?: string;
 }
 
 export const DirectorySearch = ({ 
   onSearch, 
   onFiltersChange,
+  onNearMeSearch,
   placeholder = "Search countries, cities..." 
 }: DirectorySearchProps) => {
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [filters, setFilters] = useState<DirectoryFilters>({
     continent: "all",
     populationRange: "all",
@@ -75,6 +78,37 @@ export const DirectorySearch = ({
     return Object.values(filters).filter(value => value !== "all" && value !== "name" && value !== "asc").length;
   };
 
+  const detectLocation = async () => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser');
+      return;
+    }
+
+    if (!onNearMeSearch) {
+      console.error('onNearMeSearch callback not provided');
+      return;
+    }
+
+    setIsDetectingLocation(true);
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000, // 5 minutes
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      onNearMeSearch({ latitude, longitude });
+    } catch (error) {
+      console.error('Error detecting location:', error);
+    } finally {
+      setIsDetectingLocation(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <form onSubmit={handleSubmit} className="relative">
@@ -100,6 +134,23 @@ export const DirectorySearch = ({
               </Button>
             )}
           </div>
+          
+          {onNearMeSearch && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={detectLocation}
+              disabled={isDetectingLocation}
+              className="flex items-center gap-2"
+            >
+              {isDetectingLocation ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Navigation className="h-4 w-4" />
+              )}
+              Near Me
+            </Button>
+          )}
           
           <Button
             type="button"

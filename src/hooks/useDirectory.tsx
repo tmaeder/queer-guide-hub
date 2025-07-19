@@ -144,6 +144,63 @@ export const useDirectory = () => {
     }
   };
 
+  const findNearbyCities = async (userLocation: { latitude: number; longitude: number }) => {
+    try {
+      setLoading(true);
+      
+      // Calculate distance using Haversine formula
+      const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+        const R = 6371; // Radius of the Earth in kilometers
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+          Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c; // Distance in kilometers
+        return distance;
+      };
+
+      // Fetch all cities with coordinates
+      const { data, error } = await supabase
+        .from("cities")
+        .select(`
+          *,
+          countries (*)
+        `)
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null)
+        .limit(100); // Reasonable limit for calculation
+
+      if (error) throw error;
+
+      // Calculate distances and filter nearby cities
+      const citiesWithDistance = (data || [])
+        .map(city => ({
+          ...city,
+          distance: calculateDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            Number(city.latitude),
+            Number(city.longitude)
+          )
+        }))
+        .filter((city: any) => city.distance <= 500) // Within 500km
+        .sort((a: any, b: any) => a.distance - b.distance)
+        .slice(0, 20); // Show top 20 closest cities
+
+      setCities(citiesWithDistance);
+      
+      return citiesWithDistance;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
@@ -166,6 +223,7 @@ export const useDirectory = () => {
     error,
     fetchCountriesByContinent,
     fetchCitiesByCountry,
-    searchLocations
+    searchLocations,
+    findNearbyCities
   };
 };

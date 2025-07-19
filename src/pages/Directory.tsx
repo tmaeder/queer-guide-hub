@@ -20,7 +20,8 @@ export default function Directory() {
     error,
     fetchCountriesByContinent,
     fetchCitiesByCountry,
-    searchLocations
+    searchLocations,
+    findNearbyCities
   } = useDirectory();
 
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
@@ -63,6 +64,12 @@ export default function Directory() {
   const handleFiltersChange = (newFilters: DirectoryFilters) => {
     setFilters(newFilters);
     // You can implement filter logic here when needed
+  };
+
+  const handleNearMeSearch = async (userLocation: { latitude: number; longitude: number }) => {
+    const nearbyCities = await findNearbyCities(userLocation);
+    setSearchResults({ countries: [], cities: nearbyCities });
+    setViewMode("search");
   };
 
   const handleBack = () => {
@@ -113,7 +120,11 @@ export default function Directory() {
       </div>
 
       {/* Search */}
-      <DirectorySearch onSearch={handleSearch} onFiltersChange={handleFiltersChange} />
+      <DirectorySearch 
+        onSearch={handleSearch} 
+        onFiltersChange={handleFiltersChange} 
+        onNearMeSearch={handleNearMeSearch}
+      />
 
       {/* Breadcrumb */}
       {viewMode !== "overview" && viewMode !== "search" && (
