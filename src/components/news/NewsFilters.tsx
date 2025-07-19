@@ -7,9 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, X, Filter, MapPin, Loader } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
-
 type NewsCategory = Tables<'news_categories'>;
-
 interface NewsFiltersProps {
   categories: NewsCategory[];
   onFiltersChange: (filters: {
@@ -18,21 +16,34 @@ interface NewsFiltersProps {
     sentiment?: string;
     tags?: string[];
     nearMe?: boolean;
-    userLocation?: { lat: number; lng: number };
+    userLocation?: {
+      lat: number;
+      lng: number;
+    };
   }) => void;
-  trendingTags?: { tag: string; count: number }[];
+  trendingTags?: {
+    tag: string;
+    count: number;
+  }[];
 }
-
-export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: NewsFiltersProps) => {
-  const { toast } = useToast();
+export const NewsFilters = ({
+  categories,
+  onFiltersChange,
+  trendingTags = []
+}: NewsFiltersProps) => {
+  const {
+    toast
+  } = useToast();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("");
   const [sentiment, setSentiment] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [nearMe, setNearMe] = useState(false);
-  const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
-
   const handleSearchChange = (value: string) => {
     setSearch(value);
     onFiltersChange({
@@ -41,10 +52,9 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
       sentiment: sentiment || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       nearMe,
-      userLocation: userLocation || undefined,
+      userLocation: userLocation || undefined
     });
   };
-
   const handleCategoryChange = (value: string) => {
     const newCategory = value === "all" ? "" : value;
     setCategory(newCategory);
@@ -54,10 +64,9 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
       sentiment: sentiment || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       nearMe,
-      userLocation: userLocation || undefined,
+      userLocation: userLocation || undefined
     });
   };
-
   const handleSentimentChange = (value: string) => {
     const newSentiment = value === "all" ? "" : value;
     setSentiment(newSentiment);
@@ -67,15 +76,11 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
       sentiment: newSentiment || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       nearMe,
-      userLocation: userLocation || undefined,
+      userLocation: userLocation || undefined
     });
   };
-
   const handleTagToggle = (tag: string) => {
-    const newTags = selectedTags.includes(tag)
-      ? selectedTags.filter(t => t !== tag)
-      : [...selectedTags, tag];
-    
+    const newTags = selectedTags.includes(tag) ? selectedTags.filter(t => t !== tag) : [...selectedTags, tag];
     setSelectedTags(newTags);
     onFiltersChange({
       category: category || undefined,
@@ -83,10 +88,9 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
       sentiment: sentiment || undefined,
       tags: newTags.length > 0 ? newTags : undefined,
       nearMe,
-      userLocation: userLocation || undefined,
+      userLocation: userLocation || undefined
     });
   };
-
   const handleNearMe = async () => {
     if (!nearMe) {
       setLocationLoading(true);
@@ -94,33 +98,29 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject);
         });
-        
         const location = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        
         setUserLocation(location);
         setNearMe(true);
-        
         onFiltersChange({
           category: category || undefined,
           search: search || undefined,
           sentiment: sentiment || undefined,
           tags: selectedTags.length > 0 ? selectedTags : undefined,
           nearMe: true,
-          userLocation: location,
+          userLocation: location
         });
-        
         toast({
           title: "Location found",
-          description: "Showing news relevant to your location",
+          description: "Showing news relevant to your location"
         });
       } catch (error) {
         toast({
           title: "Location Error",
           description: "Unable to get your location. Please allow location access.",
-          variant: "destructive",
+          variant: "destructive"
         });
       } finally {
         setLocationLoading(false);
@@ -132,11 +132,10 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
         category: category || undefined,
         search: search || undefined,
         sentiment: sentiment || undefined,
-        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined
       });
     }
   };
-
   const clearFilters = () => {
     setSearch("");
     setCategory("");
@@ -146,11 +145,8 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
     setUserLocation(null);
     onFiltersChange({});
   };
-
   const hasActiveFilters = search || category || sentiment || selectedTags.length > 0 || nearMe;
-
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Filter className="h-5 w-5" />
@@ -161,113 +157,49 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search articles..."
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10"
-          />
+          <Input placeholder="Search articles..." value={search} onChange={e => handleSearchChange(e.target.value)} className="pl-10" />
         </div>
 
         {/* Near Me Button */}
-        <Button 
-          onClick={handleNearMe} 
-          variant={nearMe ? "default" : "outline"}
-          disabled={locationLoading}
-          className="w-full gap-2"
-        >
-          {locationLoading ? (
-            <Loader className="h-4 w-4 animate-spin" />
-          ) : (
-            <MapPin className="h-4 w-4" />
-          )}
+        <Button onClick={handleNearMe} variant={nearMe ? "default" : "outline"} disabled={locationLoading} className="w-full gap-2">
+          {locationLoading ? <Loader className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
           {nearMe ? "Showing Local News" : "Near Me"}
         </Button>
 
         {/* Category Filter */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Category</label>
-          <Select value={category || "all"} onValueChange={handleCategoryChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.slug}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        
 
         {/* Sentiment Filter */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Sentiment</label>
-          <Select value={sentiment || "all"} onValueChange={handleSentimentChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="All Sentiments" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sentiments</SelectItem>
-              <SelectItem value="positive">Positive</SelectItem>
-              <SelectItem value="neutral">Neutral</SelectItem>
-              <SelectItem value="negative">Negative</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        
 
         {/* Trending Tags */}
-        {trendingTags.length > 0 && (
-          <div className="space-y-2">
+        {trendingTags.length > 0 && <div className="space-y-2">
             <label className="text-sm font-medium">Trending Tags</label>
             <div className="flex flex-wrap gap-2">
-              {trendingTags.slice(0, 10).map(({ tag, count }) => (
-                <Badge
-                  key={tag}
-                  variant={selectedTags.includes(tag) ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                  onClick={() => handleTagToggle(tag)}
-                >
+              {trendingTags.slice(0, 10).map(({
+            tag,
+            count
+          }) => <Badge key={tag} variant={selectedTags.includes(tag) ? "default" : "outline"} className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors" onClick={() => handleTagToggle(tag)}>
                   {tag} ({count})
-                </Badge>
-              ))}
+                </Badge>)}
             </div>
-          </div>
-        )}
+          </div>}
 
         {/* Selected Tags */}
-        {selectedTags.length > 0 && (
-          <div className="space-y-2">
+        {selectedTags.length > 0 && <div className="space-y-2">
             <label className="text-sm font-medium">Selected Tags</label>
             <div className="flex flex-wrap gap-2">
-              {selectedTags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="default"
-                  className="cursor-pointer"
-                  onClick={() => handleTagToggle(tag)}
-                >
+              {selectedTags.map(tag => <Badge key={tag} variant="default" className="cursor-pointer" onClick={() => handleTagToggle(tag)}>
                   {tag}
                   <X className="h-3 w-3 ml-1" />
-                </Badge>
-              ))}
+                </Badge>)}
             </div>
-          </div>
-        )}
+          </div>}
 
         {/* Clear Filters */}
-        {hasActiveFilters && (
-          <Button
-            variant="outline"
-            onClick={clearFilters}
-            className="w-full"
-          >
+        {hasActiveFilters && <Button variant="outline" onClick={clearFilters} className="w-full">
             Clear All Filters
-          </Button>
-        )}
+          </Button>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
