@@ -23,22 +23,6 @@ export default function ProfileSettings() {
   const { user, hasPasskey } = useAuth();
   const { profile, loading, updateProfile, uploadAvatar } = useProfile();
   const { toast } = useToast();
-
-  // Redirect if not authenticated
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
-
-  if (loading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      </div>
-    );
-  }
   
   const [isUpdating, setIsUpdating] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -122,6 +106,22 @@ export default function ProfileSettings() {
   }, [formData]);
 
   const profileCompletion = calculateProfileCompletion();
+
+  // Redirect if not authenticated
+  if (!user) {
+    navigate('/auth');
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
