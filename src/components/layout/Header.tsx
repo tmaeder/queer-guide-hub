@@ -36,6 +36,10 @@ export function Header() {
                     <CreditCard className="h-4 w-4 mb-1" />
                     <span className="text-xs">Bookings</span>
                   </Button>
+                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/favorites')}>
+                    <Heart className="h-4 w-4 mb-1" />
+                    <span className="text-xs">Favorites</span>
+                  </Button>
                   <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/profile/settings')}>
                     <Settings className="h-4 w-4 mb-1" />
                     <span className="text-xs">Settings</span>
