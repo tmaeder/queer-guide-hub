@@ -124,6 +124,7 @@ export type Database = {
       }
       cities: {
         Row: {
+          airport_codes: string[] | null
           area_codes: string[] | null
           area_km2: number | null
           best_time_to_visit: string | null
@@ -146,6 +147,7 @@ export type Database = {
           local_customs: string | null
           local_language: string | null
           longitude: number | null
+          major_airport_code: string | null
           mayor: string | null
           name: string
           notable_landmarks: string[] | null
@@ -160,6 +162,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          airport_codes?: string[] | null
           area_codes?: string[] | null
           area_km2?: number | null
           best_time_to_visit?: string | null
@@ -182,6 +185,7 @@ export type Database = {
           local_customs?: string | null
           local_language?: string | null
           longitude?: number | null
+          major_airport_code?: string | null
           mayor?: string | null
           name: string
           notable_landmarks?: string[] | null
@@ -196,6 +200,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          airport_codes?: string[] | null
           area_codes?: string[] | null
           area_km2?: number | null
           best_time_to_visit?: string | null
@@ -218,6 +223,7 @@ export type Database = {
           local_customs?: string | null
           local_language?: string | null
           longitude?: number | null
+          major_airport_code?: string | null
           mayor?: string | null
           name?: string
           notable_landmarks?: string[] | null
@@ -687,6 +693,7 @@ export type Database = {
       }
       countries: {
         Row: {
+          airport_codes: string[] | null
           area_km2: number | null
           calling_code: string | null
           capital: string | null
@@ -714,6 +721,7 @@ export type Database = {
           life_expectancy: number | null
           literacy_rate: number | null
           longitude: number | null
+          major_airports: string[] | null
           major_industries: string[] | null
           major_religions: string[] | null
           name: string
@@ -729,6 +737,7 @@ export type Database = {
           visa_requirements: Json | null
         }
         Insert: {
+          airport_codes?: string[] | null
           area_km2?: number | null
           calling_code?: string | null
           capital?: string | null
@@ -756,6 +765,7 @@ export type Database = {
           life_expectancy?: number | null
           literacy_rate?: number | null
           longitude?: number | null
+          major_airports?: string[] | null
           major_industries?: string[] | null
           major_religions?: string[] | null
           name: string
@@ -771,6 +781,7 @@ export type Database = {
           visa_requirements?: Json | null
         }
         Update: {
+          airport_codes?: string[] | null
           area_km2?: number | null
           calling_code?: string | null
           capital?: string | null
@@ -798,6 +809,7 @@ export type Database = {
           life_expectancy?: number | null
           literacy_rate?: number | null
           longitude?: number | null
+          major_airports?: string[] | null
           major_industries?: string[] | null
           major_religions?: string[] | null
           name?: string
