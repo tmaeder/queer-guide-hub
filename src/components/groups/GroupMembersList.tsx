@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Crown, Shield, User, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 
 interface GroupMember {
   user_id: string;
@@ -12,6 +13,7 @@ interface GroupMember {
   profiles: {
     display_name: string;
     avatar_url: string;
+    social_links?: Record<string, any>;
   };
 }
 
@@ -71,6 +73,14 @@ export function GroupMembersList({ members, canManage, onStartConversation }: Gr
                       Joined {new Date(member.joined_at).toLocaleDateString()}
                     </span>
                   </div>
+                  {member.profiles.social_links && Object.keys(member.profiles.social_links).length > 0 && (
+                    <div className="mt-2">
+                      <SocialLinksDisplay 
+                        socialLinks={member.profiles.social_links} 
+                        size="sm" 
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -131,7 +131,7 @@ export const useGroupPosts = (groupId: string) => {
       const userIds = memberships?.map(m => m.user_id) || [];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, display_name, avatar_url')
+        .select('user_id, display_name, avatar_url, social_links')
         .in('user_id', userIds);
 
       return memberships?.map(membership => {
@@ -142,7 +142,8 @@ export const useGroupPosts = (groupId: string) => {
           joined_at: membership.joined_at,
           profiles: {
             display_name: profile?.display_name || 'Unknown User',
-            avatar_url: profile?.avatar_url || ''
+            avatar_url: profile?.avatar_url || '',
+            social_links: (profile?.social_links as Record<string, any>) || {}
           }
         };
       }) || [];

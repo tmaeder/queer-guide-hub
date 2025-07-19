@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
+import { SocialLinksManager } from '@/components/profile/SocialLinksManager';
 
 export default function ProfileSettings() {
   const navigate = useNavigate();
@@ -470,6 +471,15 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
               </div>
             </CardContent>
           </Card>
+
+          {/* Social Media Links */}
+          <SocialLinksManager 
+            initialSocialLinks={profile?.social_links || {}}
+            onUpdate={(socialLinks) => {
+              // Update the profile context if needed
+              console.log('Social links updated:', socialLinks);
+            }}
+          />
         </TabsContent>
 
         {/* Identity Tab */}
