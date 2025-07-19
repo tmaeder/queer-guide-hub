@@ -745,6 +745,7 @@ export type Database = {
           end_date: string | null
           event_type: string
           featured: boolean | null
+          group_id: string | null
           id: string
           images: string[] | null
           is_free: boolean | null
@@ -778,6 +779,7 @@ export type Database = {
           end_date?: string | null
           event_type: string
           featured?: boolean | null
+          group_id?: string | null
           id?: string
           images?: string[] | null
           is_free?: boolean | null
@@ -811,6 +813,7 @@ export type Database = {
           end_date?: string | null
           event_type?: string
           featured?: boolean | null
+          group_id?: string | null
           id?: string
           images?: string[] | null
           is_free?: boolean | null
@@ -840,6 +843,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "events_venue_id_fkey"

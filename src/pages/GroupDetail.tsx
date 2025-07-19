@@ -26,11 +26,14 @@ import {
 } from 'lucide-react';
 import { useGroups, Group } from '@/hooks/useGroups';
 import { useGroupPosts } from '@/hooks/useGroupPosts';
+import { useGroupEvents } from '@/hooks/useGroupEvents';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { GroupPostCard } from '@/components/groups/GroupPostCard';
 import { CreatePostDialog } from '@/components/groups/CreatePostDialog';
 import { GroupMembersList } from '@/components/groups/GroupMembersList';
+import { CreateGroupEventDialog } from '@/components/groups/CreateGroupEventDialog';
+import { GroupEventCard } from '@/components/groups/GroupEventCard';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -59,6 +62,19 @@ export default function GroupDetail() {
     voteOnPoll,
     togglePin
   } = useGroupPosts(groupId || '');
+
+  const {
+    events,
+    isLoading: eventsLoading,
+    createEvent,
+    isCreatingEvent,
+    joinEvent,
+    isJoiningEvent,
+    leaveEvent,
+    isLeavingEvent,
+    deleteEvent,
+    isDeletingEvent
+  } = useGroupEvents(groupId || '');
 
   const [group, setGroup] = useState<Group | null>(null);
   const [activeTab, setActiveTab] = useState("about");
@@ -386,16 +402,59 @@ export default function GroupDetail() {
         </TabsContent>
 
         <TabsContent value="events" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Group Events</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-center py-8">
-                Group events functionality coming soon. Members will be able to create and attend group events.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Group Events</h3>
+            {group.is_member && (
+              <CreateGroupEventDialog
+                onCreateEvent={createEvent}
+                isCreating={isCreatingEvent}
+              />
+            )}
+          </div>
+
+          {eventsLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-48 bg-muted rounded-lg"></div>
+                </div>
+              ))}
+            </div>
+          ) : events.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">No events yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  {group.is_member 
+                    ? "Be the first to create an event for this group!" 
+                    : "Join the group to see and participate in events."}
+                </p>
+                {group.is_member && (
+                  <CreateGroupEventDialog
+                    onCreateEvent={createEvent}
+                    isCreating={isCreatingEvent}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {events.map((event) => (
+                <GroupEventCard
+                  key={event.id}
+                  event={event}
+                  onJoinEvent={joinEvent}
+                  onLeaveEvent={leaveEvent}
+                  onDeleteEvent={canManage ? deleteEvent : undefined}
+                  isJoining={isJoiningEvent}
+                  isLeaving={isLeavingEvent}
+                  isDeleting={isDeletingEvent}
+                  canManage={canManage}
+                />
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
