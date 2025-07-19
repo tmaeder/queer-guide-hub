@@ -32,6 +32,7 @@ export default function TagsDirectory() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [tagImages, setTagImages] = useState<Record<string, string>>({});
   const [processingImages, setProcessingImages] = useState(false);
+  const [categorizingTags, setCategorizingTags] = useState(false);
 
   // Store images for all tags (reimport all)
   const storeTagImages = async () => {
@@ -97,6 +98,49 @@ export default function TagsDirectory() {
       });
     } finally {
       setProcessingImages(false);
+    }
+  };
+
+  // Auto-categorize tags using AI
+  const categorizeAllTags = async () => {
+    setCategorizingTags(true);
+    try {
+      console.log('Starting AI tag categorization...');
+      
+      const { data, error } = await supabase.functions.invoke('categorize-tags');
+      
+      if (error) {
+        console.error('Error categorizing tags:', error);
+        toast({
+          title: "Categorization failed",
+          description: `Failed to categorize tags: ${error.message}`,
+          variant: "destructive",
+        });
+      } else if (data?.success) {
+        console.log('Successfully categorized tags:', data);
+        toast({
+          title: "Tags categorized",
+          description: `Successfully categorized ${data.categorized_count} tags! Refreshing...`,
+        });
+        // Refresh the page to show updated categories
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        console.log('Unexpected response:', data);
+        toast({
+          title: "Unexpected response",
+          description: "Received unexpected response from categorization service",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error in categorizeAllTags:', error);
+      toast({
+        title: "Error",
+        description: "Failed to categorize tags",
+        variant: "destructive",
+      });
+    } finally {
+      setCategorizingTags(false);
     }
   };
 
@@ -167,6 +211,38 @@ export default function TagsDirectory() {
         return Heart;
       case "health":
         return Brain;
+      case "sexuality":
+        return Heart;
+      case "relationships":
+        return Users;
+      case "activism":
+        return Tag;
+      case "support":
+        return Users;
+      case "lifestyle":
+        return Tag;
+      case "dating":
+        return Heart;
+      case "family":
+        return Users;
+      case "workplace":
+        return Tag;
+      case "legal":
+        return Tag;
+      case "education":
+        return Tag;
+      case "arts":
+        return Tag;
+      case "sports":
+        return Tag;
+      case "technology":
+        return Tag;
+      case "travel":
+        return MapPin;
+      case "fashion":
+        return Tag;
+      case "content":
+        return Tag;
       default:
         return Tag;
     }
@@ -300,12 +376,25 @@ export default function TagsDirectory() {
             </TabsContent>
 
             <TabsContent value="categories" className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold">Browse by Category</h2>
-                <Badge variant="secondary">{tagsByCategory.length}</Badge>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold">Browse by Category</h2>
+                  <Badge variant="secondary">{tagsByCategory.length} categories</Badge>
+                </div>
+                <Button 
+                  onClick={categorizeAllTags} 
+                  disabled={categorizingTags} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  <Brain className="h-4 w-4 mr-2" />
+                  {categorizingTags ? 'Categorizing...' : 'Auto-Categorize Tags'}
+                </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tagsByCategory.map(({ category, tags, count }) => {
+                {tagsByCategory
+                  .sort((a, b) => b.count - a.count) // Sort by tag count descending
+                  .map(({ category, tags, count }) => {
                   const IconComponent = getCategoryIcon(category);
                   return (
                     <div 
@@ -318,7 +407,7 @@ export default function TagsDirectory() {
                           <IconComponent className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <h3 className="font-medium capitalize">{category.replace('-', ' ')}</h3>
+                          <h3 className="font-medium capitalize">{category.replace(/[-_]/g, ' ')}</h3>
                           <p className="text-sm text-muted-foreground">{count} tags</p>
                         </div>
                       </div>
