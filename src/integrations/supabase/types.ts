@@ -2923,6 +2923,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_tag_relationships_table_if_not_exists: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       decrement_post_likes: {
         Args: { post_id: string }
         Returns: undefined

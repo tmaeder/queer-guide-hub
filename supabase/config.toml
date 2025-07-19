@@ -98,3 +98,6 @@ verify_jwt = false
 
 [functions.calendar-feed]
 verify_jwt = false
+
+[functions.compute-tag-relationships]
+verify_jwt = false
