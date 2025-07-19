@@ -49,6 +49,7 @@ import GroupDetail from "./pages/GroupDetail";
 import AccessibilityHub from "./pages/AccessibilityHub";
 import NotFound from "./pages/NotFound";
 import SearchResults from "./pages/SearchResults";
+import Favorites from "./pages/Favorites";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 
 const queryClient = new QueryClient();
@@ -205,9 +206,10 @@ const App = () => {
                    <Route path="/groups/:groupId" element={<GroupDetail />} />
                    <Route path="/accessibility" element={<AccessibilityHub />} />
                   <Route path="/messages" element={<Messages />} />
-                  <Route path="/my-bookings" element={<MyBookings />} />
-                  <Route path="/profile/settings" element={<ProfileSettings />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                   <Route path="/my-bookings" element={<MyBookings />} />
+                   <Route path="/favorites" element={<Favorites />} />
+                   <Route path="/profile/settings" element={<ProfileSettings />} />
+                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
                 </div>
