@@ -1,106 +1,24 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandList, CommandSeparator } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Search, Filter, X, MapPin, Calendar, Store, Newspaper, Users, Tag } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-
-const searchCategories = [
-  { label: "All", value: "all", icon: Search },
-  { label: "Venues", value: "venues", icon: MapPin },
-  { label: "Events", value: "events", icon: Calendar },
-  { label: "Marketplace", value: "marketplace", icon: Store },
-  { label: "News", value: "news", icon: Newspaper },
-  { label: "Community", value: "community", icon: Users },
-  { label: "Tags", value: "tags", icon: Tag },
-];
+import { Search, Filter, X } from "lucide-react";
+import { useSearchSuggestions, SearchSuggestion } from "@/hooks/useSearchSuggestions";
+import { SearchSuggestions } from "./SearchSuggestions";
+import { SearchCategories } from "./SearchCategories";
+import { SearchFilters } from "./SearchFilters";
 
 export const AdvancedSearchBar = () => {
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<string[]>([]);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Debounced search for suggestions
-  const debouncedFetchSuggestions = useCallback(
-    async (searchTerm: string) => {
-      if (!searchTerm || searchTerm.length < 2) {
-        setSuggestions([]);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const promises = [];
-
-        // Search venues
-        promises.push(
-          supabase
-            .from('venues')
-            .select('id, name, location')
-            .ilike('name', `%${searchTerm}%`)
-            .limit(3)
-            .then(({ data }) => (data || []).map((item: any) => ({ ...item, type: 'venue', icon: MapPin })))
-        );
-
-        // Search events
-        promises.push(
-          supabase
-            .from('events')
-            .select('id, title, city')
-            .ilike('title', `%${searchTerm}%`)
-            .limit(3)
-            .then(({ data }) => (data || []).map((item: any) => ({ ...item, type: 'event', icon: Calendar, name: item.title })))
-        );
-
-        // Search marketplace
-        promises.push(
-          supabase
-            .from('marketplace_listings')
-            .select('id, title, business_name')
-            .ilike('title', `%${searchTerm}%`)
-            .eq('status', 'active')
-            .limit(3)
-            .then(({ data }) => (data || []).map((item: any) => ({ ...item, type: 'marketplace', icon: Store, name: item.title })))
-        );
-
-        // Search tags
-        promises.push(
-          supabase
-            .from('unified_tags')
-            .select('id, name, description')
-            .ilike('name', `%${searchTerm}%`)
-            .limit(3)
-            .then(({ data }) => (data || []).map((item: any) => ({ ...item, type: 'tag', icon: Tag })))
-        );
-
-        const results = await Promise.all(promises);
-        const allSuggestions = results.flat().slice(0, 8); // Limit to 8 total suggestions
-        setSuggestions(allSuggestions);
-      } catch (error) {
-        console.error('Error fetching suggestions:', error);
-        setSuggestions([]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
-
-  // Debounce the suggestions fetch
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      debouncedFetchSuggestions(query);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [query, debouncedFetchSuggestions]);
+  const { suggestions, loading } = useSearchSuggestions(query);
 
   const handleSearch = (searchQuery?: string, category?: string) => {
     const searchTerm = searchQuery || query;
@@ -120,14 +38,40 @@ export const AdvancedSearchBar = () => {
     } else {
       navigate(`/${searchCategory}?${params}`);
     }
-    
-    // Keep the search bar open after search
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch();
+      setIsOpen(false);
     }
+  };
+
+  const handleSelectCategory = (category: string) => {
+    setSelectedCategory(category);
+    if (query) {
+      handleSearch(query, category);
+      setIsOpen(false);
+    }
+  };
+
+  const handleSelectSuggestion = (suggestion: SearchSuggestion) => {
+    const displayName = suggestion.name || suggestion.title;
+    setQuery(displayName);
+    
+    // Navigate directly to the item if possible
+    if (suggestion.type === 'venue') {
+      navigate(`/venues/${suggestion.id}`);
+    } else if (suggestion.type === 'event') {
+      navigate(`/events/${suggestion.id}`);
+    } else if (suggestion.type === 'marketplace') {
+      navigate(`/marketplace/${suggestion.id}`);
+    } else if (suggestion.type === 'tag') {
+      navigate(`/tags/${suggestion.name}`);
+    } else {
+      handleSearch(displayName, suggestion.type);
+    }
+    setIsOpen(false);
   };
 
   const addFilter = (filter: string) => {
@@ -140,61 +84,59 @@ export const AdvancedSearchBar = () => {
     setFilters(filters.filter(f => f !== filter));
   };
 
-  const CategoryIcon = searchCategories.find(cat => cat.value === selectedCategory)?.icon || Search;
-
   return (
     <div className="flex-1 max-w-md mx-4">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <div className="relative">
             <div 
-              className="flex items-center bg-background/50 backdrop-blur-sm"
+              className="flex items-center bg-background/50 backdrop-blur-sm rounded-lg border"
               onMouseEnter={() => setIsOpen(true)}
             >
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-10 px-3"
+                className="h-10 px-3 rounded-l-lg"
                 onClick={() => setIsOpen(true)}
               >
                 <Filter className="h-4 w-4" />
               </Button>
+              
               <Input
                 placeholder="Search venues, events, news..."
                 value={query}
                 onChange={(e) => {
-                  const newValue = e.target.value;
-                  setQuery(newValue);
+                  setQuery(e.target.value);
                   setIsOpen(true);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSearch();
-                  }
-                }}
+                onKeyDown={handleKeyDown}
                 onFocus={() => setIsOpen(true)}
                 onClick={() => setIsOpen(true)}
-                className="focus-visible:ring-0 border-0 bg-transparent"
+                className="border-0 bg-transparent focus-visible:ring-0 shadow-none"
                 autoComplete="off"
               />
+              
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-10 px-3"
-                onClick={() => handleSearch()}
+                className="h-10 px-3 rounded-r-lg"
+                onClick={() => {
+                  handleSearch();
+                  setIsOpen(false);
+                }}
               >
                 <Search className="h-4 w-4" />
               </Button>
             </div>
             
-            {/* Filters Display */}
+            {/* Active Filters Display */}
             {filters.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {filters.map((filter) => (
                   <Badge
                     key={filter}
                     variant="secondary"
-                    className="text-xs cursor-pointer"
+                    className="text-xs cursor-pointer hover:bg-secondary/80"
                     onClick={() => removeFilter(filter)}
                   >
                     {filter}
@@ -206,132 +148,48 @@ export const AdvancedSearchBar = () => {
           </div>
         </PopoverTrigger>
         
-        <PopoverContent className="w-80 p-0" align="start">
+        <PopoverContent className="w-80 p-0 z-50" align="start">
           <Command shouldFilter={false}>
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               
-              {/* Categories */}
-              <CommandGroup heading="Search in">
-                {searchCategories.map((category) => {
-                  const Icon = category.icon;
-                  return (
-                    <CommandItem
-                      key={category.value}
-                      onSelect={() => {
-                        setSelectedCategory(category.value);
-                        if (query) handleSearch(query, category.value);
-                      }}
-                      className="cursor-pointer"
-                    >
-                      <Icon className="h-4 w-4 mr-2" />
-                      {category.label}
-                      {selectedCategory === category.value && (
-                        <Badge variant="outline" className="ml-auto text-xs">
-                          Selected
-                        </Badge>
-                      )}
-                    </CommandItem>
-                  );
-                })}
-              </CommandGroup>
+              {/* Search Categories */}
+              <SearchCategories
+                selectedCategory={selectedCategory}
+                query={query}
+                onSelectCategory={handleSelectCategory}
+              />
 
               {/* Live Suggestions */}
-              {suggestions.length > 0 && (
-                <>
-                  <CommandSeparator />
-                  <CommandGroup heading="Suggestions">
-                    {suggestions.map((suggestion) => {
-                      const Icon = suggestion.icon;
-                      const displayName = suggestion.name || suggestion.title;
-                      const subtitle = suggestion.location || suggestion.city || suggestion.business_name || suggestion.description;
-                      
-                      return (
-                        <CommandItem
-                          key={`${suggestion.type}-${suggestion.id}`}
-                          onSelect={() => {
-                            const searchTerm = displayName;
-                            setQuery(searchTerm);
-                            
-                            // Navigate directly to the item if possible
-                            if (suggestion.type === 'venue') {
-                              navigate(`/venues/${suggestion.id}`);
-                            } else if (suggestion.type === 'event') {
-                              navigate(`/events/${suggestion.id}`);
-                            } else if (suggestion.type === 'marketplace') {
-                              navigate(`/marketplace/${suggestion.id}`);
-                            } else if (suggestion.type === 'tag') {
-                              navigate(`/tags/${suggestion.name}`);
-                            } else {
-                              handleSearch(searchTerm, suggestion.type);
-                            }
-                            setIsOpen(false);
-                          }}
-                          className="cursor-pointer"
-                        >
-                          <Icon className="h-4 w-4 mr-2 text-muted-foreground" />
-                          <div className="flex flex-col items-start">
-                            <span className="font-medium">{displayName}</span>
-                            {subtitle && (
-                              <span className="text-xs text-muted-foreground truncate">{subtitle}</span>
-                            )}
-                          </div>
-                          <Badge variant="outline" className="ml-auto text-xs capitalize">
-                            {suggestion.type}
-                          </Badge>
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                </>
-              )}
-
-              {loading && query.length >= 2 && (
-                <>
-                  <CommandSeparator />
-                  <CommandGroup heading="Loading...">
-                    <CommandItem disabled>
-                      <Search className="h-4 w-4 mr-2 animate-spin" />
-                      Searching...
-                    </CommandItem>
-                  </CommandGroup>
-                </>
-              )}
+              <SearchSuggestions
+                suggestions={suggestions}
+                loading={loading}
+                query={query}
+                onSelectSuggestion={handleSelectSuggestion}
+              />
 
               <CommandSeparator />
 
               {/* Quick Filters */}
-              <CommandGroup heading="Filters">
-                <CommandItem onSelect={() => addFilter("featured")}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  Featured only
-                </CommandItem>
-                <CommandItem onSelect={() => addFilter("free")}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  Free events
-                </CommandItem>
-                <CommandItem onSelect={() => addFilter("today")}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  Today
-                </CommandItem>
-                <CommandItem onSelect={() => addFilter("this-week")}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  This week
-                </CommandItem>
-              </CommandGroup>
+              <SearchFilters onAddFilter={addFilter} />
 
+              {/* Search Action */}
               {query && (
                 <>
                   <CommandSeparator />
-                  <CommandGroup heading="Actions">
-                    <CommandItem 
-                      onSelect={() => handleSearch()}
-                      className="cursor-pointer font-medium"
+                  <div className="p-2">
+                    <Button
+                      onClick={() => {
+                        handleSearch();
+                        setIsOpen(false);
+                      }}
+                      className="w-full"
+                      size="sm"
                     >
                       <Search className="h-4 w-4 mr-2" />
                       Search for "{query}"
-                    </CommandItem>
-                  </CommandGroup>
+                    </Button>
+                  </div>
                 </>
               )}
             </CommandList>

@@ -1,0 +1,118 @@
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { MapPin, Calendar, Store, Tag } from "lucide-react";
+
+export interface SearchSuggestion {
+  id: string;
+  name: string;
+  type: 'venue' | 'event' | 'marketplace' | 'tag';
+  icon: any;
+  subtitle?: string;
+  title?: string;
+  location?: string;
+  city?: string;
+  business_name?: string;
+  description?: string;
+}
+
+export function useSearchSuggestions(query: string) {
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchSuggestions = useCallback(
+    async (searchTerm: string) => {
+      if (!searchTerm || searchTerm.length < 2) {
+        setSuggestions([]);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const promises = [];
+
+        // Search venues
+        promises.push(
+          supabase
+            .from('venues')
+            .select('id, name, location')
+            .ilike('name', `%${searchTerm}%`)
+            .limit(3)
+            .then(({ data }) => (data || []).map((item: any) => ({
+              ...item,
+              type: 'venue' as const,
+              icon: MapPin,
+              subtitle: item.location
+            })))
+        );
+
+        // Search events
+        promises.push(
+          supabase
+            .from('events')
+            .select('id, title, city')
+            .ilike('title', `%${searchTerm}%`)
+            .limit(3)
+            .then(({ data }) => (data || []).map((item: any) => ({
+              ...item,
+              type: 'event' as const,
+              icon: Calendar,
+              name: item.title,
+              subtitle: item.city
+            })))
+        );
+
+        // Search marketplace
+        promises.push(
+          supabase
+            .from('marketplace_listings')
+            .select('id, title, business_name')
+            .ilike('title', `%${searchTerm}%`)
+            .eq('status', 'active')
+            .limit(3)
+            .then(({ data }) => (data || []).map((item: any) => ({
+              ...item,
+              type: 'marketplace' as const,
+              icon: Store,
+              name: item.title,
+              subtitle: item.business_name
+            })))
+        );
+
+        // Search tags
+        promises.push(
+          supabase
+            .from('unified_tags')
+            .select('id, name, description')
+            .ilike('name', `%${searchTerm}%`)
+            .limit(3)
+            .then(({ data }) => (data || []).map((item: any) => ({
+              ...item,
+              type: 'tag' as const,
+              icon: Tag,
+              subtitle: item.description
+            })))
+        );
+
+        const results = await Promise.all(promises);
+        const allSuggestions = results.flat().slice(0, 8);
+        setSuggestions(allSuggestions);
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        setSuggestions([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchSuggestions(query);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query, fetchSuggestions]);
+
+  return { suggestions, loading };
+}
