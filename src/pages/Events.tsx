@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Plus, Loader, Search, Filter, X, CalendarIcon, Check, ChevronDown, Grid, List } from 'lucide-react';
+import { Calendar, Plus, Loader, Search, Filter, X, CalendarIcon, Check, ChevronDown, Grid, List, MapPin } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -67,6 +67,9 @@ const Events = () => {
   const [cityOpen, setCityOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+  const [nearMe, setNearMe] = useState(false);
+  const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
 
   // Get unique cities from events for auto-suggest
   const availableCities = Array.from(new Set(events.map(event => event.city).filter(Boolean))).sort();
@@ -83,7 +86,55 @@ const Events = () => {
       eventType: (eventType && eventType !== 'all') ? eventType : undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       dateRange,
+      nearMe: nearMe ? userLocation : undefined,
     });
+  };
+
+  const handleNearMe = async () => {
+    if (!nearMe) {
+      setLocationLoading(true);
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+        
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        
+        setUserLocation(location);
+        setNearMe(true);
+        
+        // Clear city filter when using near me
+        setCity('');
+        
+        // Fetch events near user
+        fetchEvents({
+          search: search || undefined,
+          eventType: (eventType && eventType !== 'all') ? eventType : undefined,
+          tags: selectedTags.length > 0 ? selectedTags : undefined,
+          nearMe: location,
+        });
+        
+        toast({
+          title: "Location found",
+          description: "Showing events near your location",
+        });
+      } catch (error) {
+        toast({
+          title: "Location Error",
+          description: "Unable to get your location. Please allow location access.",
+          variant: "destructive",
+        });
+      } finally {
+        setLocationLoading(false);
+      }
+    } else {
+      setNearMe(false);
+      setUserLocation(null);
+      handleFiltersChange();
+    }
   };
 
   const handleTagToggle = (tag: string) => {
@@ -100,6 +151,8 @@ const Events = () => {
     setSelectedTags([]);
     setStartDate(undefined);
     setEndDate(undefined);
+    setNearMe(false);
+    setUserLocation(null);
     fetchEvents();
   };
 
@@ -135,7 +188,7 @@ const Events = () => {
     console.log('View event details:', event);
   };
 
-  const hasActiveFilters = search || city || eventType || selectedTags.length > 0 || startDate || endDate;
+  const hasActiveFilters = search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe;
 
   if (error) {
     return (
@@ -211,6 +264,19 @@ const Events = () => {
                 className="pl-9"
               />
             </div>
+            <Button 
+              onClick={handleNearMe} 
+              variant={nearMe ? "default" : "outline"}
+              disabled={locationLoading}
+              className="gap-2"
+            >
+              {locationLoading ? (
+                <Loader className="h-4 w-4 animate-spin" />
+              ) : (
+                <MapPin className="h-4 w-4" />
+              )}
+              Near Me
+            </Button>
             <Button onClick={handleFiltersChange} className="bg-gradient-primary">
               Search
             </Button>
@@ -454,6 +520,12 @@ const Events = () => {
                 <Badge variant="secondary" className="gap-1">
                   To: {format(endDate, "MMM d, yyyy")}
                   <X className="h-3 w-3 cursor-pointer" onClick={() => setEndDate(undefined)} />
+                </Badge>
+              )}
+              {nearMe && (
+                <Badge variant="secondary" className="gap-1">
+                  Near Me
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => setNearMe(false)} />
                 </Badge>
               )}
               {selectedTags.map((tag) => (
