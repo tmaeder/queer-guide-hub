@@ -156,23 +156,33 @@ export const UniversalSearchBar = () => {
     (filters.priceRange ? 1 : 0) + 
     (filters.rating ? 1 : 0);
 
+  // Focus input when popover opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [isOpen]);
+
   return (
     <div className="flex-1 max-w-2xl mx-4">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <div className="relative">
             <div 
-              className={`flex items-center transition-all duration-200 rounded-lg border ${
+              className={`flex items-center transition-all duration-200 rounded-lg border cursor-text ${
                 isFocused 
                   ? 'bg-background shadow-lg ring-2 ring-ring/20 border-ring' 
                   : 'bg-background/50 backdrop-blur-sm hover:bg-background/80'
               }`}
+              onClick={() => {
+                setIsOpen(true);
+                setTimeout(() => inputRef.current?.focus(), 0);
+              }}
             >
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-10 px-3 rounded-l-lg text-muted-foreground hover:text-foreground"
-                onClick={() => setIsOpen(true)}
+                className="h-10 px-3 rounded-l-lg text-muted-foreground hover:text-foreground pointer-events-none"
               >
                 <Search className="h-4 w-4" />
               </Button>
