@@ -3,11 +3,12 @@ import { useParams } from "react-router-dom";
 import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 import { TagCard } from "@/components/directory/TagCard";
 import { DirectorySearch } from "@/components/directory/DirectorySearch";
+import { TagGraphView } from "@/components/directory/TagGraphView";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload } from "lucide-react";
+import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload, Network } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 type ViewMode = "overview" | "category" | "search" | "tag-detail";
 export default function TagsDirectory() {
@@ -208,7 +209,20 @@ export default function TagsDirectory() {
       {viewMode === "overview" && <div className="space-y-6">
           {/* Categories */}
           <Tabs defaultValue="all" className="space-y-4">
-            
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="all" className="flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                All Tags
+              </TabsTrigger>
+              <TabsTrigger value="graph" className="flex items-center gap-2">
+                <Network className="h-4 w-4" />
+                Graph View
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Categories
+              </TabsTrigger>
+            </TabsList>
 
             <TabsContent value="all" className="space-y-4">
               <div className="flex items-center justify-between">
@@ -257,49 +271,62 @@ export default function TagsDirectory() {
               </div>
             </TabsContent>
 
-            {tagsByCategory.map(({
-          category,
-          tags,
-          count
-        }) => <TabsContent key={category} value={category} className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-semibold capitalize">
-                    {category.replace('-', ' ')} Tags
-                  </h2>
-                  <Badge variant="secondary">{count}</Badge>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                  {tags.map((tag, index) => (
+            <TabsContent value="graph" className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-xl font-semibold">Tag Relationship Graph</h2>
+                <Badge variant="secondary">{allTags.length} nodes</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Interactive graph showing relationships between tags. Connected lines represent shared categories (gray) and explicit relationships (blue).
+              </p>
+              <TagGraphView 
+                tags={allTags} 
+                onTagClick={handleTagClick}
+                selectedTag={selectedTag}
+              />
+            </TabsContent>
+
+            <TabsContent value="categories" className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-semibold">Browse by Category</h2>
+                <Badge variant="secondary">{tagsByCategory.length}</Badge>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {tagsByCategory.map(({ category, tags, count }) => {
+                  const IconComponent = getCategoryIcon(category);
+                  return (
                     <div 
-                      key={`${tag.id}-${index}`} 
-                      className="cursor-pointer transition-all hover:shadow-md hover:scale-105"
-                      onClick={() => handleTagClick(tag)}
+                      key={category} 
+                      className="bg-card border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => handleCategoryClick(category)}
                     >
-                      <div className="bg-card rounded-lg border overflow-hidden">
-                        <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
-                          {tag.image_url ? (
-                            <img 
-                              src={tag.image_url} 
-                              alt={`${tag.name} themed image`} 
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Tag className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                          )}
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          <IconComponent className="h-5 w-5 text-primary" />
                         </div>
-                        <div className="p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
-                            <span className="text-sm font-medium truncate">{tag.name}</span>
-                          </div>
+                        <div>
+                          <h3 className="font-medium capitalize">{category.replace('-', ' ')}</h3>
+                          <p className="text-sm text-muted-foreground">{count} tags</p>
                         </div>
                       </div>
+                      <div className="flex flex-wrap gap-1">
+                        {tags.slice(0, 4).map((tag) => (
+                          <div key={tag.id} className="flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tag.color }} />
+                            {tag.name}
+                          </div>
+                        ))}
+                        {count > 4 && (
+                          <div className="text-xs bg-muted px-2 py-1 rounded text-muted-foreground">
+                            +{count - 4} more
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </TabsContent>)}
+                  );
+                })}
+              </div>
+            </TabsContent>
           </Tabs>
         </div>}
 
