@@ -22,6 +22,8 @@ interface NewsFilters {
   };
   sentiment?: string;
   search?: string;
+  nearMe?: boolean;
+  userLocation?: { lat: number; lng: number };
 }
 
 export const useNews = () => {
@@ -78,7 +80,38 @@ export const useNews = () => {
         throw fetchError;
       }
 
-      setArticles(data || []);
+      let articlesData = data || [];
+
+      // Filter by location if nearMe is enabled
+      if (filters?.nearMe && filters?.userLocation) {
+        try {
+          const { data: locationData, error: locationError } = await supabase.functions.invoke('mapbox-geocoding', {
+            body: { 
+              lat: filters.userLocation.lat, 
+              lng: filters.userLocation.lng,
+              reverse: true
+            }
+          });
+
+          if (locationError) {
+            console.error('Error getting location info:', locationError);
+          } else if (locationData) {
+            const { city, country } = locationData;
+            
+            // Filter articles that are relevant to the user's location
+            articlesData = articlesData.filter(article => {
+              // Check if article mentions the user's city or country in the content/title
+              const contentText = `${article.title} ${article.content || ''} ${article.excerpt || ''}`.toLowerCase();
+              return contentText.includes(city?.toLowerCase() || '') || 
+                     contentText.includes(country?.toLowerCase() || '');
+            });
+          }
+        } catch (err) {
+          console.error('Error filtering by location:', err);
+        }
+      }
+
+      setArticles(articlesData);
     } catch (err) {
       console.error('Error fetching articles:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch articles');

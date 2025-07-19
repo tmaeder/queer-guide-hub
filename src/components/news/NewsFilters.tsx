@@ -4,8 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, X, Filter } from "lucide-react";
+import { Search, X, Filter, MapPin, Loader } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
+import { useToast } from "@/hooks/use-toast";
 
 type NewsCategory = Tables<'news_categories'>;
 
@@ -16,15 +17,21 @@ interface NewsFiltersProps {
     search?: string;
     sentiment?: string;
     tags?: string[];
+    nearMe?: boolean;
+    userLocation?: { lat: number; lng: number };
   }) => void;
   trendingTags?: { tag: string; count: number }[];
 }
 
 export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: NewsFiltersProps) => {
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("");
   const [sentiment, setSentiment] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [nearMe, setNearMe] = useState(false);
+  const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -33,6 +40,8 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
       search: value || undefined,
       sentiment: sentiment || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
+      nearMe,
+      userLocation: userLocation || undefined,
     });
   };
 
@@ -44,6 +53,8 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
       search: search || undefined,
       sentiment: sentiment || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
+      nearMe,
+      userLocation: userLocation || undefined,
     });
   };
 
@@ -55,6 +66,8 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
       search: search || undefined,
       sentiment: newSentiment || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
+      nearMe,
+      userLocation: userLocation || undefined,
     });
   };
 
@@ -69,7 +82,59 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
       search: search || undefined,
       sentiment: sentiment || undefined,
       tags: newTags.length > 0 ? newTags : undefined,
+      nearMe,
+      userLocation: userLocation || undefined,
     });
+  };
+
+  const handleNearMe = async () => {
+    if (!nearMe) {
+      setLocationLoading(true);
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+        
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        
+        setUserLocation(location);
+        setNearMe(true);
+        
+        onFiltersChange({
+          category: category || undefined,
+          search: search || undefined,
+          sentiment: sentiment || undefined,
+          tags: selectedTags.length > 0 ? selectedTags : undefined,
+          nearMe: true,
+          userLocation: location,
+        });
+        
+        toast({
+          title: "Location found",
+          description: "Showing news relevant to your location",
+        });
+      } catch (error) {
+        toast({
+          title: "Location Error",
+          description: "Unable to get your location. Please allow location access.",
+          variant: "destructive",
+        });
+      } finally {
+        setLocationLoading(false);
+      }
+    } else {
+      setNearMe(false);
+      setUserLocation(null);
+      onFiltersChange({
+        category: category || undefined,
+        search: search || undefined,
+        sentiment: sentiment || undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+      });
+    }
   };
 
   const clearFilters = () => {
@@ -77,10 +142,12 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
     setCategory("");
     setSentiment("");
     setSelectedTags([]);
+    setNearMe(false);
+    setUserLocation(null);
     onFiltersChange({});
   };
 
-  const hasActiveFilters = search || category || sentiment || selectedTags.length > 0;
+  const hasActiveFilters = search || category || sentiment || selectedTags.length > 0 || nearMe;
 
   return (
     <Card>
@@ -101,6 +168,21 @@ export const NewsFilters = ({ categories, onFiltersChange, trendingTags = [] }: 
             className="pl-10"
           />
         </div>
+
+        {/* Near Me Button */}
+        <Button 
+          onClick={handleNearMe} 
+          variant={nearMe ? "default" : "outline"}
+          disabled={locationLoading}
+          className="w-full gap-2"
+        >
+          {locationLoading ? (
+            <Loader className="h-4 w-4 animate-spin" />
+          ) : (
+            <MapPin className="h-4 w-4" />
+          )}
+          {nearMe ? "Showing Local News" : "Near Me"}
+        </Button>
 
         {/* Category Filter */}
         <div className="space-y-2">
