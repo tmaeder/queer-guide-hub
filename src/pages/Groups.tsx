@@ -9,9 +9,10 @@ import { GroupFilters } from "@/components/groups/GroupFilters";
 import { useGroups, Group } from "@/hooks/useGroups";
 import { useAuth } from "@/hooks/useAuth";
 import { Users, Plus, Search, TrendingUp } from "lucide-react";
-
 export default function Groups() {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const {
     groups,
     userGroups,
@@ -23,7 +24,6 @@ export default function Groups() {
     leaveGroup,
     isLeaving
   } = useGroups();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showMyGroups, setShowMyGroups] = useState(false);
@@ -34,10 +34,7 @@ export default function Groups() {
 
     // Search filter
     if (searchQuery) {
-      filtered = filtered.filter(group =>
-        group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        group.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      filtered = filtered.filter(group => group.name.toLowerCase().includes(searchQuery.toLowerCase()) || group.description?.toLowerCase().includes(searchQuery.toLowerCase()));
     }
 
     // Category filters
@@ -61,22 +58,13 @@ export default function Groups() {
         });
       });
     }
-
     return filtered;
   }, [groups, userGroups, searchQuery, activeFilters, showMyGroups]);
 
   // Popular groups (sorted by member count)
-  const popularGroups = useMemo(() => 
-    [...groups]
-      .filter(g => !g.is_private)
-      .sort((a, b) => b.member_count - a.member_count)
-      .slice(0, 6),
-    [groups]
-  );
-
+  const popularGroups = useMemo(() => [...groups].filter(g => !g.is_private).sort((a, b) => b.member_count - a.member_count).slice(0, 6), [groups]);
   if (!user) {
-    return (
-      <div className="space-y-8 py-8">
+    return <div className="space-y-8 py-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">Community Groups</h1>
           <p className="text-lg text-muted-foreground mb-8">
@@ -86,12 +74,9 @@ export default function Groups() {
             <a href="/auth">Sign In</a>
           </Button>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="space-y-8 py-8">
+  return <div className="space-y-8 py-8">
       {/* Header */}
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
@@ -107,31 +92,7 @@ export default function Groups() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
-            <div className="text-2xl font-bold">{groups.length}</div>
-            <div className="text-sm text-muted-foreground">Total Groups</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Plus className="h-8 w-8 mx-auto mb-2 text-primary" />
-            <div className="text-2xl font-bold">{userGroups.length}</div>
-            <div className="text-sm text-muted-foreground">Your Groups</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <TrendingUp className="h-8 w-8 mx-auto mb-2 text-primary" />
-            <div className="text-2xl font-bold">
-              {groups.reduce((sum, group) => sum + group.member_count, 0)}
-            </div>
-            <div className="text-sm text-muted-foreground">Total Members</div>
-          </CardContent>
-        </Card>
-      </div>
+      
 
       <Tabs defaultValue="discover" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
@@ -150,56 +111,29 @@ export default function Groups() {
         </TabsList>
 
         <TabsContent value="discover" className="space-y-6">
-          <GroupFilters
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            activeFilters={activeFilters}
-            onFilterChange={setActiveFilters}
-            showMyGroups={showMyGroups}
-            onShowMyGroupsChange={setShowMyGroups}
-          />
+          <GroupFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} activeFilters={activeFilters} onFilterChange={setActiveFilters} showMyGroups={showMyGroups} onShowMyGroupsChange={setShowMyGroups} />
 
-          {isLoading ? (
-            <Card>
+          {isLoading ? <Card>
               <CardContent className="p-8 text-center">
                 <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
                 <p className="text-muted-foreground">Loading groups...</p>
               </CardContent>
-            </Card>
-          ) : filteredGroups.length === 0 ? (
-            <Card>
+            </Card> : filteredGroups.length === 0 ? <Card>
               <CardContent className="p-8 text-center">
                 <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-semibold mb-2">No groups found</h3>
                 <p className="text-muted-foreground mb-4">
-                  {searchQuery || activeFilters.length > 0
-                    ? "Try adjusting your search or filters"
-                    : "Be the first to create a group in this community!"}
+                  {searchQuery || activeFilters.length > 0 ? "Try adjusting your search or filters" : "Be the first to create a group in this community!"}
                 </p>
-                {!searchQuery && activeFilters.length === 0 && (
-                  <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
-                )}
+                {!searchQuery && activeFilters.length === 0 && <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />}
               </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredGroups.map((group) => (
-                <GroupCard
-                  key={group.id}
-                  group={group}
-                  onJoin={joinGroup}
-                  onLeave={leaveGroup}
-                  isJoining={isJoining}
-                  isLeaving={isLeaving}
-                />
-              ))}
-            </div>
-          )}
+            </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredGroups.map(group => <GroupCard key={group.id} group={group} onJoin={joinGroup} onLeave={leaveGroup} isJoining={isJoining} isLeaving={isLeaving} />)}
+            </div>}
         </TabsContent>
 
         <TabsContent value="my-groups" className="space-y-6">
-          {userGroups.length === 0 ? (
-            <Card>
+          {userGroups.length === 0 ? <Card>
               <CardContent className="p-8 text-center">
                 <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-semibold mb-2">You haven't joined any groups yet</h3>
@@ -208,19 +142,9 @@ export default function Groups() {
                 </p>
                 <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
               </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userGroups.map((group) => (
-                <GroupCard
-                  key={group.id}
-                  group={group}
-                  onLeave={leaveGroup}
-                  isLeaving={isLeaving}
-                />
-              ))}
-            </div>
-          )}
+            </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {userGroups.map(group => <GroupCard key={group.id} group={group} onLeave={leaveGroup} isLeaving={isLeaving} />)}
+            </div>}
         </TabsContent>
 
         <TabsContent value="popular" className="space-y-6">
@@ -232,28 +156,14 @@ export default function Groups() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {popularGroups.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
+              {popularGroups.length === 0 ? <p className="text-center text-muted-foreground py-8">
                   No popular groups available yet.
-                </p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {popularGroups.map((group) => (
-                    <GroupCard
-                      key={group.id}
-                      group={group}
-                      onJoin={joinGroup}
-                      onLeave={leaveGroup}
-                      isJoining={isJoining}
-                      isLeaving={isLeaving}
-                    />
-                  ))}
-                </div>
-              )}
+                </p> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {popularGroups.map(group => <GroupCard key={group.id} group={group} onJoin={joinGroup} onLeave={leaveGroup} isJoining={isJoining} isLeaving={isLeaving} />)}
+                </div>}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 }
