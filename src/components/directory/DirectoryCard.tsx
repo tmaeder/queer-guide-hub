@@ -149,7 +149,7 @@ export const DirectoryCard = ({
             <Crown className="h-4 w-4" />
             <span>{country.capital}</span>
           </div>}
-          {country.regions}
+          {country.regions?.name}
         </div>;
     }
     if (type === "city" && data) {
