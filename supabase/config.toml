@@ -95,3 +95,6 @@ verify_jwt = false
 
 [functions.store-tag-images]
 verify_jwt = false
+
+[functions.calendar-feed]
+verify_jwt = false

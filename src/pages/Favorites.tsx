@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, MapPin, Calendar, Star, ShoppingBag, Newspaper, Users, Eye, ExternalLink, Grid, List } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Heart, MapPin, Calendar, Star, ShoppingBag, Newspaper, Users, Eye, ExternalLink, Grid, List, Download, Link as LinkIcon, CalendarDays } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { FavoriteButton } from '@/components/ui/favorite-button';
+import { useCalendarFeed } from '@/hooks/useCalendarFeed';
 
 interface FavoriteItem {
   id: string;
@@ -24,6 +26,9 @@ interface FavoriteItem {
 
 export default function Favorites() {
   const { user } = useAuth();
+  const { loading: calendarLoading, copyCalendarFeedUrl, downloadCalendarFile, getCalendarFeedUrl } = useCalendarFeed();
+  const [calendarDialogOpen, setCalendarDialogOpen] = useState(false);
+  const [calendarUrl, setCalendarUrl] = useState<string>('');
   const [favorites, setFavorites] = useState<Record<string, FavoriteItem[]>>({
     venue: [],
     event: [],
@@ -152,6 +157,17 @@ export default function Favorites() {
     return Object.values(favorites).flat();
   };
 
+  const getEventCount = () => {
+    return favorites.event.length;
+  };
+
+  const handleCalendarSubscription = async () => {
+    const url = await getCalendarFeedUrl();
+    if (url) {
+      setCalendarUrl(url);
+      setCalendarDialogOpen(true);
+    }
+  };
   const getTotalCount = () => {
     return Object.values(favorites).reduce((total, items) => total + items.length, 0);
   };
@@ -401,29 +417,135 @@ export default function Favorites() {
           </div>
           
           {!loading && getTotalCount() > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">View:</span>
-              <div className="flex items-center border rounded-lg">
+            <div className="flex items-center gap-3">
+              {getEventCount() > 0 && (
                 <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className="rounded-r-none"
+                  variant="outline"
+                  onClick={handleCalendarSubscription}
+                  disabled={calendarLoading}
+                  className="flex items-center gap-2"
                 >
-                  <List className="h-4 w-4" />
+                  <CalendarDays className="h-4 w-4" />
+                  Subscribe to Events Calendar
                 </Button>
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className="rounded-l-none"
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
+              )}
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">View:</span>
+                <div className="flex items-center border rounded-lg">
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-r-none"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="rounded-l-none"
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           )}
         </div>
+
+        {/* Calendar Subscription Dialog */}
+        <Dialog open={calendarDialogOpen} onOpenChange={setCalendarDialogOpen}>
+          <DialogContent className="sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarDays className="h-5 w-5" />
+                Subscribe to Your Events Calendar
+              </DialogTitle>
+              <DialogDescription>
+                Subscribe to your favorite events in any calendar application that supports iCal feeds.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">Calendar Subscription URL:</h4>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-2 bg-background rounded text-sm font-mono break-all">
+                    {calendarUrl}
+                  </code>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyCalendarFeedUrl}
+                    disabled={calendarLoading}
+                  >
+                    <LinkIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Subscribe in Calendar App</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Copy the URL above and add it as a new calendar subscription in your preferred calendar app.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div><strong>Google Calendar:</strong> Settings → Add calendar → From URL</div>
+                      <div><strong>Apple Calendar:</strong> File → New Calendar Subscription</div>
+                      <div><strong>Outlook:</strong> Add calendar → Subscribe from web</div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={copyCalendarFeedUrl}
+                      disabled={calendarLoading}
+                      className="w-full"
+                    >
+                      <LinkIcon className="h-4 w-4 mr-2" />
+                      Copy Subscription URL
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Download Calendar File</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Download a one-time .ics file that you can import into any calendar application.
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Note: Downloaded files won't automatically update when you add new favorites. Use the subscription URL for automatic updates.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={downloadCalendarFile}
+                      disabled={calendarLoading}
+                      className="w-full"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download .ics File
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                <p>• Only future events from your favorites will appear in the calendar</p>
+                <p>• The calendar updates automatically when you add or remove event favorites</p>
+                <p>• Calendar subscriptions are cached for up to 1 hour for better performance</p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Content */}
