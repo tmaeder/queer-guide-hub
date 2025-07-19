@@ -1,0 +1,47 @@
+-- Add sexuality, relationships, and intimacy related profile attributes
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS sexual_orientation_details jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS romantic_orientation text;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS relationship_style text CHECK (relationship_style IN ('monogamous', 'polyamorous', 'relationship_anarchist', 'open_relationship', 'swinging', 'exploring', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS current_relationship_status text CHECK (current_relationship_status IN ('single', 'taken', 'its_complicated', 'open_to_explore', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS partner_preferences jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS love_languages text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS intimacy_preferences jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS kink_experience_level text CHECK (kink_experience_level IN ('none', 'curious', 'beginner', 'intermediate', 'advanced', 'expert', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS kink_interests text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS bdsm_role text CHECK (bdsm_role IN ('dominant', 'submissive', 'switch', 'top', 'bottom', 'versatile', 'not_interested', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS sexual_health_status text CHECK (sexual_health_status IN ('recently_tested_clean', 'regularly_tested', 'prefer_not_to_discuss', 'will_discuss_privately'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS protection_preferences text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS boundaries_and_limits text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS consent_practices text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS relationship_goals_detailed text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS dating_preferences jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS romance_style text CHECK (romance_style IN ('very_romantic', 'somewhat_romantic', 'practical', 'anti_romantic', 'depends_on_partner', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS physical_affection_preference text CHECK (physical_affection_preference IN ('very_affectionate', 'moderately_affectionate', 'minimal_affection', 'touch_averse', 'depends_on_relationship', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS sexual_frequency_preference text CHECK (sexual_frequency_preference IN ('multiple_times_daily', 'daily', 'few_times_week', 'weekly', 'few_times_month', 'monthly', 'rarely', 'asexual', 'depends', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS communication_about_sex text CHECK (communication_about_sex IN ('very_open', 'open_with_partners', 'private', 'uncomfortable', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS jealousy_comfort_level text CHECK (jealousy_comfort_level IN ('very_comfortable', 'somewhat_comfortable', 'gets_jealous', 'very_jealous', 'depends', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS sexual_exploration_openness text CHECK (sexual_exploration_openness IN ('very_open', 'somewhat_open', 'selective', 'not_interested', 'prefer_not_to_say'));
+
+-- Add comments to explain the new fields
+COMMENT ON COLUMN public.profiles.sexual_orientation_details IS 'Detailed sexual orientation information including attractions and preferences';
+COMMENT ON COLUMN public.profiles.romantic_orientation IS 'Romantic orientation (may differ from sexual orientation)';
+COMMENT ON COLUMN public.profiles.relationship_style IS 'Preferred relationship structure';
+COMMENT ON COLUMN public.profiles.current_relationship_status IS 'Current relationship status';
+COMMENT ON COLUMN public.profiles.partner_preferences IS 'Preferences for partners (age range, characteristics, etc.)';
+COMMENT ON COLUMN public.profiles.love_languages IS 'Preferred love languages';
+COMMENT ON COLUMN public.profiles.intimacy_preferences IS 'Preferences around emotional and physical intimacy';
+COMMENT ON COLUMN public.profiles.kink_experience_level IS 'Experience level with kink/BDSM';
+COMMENT ON COLUMN public.profiles.kink_interests IS 'Specific kink interests';
+COMMENT ON COLUMN public.profiles.bdsm_role IS 'Preferred BDSM role or dynamic';
+COMMENT ON COLUMN public.profiles.sexual_health_status IS 'Sexual health testing and status';
+COMMENT ON COLUMN public.profiles.protection_preferences IS 'Preferences for sexual protection and safety';
+COMMENT ON COLUMN public.profiles.boundaries_and_limits IS 'Sexual and relationship boundaries';
+COMMENT ON COLUMN public.profiles.consent_practices IS 'Approaches to consent and communication';
+COMMENT ON COLUMN public.profiles.relationship_goals_detailed IS 'Detailed relationship goals and aspirations';
+COMMENT ON COLUMN public.profiles.dating_preferences IS 'Dating style and preferences';
+COMMENT ON COLUMN public.profiles.romance_style IS 'Approach to romance and romantic gestures';
+COMMENT ON COLUMN public.profiles.physical_affection_preference IS 'Comfort level with physical affection';
+COMMENT ON COLUMN public.profiles.sexual_frequency_preference IS 'Preferred frequency of sexual activity';
+COMMENT ON COLUMN public.profiles.communication_about_sex IS 'Comfort level discussing sexuality';
+COMMENT ON COLUMN public.profiles.jealousy_comfort_level IS 'Comfort with partners having other relationships';
+COMMENT ON COLUMN public.profiles.sexual_exploration_openness IS 'Openness to sexual exploration and new experiences';

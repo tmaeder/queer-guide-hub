@@ -142,6 +142,30 @@ export default function ProfileSettings() {
     mutual_aid_interests: (profile as any)?.mutual_aid_interests || [],
     community_roles: (profile as any)?.community_roles || [],
 
+    // Sexuality and relationships fields
+    sexual_orientation_details: (profile as any)?.sexual_orientation_details || {},
+    romantic_orientation: (profile as any)?.romantic_orientation || '',
+    relationship_style: (profile as any)?.relationship_style || '',
+    current_relationship_status: (profile as any)?.current_relationship_status || '',
+    partner_preferences: (profile as any)?.partner_preferences || {},
+    love_languages: (profile as any)?.love_languages || [],
+    intimacy_preferences: (profile as any)?.intimacy_preferences || {},
+    kink_experience_level: (profile as any)?.kink_experience_level || '',
+    kink_interests: (profile as any)?.kink_interests || [],
+    bdsm_role: (profile as any)?.bdsm_role || '',
+    sexual_health_status: (profile as any)?.sexual_health_status || '',
+    protection_preferences: (profile as any)?.protection_preferences || [],
+    boundaries_and_limits: (profile as any)?.boundaries_and_limits || [],
+    consent_practices: (profile as any)?.consent_practices || [],
+    relationship_goals_detailed: (profile as any)?.relationship_goals_detailed || [],
+    dating_preferences: (profile as any)?.dating_preferences || {},
+    romance_style: (profile as any)?.romance_style || '',
+    physical_affection_preference: (profile as any)?.physical_affection_preference || '',
+    sexual_frequency_preference: (profile as any)?.sexual_frequency_preference || '',
+    communication_about_sex: (profile as any)?.communication_about_sex || '',
+    jealousy_comfort_level: (profile as any)?.jealousy_comfort_level || '',
+    sexual_exploration_openness: (profile as any)?.sexual_exploration_openness || '',
+
     privacy_settings: {
       profile_visibility: (profile?.privacy_settings as any)?.profile_visibility || 'public',
       email_visible: (profile?.privacy_settings as any)?.email_visible || false,
@@ -332,6 +356,30 @@ export default function ProfileSettings() {
       communication_preferences: formData.communication_preferences,
       mutual_aid_interests: formData.mutual_aid_interests,
       community_roles: formData.community_roles,
+      
+      // Sexuality and relationships fields
+      sexual_orientation_details: formData.sexual_orientation_details,
+      romantic_orientation: formData.romantic_orientation,
+      relationship_style: formData.relationship_style,
+      current_relationship_status: formData.current_relationship_status,
+      partner_preferences: formData.partner_preferences,
+      love_languages: formData.love_languages,
+      intimacy_preferences: formData.intimacy_preferences,
+      kink_experience_level: formData.kink_experience_level,
+      kink_interests: formData.kink_interests,
+      bdsm_role: formData.bdsm_role,
+      sexual_health_status: formData.sexual_health_status,
+      protection_preferences: formData.protection_preferences,
+      boundaries_and_limits: formData.boundaries_and_limits,
+      consent_practices: formData.consent_practices,
+      relationship_goals_detailed: formData.relationship_goals_detailed,
+      dating_preferences: formData.dating_preferences,
+      romance_style: formData.romance_style,
+      physical_affection_preference: formData.physical_affection_preference,
+      sexual_frequency_preference: formData.sexual_frequency_preference,
+      communication_about_sex: formData.communication_about_sex,
+      jealousy_comfort_level: formData.jealousy_comfort_level,
+      sexual_exploration_openness: formData.sexual_exploration_openness,
       
       privacy_settings: formData.privacy_settings
     };
@@ -1422,6 +1470,239 @@ export default function ProfileSettings() {
                 <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sexuality & Romance */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Sexuality & Romance</CardTitle>
+          <p className="text-sm text-muted-foreground">Share what you're comfortable with about your romantic and sexual preferences</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="romantic_orientation">Romantic Orientation</Label>
+              <Input
+                id="romantic_orientation"
+                value={formData.romantic_orientation}
+                onChange={(e) => handleInputChange('romantic_orientation', e.target.value)}
+                placeholder="e.g., panromantic, biromantic, aromantic"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="current_relationship_status">Current Status</Label>
+              <Select value={formData.current_relationship_status} onValueChange={(value) => handleInputChange('current_relationship_status', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="single">Single</SelectItem>
+                  <SelectItem value="taken">Taken</SelectItem>
+                  <SelectItem value="its_complicated">It's complicated</SelectItem>
+                  <SelectItem value="open_to_explore">Open to explore</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="relationship_style">Relationship Style</Label>
+              <Select value={formData.relationship_style} onValueChange={(value) => handleInputChange('relationship_style', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select style" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monogamous">Monogamous</SelectItem>
+                  <SelectItem value="polyamorous">Polyamorous</SelectItem>
+                  <SelectItem value="relationship_anarchist">Relationship anarchist</SelectItem>
+                  <SelectItem value="open_relationship">Open relationship</SelectItem>
+                  <SelectItem value="swinging">Swinging</SelectItem>
+                  <SelectItem value="exploring">Exploring</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="romance_style">Romance Style</Label>
+              <Select value={formData.romance_style} onValueChange={(value) => handleInputChange('romance_style', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select style" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very_romantic">Very romantic</SelectItem>
+                  <SelectItem value="somewhat_romantic">Somewhat romantic</SelectItem>
+                  <SelectItem value="practical">Practical</SelectItem>
+                  <SelectItem value="anti_romantic">Anti-romantic</SelectItem>
+                  <SelectItem value="depends_on_partner">Depends on partner</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="physical_affection_preference">Physical Affection</Label>
+              <Select value={formData.physical_affection_preference} onValueChange={(value) => handleInputChange('physical_affection_preference', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select preference" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very_affectionate">Very affectionate</SelectItem>
+                  <SelectItem value="moderately_affectionate">Moderately affectionate</SelectItem>
+                  <SelectItem value="minimal_affection">Minimal affection</SelectItem>
+                  <SelectItem value="touch_averse">Touch averse</SelectItem>
+                  <SelectItem value="depends_on_relationship">Depends on relationship</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="jealousy_comfort_level">Jealousy & Sharing</Label>
+              <Select value={formData.jealousy_comfort_level} onValueChange={(value) => handleInputChange('jealousy_comfort_level', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select comfort level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very_comfortable">Very comfortable with sharing</SelectItem>
+                  <SelectItem value="somewhat_comfortable">Somewhat comfortable</SelectItem>
+                  <SelectItem value="gets_jealous">Gets jealous</SelectItem>
+                  <SelectItem value="very_jealous">Very jealous</SelectItem>
+                  <SelectItem value="depends">Depends on situation</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sexual Health & Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Sexual Health & Preferences</CardTitle>
+          <p className="text-sm text-muted-foreground">Information to help find compatible partners (all optional and private)</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="sexual_frequency_preference">Sexual Frequency</Label>
+              <Select value={formData.sexual_frequency_preference} onValueChange={(value) => handleInputChange('sexual_frequency_preference', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select preference" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="multiple_times_daily">Multiple times daily</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="few_times_week">Few times a week</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="few_times_month">Few times a month</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="rarely">Rarely</SelectItem>
+                  <SelectItem value="asexual">Asexual</SelectItem>
+                  <SelectItem value="depends">Depends</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sexual_exploration_openness">Sexual Exploration</Label>
+              <Select value={formData.sexual_exploration_openness} onValueChange={(value) => handleInputChange('sexual_exploration_openness', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select openness" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very_open">Very open to new experiences</SelectItem>
+                  <SelectItem value="somewhat_open">Somewhat open</SelectItem>
+                  <SelectItem value="selective">Selective about new things</SelectItem>
+                  <SelectItem value="not_interested">Not interested in exploring</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="communication_about_sex">Communication About Sex</Label>
+              <Select value={formData.communication_about_sex} onValueChange={(value) => handleInputChange('communication_about_sex', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select comfort level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very_open">Very open to discuss</SelectItem>
+                  <SelectItem value="open_with_partners">Open with partners</SelectItem>
+                  <SelectItem value="private">Keep it private</SelectItem>
+                  <SelectItem value="uncomfortable">Uncomfortable discussing</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sexual_health_status">Sexual Health</Label>
+              <Select value={formData.sexual_health_status} onValueChange={(value) => handleInputChange('sexual_health_status', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recently_tested_clean">Recently tested, clean</SelectItem>
+                  <SelectItem value="regularly_tested">Regularly tested</SelectItem>
+                  <SelectItem value="prefer_not_to_discuss">Prefer not to discuss</SelectItem>
+                  <SelectItem value="will_discuss_privately">Will discuss privately</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Kink & BDSM */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Kink & BDSM</CardTitle>
+          <p className="text-sm text-muted-foreground">For those interested in alternative relationship dynamics and practices</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="kink_experience_level">Kink Experience Level</Label>
+              <Select value={formData.kink_experience_level} onValueChange={(value) => handleInputChange('kink_experience_level', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select experience level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No experience</SelectItem>
+                  <SelectItem value="curious">Curious</SelectItem>
+                  <SelectItem value="beginner">Beginner</SelectItem>
+                  <SelectItem value="intermediate">Intermediate</SelectItem>
+                  <SelectItem value="advanced">Advanced</SelectItem>
+                  <SelectItem value="expert">Expert</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bdsm_role">BDSM Role/Dynamic</Label>
+              <Select value={formData.bdsm_role} onValueChange={(value) => handleInputChange('bdsm_role', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dominant">Dominant</SelectItem>
+                  <SelectItem value="submissive">Submissive</SelectItem>
+                  <SelectItem value="switch">Switch</SelectItem>
+                  <SelectItem value="top">Top</SelectItem>
+                  <SelectItem value="bottom">Bottom</SelectItem>
+                  <SelectItem value="versatile">Versatile</SelectItem>
+                  <SelectItem value="not_interested">Not interested</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>

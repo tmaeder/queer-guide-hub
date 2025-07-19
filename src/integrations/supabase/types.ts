@@ -1478,21 +1478,27 @@ export type Database = {
           age_range: string | null
           avatar_url: string | null
           background_check: boolean | null
+          bdsm_role: string | null
           bio: string | null
           body_type: string | null
+          boundaries_and_limits: string[] | null
           causes_supported: string[] | null
           chosen_family_status: string | null
           chosen_name: string | null
           coming_out_status: Json | null
+          communication_about_sex: string | null
           communication_preferences: Json | null
           communication_style: string | null
           community_involvement: string[] | null
           community_roles: string[] | null
           company: string | null
+          consent_practices: string[] | null
           content_warnings: string[] | null
           created_at: string
           cultural_background: string[] | null
+          current_relationship_status: string | null
           date_of_birth: string | null
+          dating_preferences: Json | null
           diet_preferences: string[] | null
           disability_status: string | null
           display_name: string | null
@@ -1523,14 +1529,19 @@ export type Database = {
           income_range: string | null
           industry: string | null
           interests: Json | null
+          intimacy_preferences: Json | null
           is_business: boolean | null
+          jealousy_comfort_level: string | null
           job_title: string | null
+          kink_experience_level: string | null
+          kink_interests: string[] | null
           languages: Json | null
           last_active_at: string | null
           last_name: string | null
           life_philosophy: string | null
           location: string | null
           looking_for: string[] | null
+          love_languages: string[] | null
           medication_status: string | null
           mental_health_advocacy: boolean | null
           mental_health_openness: string | null
@@ -1539,21 +1550,32 @@ export type Database = {
           neighborhood_preference: string | null
           neurodivergent_status: string | null
           occupation: string | null
+          partner_preferences: Json | null
           personality_type: string | null
           pet_preferences: string | null
           phone: string | null
+          physical_affection_preference: string | null
           political_views: string | null
           preferences: Json | null
           privacy_settings: Json | null
           profile_completion_percentage: number | null
           pronouns: string | null
+          protection_preferences: string[] | null
           relationship_goals: string[] | null
+          relationship_goals_detailed: string[] | null
           relationship_status: string | null
           relationship_structure_preference: string[] | null
+          relationship_style: string | null
           religious_beliefs: string | null
           response_time_preference: string | null
+          romance_style: string | null
+          romantic_orientation: string | null
           safe_space_preferences: string[] | null
+          sexual_exploration_openness: string | null
+          sexual_frequency_preference: string | null
+          sexual_health_status: string | null
           sexual_orientation: string | null
+          sexual_orientation_details: Json | null
           sleep_schedule: string | null
           smoking_preference: string | null
           social_links: Json | null
@@ -1581,21 +1603,27 @@ export type Database = {
           age_range?: string | null
           avatar_url?: string | null
           background_check?: boolean | null
+          bdsm_role?: string | null
           bio?: string | null
           body_type?: string | null
+          boundaries_and_limits?: string[] | null
           causes_supported?: string[] | null
           chosen_family_status?: string | null
           chosen_name?: string | null
           coming_out_status?: Json | null
+          communication_about_sex?: string | null
           communication_preferences?: Json | null
           communication_style?: string | null
           community_involvement?: string[] | null
           community_roles?: string[] | null
           company?: string | null
+          consent_practices?: string[] | null
           content_warnings?: string[] | null
           created_at?: string
           cultural_background?: string[] | null
+          current_relationship_status?: string | null
           date_of_birth?: string | null
+          dating_preferences?: Json | null
           diet_preferences?: string[] | null
           disability_status?: string | null
           display_name?: string | null
@@ -1626,14 +1654,19 @@ export type Database = {
           income_range?: string | null
           industry?: string | null
           interests?: Json | null
+          intimacy_preferences?: Json | null
           is_business?: boolean | null
+          jealousy_comfort_level?: string | null
           job_title?: string | null
+          kink_experience_level?: string | null
+          kink_interests?: string[] | null
           languages?: Json | null
           last_active_at?: string | null
           last_name?: string | null
           life_philosophy?: string | null
           location?: string | null
           looking_for?: string[] | null
+          love_languages?: string[] | null
           medication_status?: string | null
           mental_health_advocacy?: boolean | null
           mental_health_openness?: string | null
@@ -1642,21 +1675,32 @@ export type Database = {
           neighborhood_preference?: string | null
           neurodivergent_status?: string | null
           occupation?: string | null
+          partner_preferences?: Json | null
           personality_type?: string | null
           pet_preferences?: string | null
           phone?: string | null
+          physical_affection_preference?: string | null
           political_views?: string | null
           preferences?: Json | null
           privacy_settings?: Json | null
           profile_completion_percentage?: number | null
           pronouns?: string | null
+          protection_preferences?: string[] | null
           relationship_goals?: string[] | null
+          relationship_goals_detailed?: string[] | null
           relationship_status?: string | null
           relationship_structure_preference?: string[] | null
+          relationship_style?: string | null
           religious_beliefs?: string | null
           response_time_preference?: string | null
+          romance_style?: string | null
+          romantic_orientation?: string | null
           safe_space_preferences?: string[] | null
+          sexual_exploration_openness?: string | null
+          sexual_frequency_preference?: string | null
+          sexual_health_status?: string | null
           sexual_orientation?: string | null
+          sexual_orientation_details?: Json | null
           sleep_schedule?: string | null
           smoking_preference?: string | null
           social_links?: Json | null
@@ -1684,21 +1728,27 @@ export type Database = {
           age_range?: string | null
           avatar_url?: string | null
           background_check?: boolean | null
+          bdsm_role?: string | null
           bio?: string | null
           body_type?: string | null
+          boundaries_and_limits?: string[] | null
           causes_supported?: string[] | null
           chosen_family_status?: string | null
           chosen_name?: string | null
           coming_out_status?: Json | null
+          communication_about_sex?: string | null
           communication_preferences?: Json | null
           communication_style?: string | null
           community_involvement?: string[] | null
           community_roles?: string[] | null
           company?: string | null
+          consent_practices?: string[] | null
           content_warnings?: string[] | null
           created_at?: string
           cultural_background?: string[] | null
+          current_relationship_status?: string | null
           date_of_birth?: string | null
+          dating_preferences?: Json | null
           diet_preferences?: string[] | null
           disability_status?: string | null
           display_name?: string | null
@@ -1729,14 +1779,19 @@ export type Database = {
           income_range?: string | null
           industry?: string | null
           interests?: Json | null
+          intimacy_preferences?: Json | null
           is_business?: boolean | null
+          jealousy_comfort_level?: string | null
           job_title?: string | null
+          kink_experience_level?: string | null
+          kink_interests?: string[] | null
           languages?: Json | null
           last_active_at?: string | null
           last_name?: string | null
           life_philosophy?: string | null
           location?: string | null
           looking_for?: string[] | null
+          love_languages?: string[] | null
           medication_status?: string | null
           mental_health_advocacy?: boolean | null
           mental_health_openness?: string | null
@@ -1745,21 +1800,32 @@ export type Database = {
           neighborhood_preference?: string | null
           neurodivergent_status?: string | null
           occupation?: string | null
+          partner_preferences?: Json | null
           personality_type?: string | null
           pet_preferences?: string | null
           phone?: string | null
+          physical_affection_preference?: string | null
           political_views?: string | null
           preferences?: Json | null
           privacy_settings?: Json | null
           profile_completion_percentage?: number | null
           pronouns?: string | null
+          protection_preferences?: string[] | null
           relationship_goals?: string[] | null
+          relationship_goals_detailed?: string[] | null
           relationship_status?: string | null
           relationship_structure_preference?: string[] | null
+          relationship_style?: string | null
           religious_beliefs?: string | null
           response_time_preference?: string | null
+          romance_style?: string | null
+          romantic_orientation?: string | null
           safe_space_preferences?: string[] | null
+          sexual_exploration_openness?: string | null
+          sexual_frequency_preference?: string | null
+          sexual_health_status?: string | null
           sexual_orientation?: string | null
+          sexual_orientation_details?: Json | null
           sleep_schedule?: string | null
           smoking_preference?: string | null
           social_links?: Json | null
