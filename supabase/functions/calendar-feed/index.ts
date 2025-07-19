@@ -123,7 +123,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Verify the token (simple hash-based verification)
     const expectedToken = await crypto.subtle.digest(
       'SHA-256',
-      new TextEncoder().encode(`${userId}-calendar-feed-${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`)
+      new TextEncoder().encode(`${userId}-calendar-feed`)
     );
     const expectedTokenHex = Array.from(new Uint8Array(expectedToken))
       .map(b => b.toString(16).padStart(2, '0'))

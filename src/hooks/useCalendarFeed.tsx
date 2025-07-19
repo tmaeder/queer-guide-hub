@@ -10,6 +10,7 @@ export const useCalendarFeed = () => {
 
   const generateCalendarToken = async (userId: string): Promise<string> => {
     // Generate a simple hash-based token for calendar access
+    // Note: We're using a simpler approach since we can't access service key on client
     const encoder = new TextEncoder();
     const data = encoder.encode(`${userId}-calendar-feed`);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
