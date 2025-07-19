@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Search, Filter, X, MapPin, Calendar, Store, Newspaper, Users, Tag } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const searchCategories = [
   { label: "All", value: "all", icon: Search },
@@ -22,7 +23,84 @@ export const AdvancedSearchBar = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Debounced search for suggestions
+  const debouncedFetchSuggestions = useCallback(
+    async (searchTerm: string) => {
+      if (!searchTerm || searchTerm.length < 2) {
+        setSuggestions([]);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const promises = [];
+
+        // Search venues
+        promises.push(
+          supabase
+            .from('venues')
+            .select('id, name, location')
+            .ilike('name', `%${searchTerm}%`)
+            .limit(3)
+            .then(({ data }) => (data || []).map((item: any) => ({ ...item, type: 'venue', icon: MapPin })))
+        );
+
+        // Search events
+        promises.push(
+          supabase
+            .from('events')
+            .select('id, title, city')
+            .ilike('title', `%${searchTerm}%`)
+            .limit(3)
+            .then(({ data }) => (data || []).map((item: any) => ({ ...item, type: 'event', icon: Calendar, name: item.title })))
+        );
+
+        // Search marketplace
+        promises.push(
+          supabase
+            .from('marketplace_listings')
+            .select('id, title, business_name')
+            .ilike('title', `%${searchTerm}%`)
+            .eq('status', 'active')
+            .limit(3)
+            .then(({ data }) => (data || []).map((item: any) => ({ ...item, type: 'marketplace', icon: Store, name: item.title })))
+        );
+
+        // Search tags
+        promises.push(
+          supabase
+            .from('unified_tags')
+            .select('id, name, description')
+            .ilike('name', `%${searchTerm}%`)
+            .limit(3)
+            .then(({ data }) => (data || []).map((item: any) => ({ ...item, type: 'tag', icon: Tag })))
+        );
+
+        const results = await Promise.all(promises);
+        const allSuggestions = results.flat().slice(0, 8); // Limit to 8 total suggestions
+        setSuggestions(allSuggestions);
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        setSuggestions([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  // Debounce the suggestions fetch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      debouncedFetchSuggestions(query);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query, debouncedFetchSuggestions]);
 
   const handleSearch = (searchQuery?: string, category?: string) => {
     const searchTerm = searchQuery || query;
@@ -151,6 +229,68 @@ export const AdvancedSearchBar = () => {
                   );
                 })}
               </CommandGroup>
+
+              {/* Live Suggestions */}
+              {suggestions.length > 0 && (
+                <>
+                  <CommandSeparator />
+                  <CommandGroup heading="Suggestions">
+                    {suggestions.map((suggestion) => {
+                      const Icon = suggestion.icon;
+                      const displayName = suggestion.name || suggestion.title;
+                      const subtitle = suggestion.location || suggestion.city || suggestion.business_name || suggestion.description;
+                      
+                      return (
+                        <CommandItem
+                          key={`${suggestion.type}-${suggestion.id}`}
+                          onSelect={() => {
+                            const searchTerm = displayName;
+                            setQuery(searchTerm);
+                            
+                            // Navigate directly to the item if possible
+                            if (suggestion.type === 'venue') {
+                              navigate(`/venues/${suggestion.id}`);
+                            } else if (suggestion.type === 'event') {
+                              navigate(`/events/${suggestion.id}`);
+                            } else if (suggestion.type === 'marketplace') {
+                              navigate(`/marketplace/${suggestion.id}`);
+                            } else if (suggestion.type === 'tag') {
+                              navigate(`/tags/${suggestion.name}`);
+                            } else {
+                              handleSearch(searchTerm, suggestion.type);
+                            }
+                            setIsOpen(false);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Icon className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">{displayName}</span>
+                            {subtitle && (
+                              <span className="text-xs text-muted-foreground truncate">{subtitle}</span>
+                            )}
+                          </div>
+                          <Badge variant="outline" className="ml-auto text-xs capitalize">
+                            {suggestion.type}
+                          </Badge>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                </>
+              )}
+
+              {loading && query.length >= 2 && (
+                <>
+                  <CommandSeparator />
+                  <CommandGroup heading="Loading...">
+                    <CommandItem disabled>
+                      <Search className="h-4 w-4 mr-2 animate-spin" />
+                      Searching...
+                    </CommandItem>
+                  </CommandGroup>
+                </>
+              )}
 
               <CommandSeparator />
 
