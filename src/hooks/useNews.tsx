@@ -16,7 +16,7 @@ interface NewsFilters {
   tags?: string[];
   countryIds?: string[];
   cityIds?: string[];
-  dateRange?: {
+  dateRange?: string | {
     start: Date;
     end: Date;
   };
@@ -69,9 +69,43 @@ export const useNews = () => {
       }
 
       if (filters?.dateRange) {
-        query = query
-          .gte('published_at', filters.dateRange.start.toISOString())
-          .lte('published_at', filters.dateRange.end.toISOString());
+        if (typeof filters.dateRange === 'string') {
+          const now = new Date();
+          let startDate: Date;
+
+          switch (filters.dateRange) {
+            case 'today':
+              startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              query = query.gte('published_at', startDate.toISOString());
+              break;
+            case 'week':
+              startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              query = query.gte('published_at', startDate.toISOString());
+              break;
+            case 'month':
+              startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+              query = query.gte('published_at', startDate.toISOString());
+              break;
+            case 'year':
+              startDate = new Date(now.getFullYear(), 0, 1);
+              query = query.gte('published_at', startDate.toISOString());
+              break;
+            case '2024':
+            case '2023':
+            case '2022':
+              const year = parseInt(filters.dateRange);
+              startDate = new Date(year, 0, 1);
+              const endDate = new Date(year + 1, 0, 1);
+              query = query
+                .gte('published_at', startDate.toISOString())
+                .lt('published_at', endDate.toISOString());
+              break;
+          }
+        } else {
+          query = query
+            .gte('published_at', filters.dateRange.start.toISOString())
+            .lte('published_at', filters.dateRange.end.toISOString());
+        }
       }
 
       const { data, error: fetchError } = await query.limit(50);

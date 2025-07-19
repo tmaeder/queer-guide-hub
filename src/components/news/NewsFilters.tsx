@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, X, Filter, MapPin, Loader } from "lucide-react";
+import { Search, X, Filter, MapPin, Loader, Calendar } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 type NewsCategory = Tables<'news_categories'>;
@@ -20,6 +20,7 @@ interface NewsFiltersProps {
       lat: number;
       lng: number;
     };
+    dateRange?: string;
   }) => void;
   trendingTags?: {
     tag: string;
@@ -44,6 +45,7 @@ export const NewsFilters = ({
     lng: number;
   } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [dateRange, setDateRange] = useState<string>("");
   const handleSearchChange = (value: string) => {
     setSearch(value);
     onFiltersChange({
@@ -52,7 +54,8 @@ export const NewsFilters = ({
       sentiment: sentiment || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       nearMe,
-      userLocation: userLocation || undefined
+      userLocation: userLocation || undefined,
+      dateRange: dateRange || undefined
     });
   };
   const handleCategoryChange = (value: string) => {
@@ -64,7 +67,8 @@ export const NewsFilters = ({
       sentiment: sentiment || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       nearMe,
-      userLocation: userLocation || undefined
+      userLocation: userLocation || undefined,
+      dateRange: dateRange || undefined
     });
   };
   const handleSentimentChange = (value: string) => {
@@ -76,7 +80,8 @@ export const NewsFilters = ({
       sentiment: newSentiment || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       nearMe,
-      userLocation: userLocation || undefined
+      userLocation: userLocation || undefined,
+      dateRange: dateRange || undefined
     });
   };
   const handleTagToggle = (tag: string) => {
@@ -88,7 +93,8 @@ export const NewsFilters = ({
       sentiment: sentiment || undefined,
       tags: newTags.length > 0 ? newTags : undefined,
       nearMe,
-      userLocation: userLocation || undefined
+      userLocation: userLocation || undefined,
+      dateRange: dateRange || undefined
     });
   };
   const handleNearMe = async () => {
@@ -110,7 +116,8 @@ export const NewsFilters = ({
           sentiment: sentiment || undefined,
           tags: selectedTags.length > 0 ? selectedTags : undefined,
           nearMe: true,
-          userLocation: location
+          userLocation: location,
+          dateRange: dateRange || undefined
         });
         toast({
           title: "Location found",
@@ -132,10 +139,25 @@ export const NewsFilters = ({
         category: category || undefined,
         search: search || undefined,
         sentiment: sentiment || undefined,
-        tags: selectedTags.length > 0 ? selectedTags : undefined
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        dateRange: dateRange || undefined
       });
     }
   };
+  const handleDateRangeChange = (value: string) => {
+    const newDateRange = value === "all" ? "" : value;
+    setDateRange(newDateRange);
+    onFiltersChange({
+      category: category || undefined,
+      search: search || undefined,
+      sentiment: sentiment || undefined,
+      tags: selectedTags.length > 0 ? selectedTags : undefined,
+      nearMe,
+      userLocation: userLocation || undefined,
+      dateRange: newDateRange || undefined
+    });
+  };
+
   const clearFilters = () => {
     setSearch("");
     setCategory("");
@@ -143,9 +165,10 @@ export const NewsFilters = ({
     setSelectedTags([]);
     setNearMe(false);
     setUserLocation(null);
+    setDateRange("");
     onFiltersChange({});
   };
-  const hasActiveFilters = search || category || sentiment || selectedTags.length > 0 || nearMe;
+  const hasActiveFilters = search || category || sentiment || selectedTags.length > 0 || nearMe || dateRange;
   return <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -167,10 +190,63 @@ export const NewsFilters = ({
         </Button>
 
         {/* Category Filter */}
-        
+        {categories.length > 0 && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Category</label>
+            <Select value={category} onValueChange={handleCategoryChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="All categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Sentiment Filter */}
-        
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Sentiment</label>
+          <Select value={sentiment} onValueChange={handleSentimentChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="All sentiments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All sentiments</SelectItem>
+              <SelectItem value="positive">Positive</SelectItem>
+              <SelectItem value="neutral">Neutral</SelectItem>
+              <SelectItem value="negative">Negative</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Date Range Filter */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Published Date
+          </label>
+          <Select value={dateRange} onValueChange={handleDateRangeChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="All dates" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All dates</SelectItem>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">This week</SelectItem>
+              <SelectItem value="month">This month</SelectItem>
+              <SelectItem value="year">This year</SelectItem>
+              <SelectItem value="2024">2024</SelectItem>
+              <SelectItem value="2023">2023</SelectItem>
+              <SelectItem value="2022">2022</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Trending Tags */}
         {trendingTags.length > 0 && <div className="space-y-2">
