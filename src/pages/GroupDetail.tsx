@@ -25,8 +25,11 @@ import {
   User
 } from 'lucide-react';
 import { useGroups, Group } from '@/hooks/useGroups';
+import { useGroupPosts } from '@/hooks/useGroupPosts';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { GroupPostCard } from '@/components/groups/GroupPostCard';
+import { CreatePostDialog } from '@/components/groups/CreatePostDialog';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -43,6 +46,18 @@ export default function GroupDetail() {
     leaveGroup,
     isLeaving
   } = useGroups();
+
+  const {
+    posts,
+    groupMembers,
+    isLoading: postsLoading,
+    createPost,
+    isCreatingPost,
+    likePost,
+    unlikePost,
+    voteOnPoll,
+    togglePin
+  } = useGroupPosts(groupId || '');
 
   const [group, setGroup] = useState<Group | null>(null);
   const [activeTab, setActiveTab] = useState("about");
@@ -296,16 +311,63 @@ export default function GroupDetail() {
         </TabsContent>
 
         <TabsContent value="posts" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Group Posts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-center py-8">
-                Group posts functionality coming soon. Members will be able to create and view posts within the group.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Group Posts</h3>
+            {group.is_member && (
+              <CreatePostDialog
+                onCreatePost={createPost}
+                isCreating={isCreatingPost}
+                groupMembers={groupMembers}
+                canCreateAnnouncement={canManage}
+                canPin={canManage}
+              />
+            )}
+          </div>
+
+          {postsLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-32 bg-muted rounded-lg"></div>
+                </div>
+              ))}
+            </div>
+          ) : posts.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  {group.is_member 
+                    ? "Be the first to start a conversation in this group!" 
+                    : "Join the group to see and participate in discussions."}
+                </p>
+                {group.is_member && (
+                  <CreatePostDialog
+                    onCreatePost={createPost}
+                    isCreating={isCreatingPost}
+                    groupMembers={groupMembers}
+                    canCreateAnnouncement={canManage}
+                    canPin={canManage}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {posts.map((post) => (
+                <GroupPostCard
+                  key={post.id}
+                  post={post}
+                  onLike={likePost}
+                  onUnlike={unlikePost}
+                  onVote={voteOnPoll}
+                  onTogglePin={canManage ? togglePin : undefined}
+                  canManage={canManage}
+                />
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="events" className="space-y-6">
