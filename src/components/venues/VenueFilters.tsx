@@ -23,7 +23,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, X, Check, ChevronDown } from 'lucide-react';
+import { Search, Filter, X, Check, ChevronDown, Navigation, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface VenueFiltersProps {
@@ -34,6 +34,8 @@ interface VenueFiltersProps {
     tags?: string[];
     amenities?: string[];
     services?: string[];
+    userLocation?: { latitude: number; longitude: number };
+    nearMe?: boolean;
   }) => void;
 }
 
@@ -110,6 +112,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const [amenitiesOpen, setAmenitiesOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [showAllFilters, setShowAllFilters] = useState(false);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [nearMe, setNearMe] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const handleSearch = () => {
     onFiltersChange({
@@ -119,7 +124,71 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
       services: selectedServices.length > 0 ? selectedServices : undefined,
+      userLocation: userLocation || undefined,
+      nearMe: nearMe || undefined,
     });
+  };
+
+  const detectLocation = async () => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser');
+      return;
+    }
+
+    setIsDetectingLocation(true);
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000, // 5 minutes
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      setUserLocation({ latitude, longitude });
+      setNearMe(true);
+      
+      // Automatically apply the near me filter
+      onFiltersChange({
+        search: search || undefined,
+        city: city || undefined,
+        category: category === 'all' ? undefined : category || undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
+        services: selectedServices.length > 0 ? selectedServices : undefined,
+        userLocation: { latitude, longitude },
+        nearMe: true,
+      });
+    } catch (error) {
+      console.error('Error detecting location:', error);
+      setNearMe(false);
+      setUserLocation(null);
+    } finally {
+      setIsDetectingLocation(false);
+    }
+  };
+
+  const handleNearMeToggle = () => {
+    if (nearMe) {
+      // Turn off near me filter
+      setNearMe(false);
+      setUserLocation(null);
+      onFiltersChange({
+        search: search || undefined,
+        city: city || undefined,
+        category: category === 'all' ? undefined : category || undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
+        services: selectedServices.length > 0 ? selectedServices : undefined,
+        nearMe: false,
+        userLocation: undefined,
+      });
+    } else {
+      // Detect location and turn on near me filter
+      detectLocation();
+    }
   };
 
   const handleTagToggle = (tag: string) => {
@@ -150,10 +219,12 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
     setSelectedTags([]);
     setSelectedAmenities([]);
     setSelectedServices([]);
+    setNearMe(false);
+    setUserLocation(null);
     onFiltersChange({});
   };
 
-  const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0 || selectedAmenities.length > 0 || selectedServices.length > 0;
+  const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0 || selectedAmenities.length > 0 || selectedServices.length > 0 || nearMe;
 
   return (
     <div className="space-y-4 p-4 bg-card rounded-lg border">
@@ -169,6 +240,19 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             className="pl-9"
           />
         </div>
+        <Button
+          variant={nearMe ? "default" : "outline"}
+          onClick={handleNearMeToggle}
+          disabled={isDetectingLocation}
+          className="gap-2"
+        >
+          {isDetectingLocation ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Navigation className="h-4 w-4" />
+          )}
+          Near Me
+        </Button>
         <Button onClick={handleSearch} className="bg-gradient-primary">
           Search
         </Button>
@@ -451,6 +535,12 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               />
             </Badge>
           ))}
+          {nearMe && (
+            <Badge variant="secondary" className="gap-1">
+              Near Me
+              <X className="h-3 w-3 cursor-pointer" onClick={handleNearMeToggle} />
+            </Badge>
+          )}
         </div>
       )}
     </div>
