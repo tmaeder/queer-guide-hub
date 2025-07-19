@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCityImages } from "@/hooks/useCityImages";
-
 interface DirectoryCardProps {
   type: "continent" | "country" | "city";
   name: string;
@@ -22,12 +21,14 @@ export const DirectoryCard = ({
   const [countryImage, setCountryImage] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [imageKey, setImageKey] = useState(0); // Force refresh mechanism
-  
+
   // City images hook
-  const { fetchCityImage, loading: cityImageLoading } = useCityImages();
+  const {
+    fetchCityImage,
+    loading: cityImageLoading
+  } = useCityImages();
   const [cityImageUrl, setCityImageUrl] = useState<string | null>(data?.image_url || null);
   const [cityImageError, setCityImageError] = useState(false);
-
   useEffect(() => {
     if (type === "country" && name) {
       setImageLoading(true);
@@ -102,11 +103,7 @@ export const DirectoryCard = ({
     if (type === "city" && !cityImageUrl && !cityImageError && data?.id) {
       const loadCityImage = async () => {
         try {
-          const result = await fetchCityImage(
-            data.id, 
-            name, 
-            data.countries?.name || data.country_name
-          );
+          const result = await fetchCityImage(data.id, name, data.countries?.name || data.country_name);
           if (result?.image_url) {
             setCityImageUrl(result.image_url);
           } else {
@@ -117,11 +114,9 @@ export const DirectoryCard = ({
           setCityImageError(true);
         }
       };
-      
       loadCityImage();
     }
   }, [type, data?.id, name, cityImageUrl, cityImageError, fetchCityImage, data?.countries?.name, data?.country_name]);
-
   const refreshImage = () => {
     setImageKey(prev => prev + 1);
   };
@@ -154,9 +149,7 @@ export const DirectoryCard = ({
             <Crown className="h-4 w-4" />
             <span>{country.capital}</span>
           </div>}
-          {country.regions && <Badge variant="secondary" className="text-xs">
-              {country.regions.name}
-            </Badge>}
+          {country.regions}
         </div>;
     }
     if (type === "city" && data) {
@@ -184,8 +177,7 @@ export const DirectoryCard = ({
     }
     return null;
   };
-  const cardContent = (
-    <Card className={`cursor-pointer transition-all hover:shadow-md hover:scale-105 ${onClick ? "hover:bg-accent/50" : ""}`}>
+  const cardContent = <Card className={`cursor-pointer transition-all hover:shadow-md hover:scale-105 ${onClick ? "hover:bg-accent/50" : ""}`}>
       {/* Country Image */}
       {type === "country" && <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
           {imageLoading ? <div className="w-full h-full flex items-center justify-center">
@@ -197,62 +189,41 @@ export const DirectoryCard = ({
         </div>}
       
       {/* City Image */}
-      {type === "city" && (
-        <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
-          {cityImageLoading ? (
-            <div className="w-full h-full flex items-center justify-center">
+      {type === "city" && <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
+          {cityImageLoading ? <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : cityImageUrl && !cityImageError ? (
-            <img
-              src={cityImageUrl}
-              alt={`${name} cityscape`}
-              className="w-full h-full object-cover"
-              onError={() => setCityImageError(true)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
+            </div> : cityImageUrl && !cityImageError ? <img src={cityImageUrl} alt={`${name} cityscape`} className="w-full h-full object-cover" onError={() => setCityImageError(true)} /> : <div className="w-full h-full flex items-center justify-center">
               <ImageIcon className="h-8 w-8 text-muted-foreground" />
-            </div>
-          )}
-        </div>
-      )}
-      <CardHeader className={(type === "country" || type === "city") ? "pb-2 pt-3 px-3" : "pb-3"}>
-        <CardTitle className={`flex items-center justify-between ${(type === "country" || type === "city") ? "text-sm" : ""}`}>
+            </div>}
+        </div>}
+      <CardHeader className={type === "country" || type === "city" ? "pb-2 pt-3 px-3" : "pb-3"}>
+        <CardTitle className={`flex items-center justify-between ${type === "country" || type === "city" ? "text-sm" : ""}`}>
           <div className="flex items-center gap-2">
-            {(type !== "country" && type !== "city") && getIcon()}
-            <span className={(type === "country" || type === "city") ? "text-sm font-medium" : "text-lg"}>{name}</span>
+            {type !== "country" && type !== "city" && getIcon()}
+            <span className={type === "country" || type === "city" ? "text-sm font-medium" : "text-lg"}>{name}</span>
           </div>
-          {(type !== "country" && type !== "city") && getStats()}
+          {type !== "country" && type !== "city" && getStats()}
         </CardTitle>
       </CardHeader>
       {getSubtitle() && <CardContent className="pt-0">
           {getSubtitle()}
         </CardContent>}
-    </Card>
-  );
+    </Card>;
 
   // Wrap with Link for cities and countries, otherwise use onClick
   if (type === "city" && data?.id) {
-    return (
-      <Link to={`/city/${data.id}`} className="block">
+    return <Link to={`/city/${data.id}`} className="block">
         {cardContent}
-      </Link>
-    );
+      </Link>;
   }
-
   if (type === "country" && data?.id) {
-    return (
-      <Link to={`/country/${data.id}`} className="block">
+    return <Link to={`/country/${data.id}`} className="block">
         {cardContent}
-      </Link>
-    );
+      </Link>;
   }
 
   // For continents or items without detail pages, use onClick
-  return (
-    <div onClick={onClick}>
+  return <div onClick={onClick}>
       {cardContent}
-    </div>
-  );
+    </div>;
 };
