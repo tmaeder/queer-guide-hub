@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags } from 'lucide-react';
+import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -43,6 +43,10 @@ export function Header() {
                   <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/users')}>
                     <Users className="h-4 w-4 mb-1" />
                     <span className="text-xs">Users</span>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/groups')}>
+                    <UserCheck className="h-4 w-4 mb-1" />
+                    <span className="text-xs">Groups</span>
                   </Button>
                   <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/messages')}>
                     <MessageSquare className="h-4 w-4 mb-1" />
@@ -87,6 +91,10 @@ export function Header() {
               <Link to="/users" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                 <Users className="h-6 w-6 mb-1" />
                 <span className="text-xs">Users</span>
+              </Link>
+              <Link to="/groups" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                <UserCheck className="h-6 w-6 mb-1" />
+                <span className="text-xs">Groups</span>
               </Link>
               <Link to="/tags" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
                 <Tags className="h-6 w-6 mb-1" />
