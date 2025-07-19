@@ -123,7 +123,7 @@ export const AdvancedSearchBar = () => {
         </PopoverTrigger>
         
         <PopoverContent className="w-80 p-0" align="start">
-          <Command>
+          <Command shouldFilter={false}>
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               
