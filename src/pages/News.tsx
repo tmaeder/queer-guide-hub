@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Newspaper, TrendingUp, Star, Globe, Download } from "lucide-react";
+import { Newspaper, TrendingUp, Star, Globe, Download, Loader } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 export default function News() {
@@ -95,67 +95,84 @@ export default function News() {
         </Card>
       </div>;
   }
-  return <div className="w-full px-4 py-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Globe className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            LGBTQ+ News Hub
-          </h1>
+  return (
+    <div className="min-h-screen bg-gradient-subtle">
+      <div className="w-full px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-4xl font-bold gradient-text mb-2">
+              LGBTQ+ News Hub
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Stay informed with the latest news, developments, and stories from the LGBTQ+ community worldwide
+            </p>
+          </div>
+          <Button 
+            onClick={handleImportNews} 
+            disabled={isImporting} 
+            className="bg-gradient-primary gap-2"
+          >
+            <Download className="h-4 w-4" />
+            {isImporting ? "Importing..." : "Import Latest News"}
+          </Button>
         </div>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
-          Stay informed with the latest news, developments, and stories from the LGBTQ+ community worldwide
-        </p>
-        <Button onClick={handleImportNews} disabled={isImporting} variant="outline" className="gap-2">
-          <Download className="h-4 w-4" />
-          {isImporting ? "Importing..." : "Import Latest News"}
-        </Button>
-      </div>
 
-      {/* Stats Cards */}
-      
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Sidebar with filters */}
-        <div className="lg:col-span-1">
+        {/* Filters */}
+        <div className="mb-8">
           <NewsFilters categories={categories} onFiltersChange={handleFiltersChange} trendingTags={trendingTags} />
         </div>
 
-        {/* Main content */}
-        <div className="lg:col-span-3">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">Loading articles...</span>
+          </div>
+        )}
 
-            <TabsContent value={activeTab} className="space-y-6">
-              {loading ? <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {Array.from({
-                length: 6
-              }).map((_, i) => <Card key={i}>
-                      <CardHeader>
-                        <Skeleton className="h-48 w-full" />
-                        <Skeleton className="h-6 w-3/4" />
-                        <Skeleton className="h-4 w-1/2" />
-                      </CardHeader>
-                      <CardContent>
-                        <Skeleton className="h-16 w-full mb-4" />
-                        <Skeleton className="h-8 w-24" />
-                      </CardContent>
-                    </Card>)}
-                </div> : getFilteredArticles().length === 0 ? <Card>
-                  <CardContent className="pt-6 text-center">
-                    <Newspaper className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No articles found</h3>
-                    <p className="text-muted-foreground">
-                      Try adjusting your filters or check back later for new content.
-                    </p>
-                  </CardContent>
-                </Card> : <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {getFilteredArticles().map(article => <NewsCard key={article.id} article={article} onViewArticle={handleViewArticle} />)}
-                </div>}
-            </TabsContent>
-          </Tabs>
-        </div>
+        {/* Empty State */}
+        {!loading && getFilteredArticles().length === 0 && (
+          <Card className="p-8 text-center">
+            <CardContent>
+              <Newspaper className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-xl font-semibold mb-2">No articles found</h3>
+              <p className="text-muted-foreground mb-4">
+                Try adjusting your filters or check back later for new content.
+              </p>
+              <Button 
+                onClick={handleImportNews} 
+                disabled={isImporting} 
+                className="bg-gradient-primary gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Import Latest News
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Articles Grid */}
+        {!loading && getFilteredArticles().length > 0 && (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-muted-foreground">
+                Found {getFilteredArticles().length} article{getFilteredArticles().length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {getFilteredArticles().map(article => (
+                <NewsCard 
+                  key={article.id} 
+                  article={article} 
+                  onViewArticle={handleViewArticle} 
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 }
