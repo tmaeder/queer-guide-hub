@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useCalendarFeed = () => {
   const [loading, setLoading] = useState(false);
@@ -29,8 +30,12 @@ export const useCalendarFeed = () => {
     try {
       setLoading(true);
       const token = await generateCalendarToken(user.id);
-      const baseUrl = window.location.origin;
-      const feedUrl = `${baseUrl}/functions/v1/calendar-feed?userId=${user.id}&token=${token}`;
+      // Use the Supabase URL from environment or construct it from the current origin
+      const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const supabaseUrl = isLocalDev 
+        ? 'http://localhost:54321' 
+        : 'https://xqeacpakadqfxjxjcewc.supabase.co';
+      const feedUrl = `${supabaseUrl}/functions/v1/calendar-feed?userId=${user.id}&token=${token}`;
       return feedUrl;
     } catch (error) {
       console.error('Error generating calendar feed URL:', error);
