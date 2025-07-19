@@ -1,0 +1,47 @@
+-- Add more LGBTQ+ relevant profile attributes
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS chosen_name text;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS name_pronunciation text;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS coming_out_status jsonb DEFAULT '{"family": "not_out", "friends": "not_out", "work": "not_out", "public": "not_out"}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS family_acceptance_level text CHECK (family_acceptance_level IN ('very_supportive', 'supportive', 'neutral', 'unsupportive', 'very_unsupportive', 'no_contact', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS workplace_safety text CHECK (workplace_safety IN ('completely_out', 'partially_out', 'not_out', 'unsafe_to_be_out', 'not_applicable', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS relationship_structure_preference text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS chosen_family_status text CHECK (chosen_family_status IN ('have_chosen_family', 'building_chosen_family', 'looking_for_chosen_family', 'not_interested', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS activism_involvement text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS support_offering text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS support_seeking text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS safe_space_preferences text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS neurodivergent_status text CHECK (neurodivergent_status IN ('yes', 'no', 'self_diagnosed', 'questioning', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS disability_status text CHECK (disability_status IN ('yes', 'no', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS mental_health_openness text CHECK (mental_health_openness IN ('very_open', 'somewhat_open', 'private', 'prefer_not_to_discuss'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS cultural_background text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS immigration_status text CHECK (immigration_status IN ('citizen', 'permanent_resident', 'temporary_resident', 'undocumented', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS housing_situation text CHECK (housing_situation IN ('stable_housing', 'temporary_housing', 'looking_for_housing', 'housing_insecure', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS financial_situation text CHECK (financial_situation IN ('financially_stable', 'getting_by', 'struggling', 'in_crisis', 'prefer_not_to_say'));
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS content_warnings text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS communication_preferences jsonb DEFAULT '{"preferred_methods": [], "response_time": "", "boundaries": ""}'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS mutual_aid_interests text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS community_roles text[] DEFAULT ARRAY[]::text[];
+
+-- Add comments to explain the new fields
+COMMENT ON COLUMN public.profiles.chosen_name IS 'Chosen name (may differ from legal name)';
+COMMENT ON COLUMN public.profiles.name_pronunciation IS 'How to pronounce their name';
+COMMENT ON COLUMN public.profiles.coming_out_status IS 'Coming out status in different contexts (family, friends, work, public)';
+COMMENT ON COLUMN public.profiles.family_acceptance_level IS 'Level of family acceptance of their identity';
+COMMENT ON COLUMN public.profiles.workplace_safety IS 'Safety level of being out at work';
+COMMENT ON COLUMN public.profiles.relationship_structure_preference IS 'Preferred relationship structures (monogamous, polyamorous, etc.)';
+COMMENT ON COLUMN public.profiles.chosen_family_status IS 'Status regarding chosen family';
+COMMENT ON COLUMN public.profiles.activism_involvement IS 'Types of activism involvement';
+COMMENT ON COLUMN public.profiles.support_offering IS 'Types of support they can offer to others';
+COMMENT ON COLUMN public.profiles.support_seeking IS 'Types of support they are seeking';
+COMMENT ON COLUMN public.profiles.safe_space_preferences IS 'What makes them feel safe in spaces';
+COMMENT ON COLUMN public.profiles.neurodivergent_status IS 'Neurodivergent status';
+COMMENT ON COLUMN public.profiles.disability_status IS 'Disability status';
+COMMENT ON COLUMN public.profiles.mental_health_openness IS 'Comfort level discussing mental health';
+COMMENT ON COLUMN public.profiles.cultural_background IS 'Cultural/ethnic background';
+COMMENT ON COLUMN public.profiles.immigration_status IS 'Immigration/citizenship status';
+COMMENT ON COLUMN public.profiles.housing_situation IS 'Current housing situation';
+COMMENT ON COLUMN public.profiles.financial_situation IS 'Current financial situation';
+COMMENT ON COLUMN public.profiles.content_warnings IS 'Topics they prefer to avoid or need warnings for';
+COMMENT ON COLUMN public.profiles.communication_preferences IS 'Preferred communication methods and boundaries';
+COMMENT ON COLUMN public.profiles.mutual_aid_interests IS 'Mutual aid areas of interest';
+COMMENT ON COLUMN public.profiles.community_roles IS 'Roles they play in the community';

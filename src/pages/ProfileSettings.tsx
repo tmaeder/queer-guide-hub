@@ -109,6 +109,39 @@ export default function ProfileSettings() {
     volunteer_work: (profile as any)?.volunteer_work || [],
     causes_supported: (profile as any)?.causes_supported || [],
     
+    // New LGBTQ+ specific fields
+    chosen_name: (profile as any)?.chosen_name || '',
+    name_pronunciation: (profile as any)?.name_pronunciation || '',
+    coming_out_status: (profile as any)?.coming_out_status || {
+      family: 'not_out',
+      friends: 'not_out', 
+      work: 'not_out',
+      public: 'not_out'
+    },
+    family_acceptance_level: (profile as any)?.family_acceptance_level || '',
+    workplace_safety: (profile as any)?.workplace_safety || '',
+    relationship_structure_preference: (profile as any)?.relationship_structure_preference || [],
+    chosen_family_status: (profile as any)?.chosen_family_status || '',
+    activism_involvement: (profile as any)?.activism_involvement || [],
+    support_offering: (profile as any)?.support_offering || [],
+    support_seeking: (profile as any)?.support_seeking || [],
+    safe_space_preferences: (profile as any)?.safe_space_preferences || [],
+    neurodivergent_status: (profile as any)?.neurodivergent_status || '',
+    disability_status: (profile as any)?.disability_status || '',
+    mental_health_openness: (profile as any)?.mental_health_openness || '',
+    cultural_background: (profile as any)?.cultural_background || [],
+    immigration_status: (profile as any)?.immigration_status || '',
+    housing_situation: (profile as any)?.housing_situation || '',
+    financial_situation: (profile as any)?.financial_situation || '',
+    content_warnings: (profile as any)?.content_warnings || [],
+    communication_preferences: (profile as any)?.communication_preferences || {
+      preferred_methods: [],
+      response_time: '',
+      boundaries: ''
+    },
+    mutual_aid_interests: (profile as any)?.mutual_aid_interests || [],
+    community_roles: (profile as any)?.community_roles || [],
+
     privacy_settings: {
       profile_visibility: (profile?.privacy_settings as any)?.profile_visibility || 'public',
       email_visible: (profile?.privacy_settings as any)?.email_visible || false,
@@ -275,6 +308,30 @@ export default function ProfileSettings() {
       community_involvement: formData.community_involvement,
       volunteer_work: formData.volunteer_work,
       causes_supported: formData.causes_supported,
+      
+      // New LGBTQ+ specific fields
+      chosen_name: formData.chosen_name,
+      name_pronunciation: formData.name_pronunciation,
+      coming_out_status: formData.coming_out_status,
+      family_acceptance_level: formData.family_acceptance_level,
+      workplace_safety: formData.workplace_safety,
+      relationship_structure_preference: formData.relationship_structure_preference,
+      chosen_family_status: formData.chosen_family_status,
+      activism_involvement: formData.activism_involvement,
+      support_offering: formData.support_offering,
+      support_seeking: formData.support_seeking,
+      safe_space_preferences: formData.safe_space_preferences,
+      neurodivergent_status: formData.neurodivergent_status,
+      disability_status: formData.disability_status,
+      mental_health_openness: formData.mental_health_openness,
+      cultural_background: formData.cultural_background,
+      immigration_status: formData.immigration_status,
+      housing_situation: formData.housing_situation,
+      financial_situation: formData.financial_situation,
+      content_warnings: formData.content_warnings,
+      communication_preferences: formData.communication_preferences,
+      mutual_aid_interests: formData.mutual_aid_interests,
+      community_roles: formData.community_roles,
       
       privacy_settings: formData.privacy_settings
     };
@@ -1090,6 +1147,281 @@ export default function ProfileSettings() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* LGBTQ+ Identity & Community */}
+      <Card>
+        <CardHeader>
+          <CardTitle>LGBTQ+ Identity & Community</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="chosen_name">Chosen Name</Label>
+              <Input
+                id="chosen_name"
+                value={formData.chosen_name}
+                onChange={(e) => handleInputChange('chosen_name', e.target.value)}
+                placeholder="Name you'd like to be called"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="name_pronunciation">Name Pronunciation</Label>
+              <Input
+                id="name_pronunciation"
+                value={formData.name_pronunciation}
+                onChange={(e) => handleInputChange('name_pronunciation', e.target.value)}
+                placeholder="How to pronounce your name"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Coming Out Status</Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border rounded-lg">
+              <div className="space-y-2">
+                <Label htmlFor="coming_out_family" className="text-sm">Family</Label>
+                <Select 
+                  value={formData.coming_out_status.family} 
+                  onValueChange={(value) => setFormData(prev => ({
+                    ...prev,
+                    coming_out_status: { ...prev.coming_out_status, family: value }
+                  }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="completely_out">Completely out</SelectItem>
+                    <SelectItem value="partially_out">Partially out</SelectItem>
+                    <SelectItem value="not_out">Not out</SelectItem>
+                    <SelectItem value="no_contact">No contact</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="coming_out_friends" className="text-sm">Friends</Label>
+                <Select 
+                  value={formData.coming_out_status.friends} 
+                  onValueChange={(value) => setFormData(prev => ({
+                    ...prev,
+                    coming_out_status: { ...prev.coming_out_status, friends: value }
+                  }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="completely_out">Completely out</SelectItem>
+                    <SelectItem value="partially_out">Partially out</SelectItem>
+                    <SelectItem value="not_out">Not out</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="coming_out_work" className="text-sm">Work</Label>
+                <Select 
+                  value={formData.coming_out_status.work} 
+                  onValueChange={(value) => setFormData(prev => ({
+                    ...prev,
+                    coming_out_status: { ...prev.coming_out_status, work: value }
+                  }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="completely_out">Completely out</SelectItem>
+                    <SelectItem value="partially_out">Partially out</SelectItem>
+                    <SelectItem value="not_out">Not out</SelectItem>
+                    <SelectItem value="not_applicable">N/A</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="coming_out_public" className="text-sm">Public</Label>
+                <Select 
+                  value={formData.coming_out_status.public} 
+                  onValueChange={(value) => setFormData(prev => ({
+                    ...prev,
+                    coming_out_status: { ...prev.coming_out_status, public: value }
+                  }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="completely_out">Completely out</SelectItem>
+                    <SelectItem value="partially_out">Partially out</SelectItem>
+                    <SelectItem value="not_out">Not out</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="family_acceptance_level">Family Acceptance Level</Label>
+              <Select value={formData.family_acceptance_level} onValueChange={(value) => handleInputChange('family_acceptance_level', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very_supportive">Very supportive</SelectItem>
+                  <SelectItem value="supportive">Supportive</SelectItem>
+                  <SelectItem value="neutral">Neutral</SelectItem>
+                  <SelectItem value="unsupportive">Unsupportive</SelectItem>
+                  <SelectItem value="very_unsupportive">Very unsupportive</SelectItem>
+                  <SelectItem value="no_contact">No contact</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="workplace_safety">Workplace Safety</Label>
+              <Select value={formData.workplace_safety} onValueChange={(value) => handleInputChange('workplace_safety', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select safety level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="completely_out">Completely out & safe</SelectItem>
+                  <SelectItem value="partially_out">Partially out</SelectItem>
+                  <SelectItem value="not_out">Not out</SelectItem>
+                  <SelectItem value="unsafe_to_be_out">Unsafe to be out</SelectItem>
+                  <SelectItem value="not_applicable">Not applicable</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="chosen_family_status">Chosen Family Status</Label>
+            <Select value={formData.chosen_family_status} onValueChange={(value) => handleInputChange('chosen_family_status', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="have_chosen_family">Have chosen family</SelectItem>
+                <SelectItem value="building_chosen_family">Building chosen family</SelectItem>
+                <SelectItem value="looking_for_chosen_family">Looking for chosen family</SelectItem>
+                <SelectItem value="not_interested">Not interested</SelectItem>
+                <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Health & Accessibility */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Health & Accessibility</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="neurodivergent_status">Neurodivergent Status</Label>
+              <Select value={formData.neurodivergent_status} onValueChange={(value) => handleInputChange('neurodivergent_status', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="yes">Yes</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
+                  <SelectItem value="self_diagnosed">Self-diagnosed</SelectItem>
+                  <SelectItem value="questioning">Questioning</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="disability_status">Disability Status</Label>
+              <Select value={formData.disability_status} onValueChange={(value) => handleInputChange('disability_status', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="yes">Yes</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mental_health_openness">Mental Health Openness</Label>
+              <Select value={formData.mental_health_openness} onValueChange={(value) => handleInputChange('mental_health_openness', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very_open">Very open</SelectItem>
+                  <SelectItem value="somewhat_open">Somewhat open</SelectItem>
+                  <SelectItem value="private">Private</SelectItem>
+                  <SelectItem value="prefer_not_to_discuss">Prefer not to discuss</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Community & Support */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Community & Support</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="housing_situation">Housing Situation</Label>
+              <Select value={formData.housing_situation} onValueChange={(value) => handleInputChange('housing_situation', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select situation" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="stable_housing">Stable housing</SelectItem>
+                  <SelectItem value="temporary_housing">Temporary housing</SelectItem>
+                  <SelectItem value="looking_for_housing">Looking for housing</SelectItem>
+                  <SelectItem value="housing_insecure">Housing insecure</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="financial_situation">Financial Situation</Label>
+              <Select value={formData.financial_situation} onValueChange={(value) => handleInputChange('financial_situation', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select situation" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="financially_stable">Financially stable</SelectItem>
+                  <SelectItem value="getting_by">Getting by</SelectItem>
+                  <SelectItem value="struggling">Struggling</SelectItem>
+                  <SelectItem value="in_crisis">In crisis</SelectItem>
+                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="immigration_status">Immigration Status</Label>
+            <Select value={formData.immigration_status} onValueChange={(value) => handleInputChange('immigration_status', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="citizen">Citizen</SelectItem>
+                <SelectItem value="permanent_resident">Permanent resident</SelectItem>
+                <SelectItem value="temporary_resident">Temporary resident</SelectItem>
+                <SelectItem value="undocumented">Undocumented</SelectItem>
+                <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>

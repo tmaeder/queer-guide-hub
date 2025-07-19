@@ -1474,18 +1474,27 @@ export type Database = {
       profiles: {
         Row: {
           accessibility_needs: string | null
+          activism_involvement: string[] | null
           age_range: string | null
           avatar_url: string | null
           background_check: boolean | null
           bio: string | null
           body_type: string | null
           causes_supported: string[] | null
+          chosen_family_status: string | null
+          chosen_name: string | null
+          coming_out_status: Json | null
+          communication_preferences: Json | null
           communication_style: string | null
           community_involvement: string[] | null
+          community_roles: string[] | null
           company: string | null
+          content_warnings: string[] | null
           created_at: string
+          cultural_background: string[] | null
           date_of_birth: string | null
           diet_preferences: string[] | null
+          disability_status: string | null
           display_name: string | null
           drinking_preference: string | null
           education: string | null
@@ -1495,9 +1504,11 @@ export type Database = {
           ethnicity: string | null
           exercise_frequency: string | null
           eye_color: string | null
+          family_acceptance_level: string | null
           favorite_books: string[] | null
           favorite_movies: string[] | null
           favorite_music_genres: string[] | null
+          financial_situation: string | null
           first_name: string | null
           food_preferences: string[] | null
           gender_identity: string | null
@@ -1506,7 +1517,9 @@ export type Database = {
           has_pets: boolean | null
           height_cm: number | null
           hobbies: string[] | null
+          housing_situation: string | null
           id: string
+          immigration_status: string | null
           income_range: string | null
           industry: string | null
           interests: Json | null
@@ -1520,7 +1533,11 @@ export type Database = {
           looking_for: string[] | null
           medication_status: string | null
           mental_health_advocacy: boolean | null
+          mental_health_openness: string | null
+          mutual_aid_interests: string[] | null
+          name_pronunciation: string | null
           neighborhood_preference: string | null
+          neurodivergent_status: string | null
           occupation: string | null
           personality_type: string | null
           pet_preferences: string | null
@@ -1532,12 +1549,16 @@ export type Database = {
           pronouns: string | null
           relationship_goals: string[] | null
           relationship_status: string | null
+          relationship_structure_preference: string[] | null
           religious_beliefs: string | null
           response_time_preference: string | null
+          safe_space_preferences: string[] | null
           sexual_orientation: string | null
           sleep_schedule: string | null
           smoking_preference: string | null
           social_links: Json | null
+          support_offering: string[] | null
+          support_seeking: string[] | null
           therapy_friendly: boolean | null
           transportation_method: string | null
           travel_preferences: Json | null
@@ -1551,22 +1572,32 @@ export type Database = {
           website: string | null
           willing_to_relocate: boolean | null
           work_schedule: string | null
+          workplace_safety: string | null
           zodiac_sign: string | null
         }
         Insert: {
           accessibility_needs?: string | null
+          activism_involvement?: string[] | null
           age_range?: string | null
           avatar_url?: string | null
           background_check?: boolean | null
           bio?: string | null
           body_type?: string | null
           causes_supported?: string[] | null
+          chosen_family_status?: string | null
+          chosen_name?: string | null
+          coming_out_status?: Json | null
+          communication_preferences?: Json | null
           communication_style?: string | null
           community_involvement?: string[] | null
+          community_roles?: string[] | null
           company?: string | null
+          content_warnings?: string[] | null
           created_at?: string
+          cultural_background?: string[] | null
           date_of_birth?: string | null
           diet_preferences?: string[] | null
+          disability_status?: string | null
           display_name?: string | null
           drinking_preference?: string | null
           education?: string | null
@@ -1576,9 +1607,11 @@ export type Database = {
           ethnicity?: string | null
           exercise_frequency?: string | null
           eye_color?: string | null
+          family_acceptance_level?: string | null
           favorite_books?: string[] | null
           favorite_movies?: string[] | null
           favorite_music_genres?: string[] | null
+          financial_situation?: string | null
           first_name?: string | null
           food_preferences?: string[] | null
           gender_identity?: string | null
@@ -1587,7 +1620,9 @@ export type Database = {
           has_pets?: boolean | null
           height_cm?: number | null
           hobbies?: string[] | null
+          housing_situation?: string | null
           id?: string
+          immigration_status?: string | null
           income_range?: string | null
           industry?: string | null
           interests?: Json | null
@@ -1601,7 +1636,11 @@ export type Database = {
           looking_for?: string[] | null
           medication_status?: string | null
           mental_health_advocacy?: boolean | null
+          mental_health_openness?: string | null
+          mutual_aid_interests?: string[] | null
+          name_pronunciation?: string | null
           neighborhood_preference?: string | null
+          neurodivergent_status?: string | null
           occupation?: string | null
           personality_type?: string | null
           pet_preferences?: string | null
@@ -1613,12 +1652,16 @@ export type Database = {
           pronouns?: string | null
           relationship_goals?: string[] | null
           relationship_status?: string | null
+          relationship_structure_preference?: string[] | null
           religious_beliefs?: string | null
           response_time_preference?: string | null
+          safe_space_preferences?: string[] | null
           sexual_orientation?: string | null
           sleep_schedule?: string | null
           smoking_preference?: string | null
           social_links?: Json | null
+          support_offering?: string[] | null
+          support_seeking?: string[] | null
           therapy_friendly?: boolean | null
           transportation_method?: string | null
           travel_preferences?: Json | null
@@ -1632,22 +1675,32 @@ export type Database = {
           website?: string | null
           willing_to_relocate?: boolean | null
           work_schedule?: string | null
+          workplace_safety?: string | null
           zodiac_sign?: string | null
         }
         Update: {
           accessibility_needs?: string | null
+          activism_involvement?: string[] | null
           age_range?: string | null
           avatar_url?: string | null
           background_check?: boolean | null
           bio?: string | null
           body_type?: string | null
           causes_supported?: string[] | null
+          chosen_family_status?: string | null
+          chosen_name?: string | null
+          coming_out_status?: Json | null
+          communication_preferences?: Json | null
           communication_style?: string | null
           community_involvement?: string[] | null
+          community_roles?: string[] | null
           company?: string | null
+          content_warnings?: string[] | null
           created_at?: string
+          cultural_background?: string[] | null
           date_of_birth?: string | null
           diet_preferences?: string[] | null
+          disability_status?: string | null
           display_name?: string | null
           drinking_preference?: string | null
           education?: string | null
@@ -1657,9 +1710,11 @@ export type Database = {
           ethnicity?: string | null
           exercise_frequency?: string | null
           eye_color?: string | null
+          family_acceptance_level?: string | null
           favorite_books?: string[] | null
           favorite_movies?: string[] | null
           favorite_music_genres?: string[] | null
+          financial_situation?: string | null
           first_name?: string | null
           food_preferences?: string[] | null
           gender_identity?: string | null
@@ -1668,7 +1723,9 @@ export type Database = {
           has_pets?: boolean | null
           height_cm?: number | null
           hobbies?: string[] | null
+          housing_situation?: string | null
           id?: string
+          immigration_status?: string | null
           income_range?: string | null
           industry?: string | null
           interests?: Json | null
@@ -1682,7 +1739,11 @@ export type Database = {
           looking_for?: string[] | null
           medication_status?: string | null
           mental_health_advocacy?: boolean | null
+          mental_health_openness?: string | null
+          mutual_aid_interests?: string[] | null
+          name_pronunciation?: string | null
           neighborhood_preference?: string | null
+          neurodivergent_status?: string | null
           occupation?: string | null
           personality_type?: string | null
           pet_preferences?: string | null
@@ -1694,12 +1755,16 @@ export type Database = {
           pronouns?: string | null
           relationship_goals?: string[] | null
           relationship_status?: string | null
+          relationship_structure_preference?: string[] | null
           religious_beliefs?: string | null
           response_time_preference?: string | null
+          safe_space_preferences?: string[] | null
           sexual_orientation?: string | null
           sleep_schedule?: string | null
           smoking_preference?: string | null
           social_links?: Json | null
+          support_offering?: string[] | null
+          support_seeking?: string[] | null
           therapy_friendly?: boolean | null
           transportation_method?: string | null
           travel_preferences?: Json | null
@@ -1713,6 +1778,7 @@ export type Database = {
           website?: string | null
           willing_to_relocate?: boolean | null
           work_schedule?: string | null
+          workplace_safety?: string | null
           zodiac_sign?: string | null
         }
         Relationships: []
