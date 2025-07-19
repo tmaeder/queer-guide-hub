@@ -12,7 +12,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, Briefcase, GraduationCap } from "lucide-react";
+import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, Briefcase, GraduationCap, Navigation, Loader2 } from "lucide-react";
 import { StartConversationButton } from "@/components/messaging/StartConversationButton";
 import { Tables } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
@@ -55,6 +55,9 @@ const UserDirectory = () => {
   
   const [showFilters, setShowFilters] = useState(false);
   const [interestsOpen, setInterestsOpen] = useState(false);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [nearMe, setNearMe] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   // Filter options
   const ageRanges = ["18-25", "26-35", "36-45", "46-55", "56-65", "65+"];
@@ -77,11 +80,50 @@ const UserDirectory = () => {
     if (filters.isBusiness) count++;
     if (filters.hasChildren) count++;
     if (filters.hasPets) count++;
+    if (nearMe) count++;
     return count;
-  }, [filters]);
+  }, [filters, nearMe]);
+
+  const detectLocation = async () => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser');
+      return;
+    }
+
+    setIsDetectingLocation(true);
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000, // 5 minutes
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      setUserLocation({ latitude, longitude });
+      setNearMe(true);
+    } catch (error) {
+      console.error('Error detecting location:', error);
+      setNearMe(false);
+      setUserLocation(null);
+    } finally {
+      setIsDetectingLocation(false);
+    }
+  };
+
+  const handleNearMeToggle = () => {
+    if (nearMe) {
+      setNearMe(false);
+      setUserLocation(null);
+    } else {
+      detectLocation();
+    }
+  };
 
   const { data: profiles, isLoading } = useQuery({
-    queryKey: ["user-directory", filters],
+    queryKey: ["user-directory", filters, nearMe, userLocation],
     queryFn: async () => {
       let query = supabase
         .from("profiles")
@@ -172,6 +214,45 @@ const UserDirectory = () => {
           );
         });
       }
+
+      // Apply Near Me filtering if enabled
+      if (nearMe && userLocation) {
+        // For now, we'll use a simple approach since we don't have lat/lng for users
+        // In a real app, you'd want to geocode the user locations or store coordinates
+        try {
+          // Get user's current city using reverse geocoding
+          const response = await fetch('/functions/v1/mapbox-geocoding', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              query: `${userLocation.longitude},${userLocation.latitude}`,
+              isReverseGeocode: true
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.features && data.features.length > 0) {
+              const userCity = data.features[0].place_name;
+              const cityParts = userCity.split(',').map(part => part.trim().toLowerCase());
+              
+              // Filter users whose location contains any part of the user's city
+              filteredData = filteredData.filter(profile => {
+                if (!profile.location) return false;
+                const profileLocation = profile.location.toLowerCase();
+                return cityParts.some(cityPart => 
+                  profileLocation.includes(cityPart) && cityPart.length > 2
+                );
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error getting user city for near me filter:', error);
+          // If geocoding fails, fall back to showing all users
+        }
+      }
       
       return filteredData;
     },
@@ -193,6 +274,8 @@ const UserDirectory = () => {
       hasPets: false,
       sortBy: 'newest'
     });
+    setNearMe(false);
+    setUserLocation(null);
   };
 
   const handleInterestToggle = (interest: string) => {
@@ -225,6 +308,19 @@ const UserDirectory = () => {
                   className="pl-10"
                 />
               </div>
+              <Button
+                variant={nearMe ? "default" : "outline"}
+                onClick={handleNearMeToggle}
+                disabled={isDetectingLocation}
+                className="gap-2 whitespace-nowrap"
+              >
+                {isDetectingLocation ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Navigation className="h-4 w-4" />
+                )}
+                Near Me
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => setShowFilters(!showFilters)}
@@ -457,6 +553,12 @@ const UserDirectory = () => {
             {activeFiltersCount > 0 && !showFilters && (
               <div className="flex flex-wrap gap-2 items-center justify-center">
                 <span className="text-sm text-muted-foreground">Active filters:</span>
+                {nearMe && (
+                  <Badge variant="secondary" className="gap-1">
+                    Near Me
+                    <X className="h-3 w-3 cursor-pointer" onClick={handleNearMeToggle} />
+                  </Badge>
+                )}
                 {filters.location && (
                   <Badge variant="secondary" className="gap-1">
                     Location: {filters.location}
