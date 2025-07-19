@@ -76,8 +76,8 @@ export default function CityDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { toggleFavorite, isFavorite } = useFavorites();
-  const { getCityImageUrl } = useCityImages();
+  const { toggleFavorite, isFavorited } = useFavorites('city');
+  const { fetchCityImage } = useCityImages();
 
   const [city, setCity] = useState<CityWithCountry | null>(null);
   const [loading, setLoading] = useState(true);
@@ -129,8 +129,8 @@ export default function CityDetail() {
     if (!city) return;
     
     try {
-      const url = await getCityImageUrl(city.name, city.countries?.name || '');
-      setImageUrl(url || '');
+      const result = await fetchCityImage(city.id, city.name, city.countries?.name || '');
+      setImageUrl(result.image_url || '');
     } catch (error) {
       console.error('Error loading city image:', error);
     }
@@ -140,10 +140,10 @@ export default function CityDetail() {
     if (!city) return;
     
     try {
-      await toggleFavorite(city.id, 'city');
+      await toggleFavorite(city.id);
       toast({
-        title: isFavorite(city.id, 'city') ? "Removed from favorites" : "Added to favorites",
-        description: `${city.name} ${isFavorite(city.id, 'city') ? 'removed from' : 'added to'} your favorites`,
+        title: isFavorited(city.id) ? "Removed from favorites" : "Added to favorites",
+        description: `${city.name} ${isFavorited(city.id) ? 'removed from' : 'added to'} your favorites`,
       });
     } catch (error) {
       toast({
@@ -210,8 +210,8 @@ export default function CityDetail() {
             Back to Directory
           </Button>
           <Button variant="outline" onClick={handleFavoriteToggle}>
-            <Heart className={`h-4 w-4 mr-2 ${isFavorite(city.id, 'city') ? 'fill-primary text-primary' : ''}`} />
-            {isFavorite(city.id, 'city') ? 'Remove from Favorites' : 'Add to Favorites'}
+            <Heart className={`h-4 w-4 mr-2 ${isFavorited(city.id) ? 'fill-primary text-primary' : ''}`} />
+            {isFavorited(city.id) ? 'Remove from Favorites' : 'Add to Favorites'}
           </Button>
         </div>
 

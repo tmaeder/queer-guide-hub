@@ -79,7 +79,7 @@ export default function CountryDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { toggleFavorite, isFavorite } = useFavorites();
+  const { toggleFavorite, isFavorited } = useFavorites('country');
 
   const [country, setCountry] = useState<CountryWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,10 +116,10 @@ export default function CountryDetail() {
     if (!country) return;
     
     try {
-      await toggleFavorite(country.id, 'country');
+      await toggleFavorite(country.id);
       toast({
-        title: isFavorite(country.id, 'country') ? "Removed from favorites" : "Added to favorites",
-        description: `${country.name} ${isFavorite(country.id, 'country') ? 'removed from' : 'added to'} your favorites`,
+        title: isFavorited(country.id) ? "Removed from favorites" : "Added to favorites",
+        description: `${country.name} ${isFavorited(country.id) ? 'removed from' : 'added to'} your favorites`,
       });
     } catch (error) {
       toast({
@@ -202,8 +202,8 @@ export default function CountryDetail() {
             Back to Directory
           </Button>
           <Button variant="outline" onClick={handleFavoriteToggle}>
-            <Heart className={`h-4 w-4 mr-2 ${isFavorite(country.id, 'country') ? 'fill-primary text-primary' : ''}`} />
-            {isFavorite(country.id, 'country') ? 'Remove from Favorites' : 'Add to Favorites'}
+            <Heart className={`h-4 w-4 mr-2 ${isFavorited(country.id) ? 'fill-primary text-primary' : ''}`} />
+            {isFavorited(country.id) ? 'Remove from Favorites' : 'Add to Favorites'}
           </Button>
         </div>
 

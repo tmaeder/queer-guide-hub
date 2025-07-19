@@ -241,6 +241,27 @@ export type Database = {
           },
         ]
       }
+      city_favorites: {
+        Row: {
+          city_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          city_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          city_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       comment_likes: {
         Row: {
           comment_id: string
@@ -807,6 +828,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      country_favorites: {
+        Row: {
+          country_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          country_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          country_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       event_attendees: {
         Row: {

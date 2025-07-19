@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, Globe, Building2, Loader2, ImageIcon, Crown } from "lucide-react";
 import { Country, City } from "@/hooks/useDirectory";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCityImages } from "@/hooks/useCityImages";
 
@@ -183,7 +184,8 @@ export const DirectoryCard = ({
     }
     return null;
   };
-  return <Card className={`cursor-pointer transition-all hover:shadow-md hover:scale-105 ${onClick ? "hover:bg-accent/50" : ""}`} onClick={onClick}>
+  const cardContent = (
+    <Card className={`cursor-pointer transition-all hover:shadow-md hover:scale-105 ${onClick ? "hover:bg-accent/50" : ""}`}>
       {/* Country Image */}
       {type === "country" && <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
           {imageLoading ? <div className="w-full h-full flex items-center justify-center">
@@ -227,5 +229,30 @@ export const DirectoryCard = ({
       {getSubtitle() && <CardContent className="pt-0">
           {getSubtitle()}
         </CardContent>}
-    </Card>;
+    </Card>
+  );
+
+  // Wrap with Link for cities and countries, otherwise use onClick
+  if (type === "city" && data?.id) {
+    return (
+      <Link to={`/city/${data.id}`} className="block">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  if (type === "country" && data?.id) {
+    return (
+      <Link to={`/country/${data.id}`} className="block">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  // For continents or items without detail pages, use onClick
+  return (
+    <div onClick={onClick}>
+      {cardContent}
+    </div>
+  );
 };

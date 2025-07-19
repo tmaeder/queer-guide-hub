@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
-export type FavoriteType = 'venue' | 'event' | 'tag' | 'marketplace' | 'news';
+export type FavoriteType = 'venue' | 'event' | 'tag' | 'marketplace' | 'news' | 'city' | 'country';
 
 export const useFavorites = (type: FavoriteType) => {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -49,30 +49,36 @@ export const useFavorites = (type: FavoriteType) => {
             .select('article_id')
             .eq('user_id', user.id));
           break;
+        case 'city':
+          ({ data, error } = await supabase
+            .from('city_favorites')
+            .select('city_id')
+            .eq('user_id', user.id));
+          break;
+        case 'country':
+          ({ data, error } = await supabase
+            .from('country_favorites')
+            .select('country_id')
+            .eq('user_id', user.id));
+          break;
       }
 
       if (error) throw error;
-
-      const favoriteIds = new Set<string>();
-      data?.forEach(item => {
-        switch (type) {
-          case 'venue':
-            favoriteIds.add(item.venue_id);
-            break;
-          case 'event':
-            favoriteIds.add(item.event_id);
-            break;
-          case 'tag':
-            favoriteIds.add(item.tag_id);
-            break;
-          case 'marketplace':
-            favoriteIds.add(item.listing_id);
-            break;
-          case 'news':
-            favoriteIds.add(item.article_id);
-            break;
-        }
-      });
+      
+      const favoriteIds = new Set<string>(
+        data?.map((item: any) => {
+          switch (type) {
+            case 'venue': return item.venue_id;
+            case 'event': return item.event_id;
+            case 'tag': return item.tag_id;
+            case 'marketplace': return item.listing_id;
+            case 'news': return item.article_id;
+            case 'city': return item.city_id;
+            case 'country': return item.country_id;
+            default: return null;
+          }
+        }).filter(Boolean) || []
+      );
       
       setFavorites(favoriteIds);
     } catch (error) {
@@ -139,6 +145,20 @@ export const useFavorites = (type: FavoriteType) => {
               .eq('user_id', user.id)
               .eq('article_id', itemId));
             break;
+          case 'city':
+            ({ error } = await supabase
+              .from('city_favorites')
+              .delete()
+              .eq('user_id', user.id)
+              .eq('city_id', itemId));
+            break;
+          case 'country':
+            ({ error } = await supabase
+              .from('country_favorites')
+              .delete()
+              .eq('user_id', user.id)
+              .eq('country_id', itemId));
+            break;
         }
 
         if (error) throw error;
@@ -181,6 +201,16 @@ export const useFavorites = (type: FavoriteType) => {
             ({ error } = await supabase
               .from('news_favorites')
               .insert({ user_id: user.id, article_id: itemId }));
+            break;
+          case 'city':
+            ({ error } = await supabase
+              .from('city_favorites')
+              .insert({ user_id: user.id, city_id: itemId }));
+            break;
+          case 'country':
+            ({ error } = await supabase
+              .from('country_favorites')
+              .insert({ user_id: user.id, country_id: itemId }));
             break;
         }
 

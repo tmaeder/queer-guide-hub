@@ -35,6 +35,8 @@ import ContentEditor from "./pages/ContentEditor";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminTags from "./pages/AdminTags";
 import AdminCities from "./pages/AdminCities";
+import CityDetail from "./pages/CityDetail";
+import CountryDetail from "./pages/CountryDetail";
 import AdminVenues from "./pages/AdminVenues";
 import AdminEvents from "./pages/AdminEvents";
 import AdminMarketplace from "./pages/AdminMarketplace";
@@ -139,6 +141,8 @@ const App = () => {
                   <Route path="/marketplace/:id" element={<MarketplaceItemDetail />} />
                   
                   <Route path="/directory" element={<Directory />} />
+                  <Route path="/city/:id" element={<CityDetail />} />
+                  <Route path="/country/:id" element={<CountryDetail />} />
                   <Route path="/users" element={<UserDirectory />} />
                   <Route path="/tags" element={<TagsDirectory />} />
                   <Route path="/tags/:tagName" element={<TagsDirectory />} />
