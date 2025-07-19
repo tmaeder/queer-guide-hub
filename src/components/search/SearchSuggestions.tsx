@@ -20,10 +20,10 @@ export function SearchSuggestions({
     return (
       <>
         <CommandSeparator />
-        <CommandGroup heading="Loading...">
-          <CommandItem disabled>
+        <CommandGroup heading="Searching...">
+          <CommandItem disabled className="text-muted-foreground">
             <Search className="h-4 w-4 mr-2 animate-spin" />
-            Searching...
+            Finding results...
           </CommandItem>
         </CommandGroup>
       </>
@@ -47,16 +47,19 @@ export function SearchSuggestions({
             <CommandItem
               key={`${suggestion.type}-${suggestion.id}`}
               onSelect={() => onSelectSuggestion(suggestion)}
-              className="cursor-pointer"
+              className="cursor-pointer hover:bg-muted/50 transition-colors"
             >
-              <Icon className="h-4 w-4 mr-2 text-muted-foreground" />
-              <div className="flex flex-col items-start flex-1">
-                <span className="font-medium">{displayName}</span>
+              <Icon className="h-4 w-4 mr-3 text-muted-foreground flex-shrink-0" />
+              <div className="flex flex-col items-start flex-1 min-w-0">
+                <span className="font-medium text-sm truncate w-full">{displayName}</span>
                 {subtitle && (
-                  <span className="text-xs text-muted-foreground truncate">{subtitle}</span>
+                  <span className="text-xs text-muted-foreground truncate w-full">{subtitle}</span>
                 )}
               </div>
-              <Badge variant="outline" className="ml-auto text-xs capitalize">
+              <Badge 
+                variant="outline" 
+                className="ml-2 text-xs capitalize bg-background/50 border-muted flex-shrink-0"
+              >
                 {suggestion.type}
               </Badge>
             </CommandItem>
