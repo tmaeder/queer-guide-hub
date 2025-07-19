@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import DOMPurify from "dompurify";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -196,10 +197,19 @@ interface MessageInputProps {
 const MessageInput = ({ onSend, disabled }: MessageInputProps) => {
   const [message, setMessage] = useState("");
 
+  // Sanitize message input to prevent XSS
+  const sanitizeMessage = (input: string): string => {
+    return DOMPurify.sanitize(input, { 
+      ALLOWED_TAGS: [], 
+      ALLOWED_ATTR: [] 
+    }).trim();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim() && !disabled) {
-      onSend(message.trim());
+    const sanitizedMessage = sanitizeMessage(message);
+    if (sanitizedMessage && !disabled) {
+      onSend(sanitizedMessage);
       setMessage("");
     }
   };
@@ -208,10 +218,11 @@ const MessageInput = ({ onSend, disabled }: MessageInputProps) => {
     <form onSubmit={handleSubmit} className="flex gap-2 p-4">
       <Input
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={(e) => setMessage(sanitizeMessage(e.target.value))}
         placeholder="Type a message..."
         disabled={disabled}
         className="flex-1"
+        maxLength={2000}
       />
       <Button type="submit" disabled={disabled || !message.trim()}>
         <Send className="h-4 w-4" />

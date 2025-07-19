@@ -2435,7 +2435,15 @@ export type Database = {
         Returns: boolean
       }
       log_security_event: {
-        Args: { event_type: string; user_id_param: string; details?: Json }
+        Args:
+          | { event_type: string; user_id_param: string; details?: Json }
+          | {
+              event_type: string
+              user_id_param: string
+              ip_address_param?: unknown
+              user_agent_param?: string
+              details?: Json
+            }
         Returns: undefined
       }
       logflare_fdw_handler: {

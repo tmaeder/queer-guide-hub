@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import DOMPurify from "dompurify";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,8 +56,24 @@ export const ContentEditor = ({
   const [keywordInput, setKeywordInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Input sanitization helper
+  const sanitizeInput = (input: string): string => {
+    return DOMPurify.sanitize(input, { 
+      ALLOWED_TAGS: [], 
+      ALLOWED_ATTR: [] 
+    }).trim();
+  };
+
+  const sanitizeHtmlContent = (content: string): string => {
+    return DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'img'],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target']
+    });
+  };
+
   const generateSlug = (title: string) => {
-    return title
+    const sanitizedTitle = sanitizeInput(title);
+    return sanitizedTitle
       .toLowerCase()
       .replace(/[^a-z0-9 -]/g, "")
       .replace(/\s+/g, "-")
@@ -65,18 +82,20 @@ export const ContentEditor = ({
   };
 
   const handleTitleChange = (title: string) => {
+    const sanitizedTitle = sanitizeInput(title);
     onChange({
       ...formData,
-      title,
-      slug: !isEditing ? generateSlug(title) : formData.slug
+      title: sanitizedTitle,
+      slug: !isEditing ? generateSlug(sanitizedTitle) : formData.slug
     });
   };
 
   const addKeyword = () => {
-    if (keywordInput.trim() && !formData.meta_keywords.includes(keywordInput.trim())) {
+    const sanitizedKeyword = sanitizeInput(keywordInput);
+    if (sanitizedKeyword && !formData.meta_keywords.includes(sanitizedKeyword)) {
       onChange({
         ...formData,
-        meta_keywords: [...formData.meta_keywords, keywordInput.trim()]
+        meta_keywords: [...formData.meta_keywords, sanitizedKeyword]
       });
       setKeywordInput("");
     }
@@ -122,13 +141,14 @@ export const ContentEditor = ({
           <CardContent className="space-y-6">
             <div>
               <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="Enter a compelling title..."
-                required
-              />
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => handleTitleChange(e.target.value)}
+                  placeholder="Enter a compelling title..."
+                  maxLength={200}
+                  required
+                />
             </div>
 
             <div>
@@ -140,9 +160,11 @@ export const ContentEditor = ({
                 <Input
                   id="slug"
                   value={formData.slug}
-                  onChange={(e) => onChange({ ...formData, slug: e.target.value })}
+                  onChange={(e) => onChange({ ...formData, slug: sanitizeInput(e.target.value) })}
                   className=""
                   placeholder="url-friendly-slug"
+                  maxLength={100}
+                  pattern="^[a-z0-9-]+$"
                   required
                 />
               </div>
@@ -157,8 +179,9 @@ export const ContentEditor = ({
                 id="excerpt"
                 rows={3}
                 value={formData.excerpt}
-                onChange={(e) => onChange({ ...formData, excerpt: e.target.value })}
+                onChange={(e) => onChange({ ...formData, excerpt: sanitizeInput(e.target.value) })}
                 placeholder="A brief description that will appear in listings and search results..."
+                maxLength={300}
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Ideal length: 150-160 characters for SEO
@@ -171,7 +194,7 @@ export const ContentEditor = ({
                 id="content"
                 rows={20}
                 value={formData.content}
-                onChange={(e) => onChange({ ...formData, content: e.target.value })}
+                onChange={(e) => onChange({ ...formData, content: sanitizeHtmlContent(e.target.value) })}
                 placeholder="Write your content here... You can use HTML tags for formatting."
                 className="font-mono text-sm"
                 required
@@ -205,7 +228,7 @@ export const ContentEditor = ({
                     id="meta_description"
                     rows={3}
                     value={formData.meta_description}
-                    onChange={(e) => onChange({ ...formData, meta_description: e.target.value })}
+                    onChange={(e) => onChange({ ...formData, meta_description: sanitizeInput(e.target.value) })}
                     placeholder="A concise description for search engines..."
                     maxLength={160}
                   />
@@ -219,8 +242,9 @@ export const ContentEditor = ({
                   <div className="flex gap-2 mb-2">
                     <Input
                       value={keywordInput}
-                      onChange={(e) => setKeywordInput(e.target.value)}
+                      onChange={(e) => setKeywordInput(sanitizeInput(e.target.value))}
                       placeholder="Add a keyword..."
+                      maxLength={50}
                       onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addKeyword())}
                     />
                     <Button type="button" onClick={addKeyword} variant="outline">
@@ -258,8 +282,9 @@ export const ContentEditor = ({
                     <div className="flex gap-2">
                       <Input
                         value={formData.featured_image}
-                        onChange={(e) => onChange({ ...formData, featured_image: e.target.value })}
+                        onChange={(e) => onChange({ ...formData, featured_image: sanitizeInput(e.target.value) })}
                         placeholder="https://example.com/image.jpg"
+                        pattern="^https?://.*\.(jpg|jpeg|png|gif|webp)$"
                       />
                       <Button 
                         type="button" 
