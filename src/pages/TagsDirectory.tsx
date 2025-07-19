@@ -4,11 +4,12 @@ import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 import { TagCard } from "@/components/directory/TagCard";
 import { DirectorySearch } from "@/components/directory/DirectorySearch";
 import { TagGraphView } from "@/components/directory/TagGraphView";
+import { useTagRelationships } from "@/hooks/useTagRelationships";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload, Network } from "lucide-react";
+import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload, Network, Cpu } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 type ViewMode = "overview" | "category" | "search" | "tag-detail";
 export default function TagsDirectory() {
@@ -24,6 +25,7 @@ export default function TagsDirectory() {
     error,
     searchTags
   } = useCentralizedTags();
+  const { computeRelationships, computing } = useTagRelationships();
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedTag, setSelectedTag] = useState<any>(null);
@@ -272,12 +274,23 @@ export default function TagsDirectory() {
             </TabsContent>
 
             <TabsContent value="graph" className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-xl font-semibold">Tag Relationship Graph</h2>
-                <Badge variant="secondary">{allTags.length} nodes</Badge>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold">Tag Relationship Graph</h2>
+                  <Badge variant="secondary">{allTags.length} nodes</Badge>
+                </div>
+                <Button 
+                  onClick={computeRelationships} 
+                  disabled={computing} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  <Cpu className="h-4 w-4 mr-2" />
+                  {computing ? 'Computing...' : 'Compute AI Relationships'}
+                </Button>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Interactive graph showing relationships between tags. Connected lines represent shared categories (gray) and explicit relationships (blue).
+                Interactive graph showing AI-computed semantic relationships between tags based on their names and descriptions. Thicker lines indicate stronger similarity.
               </p>
               <TagGraphView 
                 tags={allTags} 

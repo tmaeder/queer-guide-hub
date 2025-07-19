@@ -27,11 +27,22 @@ export const useTagRelationships = () => {
   const fetchRelationships = useCallback(async () => {
     setLoading(true);
     try {
-      // Use RPC call since table might not be in types yet
-      const { data, error } = await supabase.rpc('get_tag_relationships');
+      // First ensure the table exists by calling the create function
+      await supabase.rpc('create_tag_relationships_table_if_not_exists');
+      
+      // Then fetch the relationships using a simple query
+      const { data, error } = await supabase
+        .from('tag_relationships' as any)
+        .select('*')
+        .order('similarity_score', { ascending: false });
 
       if (error) {
         console.error('Error fetching tag relationships:', error);
+        // If table doesn't exist, return empty array
+        if (error.code === 'PGRST116') {
+          setRelationships([]);
+          return [];
+        }
         toast({
           title: "Error",
           description: "Failed to fetch tag relationships",
@@ -40,7 +51,7 @@ export const useTagRelationships = () => {
         return [];
       }
 
-      const typedData = (data || []) as TagRelationship[];
+      const typedData = (data as unknown as TagRelationship[]) || [];
       setRelationships(typedData);
       return typedData;
     } catch (error) {

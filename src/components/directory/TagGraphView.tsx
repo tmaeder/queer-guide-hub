@@ -15,6 +15,7 @@ import '@xyflow/react/dist/style.css';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Maximize2, Tag } from "lucide-react";
+import { useTagRelationships } from "@/hooks/useTagRelationships";
 
 interface TagData {
   id: string;
@@ -69,6 +70,12 @@ export const TagGraphView = ({ tags, onTagClick, selectedTag }: TagGraphViewProp
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+  const { relationships, fetchRelationships } = useTagRelationships();
+
+  // Fetch relationships on component mount
+  useEffect(() => {
+    fetchRelationships();
+  }, [fetchRelationships]);
 
   // Generate nodes and edges from tag data
   const { graphNodes, graphEdges } = useMemo(() => {
@@ -96,73 +103,77 @@ export const TagGraphView = ({ tags, onTagClick, selectedTag }: TagGraphViewProp
       nodeMap.set(tag.id, node);
     });
 
-    // Create edges based on shared categories and related tags
-    tags.forEach((tag) => {
-      // Connect tags in the same categories
-      if (tag.categories) {
-        tags.forEach((otherTag) => {
-          if (tag.id !== otherTag.id && otherTag.categories) {
-            const sharedCategories = tag.categories.filter(cat => 
-              otherTag.categories?.includes(cat)
-            );
-            
-            if (sharedCategories.length > 0) {
-              const edgeId = `${tag.id}-${otherTag.id}`;
-              const reverseEdgeId = `${otherTag.id}-${tag.id}`;
-              
-              if (!edgeSet.has(edgeId) && !edgeSet.has(reverseEdgeId)) {
-                edgeArray.push({
-                  id: edgeId,
-                  source: tag.id,
-                  target: otherTag.id,
-                  type: 'smoothstep',
-                  style: { 
-                    stroke: 'hsl(var(--muted-foreground))', 
-                    strokeWidth: Math.min(sharedCategories.length * 2, 6),
-                    opacity: 0.6,
-                  },
-                  animated: false,
-                });
-                edgeSet.add(edgeId);
-              }
-            }
-          }
-        });
-      }
-
-      // Connect related tags
-      if (tag.related_tags) {
-        tag.related_tags.forEach((relatedTagName) => {
-          const relatedTag = tags.find(t => t.name.toLowerCase() === relatedTagName.toLowerCase());
-          if (relatedTag) {
-            const edgeId = `${tag.id}-related-${relatedTag.id}`;
-            const reverseEdgeId = `${relatedTag.id}-related-${tag.id}`;
-            
-            if (!edgeSet.has(edgeId) && !edgeSet.has(reverseEdgeId)) {
-              edgeArray.push({
-                id: edgeId,
-                source: tag.id,
-                target: relatedTag.id,
-                type: 'straight',
-                style: { 
-                  stroke: 'hsl(var(--primary))', 
-                  strokeWidth: 3,
-                  opacity: 0.8,
-                },
-                animated: true,
-              });
-              edgeSet.add(edgeId);
-            }
-          }
+    // Create edges based on computed relationships
+    relationships.forEach((relationship) => {
+      const sourceTag = tags.find(t => t.id === relationship.tag1_id);
+      const targetTag = tags.find(t => t.id === relationship.tag2_id);
+      
+      if (sourceTag && targetTag) {
+        const edgeId = `${relationship.tag1_id}-${relationship.tag2_id}`;
+        
+        // Determine edge style based on relationship type and similarity
+        const isSemanticRelationship = relationship.relationship_type === 'semantic';
+        const strokeWidth = Math.max(2, Math.min(relationship.similarity_score * 8, 6));
+        const opacity = Math.max(0.3, Math.min(relationship.similarity_score * 2, 1));
+        
+        edgeArray.push({
+          id: edgeId,
+          source: relationship.tag1_id,
+          target: relationship.tag2_id,
+          type: isSemanticRelationship ? 'smoothstep' : 'straight',
+          style: { 
+            stroke: isSemanticRelationship ? 'hsl(var(--primary))' : 'hsl(var(--secondary))', 
+            strokeWidth,
+            opacity,
+          },
+          animated: isSemanticRelationship && relationship.similarity_score > 0.5,
+          label: relationship.similarity_score > 0.7 ? `${(relationship.similarity_score * 100).toFixed(0)}%` : undefined,
         });
       }
     });
+
+    // Fallback: If no computed relationships exist, use category-based connections
+    if (relationships.length === 0) {
+      tags.forEach((tag) => {
+        // Connect tags in the same categories
+        if (tag.categories) {
+          tags.forEach((otherTag) => {
+            if (tag.id !== otherTag.id && otherTag.categories) {
+              const sharedCategories = tag.categories.filter(cat => 
+                otherTag.categories?.includes(cat)
+              );
+              
+              if (sharedCategories.length > 0) {
+                const edgeId = `${tag.id}-${otherTag.id}`;
+                const reverseEdgeId = `${otherTag.id}-${tag.id}`;
+                
+                if (!edgeSet.has(edgeId) && !edgeSet.has(reverseEdgeId)) {
+                  edgeArray.push({
+                    id: edgeId,
+                    source: tag.id,
+                    target: otherTag.id,
+                    type: 'smoothstep',
+                    style: { 
+                      stroke: 'hsl(var(--muted-foreground))', 
+                      strokeWidth: Math.min(sharedCategories.length * 2, 6),
+                      opacity: 0.6,
+                    },
+                    animated: false,
+                  });
+                  edgeSet.add(edgeId);
+                }
+              }
+            }
+          });
+        }
+      });
+    }
 
     return {
       graphNodes: Array.from(nodeMap.values()),
       graphEdges: edgeArray,
     };
-  }, [tags, selectedTag, onTagClick]);
+  }, [tags, selectedTag, onTagClick, relationships]);
 
   // Update nodes and edges when data changes
   useEffect(() => {
@@ -221,14 +232,26 @@ export const TagGraphView = ({ tags, onTagClick, selectedTag }: TagGraphViewProp
       {/* Legend */}
       <div className="absolute top-4 right-4 z-10 bg-card border rounded-lg p-3 space-y-2">
         <div className="text-sm font-medium">Legend</div>
-        <div className="flex items-center gap-2 text-xs">
-          <div className="w-3 h-0.5 bg-muted-foreground opacity-60"></div>
-          <span>Shared categories</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          <div className="w-3 h-0.5 bg-primary"></div>
-          <span>Related tags</span>
-        </div>
+        {relationships.length > 0 ? (
+          <>
+            <div className="flex items-center gap-2 text-xs">
+              <div className="w-3 h-0.5 bg-primary"></div>
+              <span>AI Semantic similarity</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <div className="w-3 h-0.5 bg-secondary"></div>
+              <span>Category-based</span>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Line thickness = similarity strength
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2 text-xs">
+            <div className="w-3 h-0.5 bg-muted-foreground opacity-60"></div>
+            <span>Shared categories</span>
+          </div>
+        )}
       </div>
 
       <ReactFlow
