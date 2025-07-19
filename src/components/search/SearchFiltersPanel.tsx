@@ -134,6 +134,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
             value={filters.location || ''}
             onChange={(e) => updateLocation(e.target.value)}
             className="text-sm"
+            tabIndex={-1}
           />
           {filters.location && (
             <Button
@@ -141,6 +142,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
               size="sm"
               className="absolute right-1 top-1 h-6 w-6 p-0"
               onClick={() => updateLocation('')}
+              tabIndex={-1}
             >
               <X className="h-3 w-3" />
             </Button>

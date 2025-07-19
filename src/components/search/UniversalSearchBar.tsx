@@ -123,6 +123,11 @@ export const UniversalSearchBar = () => {
     } else if (e.key === "Escape") {
       setIsOpen(false);
       inputRef.current?.blur();
+    } else if (e.key === "Tab") {
+      // Prevent tab from moving to filters when typing
+      if (isOpen && showFilters) {
+        e.preventDefault();
+      }
     }
   };
 
@@ -190,9 +195,16 @@ export const UniversalSearchBar = () => {
                   setIsFocused(true);
                   setIsOpen(true);
                 }}
-                onBlur={() => setIsFocused(false)}
+                onBlur={(e) => {
+                  setIsFocused(false);
+                  // Only close if not clicking on popover content
+                  if (!e.relatedTarget?.closest('[role="dialog"]')) {
+                    setTimeout(() => setIsOpen(false), 150);
+                  }
+                }}
                 className="border-0 bg-transparent focus-visible:ring-0 shadow-none text-sm placeholder:text-muted-foreground/60"
                 autoComplete="off"
+                autoFocus={false}
               />
               
               {query && (
