@@ -138,6 +138,17 @@ export function useEvents() {
         });
 
       if (error) throw error;
+
+      // Auto-add to favorites when going or interested
+      if (status === 'going' || status === 'interested') {
+        await supabase
+          .from('event_favorites')
+          .upsert({
+            event_id: eventId,
+            user_id: (await supabase.auth.getUser()).data.user?.id
+          });
+      }
+
       return { error: null };
     } catch (err) {
       return { 
