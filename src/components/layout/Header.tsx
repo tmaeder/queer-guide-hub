@@ -5,6 +5,7 @@ import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper,
 import { useAuth } from '@/hooks/useAuth';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -18,10 +19,9 @@ export function Header() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <Heart className="h-8 w-8 text-primary fill-current" />
-          
         </Link>
 
-        
+        <UniversalSearchBar />
 
         <div className="flex items-center gap-2">
           {user ? <DropdownMenu>

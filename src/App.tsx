@@ -46,6 +46,7 @@ import ProfileSettings from "./pages/ProfileSettings";
 import Messages from "./pages/Messages";
 import AccessibilityHub from "./pages/AccessibilityHub";
 import NotFound from "./pages/NotFound";
+import SearchResults from "./pages/SearchResults";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 
 const queryClient = new QueryClient();
@@ -195,7 +196,8 @@ const App = () => {
                       <AdminMarketplace />
                     </AdminRouteGuard>
                   } />
-                  <Route path="/news" element={<News />} />
+                   <Route path="/news" element={<News />} />
+                   <Route path="/search" element={<SearchResults />} />
                   <Route path="/travel" element={<Travel />} />
                   <Route path="/accessibility" element={<AccessibilityHub />} />
                   <Route path="/messages" element={<Messages />} />
