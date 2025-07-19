@@ -220,7 +220,7 @@ export default function EventDetail() {
       party: 'bg-primary/10 text-primary',
       workshop: 'bg-accent/10 text-accent',
       meetup: 'bg-secondary/10 text-secondary',
-      pride: 'bg-gradient-primary text-primary-foreground',
+      pride: 'bg-primary text-primary-foreground',
       rally: 'bg-destructive/10 text-destructive',
     };
     return colors[type] || 'bg-muted/10 text-muted-foreground';

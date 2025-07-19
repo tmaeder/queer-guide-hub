@@ -41,7 +41,7 @@ const Venues = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-subtle">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <CardContent>
@@ -55,7 +55,7 @@ const Venues = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-background">
       <div className="w-full px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -68,7 +68,7 @@ const Venues = () => {
             </p>
           </div>
           <Button 
-            className="bg-gradient-primary gap-2"
+            className="bg-primary gap-2"
             onClick={() => navigate('/admin/venues')}
           >
             <Plus className="h-4 w-4" />
@@ -114,7 +114,7 @@ const Venues = () => {
                 We couldn't find any venues matching your criteria. Try adjusting your filters or be the first to add a venue in this area!
               </p>
               <Button 
-                className="bg-gradient-primary"
+                className="bg-primary"
                 onClick={() => navigate('/admin/venues')}
               >
                 Add the First Venue

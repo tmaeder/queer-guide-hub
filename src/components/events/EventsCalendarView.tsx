@@ -122,7 +122,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
         {/* Calendar */}
         <div className="xl:col-span-3">
           <Card className="overflow-hidden">
-            <CardHeader className="bg-gradient-subtle">
+            <CardHeader className="bg-card">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl gradient-text">
                   {format(currentMonth, 'MMMM yyyy')}

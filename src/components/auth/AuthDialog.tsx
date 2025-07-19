@@ -124,7 +124,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           
           <Button 
             type="submit" 
-            className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+            className="w-full bg-primary hover:opacity-90 transition-opacity"
             disabled={loading}
           >
             {loading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}

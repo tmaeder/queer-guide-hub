@@ -125,7 +125,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
             className="pl-9"
           />
         </div>
-        <Button onClick={handleSearch} className="bg-gradient-primary">
+        <Button onClick={handleSearch} className="bg-primary">
           Search
         </Button>
         <Button
@@ -247,7 +247,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
-            <Button onClick={handleSearch} className="bg-gradient-primary gap-2">
+            <Button onClick={handleSearch} className="bg-primary gap-2">
               <Sliders className="h-4 w-4" />
               Apply Filters
             </Button>

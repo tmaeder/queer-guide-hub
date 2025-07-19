@@ -62,7 +62,7 @@ export default function About() {
 
       <section className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-8">Our Mission</h2>
-        <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-8">
+        <div className="bg-card rounded-lg p-8">
           <p className="text-lg text-center leading-relaxed">
             The Queer Guide exists to create a safer, more connected world for LGBTQ+ individuals and allies. 
             We believe everyone deserves to find welcoming spaces, supportive communities, and opportunities 

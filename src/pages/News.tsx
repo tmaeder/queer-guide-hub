@@ -96,7 +96,7 @@ export default function News() {
       </div>;
   }
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-background">
       <div className="w-full px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -111,7 +111,7 @@ export default function News() {
           <Button 
             onClick={handleImportNews} 
             disabled={isImporting} 
-            className="bg-gradient-primary gap-2"
+            className="bg-primary gap-2"
           >
             <Download className="h-4 w-4" />
             {isImporting ? "Importing..." : "Import Latest News"}
@@ -143,7 +143,7 @@ export default function News() {
               <Button 
                 onClick={handleImportNews} 
                 disabled={isImporting} 
-                className="bg-gradient-primary gap-2"
+                className="bg-primary gap-2"
               >
                 <Download className="h-4 w-4" />
                 Import Latest News

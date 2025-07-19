@@ -192,7 +192,7 @@ const Events = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-subtle">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <CardContent>
@@ -206,7 +206,7 @@ const Events = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-background">
       <div className="w-full px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -241,7 +241,7 @@ const Events = () => {
               </Button>
             </div>
             <Button 
-              className="bg-gradient-primary gap-2"
+              className="bg-primary gap-2"
               onClick={() => navigate('/admin/events')}
             >
               <Plus className="h-4 w-4" />
@@ -277,7 +277,7 @@ const Events = () => {
               )}
               Near Me
             </Button>
-            <Button onClick={handleFiltersChange} className="bg-gradient-primary">
+            <Button onClick={handleFiltersChange} className="bg-primary">
               Search
             </Button>
             <Button
@@ -475,7 +475,7 @@ const Events = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-2 pt-2">
-                <Button onClick={handleFiltersChange} className="bg-gradient-primary">
+                <Button onClick={handleFiltersChange} className="bg-primary">
                   Apply Filters
                 </Button>
                 {hasActiveFilters && (
@@ -559,7 +559,7 @@ const Events = () => {
                 We couldn't find any events matching your criteria. Try adjusting your filters or be the first to create an event!
               </p>
               <Button 
-                className="bg-gradient-primary"
+                className="bg-primary"
                 onClick={() => navigate('/admin/events')}
               >
                 Create the First Event

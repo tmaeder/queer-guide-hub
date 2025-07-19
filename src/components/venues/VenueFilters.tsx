@@ -253,7 +253,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           )}
           Near Me
         </Button>
-        <Button onClick={handleSearch} className="bg-gradient-primary">
+        <Button onClick={handleSearch} className="bg-primary">
           Search
         </Button>
         <Button
@@ -473,7 +473,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
-            <Button onClick={handleSearch} className="bg-gradient-primary">
+            <Button onClick={handleSearch} className="bg-primary">
               Apply Filters
             </Button>
             {hasActiveFilters && (

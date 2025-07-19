@@ -298,7 +298,7 @@ export const AdvancedSearchBar = () => {
                         handleSearch();
                         setIsOpen(false);
                       }}
-                      className="w-full bg-gradient-primary hover:opacity-90 text-primary-foreground"
+                      className="w-full bg-primary hover:opacity-90 text-primary-foreground"
                       size="sm"
                     >
                       <Search className="h-4 w-4 mr-2" />

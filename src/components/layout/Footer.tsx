@@ -245,7 +245,7 @@ export function Footer() {
 
         {/* Pride Flag Accent */}
         <div className="mt-8 pt-4">
-          <div className="h-1 w-full bg-gradient-to-r from-red-500 via-orange-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 rounded-full opacity-60"></div>
+          <div className="h-1 w-full bg-border rounded-full opacity-60"></div>
         </div>
       </div>
     </footer>;

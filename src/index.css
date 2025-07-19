@@ -49,10 +49,7 @@
     --sidebar-border: 0 0% 90%;
     --sidebar-ring: 0 0% 80%;
     
-    /* Gradients - Black to White */
-    --gradient-primary: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 20%));
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0%) 0%, hsl(0 0% 50%) 50%, hsl(0 0% 100%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 90%));
+    /* Background removed gradients */
     
     /* Shadows - Removed */
     --shadow-elegant: none;
@@ -99,7 +96,7 @@
     --sidebar-border: 0 0% 15%;
     --sidebar-ring: 0 0% 20%;
     
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 50%) 50%, hsl(0 0% 0%) 100%);
+    /* Dark mode gradients removed */
     --shadow-elegant: none;
     --shadow-glow: none;
   }

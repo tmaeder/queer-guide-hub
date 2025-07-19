@@ -66,7 +66,7 @@ export function Header() {
                   </Button>
                 </div>
               </DropdownMenuContent>
-            </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} className="bg-gradient-primary hover:opacity-90 transition-opacity h-9 w-9 px-0">
+            </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} className="bg-primary hover:opacity-90 transition-opacity h-9 w-9 px-0">
               <User className="h-4 w-4" />
             </Button>}
            
