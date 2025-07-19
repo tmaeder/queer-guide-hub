@@ -268,6 +268,7 @@ export default function ProfileSettings() {
     return () => clearTimeout(timeoutId);
   }, [formData, hasUnsavedChanges, handleSave]);
 
+
   return (
     <div className="w-full p-6 space-y-6">
       {/* Header with Progress */}
