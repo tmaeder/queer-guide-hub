@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, MapPin, DollarSign, Star, Filter, X } from 'lucide-react';
+import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, BookOpen, Plane } from 'lucide-react';
 import { SearchFilters } from '@/hooks/useUniversalSearch';
 import { format } from 'date-fns';
 
@@ -17,14 +17,14 @@ interface SearchFiltersPanelProps {
 }
 
 const contentTypes = [
-  { id: 'venue', label: 'Venues', icon: '🏢' },
-  { id: 'event', label: 'Events', icon: '📅' },
-  { id: 'marketplace', label: 'Marketplace', icon: '🛍️' },
-  { id: 'user', label: 'Users', icon: '👥' },
-  { id: 'news', label: 'News', icon: '📰' },
-  { id: 'location', label: 'Locations', icon: '🌍' },
-  { id: 'content', label: 'Wiki', icon: '📖' },
-  { id: 'travel', label: 'Travel', icon: '✈️' }
+  { id: 'venue', label: 'Venues', icon: Building2 },
+  { id: 'event', label: 'Events', icon: CalendarDays },
+  { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag },
+  { id: 'user', label: 'Users', icon: Users },
+  { id: 'news', label: 'News', icon: Newspaper },
+  { id: 'location', label: 'Locations', icon: Globe },
+  { id: 'content', label: 'Wiki', icon: BookOpen },
+  { id: 'travel', label: 'Travel', icon: Plane }
 ];
 
 const popularCategories = {
@@ -108,17 +108,20 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          {contentTypes.map((type) => (
-            <Badge
-              key={type.id}
-              variant={filters.types.includes(type.id) ? "default" : "outline"}
-              className="cursor-pointer hover:bg-primary/80"
-              onClick={() => toggleContentType(type.id)}
-            >
-              <span className="mr-1">{type.icon}</span>
-              {type.label}
-            </Badge>
-          ))}
+          {contentTypes.map((type) => {
+            const IconComponent = type.icon;
+            return (
+              <Badge
+                key={type.id}
+                variant={filters.types.includes(type.id) ? "default" : "outline"}
+                className="cursor-pointer hover:bg-primary/80"
+                onClick={() => toggleContentType(type.id)}
+              >
+                <IconComponent className="h-3 w-3 mr-1" />
+                {type.label}
+              </Badge>
+            );
+          })}
         </div>
       </div>
 
@@ -234,7 +237,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                   className="h-8 w-8 p-0"
                   onClick={() => updateRating(rating)}
                 >
-                  {rating}⭐
+                  <Star className="h-3 w-3" />
                 </Button>
               ))}
             </div>
