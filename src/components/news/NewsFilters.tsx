@@ -157,7 +157,6 @@ export const NewsFilters = ({
       dateRange: newDateRange || undefined
     });
   };
-
   const clearFilters = () => {
     setSearch("");
     setCategory("");
@@ -190,40 +189,10 @@ export const NewsFilters = ({
         </Button>
 
         {/* Category Filter */}
-        {categories.length > 0 && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Category</label>
-            <Select value={category} onValueChange={handleCategoryChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="All categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+        {categories.length > 0}
 
         {/* Sentiment Filter */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Sentiment</label>
-          <Select value={sentiment} onValueChange={handleSentimentChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="All sentiments" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All sentiments</SelectItem>
-              <SelectItem value="positive">Positive</SelectItem>
-              <SelectItem value="neutral">Neutral</SelectItem>
-              <SelectItem value="negative">Negative</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        
 
         {/* Date Range Filter */}
         <div className="space-y-2">

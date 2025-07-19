@@ -125,12 +125,7 @@ export default function News() {
         {/* Main content */}
         <div className="lg:col-span-3">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all">All News</TabsTrigger>
-              <TabsTrigger value="featured">Featured</TabsTrigger>
-              <TabsTrigger value="rights-legal">Rights</TabsTrigger>
-              <TabsTrigger value="politics">Politics</TabsTrigger>
-            </TabsList>
+            
 
             <TabsContent value={activeTab} className="space-y-6">
               {loading ? <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
