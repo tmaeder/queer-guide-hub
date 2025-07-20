@@ -80,7 +80,7 @@ export function Footer() {
     label: "GitHub"
   }];
   return <footer className="bg-card border-t mt-auto">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 bg-card/50 backdrop-blur-sm rounded-t-lg">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-4">
