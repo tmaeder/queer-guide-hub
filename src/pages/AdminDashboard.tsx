@@ -132,6 +132,14 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground">
           Welcome back! Manage your website content and settings.
         </p>
+        <div className="mt-2 text-sm text-muted-foreground">
+          Current permissions: {isAdmin ? 'Admin' : isModerator ? 'Moderator' : 'None'} 
+          {!canManageContent() && (
+            <span className="text-destructive ml-2">
+              (No admin/moderator role found - contact system admin)
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
