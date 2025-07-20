@@ -98,33 +98,18 @@ export default function CountryWeatherForecast({
   const threeDayForecast = weather.forecast.slice(0, 3);
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 text-sm font-medium">
-        <Thermometer className="h-4 w-4" />
-        3-Day Weather Forecast
-      </div>
-      
-      <div className="grid grid-cols-3 gap-3">
-        {threeDayForecast.map((day, index) => (
-          <div key={day.date} className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">
-              {index === 0 ? 'Today' : 
-               index === 1 ? 'Tomorrow' : 
-               new Date(day.date).toLocaleDateString('en', { weekday: 'short' })}
-            </div>
-            <div className="flex justify-center mb-1">
-              {getWeatherIcon(day.icon)}
-            </div>
-            <div className="text-sm font-medium">{day.temp}°</div>
-            <div className="text-xs text-muted-foreground">
-              {day.tempMin}°/{day.tempMax}°
-            </div>
-            <div className="text-xs text-muted-foreground mt-1 capitalize">
-              {day.description}
-            </div>
+    <div className="flex items-center gap-4 text-sm">
+      {threeDayForecast.map((day, index) => (
+        <div key={day.date} className="flex items-center gap-2">
+          <div className="text-xs text-muted-foreground">
+            {index === 0 ? 'Today' : 
+             index === 1 ? 'Tom' : 
+             new Date(day.date).toLocaleDateString('en', { weekday: 'short' })}
           </div>
-        ))}
-      </div>
+          {getWeatherIcon(day.icon)}
+          <span className="font-medium">{day.temp}°</span>
+        </div>
+      ))}
     </div>
   );
 }
