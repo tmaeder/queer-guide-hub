@@ -44,6 +44,7 @@ import CountryDetail from "./pages/CountryDetail";
 import AdminVenues from "./pages/AdminVenues";
 import AdminEvents from "./pages/AdminEvents";
 import AdminMarketplace from "./pages/AdminMarketplace";
+import AdminNewsSources from "./pages/AdminNewsSources";
 import News from "./pages/News";
 import Travel from "./pages/Travel";
 import MyBookings from "./pages/MyBookings";
@@ -190,11 +191,16 @@ const App = () => {
                       <AdminEvents />
                     </AdminRouteGuard>
                   } />
-                  <Route path="/admin/marketplace" element={
-                    <AdminRouteGuard>
-                      <AdminMarketplace />
-                    </AdminRouteGuard>
-                  } />
+                   <Route path="/admin/marketplace" element={
+                     <AdminRouteGuard>
+                       <AdminMarketplace />
+                     </AdminRouteGuard>
+                   } />
+                   <Route path="/admin/news-sources" element={
+                     <AdminRouteGuard>
+                       <AdminNewsSources />
+                     </AdminRouteGuard>
+                   } />
                   <Route path="/admin/groups" element={
                     <AdminRouteGuard>
                       <AdminGroups />

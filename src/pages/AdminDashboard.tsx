@@ -31,7 +31,8 @@ import {
   CheckCircle,
   XCircle,
   ArrowUpRight,
-  RefreshCw
+  RefreshCw,
+  Newspaper
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -270,6 +271,14 @@ export default function AdminDashboard() {
       path: "/admin/groups",
       color: "bg-gradient-to-br from-pink-500 to-pink-600",
       stats: `${stats.totalGroups} groups`
+    },
+    {
+      title: "News Sources",
+      description: "Manage RSS feeds and news API sources",
+      icon: Newspaper,
+      path: "/admin/news-sources",
+      color: "bg-gradient-to-br from-cyan-500 to-cyan-600",
+      stats: "Content feeds"
     }
   ];
 
