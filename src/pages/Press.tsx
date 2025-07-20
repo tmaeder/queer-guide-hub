@@ -92,10 +92,12 @@ export default function Press() {
   ];
 
   const keyStats = [
-    { label: "Active Users", value: "10,000+", icon: Users },
-    { label: "Verified Venues", value: "500+", icon: Award },
-    { label: "Cities Covered", value: "50+", icon: Calendar },
-    { label: "Community Events", value: "1,000+", icon: Calendar }
+    { label: "Registered Users", value: "2", icon: Users },
+    { label: "Verified Venues", value: "6", icon: Award },
+    { label: "Cities Covered", value: "5", icon: Calendar },
+    { label: "Active Events", value: "14", icon: Calendar },
+    { label: "Community Groups", value: "8", icon: Users },
+    { label: "Marketplace Listings", value: "8", icon: Award }
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
