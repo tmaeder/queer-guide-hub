@@ -68,18 +68,7 @@ export const NewsCard = ({
             </Badge>}
         </div>
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            {formatDistanceToNow(new Date(article.published_at), {
-            addSuffix: true
-          })}
-          </div>
-          {article.views_count > 0 && <div className="flex items-center gap-1">
-              <Eye className="h-4 w-4" />
-              {article.views_count}
-            </div>}
-        </div>
+        
 
         <div className="flex items-center gap-2">
           <Badge style={{
