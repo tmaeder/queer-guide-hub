@@ -49,11 +49,19 @@
     --sidebar-border: 0 0% 90%;
     --sidebar-ring: 0 0% 80%;
     
-    /* Background removed gradients */
+    /* Elegant Pride Gradient Background */
+    --gradient-pride: linear-gradient(135deg, 
+      hsl(0 85% 60%) 0%, 
+      hsl(15 85% 65%) 15%, 
+      hsl(45 85% 70%) 25%, 
+      hsl(290 85% 65%) 50%, 
+      hsl(320 85% 60%) 65%, 
+      hsl(240 85% 65%) 85%, 
+      hsl(200 85% 70%) 100%);
     
-    /* Shadows - Removed */
-    --shadow-elegant: none;
-    --shadow-glow: none;
+    /* Shadows - Elegant subtle shadows */
+    --shadow-elegant: 0 4px 20px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 30px rgba(0, 0, 0, 0.05);
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -106,9 +114,11 @@
   }
   
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: var(--gradient-pride);
     font-feature-settings: "rlig" 1, "calt" 1;
     transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
   }
   
   h1, h2, h3, h4, h5, h6 {

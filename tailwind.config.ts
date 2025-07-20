@@ -117,7 +117,9 @@ export default {
 				'fade-in': 'fade-in 0.3s ease-out',
 				'scale-in': 'scale-in 0.2s ease-out'
 			},
-			/* Gradients removed */
+			backgroundImage: {
+				'gradient-pride': 'var(--gradient-pride)'
+			},
 			boxShadow: {
 				'elegant': 'var(--shadow-elegant)',
 				'glow': 'var(--shadow-glow)'
