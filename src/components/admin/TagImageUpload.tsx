@@ -35,11 +35,11 @@ export const TagImageUpload = ({
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (max 20MB)
+    if (file.size > 20 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Please select an image smaller than 5MB",
+        description: "Please select an image smaller than 20MB",
         variant: "destructive"
       });
       return;
@@ -145,7 +145,7 @@ export const TagImageUpload = ({
                 Upload an image for this tag
               </p>
               <p className="text-xs text-muted-foreground">
-                PNG, JPG, WebP up to 5MB
+                PNG, JPG, WebP up to 20MB
               </p>
             </div>
           </div>
