@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/hooks/useFavorites";
 import CountryWeatherForecast from "@/components/weather/CountryWeatherForecast";
+import CountryHeroImages from "@/components/country/CountryHeroImages";
 
 type CountryWithRelations = {
   id: string;
@@ -229,6 +230,8 @@ export default function CountryDetail() {
         {/* Hero Section */}
         <Card className="mb-8">
           <CardContent className="p-6">
+            {/* Country Images */}
+            <CountryHeroImages countryName={country.name} />
             <div className="flex items-center gap-4 mb-4">
               {country.flag_emoji && (
                 <span className="text-6xl">{country.flag_emoji}</span>
