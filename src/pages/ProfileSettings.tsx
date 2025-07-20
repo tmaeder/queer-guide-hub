@@ -426,9 +426,11 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
                   <Label htmlFor="pronouns">Pronouns</Label>
                   <Input
                     id="pronouns"
-                    value={formData.pronouns}
+                    value={formData.pronouns || ''}
                     onChange={(e) => handleInputChange('pronouns', e.target.value)}
                     placeholder="e.g., they/them, she/her, he/him"
+                    className="pointer-events-auto"
+                    tabIndex={0}
                   />
                 </div>
               </div>
