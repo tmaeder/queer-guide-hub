@@ -46,7 +46,7 @@ export function Header() {
   const userMenuItems = [
     { to: "/my-bookings", icon: CreditCard, label: "Bookings" },
     { to: "/favorites", icon: Heart, label: "Favorites" },
-    { to: "/profile/settings", icon: Settings, label: "Settings" },
+    { to: "/profile/settings", icon: Settings, label: "My Profile" },
     { to: "/messages", icon: MessageSquare, label: "Messages" },
     { to: "/friends", icon: Users, label: "Friends" },
     { to: "/accessibility", icon: Accessibility, label: "Access" },
