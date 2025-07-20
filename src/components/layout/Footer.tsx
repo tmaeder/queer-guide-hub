@@ -3,6 +3,7 @@ import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 export function Footer() {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
@@ -239,6 +240,7 @@ export function Footer() {
               </Button>
             </div>
             <Separator orientation="vertical" className="h-6" />
+            <LanguageSwitcher variant="compact" />
             <ThemeToggle />
           </div>
         </div>

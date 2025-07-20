@@ -8,7 +8,6 @@ import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -41,7 +40,6 @@ export function Header() {
         <UniversalSearchBar />
 
         <div className="flex items-center gap-2">
-          <LanguageSwitcher variant="compact" />
           {user ? <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
