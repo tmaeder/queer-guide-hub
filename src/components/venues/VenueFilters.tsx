@@ -223,62 +223,65 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0 || selectedAmenities.length > 0 || selectedServices.length > 0 || nearMe;
 
   return (
-    <div className="space-y-4 p-4 bg-card rounded-lg border">
+    <div className="space-y-6 p-6 bg-card rounded-xl border shadow-sm">
       {/* Search Bar */}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search venues..."
+            placeholder="Search venues & organizations..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-9"
+            className="pl-9 h-11"
           />
         </div>
-        <Button
-          variant={nearMe ? "default" : "outline"}
-          onClick={handleNearMeToggle}
-          disabled={isDetectingLocation}
-          className="gap-2"
-        >
-          {isDetectingLocation ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Navigation className="h-4 w-4" />
-          )}
-          Near Me
-        </Button>
-        <Button onClick={handleSearch} className="bg-primary">
-          Search
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => setShowAllFilters(!showAllFilters)}
-          className="gap-2"
-        >
-          <Filter className="h-4 w-4" />
-          Filters
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant={nearMe ? "default" : "outline"}
+            onClick={handleNearMeToggle}
+            disabled={isDetectingLocation}
+            className="gap-2 h-11 px-4"
+          >
+            {isDetectingLocation ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Navigation className="h-4 w-4" />
+            )}
+            Near Me
+          </Button>
+          <Button onClick={handleSearch} className="bg-primary h-11 px-6">
+            Search
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowAllFilters(!showAllFilters)}
+            className="gap-2 h-11 px-4"
+          >
+            <Filter className="h-4 w-4" />
+            {showAllFilters ? 'Hide' : 'More'} Filters
+          </Button>
+        </div>
       </div>
 
       {/* Extended Filters */}
       {showAllFilters && (
-        <div className="space-y-4 pt-4 border-t">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-6 pt-6 border-t animate-fade-in">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
+              <Label htmlFor="city" className="text-sm font-medium">City</Label>
               <Input
                 id="city"
                 placeholder="Enter city..."
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
+                className="h-10"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category" className="text-sm font-medium">Category</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
+                <SelectTrigger className="h-10">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -293,25 +296,30 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             </div>
           </div>
 
-          {/* Tags */}
-          <div className="space-y-2">
-            <Label>Tags</Label>
-            <Popover open={tagsOpen} onOpenChange={setTagsOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={tagsOpen}
-                  className="w-full justify-between"
-                >
-                  {selectedTags.length > 0
-                    ? `${selectedTags.length} tag${selectedTags.length !== 1 ? 's' : ''} selected`
-                    : "Select tags..."}
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
+          {/* Filter Categories */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Tags */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                Tags
+              </Label>
+              <Popover open={tagsOpen} onOpenChange={setTagsOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={tagsOpen}
+                    className="w-full justify-between h-10"
+                  >
+                    {selectedTags.length > 0
+                      ? `${selectedTags.length} tag${selectedTags.length !== 1 ? 's' : ''} selected`
+                      : "Select tags..."}
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
                   <CommandInput placeholder="Search tags..." />
                   <CommandList>
                     <CommandEmpty>No tags found.</CommandEmpty>
@@ -353,10 +361,10 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             {selectedTags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {selectedTags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="gap-1">
+                  <Badge key={tag} variant="secondary" className="gap-1 text-xs">
                     {tag}
                     <X
-                      className="h-3 w-3 cursor-pointer"
+                      className="h-3 w-3 cursor-pointer hover:text-destructive"
                       onClick={() => handleTagToggle(tag)}
                     />
                   </Badge>
@@ -366,15 +374,18 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           </div>
 
           {/* Amenities */}
-          <div className="space-y-2">
-            <Label>Amenities</Label>
+          <div className="space-y-3">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+              Amenities
+            </Label>
             <Popover open={amenitiesOpen} onOpenChange={setAmenitiesOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={amenitiesOpen}
-                  className="w-full justify-between"
+                  className="w-full justify-between h-10"
                 >
                   {selectedAmenities.length > 0
                     ? `${selectedAmenities.length} amenity${selectedAmenities.length !== 1 ? 'ies' : ''} selected`
@@ -382,7 +393,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
+              <PopoverContent className="w-full p-0" align="start">
                 <Command>
                   <CommandInput placeholder="Search amenities..." />
                   <CommandList>
@@ -411,10 +422,10 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             {selectedAmenities.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {selectedAmenities.map((amenity) => (
-                  <Badge key={amenity} variant="secondary" className="gap-1">
+                  <Badge key={amenity} variant="secondary" className="gap-1 text-xs">
                     {amenity}
                     <X
-                      className="h-3 w-3 cursor-pointer"
+                      className="h-3 w-3 cursor-pointer hover:text-destructive"
                       onClick={() => handleAmenityToggle(amenity)}
                     />
                   </Badge>
@@ -424,15 +435,18 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           </div>
 
           {/* Services */}
-          <div className="space-y-2">
-            <Label>Services</Label>
+          <div className="space-y-3">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              Services
+            </Label>
             <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={servicesOpen}
-                  className="w-full justify-between"
+                  className="w-full justify-between h-10"
                 >
                   {selectedServices.length > 0
                     ? `${selectedServices.length} service${selectedServices.length !== 1 ? 's' : ''} selected`
@@ -440,7 +454,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
+              <PopoverContent className="w-full p-0" align="start">
                 <Command>
                   <CommandInput placeholder="Search services..." />
                   <CommandList>
@@ -469,10 +483,10 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             {selectedServices.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {selectedServices.map((service) => (
-                  <Badge key={service} variant="secondary" className="gap-1">
+                  <Badge key={service} variant="secondary" className="gap-1 text-xs">
                     {service}
                     <X
-                      className="h-3 w-3 cursor-pointer"
+                      className="h-3 w-3 cursor-pointer hover:text-destructive"
                       onClick={() => handleServiceToggle(service)}
                     />
                   </Badge>
@@ -480,14 +494,15 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               </div>
             )}
           </div>
+          </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            <Button onClick={handleSearch} className="bg-primary">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <Button onClick={handleSearch} className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none sm:px-8">
               Apply Filters
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters} className="gap-2">
+              <Button variant="outline" onClick={clearFilters} className="gap-2 flex-1 sm:flex-none">
                 <X className="h-4 w-4" />
                 Clear All
               </Button>
@@ -498,18 +513,18 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
 
       {/* Active Filters Display */}
       {hasActiveFilters && !showAllFilters && (
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
+        <div className="flex flex-wrap gap-2 items-center p-4 bg-muted/50 rounded-lg">
+          <span className="text-sm font-medium text-muted-foreground">Active filters:</span>
           {search && (
             <Badge variant="secondary" className="gap-1">
               Search: {search}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setSearch('')} />
+              <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => setSearch('')} />
             </Badge>
           )}
           {city && (
             <Badge variant="secondary" className="gap-1">
               City: {city}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setCity('')} />
+              <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => setCity('')} />
             </Badge>
           )}
           {category && category !== 'all' && (
