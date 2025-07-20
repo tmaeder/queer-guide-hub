@@ -194,9 +194,7 @@ export function Footer() {
         </div>
 
         {/* Pride Flag Accent */}
-        <div className="mt-8 pt-4">
-          
-        </div>
+        
       </div>
     </footer>;
 }
