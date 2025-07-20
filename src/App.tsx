@@ -21,6 +21,7 @@ import Directory from "./pages/Directory";
 import TagsDirectory from "./pages/TagsDirectory";
 import UserDirectory from "./pages/UserDirectory";
 import About from "./pages/About";
+import AboutHub from "./pages/AboutHub";
 import Contact from "./pages/Contact";
 import OurVision from "./pages/OurVision";
 import OurValues from "./pages/OurValues";
@@ -154,13 +155,14 @@ const App = () => {
                   <Route path="/users" element={<UserDirectory />} />
                   <Route path="/tags" element={<TagsDirectory />} />
                   <Route path="/tags/:tagName" element={<TagsDirectory />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/vision" element={<OurVision />} />
-                  <Route path="/values" element={<OurValues />} />
-                  <Route path="/press" element={<Press />} />
-                  <Route path="/blog" element={<Blog />} />
-                  <Route path="/sustainability" element={<Sustainability />} />
+                   <Route path="/about-hub" element={<AboutHub />} />
+                   <Route path="/about" element={<About />} />
+                   <Route path="/contact" element={<Contact />} />
+                   <Route path="/vision" element={<OurVision />} />
+                   <Route path="/values" element={<OurValues />} />
+                   <Route path="/press" element={<Press />} />
+                   <Route path="/blog" element={<Blog />} />
+                   <Route path="/sustainability" element={<Sustainability />} />
                    <Route path="/legal" element={<LegalHub />} />
                    <Route path="/terms" element={<TermsOfService />} />
                    <Route path="/privacy" element={<PrivacyPolicy />} />

@@ -12,16 +12,8 @@ export function Footer() {
     icon: Shield
   }];
   const helpLinks = [{
-    href: "/about",
-    label: "About Us",
-    icon: Info
-  }, {
-    href: "/vision",
-    label: "Our Vision",
-    icon: Eye
-  }, {
-    href: "/values",
-    label: "Our Values",
+    href: "/about-hub",
+    label: "About Hub",
     icon: Heart
   }, {
     href: "/contact",
@@ -35,10 +27,6 @@ export function Footer() {
     href: "/blog",
     label: "Blog",
     icon: FileText
-  }, {
-    href: "/sustainability",
-    label: "Sustainability",
-    icon: Leaf
   }];
   const communityLinks = [{
     href: "/travel",
