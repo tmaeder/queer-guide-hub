@@ -2392,6 +2392,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tag_relationships: {
+        Row: {
+          created_at: string
+          id: string
+          relationship_type: string
+          similarity_score: number
+          tag1_id: string
+          tag2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          relationship_type?: string
+          similarity_score: number
+          tag1_id: string
+          tag2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          relationship_type?: string
+          similarity_score?: number
+          tag1_id?: string
+          tag2_id?: string
+        }
+        Relationships: []
+      }
       unified_tag_assignments: {
         Row: {
           created_at: string
