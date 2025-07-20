@@ -104,13 +104,26 @@ export const NewsCard = ({ article, onViewArticle, showFullContent = false, view
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Badge 
-                    style={{ backgroundColor: getCategoryColor(article.category) }}
-                    className="text-primary-foreground text-xs"
-                  >
-                    {article.category.replace('-', ' ')}
-                  </Badge>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {article.tags && article.tags.length > 0 ? (
+                    article.tags.slice(0, 2).map((tag, index) => (
+                      <Badge 
+                        key={index}
+                        variant="secondary"
+                        className="text-xs"
+                      >
+                        <Tag className="h-3 w-3 mr-1" />
+                        {tag}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge 
+                      style={{ backgroundColor: getCategoryColor(article.category) }}
+                      className="text-primary-foreground text-xs"
+                    >
+                      {article.category.replace('-', ' ')}
+                    </Badge>
+                  )}
                   <Badge variant="outline" className="text-xs">
                     <Newspaper className="h-3 w-3 mr-1" />
                     {new URL(article.url).hostname.replace('www.', '')}
@@ -184,13 +197,26 @@ export const NewsCard = ({ article, onViewArticle, showFullContent = false, view
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <Badge 
-            style={{ backgroundColor: getCategoryColor(article.category) }}
-            className="text-primary-foreground"
-          >
-            {article.category.replace('-', ' ')}
-          </Badge>
+        <div className="flex items-center gap-2 flex-wrap">
+          {article.tags && article.tags.length > 0 ? (
+            article.tags.slice(0, 3).map((tag, index) => (
+              <Badge 
+                key={index}
+                variant="secondary"
+                className="text-xs"
+              >
+                <Tag className="h-3 w-3 mr-1" />
+                {tag}
+              </Badge>
+            ))
+          ) : (
+            <Badge 
+              style={{ backgroundColor: getCategoryColor(article.category) }}
+              className="text-primary-foreground text-xs"
+            >
+              {article.category.replace('-', ' ')}
+            </Badge>
+          )}
           <Badge variant="outline" className="text-xs">
             <Newspaper className="h-3 w-3 mr-1" />
             {new URL(article.url).hostname.replace('www.', '')}
