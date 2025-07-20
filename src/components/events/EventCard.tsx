@@ -78,6 +78,25 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
 
   return (
     <Card className="group hover:shadow-elegant transition-all duration-300">
+      {/* Event Images */}
+      {event.images && event.images.length > 0 && (
+        <div className="relative h-48 overflow-hidden rounded-t-lg">
+          <img
+            src={event.images[0]}
+            alt={event.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+            }}
+          />
+          {event.images.length > 1 && (
+            <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+              +{event.images.length - 1} more
+            </div>
+          )}
+        </div>
+      )}
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">

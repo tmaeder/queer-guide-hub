@@ -354,6 +354,36 @@ export default function EventDetail() {
             </Card>
           )}
 
+          {/* Event Images */}
+          {event.images && event.images.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Event Photos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {event.images.map((imageUrl, index) => (
+                    <div key={index} className="aspect-video rounded-lg overflow-hidden bg-muted">
+                      <img
+                        src={imageUrl}
+                        alt={`${event.title} - Image ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                        onClick={() => {
+                          // Open image in new tab for full view
+                          window.open(imageUrl, '_blank');
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Description */}
           {event.description && (
             <Card>

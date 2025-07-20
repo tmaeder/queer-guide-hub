@@ -33,6 +33,7 @@ import {
   Users
 } from "lucide-react";
 import { EventsCsvImport } from "@/components/events/EventsCsvImport";
+import { EventImageUpload } from "@/components/events/EventImageUpload";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -74,7 +75,8 @@ export default function AdminEvents() {
     organizer_name: "",
     organizer_contact: "",
     featured: false,
-    tags: [] as string[]
+    tags: [] as string[],
+    images: [] as string[]
   });
 
   const eventTypes = [
@@ -138,6 +140,7 @@ export default function AdminEvents() {
         price_min: formData.price_min ? parseFloat(formData.price_min) : null,
         price_max: formData.price_max ? parseFloat(formData.price_max) : null,
         max_attendees: formData.max_attendees ? parseInt(formData.max_attendees) : null,
+        images: formData.images.length > 0 ? formData.images : null,
         created_by: user?.id
       };
 
@@ -194,7 +197,8 @@ export default function AdminEvents() {
       organizer_name: "",
       organizer_contact: "",
       featured: false,
-      tags: []
+      tags: [],
+      images: []
     });
     setStartDate(undefined);
     setEndDate(undefined);
@@ -254,7 +258,8 @@ export default function AdminEvents() {
       organizer_name: event.organizer_name || "",
       organizer_contact: event.organizer_contact || "",
       featured: event.featured,
-      tags: event.tags || []
+      tags: event.tags || [],
+      images: event.images || []
     });
     setStartDate(new Date(event.start_date));
     setEndDate(event.end_date ? new Date(event.end_date) : undefined);
@@ -616,6 +621,13 @@ export default function AdminEvents() {
                   <Label htmlFor="featured">Featured Event</Label>
                 </div>
               </div>
+
+              {/* Event Images */}
+              <EventImageUpload
+                images={formData.images}
+                onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+                maxImages={5}
+              />
 
               <Button type="submit" className="w-full">
                 {editingEvent ? 'Update Event' : 'Create Event'}

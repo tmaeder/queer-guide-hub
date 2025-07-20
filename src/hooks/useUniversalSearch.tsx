@@ -226,29 +226,8 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
   };
 
   const searchContent = async (searchQuery: string): Promise<SearchResult[]> => {
-    const { data, error } = await supabase
-      .from('content')
-      .select('*')
-      .or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`)
-      .eq('status', 'published')
-      .limit(10);
-
-    if (error) return [];
-
-    return data.map(content => ({
-      id: content.id,
-      title: content.title,
-      description: content.excerpt,
-      type: 'content' as const,
-      imageUrl: content.featured_image,
-      category: content.content_type,
-      date: content.published_at,
-      metadata: {
-        slug: content.slug,
-        metaDescription: content.meta_description,
-        keywords: content.meta_keywords
-      }
-    }));
+    // Content search removed since CMS is no longer available
+    return [];
   };
 
   const searchTravel = async (searchQuery: string): Promise<SearchResult[]> => {
