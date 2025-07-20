@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -82,6 +83,9 @@ export function Header() {
 
           {/* Right side controls */}
           <div className="flex items-center gap-2">
+            {/* Notifications */}
+            {user && <NotificationBell />}
+            
             {/* User menu */}
             {user && !isMobile ? (
               <DropdownMenu>
