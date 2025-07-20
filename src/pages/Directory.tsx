@@ -8,7 +8,8 @@ import { LocationInfo } from "@/components/location/LocationInfo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Globe, MapPin, Building2, Users } from "lucide-react";
+import { ArrowLeft, Globe, MapPin, Building2, Users, Map } from "lucide-react";
+import { DirectoryMapView } from "@/components/directory/DirectoryMapView";
 
 type ViewMode = "overview" | "country" | "city" | "search";
 
@@ -166,6 +167,10 @@ export default function Directory() {
               <Building2 className="h-4 w-4" />
               {t('directory.cities')}
             </TabsTrigger>
+            <TabsTrigger value="map" className="flex items-center gap-2">
+              <Map className="h-4 w-4" />
+              Map View
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="countries" className="space-y-4">
@@ -264,6 +269,20 @@ export default function Directory() {
                 );
               })}
             </div>
+          </TabsContent>
+
+          <TabsContent value="map" className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-semibold">Interactive World Map</h2>
+              <Badge variant="secondary">{countries.length} countries, {cities.length} cities</Badge>
+            </div>
+            <DirectoryMapView
+              countries={countries}
+              cities={cities}
+              loading={loading}
+              onCountryClick={handleCountryClick}
+              onCityClick={handleCityClick}
+            />
           </TabsContent>
         </Tabs>
       )}
