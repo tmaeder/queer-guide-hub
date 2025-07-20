@@ -47,6 +47,7 @@ import ProfileSettings from "./pages/ProfileSettings";
 import UserProfile from "./pages/UserProfile";
 
 import Messages from "./pages/Messages";
+import Friends from "./pages/Friends";
 import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
 import AccessibilityHub from "./pages/AccessibilityHub";
@@ -210,8 +211,9 @@ const App = () => {
                    <Route path="/groups" element={<Groups />} />
                    <Route path="/groups/:groupId" element={<GroupDetail />} />
                    <Route path="/accessibility" element={<AccessibilityHub />} />
-                  <Route path="/messages" element={<Messages />} />
-                   <Route path="/my-bookings" element={<MyBookings />} />
+                   <Route path="/messages" element={<Messages />} />
+                   <Route path="/friends" element={<Friends />} />
+                    <Route path="/my-bookings" element={<MyBookings />} />
                    <Route path="/favorites" element={<Favorites />} />
                    <Route path="/profile/settings" element={<ProfileSettings />} />
                    <Route path="/user/:userId" element={<UserProfile />} />

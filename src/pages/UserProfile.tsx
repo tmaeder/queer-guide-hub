@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
+import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { useAuth } from '@/hooks/useAuth';
@@ -243,10 +244,7 @@ export default function UserProfile() {
                     userName={profile.display_name || "User"}
                     variant="default"
                   />
-                  <Button variant="outline">
-                    <Users className="h-4 w-4 mr-2" />
-                    Follow
-                  </Button>
+                  <UserRelationshipActions targetUserId={profile.user_id} />
                 </div>
               )}
 

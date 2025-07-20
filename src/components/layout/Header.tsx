@@ -98,6 +98,10 @@ export function Header() {
                     <MessageSquare className="h-4 w-4 mb-1" />
                     <span className="text-xs">Messages</span>
                   </Button>
+                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/friends')}>
+                    <Users className="h-4 w-4 mb-1" />
+                    <span className="text-xs">Friends</span>
+                  </Button>
                   <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/accessibility')}>
                     <Accessibility className="h-4 w-4 mb-1" />
                     <span className="text-xs">Access</span>

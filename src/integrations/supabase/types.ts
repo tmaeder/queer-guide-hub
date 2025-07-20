@@ -2584,6 +2584,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_relationships: {
+        Row: {
+          created_at: string
+          id: string
+          relationship_type: string
+          status: string
+          target_user_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          relationship_type: string
+          status?: string
+          target_user_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          relationship_type?: string
+          status?: string
+          target_user_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_role_audit_log: {
         Row: {
           action_type: string
