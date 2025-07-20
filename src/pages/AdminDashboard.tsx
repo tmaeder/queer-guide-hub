@@ -160,7 +160,11 @@ export default function AdminDashboard() {
               <Button 
                 variant="outline" 
                 className="w-full"
-                onClick={() => navigate(section.path)}
+                onClick={() => {
+                  console.log('Navigating to:', section.path);
+                  console.log('Section:', section.title);
+                  navigate(section.path);
+                }}
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Manage

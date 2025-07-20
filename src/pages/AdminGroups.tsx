@@ -25,13 +25,19 @@ export default function AdminGroups() {
   const [typeFilter, setTypeFilter] = useState<string>("all");
 
   
+  console.log('AdminGroups - user:', user?.email);
+  console.log('AdminGroups - canManageContent:', canManageContent());
+  console.log('AdminGroups - isAdmin:', isAdmin);
+  
   useEffect(() => {
     if (!user || !canManageContent()) {
+      console.log('AdminGroups - Redirecting to /admin due to lack of permissions');
       navigate("/admin");
     }
   }, [user, canManageContent, navigate]);
 
   if (!user || !canManageContent()) {
+    console.log('AdminGroups - Rendering null due to lack of permissions');
     return null;
   }
 
