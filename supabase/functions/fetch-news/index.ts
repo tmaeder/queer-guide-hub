@@ -210,6 +210,7 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: stri
       for (const article of data.articles) {
         if (article.title && article.url) {
           const tags = await autoApplyTags(article.title, article.content || '', supabaseClient);
+          const { countryIds, cityIds } = await extractGeoInfo(article.title, article.content || '', article.url, supabaseClient);
           
           articles.push({
             title: article.title,
@@ -221,7 +222,9 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: stri
             published_at: article.publishedAt,
             category,
             source_id: sourceId,
-            tags: tags
+            tags: tags,
+            country_ids: countryIds,
+            city_ids: cityIds
           });
         }
       }
@@ -249,6 +252,7 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, category: str
       for (const article of data.results) {
         if (article.title && article.link) {
           const tags = await autoApplyTags(article.title, article.content || '', supabaseClient);
+          const { countryIds, cityIds } = await extractGeoInfo(article.title, article.content || '', article.link, supabaseClient);
           
           articles.push({
             title: article.title,
@@ -260,7 +264,9 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, category: str
             published_at: article.pubDate,
             category,
             source_id: sourceId,
-            tags: tags
+            tags: tags,
+            country_ids: countryIds,
+            city_ids: cityIds
           });
         }
       }
@@ -288,6 +294,7 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
       for (const article of data.articles) {
         if (article.title && article.url) {
           const tags = await autoApplyTags(article.title, article.content || '', supabaseClient);
+          const { countryIds, cityIds } = await extractGeoInfo(article.title, article.content || '', article.url, supabaseClient);
           
           articles.push({
             title: article.title,
@@ -299,7 +306,9 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
             published_at: article.publishedAt,
             category,
             source_id: sourceId,
-            tags: tags
+            tags: tags,
+            country_ids: countryIds,
+            city_ids: cityIds
           });
         }
       }
@@ -327,6 +336,7 @@ async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: s
       for (const article of data.data) {
         if (article.title && article.url) {
           const tags = await autoApplyTags(article.title, article.snippet || '', supabaseClient);
+          const { countryIds, cityIds } = await extractGeoInfo(article.title, article.snippet || '', article.url, supabaseClient);
           
           articles.push({
             title: article.title,
@@ -338,7 +348,9 @@ async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: s
             published_at: article.published_at,
             category,
             source_id: sourceId,
-            tags: tags
+            tags: tags,
+            country_ids: countryIds,
+            city_ids: cityIds
           });
         }
       }
