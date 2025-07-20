@@ -237,9 +237,6 @@ export default function CountryDetail() {
                 <p className="text-xl text-muted-foreground">
                   {country.capital && `Capital: ${country.capital}`}
                 </p>
-                <p className="text-muted-foreground">
-                  Country Code: {country.code}
-                </p>
               </div>
             </div>
 
