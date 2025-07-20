@@ -496,7 +496,7 @@ export default function AdminDashboard() {
         <TabsContent value="management" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {adminSections.map((section) => (
-              <Card key={section.path} className="hover-scale group cursor-pointer transition-all duration-300 hover:shadow-elegant">
+              <Card key={section.path} className="hover-scale group transition-all duration-300 hover:shadow-elegant">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-3">
                     <div className={`p-3 rounded-lg ${section.color} text-white shadow-lg group-hover:scale-110 transition-transform`}>
