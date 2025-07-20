@@ -239,11 +239,64 @@ serve(async (req) => {
       );
     }
 
-    // Process events and create venues if needed
+    // Process events and create venues/cities if needed
     const eventsWithCreatorAndVenues = [];
     
     for (const event of events) {
       let venue_id = null;
+      let city_id = null;
+      
+      // First, handle city creation/lookup
+      if (event.city && event.country) {
+        // Check if city exists
+        const { data: existingCities } = await supabaseClient
+          .from('cities')
+          .select('id')
+          .eq('name', event.city)
+          .eq('country_id', (
+            await supabaseClient
+              .from('countries')
+              .select('id')
+              .eq('name', event.country)
+              .limit(1)
+              .single()
+          )?.data?.id || '')
+          .limit(1);
+        
+        if (existingCities && existingCities.length > 0) {
+          city_id = existingCities[0].id;
+        } else {
+          // Get country_id first
+          const { data: country } = await supabaseClient
+            .from('countries')
+            .select('id')
+            .eq('name', event.country)
+            .limit(1)
+            .single();
+          
+          if (country) {
+            // Create new city
+            const cityData = {
+              name: event.city,
+              country_id: country.id,
+              region_name: event.state || null
+            };
+            
+            const { data: newCity, error: cityError } = await supabaseClient
+              .from('cities')
+              .insert(cityData)
+              .select('id')
+              .single();
+            
+            if (cityError) {
+              console.error('Failed to create city:', cityError);
+            } else {
+              city_id = newCity.id;
+              console.log(`Created new city: ${event.city}, ${event.country}`);
+            }
+          }
+        }
+      }
       
       // If venue_name is provided, check if venue exists or create it
       if (event.venue_name) {
@@ -268,7 +321,8 @@ serve(async (req) => {
             country: event.country,
             category: 'event_venue',
             created_by: user.id,
-            verified: false
+            verified: false,
+            city_id: city_id
           };
           
           const { data: newVenue, error: venueError } = await supabaseClient

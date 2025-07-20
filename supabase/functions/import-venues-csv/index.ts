@@ -243,16 +243,75 @@ serve(async (req) => {
       );
     }
 
-    // Add created_by field to all venues
-    const venuesWithCreator = venues.map(venue => ({
-      ...venue,
-      created_by: user.id
-    }));
+    // Process venues and create cities if needed
+    const venuesWithCreatorAndCities = [];
+    
+    for (const venue of venues) {
+      let city_id = null;
+      
+      // Handle city creation/lookup
+      if (venue.city && venue.country) {
+        // Check if city exists
+        const { data: existingCities } = await supabaseClient
+          .from('cities')
+          .select('id')
+          .eq('name', venue.city)
+          .eq('country_id', (
+            await supabaseClient
+              .from('countries')
+              .select('id')
+              .eq('name', venue.country)
+              .limit(1)
+              .single()
+          )?.data?.id || '')
+          .limit(1);
+        
+        if (existingCities && existingCities.length > 0) {
+          city_id = existingCities[0].id;
+        } else {
+          // Get country_id first
+          const { data: country } = await supabaseClient
+            .from('countries')
+            .select('id')
+            .eq('name', venue.country)
+            .limit(1)
+            .single();
+          
+          if (country) {
+            // Create new city
+            const cityData = {
+              name: venue.city,
+              country_id: country.id,
+              region_name: venue.state || null
+            };
+            
+            const { data: newCity, error: cityError } = await supabaseClient
+              .from('cities')
+              .insert(cityData)
+              .select('id')
+              .single();
+            
+            if (cityError) {
+              console.error('Failed to create city:', cityError);
+            } else {
+              city_id = newCity.id;
+              console.log(`Created new city: ${venue.city}, ${venue.country}`);
+            }
+          }
+        }
+      }
+      
+      venuesWithCreatorAndCities.push({
+        ...venue,
+        created_by: user.id,
+        city_id: city_id
+      });
+    }
 
     // Insert venues into database
     const { data: insertedVenues, error: insertError } = await supabaseClient
       .from('venues')
-      .insert(venuesWithCreator)
+      .insert(venuesWithCreatorAndCities)
       .select();
 
     if (insertError) {
