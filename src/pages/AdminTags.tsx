@@ -28,6 +28,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { TagCategorizer } from "@/components/admin/TagCategorizer";
 import { TagsCsvImport } from "@/components/admin/TagsCsvImport";
+import { TagImageUpload } from "@/components/admin/TagImageUpload";
 
 export default function AdminTags() {
   const navigate = useNavigate();
@@ -55,7 +56,8 @@ export default function AdminTags() {
     name: "",
     category: "",
     description: "",
-    color: "#6366f1"
+    color: "#6366f1",
+    image_url: "" as string | null
   });
 
   useEffect(() => {
@@ -124,7 +126,8 @@ export default function AdminTags() {
       name: tag.name,
       category: tag.category,
       description: tag.description || "",
-      color: tag.color || "#6366f1"
+      color: tag.color || "#6366f1",
+      image_url: tag.image_url || null
     });
     setEditingTag(tag);
     setIsCreateDialogOpen(true);
@@ -153,7 +156,8 @@ export default function AdminTags() {
       name: "",
       category: "",
       description: "",
-      color: "#6366f1"
+      color: "#6366f1",
+      image_url: null
     });
     setEditingTag(null);
   };
@@ -313,6 +317,11 @@ export default function AdminTags() {
                   onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
                 />
               </div>
+              <TagImageUpload 
+                currentImageUrl={formData.image_url}
+                onImageChange={(imageUrl) => setFormData(prev => ({ ...prev, image_url: imageUrl }))}
+                tagName={formData.name}
+              />
               <Button type="submit" className="w-full">
                 {editingTag ? "Update Tag" : "Create Tag"}
               </Button>
@@ -486,6 +495,16 @@ export default function AdminTags() {
                     </Button>
                   </div>
                 </div>
+                
+                {tag.image_url && (
+                  <div className="mb-2">
+                    <img 
+                      src={tag.image_url} 
+                      alt={tag.name} 
+                      className="w-full h-20 object-cover rounded border"
+                    />
+                  </div>
+                )}
                 
                 <Badge variant="outline" className="mb-2">
                   {tag.category}
