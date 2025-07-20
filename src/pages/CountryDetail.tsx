@@ -234,8 +234,13 @@ export default function CountryDetail() {
               )}
               <div>
                 <h1 className="text-4xl font-bold">{country.name}</h1>
-                <p className="text-xl text-muted-foreground">
-                  {country.capital && `Capital: ${country.capital}`}
+                <p className="text-xl text-muted-foreground flex items-center gap-2">
+                  {country.capital && (
+                    <>
+                      <Building className="h-5 w-5" />
+                      {country.capital}
+                    </>
+                  )}
                 </p>
               </div>
             </div>
