@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Calendar, MapPin, Users, Clock, DollarSign, ExternalLink, Mail, Phone, Globe, Share2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +37,7 @@ type Event = Database['public']['Tables']['events']['Row'] & {
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [userAttendance, setUserAttendance] = useState<string | null>(null);
@@ -518,7 +519,12 @@ export default function EventDetail() {
               {event.organizer_name && (
                 <div>
                   <h4 className="font-medium text-sm mb-1">Organizer</h4>
-                  <p className="text-sm text-muted-foreground">{event.organizer_name}</p>
+                  <button 
+                    onClick={() => navigate(`/events?organizer=${encodeURIComponent(event.organizer_name!)}`)}
+                    className="text-sm text-primary hover:underline text-left"
+                  >
+                    {event.organizer_name}
+                  </button>
                   {event.organizer_contact && (
                     <p className="text-xs text-muted-foreground">{event.organizer_contact}</p>
                   )}
