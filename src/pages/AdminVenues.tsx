@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { VenueImageUpload } from "@/components/venues/VenueImageUpload";
+import { VenuesCsvImport } from "@/components/venues/VenuesCsvImport";
 
 export default function AdminVenues() {
   const navigate = useNavigate();
@@ -248,13 +249,15 @@ export default function AdminVenues() {
             <p className="text-muted-foreground">Manage venues and locations</p>
           </div>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Venue
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <VenuesCsvImport onImportComplete={refetch} />
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Venue
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingVenue ? 'Edit Venue' : 'Add New Venue'}</DialogTitle>
@@ -462,6 +465,7 @@ export default function AdminVenues() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Filters */}
