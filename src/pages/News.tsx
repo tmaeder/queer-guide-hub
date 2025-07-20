@@ -307,7 +307,7 @@ export default function News() {
           {showFilters && (
             <div className="lg:col-span-1">
               <NewsFilters 
-                categories={categories} 
+                sources={sources} 
                 onFiltersChange={handleFiltersChange} 
                 trendingTags={trendingTags} 
               />

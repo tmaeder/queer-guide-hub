@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,20 +6,29 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Search, X, Filter, MapPin, Loader, Calendar, Tag, Building, Heart } from "lucide-react";
+import { Search, X, Filter, MapPin, Calendar, Tag, Building, Globe, Map } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-type NewsCategory = Tables<'news_categories'>;
 type NewsSource = Tables<'news_sources'>;
 
+interface CountryOption {
+  id: string;
+  name: string;
+}
+
+interface CityOption {
+  id: string;
+  name: string;
+}
+
 interface NewsFiltersProps {
-  categories: NewsCategory[];
   onFiltersChange: (filters: {
-    category?: string;
     search?: string;
-    sentiment?: string;
     tags?: string[];
+    countryIds?: string[];
+    cityIds?: string[];
     source?: string;
     nearMe?: boolean;
     userLocation?: { lat: number; lng: number; };
@@ -30,43 +39,60 @@ interface NewsFiltersProps {
 }
 
 export const NewsFilters = ({
-  categories,
   onFiltersChange,
   trendingTags = [],
   sources = []
 }: NewsFiltersProps) => {
   const { toast } = useToast();
-  const [category, setCategory] = useState<string>("");
-  const [sentiment, setSentiment] = useState<string>("");
   const [source, setSource] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [nearMe, setNearMe] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [dateRange, setDateRange] = useState<string>("");
+  const [countries, setCountries] = useState<CountryOption[]>([]);
+  const [cities, setCities] = useState<CityOption[]>([]);
+  const [allTags, setAllTags] = useState<string[]>([]);
+
+  // Fetch countries, cities, and tags
+  useEffect(() => {
+    const fetchData = async () => {
+      // Fetch countries
+      const { data: countriesData } = await supabase
+        .from('countries')
+        .select('id, name')
+        .order('name');
+      if (countriesData) setCountries(countriesData);
+
+      // Fetch cities
+      const { data: citiesData } = await supabase
+        .from('cities')
+        .select('id, name')
+        .order('name');
+      if (citiesData) setCities(citiesData);
+
+      // For now, use trending tags as available tags if no unified tags found
+      if (trendingTags.length > 0) {
+        const tagNames = trendingTags.map(t => t.tag);
+        setAllTags(tagNames);
+      }
+    };
+
+    fetchData();
+  }, [trendingTags]);
 
   const triggerFiltersChange = () => {
     onFiltersChange({
-      category: category || undefined,
-      sentiment: sentiment || undefined,
       source: source || undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
+      countryIds: selectedCountries.length > 0 ? selectedCountries : undefined,
+      cityIds: selectedCities.length > 0 ? selectedCities : undefined,
       nearMe,
       userLocation: userLocation || undefined,
       dateRange: dateRange || undefined
     });
-  };
-
-  const handleCategoryChange = (value: string) => {
-    const newCategory = value === "all" ? "" : value;
-    setCategory(newCategory);
-    setTimeout(triggerFiltersChange, 0);
-  };
-
-  const handleSentimentChange = (value: string) => {
-    const newSentiment = value === "all" ? "" : value;
-    setSentiment(newSentiment);
-    setTimeout(triggerFiltersChange, 0);
   };
 
   const handleSourceChange = (value: string) => {
@@ -80,6 +106,22 @@ export const NewsFilters = ({
       ? selectedTags.filter(t => t !== tag) 
       : [...selectedTags, tag];
     setSelectedTags(newTags);
+    setTimeout(triggerFiltersChange, 0);
+  };
+
+  const handleCountryToggle = (countryId: string) => {
+    const newCountries = selectedCountries.includes(countryId) 
+      ? selectedCountries.filter(c => c !== countryId) 
+      : [...selectedCountries, countryId];
+    setSelectedCountries(newCountries);
+    setTimeout(triggerFiltersChange, 0);
+  };
+
+  const handleCityToggle = (cityId: string) => {
+    const newCities = selectedCities.includes(cityId) 
+      ? selectedCities.filter(c => c !== cityId) 
+      : [...selectedCities, cityId];
+    setSelectedCities(newCities);
     setTimeout(triggerFiltersChange, 0);
   };
 
@@ -124,17 +166,17 @@ export const NewsFilters = ({
   };
 
   const clearFilters = () => {
-    setCategory("");
-    setSentiment("");
     setSource("");
     setSelectedTags([]);
+    setSelectedCountries([]);
+    setSelectedCities([]);
     setNearMe(false);
     setUserLocation(null);
     setDateRange("");
     onFiltersChange({});
   };
 
-  const hasActiveFilters = category || sentiment || source || selectedTags.length > 0 || nearMe || dateRange;
+  const hasActiveFilters = source || selectedTags.length > 0 || selectedCountries.length > 0 || selectedCities.length > 0 || nearMe || dateRange;
 
   return (
     <Card className="sticky top-4">
@@ -167,26 +209,120 @@ export const NewsFilters = ({
 
         <Separator />
 
-        {/* Category Filter */}
-        {categories.length > 0 && (
+        {/* Countries Filter */}
+        {countries.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Tag className="h-4 w-4" />
-              <span className="text-sm font-medium">Category</span>
+              <Globe className="h-4 w-4" />
+              <span className="text-sm font-medium">Countries</span>
             </div>
-            <Select value={category} onValueChange={handleCategoryChange}>
+            <Select onValueChange={handleCountryToggle}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="All categories" />
+                <SelectValue placeholder="Select countries" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.slug}>
-                    {cat.name}
+              <SelectContent className="max-h-48 overflow-y-auto">
+                {countries.map((country) => (
+                  <SelectItem key={country.id} value={country.id}>
+                    {country.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {selectedCountries.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedCountries.map(countryId => {
+                  const country = countries.find(c => c.id === countryId);
+                  return country ? (
+                    <Badge
+                      key={countryId}
+                      variant="default"
+                      className="cursor-pointer text-xs"
+                      onClick={() => handleCountryToggle(countryId)}
+                    >
+                      {country.name}
+                      <X className="h-3 w-3 ml-1" />
+                    </Badge>
+                  ) : null;
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Cities Filter */}
+        {cities.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Map className="h-4 w-4" />
+              <span className="text-sm font-medium">Cities</span>
+            </div>
+            <Select onValueChange={handleCityToggle}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select cities" />
+              </SelectTrigger>
+              <SelectContent className="max-h-48 overflow-y-auto">
+                {cities.map((city) => (
+                  <SelectItem key={city.id} value={city.id}>
+                    {city.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedCities.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedCities.map(cityId => {
+                  const city = cities.find(c => c.id === cityId);
+                  return city ? (
+                    <Badge
+                      key={cityId}
+                      variant="default"
+                      className="cursor-pointer text-xs"
+                      onClick={() => handleCityToggle(cityId)}
+                    >
+                      {city.name}
+                      <X className="h-3 w-3 ml-1" />
+                    </Badge>
+                  ) : null;
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tags Filter */}
+        {allTags.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              <span className="text-sm font-medium">Tags</span>
+            </div>
+            <Select onValueChange={handleTagToggle}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select tags" />
+              </SelectTrigger>
+              <SelectContent className="max-h-48 overflow-y-auto">
+                {allTags.map((tag) => (
+                  <SelectItem key={tag} value={tag}>
+                    {tag}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedTags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedTags.map(tag => (
+                  <Badge
+                    key={tag}
+                    variant="default"
+                    className="cursor-pointer text-xs"
+                    onClick={() => handleTagToggle(tag)}
+                  >
+                    {tag}
+                    <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -212,25 +348,6 @@ export const NewsFilters = ({
             </Select>
           </div>
         )}
-
-        {/* Sentiment Filter */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Heart className="h-4 w-4" />
-            <span className="text-sm font-medium">Sentiment</span>
-          </div>
-          <Select value={sentiment} onValueChange={handleSentimentChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="All sentiments" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All sentiments</SelectItem>
-              <SelectItem value="positive">Positive</SelectItem>
-              <SelectItem value="neutral">Neutral</SelectItem>
-              <SelectItem value="negative">Negative</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
 
         {/* Date Range Filter */}
         <div className="space-y-3">
@@ -275,26 +392,6 @@ export const NewsFilters = ({
               </div>
             </div>
           </>
-        )}
-
-        {/* Selected Tags */}
-        {selectedTags.length > 0 && (
-          <div className="space-y-3">
-            <span className="text-sm font-medium">Selected Tags</span>
-            <div className="flex flex-wrap gap-2">
-              {selectedTags.map(tag => (
-                <Badge
-                  key={tag}
-                  variant="default"
-                  className="cursor-pointer text-xs"
-                  onClick={() => handleTagToggle(tag)}
-                >
-                  {tag}
-                  <X className="h-3 w-3 ml-1" />
-                </Badge>
-              ))}
-            </div>
-          </div>
         )}
 
         {/* Clear Filters */}
