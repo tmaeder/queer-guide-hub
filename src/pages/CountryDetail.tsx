@@ -70,6 +70,24 @@ type CountryWithRelations = {
   visa_requirements?: any;
   lgbt_rights_status?: string;
   lgbt_legal_status?: string;
+  lgbti_criminalization?: any;
+  lgbti_expression_restrictions?: any;
+  lgbti_association_restrictions?: any;
+  lgbti_constitutional_protection?: any;
+  lgbti_goods_services_protection?: any;
+  lgbti_health_protection?: any;
+  lgbti_education_protection?: any;
+  lgbti_bullying_protection?: any;
+  lgbti_employment_protection?: any;
+  lgbti_housing_protection?: any;
+  lgbti_hate_crime_law?: any;
+  lgbti_incitement_prohibition?: any;
+  lgbti_conversion_therapy_regulation?: string;
+  lgbti_same_sex_unions?: string;
+  lgbti_adoption_rights?: string;
+  lgbti_intersex_protection?: string;
+  lgbti_gender_recognition?: any;
+  lgbti_data_last_updated?: string;
   description?: string;
   flag_emoji?: string;
   national_symbols?: any;
@@ -232,13 +250,14 @@ export default function CountryDetail() {
         </Card>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="demographics">Demographics</TabsTrigger>
             <TabsTrigger value="economy">Economy</TabsTrigger>
             <TabsTrigger value="government">Government</TabsTrigger>
             <TabsTrigger value="geography">Geography</TabsTrigger>
             <TabsTrigger value="culture">Culture</TabsTrigger>
+            <TabsTrigger value="lgbti">LGBTI Rights</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -653,6 +672,233 @@ export default function CountryDetail() {
                   )}
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="lgbti" className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              {/* Criminalization */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Scale className="h-5 w-5" />
+                    Criminalization of Same-Sex Relations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {country.lgbti_criminalization ? (
+                    <div className="space-y-3">
+                      {country.lgbti_criminalization.status && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Status</span>
+                          <Badge 
+                            variant={country.lgbti_criminalization.status.toLowerCase().includes('legal') ? 'default' : 'destructive'}
+                          >
+                            {country.lgbti_criminalization.status}
+                          </Badge>
+                        </div>
+                      )}
+                      {country.lgbti_criminalization.penalty && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Penalty</span>
+                          <span className="font-medium text-sm">{country.lgbti_criminalization.penalty}</span>
+                        </div>
+                      )}
+                      {country.lgbti_criminalization.last_amended && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Last Amendment</span>
+                          <span className="font-medium text-sm">{country.lgbti_criminalization.last_amended}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No criminalization data available.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Constitutional Protection */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Constitutional Protection
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {country.lgbti_constitutional_protection ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {['SO', 'GI', 'GE', 'SC'].map((type) => (
+                        <div key={type} className="text-center">
+                          <div className="text-xs text-muted-foreground mb-1">
+                            {type === 'SO' ? 'Sexual Orientation' : 
+                             type === 'GI' ? 'Gender Identity' :
+                             type === 'GE' ? 'Gender Expression' : 'Sex Characteristics'}
+                          </div>
+                          <Badge 
+                            variant={country.lgbti_constitutional_protection[type] === 'Yes' ? 'default' : 'secondary'}
+                          >
+                            {country.lgbti_constitutional_protection[type] || 'No'}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No constitutional protection data available.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Discrimination Protection Areas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  { key: 'lgbti_goods_services_protection', title: 'Goods & Services', icon: DollarSign },
+                  { key: 'lgbti_health_protection', title: 'Healthcare', icon: Heart },
+                  { key: 'lgbti_education_protection', title: 'Education', icon: GraduationCap },
+                  { key: 'lgbti_employment_protection', title: 'Employment', icon: Briefcase },
+                  { key: 'lgbti_housing_protection', title: 'Housing', icon: Building },
+                  { key: 'lgbti_hate_crime_law', title: 'Hate Crime Law', icon: Scale }
+                ].map(({ key, title, icon: Icon }) => (
+                  <Card key={key}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <Icon className="h-4 w-4" />
+                        {title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {country[key as keyof CountryWithRelations] ? (
+                        <div className="grid grid-cols-2 gap-2">
+                          {['SO', 'GI', 'GE', 'SC'].map((type) => (
+                            <div key={type} className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">{type}</span>
+                              <Badge 
+                                variant={(country[key as keyof CountryWithRelations] as any)?.[type] === 'Yes' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {(country[key as keyof CountryWithRelations] as any)?.[type] || 'No'}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-sm">No data available.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Legal Rights */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Heart className="h-5 w-5" />
+                      Same-Sex Unions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Badge 
+                      variant={country.lgbti_same_sex_unions?.toLowerCase().includes('yes') || 
+                               country.lgbti_same_sex_unions?.toLowerCase().includes('legal') ? 'default' : 'secondary'}
+                    >
+                      {country.lgbti_same_sex_unions || 'No data'}
+                    </Badge>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Adoption Rights
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Badge 
+                      variant={country.lgbti_adoption_rights?.toLowerCase().includes('possible') || 
+                               country.lgbti_adoption_rights?.toLowerCase().includes('legal') ? 'default' : 'secondary'}
+                    >
+                      {country.lgbti_adoption_rights || 'No data'}
+                    </Badge>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5" />
+                      Intersex Protection
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Badge 
+                      variant={country.lgbti_intersex_protection?.toLowerCase().includes('yes') || 
+                               country.lgbti_intersex_protection?.toLowerCase().includes('protected') ? 'default' : 'secondary'}
+                    >
+                      {country.lgbti_intersex_protection || 'No data'}
+                    </Badge>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Conversion Therapy */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Conversion Therapy Regulation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Badge 
+                    variant={country.lgbti_conversion_therapy_regulation?.toLowerCase().includes('banned') || 
+                             country.lgbti_conversion_therapy_regulation?.toLowerCase().includes('restricted') ? 'default' : 'secondary'}
+                  >
+                    {country.lgbti_conversion_therapy_regulation || 'No regulation'}
+                  </Badge>
+                </CardContent>
+              </Card>
+
+              {/* Legal Gender Recognition */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Legal Gender Recognition
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {country.lgbti_gender_recognition ? (
+                    <div className="space-y-3">
+                      {Object.entries(country.lgbti_gender_recognition).map(([key, value]) => (
+                        <div key={key} className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground capitalize">
+                            {key.replace(/_/g, ' ')}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {String(value)}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No legal gender recognition data available.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Data Last Updated */}
+              {country.lgbti_data_last_updated && (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center text-sm text-muted-foreground">
+                      LGBTI data last updated: {new Date(country.lgbti_data_last_updated).toLocaleDateString()}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
         </Tabs>
