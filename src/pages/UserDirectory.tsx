@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, Briefcase, GraduationCap, Navigation, Loader2 } from "lucide-react";
 import { StartConversationButton } from "@/components/messaging/StartConversationButton";
+import { UserModeBadge } from "@/components/profile/UserModeBadge";
 import { Tables } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 
@@ -632,7 +633,10 @@ const UserDirectory = () => {
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1">
+                   <div className="flex flex-col gap-1">
+                    {(profile as any)?.user_mode && (
+                      <UserModeBadge mode={(profile as any).user_mode} size="sm" />
+                    )}
                     {profile.is_business && (
                       <Badge variant="outline" className="text-xs">
                         <Briefcase className="h-3 w-3 mr-1" />

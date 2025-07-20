@@ -106,7 +106,8 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
       profile_visibility: (profile?.privacy_settings as any)?.profile_visibility || 'public',
       email_visible: (profile?.privacy_settings as any)?.email_visible || false,
       phone_visible: (profile?.privacy_settings as any)?.phone_visible || false,
-    }
+    },
+    user_mode: (profile as any)?.user_mode || 'exploration'
   });
 
   // Calculate profile completion percentage
@@ -237,7 +238,8 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
       financial_situation: formData.financial_situation,
       immigration_status: formData.immigration_status,
       
-      privacy_settings: formData.privacy_settings
+      privacy_settings: formData.privacy_settings,
+      user_mode: formData.user_mode
     };
 
     const { error } = await updateProfile(updates);
@@ -442,7 +444,7 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
                   <Input
@@ -465,6 +467,22 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
                       <SelectItem value="45-54">45-54</SelectItem>
                       <SelectItem value="55-64">55-64</SelectItem>
                       <SelectItem value="65+">65+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="user_mode">What you're looking for</Label>
+                  <Select value={formData.user_mode} onValueChange={(value) => handleInputChange('user_mode', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dating">💕 Dating</SelectItem>
+                      <SelectItem value="friends">👥 Friends</SelectItem>
+                      <SelectItem value="exploration">🗺️ Exploration</SelectItem>
+                      <SelectItem value="fun">🎉 Fun</SelectItem>
+                      <SelectItem value="networking">🤝 Networking</SelectItem>
+                      <SelectItem value="community">🏘️ Community</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

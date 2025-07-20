@@ -2046,6 +2046,7 @@ export type Database = {
           travel_preferences: Json | null
           updated_at: string
           user_id: string
+          user_mode: Database["public"]["Enums"]["user_mode"] | null
           verified_email: boolean | null
           verified_identity: boolean | null
           verified_phone: boolean | null
@@ -2171,6 +2172,7 @@ export type Database = {
           travel_preferences?: Json | null
           updated_at?: string
           user_id: string
+          user_mode?: Database["public"]["Enums"]["user_mode"] | null
           verified_email?: boolean | null
           verified_identity?: boolean | null
           verified_phone?: boolean | null
@@ -2296,6 +2298,7 @@ export type Database = {
           travel_preferences?: Json | null
           updated_at?: string
           user_id?: string
+          user_mode?: Database["public"]["Enums"]["user_mode"] | null
           verified_email?: boolean | null
           verified_identity?: boolean | null
           verified_phone?: boolean | null
@@ -3181,6 +3184,13 @@ export type Database = {
         | "legal_document"
         | "press_release"
         | "about_content"
+      user_mode:
+        | "dating"
+        | "friends"
+        | "exploration"
+        | "fun"
+        | "networking"
+        | "community"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3316,6 +3326,14 @@ export const Constants = {
         "legal_document",
         "press_release",
         "about_content",
+      ],
+      user_mode: [
+        "dating",
+        "friends",
+        "exploration",
+        "fun",
+        "networking",
+        "community",
       ],
     },
   },
