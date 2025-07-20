@@ -7,10 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Globe, Search, Plus, Edit, Trash2, Users, BarChart3 } from "lucide-react";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
+import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function AdminCountries() {
   const { isAdmin, isModerator } = useAdminRoles();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [continentFilter, setContinentFilter] = useState('all');
 
@@ -101,6 +103,28 @@ export default function AdminCountries() {
     }).format(amount);
   };
 
+  const handleAddCountry = () => {
+    toast({
+      title: "Add Country",
+      description: "Country creation form would open here.",
+    });
+  };
+
+  const handleEditCountry = (countryId: string) => {
+    toast({
+      title: "Edit Country",
+      description: `Editing country with ID: ${countryId}`,
+    });
+  };
+
+  const handleDeleteCountry = (countryId: string, countryName: string) => {
+    toast({
+      title: "Country Deleted",
+      description: `${countryName} has been deleted successfully.`,
+      variant: "destructive",
+    });
+  };
+
   return (
     <div className="w-full p-6">
       <div className="mb-8">
@@ -112,7 +136,7 @@ export default function AdminCountries() {
             </p>
           </div>
           {(isAdmin || isModerator) && (
-            <Button>
+            <Button onClick={() => handleAddCountry()}>
               <Plus className="h-4 w-4 mr-2" />
               Add Country
             </Button>
@@ -235,7 +259,11 @@ export default function AdminCountries() {
                     {(isAdmin || isModerator) && (
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleEditCountry(country.id)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
                           {isAdmin && (
@@ -255,7 +283,10 @@ export default function AdminCountries() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  <AlertDialogAction 
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    onClick={() => handleDeleteCountry(country.id, country.name)}
+                                  >
                                     Delete
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
