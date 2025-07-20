@@ -94,13 +94,13 @@ export function Footer() {
             
             {/* Newsletter Signup */}
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">Stay Connected</h4>
+              
               
             </div>
 
             {/* Social Links */}
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">Follow Us</h4>
+              
               <div className="flex items-center gap-2">
                 {socialLinks.map(social => <Button key={social.label} variant="ghost" size="sm" asChild className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110">
                     <a href={social.href} aria-label={social.label}>
