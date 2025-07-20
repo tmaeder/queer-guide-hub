@@ -21,6 +21,24 @@ export default function AdminAnalytics() {
 
   useEffect(() => {
     fetchStats();
+
+    // Set up real-time subscriptions for live updates
+    const channel = supabase
+      .channel('analytics-updates')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'venues' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'community_groups' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'marketplace_listings' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'news_articles' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'group_memberships' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_attendees' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'marketplace_favorites' }, () => fetchStats())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchStats = async () => {
