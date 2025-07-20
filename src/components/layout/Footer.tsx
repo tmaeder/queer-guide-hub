@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store, Info, Eye, FileText, Phone, Newspaper, Users, Globe, Tag, Shield, Lock, Cookie, Copyright } from "lucide-react";
+import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store, Info, Eye, FileText, Phone, Newspaper, Users, Globe, Tag, Shield, Lock, Cookie, Copyright, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -186,7 +186,7 @@ export function Footer() {
               top: 0,
               behavior: 'smooth'
             })}>
-                Back to Top
+                <ChevronUp className="h-4 w-4" />
               </Button>
             </div>
             <Separator orientation="vertical" className="h-6" />
