@@ -33,7 +33,7 @@ export const usePushNotifications = () => {
           
           // Store the token in the database
           await supabase
-            .from('user_push_tokens')
+            .from('user_push_tokens' as any)
             .upsert({
               user_id: user.id,
               token: token.value,
@@ -93,7 +93,7 @@ export const usePushNotifications = () => {
     try {
       // Remove token from database
       await supabase
-        .from('user_push_tokens')
+        .from('user_push_tokens' as any)
         .delete()
         .eq('user_id', user.id)
         .eq('token', token);
