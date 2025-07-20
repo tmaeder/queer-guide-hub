@@ -179,13 +179,19 @@ export default function AdminVenues() {
   };
 
   const handleDeleteVenue = async (venue: any) => {
+    console.log('Delete button clicked for venue:', venue);
     if (!confirm(`Are you sure you want to delete "${venue.name}"?`)) return;
 
     try {
+      console.log('Attempting to delete venue with id:', venue.id);
       const { error } = await deleteVenue(venue.id);
       
-      if (error) throw new Error(error);
+      if (error) {
+        console.error('Delete venue error:', error);
+        throw new Error(error);
+      }
 
+      console.log('Venue deleted successfully');
       toast({
         title: "Success",
         description: "Venue deleted successfully"
@@ -193,6 +199,7 @@ export default function AdminVenues() {
 
       refetch();
     } catch (error) {
+      console.error('Delete venue catch block:', error);
       toast({
         title: "Error",
         description: "Failed to delete venue",
