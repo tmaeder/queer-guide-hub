@@ -463,63 +463,82 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
                 <div className="space-y-2">
                   <Label htmlFor="date_of_birth">Date of Birth</Label>
                   <div className="space-y-1">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal h-10",
-                            !formData.date_of_birth && "text-muted-foreground",
-                            "hover:bg-accent hover:text-accent-foreground",
-                            "focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.date_of_birth ? (
-                            <span className="text-foreground">
-                              {format(new Date(formData.date_of_birth), "MMMM d, yyyy")}
-                            </span>
-                          ) : (
-                            <span>Select your date of birth</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <div className="p-3 border-b">
-                          <p className="text-sm font-medium">Select Date of Birth</p>
-                          <p className="text-xs text-muted-foreground">
-                            You must be at least 18 years old
-                          </p>
-                        </div>
-                        <Calendar
-                          mode="single"
-                          selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
-                          onSelect={(date) => handleInputChange('date_of_birth', date ? date.toISOString().split('T')[0] : '')}
-                          disabled={(date) => {
+                    <div className="flex gap-2">
+                      <Input
+                        id="date_of_birth"
+                        type="date"
+                        value={formData.date_of_birth || ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value) {
+                            const selectedDate = new Date(value);
                             const today = new Date();
                             const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-                            return date > eighteenYearsAgo || date < new Date("1900-01-01");
-                          }}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                          defaultMonth={new Date(2000, 0)}
-                        />
-                        {formData.date_of_birth && (
-                          <div className="p-3 border-t">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleInputChange('date_of_birth', '')}
-                              className="w-full text-muted-foreground hover:text-foreground"
-                            >
-                              Clear date
-                            </Button>
+                            
+                            if (selectedDate <= eighteenYearsAgo && selectedDate >= new Date("1900-01-01")) {
+                              handleInputChange('date_of_birth', value);
+                            }
+                          } else {
+                            handleInputChange('date_of_birth', '');
+                          }
+                        }}
+                        max={(() => {
+                          const today = new Date();
+                          const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+                          return eighteenYearsAgo.toISOString().split('T')[0];
+                        })()}
+                        min="1900-01-01"
+                        className="flex-1"
+                        placeholder="YYYY-MM-DD"
+                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10 shrink-0"
+                            type="button"
+                          >
+                            <CalendarIcon className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <div className="p-3 border-b">
+                            <p className="text-sm font-medium">Select Date of Birth</p>
+                            <p className="text-xs text-muted-foreground">
+                              You must be at least 18 years old
+                            </p>
                           </div>
-                        )}
-                      </PopoverContent>
-                    </Popover>
+                          <Calendar
+                            mode="single"
+                            selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
+                            onSelect={(date) => handleInputChange('date_of_birth', date ? date.toISOString().split('T')[0] : '')}
+                            disabled={(date) => {
+                              const today = new Date();
+                              const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+                              return date > eighteenYearsAgo || date < new Date("1900-01-01");
+                            }}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                            defaultMonth={new Date(2000, 0)}
+                          />
+                          {formData.date_of_birth && (
+                            <div className="p-3 border-t">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleInputChange('date_of_birth', '')}
+                                className="w-full text-muted-foreground hover:text-foreground"
+                              >
+                                Clear date
+                              </Button>
+                            </div>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      This information helps us provide age-appropriate content and comply with legal requirements
+                      Type directly or use the calendar. You must be at least 18 years old.
                     </p>
                   </div>
                 </div>
