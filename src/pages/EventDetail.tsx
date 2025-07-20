@@ -295,72 +295,105 @@ export default function EventDetail() {
   };
 
   return (
-    <div className="w-full px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Header */}
-      <div className="mb-6">
-        <Link to="/events" className="inline-flex items-center text-muted-foreground hover:text-primary mb-4">
+      <div className="mb-8">
+        <Link to="/events" className="inline-flex items-center text-muted-foreground hover:text-primary mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Events
         </Link>
         
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">{event.title}</h1>
-              {event.featured && (
-                <Badge className="bg-accent/10 text-accent">Featured</Badge>
-              )}
+        {/* Hero Section */}
+        <div className="relative mb-8">
+          {event.images && event.images.length > 0 && (
+            <div className="aspect-[21/9] rounded-2xl overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20">
+              <img
+                src={event.images[0]}
+                alt={event.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
+          {(!event.images || event.images.length === 0) && (
+            <div className="aspect-[21/9] rounded-2xl bg-gradient-to-r from-primary/20 to-accent/20 flex items-center justify-center">
+              <Calendar className="h-16 w-16 text-primary/60" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+          <div className="flex-1">
+            <div className="flex items-start gap-4 mb-4">
+              <div>
+                <h1 className="text-4xl font-bold mb-2">{event.title}</h1>
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge className={getEventTypeColor(event.event_type)} variant="secondary">
+                    {event.event_type}
+                  </Badge>
+                  <Badge variant="outline" className={`${event.is_free ? 'border-success text-success' : 'border-primary text-primary'} font-medium`}>
+                    {getPriceDisplay()}
+                  </Badge>
+                  {event.featured && (
+                    <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground">✨ Featured</Badge>
+                  )}
+                  {event.age_restriction && (
+                    <Badge variant="outline">
+                      {event.age_restriction}
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </div>
             
-            <div className="flex flex-col gap-2 mb-3">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span className="font-medium">{formatEventDate(event.start_date, event.end_date)}</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50">
+                <Calendar className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Date</p>
+                  <p className="font-medium">{formatEventDate(event.start_date, event.end_date)}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>{formatEventTime(event.start_date, event.end_date)}</span>
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50">
+                <Clock className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Time</p>
+                  <p className="font-medium">{formatEventTime(event.start_date, event.end_date)}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>
-                  {event.venues?.name || event.venue_name || 'Location TBA'} • {event.city}, {event.state}
-                </span>
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50">
+                <MapPin className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Location</p>
+                  <p className="font-medium">{event.venues?.name || event.venue_name || 'Location TBA'}</p>
+                  <p className="text-sm text-muted-foreground">{event.city}, {event.state}</p>
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Badge className={getEventTypeColor(event.event_type)}>
-                {event.event_type}
-              </Badge>
-              <Badge variant="outline" className={event.is_free ? 'text-accent' : ''}>
-                {getPriceDisplay()}
-              </Badge>
-              {event.age_restriction && (
-                <Badge variant="outline">
-                  {event.age_restriction}
-                </Badge>
-              )}
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleExportToCalendar}>
-              <Download className="h-4 w-4 mr-2" />
-              Export to Calendar
-            </Button>
-            <Button variant="outline" size="sm">
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
+          <div className="flex flex-col gap-3 lg:min-w-[200px]">
             {event.ticket_url && (
-              <Button asChild>
+              <Button size="lg" className="w-full" asChild>
                 <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Get Tickets
                 </a>
               </Button>
             )}
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleExportToCalendar} className="flex-1">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+              <Button variant="outline" size="sm" className="flex-1">
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
+            </div>
           </div>
         </div>
       </div>
