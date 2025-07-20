@@ -179,8 +179,7 @@ export function Footer() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => navigate('/admin')}>
-                <FileText className="h-3 w-3 mr-1" />
-                Admin
+                <FileText className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => window.scrollTo({
               top: 0,
