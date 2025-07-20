@@ -484,7 +484,11 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
                         mode="single"
                         selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
                         onSelect={(date) => handleInputChange('date_of_birth', date ? date.toISOString().split('T')[0] : '')}
-                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                        disabled={(date) => {
+                          const today = new Date();
+                          const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+                          return date > eighteenYearsAgo || date < new Date("1900-01-01");
+                        }}
                         initialFocus
                         className="p-3 pointer-events-auto"
                       />
