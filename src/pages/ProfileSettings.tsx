@@ -512,9 +512,11 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
                   <Label htmlFor="gender_identity">Gender Identity</Label>
                   <Input
                     id="gender_identity"
-                    value={formData.gender_identity}
+                    value={formData.gender_identity || ''}
                     onChange={(e) => handleInputChange('gender_identity', e.target.value)}
                     placeholder="How you identify"
+                    className="pointer-events-auto"
+                    tabIndex={0}
                   />
                 </div>
                 <div className="space-y-2">
