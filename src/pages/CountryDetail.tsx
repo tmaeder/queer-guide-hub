@@ -237,7 +237,7 @@ export default function CountryDetail() {
                 <p className="text-xl text-muted-foreground flex items-center gap-2">
                   {country.capital && (
                     <>
-                      <Building className="h-5 w-5" />
+                      <Landmark className="h-5 w-5" />
                       {country.capital}
                     </>
                   )}
