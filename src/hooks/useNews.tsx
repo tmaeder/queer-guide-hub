@@ -40,8 +40,9 @@ export const useNews = () => {
         .from('news_articles')
         .select(`
           *,
-          news_sources (*)
+          news_sources!inner (*)
         `)
+        .eq('news_sources.is_active', true)
         .order('published_at', { ascending: false });
 
       if (filters?.category) {
@@ -108,7 +109,7 @@ export const useNews = () => {
         }
       }
 
-      const { data, error: fetchError } = await query.limit(50);
+      const { data, error: fetchError } = await query.limit(200);
 
       if (fetchError) {
         throw fetchError;
