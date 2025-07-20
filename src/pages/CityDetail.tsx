@@ -32,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useCityImages } from "@/hooks/useCityImages";
+import CityHeroImages from "@/components/city/CityHeroImages";
 
 type CityWithCountry = {
   id: string;
@@ -218,6 +219,8 @@ export default function CityDetail() {
         {/* Hero Section */}
         <Card className="mb-8">
           <CardContent className="p-6">
+            {/* City Images */}
+            <CityHeroImages cityName={city.name} countryName={city.countries?.name} />
             <div className="flex items-center gap-4 mb-4">
               {city.countries?.flag_emoji && (
                 <span className="text-6xl">{city.countries.flag_emoji}</span>
