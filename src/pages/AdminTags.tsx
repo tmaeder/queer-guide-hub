@@ -26,6 +26,7 @@ import {
   Tag
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { TagCategorizer } from "@/components/admin/TagCategorizer";
 
 export default function AdminTags() {
   const navigate = useNavigate();
@@ -394,6 +395,11 @@ export default function AdminTags() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Tag Categorizer */}
+      <div className="mb-6">
+        <TagCategorizer />
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

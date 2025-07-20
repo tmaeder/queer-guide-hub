@@ -13,13 +13,27 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Predefined categories for LGBTQ+ community platform
-const PREDEFINED_CATEGORIES = [
-  'sexuality', 'gender-identity', 'health', 'relationships', 'community',
-  'activism', 'support', 'lifestyle', 'events', 'venues', 'dating',
-  'family', 'workplace', 'legal', 'education', 'arts', 'sports',
-  'technology', 'travel', 'fashion', 'content'
-];
+// Updated categories for tag wiki
+const TAG_CATEGORIES = {
+  'consent': 'Consent',
+  'genders': 'Genders', 
+  'sexual-orientations': 'Sexual Orientations',
+  'romantic-orientations': 'Romantic Orientations',
+  'relationships': 'Relationships',
+  'roles': 'Roles',
+  'gay-culture': 'Gay Culture',
+  'kink-activities': 'Kink Activities', 
+  'sexual-activities': 'Sexual Activities',
+  'philia': 'Philia',
+  'toys-equipment': 'Toys & Equipment',
+  'play-spaces': 'Play Spaces',
+  'events': 'Events',
+  'holidays': 'Holidays',
+  'sexual-health': 'Sexual Health',
+  'mental-health': 'Mental Health',
+  'scene-safety': 'Scene Safety',
+  'safety-resources': 'Safety Resources'
+};
 
 interface TagData {
   id: string;
@@ -35,11 +49,24 @@ serve(async (req) => {
   try {
     console.log('Starting tag categorization process...');
 
-    // Fetch all tags that need categorization (uncategorized or general)
+    // Get all tag categories first
+    const { data: categories, error: categoriesError } = await supabase
+      .from('tag_categories')
+      .select('*')
+      .order('sort_order');
+
+    if (categoriesError) {
+      throw new Error(`Failed to fetch categories: ${categoriesError.message}`);
+    }
+
+    // Create category slug to ID mapping
+    const categoryMap = new Map(categories.map(cat => [cat.slug, cat.id]));
+
+    // Fetch all tags that need categorization (no category_id)
     const { data: tags, error: fetchError } = await supabase
       .from('unified_tags')
-      .select('id, name, category')
-      .or('category.is.null,category.eq.general');
+      .select('id, name, category_id')
+      .is('category_id', null);
 
     if (fetchError) {
       throw new Error(`Failed to fetch tags: ${fetchError.message}`);
@@ -78,28 +105,45 @@ serve(async (req) => {
         // Prepare batch of tag names for AI categorization
         const tagNames = batch.map(tag => tag.name);
         const prompt = `
-You are an AI assistant that categorizes LGBTQ+ community tags. Given a list of tag names, categorize each one into the most appropriate category from this list:
+You are an AI assistant that categorizes tags for an LGBTQ+ community platform with kink/BDSM content. Given a list of tag names, categorize each one into the most appropriate category from this list:
 
-Categories: ${PREDEFINED_CATEGORIES.join(', ')}
+Categories: ${Object.keys(TAG_CATEGORIES).join(', ')}
+
+Category descriptions:
+- consent: Consent, communication, safety protocols, negotiation
+- genders: Gender identity, expression, transgender, non-binary, etc.
+- sexual-orientations: Sexual attraction, sexuality labels (gay, lesbian, bi, pan, ace, etc.)
+- romantic-orientations: Romantic attraction types (aromantic, demiromantic, etc.)
+- relationships: Relationship structures (poly, mono, open, etc.)
+- roles: D/s roles, BDSM roles, power dynamics
+- gay-culture: LGBTQ+ culture, slang, community specific terms
+- kink-activities: BDSM activities, kink practices, power exchange
+- sexual-activities: Sexual acts, techniques, positions
+- philia: Specific attractions, fetishes, interests
+- toys-equipment: Sex toys, BDSM equipment, tools
+- play-spaces: Locations, venues, spaces for activities
+- events: Gatherings, parties, conventions, munches
+- holidays: Celebrations, special days, festivals
+- sexual-health: STI testing, sexual wellness, health
+- mental-health: Mental wellness, therapy, support
+- scene-safety: Safety practices, risk awareness, protocols  
+- safety-resources: Resources, hotlines, support services
 
 Instructions:
 - Assign exactly one category per tag
 - Choose the most specific and appropriate category
-- For identity-related terms (gay, lesbian, trans, etc.), use 'sexuality' or 'gender-identity'
-- For medical/wellness terms, use 'health'
-- For social connection terms, use 'community'
-- For general content/topics, use 'content'
+- Be mindful of adult/kink content context
 - If unsure, use the most general applicable category
 
 Tag names to categorize:
 ${tagNames.join(', ')}
 
-Return ONLY a JSON object with tag names as keys and categories as values. Example:
+Return ONLY a JSON object with tag names as keys and category slugs as values. Example:
 {
-  "gay": "sexuality",
-  "transgender": "gender-identity",
-  "pride-parade": "events",
-  "wellness": "health"
+  "gay": "sexual-orientations",
+  "transgender": "genders", 
+  "bondage": "kink-activities",
+  "aftercare": "scene-safety"
 }
 `;
 
@@ -142,17 +186,20 @@ Return ONLY a JSON object with tag names as keys and categories as values. Examp
         // Update tags with new categories for this batch
         const updatePromises = [];
         for (const tag of batch) {
-          const newCategory = batchCategorizations[tag.name];
-          if (newCategory && PREDEFINED_CATEGORIES.includes(newCategory)) {
-            console.log(`Updating tag "${tag.name}" to category "${newCategory}"`);
-            
-            const updatePromise = supabase
-              .from('unified_tags')
-              .update({ category: newCategory })
-              .eq('id', tag.id);
-            
-            updatePromises.push(updatePromise);
-            totalCategorized++;
+          const newCategorySlug = batchCategorizations[tag.name];
+          if (newCategorySlug && Object.keys(TAG_CATEGORIES).includes(newCategorySlug)) {
+            const categoryId = categoryMap.get(newCategorySlug);
+            if (categoryId) {
+              console.log(`Updating tag "${tag.name}" to category "${newCategorySlug}" (ID: ${categoryId})`);
+              
+              const updatePromise = supabase
+                .from('unified_tags')
+                .update({ category_id: categoryId })
+                .eq('id', tag.id);
+              
+              updatePromises.push(updatePromise);
+              totalCategorized++;
+            }
           }
         }
 
