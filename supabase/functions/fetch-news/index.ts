@@ -1,9 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 interface NewsArticle {
@@ -21,230 +21,165 @@ interface NewsArticle {
   city_ids?: string[];
 }
 
-// Enhanced keyword extraction to generate tags with geo-detection
+// Extract LGBTQ-related keywords from content
 function extractTags(title: string, content: string): string[] {
-  const text = `${title} ${content}`.toLowerCase();
   const lgbtqKeywords = [
-    'lgbt', 'lgbtq', 'gay', 'lesbian', 'bisexual', 'transgender', 'queer',
-    'pride', 'rainbow', 'equality', 'rights', 'discrimination', 'marriage',
-    'community', 'activism', 'advocate', 'inclusive', 'diversity', 'trans',
-    'non-binary', 'pansexual', 'asexual', 'intersex', 'homophobia', 'transphobia',
-    'coming out', 'drag', 'pronouns', 'gender identity', 'sexual orientation',
-    'same-sex', 'civil union', 'adoption', 'healthcare', 'sports', 'legislation',
-    'hate crime', 'conversion therapy', 'workplace', 'military', 'school'
+    'lgbtq', 'lgbt', 'gay', 'lesbian', 'bisexual', 'transgender', 'queer', 'pride',
+    'rainbow', 'equality', 'rights', 'discrimination', 'marriage', 'adoption',
+    'intersex', 'sexual orientation', 'gender identity', 'same-sex', 'homosexual',
+    'coming out', 'drag', 'trans', 'non-binary', 'genderfluid'
   ];
   
+  const text = (title + ' ' + content).toLowerCase();
   return lgbtqKeywords.filter(keyword => text.includes(keyword));
 }
 
-// Standardize tags using the centralized tags table
+// Standardize tags against centralized tags table
 async function standardizeTags(extractedTags: string[], supabaseClient: any): Promise<string[]> {
   if (extractedTags.length === 0) return [];
   
-  // Get all active tags from the centralized tags table
-  const { data: centralizedTags } = await supabaseClient
-    .from('tags')
-    .select('name, description')
-    .eq('is_active', true);
-  
-  if (!centralizedTags) return extractedTags;
-  
-  const standardizedTags: string[] = [];
-  const tagMap = new Map(centralizedTags.map(tag => [tag.name.toLowerCase(), tag.name]));
-  
-  // Map extracted tags to standardized ones (direct match only)
-  extractedTags.forEach(tag => {
-    const lowerTag = tag.toLowerCase();
+  try {
+    const { data: tags, error } = await supabaseClient
+      .from('unified_tags')
+      .select('id, name')
+      .in('name', extractedTags);
     
-    // Direct match only
-    if (tagMap.has(lowerTag)) {
-      standardizedTags.push(tagMap.get(lowerTag)!);
+    if (error) {
+      console.error('Error fetching standardized tags:', error);
+      return extractedTags;
     }
-  });
-  
-  return [...new Set(standardizedTags)]; // Remove duplicates
+    
+    return tags?.map((tag: any) => tag.name) || extractedTags;
+  } catch (error) {
+    console.error('Error standardizing tags:', error);
+    return extractedTags;
+  }
 }
 
-// Extract geographic information from article text
+// Extract geographic information from content
 async function extractGeoInfo(title: string, content: string, sourceUrl: string, supabaseClient: any) {
-  const text = `${title} ${content}`.toLowerCase();
+  const text = (title + ' ' + content + ' ' + sourceUrl).toLowerCase();
+  const countryIds: string[] = [];
+  const cityIds: string[] = [];
   
-  // Country mappings based on source domains
-  const countryMappings: { [key: string]: string[] } = {
-    'theguardian.com': ['united kingdom', 'uk', 'britain'],
-    'washingtonblade.com': ['united states', 'usa', 'america'],
-    'buzzfeed.com': ['united states', 'usa', 'america'],
-    'reddit.com': ['united states', 'usa', 'america'],
-    'thepinknews.com': ['united kingdom', 'uk', 'britain'],
-    'sfgate.com': ['united states', 'usa', 'america'],
-    'oii.org.au': ['australia'],
-    'lgbtqnation.com': ['united states', 'usa', 'america'],
-    'outsports.com': ['united states', 'usa', 'america'],
-    'ilga-europe.org': ['europe'],
-    'tgeu.org': ['europe'],
-    'ilga.org': ['international'],
-    'eur-lex.europa.eu': ['european union', 'europe'],
-    'queerty.com': ['united states', 'usa', 'america'],
-    'out.com': ['united states', 'usa', 'america']
-  };
-  
-  // Extract source-based country
-  let sourceCountries: string[] = [];
-  for (const [domain, countries] of Object.entries(countryMappings)) {
-    if (sourceUrl.includes(domain)) {
-      sourceCountries = countries;
-      break;
-    }
-  }
-  
-  // Look for country and city names in the database
-  const { data: countries } = await supabaseClient
-    .from('countries')
-    .select('id, name, code');
+  try {
+    // Check for country mentions
+    const { data: countries } = await supabaseClient
+      .from('countries')
+      .select('id, name, code');
     
-  const { data: cities } = await supabaseClient
-    .from('cities')
-    .select('id, name, country_id');
-  
-  const detectedCountryIds: string[] = [];
-  const detectedCityIds: string[] = [];
-  
-  // Match countries from text and source
-  if (countries) {
-    for (const country of countries) {
-      const countryName = country.name.toLowerCase();
-      if (text.includes(countryName) || sourceCountries.some(sc => sc.includes(countryName))) {
-        detectedCountryIds.push(country.id);
+    if (countries) {
+      for (const country of countries) {
+        if (text.includes(country.name.toLowerCase()) || text.includes(country.code.toLowerCase())) {
+          countryIds.push(country.id);
+        }
       }
     }
-  }
-  
-  // Match cities from text
-  if (cities) {
-    for (const city of cities) {
-      const cityName = city.name.toLowerCase();
-      if (text.includes(cityName)) {
-        detectedCityIds.push(city.id);
+    
+    // Check for city mentions
+    const { data: cities } = await supabaseClient
+      .from('cities')
+      .select('id, name');
+    
+    if (cities) {
+      for (const city of cities) {
+        if (text.includes(city.name.toLowerCase())) {
+          cityIds.push(city.id);
+        }
       }
     }
+  } catch (error) {
+    console.error('Error extracting geo info:', error);
   }
   
-  return {
-    country_ids: detectedCountryIds.slice(0, 3), // Limit to 3 countries
-    city_ids: detectedCityIds.slice(0, 3) // Limit to 3 cities
-  };
+  return { countryIds, cityIds };
 }
 
 // RSS Feed parser
 async function parseRSSFeed(url: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
-    // Validate URL to prevent SSRF attacks
     const urlObj = new URL(url);
     if (!['http:', 'https:'].includes(urlObj.protocol)) {
       throw new Error('Invalid URL protocol');
     }
     
-    // Prevent access to internal/private networks
-    const hostname = urlObj.hostname;
-    if (hostname === 'localhost' || hostname === '127.0.0.1' || 
-        hostname.startsWith('192.168.') || hostname.startsWith('10.') ||
-        hostname.startsWith('172.')) {
-      throw new Error('Access to internal networks not allowed');
-    }
-    
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'LovableNewsBot/1.0'
+        'User-Agent': 'Mozilla/5.0 (compatible; NewsBot/1.0)',
       },
-      // Add timeout and size limits
-      signal: AbortSignal.timeout(10000) // 10 second timeout
     });
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
-    const text = await response.text();
+    const xmlText = await response.text();
+    const xmlDoc = new DOMParser().parseFromString(xmlText, 'text/xml');
     
-    // Simple RSS parsing (in production, you'd use a proper XML parser)
-    const items = text.split('<item>').slice(1);
+    if (xmlDoc.querySelector('parsererror')) {
+      throw new Error('Invalid XML format');
+    }
+    
+    const items = xmlDoc.querySelectorAll('item, entry');
     const articles: NewsArticle[] = [];
     
-    for (const item of items.slice(0, 10)) { // Limit to 10 articles per feed
-      const titleMatch = item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>|<title>(.*?)<\/title>/);
-      const linkMatch = item.match(/<link>(.*?)<\/link>/);
-      const descMatch = item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>|<description>(.*?)<\/description>/);
-      const pubDateMatch = item.match(/<pubDate>(.*?)<\/pubDate>/);
-      const authorMatch = item.match(/<dc:creator><!\[CDATA\[(.*?)\]\]><\/dc:creator>|<author>(.*?)<\/author>/);
+    for (const item of items) {
+      const titleEl = item.querySelector('title');
+      const linkEl = item.querySelector('link');
+      const descEl = item.querySelector('description, summary');
+      const contentEl = item.querySelector('content\\:encoded, content');
+      const authorEl = item.querySelector('author, dc\\:creator');
+      const pubDateEl = item.querySelector('pubDate, published, updated');
       
-      if (titleMatch && linkMatch) {
-        // Sanitize extracted data to prevent XSS
-        const title = (titleMatch[1] || titleMatch[2] || '').replace(/<[^>]*>/g, '').trim();
-        const url = (linkMatch[1] || '').trim();
-        const description = (descMatch ? (descMatch[1] || descMatch[2]) : '').replace(/<[^>]*>/g, '').trim();
-        const pubDate = pubDateMatch ? pubDateMatch[1] : new Date().toISOString();
-        const author = authorMatch ? (authorMatch[1] || authorMatch[2] || '').replace(/<[^>]*>/g, '').trim() : undefined;
-        
-        // Extract image URL from multiple sources
-        let imageUrl = null;
-        
-        // Try to find image in enclosure tag (common in RSS)
-        const enclosureMatch = item.match(/<enclosure[^>]*url="([^"]*)"[^>]*type="image[^"]*"/);
-        if (enclosureMatch) {
-          imageUrl = enclosureMatch[1];
+      if (!titleEl?.textContent || !linkEl?.textContent) continue;
+      
+      const title = titleEl.textContent.trim();
+      const url = linkEl.textContent.trim();
+      const description = descEl?.textContent?.trim() || '';
+      const content = contentEl?.textContent?.trim() || description;
+      const author = authorEl?.textContent?.trim();
+      
+      let publishedAt = new Date().toISOString();
+      if (pubDateEl?.textContent) {
+        const parsedDate = new Date(pubDateEl.textContent.trim());
+        if (!isNaN(parsedDate.getTime())) {
+          publishedAt = parsedDate.toISOString();
         }
-        
-        // Try to find image in media:content tag
-        if (!imageUrl) {
-          const mediaContentMatch = item.match(/<media:content[^>]*url="([^"]*)"[^>]*medium="image"/);
-          if (mediaContentMatch) {
-            imageUrl = mediaContentMatch[1];
-          }
-        }
-        
-        // Try to find image in content or description
-        if (!imageUrl) {
-          const imgTagMatch = description.match(/<img[^>]*src="([^"]*)"[^>]*>/);
-          if (imgTagMatch) {
-            imageUrl = imgTagMatch[1];
-          }
-        }
-        
-        // Try to find image in media:thumbnail
-        if (!imageUrl) {
-          const mediaThumbnailMatch = item.match(/<media:thumbnail[^>]*url="([^"]*)"[^>]*>/);
-          if (mediaThumbnailMatch) {
-            imageUrl = mediaThumbnailMatch[1];
-          }
-        }
-        
-        // Validate URL
-        try {
-          new URL(url);
-        } catch {
-          continue; // Skip invalid URLs
-        }
-        
-        // Generate enhanced tags and geo info
-        const extractedTags = extractTags(title, description);
-        const standardizedTags = await standardizeTags(extractedTags, supabaseClient);
-        const geoInfo = await extractGeoInfo(title, description, url, supabaseClient);
-        
-        articles.push({
-          title: title.trim(),
-          content: description.trim(),
-          excerpt: description.trim().slice(0, 300) + '...',
-          url: url.trim(),
-          image_url: imageUrl,
-          author,
-          published_at: new Date(pubDate).toISOString(),
-          category,
-          tags: standardizedTags,
-          source_id: sourceId,
-          country_ids: geoInfo.country_ids,
-          city_ids: geoInfo.city_ids
-        });
       }
+      
+      // XSS prevention
+      const sanitizedTitle = title.replace(/<[^>]*>/g, '');
+      const sanitizedContent = content.replace(/<[^>]*>/g, '');
+      const sanitizedDescription = description.replace(/<[^>]*>/g, '');
+      
+      // Extract tags
+      const extractedTags = extractTags(sanitizedTitle, sanitizedContent);
+      const tags = await standardizeTags(extractedTags, supabaseClient);
+      
+      // Extract geographic info
+      const { countryIds, cityIds } = await extractGeoInfo(sanitizedTitle, sanitizedContent, url, supabaseClient);
+      
+      // Extract image
+      let imageUrl = '';
+      const mediaContentEl = item.querySelector('media\\:content, enclosure[type^="image"]');
+      if (mediaContentEl) {
+        imageUrl = mediaContentEl.getAttribute('url') || '';
+      }
+      
+      articles.push({
+        title: sanitizedTitle,
+        content: sanitizedContent,
+        excerpt: sanitizedDescription,
+        url: url,
+        image_url: imageUrl,
+        author: author,
+        published_at: publishedAt,
+        category,
+        tags,
+        source_id: sourceId,
+        country_ids: countryIds,
+        city_ids: cityIds
+      });
     }
     
     return articles;
@@ -335,6 +270,7 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, category: str
             source_id: sourceId
           });
         }
+      }
     }
     
     return articles;
@@ -517,21 +453,21 @@ serve(async (req) => {
     if (allArticles.length > 0) {
       const { error: insertError } = await supabaseClient
         .from('news_articles')
-        .upsert(allArticles, { 
-          onConflict: 'url',
-          ignoreDuplicates: true 
-        });
+        .insert(allArticles)
+        .select();
 
       if (insertError) {
         console.error('Error inserting articles:', insertError);
       }
     }
 
+    console.log(`Successfully processed ${allArticles.length} articles from ${sources?.length || 0} sources`);
+
     return new Response(
       JSON.stringify({ 
         success: true, 
         articlesProcessed: allArticles.length,
-        sources: sources?.length || 0
+        sourcesProcessed: sources?.length || 0
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
