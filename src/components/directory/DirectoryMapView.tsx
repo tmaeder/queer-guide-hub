@@ -3,6 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { MapPin, Loader2, Globe, Building2 } from 'lucide-react';
 import { DirectoryCard } from './DirectoryCard';
 
@@ -49,7 +50,6 @@ export function DirectoryMapView({
   const map = useRef<mapboxgl.Map | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
   const [showCities, setShowCities] = useState(true);
-  const [showCountries, setShowCountries] = useState(true);
   const [mapboxToken, setMapboxToken] = useState(import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || 'pk.eyJ1IjoidG1hZWRlciIsImEiOiJjazh4Ym9wOTEwN3F4M21zN3FqdnM4MHE2In0.24RlCLiCNxxX-c6h_4rwWw');
   const [showTokenInput, setShowTokenInput] = useState(false);
   
@@ -111,7 +111,7 @@ export function DirectoryMapView({
       markers.forEach(marker => marker.remove());
       
       // Add country markers (capitals)
-      if (showCountries) {
+      if (!showCities) {
         countries.forEach((country) => {
           if (country.latitude && country.longitude) {
             const marker = new mapboxgl.Marker({
@@ -182,7 +182,7 @@ export function DirectoryMapView({
       // Fit map to show all points
       const allCoordinates: [number, number][] = [];
       
-      if (showCountries) {
+      if (!showCities) {
         allCoordinates.push(
           ...countries
             .filter(c => c.latitude && c.longitude)
@@ -204,7 +204,7 @@ export function DirectoryMapView({
         map.current.fitBounds(bounds, { padding: 50, maxZoom: 6 });
       }
     }
-  }, [countries, cities, showCountries, showCities, activeToken]);
+  }, [countries, cities, showCities, activeToken]);
 
   const handleTokenSubmit = () => {
     if (mapboxToken.trim()) {
@@ -261,25 +261,13 @@ export function DirectoryMapView({
                 <span className="text-sm">Other Cities</span>
               </div>
               
-              <div className="flex gap-2 ml-auto">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCountries(!showCountries)}
-                  className={showCountries ? 'bg-red-50 border-red-200' : ''}
-                >
-                  <MapPin className="h-4 w-4 mr-1" />
-                  {showCountries ? 'Hide' : 'Show'} Countries
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCities(!showCities)}
-                  className={showCities ? 'bg-blue-50 border-blue-200' : ''}
-                >
-                  <Building2 className="h-4 w-4 mr-1" />
-                  {showCities ? 'Hide' : 'Show'} Cities
-                </Button>
+              <div className="flex items-center gap-3 ml-auto">
+                <span className="text-sm font-medium">Countries</span>
+                <Switch 
+                  checked={showCities}
+                  onCheckedChange={setShowCities}
+                />
+                <span className="text-sm font-medium">Cities</span>
               </div>
             </div>
 
