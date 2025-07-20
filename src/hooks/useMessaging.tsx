@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 export interface MessageProfile {
   display_name: string | null;
   avatar_url: string | null;
+  user_mode?: string | null;
 }
 
 export interface Message {
@@ -94,7 +95,8 @@ export const useMessaging = () => {
             profile:profiles!conversation_participants_user_id_profiles_user_id_fkey(
               display_name,
               avatar_url,
-              user_id
+              user_id,
+              user_mode
             )
           )
         `)

@@ -21,6 +21,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { useMessaging, type Conversation, type Message, type TypingIndicator } from "@/hooks/useMessaging";
 import { useAuth } from "@/hooks/useAuth";
+import { UserModeBadge } from "@/components/profile/UserModeBadge";
 import { useSearchParams } from "react-router-dom";
 
 interface MessageItemProps {
@@ -195,6 +196,16 @@ const ConversationList = ({
     return otherParticipant?.profile?.avatar_url;
   };
 
+  const getOtherParticipant = (conversation: Conversation) => {
+    if (conversation.conversation_type === 'group') {
+      return null;
+    }
+    
+    return conversation.participants?.find(
+      p => p.user_id !== currentUserId
+    );
+  };
+
   return (
     <div className="space-y-2">
       {conversations.map(conversation => (
@@ -207,22 +218,26 @@ const ConversationList = ({
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <Avatar>
-                  <AvatarImage src={getConversationAvatar(conversation) || ''} />
-                  <AvatarFallback>
-                    {getConversationTitle(conversation).charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                {/* Online indicator - could be dynamic */}
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
-              </div>
+              <Avatar>
+                <AvatarImage src={getConversationAvatar(conversation) || ''} />
+                <AvatarFallback>
+                  {getConversationTitle(conversation).charAt(0)}
+                </AvatarFallback>
+              </Avatar>
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium truncate">
-                    {getConversationTitle(conversation)}
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium truncate">
+                      {getConversationTitle(conversation)}
+                    </h4>
+                    {getOtherParticipant(conversation)?.profile?.user_mode && (
+                      <UserModeBadge 
+                        mode={getOtherParticipant(conversation)?.profile?.user_mode || ''} 
+                        size="sm" 
+                      />
+                    )}
+                  </div>
                   {conversation.last_message_at && (
                     <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })}
