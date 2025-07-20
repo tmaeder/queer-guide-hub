@@ -30,7 +30,13 @@ export const GroupCard = ({
       <CardHeader className="pb-3">
         <div className="flex items-start gap-3">
           <Avatar className="h-12 w-12">
-            <AvatarImage src={group.image_url || undefined} />
+            <AvatarImage 
+              src={group.image_url || undefined}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${group.name}`;
+              }}
+            />
             <AvatarFallback className="bg-gradient-primary text-primary-foreground">
               {group.name.charAt(0).toUpperCase()}
             </AvatarFallback>

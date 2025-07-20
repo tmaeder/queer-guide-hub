@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Users } from "lucide-react";
+import { GroupImageUpload } from "./GroupImageUpload";
 
 interface CreateGroupDialogProps {
   onCreateGroup: (data: {
@@ -27,6 +28,7 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating }: CreateGroupDial
     imageUrl: "",
     rules: ""
   });
+  const [groupImages, setGroupImages] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +38,7 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating }: CreateGroupDial
       name: formData.name.trim(),
       description: formData.description.trim() || undefined,
       isPrivate: formData.isPrivate,
-      imageUrl: formData.imageUrl.trim() || undefined,
+      imageUrl: groupImages.length > 0 ? groupImages[0] : (formData.imageUrl.trim() || undefined),
       rules: formData.rules.trim() || undefined
     });
 
@@ -48,6 +50,7 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating }: CreateGroupDial
       imageUrl: "",
       rules: ""
     });
+    setGroupImages([]);
     setOpen(false);
   };
 
@@ -89,8 +92,14 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating }: CreateGroupDial
             />
           </div>
 
+          <GroupImageUpload
+            currentImages={groupImages}
+            onImagesChange={setGroupImages}
+            maxImages={1}
+          />
+
           <div className="space-y-2">
-            <Label htmlFor="imageUrl">Group Image URL</Label>
+            <Label htmlFor="imageUrl">Or Image URL</Label>
             <Input
               id="imageUrl"
               value={formData.imageUrl}
