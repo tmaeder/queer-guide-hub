@@ -1991,6 +1991,7 @@ export type Database = {
           interests: Json | null
           intimacy_preferences: Json | null
           is_business: boolean | null
+          is_online: boolean | null
           jealousy_comfort_level: string | null
           job_title: string | null
           kink_experience_level: string | null
@@ -1998,6 +1999,7 @@ export type Database = {
           languages: Json | null
           last_active_at: string | null
           last_name: string | null
+          last_seen_at: string | null
           life_philosophy: string | null
           location: string | null
           looking_for: string[] | null
@@ -2117,6 +2119,7 @@ export type Database = {
           interests?: Json | null
           intimacy_preferences?: Json | null
           is_business?: boolean | null
+          is_online?: boolean | null
           jealousy_comfort_level?: string | null
           job_title?: string | null
           kink_experience_level?: string | null
@@ -2124,6 +2127,7 @@ export type Database = {
           languages?: Json | null
           last_active_at?: string | null
           last_name?: string | null
+          last_seen_at?: string | null
           life_philosophy?: string | null
           location?: string | null
           looking_for?: string[] | null
@@ -2243,6 +2247,7 @@ export type Database = {
           interests?: Json | null
           intimacy_preferences?: Json | null
           is_business?: boolean | null
+          is_online?: boolean | null
           jealousy_comfort_level?: string | null
           job_title?: string | null
           kink_experience_level?: string | null
@@ -2250,6 +2255,7 @@ export type Database = {
           languages?: Json | null
           last_active_at?: string | null
           last_name?: string | null
+          last_seen_at?: string | null
           life_philosophy?: string | null
           location?: string | null
           looking_for?: string[] | null

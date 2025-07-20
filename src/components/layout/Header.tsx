@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
@@ -15,6 +17,11 @@ export function Header() {
     user,
     signOut
   } = useAuth();
+  const { profile, updateProfile } = useProfile();
+
+  const handleStatusToggle = async (checked: boolean) => {
+    await updateProfile({ is_online: checked });
+  };
   return <header className="bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
@@ -30,7 +37,14 @@ export function Header() {
                   <User className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-screen left-0 right-0 p-4 bg-background border border-border h-[120px]">
+              <DropdownMenuContent align="end" className="w-screen left-0 right-0 p-4 bg-background border border-border h-[140px]">
+                <div className="flex items-center justify-between p-2 mb-2">
+                  <span className="text-sm font-medium">Online Status</span>
+                  <Switch 
+                    checked={profile?.is_online || false}
+                    onCheckedChange={handleStatusToggle}
+                  />
+                </div>
                 <div className="flex justify-between p-4">
                   <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/my-bookings')}>
                     <CreditCard className="h-4 w-4 mb-1" />
