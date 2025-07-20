@@ -389,8 +389,7 @@ export default function EventDetail() {
                 <Download className="h-4 w-4" />
               </Button>
               <Button variant="outline" size="sm" className="flex-1">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
+                <Share2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
