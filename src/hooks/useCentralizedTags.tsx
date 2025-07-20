@@ -42,15 +42,17 @@ export const useCentralizedTags = () => {
 
       setAllTags(data || []);
 
-      // Group tags by category
+      // Group tags by category - only show categories that have been properly categorized
       const categoryMap = new Map<string, CentralizedTag[]>();
       
       (data || []).forEach((tag) => {
-        const category = tag.category || 'general';
-        if (!categoryMap.has(category)) {
-          categoryMap.set(category, []);
+        // Only include tags that have a proper category (not 'general' or null)
+        if (tag.category && tag.category !== 'general') {
+          if (!categoryMap.has(tag.category)) {
+            categoryMap.set(tag.category, []);
+          }
+          categoryMap.get(tag.category)!.push(tag);
         }
-        categoryMap.get(category)!.push(tag);
       });
 
       const categories: TagCategory[] = Array.from(categoryMap.entries()).map(([category, tags]) => ({
