@@ -188,37 +188,6 @@ export function Header() {
 
                 </div>
 
-                {/* Footer actions */}
-                <div className="p-2 border-t">
-                  {user ? (
-                    <DropdownMenuItem className="p-0">
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start text-destructive hover:text-destructive h-11 px-2" 
-                        onClick={() => {
-                          signOut();
-                          setMenuOpen(false);
-                        }}
-                      >
-                        <LogOut className="h-5 w-5 mr-3" />
-                        Logout
-                      </Button>
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem className="p-0">
-                      <Button 
-                        className="w-full h-11 mx-2" 
-                        onClick={() => {
-                          setAuthDialogOpen(true);
-                          setMenuOpen(false);
-                        }}
-                      >
-                        <User className="h-5 w-5 mr-2" />
-                        Sign In / Sign Up
-                      </Button>
-                    </DropdownMenuItem>
-                  )}
-                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
