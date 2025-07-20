@@ -512,14 +512,26 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="gender_identity">Gender Identity</Label>
-                  <Input
-                    id="gender_identity"
-                    value={formData.gender_identity || ''}
-                    onChange={(e) => handleInputChange('gender_identity', e.target.value)}
-                    placeholder="How you identify"
-                    className="pointer-events-auto"
-                    tabIndex={0}
-                  />
+                  <Select value={formData.gender_identity} onValueChange={(value) => handleInputChange('gender_identity', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your gender identity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="woman">Woman</SelectItem>
+                      <SelectItem value="man">Man</SelectItem>
+                      <SelectItem value="non_binary">Non-binary</SelectItem>
+                      <SelectItem value="genderfluid">Genderfluid</SelectItem>
+                      <SelectItem value="agender">Agender</SelectItem>
+                      <SelectItem value="bigender">Bigender</SelectItem>
+                      <SelectItem value="genderqueer">Genderqueer</SelectItem>
+                      <SelectItem value="demigender">Demigender</SelectItem>
+                      <SelectItem value="transgender_woman">Transgender woman</SelectItem>
+                      <SelectItem value="transgender_man">Transgender man</SelectItem>
+                      <SelectItem value="questioning">Questioning</SelectItem>
+                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="sexual_orientation">Sexual Orientation</Label>
