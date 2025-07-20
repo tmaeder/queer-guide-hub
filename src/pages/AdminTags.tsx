@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TagCategorizer } from "@/components/admin/TagCategorizer";
+import { TagsCsvImport } from "@/components/admin/TagsCsvImport";
 
 export default function AdminTags() {
   const navigate = useNavigate();
@@ -237,6 +238,7 @@ export default function AdminTags() {
           </div>
         </div>
         <div className="flex gap-2">
+          <TagsCsvImport onImportComplete={() => window.location.reload()} />
           <Button variant="outline" onClick={handleBulkEdit}>
             <Edit className="h-4 w-4 mr-2" />
             Bulk Edit Descriptions
