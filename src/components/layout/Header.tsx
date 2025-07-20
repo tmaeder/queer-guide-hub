@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck } from 'lucide-react';
+import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck, Map, Smile, Handshake, Home } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -20,12 +20,12 @@ export function Header() {
   const { profile, updateProfile } = useProfile();
 
   const userModes = [
-    { value: 'dating', emoji: '💕', label: 'Dating' },
-    { value: 'friends', emoji: '👥', label: 'Friends' },
-    { value: 'exploration', emoji: '🗺️', label: 'Exploration' },
-    { value: 'fun', emoji: '🎉', label: 'Fun' },
-    { value: 'networking', emoji: '🤝', label: 'Networking' },
-    { value: 'community', emoji: '🏘️', label: 'Community' },
+    { value: 'dating', icon: Heart, label: 'Dating' },
+    { value: 'friends', icon: Users, label: 'Friends' },
+    { value: 'exploration', icon: Map, label: 'Exploration' },
+    { value: 'fun', icon: Smile, label: 'Fun' },
+    { value: 'networking', icon: Handshake, label: 'Networking' },
+    { value: 'community', icon: Home, label: 'Community' },
   ];
 
   const handleModeChange = async (mode: string) => {
@@ -53,7 +53,10 @@ export function Header() {
                     <SelectTrigger className="w-40">
                       <SelectValue>
                         <div className="flex items-center gap-2">
-                          <span>{userModes.find(m => m.value === profile?.user_mode)?.emoji}</span>
+                          {(() => {
+                            const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
+                            return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
+                          })()}
                           <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
                         </div>
                       </SelectValue>
@@ -62,7 +65,7 @@ export function Header() {
                       {userModes.map((mode) => (
                         <SelectItem key={mode.value} value={mode.value}>
                           <div className="flex items-center gap-2">
-                            <span>{mode.emoji}</span>
+                            <mode.icon className="h-4 w-4" />
                             <span>{mode.label}</span>
                           </div>
                         </SelectItem>
