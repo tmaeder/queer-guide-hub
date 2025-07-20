@@ -167,11 +167,6 @@ export function Header() {
                 className="w-[300px] max-h-[80vh] overflow-y-auto p-0 bg-background border border-border"
                 sideOffset={8}
               >
-                {/* Search */}
-                <div className="p-4 border-b">
-                  <UniversalSearchBar />
-                </div>
-
                 {/* User mode selector */}
                 {user && (
                   <div className="p-4 border-b">
