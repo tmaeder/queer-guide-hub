@@ -173,102 +173,99 @@ export function Header() {
               </Button>
             )}
 
-            {/* Mobile menu */}
+            {/* Mobile hamburger menu */}
             {isMobile && (
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
-                    <Menu className="h-5 w-5" />
+              <DropdownMenu open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-11 w-11 p-0">
+                    {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                   </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[280px] p-0">
-                  <SheetHeader className="p-6 pb-4 border-b">
-                    <SheetTitle className="text-left">
-                      {user ? `Welcome back!` : 'Queer Guide'}
-                    </SheetTitle>
-                  </SheetHeader>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-[300px] max-h-[80vh] overflow-y-auto p-0 bg-background border border-border"
+                  sideOffset={8}
+                >
+                  {/* Search */}
+                  <div className="p-4 border-b">
+                    <UniversalSearchBar />
+                  </div>
 
-                  <div className="flex flex-col h-full">
-                    {/* User section */}
-                    {user && (
-                      <div className="p-4 border-b">
-                        <div className="mb-4">
-                          <label className="text-sm font-medium text-muted-foreground">Current Mode</label>
-                          <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
-                            <SelectTrigger className="w-full mt-1">
-                              <SelectValue>
-                                <div className="flex items-center gap-2">
-                                  {(() => {
-                                    const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
-                                    return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
-                                  })()}
-                                  <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
-                                </div>
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {userModes.map((mode) => (
-                                <SelectItem key={mode.value} value={mode.value}>
-                                  <div className="flex items-center gap-2">
-                                    <mode.icon className="h-4 w-4" />
-                                    <span>{mode.label}</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    )}
+                  {/* User mode selector */}
+                  {user && (
+                    <div className="p-4 border-b">
+                      <label className="text-sm font-medium text-muted-foreground mb-2 block">Current Mode</label>
+                      <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue>
+                            <div className="flex items-center gap-2">
+                              {(() => {
+                                const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
+                                return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
+                              })()}
+                              <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
+                            </div>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {userModes.map((mode) => (
+                            <SelectItem key={mode.value} value={mode.value}>
+                              <div className="flex items-center gap-2">
+                                <mode.icon className="h-4 w-4" />
+                                <span>{mode.label}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
-                    {/* Navigation */}
-                    <nav className="flex-1 p-4 space-y-2">
-                      {/* Search on mobile */}
-                      <div className="mb-4">
-                        <UniversalSearchBar />
-                      </div>
-
-                      {/* Main navigation */}
-                      <div className="space-y-1">
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Explore</h3>
-                        {navigationItems.map((item) => (
+                  {/* Main navigation */}
+                  <div className="p-2">
+                    <div className="mb-2">
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1 px-2">Explore</h3>
+                      {navigationItems.map((item) => (
+                        <DropdownMenuItem key={item.to} className="p-0">
                           <Button
-                            key={item.to}
                             variant="ghost"
-                            className="w-full justify-start h-12 text-base"
+                            className="w-full justify-start h-11 text-base px-2"
                             onClick={() => handleMenuItemClick(item.to)}
                           >
                             <item.icon className="h-5 w-5 mr-3" />
                             {item.label}
                           </Button>
-                        ))}
-                      </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
 
-                      {/* User menu items */}
-                      {user && (
-                        <div className="space-y-1 pt-4">
-                          <h3 className="text-sm font-medium text-muted-foreground mb-2">Your Account</h3>
-                          {userMenuItems.map((item) => (
+                    {/* User menu items */}
+                    {user && (
+                      <div className="pt-2 border-t">
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1 px-2">Your Account</h3>
+                        {userMenuItems.map((item) => (
+                          <DropdownMenuItem key={item.to} className="p-0">
                             <Button
-                              key={item.to}
                               variant="ghost"
-                              className="w-full justify-start h-12 text-base"
+                              className="w-full justify-start h-11 text-base px-2"
                               onClick={() => handleMenuItemClick(item.to)}
                             >
                               <item.icon className="h-5 w-5 mr-3" />
                               {item.label}
                             </Button>
-                          ))}
-                        </div>
-                      )}
-                    </nav>
+                          </DropdownMenuItem>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                    {/* Footer actions */}
-                    <div className="p-4 border-t mt-auto">
-                      {user ? (
+                  {/* Footer actions */}
+                  <div className="p-2 border-t">
+                    {user ? (
+                      <DropdownMenuItem className="p-0">
                         <Button 
                           variant="ghost" 
-                          className="w-full justify-start text-destructive hover:text-destructive h-12" 
+                          className="w-full justify-start text-destructive hover:text-destructive h-11 px-2" 
                           onClick={() => {
                             signOut();
                             setMobileMenuOpen(false);
@@ -277,9 +274,11 @@ export function Header() {
                           <LogOut className="h-5 w-5 mr-3" />
                           Logout
                         </Button>
-                      ) : (
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem className="p-0">
                         <Button 
-                          className="w-full h-12" 
+                          className="w-full h-11 mx-2" 
                           onClick={() => {
                             setAuthDialogOpen(true);
                             setMobileMenuOpen(false);
@@ -288,11 +287,11 @@ export function Header() {
                           <User className="h-5 w-5 mr-2" />
                           Sign In / Sign Up
                         </Button>
-                      )}
-                    </div>
+                      </DropdownMenuItem>
+                    )}
                   </div>
-                </SheetContent>
-              </Sheet>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
