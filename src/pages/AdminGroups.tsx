@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
@@ -24,8 +24,14 @@ export default function AdminGroups() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
 
+  
+  useEffect(() => {
+    if (!user || !canManageContent()) {
+      navigate("/admin");
+    }
+  }, [user, canManageContent, navigate]);
+
   if (!user || !canManageContent()) {
-    navigate("/admin");
     return null;
   }
 
