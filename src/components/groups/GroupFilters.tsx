@@ -2,7 +2,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Search, Filter, Users, Lock, Globe, X } from "lucide-react";
+import { TagSelector } from "@/components/tags/TagSelector";
 
 interface GroupFiltersProps {
   searchQuery: string;
@@ -11,6 +13,8 @@ interface GroupFiltersProps {
   onFilterChange: (filters: string[]) => void;
   showMyGroups: boolean;
   onShowMyGroupsChange: (show: boolean) => void;
+  selectedTags: string[];
+  onTagsChange: (tags: string[]) => void;
 }
 
 const filterOptions = [
@@ -27,7 +31,9 @@ export const GroupFilters = ({
   activeFilters,
   onFilterChange,
   showMyGroups,
-  onShowMyGroupsChange
+  onShowMyGroupsChange,
+  selectedTags,
+  onTagsChange
 }: GroupFiltersProps) => {
   const toggleFilter = (filterId: string) => {
     if (activeFilters.includes(filterId)) {
@@ -41,9 +47,10 @@ export const GroupFilters = ({
     onFilterChange([]);
     onSearchChange("");
     onShowMyGroupsChange(false);
+    onTagsChange([]);
   };
 
-  const hasActiveFilters = activeFilters.length > 0 || searchQuery || showMyGroups;
+  const hasActiveFilters = activeFilters.length > 0 || searchQuery || showMyGroups || selectedTags.length > 0;
 
   return (
     <Card className="p-4 space-y-4">
@@ -99,6 +106,17 @@ export const GroupFilters = ({
         })}
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="tags">Filter by Tags</Label>
+        <TagSelector
+          selectedTags={selectedTags}
+          onTagsChange={onTagsChange}
+          placeholder="Filter groups by tags..."
+          maxTags={3}
+          allowCustomTags={false}
+        />
+      </div>
+
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-1">
           {searchQuery && (
@@ -119,6 +137,15 @@ export const GroupFilters = ({
               />
             </Badge>
           )}
+          {selectedTags.map((tag) => (
+            <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+              Tag: {tag}
+              <X 
+                className="h-3 w-3 cursor-pointer" 
+                onClick={() => onTagsChange(selectedTags.filter(t => t !== tag))}
+              />
+            </Badge>
+          ))}
           {activeFilters.map((filter) => {
             const option = filterOptions.find(opt => opt.id === filter);
             return (

@@ -27,6 +27,7 @@ export default function Groups() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showMyGroups, setShowMyGroups] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   // Filter groups based on search and filters
   const filteredGroups = useMemo(() => {
@@ -35,6 +36,14 @@ export default function Groups() {
     // Search filter
     if (searchQuery) {
       filtered = filtered.filter(group => group.name.toLowerCase().includes(searchQuery.toLowerCase()) || group.description?.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+
+    // Tag filter
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(group => {
+        if (!group.tags || group.tags.length === 0) return false;
+        return selectedTags.every(tag => group.tags?.includes(tag));
+      });
     }
 
     // Category filters
@@ -59,7 +68,7 @@ export default function Groups() {
       });
     }
     return filtered;
-  }, [groups, userGroups, searchQuery, activeFilters, showMyGroups]);
+  }, [groups, userGroups, searchQuery, selectedTags, activeFilters, showMyGroups]);
 
   // Popular groups (sorted by member count)
   const popularGroups = useMemo(() => [...groups].filter(g => !g.is_private).sort((a, b) => b.member_count - a.member_count).slice(0, 6), [groups]);
@@ -111,7 +120,7 @@ export default function Groups() {
         </TabsList>
 
         <TabsContent value="discover" className="space-y-6">
-          <GroupFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} activeFilters={activeFilters} onFilterChange={setActiveFilters} showMyGroups={showMyGroups} onShowMyGroupsChange={setShowMyGroups} />
+          <GroupFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} activeFilters={activeFilters} onFilterChange={setActiveFilters} showMyGroups={showMyGroups} onShowMyGroupsChange={setShowMyGroups} selectedTags={selectedTags} onTagsChange={setSelectedTags} />
 
           {isLoading ? <Card>
               <CardContent className="p-8 text-center">

@@ -315,6 +315,7 @@ export type Database = {
           member_count: number
           name: string
           rules: string | null
+          tags: string[] | null
           updated_at: string
         }
         Insert: {
@@ -327,6 +328,7 @@ export type Database = {
           member_count?: number
           name: string
           rules?: string | null
+          tags?: string[] | null
           updated_at?: string
         }
         Update: {
@@ -339,6 +341,7 @@ export type Database = {
           member_count?: number
           name?: string
           rules?: string | null
+          tags?: string[] | null
           updated_at?: string
         }
         Relationships: []

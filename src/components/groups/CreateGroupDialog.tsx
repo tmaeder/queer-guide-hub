@@ -7,14 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Users } from "lucide-react";
 import { GroupImageUpload } from "./GroupImageUpload";
+import { TagSelector } from "@/components/tags/TagSelector";
 
 interface CreateGroupDialogProps {
-  onCreateGroup: (data: {
-    name: string;
-    description?: string;
-    isPrivate?: boolean;
-    imageUrl?: string;
-    rules?: string;
+  onCreateGroup: (data: { 
+    name: string; 
+    description?: string; 
+    isPrivate?: boolean; 
+    imageUrl?: string; 
+    rules?: string; 
+    tags?: string[];
   }) => void;
   isCreating?: boolean;
 }
@@ -26,7 +28,8 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating }: CreateGroupDial
     description: "",
     isPrivate: false,
     imageUrl: "",
-    rules: ""
+    rules: "",
+    tags: [] as string[]
   });
   const [groupImages, setGroupImages] = useState<string[]>([]);
 
@@ -39,7 +42,8 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating }: CreateGroupDial
       description: formData.description.trim() || undefined,
       isPrivate: formData.isPrivate,
       imageUrl: groupImages.length > 0 ? groupImages[0] : (formData.imageUrl.trim() || undefined),
-      rules: formData.rules.trim() || undefined
+      rules: formData.rules.trim() || undefined,
+      tags: formData.tags
     });
 
     // Reset form and close dialog
@@ -48,7 +52,8 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating }: CreateGroupDial
       description: "",
       isPrivate: false,
       imageUrl: "",
-      rules: ""
+      rules: "",
+      tags: []
     });
     setGroupImages([]);
     setOpen(false);
@@ -117,6 +122,17 @@ export const CreateGroupDialog = ({ onCreateGroup, isCreating }: CreateGroupDial
               onChange={(e) => setFormData(prev => ({ ...prev, rules: e.target.value }))}
               placeholder="Guidelines for group members"
               rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tags">Tags</Label>
+            <TagSelector
+              selectedTags={formData.tags}
+              onTagsChange={(tags) => setFormData(prev => ({ ...prev, tags }))}
+              placeholder="Add tags to help others discover your group..."
+              maxTags={5}
+              allowCustomTags={true}
             />
           </div>
 

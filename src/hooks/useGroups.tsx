@@ -15,6 +15,7 @@ export interface Group {
   created_by: string;
   created_at: string;
   updated_at: string;
+  tags?: string[];
   user_role?: string;
   is_member?: boolean;
 }
@@ -82,12 +83,13 @@ export const useGroups = () => {
 
   // Create group mutation
   const createGroupMutation = useMutation({
-    mutationFn: async ({ name, description, isPrivate, imageUrl, rules }: {
+    mutationFn: async ({ name, description, isPrivate, imageUrl, rules, tags }: {
       name: string;
       description?: string;
       isPrivate?: boolean;
       imageUrl?: string;
       rules?: string;
+      tags?: string[];
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
@@ -99,6 +101,7 @@ export const useGroups = () => {
           is_private: isPrivate || false,
           image_url: imageUrl,
           rules,
+          tags: tags || [],
           created_by: user.id
         })
         .select()
@@ -202,7 +205,7 @@ export const useGroups = () => {
   const updateGroupMutation = useMutation({
     mutationFn: async ({ groupId, updates }: {
       groupId: string;
-      updates: Partial<Pick<Group, 'name' | 'description' | 'image_url' | 'is_private' | 'rules'>>;
+      updates: Partial<Pick<Group, 'name' | 'description' | 'image_url' | 'is_private' | 'rules' | 'tags'>>;
     }) => {
       const { error } = await supabase
         .from('community_groups')

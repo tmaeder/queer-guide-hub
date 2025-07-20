@@ -87,6 +87,21 @@ export const GroupCard = ({
           </p>
         )}
 
+        {group.tags && group.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {group.tags.slice(0, 3).map((tag) => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+            {group.tags.length > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{group.tags.length - 3} more
+              </Badge>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-2">
           <Button asChild variant="ghost" size="sm" className="flex-1">
             <Link to={`/groups/${group.id}`} className="flex items-center">
