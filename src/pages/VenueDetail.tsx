@@ -218,6 +218,36 @@ export default function VenueDetail() {
             </Card>
           )}
 
+          {/* Venue Images */}
+          {venue.images && venue.images.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Photos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {venue.images.map((imageUrl, index) => (
+                    <div key={index} className="aspect-square rounded-lg overflow-hidden bg-muted">
+                      <img
+                        src={imageUrl}
+                        alt={`${venue.name} - Image ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                        onClick={() => {
+                          // Open image in new tab for full view
+                          window.open(imageUrl, '_blank');
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Amenities */}
           {venue.amenities && venue.amenities.length > 0 && (
             <Card>

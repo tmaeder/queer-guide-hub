@@ -29,6 +29,7 @@ import {
   Star
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { VenueImageUpload } from "@/components/venues/VenueImageUpload";
 
 export default function AdminVenues() {
   const navigate = useNavigate();
@@ -61,7 +62,8 @@ export default function AdminVenues() {
     latitude: "",
     longitude: "",
     amenities: [] as string[],
-    tags: [] as string[]
+    tags: [] as string[],
+    images: [] as string[]
   });
 
   const venueCategories = [
@@ -118,6 +120,7 @@ export default function AdminVenues() {
         price_range: parseInt(formData.price_range),
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        images: formData.images.length > 0 ? formData.images : null,
         created_by: user?.id
       };
 
@@ -168,7 +171,8 @@ export default function AdminVenues() {
       latitude: venue.latitude?.toString() || "",
       longitude: venue.longitude?.toString() || "",
       amenities: venue.amenities || [],
-      tags: venue.tags || []
+      tags: venue.tags || [],
+      images: venue.images || []
     });
     setIsCreateDialogOpen(true);
   };
@@ -216,7 +220,8 @@ export default function AdminVenues() {
       latitude: "",
       longitude: "",
       amenities: [],
-      tags: []
+      tags: [],
+      images: []
     });
     setEditingVenue(null);
   };
@@ -443,6 +448,13 @@ export default function AdminVenues() {
                   </div>
                 </div>
               </div>
+
+              {/* Venue Images */}
+              <VenueImageUpload
+                images={formData.images}
+                onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+                maxImages={8}
+              />
 
               <Button type="submit" className="w-full">
                 {editingVenue ? 'Update Venue' : 'Add Venue'}
