@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -25,6 +25,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, X, Check, ChevronDown, Navigation, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUnifiedTags } from '@/hooks/useUnifiedTags';
 
 interface VenueFiltersProps {
   onFiltersChange: (filters: {
@@ -51,19 +52,6 @@ const categories = [
   'healthcare'
 ];
 
-const commonTags = [
-  'lgbt-friendly',
-  'trans-friendly',
-  'drag-shows',
-  'karaoke',
-  'live-music',
-  'outdoor-seating',
-  'wheelchair-accessible',
-  'all-ages',
-  '21+',
-  'leather-friendly',
-  'bear-friendly'
-];
 
 const commonAmenities = [
   'wifi',
@@ -115,6 +103,14 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [nearMe, setNearMe] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  
+  // Use unified tags from the tag wiki
+  const { tags: unifiedTags, loading: tagsLoading, fetchTags } = useUnifiedTags();
+
+  useEffect(() => {
+    // Fetch the main tags for venues/organizations
+    fetchTags();
+  }, []);
 
   const handleSearch = () => {
     onFiltersChange({
@@ -320,21 +316,35 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                   <CommandList>
                     <CommandEmpty>No tags found.</CommandEmpty>
                     <CommandGroup>
-                      {commonTags.map((tag) => (
-                        <CommandItem
-                          key={tag}
-                          value={tag}
-                          onSelect={() => handleTagToggle(tag)}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedTags.includes(tag) ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {tag}
-                        </CommandItem>
-                      ))}
+                      {tagsLoading ? (
+                        <div className="flex items-center justify-center p-4">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        </div>
+                      ) : (
+                        unifiedTags.map((tag) => (
+                          <CommandItem
+                            key={tag.id}
+                            value={tag.name}
+                            onSelect={() => handleTagToggle(tag.name)}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedTags.includes(tag.name) ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div className="flex items-center gap-2">
+                              {tag.color && (
+                                <div 
+                                  className="w-3 h-3 rounded-full border"
+                                  style={{ backgroundColor: tag.color }}
+                                />
+                              )}
+                              {tag.name}
+                            </div>
+                          </CommandItem>
+                        ))
+                      )}
                     </CommandGroup>
                   </CommandList>
                 </Command>
