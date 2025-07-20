@@ -167,35 +167,6 @@ export function Header() {
                 className="w-[300px] max-h-[80vh] overflow-y-auto p-0 bg-background border border-border"
                 sideOffset={8}
               >
-                {/* User mode selector */}
-                {user && (
-                  <div className="p-4 border-b">
-                    <label className="text-sm font-medium text-muted-foreground mb-2 block">Current Mode</label>
-                    <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue>
-                          <div className="flex items-center gap-2">
-                            {(() => {
-                              const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
-                              return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
-                            })()}
-                            <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
-                          </div>
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {userModes.map((mode) => (
-                          <SelectItem key={mode.value} value={mode.value}>
-                            <div className="flex items-center gap-2">
-                              <mode.icon className="h-4 w-4" />
-                              <span>{mode.label}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
 
                 {/* Main navigation */}
                 <div className="p-2">
