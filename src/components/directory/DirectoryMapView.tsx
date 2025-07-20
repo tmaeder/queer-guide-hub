@@ -110,40 +110,9 @@ export function DirectoryMapView({
       const markers = document.querySelectorAll('.mapboxgl-marker');
       markers.forEach(marker => marker.remove());
       
-      // Add country markers (capitals)
-      if (!showCities) {
-        countries.forEach((country) => {
-          if (country.latitude && country.longitude) {
-            const marker = new mapboxgl.Marker({
-              color: '#dc2626', // red for countries
-              scale: 0.8
-            })
-              .setLngLat([country.longitude, country.latitude])
-              .addTo(map.current!);
-
-            const popup = new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`
-                <div class="p-3">
-                  <h3 class="font-semibold flex items-center gap-2">
-                    <span class="text-red-600">🏛️</span>
-                    ${country.name}
-                  </h3>
-                  <p class="text-sm text-muted-foreground">Country</p>
-                  ${country.capital ? `<p class="text-xs">Capital: ${country.capital}</p>` : ''}
-                </div>
-              `);
-            
-            marker.getElement().addEventListener('click', () => {
-              setSelectedItem(country);
-            });
-
-            marker.setPopup(popup);
-          }
-        });
-      }
-
-      // Add city markers
+      // Add markers based on switch state
       if (showCities) {
+        // Show cities
         cities.forEach((city) => {
           if (city.latitude && city.longitude) {
             const isCapital = city.is_capital;
@@ -177,22 +146,50 @@ export function DirectoryMapView({
             marker.setPopup(popup);
           }
         });
+      } else {
+        // Show countries
+        countries.forEach((country) => {
+          if (country.latitude && country.longitude) {
+            const marker = new mapboxgl.Marker({
+              color: '#dc2626', // red for countries
+              scale: 0.8
+            })
+              .setLngLat([country.longitude, country.latitude])
+              .addTo(map.current!);
+
+            const popup = new mapboxgl.Popup({ offset: 25 })
+              .setHTML(`
+                <div class="p-3">
+                  <h3 class="font-semibold flex items-center gap-2">
+                    <span class="text-red-600">🏛️</span>
+                    ${country.name}
+                  </h3>
+                  <p class="text-sm text-muted-foreground">Country</p>
+                  ${country.capital ? `<p class="text-xs">Capital: ${country.capital}</p>` : ''}
+                </div>
+              `);
+            
+            marker.getElement().addEventListener('click', () => {
+              setSelectedItem(country);
+            });
+
+            marker.setPopup(popup);
+          }
+        });
       }
 
       // Fit map to show all points
       const allCoordinates: [number, number][] = [];
       
-      if (!showCities) {
-        allCoordinates.push(
-          ...countries
-            .filter(c => c.latitude && c.longitude)
-            .map(c => [c.longitude!, c.latitude!] as [number, number])
-        );
-      }
-      
       if (showCities) {
         allCoordinates.push(
           ...cities
+            .filter(c => c.latitude && c.longitude)
+            .map(c => [c.longitude!, c.latitude!] as [number, number])
+        );
+      } else {
+        allCoordinates.push(
+          ...countries
             .filter(c => c.latitude && c.longitude)
             .map(c => [c.longitude!, c.latitude!] as [number, number])
         );
