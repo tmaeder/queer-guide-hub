@@ -26,6 +26,7 @@ import OurVision from "./pages/OurVision";
 import OurValues from "./pages/OurValues";
 import Press from "./pages/Press";
 import Blog from "./pages/Blog";
+import Sustainability from "./pages/Sustainability";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
@@ -157,6 +158,7 @@ const App = () => {
                   <Route path="/values" element={<OurValues />} />
                   <Route path="/press" element={<Press />} />
                   <Route path="/blog" element={<Blog />} />
+                  <Route path="/sustainability" element={<Sustainability />} />
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/cookies" element={<CookiePolicy />} />
