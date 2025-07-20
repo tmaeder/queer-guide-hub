@@ -206,6 +206,19 @@ export default function GroupDetail() {
                 <p className="text-muted-foreground">{group.description}</p>
               )}
 
+              {group.tags && group.tags.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-muted-foreground">Tags:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {group.tags.map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-2 justify-center md:justify-start">
                 {!group.is_member ? (
                   <Button
@@ -300,6 +313,22 @@ export default function GroupDetail() {
                   </div>
                 </div>
               </div>
+
+              {group.tags && group.tags.length > 0 && (
+                <>
+                  <Separator />
+                  <div className="space-y-3">
+                    <h4 className="font-semibold">Tags</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {group.tags.map((tag) => (
+                        <Badge key={tag} variant="outline">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
 
               {group.rules && (
                 <>
