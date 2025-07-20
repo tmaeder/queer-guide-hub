@@ -194,41 +194,53 @@ serve(async (req) => {
       color: tag.color || '#6366f1'
     }));
 
-    console.log('Inserting tags:', tagsToInsert.length);
+    console.log('Processing tags:', tagsToInsert.length);
 
-    // Insert tags into database
-    const { data: insertedTags, error: insertError } = await supabaseClient
+    // Check for existing tags to avoid duplicates
+    const existingSlugs = tagsToInsert.map(tag => tag.slug);
+    const { data: existingTags } = await supabaseClient
       .from('unified_tags')
-      .insert(tagsToInsert)
-      .select();
+      .select('slug')
+      .in('slug', existingSlugs);
 
-    if (insertError) {
-      console.error('Database insert error:', insertError);
+    const existingSlugSet = new Set(existingTags?.map(tag => tag.slug) || []);
+    
+    // Filter out tags that already exist
+    const newTags = tagsToInsert.filter(tag => !existingSlugSet.has(tag.slug));
+    const skippedCount = tagsToInsert.length - newTags.length;
+
+    console.log('New tags to insert:', newTags.length);
+    console.log('Skipped existing tags:', skippedCount);
+
+    let insertedTags = [];
+    let insertError = null;
+
+    // Insert only new tags
+    if (newTags.length > 0) {
+      const result = await supabaseClient
+        .from('unified_tags')
+        .insert(newTags)
+        .select();
       
-      // Handle duplicate key errors
-      if (insertError.code === '23505') {
+      insertedTags = result.data || [];
+      insertError = result.error;
+
+      if (insertError) {
+        console.error('Database insert error:', insertError);
         return new Response(JSON.stringify({ 
-          error: 'Some tags already exist',
-          details: insertError.message,
-          hint: 'Tags with duplicate names or slugs cannot be imported'
+          error: 'Failed to import tags',
+          details: insertError.message 
         }), {
-          status: 409,
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      
-      return new Response(JSON.stringify({ 
-        error: 'Failed to import tags',
-        details: insertError.message 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
     }
 
     const result = {
       success: true,
       imported: insertedTags?.length || 0,
+      skipped: skippedCount,
       total_parsed: tags.length,
       errors: errors.length > 0 ? errors : undefined
     };
