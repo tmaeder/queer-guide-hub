@@ -61,10 +61,10 @@ const Venues = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold gradient-text mb-2">
-              Venue Directory
+              Venues & Organizations
             </h1>
             <p className="text-lg text-muted-foreground">
-              Discover queer-friendly venues in your area
+              Discover queer-friendly venues, businesses, and organizations in your area
             </p>
           </div>
           <Button 
