@@ -56,7 +56,6 @@ export default function AdminTags() {
     name: "",
     category: "",
     description: "",
-    color: "#6366f1",
     image_url: "" as string | null
   });
 
@@ -126,7 +125,6 @@ export default function AdminTags() {
       name: tag.name,
       category: tag.category,
       description: tag.description || "",
-      color: tag.color || "#6366f1",
       image_url: tag.image_url || null
     });
     setEditingTag(tag);
@@ -156,7 +154,6 @@ export default function AdminTags() {
       name: "",
       category: "",
       description: "",
-      color: "#6366f1",
       image_url: null
     });
     setEditingTag(null);
@@ -308,15 +305,6 @@ export default function AdminTags() {
                   rows={3}
                 />
               </div>
-              <div>
-                <Label htmlFor="color">Color</Label>
-                <Input
-                  id="color"
-                  type="color"
-                  value={formData.color}
-                  onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
-                />
-              </div>
               <TagImageUpload 
                 currentImageUrl={formData.image_url}
                 onImageChange={(imageUrl) => setFormData(prev => ({ ...prev, image_url: imageUrl }))}
@@ -346,10 +334,6 @@ export default function AdminTags() {
                 return (
                   <div key={tagId} className="border rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <div 
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: tag.color }}
-                      />
                       <span className="font-medium">{tag.name}</span>
                       <Badge variant="outline">{tag.category}</Badge>
                     </div>
@@ -472,10 +456,6 @@ export default function AdminTags() {
               <div key={tag.id} className="border rounded-lg p-4 hover:bg-muted/50">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: tag.color }}
-                    />
                     <h3 className="font-semibold">{tag.name}</h3>
                   </div>
                   <div className="flex items-center gap-1">

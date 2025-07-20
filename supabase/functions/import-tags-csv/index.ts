@@ -11,7 +11,6 @@ interface TagRow {
   name: string;
   category: string;
   description?: string;
-  color?: string;
 }
 
 serve(async (req) => {
@@ -96,7 +95,7 @@ serve(async (req) => {
     
     if (missingHeaders.length > 0) {
       return new Response(JSON.stringify({ 
-        error: `Missing required headers: ${missingHeaders.join(', ')}. Required: name, category. Optional: description, color` 
+        error: `Missing required headers: ${missingHeaders.join(', ')}. Required: name, category. Optional: description` 
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -148,9 +147,6 @@ serve(async (req) => {
           case 'description':
             if (value) tag.description = value;
             break;
-          case 'color':
-            if (value) tag.color = value;
-            break;
         }
       });
 
@@ -163,11 +159,6 @@ serve(async (req) => {
       if (!tag.category.trim()) {
         errors.push(`Row ${i + 1}: Missing category`);
         continue;
-      }
-
-      // Set defaults
-      if (!tag.color) {
-        tag.color = '#6366f1';
       }
 
       tags.push(tag);
@@ -190,8 +181,7 @@ serve(async (req) => {
       name: tag.name.trim(),
       slug: tag.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
       category: tag.category.trim().toLowerCase().replace(/\s+/g, '-'),
-      description: tag.description?.trim() || null,
-      color: tag.color || '#6366f1'
+      description: tag.description?.trim() || null
     }));
 
     console.log('Processing tags:', tagsToInsert.length);
@@ -200,7 +190,7 @@ serve(async (req) => {
     const existingSlugs = tagsToInsert.map(tag => tag.slug);
     const { data: existingTags } = await supabaseClient
       .from('unified_tags')
-      .select('id, slug, name, category, description, color')
+      .select('id, slug, name, category, description')
       .in('slug', existingSlugs);
 
     const existingTagsMap = new Map(existingTags?.map(tag => [tag.slug, tag]) || []);
@@ -249,8 +239,7 @@ serve(async (req) => {
             .update({
               name: tag.name,
               category: tag.category,
-              description: tag.description,
-              color: tag.color
+              description: tag.description
             })
             .eq('id', existingTag.id)
             .select();
