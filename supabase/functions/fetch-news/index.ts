@@ -257,8 +257,8 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
 // News API fetcher
 async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: string): Promise<NewsArticle[]> {
   try {
-    const query = 'LGBTQ OR LGBT OR gay OR lesbian OR transgender OR queer OR pride';
-    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=en&sortBy=publishedAt&pageSize=20`;
+    const query = 'LGBT OR gay OR lesbian OR bisexual OR intersex OR transgender OR "sexual orientation"';
+    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=en&sortBy=publishedAt&pageSize=50`;
     
     const response = await fetch(url, {
       headers: {
@@ -332,7 +332,7 @@ serve(async (req) => {
       
       if (source.source_type === 'rss') {
         articles = await parseRSSFeed(source.url, source.id, source.category, supabaseClient);
-      } else if (source.source_type === 'api' && source.name === 'NewsAPI') {
+      } else if (source.source_type === 'api' && source.name === 'NewsAPI.org') {
         const apiKey = Deno.env.get("NEWS_API_KEY");
         if (apiKey) {
           articles = await fetchFromNewsAPI(apiKey, source.id, source.category);
