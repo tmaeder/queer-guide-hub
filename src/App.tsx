@@ -37,6 +37,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminCountries from "./pages/AdminCountries";
 import AdminTags from "./pages/AdminTags";
 import AdminCities from "./pages/AdminCities";
+import AdminGroups from "./pages/AdminGroups";
 import CityDetail from "./pages/CityDetail";
 import CountryDetail from "./pages/CountryDetail";
 import AdminVenues from "./pages/AdminVenues";
@@ -190,6 +191,11 @@ const App = () => {
                   <Route path="/admin/marketplace" element={
                     <AdminRouteGuard>
                       <AdminMarketplace />
+                    </AdminRouteGuard>
+                  } />
+                  <Route path="/admin/groups" element={
+                    <AdminRouteGuard>
+                      <AdminGroups />
                     </AdminRouteGuard>
                   } />
                   <Route path="/admin/analytics" element={

@@ -14,7 +14,8 @@ import {
   Calendar,
   ShoppingBag,
   Users,
-  BarChart3
+  BarChart3,
+  UserCheck
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -94,6 +95,13 @@ export default function AdminDashboard() {
       description: "Manage marketplace listings and products",
       icon: ShoppingBag,
       path: "/admin/marketplace",
+      color: "bg-muted"
+    },
+    {
+      title: "Groups Management",
+      description: "Manage community groups and memberships",
+      icon: UserCheck,
+      path: "/admin/groups",
       color: "bg-muted"
     }
   ];
