@@ -523,12 +523,24 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="sexual_orientation">Sexual Orientation</Label>
-                  <Input
-                    id="sexual_orientation"
-                    value={formData.sexual_orientation}
-                    onChange={(e) => handleInputChange('sexual_orientation', e.target.value)}
-                    placeholder="Your orientation"
-                  />
+                  <Select value={formData.sexual_orientation} onValueChange={(value) => handleInputChange('sexual_orientation', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your orientation" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="straight">Straight</SelectItem>
+                      <SelectItem value="gay">Gay</SelectItem>
+                      <SelectItem value="lesbian">Lesbian</SelectItem>
+                      <SelectItem value="bisexual">Bisexual</SelectItem>
+                      <SelectItem value="pansexual">Pansexual</SelectItem>
+                      <SelectItem value="asexual">Asexual</SelectItem>
+                      <SelectItem value="demisexual">Demisexual</SelectItem>
+                      <SelectItem value="queer">Queer</SelectItem>
+                      <SelectItem value="questioning">Questioning</SelectItem>
+                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
