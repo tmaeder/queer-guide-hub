@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const {
@@ -58,7 +58,7 @@ export function Header() {
 
   const handleMenuItemClick = (path: string) => {
     navigate(path);
-    setMobileMenuOpen(false);
+    setMenuOpen(false);
   };
   return (
     <header className="bg-card/50 backdrop-blur-sm sticky top-0 z-50 border-b border-border/50">
@@ -78,25 +78,7 @@ export function Header() {
           {/* Search - Hidden on mobile when menu is open */}
           {!isMobile && <UniversalSearchBar />}
 
-          {/* Desktop Navigation */}
-          {!isMobile && (
-            <nav className="hidden lg:flex items-center gap-1">
-              {navigationItems.slice(0, 6).map((item) => (
-                <Button
-                  key={item.to}
-                  variant="ghost"
-                  size="sm"
-                  className="text-sm px-3 py-2 h-9"
-                  asChild
-                >
-                  <Link to={item.to} className="flex items-center gap-2">
-                    <item.icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                </Button>
-              ))}
-            </nav>
-          )}
+          {/* All navigation now in hamburger menu */}
 
           {/* Right side controls */}
           <div className="flex items-center gap-2">
@@ -173,59 +155,76 @@ export function Header() {
               </Button>
             )}
 
-            {/* Mobile hamburger menu */}
-            {isMobile && (
-              <DropdownMenu open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-11 w-11 p-0">
-                    {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
-                  className="w-[300px] max-h-[80vh] overflow-y-auto p-0 bg-background border border-border"
-                  sideOffset={8}
-                >
-                  {/* Search */}
+            {/* Hamburger menu for all navigation */}
+            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-11 w-11 p-0">
+                  {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="end" 
+                className="w-[300px] max-h-[80vh] overflow-y-auto p-0 bg-background border border-border"
+                sideOffset={8}
+              >
+                {/* Search */}
+                <div className="p-4 border-b">
+                  <UniversalSearchBar />
+                </div>
+
+                {/* User mode selector */}
+                {user && (
                   <div className="p-4 border-b">
-                    <UniversalSearchBar />
+                    <label className="text-sm font-medium text-muted-foreground mb-2 block">Current Mode</label>
+                    <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue>
+                          <div className="flex items-center gap-2">
+                            {(() => {
+                              const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
+                              return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
+                            })()}
+                            <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
+                          </div>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {userModes.map((mode) => (
+                          <SelectItem key={mode.value} value={mode.value}>
+                            <div className="flex items-center gap-2">
+                              <mode.icon className="h-4 w-4" />
+                              <span>{mode.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Main navigation */}
+                <div className="p-2">
+                  <div className="mb-2">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1 px-2">Explore</h3>
+                    {navigationItems.map((item) => (
+                      <DropdownMenuItem key={item.to} className="p-0">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start h-11 text-base px-2"
+                          onClick={() => handleMenuItemClick(item.to)}
+                        >
+                          <item.icon className="h-5 w-5 mr-3" />
+                          {item.label}
+                        </Button>
+                      </DropdownMenuItem>
+                    ))}
                   </div>
 
-                  {/* User mode selector */}
+                  {/* User menu items */}
                   {user && (
-                    <div className="p-4 border-b">
-                      <label className="text-sm font-medium text-muted-foreground mb-2 block">Current Mode</label>
-                      <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue>
-                            <div className="flex items-center gap-2">
-                              {(() => {
-                                const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
-                                return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
-                              })()}
-                              <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
-                            </div>
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {userModes.map((mode) => (
-                            <SelectItem key={mode.value} value={mode.value}>
-                              <div className="flex items-center gap-2">
-                                <mode.icon className="h-4 w-4" />
-                                <span>{mode.label}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {/* Main navigation */}
-                  <div className="p-2">
-                    <div className="mb-2">
-                      <h3 className="text-sm font-medium text-muted-foreground mb-1 px-2">Explore</h3>
-                      {navigationItems.map((item) => (
+                    <div className="pt-2 border-t">
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1 px-2">Your Account</h3>
+                      {userMenuItems.map((item) => (
                         <DropdownMenuItem key={item.to} className="p-0">
                           <Button
                             variant="ghost"
@@ -238,61 +237,42 @@ export function Header() {
                         </DropdownMenuItem>
                       ))}
                     </div>
+                  )}
+                </div>
 
-                    {/* User menu items */}
-                    {user && (
-                      <div className="pt-2 border-t">
-                        <h3 className="text-sm font-medium text-muted-foreground mb-1 px-2">Your Account</h3>
-                        {userMenuItems.map((item) => (
-                          <DropdownMenuItem key={item.to} className="p-0">
-                            <Button
-                              variant="ghost"
-                              className="w-full justify-start h-11 text-base px-2"
-                              onClick={() => handleMenuItemClick(item.to)}
-                            >
-                              <item.icon className="h-5 w-5 mr-3" />
-                              {item.label}
-                            </Button>
-                          </DropdownMenuItem>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Footer actions */}
-                  <div className="p-2 border-t">
-                    {user ? (
-                      <DropdownMenuItem className="p-0">
-                        <Button 
-                          variant="ghost" 
-                          className="w-full justify-start text-destructive hover:text-destructive h-11 px-2" 
-                          onClick={() => {
-                            signOut();
-                            setMobileMenuOpen(false);
-                          }}
-                        >
-                          <LogOut className="h-5 w-5 mr-3" />
-                          Logout
-                        </Button>
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem className="p-0">
-                        <Button 
-                          className="w-full h-11 mx-2" 
-                          onClick={() => {
-                            setAuthDialogOpen(true);
-                            setMobileMenuOpen(false);
-                          }}
-                        >
-                          <User className="h-5 w-5 mr-2" />
-                          Sign In / Sign Up
-                        </Button>
-                      </DropdownMenuItem>
-                    )}
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                {/* Footer actions */}
+                <div className="p-2 border-t">
+                  {user ? (
+                    <DropdownMenuItem className="p-0">
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-destructive hover:text-destructive h-11 px-2" 
+                        onClick={() => {
+                          signOut();
+                          setMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-5 w-5 mr-3" />
+                        Logout
+                      </Button>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem className="p-0">
+                      <Button 
+                        className="w-full h-11 mx-2" 
+                        onClick={() => {
+                          setAuthDialogOpen(true);
+                          setMenuOpen(false);
+                        }}
+                      >
+                        <User className="h-5 w-5 mr-2" />
+                        Sign In / Sign Up
+                      </Button>
+                    </DropdownMenuItem>
+                  )}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
