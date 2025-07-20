@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -19,8 +19,17 @@ export function Header() {
   } = useAuth();
   const { profile, updateProfile } = useProfile();
 
-  const handleStatusToggle = async (checked: boolean) => {
-    await updateProfile({ is_online: checked });
+  const userModes = [
+    { value: 'dating', emoji: '💕', label: 'Dating' },
+    { value: 'friends', emoji: '👥', label: 'Friends' },
+    { value: 'exploration', emoji: '🗺️', label: 'Exploration' },
+    { value: 'fun', emoji: '🎉', label: 'Fun' },
+    { value: 'networking', emoji: '🤝', label: 'Networking' },
+    { value: 'community', emoji: '🏘️', label: 'Community' },
+  ];
+
+  const handleModeChange = async (mode: string) => {
+    await updateProfile({ user_mode: mode as 'dating' | 'friends' | 'exploration' | 'fun' | 'networking' | 'community' });
   };
   return <header className="bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -37,13 +46,29 @@ export function Header() {
                   <User className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-screen left-0 right-0 p-4 bg-background border border-border h-[140px]">
-                <div className="flex items-center justify-between p-2 mb-2">
-                  <span className="text-sm font-medium">Online Status</span>
-                  <Switch 
-                    checked={profile?.is_online || false}
-                    onCheckedChange={handleStatusToggle}
-                  />
+              <DropdownMenuContent align="end" className="w-screen left-0 right-0 p-4 bg-background border border-border h-[160px]">
+                <div className="flex items-center justify-between p-2 mb-3">
+                  <span className="text-sm font-medium">Current Mode</span>
+                  <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue>
+                        <div className="flex items-center gap-2">
+                          <span>{userModes.find(m => m.value === profile?.user_mode)?.emoji}</span>
+                          <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {userModes.map((mode) => (
+                        <SelectItem key={mode.value} value={mode.value}>
+                          <div className="flex items-center gap-2">
+                            <span>{mode.emoji}</span>
+                            <span>{mode.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex justify-between p-4">
                   <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/my-bookings')}>
