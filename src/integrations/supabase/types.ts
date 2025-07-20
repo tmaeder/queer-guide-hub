@@ -733,6 +733,24 @@ export type Database = {
           latitude: number | null
           lgbt_legal_status: string | null
           lgbt_rights_status: string | null
+          lgbti_adoption_rights: string | null
+          lgbti_association_restrictions: Json | null
+          lgbti_bullying_protection: Json | null
+          lgbti_constitutional_protection: Json | null
+          lgbti_conversion_therapy_regulation: string | null
+          lgbti_criminalization: Json | null
+          lgbti_data_last_updated: string | null
+          lgbti_education_protection: Json | null
+          lgbti_employment_protection: Json | null
+          lgbti_expression_restrictions: Json | null
+          lgbti_gender_recognition: Json | null
+          lgbti_goods_services_protection: Json | null
+          lgbti_hate_crime_law: Json | null
+          lgbti_health_protection: Json | null
+          lgbti_housing_protection: Json | null
+          lgbti_incitement_prohibition: Json | null
+          lgbti_intersex_protection: string | null
+          lgbti_same_sex_unions: string | null
           life_expectancy: number | null
           literacy_rate: number | null
           longitude: number | null
@@ -777,6 +795,24 @@ export type Database = {
           latitude?: number | null
           lgbt_legal_status?: string | null
           lgbt_rights_status?: string | null
+          lgbti_adoption_rights?: string | null
+          lgbti_association_restrictions?: Json | null
+          lgbti_bullying_protection?: Json | null
+          lgbti_constitutional_protection?: Json | null
+          lgbti_conversion_therapy_regulation?: string | null
+          lgbti_criminalization?: Json | null
+          lgbti_data_last_updated?: string | null
+          lgbti_education_protection?: Json | null
+          lgbti_employment_protection?: Json | null
+          lgbti_expression_restrictions?: Json | null
+          lgbti_gender_recognition?: Json | null
+          lgbti_goods_services_protection?: Json | null
+          lgbti_hate_crime_law?: Json | null
+          lgbti_health_protection?: Json | null
+          lgbti_housing_protection?: Json | null
+          lgbti_incitement_prohibition?: Json | null
+          lgbti_intersex_protection?: string | null
+          lgbti_same_sex_unions?: string | null
           life_expectancy?: number | null
           literacy_rate?: number | null
           longitude?: number | null
@@ -821,6 +857,24 @@ export type Database = {
           latitude?: number | null
           lgbt_legal_status?: string | null
           lgbt_rights_status?: string | null
+          lgbti_adoption_rights?: string | null
+          lgbti_association_restrictions?: Json | null
+          lgbti_bullying_protection?: Json | null
+          lgbti_constitutional_protection?: Json | null
+          lgbti_conversion_therapy_regulation?: string | null
+          lgbti_criminalization?: Json | null
+          lgbti_data_last_updated?: string | null
+          lgbti_education_protection?: Json | null
+          lgbti_employment_protection?: Json | null
+          lgbti_expression_restrictions?: Json | null
+          lgbti_gender_recognition?: Json | null
+          lgbti_goods_services_protection?: Json | null
+          lgbti_hate_crime_law?: Json | null
+          lgbti_health_protection?: Json | null
+          lgbti_housing_protection?: Json | null
+          lgbti_incitement_prohibition?: Json | null
+          lgbti_intersex_protection?: string | null
+          lgbti_same_sex_unions?: string | null
           life_expectancy?: number | null
           literacy_rate?: number | null
           longitude?: number | null
