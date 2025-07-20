@@ -30,10 +30,10 @@ export default function Messages() {
   }
 
   return (
-    <div className="w-full p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Messages</h1>
-        <p className="text-muted-foreground">Stay connected with your community</p>
+    <div className="w-full p-3 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Messages</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Stay connected with your community</p>
       </div>
       
       <MessagingInterface />

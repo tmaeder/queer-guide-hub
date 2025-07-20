@@ -240,8 +240,8 @@ const ConversationList = ({
           }`}
           onClick={() => onSelectConversation(conversation.id)}
         >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
+          <CardContent className="p-3 md:p-4">
+            <div className="flex items-center gap-3 min-h-[48px]">
               <Avatar>
                 <AvatarImage src={getConversationAvatar(conversation) || ''} />
                 <AvatarFallback>
@@ -413,7 +413,7 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t bg-background/50 backdrop-blur">
+    <form onSubmit={handleSubmit} className="flex gap-2 p-3 md:p-4 border-t bg-background/50 backdrop-blur">
       <Input
         ref={inputRef}
         value={message}
@@ -421,7 +421,7 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
         onKeyDown={handleKeyDown}
         placeholder="Type a message..."
         disabled={disabled}
-        className="flex-1 rounded-full border-muted-foreground/20 focus:border-primary transition-colors"
+        className="flex-1 rounded-full border-muted-foreground/20 focus:border-primary transition-colors h-11 md:h-10"
         maxLength={2000}
       />
       
@@ -432,22 +432,22 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
             type="button"
             variant="ghost" 
             size="sm"
-            className="rounded-full h-10 w-10 p-0"
+            className="rounded-full h-11 w-11 md:h-10 md:w-10 p-0"
             disabled={disabled}
           >
-            <Smile className="h-4 w-4" />
+            <Smile className="h-5 w-5 md:h-4 md:w-4" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-4" side="top">
           <div className="space-y-3">
             <h4 className="font-medium text-sm">Choose an emoji</h4>
-            <div className="grid grid-cols-10 gap-1">
+            <div className="grid grid-cols-8 md:grid-cols-10 gap-1">
               {commonEmojis.map((emoji, index) => (
                 <Button
                   key={index}
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-muted transition-colors"
+                  className="h-10 w-10 md:h-8 md:w-8 p-0 hover:bg-muted transition-colors"
                   onClick={() => addEmoji(emoji)}
                 >
                   <span className="text-lg">{emoji}</span>
@@ -465,13 +465,13 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
             type="button"
             variant="ghost" 
             size="sm"
-            className="rounded-full h-10 w-10 p-0"
+            className="rounded-full h-11 w-11 md:h-10 md:w-10 p-0"
             disabled={disabled}
           >
-            <Image className="h-4 w-4" />
+            <Image className="h-5 w-5 md:h-4 md:w-4" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-96 p-4" side="top">
+        <PopoverContent className="w-80 md:w-96 p-4" side="top">
           <div className="space-y-3">
             <h4 className="font-medium text-sm">Search GIFs</h4>
             <Input
@@ -488,12 +488,12 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
             )}
             
             {gifs.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
                 {gifs.map((gif) => (
                   <button
                     key={gif.id}
                     onClick={() => addGif(gif.images.fixed_height.url)}
-                    className="relative overflow-hidden rounded-lg hover:opacity-80 transition-opacity"
+                    className="relative overflow-hidden rounded-lg hover:opacity-80 transition-opacity min-h-[60px]"
                   >
                     <img 
                       src={gif.images.fixed_height_small.url} 
@@ -517,10 +517,10 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
       <Button 
         type="submit" 
         disabled={disabled || !message.trim()}
-        className="rounded-full h-10 w-10 p-0 transition-all hover:scale-105"
+        className="rounded-full h-11 w-11 md:h-10 md:w-10 p-0 transition-all hover:scale-105"
         size="sm"
       >
-        <Send className="h-4 w-4" />
+        <Send className="h-5 w-5 md:h-4 md:w-4" />
       </Button>
     </form>
   );
@@ -634,15 +634,15 @@ export const MessagingInterface = () => {
   }
 
   return (
-    <div className="flex h-[600px] overflow-hidden rounded-lg border bg-background">
-      {/* Conversation List */}
-      <div className="w-1/3 border-r bg-background/50">
-        <div className="p-4 border-b">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold">Messages</h2>
-            <Button size="sm" variant="outline" className="rounded-full">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] md:h-[600px] overflow-hidden rounded-lg border bg-background">
+      {/* Conversation List - Full width on mobile, 1/3 on desktop */}
+      <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r bg-background/50 flex-col`}>
+        <div className="p-3 md:p-4 border-b">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h2 className="font-semibold text-lg md:text-base">Messages</h2>
+            <Button size="sm" variant="outline" className="rounded-full h-9 md:h-8">
               <Plus className="h-4 w-4 mr-2" />
-              New
+              <span className="hidden sm:inline">New</span>
             </Button>
           </div>
           
@@ -652,13 +652,13 @@ export const MessagingInterface = () => {
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-muted-foreground/20"
+              className="pl-10 rounded-full border-muted-foreground/20 h-11 md:h-10"
             />
           </div>
         </div>
         
-        <ScrollArea className="h-[calc(100%-140px)]">
-          <div className="p-4">
+        <ScrollArea className="flex-1">
+          <div className="p-3 md:p-4">
             {filteredConversations.length === 0 ? (
               <div className="text-center py-8">
                 <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -676,16 +676,28 @@ export const MessagingInterface = () => {
         </ScrollArea>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      {/* Chat Area - Full width on mobile when conversation selected */}
+      <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b bg-background/50 backdrop-blur">
+            <div className="p-3 md:p-4 border-b bg-background/50 backdrop-blur">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
+                  {/* Back button for mobile */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="md:hidden h-9 w-9 p-0"
+                    onClick={() => setSelectedConversation(null)}
+                  >
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </Button>
+                  
                   <div className="relative">
-                    <Avatar>
+                    <Avatar className="h-10 w-10">
                       <AvatarImage src={
                         conversations.find(c => c.id === selectedConversation)?.participants
                           ?.find(p => p.user_id !== user?.id)?.profile?.avatar_url || ''
@@ -697,8 +709,8 @@ export const MessagingInterface = () => {
                     </Avatar>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
                   </div>
-                  <div>
-                    <h3 className="font-medium">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium truncate">
                       {conversations.find(c => c.id === selectedConversation)?.participants
                         ?.find(p => p.user_id !== user?.id)?.profile?.display_name || 'Unknown User'}
                     </h3>
@@ -706,7 +718,7 @@ export const MessagingInterface = () => {
                   </div>
                 </div>
                 
-                <Button variant="ghost" size="sm" className="rounded-full">
+                <Button variant="ghost" size="sm" className="rounded-full h-9 w-9 p-0">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </div>
@@ -714,7 +726,7 @@ export const MessagingInterface = () => {
 
             {/* Messages */}
             <ScrollArea className="flex-1 bg-gradient-to-b from-background/50 to-background">
-              <div className="p-4">
+              <div className="p-3 md:p-4">
                 {currentMessages.length === 0 ? (
                   <div className="text-center py-8">
                     <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -749,10 +761,10 @@ export const MessagingInterface = () => {
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-background/50 to-background">
-            <div className="text-center">
+            <div className="text-center px-4">
               <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">Select a conversation</h3>
-              <p className="text-muted-foreground">Choose a conversation from the list to start messaging</p>
+              <p className="text-muted-foreground text-sm md:text-base">Choose a conversation from the list to start messaging</p>
             </div>
           </div>
         )}
