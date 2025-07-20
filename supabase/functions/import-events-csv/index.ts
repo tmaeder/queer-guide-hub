@@ -35,14 +35,51 @@ function parseCSV(csvText: string): EventData[] {
     throw new Error('CSV must have at least a header row and one data row');
   }
 
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+  // Proper CSV parsing function that handles quoted values with commas
+  function parseCSVLine(line: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+      
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          // Escaped quote
+          current += '"';
+          i++; // Skip next quote
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        // End of field
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    // Add the last field
+    result.push(current.trim());
+    return result;
+  }
+
+  const headers = parseCSVLine(lines[0]).map(h => h.replace(/^"|"$/g, ''));
   const events: EventData[] = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+    if (!lines[i].trim()) continue; // Skip empty lines
+    
+    const values = parseCSVLine(lines[i]).map(v => v.replace(/^"|"$/g, ''));
     
     if (values.length !== headers.length) {
-      console.warn(`Skipping row ${i + 1}: column count mismatch`);
+      console.error(`Skipping row ${i + 1}: column count mismatch (expected ${headers.length}, got ${values.length})`);
+      console.error(`Headers: ${headers.join(', ')}`);
+      console.error(`Values: ${values.join(', ')}`);
       continue;
     }
 
