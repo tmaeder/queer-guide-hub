@@ -376,7 +376,6 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
             source_id: sourceId
           });
         }
-        }
       }
     }
     
@@ -427,6 +426,7 @@ async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: s
     console.error('Error fetching from TheNewsAPI.com:', error);
     return [];
   }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -454,37 +454,62 @@ serve(async (req) => {
     // Fetch from each source
     for (const source of sources || []) {
       let articles: NewsArticle[] = [];
+      let sourceStatus = 'success';
+      let sourceError = null;
       
-      if (source.source_type === 'rss') {
-        articles = await parseRSSFeed(source.url, source.id, source.category, supabaseClient);
-      } else if (source.source_type === 'api' && source.name === 'NewsAPI.org') {
-        const apiKey = Deno.env.get("NEWS_API_KEY");
-        if (apiKey) {
-          articles = await fetchFromNewsAPI(apiKey, source.id, source.category);
+      try {
+        if (source.source_type === 'rss') {
+          articles = await parseRSSFeed(source.url, source.id, source.category, supabaseClient);
+        } else if (source.source_type === 'api' && source.name === 'NewsAPI.org') {
+          const apiKey = Deno.env.get("NEWS_API_KEY");
+          if (apiKey) {
+            articles = await fetchFromNewsAPI(apiKey, source.id, source.category);
+          } else {
+            sourceStatus = 'error';
+            sourceError = 'Missing NEWS_API_KEY';
+          }
+        } else if (source.source_type === 'api' && source.name === 'NewsData.io') {
+          const apiKey = Deno.env.get("NEWSDATA_API_KEY");
+          if (apiKey) {
+            articles = await fetchFromNewsData(apiKey, source.id, source.category);
+          } else {
+            sourceStatus = 'error';
+            sourceError = 'Missing NEWSDATA_API_KEY';
+          }
+        } else if (source.source_type === 'api' && source.name === 'GNews.io') {
+          const apiKey = Deno.env.get("GNEWS_API_KEY");
+          if (apiKey) {
+            articles = await fetchFromGNews(apiKey, source.id, source.category);
+          } else {
+            sourceStatus = 'error';
+            sourceError = 'Missing GNEWS_API_KEY';
+          }
+        } else if (source.source_type === 'api' && source.name === 'TheNewsAPI.com') {
+          const apiKey = Deno.env.get("THENEWSAPI_API_KEY");
+          if (apiKey) {
+            articles = await fetchFromTheNewsAPI(apiKey, source.id, source.category);
+          } else {
+            sourceStatus = 'error';
+            sourceError = 'Missing THENEWSAPI_API_KEY';
+          }
         }
-      } else if (source.source_type === 'api' && source.name === 'NewsData.io') {
-        const apiKey = Deno.env.get("NEWSDATA_API_KEY");
-        if (apiKey) {
-          articles = await fetchFromNewsData(apiKey, source.id, source.category);
-        }
-      } else if (source.source_type === 'api' && source.name === 'GNews.io') {
-        const apiKey = Deno.env.get("GNEWS_API_KEY");
-        if (apiKey) {
-          articles = await fetchFromGNews(apiKey, source.id, source.category);
-        }
-      } else if (source.source_type === 'api' && source.name === 'TheNewsAPI.com') {
-        const apiKey = Deno.env.get("THENEWSAPI_API_KEY");
-        if (apiKey) {
-          articles = await fetchFromTheNewsAPI(apiKey, source.id, source.category);
-        }
+      } catch (error) {
+        console.error(`Error fetching from ${source.name}:`, error);
+        sourceStatus = 'error';
+        sourceError = error.message || 'Unknown error occurred';
       }
       
       allArticles = [...allArticles, ...articles];
       
-      // Update last fetched timestamp
+      // Update source status, error, and timestamp
       await supabaseClient
         .from('news_sources')
-        .update({ last_fetched_at: new Date().toISOString() })
+        .update({ 
+          last_fetched_at: new Date().toISOString(),
+          status: sourceStatus,
+          last_error: sourceError,
+          articles_fetched: articles.length
+        })
         .eq('id', source.id);
     }
 

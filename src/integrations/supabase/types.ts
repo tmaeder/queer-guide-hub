@@ -1675,38 +1675,50 @@ export type Database = {
       }
       news_sources: {
         Row: {
+          articles_fetched: number | null
           category: string
           created_at: string
           fetch_frequency: number
           id: string
           is_active: boolean
+          keywords: string[] | null
+          last_error: string | null
           last_fetched_at: string | null
           name: string
           source_type: string
+          status: string | null
           updated_at: string
           url: string
         }
         Insert: {
+          articles_fetched?: number | null
           category?: string
           created_at?: string
           fetch_frequency?: number
           id?: string
           is_active?: boolean
+          keywords?: string[] | null
+          last_error?: string | null
           last_fetched_at?: string | null
           name: string
           source_type?: string
+          status?: string | null
           updated_at?: string
           url: string
         }
         Update: {
+          articles_fetched?: number | null
           category?: string
           created_at?: string
           fetch_frequency?: number
           id?: string
           is_active?: boolean
+          keywords?: string[] | null
+          last_error?: string | null
           last_fetched_at?: string | null
           name?: string
           source_type?: string
+          status?: string | null
           updated_at?: string
           url?: string
         }

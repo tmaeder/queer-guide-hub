@@ -23,7 +23,11 @@ import {
   Rss, 
   Activity,
   Calendar,
-  ArrowLeft 
+  ArrowLeft,
+  AlertCircle,
+  CheckCircle,
+  Settings,
+  Tags
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -35,6 +39,10 @@ interface NewsSource {
   category: string;
   is_active: boolean;
   fetch_frequency: number;
+  status?: string;
+  last_error?: string;
+  articles_fetched?: number;
+  keywords?: string[];
   created_at: string;
   updated_at: string;
   last_fetched_at?: string;
@@ -49,7 +57,10 @@ export default function AdminNewsSources() {
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [keywordsDialogOpen, setKeywordsDialogOpen] = useState(false);
   const [editingSource, setEditingSource] = useState<NewsSource | null>(null);
+  const [editingKeywords, setEditingKeywords] = useState<string[]>([]);
+  const [newKeyword, setNewKeyword] = useState('');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -250,6 +261,53 @@ export default function AdminNewsSources() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleKeywordsEdit = (source: NewsSource) => {
+    setEditingSource(source);
+    setEditingKeywords(source.keywords || []);
+    setKeywordsDialogOpen(true);
+  };
+
+  const addKeyword = () => {
+    if (newKeyword.trim() && !editingKeywords.includes(newKeyword.trim())) {
+      setEditingKeywords([...editingKeywords, newKeyword.trim()]);
+      setNewKeyword('');
+    }
+  };
+
+  const removeKeyword = (keyword: string) => {
+    setEditingKeywords(editingKeywords.filter(k => k !== keyword));
+  };
+
+  const saveKeywords = async () => {
+    if (!editingSource) return;
+    
+    try {
+      const { error } = await supabase
+        .from('news_sources')
+        .update({ keywords: editingKeywords })
+        .eq('id', editingSource.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Keywords updated successfully",
+      });
+      
+      setKeywordsDialogOpen(false);
+      setEditingSource(null);
+      setEditingKeywords([]);
+      fetchSources();
+    } catch (error) {
+      console.error('Error updating keywords:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update keywords",
+        variant: "destructive",
+      });
     }
   };
 
@@ -484,10 +542,10 @@ export default function AdminNewsSources() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Frequency</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>URL</TableHead>
+                  <TableHead>Articles</TableHead>
+                  <TableHead>Keywords</TableHead>
+                  <TableHead>Last Fetched</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -506,33 +564,57 @@ export default function AdminNewsSources() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
-                        {source.category.charAt(0).toUpperCase() + source.category.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {frequencies.find(f => f.value === source.fetch_frequency)?.label || 'Unknown'}
+                        {source.status === 'error' ? (
+                          <AlertCircle className="h-4 w-4 text-red-500" />
+                        ) : (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        )}
+                        <div>
+                          <Badge variant={source.status === 'error' ? 'destructive' : 'default'}>
+                            {source.is_active ? (source.status || 'Active') : 'Inactive'}
+                          </Badge>
+                          {source.last_error && (
+                            <div className="text-xs text-red-500 mt-1" title={source.last_error}>
+                              {source.last_error.length > 30 ? source.last_error.substring(0, 30) + '...' : source.last_error}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${source.is_active ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                        <Switch
-                          checked={source.is_active}
-                          onCheckedChange={() => handleToggleActive(source.id, source.is_active)}
-                        />
+                      <div className="text-sm">
+                        <div className="font-medium">{source.articles_fetched || 0}</div>
+                        <div className="text-muted-foreground">articles</div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open(source.url, '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
+                      {source.source_type === 'api' && (
+                        <div className="flex items-center gap-2">
+                          <div className="text-xs">
+                            {source.keywords ? source.keywords.slice(0, 2).join(', ') + (source.keywords.length > 2 ? '...' : '') : 'None'}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleKeywordsEdit(source)}
+                            className="h-6 w-6 p-0"
+                          >
+                            <Tags className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+                      {source.source_type === 'rss' && (
+                        <span className="text-muted-foreground text-xs">N/A</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-xs">
+                        {source.last_fetched_at ? 
+                          new Date(source.last_fetched_at).toLocaleString() : 
+                          'Never'
+                        }
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -542,6 +624,13 @@ export default function AdminNewsSources() {
                           onClick={() => handleEdit(source)}
                         >
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(source.url, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -576,6 +665,60 @@ export default function AdminNewsSources() {
           )}
         </CardContent>
       </Card>
+
+      {/* Keywords Management Dialog */}
+      <Dialog open={keywordsDialogOpen} onOpenChange={setKeywordsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Manage Keywords - {editingSource?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Current Keywords</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {editingKeywords.map((keyword, index) => (
+                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                    {keyword}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0 hover:bg-red-100"
+                      onClick={() => removeKeyword(keyword)}
+                    >
+                      ×
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="newKeyword">Add New Keyword</Label>
+              <div className="flex gap-2 mt-2">
+                <Input
+                  id="newKeyword"
+                  value={newKeyword}
+                  onChange={(e) => setNewKeyword(e.target.value)}
+                  placeholder="Enter keyword..."
+                  onKeyPress={(e) => e.key === 'Enter' && addKeyword()}
+                />
+                <Button onClick={addKeyword} disabled={!newKeyword.trim()}>
+                  Add
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setKeywordsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={saveKeywords}>
+                Save Keywords
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
