@@ -22,6 +22,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
 import { SocialLinksManager } from '@/components/profile/SocialLinksManager';
+import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 
 export default function ProfileSettings() {
   const navigate = useNavigate();
@@ -451,13 +452,12 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
+                <div className="space-y-2 relative">
                   <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
+                  <LocationAutocomplete
                     value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    placeholder="City, Country"
+                    onChange={(value) => handleInputChange('location', value)}
+                    placeholder="Search for your city, country"
                   />
                 </div>
                 <div className="space-y-2">
