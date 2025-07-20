@@ -239,16 +239,64 @@ serve(async (req) => {
       );
     }
 
-    // Add created_by field to all events
-    const eventsWithCreator = events.map(event => ({
-      ...event,
-      created_by: user.id
-    }));
+    // Process events and create venues if needed
+    const eventsWithCreatorAndVenues = [];
+    
+    for (const event of events) {
+      let venue_id = null;
+      
+      // If venue_name is provided, check if venue exists or create it
+      if (event.venue_name) {
+        // Check if venue exists
+        const { data: existingVenues } = await supabaseClient
+          .from('venues')
+          .select('id')
+          .eq('name', event.venue_name)
+          .eq('city', event.city)
+          .eq('country', event.country)
+          .limit(1);
+        
+        if (existingVenues && existingVenues.length > 0) {
+          venue_id = existingVenues[0].id;
+        } else {
+          // Create new venue
+          const venueData = {
+            name: event.venue_name,
+            address: event.address || '',
+            city: event.city,
+            state: event.state,
+            country: event.country,
+            category: 'event_venue',
+            created_by: user.id,
+            verified: false
+          };
+          
+          const { data: newVenue, error: venueError } = await supabaseClient
+            .from('venues')
+            .insert(venueData)
+            .select('id')
+            .single();
+          
+          if (venueError) {
+            console.error('Failed to create venue:', venueError);
+          } else {
+            venue_id = newVenue.id;
+            console.log(`Created new venue: ${event.venue_name}`);
+          }
+        }
+      }
+      
+      eventsWithCreatorAndVenues.push({
+        ...event,
+        created_by: user.id,
+        venue_id: venue_id
+      });
+    }
 
     // Insert events into database
     const { data: insertedEvents, error: insertError } = await supabaseClient
       .from('events')
-      .insert(eventsWithCreator)
+      .insert(eventsWithCreatorAndVenues)
       .select();
 
     if (insertError) {
