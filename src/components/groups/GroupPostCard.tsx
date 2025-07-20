@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import DOMPurify from 'dompurify';
 import { 
   Heart, 
   MessageCircle, 
@@ -55,14 +56,22 @@ export const GroupPostCard = ({
 
     let processedContent = content;
     post.mentions.forEach(mention => {
-      const mentionPattern = new RegExp(`@${mention.username}`, 'g');
+      // Sanitize username to prevent XSS
+      const sanitizedUsername = DOMPurify.sanitize(mention.username, { ALLOWED_TAGS: [] });
+      const mentionPattern = new RegExp(`@${sanitizedUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
       processedContent = processedContent.replace(
         mentionPattern,
-        `<span class="text-primary font-medium">@${mention.username}</span>`
+        `<span class="text-primary font-medium">@${sanitizedUsername}</span>`
       );
     });
 
-    return <span dangerouslySetInnerHTML={{ __html: processedContent }} />;
+    // Sanitize the entire content before rendering
+    const sanitizedContent = DOMPurify.sanitize(processedContent, {
+      ALLOWED_TAGS: ['span'],
+      ALLOWED_ATTR: ['class']
+    });
+
+    return <span dangerouslySetInnerHTML={{ __html: sanitizedContent }} />;
   };
 
   const renderPoll = () => {

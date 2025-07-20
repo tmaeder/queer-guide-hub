@@ -366,7 +366,6 @@ export default function News() {
                       key={article.id} 
                       article={article} 
                       onViewArticle={handleViewArticle}
-                      viewMode={viewMode}
                     />
                   ))}
                 </div>
