@@ -1549,6 +1549,7 @@ export type Database = {
           published_at: string
           sentiment: string | null
           source_id: string
+          tags: string[] | null
           title: string
           updated_at: string
           url: string
@@ -1568,6 +1569,7 @@ export type Database = {
           published_at: string
           sentiment?: string | null
           source_id: string
+          tags?: string[] | null
           title: string
           updated_at?: string
           url: string
@@ -1587,6 +1589,7 @@ export type Database = {
           published_at?: string
           sentiment?: string | null
           source_id?: string
+          tags?: string[] | null
           title?: string
           updated_at?: string
           url?: string

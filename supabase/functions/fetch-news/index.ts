@@ -15,7 +15,6 @@ interface NewsArticle {
   author?: string;
   published_at: string;
   category: string;
-  tags: string[];
   source_id: string;
   country_ids?: string[];
   city_ids?: string[];
@@ -152,10 +151,6 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
       const sanitizedContent = content.replace(/<[^>]*>/g, '');
       const sanitizedDescription = description.replace(/<[^>]*>/g, '');
       
-      // Extract tags
-      const extractedTags = extractTags(sanitizedTitle, sanitizedContent);
-      const tags = await standardizeTags(extractedTags, supabaseClient);
-      
       // Extract geographic info
       const { countryIds, cityIds } = await extractGeoInfo(sanitizedTitle, sanitizedContent, url, supabaseClient);
       
@@ -175,7 +170,6 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
         author: author,
         published_at: publishedAt,
         category,
-        tags,
         source_id: sourceId,
         country_ids: countryIds,
         city_ids: cityIds
@@ -207,14 +201,6 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: stri
     if (data.articles) {
       for (const article of data.articles) {
         if (article.title && article.url) {
-          const content = (article.title + ' ' + (article.description || '')).toLowerCase();
-          const lgbtqKeywords = [
-            'lgbtq', 'lgbt', 'gay', 'lesbian', 'bisexual', 'transgender', 'queer', 'pride',
-            'rainbow', 'equality', 'rights', 'discrimination', 'marriage', 'adoption'
-          ];
-          
-          const tags = lgbtqKeywords.filter(keyword => content.includes(keyword));
-          
           articles.push({
             title: article.title,
             content: article.content,
@@ -224,7 +210,6 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: stri
             author: article.author,
             published_at: article.publishedAt,
             category,
-            tags,
             source_id: sourceId
           });
         }
@@ -252,11 +237,6 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, category: str
     if (data.results) {
       for (const article of data.results) {
         if (article.title && article.link) {
-          const content = (article.title + ' ' + (article.description || '') + ' ' + (article.content || '')).toLowerCase();
-          const lgbtKeywords = ['lgbt', 'gay', 'lesbian', 'bisexual', 'intersex', 'transgender', 'sexual orientation', 'queer', 'pride'];
-          
-          const tags = lgbtKeywords.filter(keyword => content.includes(keyword.toLowerCase()));
-          
           articles.push({
             title: article.title,
             content: article.content,
@@ -266,7 +246,6 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, category: str
             author: article.source_id,
             published_at: article.pubDate,
             category,
-            tags,
             source_id: sourceId
           });
         }
@@ -294,11 +273,6 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
     if (data.articles) {
       for (const article of data.articles) {
         if (article.title && article.url) {
-          const content = (article.title + ' ' + (article.description || '') + ' ' + (article.content || '')).toLowerCase();
-          const lgbtKeywords = ['lgbt', 'gay', 'lesbian', 'bisexual', 'intersex', 'transgender', 'sexual orientation', 'queer', 'pride'];
-          
-          const tags = lgbtKeywords.filter(keyword => content.includes(keyword.toLowerCase()));
-          
           articles.push({
             title: article.title,
             content: article.content,
@@ -308,7 +282,6 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
             author: article.source?.name,
             published_at: article.publishedAt,
             category,
-            tags,
             source_id: sourceId
           });
         }
@@ -336,11 +309,6 @@ async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: s
     if (data.data) {
       for (const article of data.data) {
         if (article.title && article.url) {
-          const content = (article.title + ' ' + (article.description || '') + ' ' + (article.snippet || '')).toLowerCase();
-          const lgbtKeywords = ['lgbt', 'gay', 'lesbian', 'bisexual', 'intersex', 'transgender', 'sexual orientation', 'queer', 'pride'];
-          
-          const tags = lgbtKeywords.filter(keyword => content.includes(keyword.toLowerCase()));
-          
           articles.push({
             title: article.title,
             content: article.snippet,
@@ -350,7 +318,6 @@ async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: s
             author: article.source,
             published_at: article.published_at,
             category,
-            tags,
             source_id: sourceId
           });
         }
@@ -449,15 +416,20 @@ serve(async (req) => {
         .eq('id', source.id);
     }
 
-    // Insert articles (ignore duplicates)
+    // Insert articles (ignore duplicates based on URL)
     if (allArticles.length > 0) {
-      const { error: insertError } = await supabaseClient
-        .from('news_articles')
-        .insert(allArticles)
-        .select();
-
-      if (insertError) {
-        console.error('Error inserting articles:', insertError);
+      for (const article of allArticles) {
+        try {
+          await supabaseClient
+            .from('news_articles')
+            .insert(article)
+            .select();
+        } catch (error) {
+          // Ignore duplicate key errors, log others
+          if (!error.message?.includes('duplicate key') && !error.message?.includes('unique constraint')) {
+            console.error('Error inserting article:', error);
+          }
+        }
       }
     }
 
