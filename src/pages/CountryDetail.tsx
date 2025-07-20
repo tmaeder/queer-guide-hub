@@ -242,7 +242,12 @@ export default function CountryDetail() {
                   {country.capital && (
                     <>
                       <Landmark className="h-5 w-5" />
-                      {country.capital}
+                      <button 
+                        onClick={() => navigate(`/directory?search=${encodeURIComponent(country.capital)}&type=cities`)}
+                        className="text-primary hover:underline font-medium"
+                      >
+                        {country.capital}
+                      </button>
                     </>
                   )}
                 </p>
