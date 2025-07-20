@@ -50,8 +50,8 @@ export function DirectoryMapView({
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
   const [showCities, setShowCities] = useState(true);
   const [showCountries, setShowCountries] = useState(true);
-  const [mapboxToken, setMapboxToken] = useState(import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '');
-  const [showTokenInput, setShowTokenInput] = useState(!import.meta.env.VITE_MAPBOX_ACCESS_TOKEN);
+  const [mapboxToken, setMapboxToken] = useState(import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || 'pk.eyJ1IjoidG1hZWRlciIsImEiOiJjazh4Ym9wOTEwN3F4M21zN3FqdnM4MHE2In0.24RlCLiCNxxX-c6h_4rwWw');
+  const [showTokenInput, setShowTokenInput] = useState(false);
   
   // Use the provided token or environment token
   const activeToken = mapboxToken || import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
