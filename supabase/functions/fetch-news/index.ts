@@ -18,40 +18,44 @@ interface NewsArticle {
   source_id: string;
   country_ids?: string[];
   city_ids?: string[];
+  tags?: string[];
 }
 
-// Extract LGBTQ-related keywords from content
-function extractTags(title: string, content: string): string[] {
-  const lgbtqKeywords = [
-    'lgbtq', 'lgbt', 'gay', 'lesbian', 'bisexual', 'transgender', 'queer', 'pride',
-    'rainbow', 'equality', 'rights', 'discrimination', 'marriage', 'adoption',
-    'intersex', 'sexual orientation', 'gender identity', 'same-sex', 'homosexual',
-    'coming out', 'drag', 'trans', 'non-binary', 'genderfluid'
-  ];
-  
-  const text = (title + ' ' + content).toLowerCase();
-  return lgbtqKeywords.filter(keyword => text.includes(keyword));
-}
-
-// Standardize tags against centralized tags table
-async function standardizeTags(extractedTags: string[], supabaseClient: any): Promise<string[]> {
-  if (extractedTags.length === 0) return [];
-  
+// Auto-apply tags by matching existing tags against article content
+async function autoApplyTags(title: string, content: string, supabaseClient: any): Promise<string[]> {
   try {
-    const { data: tags, error } = await supabaseClient
-      .from('unified_tags')
-      .select('id, name')
-      .in('name', extractedTags);
+    // Get all active tags from the database
+    const { data: allTags, error } = await supabaseClient
+      .from('tags')
+      .select('name')
+      .eq('is_active', true);
     
     if (error) {
-      console.error('Error fetching standardized tags:', error);
-      return extractedTags;
+      console.error('Error fetching tags:', error);
+      return [];
     }
     
-    return tags?.map((tag: any) => tag.name) || extractedTags;
+    if (!allTags || allTags.length === 0) {
+      return [];
+    }
+    
+    const text = (title + ' ' + (content || '')).toLowerCase();
+    const matchedTags: string[] = [];
+    
+    // Check each tag to see if it appears in the title or content
+    for (const tag of allTags) {
+      const tagName = tag.name.toLowerCase();
+      // Match whole words to avoid partial matches
+      const regex = new RegExp(`\\b${tagName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+      if (regex.test(text)) {
+        matchedTags.push(tag.name);
+      }
+    }
+    
+    return matchedTags;
   } catch (error) {
-    console.error('Error standardizing tags:', error);
-    return extractedTags;
+    console.error('Error auto-applying tags:', error);
+    return [];
   }
 }
 
@@ -154,6 +158,9 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
       // Extract geographic info
       const { countryIds, cityIds } = await extractGeoInfo(sanitizedTitle, sanitizedContent, url, supabaseClient);
       
+      // Auto-apply tags
+      const tags = await autoApplyTags(sanitizedTitle, sanitizedContent, supabaseClient);
+      
       // Extract image
       let imageUrl = '';
       const mediaContentEl = item.querySelector('media\\:content, enclosure[type^="image"]');
@@ -172,7 +179,8 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
         category,
         source_id: sourceId,
         country_ids: countryIds,
-        city_ids: cityIds
+        city_ids: cityIds,
+        tags: tags
       });
     }
     
@@ -184,7 +192,7 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
 }
 
 // News API fetcher
-async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: string): Promise<NewsArticle[]> {
+async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
     const query = 'LGBT OR gay OR lesbian OR bisexual OR intersex OR transgender OR "sexual orientation"';
     const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=en&sortBy=publishedAt&pageSize=50`;
@@ -201,6 +209,8 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: stri
     if (data.articles) {
       for (const article of data.articles) {
         if (article.title && article.url) {
+          const tags = await autoApplyTags(article.title, article.content || '', supabaseClient);
+          
           articles.push({
             title: article.title,
             content: article.content,
@@ -210,7 +220,8 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: stri
             author: article.author,
             published_at: article.publishedAt,
             category,
-            source_id: sourceId
+            source_id: sourceId,
+            tags: tags
           });
         }
       }
@@ -224,7 +235,7 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: stri
 }
 
 // NewsData.io fetcher
-async function fetchFromNewsData(apiKey: string, sourceId: string, category: string): Promise<NewsArticle[]> {
+async function fetchFromNewsData(apiKey: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
     const keywords = ['LGBT', 'Gay', 'Lesbian', 'Bisexual', 'Intersex', 'Transgender', 'Sexual Orientation'];
     const query = keywords.join(' OR ');
@@ -237,6 +248,8 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, category: str
     if (data.results) {
       for (const article of data.results) {
         if (article.title && article.link) {
+          const tags = await autoApplyTags(article.title, article.content || '', supabaseClient);
+          
           articles.push({
             title: article.title,
             content: article.content,
@@ -246,7 +259,8 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, category: str
             author: article.source_id,
             published_at: article.pubDate,
             category,
-            source_id: sourceId
+            source_id: sourceId,
+            tags: tags
           });
         }
       }
@@ -260,7 +274,7 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, category: str
 }
 
 // GNews.io fetcher
-async function fetchFromGNews(apiKey: string, sourceId: string, category: string): Promise<NewsArticle[]> {
+async function fetchFromGNews(apiKey: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
     const keywords = ['LGBT', 'Gay', 'Lesbian', 'Bisexual', 'Intersex', 'Transgender', 'Sexual Orientation'];
     const query = keywords.join(' OR ');
@@ -273,6 +287,8 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
     if (data.articles) {
       for (const article of data.articles) {
         if (article.title && article.url) {
+          const tags = await autoApplyTags(article.title, article.content || '', supabaseClient);
+          
           articles.push({
             title: article.title,
             content: article.content,
@@ -282,7 +298,8 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
             author: article.source?.name,
             published_at: article.publishedAt,
             category,
-            source_id: sourceId
+            source_id: sourceId,
+            tags: tags
           });
         }
       }
@@ -296,7 +313,7 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
 }
 
 // TheNewsAPI.com fetcher
-async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: string): Promise<NewsArticle[]> {
+async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
     const keywords = ['LGBT', 'Gay', 'Lesbian', 'Bisexual', 'Intersex', 'Transgender', 'Sexual Orientation'];
     const query = keywords.join(' OR ');
@@ -309,6 +326,8 @@ async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: s
     if (data.data) {
       for (const article of data.data) {
         if (article.title && article.url) {
+          const tags = await autoApplyTags(article.title, article.snippet || '', supabaseClient);
+          
           articles.push({
             title: article.title,
             content: article.snippet,
@@ -318,7 +337,8 @@ async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: s
             author: article.source,
             published_at: article.published_at,
             category,
-            source_id: sourceId
+            source_id: sourceId,
+            tags: tags
           });
         }
       }
@@ -366,7 +386,7 @@ serve(async (req) => {
         } else if (source.source_type === 'api' && source.name === 'NewsAPI.org') {
           const apiKey = Deno.env.get("NEWS_API_KEY");
           if (apiKey) {
-            articles = await fetchFromNewsAPI(apiKey, source.id, source.category);
+            articles = await fetchFromNewsAPI(apiKey, source.id, source.category, supabaseClient);
           } else {
             sourceStatus = 'error';
             sourceError = 'Missing NEWS_API_KEY';
@@ -374,7 +394,7 @@ serve(async (req) => {
         } else if (source.source_type === 'api' && source.name === 'NewsData.io') {
           const apiKey = Deno.env.get("NEWSDATA_API_KEY");
           if (apiKey) {
-            articles = await fetchFromNewsData(apiKey, source.id, source.category);
+            articles = await fetchFromNewsData(apiKey, source.id, source.category, supabaseClient);
           } else {
             sourceStatus = 'error';
             sourceError = 'Missing NEWSDATA_API_KEY';
@@ -382,7 +402,7 @@ serve(async (req) => {
         } else if (source.source_type === 'api' && source.name === 'GNews.io') {
           const apiKey = Deno.env.get("GNEWS_API_KEY");
           if (apiKey) {
-            articles = await fetchFromGNews(apiKey, source.id, source.category);
+            articles = await fetchFromGNews(apiKey, source.id, source.category, supabaseClient);
           } else {
             sourceStatus = 'error';
             sourceError = 'Missing GNEWS_API_KEY';
@@ -390,7 +410,7 @@ serve(async (req) => {
         } else if (source.source_type === 'api' && source.name === 'TheNewsAPI.com') {
           const apiKey = Deno.env.get("THENEWSAPI_API_KEY");
           if (apiKey) {
-            articles = await fetchFromTheNewsAPI(apiKey, source.id, source.category);
+            articles = await fetchFromTheNewsAPI(apiKey, source.id, source.category, supabaseClient);
           } else {
             sourceStatus = 'error';
             sourceError = 'Missing THENEWSAPI_API_KEY';
