@@ -376,6 +376,7 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
             source_id: sourceId
           });
         }
+        }
       }
     }
     
@@ -385,6 +386,47 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
     return [];
   }
 }
+
+// TheNewsAPI.com fetcher
+async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: string): Promise<NewsArticle[]> {
+  try {
+    const keywords = ['LGBT', 'Gay', 'Lesbian', 'Bisexual', 'Intersex', 'Transgender', 'Sexual Orientation'];
+    const query = keywords.join(' OR ');
+    const url = `https://api.thenewsapi.com/v1/news/all?api_token=${apiKey}&search=${encodeURIComponent(query)}&language=en&limit=50`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    const articles: NewsArticle[] = [];
+    
+    if (data.data) {
+      for (const article of data.data) {
+        if (article.title && article.url) {
+          const content = (article.title + ' ' + (article.description || '') + ' ' + (article.snippet || '')).toLowerCase();
+          const lgbtKeywords = ['lgbt', 'gay', 'lesbian', 'bisexual', 'intersex', 'transgender', 'sexual orientation', 'queer', 'pride'];
+          
+          const tags = lgbtKeywords.filter(keyword => content.includes(keyword.toLowerCase()));
+          
+          articles.push({
+            title: article.title,
+            content: article.snippet,
+            excerpt: article.description,
+            url: article.url,
+            image_url: article.image_url,
+            author: article.source,
+            published_at: article.published_at,
+            category,
+            tags,
+            source_id: sourceId
+          });
+        }
+      }
+    }
+    
+    return articles;
+  } catch (error) {
+    console.error('Error fetching from TheNewsAPI.com:', error);
+    return [];
+  }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -429,6 +471,11 @@ serve(async (req) => {
         const apiKey = Deno.env.get("GNEWS_API_KEY");
         if (apiKey) {
           articles = await fetchFromGNews(apiKey, source.id, source.category);
+        }
+      } else if (source.source_type === 'api' && source.name === 'TheNewsAPI.com') {
+        const apiKey = Deno.env.get("THENEWSAPI_API_KEY");
+        if (apiKey) {
+          articles = await fetchFromTheNewsAPI(apiKey, source.id, source.category);
         }
       }
       
