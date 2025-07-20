@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,11 +17,20 @@ import {
   BarChart3,
   UserCheck
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, isModerator, canManageContent, loading } = useAdminRoles();
+  
+  const [stats, setStats] = useState({
+    totalContent: 0,
+    activeVenues: 0,
+    upcomingEvents: 0,
+    marketplaceItems: 0
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
@@ -34,6 +43,34 @@ export default function AdminDashboard() {
       return;
     }
   }, [user, loading, canManageContent]);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const [venues, events, listings, articles] = await Promise.all([
+        supabase.from('venues').select('id', { count: 'exact', head: true }),
+        supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('marketplace_listings').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('news_articles').select('id', { count: 'exact', head: true })
+      ]);
+
+      const totalContentCount = (articles.count || 0) + (events.count || 0) + (listings.count || 0);
+
+      setStats({
+        totalContent: totalContentCount,
+        activeVenues: venues.count || 0,
+        upcomingEvents: events.count || 0,
+        marketplaceItems: listings.count || 0
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -179,25 +216,33 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle>Quick Stats</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">-</div>
-                <div className="text-sm text-muted-foreground">Total Content</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-accent">-</div>
-                <div className="text-sm text-muted-foreground">Active Venues</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-secondary">-</div>
-                <div className="text-sm text-muted-foreground">Upcoming Events</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">-</div>
-                <div className="text-sm text-muted-foreground">Marketplace Items</div>
-              </div>
-            </div>
+           <CardContent>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+               <div className="text-center">
+                 <div className="text-2xl font-bold text-primary">
+                   {statsLoading ? '...' : stats.totalContent}
+                 </div>
+                 <div className="text-sm text-muted-foreground">Total Content</div>
+               </div>
+               <div className="text-center">
+                 <div className="text-2xl font-bold text-accent">
+                   {statsLoading ? '...' : stats.activeVenues}
+                 </div>
+                 <div className="text-sm text-muted-foreground">Active Venues</div>
+               </div>
+               <div className="text-center">
+                 <div className="text-2xl font-bold text-secondary">
+                   {statsLoading ? '...' : stats.upcomingEvents}
+                 </div>
+                 <div className="text-sm text-muted-foreground">Upcoming Events</div>
+               </div>
+               <div className="text-center">
+                 <div className="text-2xl font-bold text-primary">
+                   {statsLoading ? '...' : stats.marketplaceItems}
+                 </div>
+                 <div className="text-sm text-muted-foreground">Marketplace Items</div>
+               </div>
+             </div>
           </CardContent>
         </Card>
       </div>
