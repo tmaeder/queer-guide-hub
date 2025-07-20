@@ -35,6 +35,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/hooks/useFavorites";
+import CountryWeatherForecast from "@/components/weather/CountryWeatherForecast";
 
 type CountryWithRelations = {
   id: string;
@@ -244,6 +245,18 @@ export default function CountryDetail() {
                 </p>
               </div>
             </div>
+
+            {/* Weather Forecast */}
+            {country.latitude && country.longitude && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <CountryWeatherForecast
+                  latitude={country.latitude}
+                  longitude={country.longitude}
+                  countryName={country.name}
+                  capital={country.capital}
+                />
+              </div>
+            )}
 
             {country.description && (
               <p className="text-muted-foreground leading-relaxed mt-4">{country.description}</p>
