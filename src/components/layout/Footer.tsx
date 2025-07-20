@@ -168,7 +168,7 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">
               © {currentYear} Queer Guide. All rights reserved.
             </p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <span>Made with</span>
               <Heart className="h-4 w-4 text-primary fill-current animate-pulse" />
               <span>for the community</span>
