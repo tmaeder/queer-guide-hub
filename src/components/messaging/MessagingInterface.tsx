@@ -24,6 +24,7 @@ import { useMessaging, type Conversation, type Message, type TypingIndicator } f
 import { useAuth } from "@/hooks/useAuth";
 import { UserModeBadge } from "@/components/profile/UserModeBadge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams } from "react-router-dom";
 
 interface MessageItemProps {
@@ -306,7 +307,7 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
     '😢', '😭', '😡', '😱', '🤯', '🥺', '😤', '🤮', '😷', '🤒'
   ];
 
-  // Search GIFs function (using Giphy API)
+  // Search GIFs function using our Supabase Edge Function
   const searchGifs = async (query: string) => {
     if (!query.trim()) {
       setGifs([]);
@@ -315,11 +316,21 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
 
     setLoadingGifs(true);
     try {
-      // For now, we'll use a mock API call. In production, you'd use the Giphy API
-      // This would require adding GIPHY_API_KEY to Supabase secrets
-      const response = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=demo_api_key&q=${encodeURIComponent(query)}&limit=12&rating=pg`);
-      const data = await response.json();
-      setGifs(data.data || []);
+      const { data, error } = await supabase.functions.invoke('search-gifs', {
+        body: { 
+          query: query.trim(),
+          limit: 12,
+          rating: 'pg'
+        }
+      });
+
+      if (error) {
+        console.error('Error searching GIFs:', error);
+        setGifs([]);
+        return;
+      }
+
+      setGifs(data?.data || []);
     } catch (error) {
       console.error('Error searching GIFs:', error);
       setGifs([]);
