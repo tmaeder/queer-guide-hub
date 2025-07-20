@@ -50,17 +50,19 @@ export function DirectoryMapView({
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
   const [showCities, setShowCities] = useState(true);
   const [showCountries, setShowCountries] = useState(true);
+  const [mapboxToken, setMapboxToken] = useState(import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '');
+  const [showTokenInput, setShowTokenInput] = useState(!import.meta.env.VITE_MAPBOX_ACCESS_TOKEN);
   
-  // Use the Mapbox token from environment
-  const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+  // Use the provided token or environment token
+  const activeToken = mapboxToken || import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
   const initializeMap = () => {
-    if (!mapContainer.current || !mapboxToken) {
-      console.error('Mapbox token not configured. Please add VITE_MAPBOX_ACCESS_TOKEN to your environment.');
+    if (!mapContainer.current || !activeToken) {
+      console.error('Mapbox token not configured. Please add VITE_MAPBOX_ACCESS_TOKEN to your environment or enter it below.');
       return;
     }
 
-    mapboxgl.accessToken = mapboxToken;
+    mapboxgl.accessToken = activeToken;
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -94,14 +96,16 @@ export function DirectoryMapView({
   };
 
   useEffect(() => {
-    initializeMap();
+    if (activeToken) {
+      initializeMap();
+    }
     return () => {
       map.current?.remove();
     };
-  }, []);
+  }, [activeToken]);
 
   useEffect(() => {
-    if (map.current && (countries.length > 0 || cities.length > 0)) {
+    if (map.current && activeToken && (countries.length > 0 || cities.length > 0)) {
       // Clear existing markers
       const markers = document.querySelectorAll('.mapboxgl-marker');
       markers.forEach(marker => marker.remove());
@@ -200,7 +204,13 @@ export function DirectoryMapView({
         map.current.fitBounds(bounds, { padding: 50, maxZoom: 6 });
       }
     }
-  }, [countries, cities, showCountries, showCities]);
+  }, [countries, cities, showCountries, showCities, activeToken]);
+
+  const handleTokenSubmit = () => {
+    if (mapboxToken.trim()) {
+      setShowTokenInput(false);
+    }
+  };
 
   return (
     <div className={className}>
@@ -211,6 +221,27 @@ export function DirectoryMapView({
               <Globe className="h-5 w-5 text-primary" />
               <h3 className="text-lg font-semibold">Geographic Map View</h3>
             </div>
+            
+            {showTokenInput && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h4 className="font-medium text-yellow-800 mb-2">Mapbox Token Required</h4>
+                <p className="text-sm text-yellow-700 mb-3">
+                  Please enter your Mapbox public token. Get one free at <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="underline">mapbox.com</a>
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwiYSI6IlYourTokenHere"
+                    value={mapboxToken}
+                    onChange={(e) => setMapboxToken(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  />
+                  <Button onClick={handleTokenSubmit} disabled={!mapboxToken.trim()}>
+                    Load Map
+                  </Button>
+                </div>
+              </div>
+            )}
             
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-2">
@@ -259,9 +290,18 @@ export function DirectoryMapView({
               </div>
             )}
 
-            <div className="h-[600px] w-full rounded-lg overflow-hidden border">
-              <div ref={mapContainer} className="w-full h-full" />
-            </div>
+            {!activeToken ? (
+              <div className="h-[600px] w-full rounded-lg border bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                  <Globe className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Please enter your Mapbox token above to load the map</p>
+                </div>
+              </div>
+            ) : (
+              <div className="h-[600px] w-full rounded-lg overflow-hidden border">
+                <div ref={mapContainer} className="w-full h-full" />
+              </div>
+            )}
 
             {selectedItem && (
               <div className="mt-4">
