@@ -303,6 +303,48 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: stri
   }
 }
 
+// NewsData.io fetcher
+async function fetchFromNewsData(apiKey: string, sourceId: string, category: string): Promise<NewsArticle[]> {
+  try {
+    const keywords = ['LGBT', 'Gay', 'Lesbian', 'Bisexual', 'Intersex', 'Transgender', 'Sexual Orientation'];
+    const query = keywords.join(' OR ');
+    const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&q=${encodeURIComponent(query)}&language=en&size=50`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    const articles: NewsArticle[] = [];
+    
+    if (data.results) {
+      for (const article of data.results) {
+        if (article.title && article.link) {
+          const content = (article.title + ' ' + (article.description || '') + ' ' + (article.content || '')).toLowerCase();
+          const lgbtKeywords = ['lgbt', 'gay', 'lesbian', 'bisexual', 'intersex', 'transgender', 'sexual orientation', 'queer', 'pride'];
+          
+          const tags = lgbtKeywords.filter(keyword => content.includes(keyword.toLowerCase()));
+          
+          articles.push({
+            title: article.title,
+            content: article.content,
+            excerpt: article.description,
+            url: article.link,
+            image_url: article.image_url,
+            author: article.source_id,
+            published_at: article.pubDate,
+            category,
+            tags,
+            source_id: sourceId
+          });
+        }
+      }
+    }
+    
+    return articles;
+  } catch (error) {
+    console.error('Error fetching from NewsData.io:', error);
+    return [];
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -336,6 +378,11 @@ serve(async (req) => {
         const apiKey = Deno.env.get("NEWS_API_KEY");
         if (apiKey) {
           articles = await fetchFromNewsAPI(apiKey, source.id, source.category);
+        }
+      } else if (source.source_type === 'api' && source.name === 'NewsData.io') {
+        const apiKey = Deno.env.get("NEWSDATA_API_KEY");
+        if (apiKey) {
+          articles = await fetchFromNewsData(apiKey, source.id, source.category);
         }
       }
       
