@@ -2536,6 +2536,48 @@ export type Database = {
           },
         ]
       }
+      user_photos: {
+        Row: {
+          caption: string | null
+          content_type: string | null
+          created_at: string
+          display_order: number | null
+          file_size: number | null
+          filename: string
+          id: string
+          is_profile_picture: boolean | null
+          storage_path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          content_type?: string | null
+          created_at?: string
+          display_order?: number | null
+          file_size?: number | null
+          filename: string
+          id?: string
+          is_profile_picture?: boolean | null
+          storage_path: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          content_type?: string | null
+          created_at?: string
+          display_order?: number | null
+          file_size?: number | null
+          filename?: string
+          id?: string
+          is_profile_picture?: boolean | null
+          storage_path?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_role_audit_log: {
         Row: {
           action_type: string

@@ -28,6 +28,7 @@ import {
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
+import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
@@ -261,8 +262,9 @@ export default function UserProfile() {
 
       {/* Profile Content */}
       <Tabs defaultValue="about" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="about">About</TabsTrigger>
+          <TabsTrigger value="photos">Photos</TabsTrigger>
           <TabsTrigger value="identity">Identity</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
         </TabsList>
@@ -324,6 +326,10 @@ export default function UserProfile() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="photos" className="space-y-6">
+          <PhotoGallery userId={profile.user_id} isOwnProfile={isOwnProfile} />
         </TabsContent>
 
         <TabsContent value="identity" className="space-y-6">
