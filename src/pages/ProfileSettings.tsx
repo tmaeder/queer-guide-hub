@@ -12,7 +12,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { User, Camera, Save, ArrowLeft, Loader2, CheckCircle, AlertCircle, Heart, Users, Lock, Globe, Settings } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { User, Camera, Save, ArrowLeft, Loader2, CheckCircle, AlertCircle, Heart, Users, Lock, Globe, Settings, CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
@@ -457,20 +461,35 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="age_range">Age Range</Label>
-                  <Select value={formData.age_range} onValueChange={(value) => handleInputChange('age_range', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select age range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="18-24">18-24</SelectItem>
-                      <SelectItem value="25-34">25-34</SelectItem>
-                      <SelectItem value="35-44">35-44</SelectItem>
-                      <SelectItem value="45-54">45-54</SelectItem>
-                      <SelectItem value="55-64">55-64</SelectItem>
-                      <SelectItem value="65+">65+</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="date_of_birth">Date of Birth</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !formData.date_of_birth && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.date_of_birth ? (
+                          format(new Date(formData.date_of_birth), "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
+                        onSelect={(date) => handleInputChange('date_of_birth', date ? date.toISOString().split('T')[0] : '')}
+                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="user_mode">What you're looking for</Label>
