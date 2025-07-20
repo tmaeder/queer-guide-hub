@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Calendar, MapPin, Users, Clock, DollarSign, ExternalLink, Mail, Phone, Globe, Share2 } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, DollarSign, ExternalLink, Mail, Phone, Globe, Share2, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -178,6 +178,41 @@ export default function EventDetail() {
     }
   };
 
+  const handleExportToCalendar = async () => {
+    if (!event) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('calendar-export', {
+        body: { eventId: event.id }
+      });
+
+      if (error) throw error;
+
+      // Create a blob from the calendar data and trigger download
+      const blob = new Blob([data], { type: 'text/calendar' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Calendar export successful",
+        description: "Event has been exported to your calendar",
+      });
+    } catch (error) {
+      console.error('Error exporting calendar:', error);
+      toast({
+        title: "Export failed",
+        description: "Failed to export event to calendar",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -310,6 +345,10 @@ export default function EventDetail() {
           </div>
 
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleExportToCalendar}>
+              <Download className="h-4 w-4 mr-2" />
+              Export to Calendar
+            </Button>
             <Button variant="outline" size="sm">
               <Share2 className="h-4 w-4 mr-2" />
               Share
