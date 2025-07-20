@@ -272,11 +272,24 @@ export default function AdminTags() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="venue">Venue</SelectItem>
-                    <SelectItem value="event">Event</SelectItem>
-                    <SelectItem value="marketplace">Marketplace</SelectItem>
-                    <SelectItem value="content">Content</SelectItem>
-                    <SelectItem value="general">General</SelectItem>
+                    <SelectItem value="consent">Consent</SelectItem>
+                    <SelectItem value="genders">Genders</SelectItem>
+                    <SelectItem value="sexual-orientations">Sexual Orientations</SelectItem>
+                    <SelectItem value="romantic-orientations">Romantic Orientations</SelectItem>
+                    <SelectItem value="relationships">Relationships</SelectItem>
+                    <SelectItem value="roles">Roles</SelectItem>
+                    <SelectItem value="gay-culture">Gay Culture</SelectItem>
+                    <SelectItem value="kink-activities">Kink Activities</SelectItem>
+                    <SelectItem value="sexual-activities">Sexual Activities</SelectItem>
+                    <SelectItem value="philia">Philia</SelectItem>
+                    <SelectItem value="toys-equipment">Toys & Equipment</SelectItem>
+                    <SelectItem value="play-spaces">Play Spaces</SelectItem>
+                    <SelectItem value="events">Events</SelectItem>
+                    <SelectItem value="holidays">Holidays</SelectItem>
+                    <SelectItem value="sexual-health">Sexual Health</SelectItem>
+                    <SelectItem value="mental-health">Mental Health</SelectItem>
+                    <SelectItem value="scene-safety">Scene Safety</SelectItem>
+                    <SelectItem value="safety-resources">Safety Resources</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
