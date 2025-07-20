@@ -31,8 +31,6 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import DMCA from "./pages/DMCA";
 import Auth from "./pages/Auth";
-import ContentManagementSystem from "./pages/ContentManagementSystem";
-import ContentEditor from "./pages/ContentEditor";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminUsers from "./pages/AdminUsers";
@@ -169,21 +167,6 @@ const App = () => {
                     </AdminRouteGuard>
                   } />
                   
-                  <Route path="/admin/content" element={
-                    <AdminRouteGuard>
-                      <ContentManagementSystem />
-                    </AdminRouteGuard>
-                  } />
-                  <Route path="/admin/content/:id" element={
-                    <AdminRouteGuard>
-                      <ContentEditor />
-                    </AdminRouteGuard>
-                  } />
-                  <Route path="/admin/content/new" element={
-                    <AdminRouteGuard>
-                      <ContentEditor />
-                    </AdminRouteGuard>
-                  } />
                   <Route path="/admin/tags" element={
                     <AdminRouteGuard>
                       <AdminTags />
