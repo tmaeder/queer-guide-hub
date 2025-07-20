@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
+import { useIsMobile } from '@/hooks/use-mobile';
 const Index = () => {
   const {
     user
@@ -13,6 +14,7 @@ const Index = () => {
     stats: realStats,
     loading
   } = useStats();
+  const isMobile = useIsMobile();
   const features = [{
     icon: MapPin,
     title: 'Safe Venues',
@@ -81,22 +83,23 @@ const Index = () => {
     number: formatNumber(realStats.weeklyEvents),
     label: 'Weekly Events'
   }];
-  return <div className="min-h-screen">
+  return (
+    <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-        <div className="relative container mx-auto px-4 py-20 lg:py-28">
+        <div className={`relative container mx-auto px-4 ${isMobile ? 'py-12' : 'py-20 lg:py-28'}`}>
           <div className="text-center max-w-5xl mx-auto">
             {/* Badge */}
-            <Badge variant="secondary" className="mb-6 px-4 py-2">
-              <Sparkles className="h-4 w-4 mr-2" />
+            <Badge variant="secondary" className={`mb-6 ${isMobile ? 'px-3 py-1 text-xs' : 'px-4 py-2'}`}>
+              <Sparkles className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} mr-2`} />
               Building Safe Communities Since 2024
             </Badge>
 
             {/* Main Headline */}
-            <div className="flex items-center justify-center gap-4 mb-8">
-              <Heart className="h-16 w-16 text-primary fill-current animate-pulse" />
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold">
+            <div className={`flex items-center justify-center gap-4 mb-8 ${isMobile ? 'flex-col gap-2' : ''}`}>
+              <Heart className={`${isMobile ? 'h-12 w-12' : 'h-16 w-16'} text-primary fill-current animate-pulse`} />
+              <h1 className={`font-bold ${isMobile ? 'text-4xl' : 'text-6xl md:text-7xl lg:text-8xl'}`}>
                 <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                   Queer Guide
                 </span>
@@ -104,20 +107,31 @@ const Index = () => {
             </div>
 
             {/* Subtitle */}
-            <p className="text-xl md:text-2xl lg:text-3xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
+            <p className={`text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed ${
+              isMobile ? 'text-lg' : 'text-xl md:text-2xl lg:text-3xl'
+            }`}>
               Your comprehensive platform for discovering safe spaces, 
               connecting with community, and building an inclusive world together.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button size="lg" className="text-lg px-8 py-6 bg-gradient-primary hover:opacity-90 shadow-lg hover:shadow-xl transition-all" asChild>
+            <div className={`flex gap-4 justify-center mb-12 ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'}`}>
+              <Button 
+                size={isMobile ? "default" : "lg"} 
+                className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} bg-gradient-primary hover:opacity-90 shadow-lg hover:shadow-xl transition-all`} 
+                asChild
+              >
                 <Link to="/venues">
                   Explore Venues
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className={`ml-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 hover:bg-primary/10 border-2" asChild>
+              <Button 
+                size={isMobile ? "default" : "lg"} 
+                variant="outline" 
+                className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} hover:bg-primary/10 border-2`} 
+                asChild
+              >
                 <Link to={user ? "/events" : "/auth"}>
                   {user ? "Browse Events" : "Join Community"}
                 </Link>
@@ -125,55 +139,71 @@ const Index = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
-              {stats.map((stat, index) => <div key={index} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+            <div className={`grid gap-8 max-w-3xl mx-auto ${isMobile ? 'grid-cols-2 gap-4' : 'grid-cols-2 md:grid-cols-4'}`}>
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className={`font-bold text-primary mb-2 ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>
                     {stat.number}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
                     {stat.label}
                   </div>
-                </div>)}
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/20">
+      <section className={`bg-gradient-to-b from-background to-muted/20 ${isMobile ? 'py-12' : 'py-20'} px-4`}>
         <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <div className={`text-center ${isMobile ? 'mb-8' : 'mb-16'}`}>
+            <h2 className={`font-bold mb-6 ${isMobile ? 'text-2xl' : 'text-4xl md:text-5xl'}`}>
               Everything You Need in 
               <span className="text-primary"> One Place</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className={`text-muted-foreground max-w-3xl mx-auto ${isMobile ? 'text-base' : 'text-xl'}`}>
               Comprehensive tools and resources designed by and for the LGBTQ+ community
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => <Card key={index} className={`group hover:shadow-2xl transition-all duration-300 animate-fade-in hover:-translate-y-2 border-0 ${feature.gradient}`} style={{
-            animationDelay: `${index * 100}ms`
-          }}>
-                <CardContent className="p-8 text-center h-full flex flex-col">
-                  <div className={`h-16 w-16 mx-auto mb-6 rounded-full bg-background shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                    <feature.icon className={`h-8 w-8 ${feature.color}`} />
+          <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'}`}>
+            {features.map((feature, index) => (
+              <Card 
+                key={index} 
+                className={`group hover:shadow-2xl transition-all duration-300 animate-fade-in hover:-translate-y-2 border-0 ${feature.gradient}`} 
+                style={{
+                  animationDelay: `${index * 100}ms`
+                }}
+              >
+                <CardContent className={`text-center h-full flex flex-col ${isMobile ? 'p-6' : 'p-8'}`}>
+                  <div className={`mx-auto mb-6 rounded-full bg-background shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform ${
+                    isMobile ? 'h-12 w-12' : 'h-16 w-16'
+                  }`}>
+                    <feature.icon className={`${feature.color} ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
                   </div>
-                  <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>
-                  <p className="text-muted-foreground flex-grow">{feature.description}</p>
+                  <h3 className={`font-semibold mb-4 ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+                    {feature.title}
+                  </h3>
+                  <p className={`text-muted-foreground flex-grow ${isMobile ? 'text-sm' : ''}`}>
+                    {feature.description}
+                  </p>
                   <Button variant="ghost" size="sm" className="mt-4 group-hover:bg-background/50">
                     Learn More
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                   </Button>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Final CTA Section */}
       
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

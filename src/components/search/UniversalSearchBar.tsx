@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Search, Filter, X, Clock, Zap, MapPin, Calendar, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, SlidersHorizontal } from "lucide-react";
 import { useUniversalSearch, SearchResult, SearchFilters } from "@/hooks/useUniversalSearch";
 import { SearchFiltersPanel } from "./SearchFiltersPanel";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const contentTypeIcons = {
   venue: MapPin,
@@ -40,6 +41,7 @@ export const UniversalSearchBar = () => {
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const { results, suggestions, loading } = useUniversalSearch(query, filters);
 
@@ -164,7 +166,7 @@ export const UniversalSearchBar = () => {
   }, [isOpen]);
 
   return (
-    <div className="flex-1 max-w-2xl mx-4">
+    <div className={`${isMobile ? 'w-full' : 'flex-1 max-w-2xl mx-4'}`}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <div className="relative">
@@ -182,14 +184,14 @@ export const UniversalSearchBar = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-10 px-3 rounded-l-lg text-muted-foreground hover:text-foreground pointer-events-none"
+                className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} rounded-l-lg text-muted-foreground hover:text-foreground pointer-events-none`}
               >
-                <Search className="h-4 w-4" />
+                <Search className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
               </Button>
               
               <Input
                 ref={inputRef}
-                placeholder="Search venues, events, marketplace, users, news..."
+                placeholder={isMobile ? "Search..." : "Search venues, events, marketplace, users, news..."}
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -201,7 +203,9 @@ export const UniversalSearchBar = () => {
                   setIsOpen(true);
                 }}
                 onBlur={() => setIsFocused(false)}
-                className="border-0 bg-transparent focus-visible:ring-0 shadow-none text-sm placeholder:text-muted-foreground/60"
+                className={`border-0 bg-transparent focus-visible:ring-0 shadow-none ${
+                  isMobile ? 'text-base placeholder:text-muted-foreground/60' : 'text-sm placeholder:text-muted-foreground/60'
+                }`}
                 autoComplete="off"
               />
               
@@ -209,25 +213,25 @@ export const UniversalSearchBar = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 mr-1 text-muted-foreground hover:text-foreground"
+                  className={`${isMobile ? 'h-8 w-8' : 'h-6 w-6'} p-0 mr-1 text-muted-foreground hover:text-foreground`}
                   onClick={() => {
                     setQuery("");
                     inputRef.current?.focus();
                   }}
                 >
-                  <X className="h-3 w-3" />
+                  <X className={`${isMobile ? 'h-4 w-4' : 'h-3 w-3'}`} />
                 </Button>
               )}
               
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-10 px-3 text-muted-foreground hover:text-foreground relative ${
+                className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} text-muted-foreground hover:text-foreground relative ${
                   activeFiltersCount > 0 ? 'text-primary' : ''
                 }`}
                 onClick={() => setShowFilters(!showFilters)}
               >
-                <SlidersHorizontal className="h-4 w-4" />
+                <SlidersHorizontal className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
                 {activeFiltersCount > 0 && (
                   <Badge 
                     variant="destructive" 
@@ -241,7 +245,7 @@ export const UniversalSearchBar = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-10 px-3 rounded-r-lg text-muted-foreground hover:text-foreground"
+                className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} rounded-r-lg text-muted-foreground hover:text-foreground`}
                 onClick={() => {
                   if (query.trim()) {
                     handleSearch();
@@ -250,13 +254,16 @@ export const UniversalSearchBar = () => {
                   }
                 }}
               >
-                <Zap className="h-4 w-4" />
+                <Zap className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
               </Button>
             </div>
           </div>
         </PopoverTrigger>
         
-        <PopoverContent className="w-[600px] p-0 z-50 bg-background/95 backdrop-blur-sm border shadow-xl" align="start">
+        <PopoverContent 
+          className={`${isMobile ? 'w-[calc(100vw-2rem)]' : 'w-[600px]'} p-0 z-50 bg-background/95 backdrop-blur-sm border shadow-xl`} 
+          align="start"
+        >
           <Command shouldFilter={false} className="bg-transparent">
             {showFilters && (
               <>

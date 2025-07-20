@@ -8,11 +8,14 @@ import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const {
     user,
     signOut
@@ -28,145 +31,274 @@ export function Header() {
     { value: 'community', icon: Home, label: 'Community' },
   ];
 
+  const navigationItems = [
+    { to: "/venues", icon: MapPin, label: "Venues" },
+    { to: "/events", icon: Calendar, label: "Events" },
+    { to: "/marketplace", icon: Store, label: "Market" },
+    { to: "/users", icon: Users, label: "Users" },
+    { to: "/groups", icon: UserCheck, label: "Groups" },
+    { to: "/tags", icon: Tags, label: "Wiki" },
+    { to: "/directory", icon: Globe, label: "Locations" },
+    { to: "/travel", icon: Plane, label: "Travel" },
+    { to: "/news", icon: Newspaper, label: "News" },
+  ];
+
+  const userMenuItems = [
+    { to: "/my-bookings", icon: CreditCard, label: "Bookings" },
+    { to: "/favorites", icon: Heart, label: "Favorites" },
+    { to: "/profile/settings", icon: Settings, label: "Settings" },
+    { to: "/messages", icon: MessageSquare, label: "Messages" },
+    { to: "/friends", icon: Users, label: "Friends" },
+    { to: "/accessibility", icon: Accessibility, label: "Access" },
+  ];
+
   const handleModeChange = async (mode: string) => {
     await updateProfile({ user_mode: mode as 'dating' | 'friends' | 'exploration' | 'fun' | 'networking' | 'community' });
   };
-  return <header className="bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <Heart className="h-8 w-8 text-primary fill-current" />
-        </Link>
 
-        <UniversalSearchBar />
+  const handleMenuItemClick = (path: string) => {
+    navigate(path);
+    setMobileMenuOpen(false);
+  };
+  return (
+    <header className="bg-card/50 backdrop-blur-sm sticky top-0 z-50 border-b border-border/50">
+      <div className="container mx-auto px-4">
+        {/* Main header */}
+        <div className="h-16 flex items-center justify-between gap-2">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+            <Heart className="h-8 w-8 text-primary fill-current" />
+            {!isMobile && (
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Queer Guide
+              </span>
+            )}
+          </Link>
 
-        <div className="flex items-center gap-2">
-          {user ? <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
-                  <User className="h-4 w-4" />
+          {/* Search - Hidden on mobile when menu is open */}
+          {!isMobile && <UniversalSearchBar />}
+
+          {/* Desktop Navigation */}
+          {!isMobile && (
+            <nav className="hidden lg:flex items-center gap-1">
+              {navigationItems.slice(0, 6).map((item) => (
+                <Button
+                  key={item.to}
+                  variant="ghost"
+                  size="sm"
+                  className="text-sm px-3 py-2 h-9"
+                  asChild
+                >
+                  <Link to={item.to} className="flex items-center gap-2">
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-screen left-0 right-0 p-4 bg-background border border-border h-[160px]">
-                <div className="flex items-center justify-between p-2 mb-3">
-                  <span className="text-sm font-medium">Current Mode</span>
-                  <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue>
-                        <div className="flex items-center gap-2">
-                          {(() => {
-                            const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
-                            return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
-                          })()}
-                          <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
-                        </div>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {userModes.map((mode) => (
-                        <SelectItem key={mode.value} value={mode.value}>
+              ))}
+            </nav>
+          )}
+
+          {/* Right side controls */}
+          <div className="flex items-center gap-2">
+            {/* User menu */}
+            {user && !isMobile ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80 p-4 bg-background border border-border">
+                  {/* User mode selector */}
+                  <div className="flex items-center justify-between p-2 mb-3">
+                    <span className="text-sm font-medium">Current Mode</span>
+                    <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue>
                           <div className="flex items-center gap-2">
-                            <mode.icon className="h-4 w-4" />
-                            <span>{mode.label}</span>
+                            {(() => {
+                              const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
+                              return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
+                            })()}
+                            <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
                           </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex justify-between p-4">
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/my-bookings')}>
-                    <CreditCard className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Bookings</span>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {userModes.map((mode) => (
+                          <SelectItem key={mode.value} value={mode.value}>
+                            <div className="flex items-center gap-2">
+                              <mode.icon className="h-4 w-4" />
+                              <span>{mode.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Quick actions grid */}
+                  <div className="grid grid-cols-3 gap-2 p-2">
+                    {userMenuItems.map((item) => (
+                      <Button 
+                        key={item.to}
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex flex-col items-center p-3 h-auto gap-1" 
+                        onClick={() => navigate(item.to)}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span className="text-xs">{item.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+
+                  <DropdownMenuSeparator />
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full justify-start text-destructive hover:text-destructive" 
+                    onClick={signOut}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
                   </Button>
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/favorites')}>
-                    <Heart className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Favorites</span>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : !user && !isMobile && (
+              <Button onClick={() => setAuthDialogOpen(true)} size="sm" className="h-9">
+                <User className="h-4 w-4 mr-2" />
+                Sign In
+              </Button>
+            )}
+
+            {/* Mobile menu */}
+            {isMobile && (
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
+                    <Menu className="h-5 w-5" />
                   </Button>
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/profile/settings')}>
-                    <Settings className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Settings</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/users')}>
-                    <Users className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Users</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/groups')}>
-                    <UserCheck className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Groups</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/messages')}>
-                    <MessageSquare className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Messages</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/friends')}>
-                    <Users className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Friends</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto" onClick={() => navigate('/accessibility')}>
-                    <Accessibility className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Access</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 h-auto text-destructive" onClick={signOut}>
-                    <LogOut className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Logout</span>
-                  </Button>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} className="bg-primary hover:opacity-90 transition-opacity h-9 w-9 px-0">
-              <User className="h-4 w-4" />
-            </Button>}
-           
-          <Button variant="ghost" size="sm" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[280px] p-0">
+                  <SheetHeader className="p-6 pb-4 border-b">
+                    <SheetTitle className="text-left">
+                      {user ? `Welcome back!` : 'Queer Guide'}
+                    </SheetTitle>
+                  </SheetHeader>
+
+                  <div className="flex flex-col h-full">
+                    {/* User section */}
+                    {user && (
+                      <div className="p-4 border-b">
+                        <div className="mb-4">
+                          <label className="text-sm font-medium text-muted-foreground">Current Mode</label>
+                          <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
+                            <SelectTrigger className="w-full mt-1">
+                              <SelectValue>
+                                <div className="flex items-center gap-2">
+                                  {(() => {
+                                    const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
+                                    return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
+                                  })()}
+                                  <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {userModes.map((mode) => (
+                                <SelectItem key={mode.value} value={mode.value}>
+                                  <div className="flex items-center gap-2">
+                                    <mode.icon className="h-4 w-4" />
+                                    <span>{mode.label}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Navigation */}
+                    <nav className="flex-1 p-4 space-y-2">
+                      {/* Search on mobile */}
+                      <div className="mb-4">
+                        <UniversalSearchBar />
+                      </div>
+
+                      {/* Main navigation */}
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Explore</h3>
+                        {navigationItems.map((item) => (
+                          <Button
+                            key={item.to}
+                            variant="ghost"
+                            className="w-full justify-start h-12 text-base"
+                            onClick={() => handleMenuItemClick(item.to)}
+                          >
+                            <item.icon className="h-5 w-5 mr-3" />
+                            {item.label}
+                          </Button>
+                        ))}
+                      </div>
+
+                      {/* User menu items */}
+                      {user && (
+                        <div className="space-y-1 pt-4">
+                          <h3 className="text-sm font-medium text-muted-foreground mb-2">Your Account</h3>
+                          {userMenuItems.map((item) => (
+                            <Button
+                              key={item.to}
+                              variant="ghost"
+                              className="w-full justify-start h-12 text-base"
+                              onClick={() => handleMenuItemClick(item.to)}
+                            >
+                              <item.icon className="h-5 w-5 mr-3" />
+                              {item.label}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </nav>
+
+                    {/* Footer actions */}
+                    <div className="p-4 border-t mt-auto">
+                      {user ? (
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start text-destructive hover:text-destructive h-12" 
+                          onClick={() => {
+                            signOut();
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          <LogOut className="h-5 w-5 mr-3" />
+                          Logout
+                        </Button>
+                      ) : (
+                        <Button 
+                          className="w-full h-12" 
+                          onClick={() => {
+                            setAuthDialogOpen(true);
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          <User className="h-5 w-5 mr-2" />
+                          Sign In / Sign Up
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Mobile Navigation Menu */}
-      {mobileMenuOpen && <div className="absolute top-16 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
-          <nav className="container mx-auto px-4 py-4">
-            <div className="flex justify-between px-4">
-              <Link to="/venues" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                <MapPin className="h-6 w-6 mb-1" />
-                <span className="text-xs">Venues</span>
-              </Link>
-              <Link to="/events" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                <Calendar className="h-6 w-6 mb-1" />
-                <span className="text-xs">Events</span>
-              </Link>
-              <Link to="/marketplace" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                <Store className="h-6 w-6 mb-1" />
-                <span className="text-xs">Market</span>
-              </Link>
-              <Link to="/users" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                <Users className="h-6 w-6 mb-1" />
-                <span className="text-xs">Users</span>
-              </Link>
-              <Link to="/groups" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                <UserCheck className="h-6 w-6 mb-1" />
-                <span className="text-xs">Groups</span>
-              </Link>
-              <Link to="/tags" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                <Tags className="h-6 w-6 mb-1" />
-                <span className="text-xs">Wiki</span>
-              </Link>
-              <Link to="/directory" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                <Globe className="h-6 w-6 mb-1" />
-                <span className="text-xs">Locations
-            </span>
-              </Link>
-              <Link to="/travel" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                <Plane className="h-6 w-6 mb-1" />
-                <span className="text-xs">Travel</span>
-              </Link>
-              <Link to="/news" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                <Newspaper className="h-6 w-6 mb-1" />
-                <span className="text-xs">News</span>
-              </Link>
-            </div>
-          </nav>
-        </div>}
-
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
-    </header>;
+    </header>
+  );
 }

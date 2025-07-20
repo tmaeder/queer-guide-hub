@@ -137,7 +137,7 @@ const App = () => {
               />
               <Header />
               <main className="flex-1 relative z-10">
-                <div className="container mx-auto px-4">
+                <div className="container mx-auto px-2 sm:px-4">
                   <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/venues" element={<Venues />} />
