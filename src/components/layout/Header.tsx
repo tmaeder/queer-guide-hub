@@ -163,10 +163,6 @@ export function Header() {
                 <Newspaper className="h-6 w-6 mb-1" />
                 <span className="text-xs">News</span>
               </Link>
-              <Link to="/sustainability" className="flex flex-col items-center p-3 text-foreground hover:bg-muted transition-colors rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                <Leaf className="h-6 w-6 mb-1" />
-                <span className="text-xs">Eco</span>
-              </Link>
             </div>
           </nav>
         </div>}
