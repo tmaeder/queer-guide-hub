@@ -31,6 +31,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import DMCA from "./pages/DMCA";
+import LegalHub from "./pages/LegalHub";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminAnalytics from "./pages/AdminAnalytics";
@@ -160,10 +161,11 @@ const App = () => {
                   <Route path="/press" element={<Press />} />
                   <Route path="/blog" element={<Blog />} />
                   <Route path="/sustainability" element={<Sustainability />} />
-                  <Route path="/terms" element={<TermsOfService />} />
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/cookies" element={<CookiePolicy />} />
-                  <Route path="/dmca" element={<DMCA />} />
+                   <Route path="/legal" element={<LegalHub />} />
+                   <Route path="/terms" element={<TermsOfService />} />
+                   <Route path="/privacy" element={<PrivacyPolicy />} />
+                   <Route path="/cookies" element={<CookiePolicy />} />
+                   <Route path="/dmca" element={<DMCA />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/admin" element={
                     <AdminRouteGuard>

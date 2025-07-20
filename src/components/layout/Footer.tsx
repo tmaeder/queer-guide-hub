@@ -7,21 +7,9 @@ export function Footer() {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const legalLinks = [{
-    href: "/terms",
-    label: "Terms of Service",
-    icon: FileText
-  }, {
-    href: "/privacy",
-    label: "Privacy Policy",
+    href: "/legal",
+    label: "Legal Hub",
     icon: Shield
-  }, {
-    href: "/cookies",
-    label: "Cookie Policy",
-    icon: Cookie
-  }, {
-    href: "/dmca",
-    label: "DMCA",
-    icon: Copyright
   }];
   const helpLinks = [{
     href: "/about",
