@@ -60,22 +60,34 @@ export default function UserProfile() {
   const isOwnProfile = currentUser?.id === userId;
 
   const handleShare = async () => {
-    if (navigator.share) {
+    const url = window.location.href;
+    const title = `${profile?.display_name}'s Profile`;
+    const text = profile?.bio || `Check out ${profile?.display_name}'s profile`;
+
+    // Check if Web Share API is available and supported
+    if (navigator.share && navigator.canShare && navigator.canShare({ title, text, url })) {
       try {
-        await navigator.share({
-          title: `${profile?.display_name}'s Profile`,
-          text: profile?.bio || `Check out ${profile?.display_name}'s profile`,
-          url: window.location.href,
-        });
+        await navigator.share({ title, text, url });
+        return;
       } catch (error) {
-        console.error('Error sharing:', error);
+        // If share fails or is cancelled, fall back to clipboard
+        console.log('Share cancelled or failed:', error);
       }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
+    }
+
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(url);
       toast({
-        title: "Link copied",
+        title: "Link copied!",
         description: "Profile link copied to clipboard",
+      });
+    } catch (error) {
+      // Final fallback: manual copy instruction
+      toast({
+        title: "Share this profile",
+        description: `Copy this link: ${url}`,
+        duration: 5000,
       });
     }
   };
