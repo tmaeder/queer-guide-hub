@@ -264,6 +264,28 @@ export default function AdminNewsSources() {
     }
   };
 
+  const triggerIndividualFetch = async (sourceId: string, sourceName: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('fetch-news', {
+        body: { sourceId }
+      });
+      
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `News fetch triggered for ${sourceName}`,
+      });
+    } catch (error) {
+      console.error('Error triggering individual news fetch:', error);
+      toast({
+        title: "Error",
+        description: `Failed to fetch news for ${sourceName}`,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleKeywordsEdit = (source: NewsSource) => {
     setEditingSource(source);
     setEditingKeywords(source.keywords || []);
@@ -625,13 +647,21 @@ export default function AdminNewsSources() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.open(source.url, '_blank')}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => triggerIndividualFetch(source.id, source.name)}
+                           title={`Fetch news from ${source.name}`}
+                         >
+                           <RefreshCw className="h-4 w-4" />
+                         </Button>
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => window.open(source.url, '_blank')}
+                         >
+                           <ExternalLink className="h-4 w-4" />
+                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="sm">
