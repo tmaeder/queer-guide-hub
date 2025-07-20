@@ -21,6 +21,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { useMessaging, type Conversation, type Message, type TypingIndicator } from "@/hooks/useMessaging";
 import { useAuth } from "@/hooks/useAuth";
+import { useSearchParams } from "react-router-dom";
 
 interface MessageItemProps {
   message: Message;
@@ -248,9 +249,10 @@ interface MessageInputProps {
   onTyping: () => void;
   onStopTyping: () => void;
   disabled?: boolean;
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
-const MessageInput = ({ onSend, onTyping, onStopTyping, disabled }: MessageInputProps) => {
+const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: MessageInputProps) => {
   const [message, setMessage] = useState("");
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -308,6 +310,7 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled }: MessageInput
   return (
     <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t bg-background/50 backdrop-blur">
       <Input
+        ref={inputRef}
         value={message}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
@@ -330,6 +333,7 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled }: MessageInput
 
 export const MessagingInterface = () => {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     conversations,
     messages,
@@ -347,6 +351,7 @@ export const MessagingInterface = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -356,8 +361,32 @@ export const MessagingInterface = () => {
     scrollToBottom();
   }, [messages, selectedConversation]);
 
+  // Handle URL parameters to auto-select conversation
+  useEffect(() => {
+    const conversationId = searchParams.get('conversation');
+    if (conversationId && conversations.length > 0) {
+      const conversation = conversations.find(c => c.id === conversationId);
+      if (conversation && selectedConversation !== conversationId) {
+        handleSelectConversation(conversationId);
+      }
+    }
+  }, [searchParams, conversations, selectedConversation]);
+
+  // Auto-focus input when conversation is selected
+  useEffect(() => {
+    if (selectedConversation && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [selectedConversation]);
+
   const handleSelectConversation = async (conversationId: string) => {
     setSelectedConversation(conversationId);
+    
+    // Update URL without causing navigation
+    setSearchParams({ conversation: conversationId }, { replace: true });
+    
     await fetchMessages(conversationId);
     await markAsRead(conversationId);
   };
@@ -520,6 +549,7 @@ export const MessagingInterface = () => {
               onTyping={handleTyping}
               onStopTyping={handleStopTyping}
               disabled={sendingMessage}
+              inputRef={inputRef}
             />
           </>
         ) : (
