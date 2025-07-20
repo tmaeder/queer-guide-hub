@@ -215,24 +215,6 @@ export function Header() {
                     ))}
                   </div>
 
-                  {/* User menu items */}
-                  {user && (
-                    <div className="pt-2 border-t">
-                      <h3 className="text-sm font-medium text-muted-foreground mb-1 px-2">Your Account</h3>
-                      {userMenuItems.map((item) => (
-                        <DropdownMenuItem key={item.to} className="p-0">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start h-11 text-base px-2"
-                            onClick={() => handleMenuItemClick(item.to)}
-                          >
-                            <item.icon className="h-5 w-5 mr-3" />
-                            {item.label}
-                          </Button>
-                        </DropdownMenuItem>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Footer actions */}
