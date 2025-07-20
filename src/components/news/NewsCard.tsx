@@ -112,7 +112,8 @@ export const NewsCard = ({ article, onViewArticle, showFullContent = false, view
                     {article.category.replace('-', ' ')}
                   </Badge>
                   <Badge variant="outline" className="text-xs">
-                    {article.news_sources.name}
+                    <Newspaper className="h-3 w-3 mr-1" />
+                    {new URL(article.url).hostname.replace('www.', '')}
                   </Badge>
                 </div>
               </div>
@@ -191,7 +192,8 @@ export const NewsCard = ({ article, onViewArticle, showFullContent = false, view
             {article.category.replace('-', ' ')}
           </Badge>
           <Badge variant="outline" className="text-xs">
-            {article.news_sources.name}
+            <Newspaper className="h-3 w-3 mr-1" />
+            {new URL(article.url).hostname.replace('www.', '')}
           </Badge>
         </div>
       </CardHeader>
