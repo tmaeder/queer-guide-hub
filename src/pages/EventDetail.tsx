@@ -319,7 +319,7 @@ export default function EventDetail() {
             </div>
           )}
           {(!event.images || event.images.length === 0) && (
-            <div className="aspect-[21/9] rounded-2xl bg-gradient-to-r from-primary/20 to-accent/20 flex items-center justify-center">
+            <div className="aspect-[21/9] bg-gradient-to-r from-primary/20 to-accent/20 flex items-center justify-center">
               <Calendar className="h-16 w-16 text-primary/60" />
             </div>
           )}
