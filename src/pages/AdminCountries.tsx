@@ -3,8 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Globe, Search, Plus, Edit, Trash2, Users, BarChart3 } from "lucide-react";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +21,17 @@ export default function AdminCountries() {
   const [continentFilter, setContinentFilter] = useState('all');
   const [countries, setCountries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingCountry, setEditingCountry] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    code: '',
+    capital: '',
+    population: '',
+    area_km2: '',
+    gdp_usd: '',
+    currency: ''
+  });
 
   // Fetch countries from database
   useEffect(() => {
@@ -108,11 +122,75 @@ export default function AdminCountries() {
     });
   };
 
-  const handleEditCountry = (countryId: string) => {
-    toast({
-      title: "Edit Country",
-      description: `Editing country with ID: ${countryId}`,
-    });
+  const handleEditCountry = async (countryId: string) => {
+    const country = countries.find(c => c.id === countryId);
+    if (country) {
+      setEditingCountry(country);
+      setFormData({
+        name: country.name || '',
+        code: country.code || '',
+        capital: country.capital || '',
+        population: country.population?.toString() || '',
+        area_km2: country.area?.toString() || '',
+        gdp_usd: country.gdp?.toString() || '',
+        currency: country.currency || ''
+      });
+      setEditDialogOpen(true);
+    }
+  };
+
+  const handleSaveCountry = async () => {
+    if (!editingCountry) return;
+
+    try {
+      const updateData = {
+        name: formData.name,
+        code: formData.code,
+        capital: formData.capital,
+        population: formData.population ? parseInt(formData.population) : null,
+        area_km2: formData.area_km2 ? parseFloat(formData.area_km2) : null,
+        gdp_usd: formData.gdp_usd ? parseFloat(formData.gdp_usd) : null,
+        currency: formData.currency
+      };
+
+      const { error } = await supabase
+        .from('countries')
+        .update(updateData)
+        .eq('id', editingCountry.id);
+
+      if (error) {
+        console.error('Error updating country:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update country.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: `${formData.name} has been updated successfully.`,
+      });
+
+      setEditDialogOpen(false);
+      setEditingCountry(null);
+      fetchCountries(); // Refresh the list
+    } catch (error) {
+      console.error('Error updating country:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update country.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleDeleteCountry = (countryId: string, countryName: string) => {
@@ -315,6 +393,103 @@ export default function AdminCountries() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Country Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Country</DialogTitle>
+            <DialogDescription>
+              Update the information for {editingCountry?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Country Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                placeholder="Enter country name"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="code">Country Code</Label>
+              <Input
+                id="code"
+                value={formData.code}
+                onChange={(e) => handleInputChange('code', e.target.value)}
+                placeholder="e.g., US, GB, DE"
+                maxLength={3}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="capital">Capital City</Label>
+              <Input
+                id="capital"
+                value={formData.capital}
+                onChange={(e) => handleInputChange('capital', e.target.value)}
+                placeholder="Enter capital city"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency</Label>
+              <Input
+                id="currency"
+                value={formData.currency}
+                onChange={(e) => handleInputChange('currency', e.target.value)}
+                placeholder="e.g., USD, EUR, GBP"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="population">Population</Label>
+              <Input
+                id="population"
+                type="number"
+                value={formData.population}
+                onChange={(e) => handleInputChange('population', e.target.value)}
+                placeholder="Enter population"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="area">Area (km²)</Label>
+              <Input
+                id="area"
+                type="number"
+                value={formData.area_km2}
+                onChange={(e) => handleInputChange('area_km2', e.target.value)}
+                placeholder="Enter area in km²"
+              />
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="gdp">GDP (USD)</Label>
+              <Input
+                id="gdp"
+                type="number"
+                value={formData.gdp_usd}
+                onChange={(e) => handleInputChange('gdp_usd', e.target.value)}
+                placeholder="Enter GDP in USD"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveCountry}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
