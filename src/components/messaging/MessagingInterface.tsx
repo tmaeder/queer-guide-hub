@@ -12,10 +12,14 @@ import {
   Search, 
   Plus,
   MessageCircle,
-  Smile
+  Smile,
+  Check,
+  CheckCheck,
+  Clock,
+  Eye
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useMessaging, type Conversation, type Message } from "@/hooks/useMessaging";
+import { useMessaging, type Conversation, type Message, type TypingIndicator } from "@/hooks/useMessaging";
 import { useAuth } from "@/hooks/useAuth";
 
 interface MessageItemProps {
@@ -24,13 +28,28 @@ interface MessageItemProps {
   onReaction: (messageId: string, emoji: string) => void;
 }
 
+const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
+  switch (status) {
+    case 'sending':
+      return <Clock className="h-3 w-3 text-muted-foreground" />;
+    case 'sent':
+      return <Check className="h-3 w-3 text-muted-foreground" />;
+    case 'delivered':
+      return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
+    case 'read':
+      return <Eye className="h-3 w-3 text-primary" />;
+    default:
+      return null;
+  }
+};
+
 const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
   const [showReactions, setShowReactions] = useState(false);
 
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😠'];
 
   return (
-    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4 group`}>
+    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4 group animate-in slide-in-from-bottom-2 duration-300`}>
       <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'}`}>
         {!isOwn && (
           <div className="flex items-center gap-2 mb-1">
@@ -48,19 +67,23 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
         
         <div className="relative">
           <div
-            className={`px-4 py-2 ${
+            className={`px-4 py-2 rounded-2xl ${
               isOwn
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted'
-            }`}
+                ? 'bg-primary text-primary-foreground rounded-br-md'
+                : 'bg-muted rounded-bl-md'
+            } ${message.status === 'sending' ? 'opacity-60' : ''}`}
           >
             <p className="text-sm">{message.content}</p>
           </div>
           
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-            </span>
+          <div className="flex items-center justify-between mt-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+              </span>
+              
+              {isOwn && <MessageStatusIcon status={message.status} />}
+            </div>
             
             <Button
               variant="ghost"
@@ -73,14 +96,14 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
           </div>
 
           {showReactions && (
-            <div className="absolute top-full mt-1 bg-popover p-2 shadow-md z-10">
+            <div className="absolute top-full mt-1 bg-popover border rounded-lg p-2 shadow-md z-10 animate-in fade-in duration-200">
               <div className="flex gap-1">
                 {commonEmojis.map(emoji => (
                   <Button
                     key={emoji}
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 hover:bg-muted transition-colors"
                     onClick={() => {
                       onReaction(message.id, emoji);
                       setShowReactions(false);
@@ -96,13 +119,40 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
           {message.reactions && message.reactions.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {message.reactions.map(reaction => (
-                <Badge key={reaction.id} variant="secondary" className="text-xs">
+                <Badge key={reaction.id} variant="secondary" className="text-xs animate-in zoom-in duration-200">
                   {reaction.emoji} 1
                 </Badge>
               ))}
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+};
+
+interface TypingIndicatorProps {
+  typingUsers: TypingIndicator[];
+}
+
+const TypingIndicator = ({ typingUsers }: TypingIndicatorProps) => {
+  if (typingUsers.length === 0) return null;
+
+  const names = typingUsers.map(user => user.display_name).join(', ');
+  const verb = typingUsers.length === 1 ? 'is' : 'are';
+  
+  return (
+    <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground animate-in slide-in-from-bottom-2 duration-300">
+      <Avatar className="h-6 w-6">
+        <AvatarFallback className="text-xs">
+          {typingUsers[0]?.display_name?.charAt(0) || 'U'}
+        </AvatarFallback>
+      </Avatar>
+      <span>{names} {verb} typing</span>
+      <div className="flex gap-1">
+        <div className="w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+        <div className="w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+        <div className="w-1 h-1 bg-primary rounded-full animate-bounce"></div>
       </div>
     </div>
   );
@@ -149,19 +199,23 @@ const ConversationList = ({
       {conversations.map(conversation => (
         <Card
           key={conversation.id}
-          className={`cursor-pointer transition-colors hover:bg-muted/50 ${
-            selectedConversation === conversation.id ? 'border-primary' : ''
+          className={`cursor-pointer transition-all duration-200 hover:bg-muted/50 hover:shadow-sm ${
+            selectedConversation === conversation.id ? 'ring-2 ring-primary border-primary' : ''
           }`}
           onClick={() => onSelectConversation(conversation.id)}
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarImage src={getConversationAvatar(conversation) || ''} />
-                <AvatarFallback>
-                  {getConversationTitle(conversation).charAt(0)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar>
+                  <AvatarImage src={getConversationAvatar(conversation) || ''} />
+                  <AvatarFallback>
+                    {getConversationTitle(conversation).charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Online indicator - could be dynamic */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
+              </div>
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
@@ -191,11 +245,14 @@ const ConversationList = ({
 
 interface MessageInputProps {
   onSend: (content: string) => void;
+  onTyping: () => void;
+  onStopTyping: () => void;
   disabled?: boolean;
 }
 
-const MessageInput = ({ onSend, disabled }: MessageInputProps) => {
+const MessageInput = ({ onSend, onTyping, onStopTyping, disabled }: MessageInputProps) => {
   const [message, setMessage] = useState("");
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Sanitize message input to prevent XSS
   const sanitizeMessage = (input: string): string => {
@@ -211,20 +268,60 @@ const MessageInput = ({ onSend, disabled }: MessageInputProps) => {
     if (sanitizedMessage && !disabled) {
       onSend(sanitizedMessage);
       setMessage("");
+      onStopTyping();
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = sanitizeMessage(e.target.value);
+    setMessage(value);
+
+    // Send typing indicator
+    onTyping();
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Stop typing after 1 second of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      onStopTyping();
+    }, 1000);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e as any);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-4">
+    <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t bg-background/50 backdrop-blur">
       <Input
         value={message}
-        onChange={(e) => setMessage(sanitizeMessage(e.target.value))}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
         placeholder="Type a message..."
         disabled={disabled}
-        className="flex-1"
+        className="flex-1 rounded-full border-muted-foreground/20 focus:border-primary transition-colors"
         maxLength={2000}
       />
-      <Button type="submit" disabled={disabled || !message.trim()}>
+      <Button 
+        type="submit" 
+        disabled={disabled || !message.trim()}
+        className="rounded-full h-10 w-10 p-0 transition-all hover:scale-105"
+        size="sm"
+      >
         <Send className="h-4 w-4" />
       </Button>
     </form>
@@ -238,10 +335,13 @@ export const MessagingInterface = () => {
     messages,
     loading,
     sendingMessage,
+    typingUsers,
     fetchMessages,
     sendMessage,
     addReaction,
-    markAsRead
+    markAsRead,
+    sendTypingIndicator,
+    stopTypingIndicator
   } = useMessaging();
 
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -265,11 +365,24 @@ export const MessagingInterface = () => {
   const handleSendMessage = async (content: string) => {
     if (selectedConversation) {
       await sendMessage(selectedConversation, content);
+      await stopTypingIndicator(selectedConversation);
     }
   };
 
   const handleReaction = async (messageId: string, emoji: string) => {
     await addReaction(messageId, emoji);
+  };
+
+  const handleTyping = () => {
+    if (selectedConversation) {
+      sendTypingIndicator(selectedConversation);
+    }
+  };
+
+  const handleStopTyping = () => {
+    if (selectedConversation) {
+      stopTypingIndicator(selectedConversation);
+    }
   };
 
   const filteredConversations = conversations.filter(conv => {
@@ -283,12 +396,13 @@ export const MessagingInterface = () => {
   });
 
   const currentMessages = selectedConversation ? messages[selectedConversation] || [] : [];
+  const currentTypingUsers = selectedConversation ? typingUsers[selectedConversation] || [] : [];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="animate-spin h-8 w-8 bg-primary mx-auto mb-4"></div>
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading messages...</p>
         </div>
       </div>
@@ -296,13 +410,13 @@ export const MessagingInterface = () => {
   }
 
   return (
-    <div className="flex h-[600px] overflow-hidden">
+    <div className="flex h-[600px] overflow-hidden rounded-lg border bg-background">
       {/* Conversation List */}
-      <div className="w-1/3 bg-background">
-        <div className="p-4">
+      <div className="w-1/3 border-r bg-background/50">
+        <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold">Messages</h2>
-            <Button size="sm" variant="outline">
+            <Button size="sm" variant="outline" className="rounded-full">
               <Plus className="h-4 w-4 mr-2" />
               New
             </Button>
@@ -314,7 +428,7 @@ export const MessagingInterface = () => {
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 rounded-full border-muted-foreground/20"
             />
           </div>
         </div>
@@ -343,60 +457,73 @@ export const MessagingInterface = () => {
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <div className="p-4">
+            <div className="p-4 border-b bg-background/50 backdrop-blur">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarFallback>
-                      {conversations.find(c => c.id === selectedConversation)?.participants
-                        ?.find(p => p.user_id !== user?.id)?.profile?.display_name?.charAt(0) || 'C'}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar>
+                      <AvatarImage src={
+                        conversations.find(c => c.id === selectedConversation)?.participants
+                          ?.find(p => p.user_id !== user?.id)?.profile?.avatar_url || ''
+                      } />
+                      <AvatarFallback>
+                        {conversations.find(c => c.id === selectedConversation)?.participants
+                          ?.find(p => p.user_id !== user?.id)?.profile?.display_name?.charAt(0) || 'C'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
+                  </div>
                   <div>
                     <h3 className="font-medium">
                       {conversations.find(c => c.id === selectedConversation)?.participants
                         ?.find(p => p.user_id !== user?.id)?.profile?.display_name || 'Unknown User'}
                     </h3>
-                    <p className="text-sm text-muted-foreground">Online</p>
+                    <p className="text-sm text-green-600">Online</p>
                   </div>
                 </div>
                 
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="rounded-full">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              {currentMessages.length === 0 ? (
-                <div className="text-center py-8">
-                  <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
-                </div>
-              ) : (
-                <div>
-                  {currentMessages.map(message => (
-                    <MessageItem
-                      key={message.id}
-                      message={message}
-                      isOwn={message.sender_id === user?.id}
-                      onReaction={handleReaction}
-                    />
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-              )}
+            <ScrollArea className="flex-1 bg-gradient-to-b from-background/50 to-background">
+              <div className="p-4">
+                {currentMessages.length === 0 ? (
+                  <div className="text-center py-8">
+                    <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
+                  </div>
+                ) : (
+                  <div>
+                    {currentMessages.map(message => (
+                      <MessageItem
+                        key={message.id}
+                        message={message}
+                        isOwn={message.sender_id === user?.id}
+                        onReaction={handleReaction}
+                      />
+                    ))}
+                    
+                    <TypingIndicator typingUsers={currentTypingUsers} />
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+              </div>
             </ScrollArea>
 
             {/* Message Input */}
             <MessageInput
               onSend={handleSendMessage}
+              onTyping={handleTyping}
+              onStopTyping={handleStopTyping}
               disabled={sendingMessage}
             />
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-background/50 to-background">
             <div className="text-center">
               <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">Select a conversation</h3>

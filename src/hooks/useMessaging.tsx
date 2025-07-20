@@ -22,6 +22,7 @@ export interface Message {
   metadata: any;
   sender?: MessageProfile;
   reactions?: MessageReaction[];
+  status?: 'sending' | 'sent' | 'delivered' | 'read';
 }
 
 export interface MessageReaction {
@@ -58,6 +59,13 @@ export interface Conversation {
   last_message?: Message;
 }
 
+export interface TypingIndicator {
+  user_id: string;
+  conversation_id: string;
+  display_name: string;
+  timestamp: number;
+}
+
 export const useMessaging = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -66,10 +74,15 @@ export const useMessaging = () => {
   const [messages, setMessages] = useState<Record<string, Message[]>>({});
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<Record<string, TypingIndicator[]>>({});
+  const [isTyping, setIsTyping] = useState<Record<string, boolean>>({});
 
   // Fetch user's conversations
   const fetchConversations = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -125,12 +138,17 @@ export const useMessaging = () => {
 
       if (error) throw error;
 
+      const messagesWithStatus = (data as any)?.map((msg: Message) => ({
+        ...msg,
+        status: msg.sender_id === user?.id ? 'sent' : 'delivered'
+      })) || [];
+
       setMessages(prev => ({
         ...prev,
-        [conversationId]: (data as any) || []
+        [conversationId]: messagesWithStatus
       }));
 
-      return (data as any) || [];
+      return messagesWithStatus;
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({
@@ -140,11 +158,37 @@ export const useMessaging = () => {
       });
       return [];
     }
-  }, [toast]);
+  }, [toast, user?.id]);
 
   // Send a message
   const sendMessage = useCallback(async (conversationId: string, content: string, replyToId?: string) => {
     if (!user || !content.trim()) return;
+
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage: Message = {
+      id: tempId,
+      conversation_id: conversationId,
+      sender_id: user.id,
+      content: content.trim(),
+      message_type: 'text',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      edited_at: null,
+      reply_to_id: replyToId || null,
+      attachments: null,
+      metadata: null,
+      status: 'sending',
+      sender: {
+        display_name: user.user_metadata?.display_name || user.email || 'You',
+        avatar_url: user.user_metadata?.avatar_url || null
+      }
+    };
+
+    // Optimistically add the message
+    setMessages(prev => ({
+      ...prev,
+      [conversationId]: [...(prev[conversationId] || []), tempMessage]
+    }));
 
     setSendingMessage(true);
     try {
@@ -167,15 +211,26 @@ export const useMessaging = () => {
 
       if (error) throw error;
 
-      // Optimistically update messages
+      // Replace temp message with real one
       setMessages(prev => ({
         ...prev,
-        [conversationId]: [...(prev[conversationId] || []), data as any]
+        [conversationId]: prev[conversationId]?.map(msg => 
+          msg.id === tempId 
+            ? { ...(data as any), status: 'sent' }
+            : msg
+        ) || []
       }));
 
       return data;
     } catch (error) {
       console.error('Error sending message:', error);
+      
+      // Remove temp message on error
+      setMessages(prev => ({
+        ...prev,
+        [conversationId]: prev[conversationId]?.filter(msg => msg.id !== tempId) || []
+      }));
+
       toast({
         title: "Error",
         description: "Failed to send message",
@@ -225,6 +280,12 @@ export const useMessaging = () => {
         });
 
       if (error) throw error;
+
+      // Refresh messages to show the new reaction
+      const message = Object.values(messages).flat().find(m => m.id === messageId);
+      if (message) {
+        await fetchMessages(message.conversation_id);
+      }
     } catch (error) {
       console.error('Error adding reaction:', error);
       toast({
@@ -233,7 +294,7 @@ export const useMessaging = () => {
         variant: "destructive"
       });
     }
-  }, [user, toast]);
+  }, [user, toast, messages, fetchMessages]);
 
   // Mark conversation as read
   const markAsRead = useCallback(async (conversationId: string) => {
@@ -247,8 +308,68 @@ export const useMessaging = () => {
         .eq('user_id', user.id);
 
       if (error) throw error;
+
+      // Update message status to 'read' for messages from other users
+      setMessages(prev => ({
+        ...prev,
+        [conversationId]: prev[conversationId]?.map(msg => 
+          msg.sender_id !== user.id 
+            ? { ...msg, status: 'read' }
+            : msg
+        ) || []
+      }));
     } catch (error) {
       console.error('Error marking as read:', error);
+    }
+  }, [user]);
+
+  // Typing indicator functions
+  const sendTypingIndicator = useCallback(async (conversationId: string) => {
+    if (!user || isTyping[conversationId]) return;
+
+    setIsTyping(prev => ({ ...prev, [conversationId]: true }));
+
+    try {
+      await supabase
+        .channel(`typing-${conversationId}`)
+        .send({
+          type: 'broadcast',
+          event: 'typing',
+          payload: {
+            user_id: user.id,
+            display_name: user.user_metadata?.display_name || user.email,
+            conversation_id: conversationId,
+            timestamp: Date.now()
+          }
+        });
+
+      // Stop typing after 3 seconds
+      setTimeout(() => {
+        setIsTyping(prev => ({ ...prev, [conversationId]: false }));
+      }, 3000);
+    } catch (error) {
+      console.error('Error sending typing indicator:', error);
+    }
+  }, [user, isTyping]);
+
+  const stopTypingIndicator = useCallback(async (conversationId: string) => {
+    if (!user) return;
+
+    setIsTyping(prev => ({ ...prev, [conversationId]: false }));
+
+    try {
+      await supabase
+        .channel(`typing-${conversationId}`)
+        .send({
+          type: 'broadcast',
+          event: 'stop_typing',
+          payload: {
+            user_id: user.id,
+            conversation_id: conversationId
+          }
+        });
+    } catch (error) {
+      console.error('Error stopping typing indicator:', error);
     }
   }, [user]);
 
@@ -277,7 +398,8 @@ export const useMessaging = () => {
 
           const messageWithSender = {
             ...newMessage,
-            sender: senderData
+            sender: senderData,
+            status: 'delivered' as const
           };
 
           setMessages(prev => ({
@@ -309,6 +431,57 @@ export const useMessaging = () => {
     };
   }, [user, fetchConversations]);
 
+  // Set up typing indicators for active conversations
+  useEffect(() => {
+    if (!user) return;
+
+    const channels: { [key: string]: any } = {};
+
+    // Set up typing channels for each conversation
+    conversations.forEach(conversation => {
+      const channel = supabase
+        .channel(`typing-${conversation.id}`)
+        .on('broadcast', { event: 'typing' }, (payload) => {
+          const typingData = payload.payload as TypingIndicator;
+          
+          if (typingData.user_id !== user.id) {
+            setTypingUsers(prev => ({
+              ...prev,
+              [conversation.id]: [
+                ...(prev[conversation.id]?.filter(t => t.user_id !== typingData.user_id) || []),
+                typingData
+              ]
+            }));
+
+            // Remove typing indicator after 5 seconds
+            setTimeout(() => {
+              setTypingUsers(prev => ({
+                ...prev,
+                [conversation.id]: prev[conversation.id]?.filter(t => t.user_id !== typingData.user_id) || []
+              }));
+            }, 5000);
+          }
+        })
+        .on('broadcast', { event: 'stop_typing' }, (payload) => {
+          const { user_id, conversation_id } = payload.payload;
+          
+          setTypingUsers(prev => ({
+            ...prev,
+            [conversation_id]: prev[conversation_id]?.filter(t => t.user_id !== user_id) || []
+          }));
+        })
+        .subscribe();
+
+      channels[conversation.id] = channel;
+    });
+
+    return () => {
+      Object.values(channels).forEach(channel => {
+        supabase.removeChannel(channel);
+      });
+    };
+  }, [user, conversations]);
+
   // Initial fetch
   useEffect(() => {
     fetchConversations();
@@ -319,11 +492,14 @@ export const useMessaging = () => {
     messages,
     loading,
     sendingMessage,
+    typingUsers,
     fetchMessages,
     sendMessage,
     startConversation,
     addReaction,
     markAsRead,
+    sendTypingIndicator,
+    stopTypingIndicator,
     refetchConversations: fetchConversations
   };
 };
