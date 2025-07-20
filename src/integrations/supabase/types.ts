@@ -3077,6 +3077,12 @@ export type Database = {
         Args: { user1_id: string; user2_id: string }
         Returns: string
       }
+      get_user_conversation_ids: {
+        Args: { user_id_param: string }
+        Returns: {
+          conversation_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -3133,6 +3139,10 @@ export type Database = {
       increment_post_likes: {
         Args: { post_id: string }
         Returns: undefined
+      }
+      is_conversation_participant: {
+        Args: { conversation_id_param: string; user_id_param: string }
+        Returns: boolean
       }
       is_group_member_or_admin: {
         Args: { group_id: string; check_admin?: boolean }
