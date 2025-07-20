@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "Geographic Directory",
+    "loading": "Loading directory...",
+    "error": "Error: {{message}}",
+    "back": "Back",
+    "breadcrumb": "Directory",
+    "countries": "Countries",
+    "cities": "Major Cities",
+    "countriesByContinent": "Countries by Continent",
+    "citiesByContinent": "Cities by Continent & Country",
+    "citiesIn": "Cities in {{country}}",
+    "searchResults": "Search Results",
+    "noResults": "No results found. Try a different search term.",
+    "capital": "Capital",
+    "majorCity": "Major City",
+    "population": "Population",
+    "region": "Region",
+    "timezone": "Timezone",
+    "coordinates": "Coordinates"
+  },
+  "search": {
+    "placeholder": "Search countries and cities...",
+    "nearMe": "Near Me",
+    "filters": "Filters",
+    "continent": "Continent",
+    "all": "All",
+    "populationRange": "Population Range",
+    "sortBy": "Sort By",
+    "name": "Name",
+    "ascending": "Ascending",
+    "descending": "Descending"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "language": "Language"
+  },
+  "navigation": {
+    "home": "Home",
+    "venues": "Venues",
+    "events": "Events",
+    "marketplace": "Marketplace",
+    "directory": "Directory",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile"
+  },
+  "footer": {
+    "madeWith": "Made with",
+    "backToTop": "Back to Top",
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Stay updated with the latest news and events",
+    "subscribe": "Subscribe",
+    "social": "Follow Us",
+    "community": "Community",
+    "resources": "Resources",
+    "legal": "Legal",
+    "copyright": "© {{year}} All rights reserved."
+  }
+}

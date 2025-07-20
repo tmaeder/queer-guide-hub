@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "Répertoire Géographique",
+    "loading": "Chargement du répertoire...",
+    "error": "Erreur: {{message}}",
+    "back": "Retour",
+    "breadcrumb": "Répertoire",
+    "countries": "Pays",
+    "cities": "Grandes Villes",
+    "countriesByContinent": "Pays par Continent",
+    "citiesByContinent": "Villes par Continent et Pays",
+    "citiesIn": "Villes en {{country}}",
+    "searchResults": "Résultats de Recherche",
+    "noResults": "Aucun résultat trouvé. Essayez un autre terme de recherche.",
+    "capital": "Capitale",
+    "majorCity": "Grande Ville",
+    "population": "Population",
+    "region": "Région",
+    "timezone": "Fuseau Horaire",
+    "coordinates": "Coordonnées"
+  },
+  "search": {
+    "placeholder": "Rechercher pays et villes...",
+    "nearMe": "Près de Moi",
+    "filters": "Filtres",
+    "continent": "Continent",
+    "all": "Tous",
+    "populationRange": "Gamme de Population",
+    "sortBy": "Trier Par",
+    "name": "Nom",
+    "ascending": "Croissant",
+    "descending": "Décroissant"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "language": "Langue"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "venues": "Lieux",
+    "events": "Événements",
+    "marketplace": "Marché",
+    "directory": "Répertoire",
+    "about": "À Propos",
+    "contact": "Contact",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "profile": "Profil"
+  },
+  "footer": {
+    "madeWith": "Fait avec",
+    "backToTop": "Retour en Haut",
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Restez informé des dernières actualités et événements",
+    "subscribe": "S'abonner",
+    "social": "Suivez-nous",
+    "community": "Communauté",
+    "resources": "Ressources",
+    "legal": "Légal",
+    "copyright": "© {{year}} Tous droits réservés."
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "Directory Geografica",
+    "loading": "Caricamento directory...",
+    "error": "Errore: {{message}}",
+    "back": "Indietro",
+    "breadcrumb": "Directory",
+    "countries": "Paesi",
+    "cities": "Grandi Città",
+    "countriesByContinent": "Paesi per Continente",
+    "citiesByContinent": "Città per Continente e Paese",
+    "citiesIn": "Città in {{country}}",
+    "searchResults": "Risultati della Ricerca",
+    "noResults": "Nessun risultato trovato. Prova un termine diverso.",
+    "capital": "Capitale",
+    "majorCity": "Grande Città",
+    "population": "Popolazione",
+    "region": "Regione",
+    "timezone": "Fuso Orario",
+    "coordinates": "Coordinate"
+  },
+  "search": {
+    "placeholder": "Cerca paesi e città...",
+    "nearMe": "Vicino a Me",
+    "filters": "Filtri",
+    "continent": "Continente",
+    "all": "Tutti",
+    "populationRange": "Fascia di Popolazione",
+    "sortBy": "Ordina Per",
+    "name": "Nome",
+    "ascending": "Crescente",
+    "descending": "Decrescente"
+  },
+  "common": {
+    "loading": "Caricamento...",
+    "error": "Errore",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "view": "Visualizza",
+    "close": "Chiudi",
+    "search": "Cerca",
+    "filter": "Filtra",
+    "sort": "Ordina",
+    "language": "Lingua"
+  },
+  "navigation": {
+    "home": "Home",
+    "venues": "Luoghi",
+    "events": "Eventi",
+    "marketplace": "Mercato",
+    "directory": "Directory",
+    "about": "Chi Siamo",
+    "contact": "Contatti",
+    "login": "Accedi",
+    "logout": "Esci",
+    "profile": "Profilo"
+  },
+  "footer": {
+    "madeWith": "Fatto con",
+    "backToTop": "Torna Su",
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Rimani aggiornato con le ultime notizie ed eventi",
+    "subscribe": "Iscriviti",
+    "social": "Seguici",
+    "community": "Comunità",
+    "resources": "Risorse",
+    "legal": "Legale",
+    "copyright": "© {{year}} Tutti i diritti riservati."
+  }
+}

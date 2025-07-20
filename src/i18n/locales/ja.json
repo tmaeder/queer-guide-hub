@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "地理ディレクトリ",
+    "loading": "ディレクトリを読み込み中...",
+    "error": "エラー：{{message}}",
+    "back": "戻る",
+    "breadcrumb": "ディレクトリ",
+    "countries": "国",
+    "cities": "主要都市",
+    "countriesByContinent": "大陸別の国",
+    "citiesByContinent": "大陸・国別の都市",
+    "citiesIn": "{{country}}の都市",
+    "searchResults": "検索結果",
+    "noResults": "結果が見つかりません。別の検索語を試してください。",
+    "capital": "首都",
+    "majorCity": "主要都市",
+    "population": "人口",
+    "region": "地域",
+    "timezone": "タイムゾーン",
+    "coordinates": "座標"
+  },
+  "search": {
+    "placeholder": "国や都市を検索...",
+    "nearMe": "近くの場所",
+    "filters": "フィルター",
+    "continent": "大陸",
+    "all": "すべて",
+    "populationRange": "人口範囲",
+    "sortBy": "並び順",
+    "name": "名前",
+    "ascending": "昇順",
+    "descending": "降順"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "view": "表示",
+    "close": "閉じる",
+    "search": "検索",
+    "filter": "フィルター",
+    "sort": "並び替え",
+    "language": "言語"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "venues": "会場",
+    "events": "イベント",
+    "marketplace": "マーケットプレイス",
+    "directory": "ディレクトリ",
+    "about": "について",
+    "contact": "お問い合わせ",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "profile": "プロフィール"
+  },
+  "footer": {
+    "madeWith": "作成ツール",
+    "backToTop": "トップに戻る",
+    "newsletter": "ニュースレター",
+    "newsletterDescription": "最新のニュースやイベント情報を受け取る",
+    "subscribe": "購読",
+    "social": "フォローする",
+    "community": "コミュニティ",
+    "resources": "リソース",
+    "legal": "法的事項",
+    "copyright": "© {{year}} 全著作権所有。"
+  }
+}

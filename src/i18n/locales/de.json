@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "Geografisches Verzeichnis",
+    "loading": "Verzeichnis wird geladen...",
+    "error": "Fehler: {{message}}",
+    "back": "Zurück",
+    "breadcrumb": "Verzeichnis",
+    "countries": "Länder",
+    "cities": "Große Städte",
+    "countriesByContinent": "Länder nach Kontinent",
+    "citiesByContinent": "Städte nach Kontinent und Land",
+    "citiesIn": "Städte in {{country}}",
+    "searchResults": "Suchergebnisse",
+    "noResults": "Keine Ergebnisse gefunden. Versuchen Sie einen anderen Suchbegriff.",
+    "capital": "Hauptstadt",
+    "majorCity": "Großstadt",
+    "population": "Bevölkerung",
+    "region": "Region",
+    "timezone": "Zeitzone",
+    "coordinates": "Koordinaten"
+  },
+  "search": {
+    "placeholder": "Länder und Städte suchen...",
+    "nearMe": "In meiner Nähe",
+    "filters": "Filter",
+    "continent": "Kontinent",
+    "all": "Alle",
+    "populationRange": "Bevölkerungsbereich",
+    "sortBy": "Sortieren nach",
+    "name": "Name",
+    "ascending": "Aufsteigend",
+    "descending": "Absteigend"
+  },
+  "common": {
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "view": "Anzeigen",
+    "close": "Schließen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "language": "Sprache"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "venues": "Veranstaltungsorte",
+    "events": "Veranstaltungen",
+    "marketplace": "Marktplatz",
+    "directory": "Verzeichnis",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "profile": "Profil"
+  },
+  "footer": {
+    "madeWith": "Gemacht mit",
+    "backToTop": "Nach oben",
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Bleiben Sie auf dem Laufenden mit den neuesten Nachrichten und Veranstaltungen",
+    "subscribe": "Abonnieren",
+    "social": "Folgen Sie uns",
+    "community": "Gemeinschaft",
+    "resources": "Ressourcen",
+    "legal": "Rechtliches",
+    "copyright": "© {{year}} Alle Rechte vorbehalten."
+  }
+}

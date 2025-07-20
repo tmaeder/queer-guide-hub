@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "الدليل الجغرافي",
+    "loading": "تحميل الدليل...",
+    "error": "خطأ: {{message}}",
+    "back": "رجوع",
+    "breadcrumb": "الدليل",
+    "countries": "البلدان",
+    "cities": "المدن الرئيسية",
+    "countriesByContinent": "البلدان حسب القارة",
+    "citiesByContinent": "المدن حسب القارة والبلد",
+    "citiesIn": "المدن في {{country}}",
+    "searchResults": "نتائج البحث",
+    "noResults": "لم يتم العثور على نتائج. جرب مصطلح بحث مختلف.",
+    "capital": "العاصمة",
+    "majorCity": "مدينة رئيسية",
+    "population": "السكان",
+    "region": "المنطقة",
+    "timezone": "المنطقة الزمنية",
+    "coordinates": "الإحداثيات"
+  },
+  "search": {
+    "placeholder": "البحث في البلدان والمدن...",
+    "nearMe": "بالقرب مني",
+    "filters": "المرشحات",
+    "continent": "القارة",
+    "all": "الكل",
+    "populationRange": "نطاق السكان",
+    "sortBy": "ترتيب حسب",
+    "name": "الاسم",
+    "ascending": "تصاعدي",
+    "descending": "تنازلي"
+  },
+  "common": {
+    "loading": "تحميل...",
+    "error": "خطأ",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تحرير",
+    "view": "عرض",
+    "close": "إغلاق",
+    "search": "بحث",
+    "filter": "مرشح",
+    "sort": "ترتيب",
+    "language": "اللغة"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "venues": "الأماكن",
+    "events": "الفعاليات",
+    "marketplace": "السوق",
+    "directory": "الدليل",
+    "about": "حول",
+    "contact": "اتصال",
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "profile": "الملف الشخصي"
+  },
+  "footer": {
+    "madeWith": "صنع بـ",
+    "backToTop": "العودة إلى الأعلى",
+    "newsletter": "النشرة الإخبارية",
+    "newsletterDescription": "ابق على اطلاع بآخر الأخبار والفعاليات",
+    "subscribe": "اشتراك",
+    "social": "تابعنا",
+    "community": "المجتمع",
+    "resources": "الموارد",
+    "legal": "قانوني",
+    "copyright": "© {{year}} جميع الحقوق محفوظة."
+  }
+}

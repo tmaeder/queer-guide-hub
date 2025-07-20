@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "지리 디렉토리",
+    "loading": "디렉토리 로딩 중...",
+    "error": "오류: {{message}}",
+    "back": "뒤로",
+    "breadcrumb": "디렉토리",
+    "countries": "국가",
+    "cities": "주요 도시",
+    "countriesByContinent": "대륙별 국가",
+    "citiesByContinent": "대륙 및 국가별 도시",
+    "citiesIn": "{{country}}의 도시",
+    "searchResults": "검색 결과",
+    "noResults": "결과를 찾을 수 없습니다. 다른 검색어를 시도해보세요.",
+    "capital": "수도",
+    "majorCity": "주요 도시",
+    "population": "인구",
+    "region": "지역",
+    "timezone": "시간대",
+    "coordinates": "좌표"
+  },
+  "search": {
+    "placeholder": "국가와 도시 검색...",
+    "nearMe": "내 주변",
+    "filters": "필터",
+    "continent": "대륙",
+    "all": "전체",
+    "populationRange": "인구 범위",
+    "sortBy": "정렬 기준",
+    "name": "이름",
+    "ascending": "오름차순",
+    "descending": "내림차순"
+  },
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류",
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "view": "보기",
+    "close": "닫기",
+    "search": "검색",
+    "filter": "필터",
+    "sort": "정렬",
+    "language": "언어"
+  },
+  "navigation": {
+    "home": "홈",
+    "venues": "장소",
+    "events": "이벤트",
+    "marketplace": "마켓플레이스",
+    "directory": "디렉토리",
+    "about": "소개",
+    "contact": "연락처",
+    "login": "로그인",
+    "logout": "로그아웃",
+    "profile": "프로필"
+  },
+  "footer": {
+    "madeWith": "제작 도구",
+    "backToTop": "위로 가기",
+    "newsletter": "뉴스레터",
+    "newsletterDescription": "최신 뉴스와 이벤트 정보를 받아보세요",
+    "subscribe": "구독",
+    "social": "팔로우",
+    "community": "커뮤니티",
+    "resources": "리소스",
+    "legal": "법적 고지",
+    "copyright": "© {{year}} 모든 권리 보유."
+  }
+}

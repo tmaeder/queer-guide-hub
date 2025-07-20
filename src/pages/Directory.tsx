@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDirectory } from "@/hooks/useDirectory";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import { DirectorySearch, type DirectoryFilters } from "@/components/directory/DirectorySearch";
@@ -12,6 +13,7 @@ import { ArrowLeft, Globe, MapPin, Building2, Users } from "lucide-react";
 type ViewMode = "overview" | "country" | "city" | "search";
 
 export default function Directory() {
+  const { t } = useTranslation();
   const { 
     continents, 
     countries, 
@@ -83,7 +85,7 @@ export default function Directory() {
   if (loading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="text-center">Loading directory...</div>
+        <div className="text-center">{t('directory.loading')}</div>
       </div>
     );
   }
@@ -91,7 +93,7 @@ export default function Directory() {
   if (error) {
     return (
       <div className="container mx-auto p-6">
-        <div className="text-center text-destructive">Error: {error}</div>
+        <div className="text-center text-destructive">{t('directory.error', { message: error })}</div>
       </div>
     );
   }
@@ -104,13 +106,13 @@ export default function Directory() {
           {viewMode !== "overview" && (
             <Button variant="outline" onClick={handleBack}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              {t('directory.back')}
             </Button>
           )}
           <div>
-            <h1 className="text-3xl font-bold">Geographic Directory</h1>
+            <h1 className="text-3xl font-bold">{t('directory.title')}</h1>
             {viewMode === "country" && selectedCountry && (
-              <p className="text-muted-foreground">Cities in {selectedCountry.name}</p>
+              <p className="text-muted-foreground">{t('directory.citiesIn', { country: selectedCountry.name })}</p>
             )}
             {viewMode === "city" && selectedCity && (
               <p className="text-muted-foreground">{selectedCity.name} Details</p>
@@ -130,7 +132,7 @@ export default function Directory() {
       {viewMode !== "overview" && viewMode !== "search" && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <button onClick={() => setViewMode("overview")} className="hover:text-foreground">
-            Directory
+            {t('directory.breadcrumb')}
           </button>
           {selectedCountry && (
             <>
@@ -158,17 +160,17 @@ export default function Directory() {
           <TabsList>
             <TabsTrigger value="countries" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Countries
+              {t('directory.countries')}
             </TabsTrigger>
             <TabsTrigger value="cities" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
-              Major Cities
+              {t('directory.cities')}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="countries" className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">Countries by Continent</h2>
+              <h2 className="text-xl font-semibold">{t('directory.countriesByContinent')}</h2>
               <Badge variant="secondary">{countries.length}</Badge>
             </div>
             <div className="space-y-8">
@@ -205,7 +207,7 @@ export default function Directory() {
 
           <TabsContent value="cities" className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">Cities by Continent & Country</h2>
+              <h2 className="text-xl font-semibold">{t('directory.citiesByContinent')}</h2>
               <Badge variant="secondary">{cities.length}</Badge>
             </div>
             <div className="space-y-8">
@@ -270,7 +272,7 @@ export default function Directory() {
       {viewMode === "country" && (
         <div className="space-y-6">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">Cities in {selectedCountry?.name}</h2>
+            <h2 className="text-xl font-semibold">{t('directory.citiesIn', { country: selectedCountry?.name })}</h2>
             <Badge variant="secondary">{countryCities.length}</Badge>
           </div>
           
@@ -311,29 +313,29 @@ export default function Directory() {
               <div className="flex items-center gap-2">
                 <h2 className="text-2xl font-bold">{selectedCity?.name}</h2>
                 {selectedCity?.is_capital && (
-                  <Badge variant="secondary">Capital</Badge>
+                  <Badge variant="secondary">{t('directory.capital')}</Badge>
                 )}
                 {selectedCity?.is_major_city && (
-                  <Badge variant="outline">Major City</Badge>
+                  <Badge variant="outline">{t('directory.majorCity')}</Badge>
                 )}
               </div>
               
               <div className="space-y-2 text-sm text-muted-foreground">
                 {selectedCity?.region_name && (
-                  <p><span className="font-medium">Region:</span> {selectedCity.region_name}</p>
+                  <p><span className="font-medium">{t('directory.region')}:</span> {selectedCity.region_name}</p>
                 )}
                 {selectedCity?.population && (
                   <p className="flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    <span className="font-medium">Population:</span> 
+                    <span className="font-medium">{t('directory.population')}:</span> 
                     {selectedCity.population.toLocaleString()}
                   </p>
                 )}
                 {selectedCity?.timezone && (
-                  <p><span className="font-medium">Timezone:</span> {selectedCity.timezone}</p>
+                  <p><span className="font-medium">{t('directory.timezone')}:</span> {selectedCity.timezone}</p>
                 )}
                 {selectedCity?.latitude && selectedCity?.longitude && (
-                  <p><span className="font-medium">Coordinates:</span> {selectedCity.latitude}°, {selectedCity.longitude}°</p>
+                  <p><span className="font-medium">{t('directory.coordinates')}:</span> {selectedCity.latitude}°, {selectedCity.longitude}°</p>
                 )}
               </div>
             </div>
@@ -357,12 +359,12 @@ export default function Directory() {
 
       {viewMode === "search" && (
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold">Search Results</h2>
+          <h2 className="text-xl font-semibold">{t('directory.searchResults')}</h2>
           
           {searchResults.countries.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-medium">Countries</h3>
+                <h3 className="text-lg font-medium">{t('directory.countries')}</h3>
                 <Badge variant="secondary">{searchResults.countries.length}</Badge>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -382,7 +384,7 @@ export default function Directory() {
           {searchResults.cities.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-medium">Cities</h3>
+                <h3 className="text-lg font-medium">{t('directory.cities')}</h3>
                 <Badge variant="secondary">{searchResults.cities.length}</Badge>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -409,7 +411,7 @@ export default function Directory() {
           {searchResults.countries.length === 0 && 
            searchResults.cities.length === 0 && (
             <div className="text-center text-muted-foreground py-8">
-              No results found. Try a different search term.
+              {t('directory.noResults')}
             </div>
           )}
         </div>

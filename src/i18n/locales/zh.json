@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "地理目录",
+    "loading": "正在加载目录...",
+    "error": "错误：{{message}}",
+    "back": "返回",
+    "breadcrumb": "目录",
+    "countries": "国家",
+    "cities": "主要城市",
+    "countriesByContinent": "按大洲分类的国家",
+    "citiesByContinent": "按大洲和国家分类的城市",
+    "citiesIn": "{{country}}的城市",
+    "searchResults": "搜索结果",
+    "noResults": "未找到结果。请尝试不同的搜索词。",
+    "capital": "首都",
+    "majorCity": "主要城市",
+    "population": "人口",
+    "region": "地区",
+    "timezone": "时区",
+    "coordinates": "坐标"
+  },
+  "search": {
+    "placeholder": "搜索国家和城市...",
+    "nearMe": "附近",
+    "filters": "筛选",
+    "continent": "大洲",
+    "all": "全部",
+    "populationRange": "人口范围",
+    "sortBy": "排序方式",
+    "name": "名称",
+    "ascending": "升序",
+    "descending": "降序"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "view": "查看",
+    "close": "关闭",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "language": "语言"
+  },
+  "navigation": {
+    "home": "首页",
+    "venues": "场所",
+    "events": "活动",
+    "marketplace": "市场",
+    "directory": "目录",
+    "about": "关于",
+    "contact": "联系",
+    "login": "登录",
+    "logout": "登出",
+    "profile": "个人资料"
+  },
+  "footer": {
+    "madeWith": "制作工具",
+    "backToTop": "返回顶部",
+    "newsletter": "新闻通讯",
+    "newsletterDescription": "获取最新新闻和活动信息",
+    "subscribe": "订阅",
+    "social": "关注我们",
+    "community": "社区",
+    "resources": "资源",
+    "legal": "法律",
+    "copyright": "© {{year}} 版权所有。"
+  }
+}

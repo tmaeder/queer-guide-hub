@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "Географический Справочник",
+    "loading": "Загрузка справочника...",
+    "error": "Ошибка: {{message}}",
+    "back": "Назад",
+    "breadcrumb": "Справочник",
+    "countries": "Страны",
+    "cities": "Крупные Города",
+    "countriesByContinent": "Страны по Континентам",
+    "citiesByContinent": "Города по Континентам и Странам",
+    "citiesIn": "Города в {{country}}",
+    "searchResults": "Результаты Поиска",
+    "noResults": "Результаты не найдены. Попробуйте другой поисковый запрос.",
+    "capital": "Столица",
+    "majorCity": "Крупный Город",
+    "population": "Население",
+    "region": "Регион",
+    "timezone": "Часовой Пояс",
+    "coordinates": "Координаты"
+  },
+  "search": {
+    "placeholder": "Поиск стран и городов...",
+    "nearMe": "Рядом со Мной",
+    "filters": "Фильтры",
+    "continent": "Континент",
+    "all": "Все",
+    "populationRange": "Диапазон Населения",
+    "sortBy": "Сортировать по",
+    "name": "Название",
+    "ascending": "По Возрастанию",
+    "descending": "По Убыванию"
+  },
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "view": "Просмотр",
+    "close": "Закрыть",
+    "search": "Поиск",
+    "filter": "Фильтр",
+    "sort": "Сортировка",
+    "language": "Язык"
+  },
+  "navigation": {
+    "home": "Главная",
+    "venues": "Места",
+    "events": "События",
+    "marketplace": "Рынок",
+    "directory": "Справочник",
+    "about": "О нас",
+    "contact": "Контакты",
+    "login": "Войти",
+    "logout": "Выйти",
+    "profile": "Профиль"
+  },
+  "footer": {
+    "madeWith": "Сделано с",
+    "backToTop": "Наверх",
+    "newsletter": "Рассылка",
+    "newsletterDescription": "Будьте в курсе последних новостей и событий",
+    "subscribe": "Подписаться",
+    "social": "Подписывайтесь",
+    "community": "Сообщество",
+    "resources": "Ресурсы",
+    "legal": "Правовая Информация",
+    "copyright": "© {{year}} Все права защищены."
+  }
+}

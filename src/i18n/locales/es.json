@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "Directorio Geográfico",
+    "loading": "Cargando directorio...",
+    "error": "Error: {{message}}",
+    "back": "Atrás",
+    "breadcrumb": "Directorio",
+    "countries": "Países",
+    "cities": "Ciudades Principales",
+    "countriesByContinent": "Países por Continente",
+    "citiesByContinent": "Ciudades por Continente y País",
+    "citiesIn": "Ciudades en {{country}}",
+    "searchResults": "Resultados de Búsqueda",
+    "noResults": "No se encontraron resultados. Intenta con un término diferente.",
+    "capital": "Capital",
+    "majorCity": "Ciudad Principal",
+    "population": "Población",
+    "region": "Región",
+    "timezone": "Zona Horaria",
+    "coordinates": "Coordenadas"
+  },
+  "search": {
+    "placeholder": "Buscar países y ciudades...",
+    "nearMe": "Cerca de Mí",
+    "filters": "Filtros",
+    "continent": "Continente",
+    "all": "Todos",
+    "populationRange": "Rango de Población",
+    "sortBy": "Ordenar Por",
+    "name": "Nombre",
+    "ascending": "Ascendente",
+    "descending": "Descendente"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "close": "Cerrar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "language": "Idioma"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "venues": "Lugares",
+    "events": "Eventos",
+    "marketplace": "Mercado",
+    "directory": "Directorio",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "profile": "Perfil"
+  },
+  "footer": {
+    "madeWith": "Hecho con",
+    "backToTop": "Volver Arriba",
+    "newsletter": "Boletín",
+    "newsletterDescription": "Mantente actualizado con las últimas noticias y eventos",
+    "subscribe": "Suscribirse",
+    "social": "Síguenos",
+    "community": "Comunidad",
+    "resources": "Recursos",
+    "legal": "Legal",
+    "copyright": "© {{year}} Todos los derechos reservados."
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "directory": {
+    "title": "Diretório Geográfico",
+    "loading": "Carregando diretório...",
+    "error": "Erro: {{message}}",
+    "back": "Voltar",
+    "breadcrumb": "Diretório",
+    "countries": "Países",
+    "cities": "Grandes Cidades",
+    "countriesByContinent": "Países por Continente",
+    "citiesByContinent": "Cidades por Continente e País",
+    "citiesIn": "Cidades em {{country}}",
+    "searchResults": "Resultados da Pesquisa",
+    "noResults": "Nenhum resultado encontrado. Tente um termo diferente.",
+    "capital": "Capital",
+    "majorCity": "Grande Cidade",
+    "population": "População",
+    "region": "Região",
+    "timezone": "Fuso Horário",
+    "coordinates": "Coordenadas"
+  },
+  "search": {
+    "placeholder": "Pesquisar países e cidades...",
+    "nearMe": "Perto de Mim",
+    "filters": "Filtros",
+    "continent": "Continente",
+    "all": "Todos",
+    "populationRange": "Faixa de População",
+    "sortBy": "Ordenar Por",
+    "name": "Nome",
+    "ascending": "Crescente",
+    "descending": "Decrescente"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "view": "Visualizar",
+    "close": "Fechar",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "language": "Idioma"
+  },
+  "navigation": {
+    "home": "Início",
+    "venues": "Locais",
+    "events": "Eventos",
+    "marketplace": "Mercado",
+    "directory": "Diretório",
+    "about": "Sobre",
+    "contact": "Contato",
+    "login": "Entrar",
+    "logout": "Sair",
+    "profile": "Perfil"
+  },
+  "footer": {
+    "madeWith": "Feito com",
+    "backToTop": "Voltar ao Topo",
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Mantenha-se atualizado com as últimas notícias e eventos",
+    "subscribe": "Inscrever-se",
+    "social": "Siga-nos",
+    "community": "Comunidade",
+    "resources": "Recursos",
+    "legal": "Legal",
+    "copyright": "© {{year}} Todos os direitos reservados."
+  }
+}
