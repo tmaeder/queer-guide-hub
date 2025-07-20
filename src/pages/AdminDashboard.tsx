@@ -8,6 +8,7 @@ import {
   Settings, 
   FileText, 
   Tags, 
+  Globe,
   MapPin, 
   Building, 
   Calendar,
@@ -72,6 +73,13 @@ export default function AdminDashboard() {
       description: "Create and manage tags for content organization",
       icon: Tags,
       path: "/admin/tags",
+      color: "bg-muted"
+    },
+    {
+      title: "Countries Management",
+      description: "Manage countries and their information",
+      icon: Globe,
+      path: "/admin/countries",
       color: "bg-muted"
     },
     {

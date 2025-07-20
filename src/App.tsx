@@ -35,6 +35,7 @@ import ContentEditor from "./pages/ContentEditor";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminUsers from "./pages/AdminUsers";
+import AdminCountries from "./pages/AdminCountries";
 import AdminTags from "./pages/AdminTags";
 import AdminCities from "./pages/AdminCities";
 import CityDetail from "./pages/CityDetail";
@@ -215,6 +216,11 @@ const App = () => {
                   <Route path="/admin/users" element={
                     <AdminRouteGuard requiredRole="admin">
                       <AdminUsers />
+                    </AdminRouteGuard>
+                  } />
+                  <Route path="/admin/countries" element={
+                    <AdminRouteGuard>
+                      <AdminCountries />
                     </AdminRouteGuard>
                   } />
                    <Route path="/news" element={<News />} />
