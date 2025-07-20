@@ -386,8 +386,7 @@ export default function EventDetail() {
             )}
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handleExportToCalendar} className="flex-1">
-                <Download className="h-4 w-4 mr-2" />
-                Export
+                <Download className="h-4 w-4" />
               </Button>
               <Button variant="outline" size="sm" className="flex-1">
                 <Share2 className="h-4 w-4 mr-2" />
