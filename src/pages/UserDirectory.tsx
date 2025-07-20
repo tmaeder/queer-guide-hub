@@ -12,11 +12,12 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, Briefcase, GraduationCap, Navigation, Loader2 } from "lucide-react";
+import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, Briefcase, GraduationCap, Navigation, Loader2, ExternalLink } from "lucide-react";
 import { StartConversationButton } from "@/components/messaging/StartConversationButton";
 import { UserModeBadge } from "@/components/profile/UserModeBadge";
 import { Tables } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 type Profile = Tables<"profiles">;
 
@@ -604,7 +605,8 @@ const UserDirectory = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {profiles?.map((profile) => (
-              <Card key={profile.id} className="p-6 hover:shadow-lg transition-all duration-200 hover-scale group">
+              <Link key={profile.id} to={`/user/${profile.user_id}`} className="block">
+                <Card className="p-6 hover:shadow-lg transition-all duration-200 hover-scale group cursor-pointer">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="relative">
                     <Avatar className="h-12 w-12">
@@ -706,20 +708,25 @@ const UserDirectory = () => {
                       href={profile.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline"
+                      className="text-sm text-primary hover:underline flex items-center gap-1"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Visit Website
+                      <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
                   
-                  <StartConversationButton
-                    userId={profile.user_id}
-                    userName={profile.display_name || "Anonymous User"}
-                    variant="outline"
-                    size="sm"
-                  />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <StartConversationButton
+                      userId={profile.user_id}
+                      userName={profile.display_name || "Anonymous User"}
+                      variant="outline"
+                      size="sm"
+                    />
+                  </div>
                 </div>
               </Card>
+              </Link>
             ))}
           </div>
         )}

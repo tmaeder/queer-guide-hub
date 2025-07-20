@@ -44,6 +44,7 @@ import News from "./pages/News";
 import Travel from "./pages/Travel";
 import MyBookings from "./pages/MyBookings";
 import ProfileSettings from "./pages/ProfileSettings";
+import UserProfile from "./pages/UserProfile";
 
 import Messages from "./pages/Messages";
 import Groups from "./pages/Groups";
@@ -213,6 +214,7 @@ const App = () => {
                    <Route path="/my-bookings" element={<MyBookings />} />
                    <Route path="/favorites" element={<Favorites />} />
                    <Route path="/profile/settings" element={<ProfileSettings />} />
+                   <Route path="/user/:userId" element={<UserProfile />} />
                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
