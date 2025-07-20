@@ -243,7 +243,21 @@ export default function CountryDetail() {
                     <>
                       <Landmark className="h-5 w-5" />
                       <button 
-                        onClick={() => navigate(`/directory?search=${encodeURIComponent(country.capital)}&type=cities`)}
+                        onClick={async () => {
+                          const { data: cities } = await supabase
+                            .from('cities')
+                            .select('id')
+                            .eq('name', country.capital)
+                            .eq('country_id', country.id)
+                            .eq('is_capital', true)
+                            .maybeSingle();
+                          
+                          if (cities?.id) {
+                            navigate(`/city/${cities.id}`);
+                          } else {
+                            navigate(`/directory?search=${encodeURIComponent(country.capital)}&type=cities`);
+                          }
+                        }}
                         className="text-primary hover:underline font-medium"
                       >
                         {country.capital}
