@@ -350,21 +350,21 @@ export default function EventDetail() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50">
+              <div className="flex items-center gap-3 p-4 bg-muted/50">
                 <Calendar className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Date</p>
                   <p className="font-medium">{formatEventDate(event.start_date, event.end_date)}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50">
+              <div className="flex items-center gap-3 p-4 bg-muted/50">
                 <Clock className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Time</p>
                   <p className="font-medium">{formatEventTime(event.start_date, event.end_date)}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50">
+              <div className="flex items-center gap-3 p-4 bg-muted/50">
                 <MapPin className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Location</p>
