@@ -91,7 +91,7 @@ export const useMessaging = () => {
           *,
           participants:conversation_participants(
             *,
-            profile:profiles(
+            profile:profiles!conversation_participants_user_id_profiles_user_id_fkey(
               display_name,
               avatar_url,
               user_id
@@ -122,13 +122,13 @@ export const useMessaging = () => {
         .from('messages')
         .select(`
           *,
-          sender:profiles(
+          sender:profiles!messages_sender_id_profiles_user_id_fkey(
             display_name,
             avatar_url
           ),
           reactions:message_reactions(
             *,
-            user:profiles(
+            user:profiles!message_reactions_user_id_profiles_user_id_fkey(
               display_name
             )
           )
@@ -202,7 +202,7 @@ export const useMessaging = () => {
         })
         .select(`
           *,
-          sender:profiles(
+          sender:profiles!messages_sender_id_profiles_user_id_fkey(
             display_name,
             avatar_url
           )
