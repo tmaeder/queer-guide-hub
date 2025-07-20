@@ -2463,6 +2463,39 @@ export type Database = {
         }
         Relationships: []
       }
+      tag_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tag_favorites: {
         Row: {
           created_at: string
@@ -2553,6 +2586,7 @@ export type Database = {
       unified_tags: {
         Row: {
           category: string | null
+          category_id: string | null
           color: string | null
           created_at: string
           description: string | null
@@ -2565,6 +2599,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          category_id?: string | null
           color?: string | null
           created_at?: string
           description?: string | null
@@ -2577,6 +2612,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          category_id?: string | null
           color?: string | null
           created_at?: string
           description?: string | null
@@ -2587,7 +2623,15 @@ export type Database = {
           updated_at?: string
           usage_count?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "unified_tags_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "tag_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_follows: {
         Row: {
