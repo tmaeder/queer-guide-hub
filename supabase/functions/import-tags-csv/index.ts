@@ -196,26 +196,28 @@ serve(async (req) => {
 
     console.log('Processing tags:', tagsToInsert.length);
 
-    // Check for existing tags to avoid duplicates
+    // Check for existing tags and split into new vs existing
     const existingSlugs = tagsToInsert.map(tag => tag.slug);
     const { data: existingTags } = await supabaseClient
       .from('unified_tags')
-      .select('slug')
+      .select('id, slug, name, category, description, color')
       .in('slug', existingSlugs);
 
-    const existingSlugSet = new Set(existingTags?.map(tag => tag.slug) || []);
+    const existingTagsMap = new Map(existingTags?.map(tag => [tag.slug, tag]) || []);
     
-    // Filter out tags that already exist
-    const newTags = tagsToInsert.filter(tag => !existingSlugSet.has(tag.slug));
-    const skippedCount = tagsToInsert.length - newTags.length;
+    // Split tags into new and existing for updates
+    const newTags = tagsToInsert.filter(tag => !existingTagsMap.has(tag.slug));
+    const existingTagsToUpdate = tagsToInsert.filter(tag => existingTagsMap.has(tag.slug));
 
     console.log('New tags to insert:', newTags.length);
-    console.log('Skipped existing tags:', skippedCount);
+    console.log('Existing tags to update:', existingTagsToUpdate.length);
 
     let insertedTags = [];
+    let updatedTags = [];
     let insertError = null;
+    let updateError = null;
 
-    // Insert only new tags
+    // Insert new tags
     if (newTags.length > 0) {
       const result = await supabaseClient
         .from('unified_tags')
@@ -237,10 +239,36 @@ serve(async (req) => {
       }
     }
 
+    // Update existing tags
+    if (existingTagsToUpdate.length > 0) {
+      for (const tag of existingTagsToUpdate) {
+        const existingTag = existingTagsMap.get(tag.slug);
+        if (existingTag) {
+          const { data: updated, error: updateErr } = await supabaseClient
+            .from('unified_tags')
+            .update({
+              name: tag.name,
+              category: tag.category,
+              description: tag.description,
+              color: tag.color
+            })
+            .eq('id', existingTag.id)
+            .select();
+
+          if (updateErr) {
+            console.error('Update error for tag:', tag.name, updateErr);
+            updateError = updateErr;
+          } else if (updated) {
+            updatedTags.push(...updated);
+          }
+        }
+      }
+    }
+
     const result = {
       success: true,
       imported: insertedTags?.length || 0,
-      skipped: skippedCount,
+      updated: updatedTags?.length || 0,
       total_parsed: tags.length,
       errors: errors.length > 0 ? errors : undefined
     };
