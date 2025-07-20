@@ -542,22 +542,6 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
                     </p>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="user_mode">What you're looking for</Label>
-                  <Select value={formData.user_mode} onValueChange={(value) => handleInputChange('user_mode', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your mode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="dating">💕 Dating</SelectItem>
-                      <SelectItem value="friends">👥 Friends</SelectItem>
-                      <SelectItem value="exploration">🗺️ Exploration</SelectItem>
-                      <SelectItem value="fun">🎉 Fun</SelectItem>
-                      <SelectItem value="networking">🤝 Networking</SelectItem>
-                      <SelectItem value="community">🏘️ Community</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
             </CardContent>
           </Card>
