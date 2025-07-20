@@ -3,7 +3,6 @@ import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
 export function Footer() {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
@@ -96,45 +95,18 @@ export function Footer() {
             {/* Newsletter Signup */}
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Stay Connected</h4>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="text-xs"
-                  onClick={() => window.open('mailto:newsletter@queerguide.com?subject=Newsletter Signup', '_blank')}
-                >
-                  <Mail className="h-3 w-3 mr-1" />
-                  Newsletter
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="text-xs"
-                  onClick={() => navigate('/news')}
-                >
-                  <Globe className="h-3 w-3 mr-1" />
-                  Updates
-                </Button>
-              </div>
+              
             </div>
 
             {/* Social Links */}
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Follow Us</h4>
               <div className="flex items-center gap-2">
-                {socialLinks.map(social => 
-                  <Button 
-                    key={social.label} 
-                    variant="ghost" 
-                    size="sm" 
-                    asChild 
-                    className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110"
-                  >
+                {socialLinks.map(social => <Button key={social.label} variant="ghost" size="sm" asChild className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110">
                     <a href={social.href} aria-label={social.label}>
                       <social.icon className="h-4 w-4" />
                     </a>
-                  </Button>
-                )}
+                  </Button>)}
               </div>
             </div>
           </div>
@@ -146,17 +118,12 @@ export function Footer() {
               Community
             </h3>
             <ul className="space-y-3">
-              {communityLinks.map(link => 
-                <li key={link.href}>
-                  <Link 
-                    to={link.href} 
-                    className="text-sm text-muted-foreground hover:text-primary transition-all duration-200 flex items-center gap-2 group hover:translate-x-1"
-                  >
+              {communityLinks.map(link => <li key={link.href}>
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-all duration-200 flex items-center gap-2 group hover:translate-x-1">
                     <link.icon className="h-4 w-4 group-hover:text-primary" />
                     {link.label}
                   </Link>
-                </li>
-              )}
+                </li>)}
             </ul>
           </div>
 
@@ -167,17 +134,12 @@ export function Footer() {
               Resources
             </h3>
             <ul className="space-y-3">
-              {helpLinks.map(link => 
-                <li key={link.href}>
-                  <Link 
-                    to={link.href} 
-                    className="text-sm text-muted-foreground hover:text-primary transition-all duration-200 flex items-center gap-2 group hover:translate-x-1"
-                  >
+              {helpLinks.map(link => <li key={link.href}>
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-all duration-200 flex items-center gap-2 group hover:translate-x-1">
                     <link.icon className="h-4 w-4 group-hover:text-primary" />
                     {link.label}
                   </Link>
-                </li>
-              )}
+                </li>)}
             </ul>
           </div>
 
@@ -188,17 +150,12 @@ export function Footer() {
               Legal & Privacy
             </h3>
             <ul className="space-y-3">
-              {legalLinks.map(link => 
-                <li key={link.href}>
-                  <Link 
-                    to={link.href} 
-                    className="text-sm text-muted-foreground hover:text-primary transition-all duration-200 flex items-center gap-2 group hover:translate-x-1"
-                  >
+              {legalLinks.map(link => <li key={link.href}>
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-all duration-200 flex items-center gap-2 group hover:translate-x-1">
                     <link.icon className="h-4 w-4 group-hover:text-primary" />
                     {link.label}
                   </Link>
-                </li>
-              )}
+                </li>)}
             </ul>
           </div>
         </div>
@@ -221,26 +178,18 @@ export function Footer() {
           {/* Quick Actions */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" 
-                onClick={() => navigate('/admin')}
-              >
+              <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => navigate('/admin')}>
                 <FileText className="h-3 w-3 mr-1" />
                 Admin
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              >
+              <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => window.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+            })}>
                 Back to Top
               </Button>
             </div>
             <Separator orientation="vertical" className="h-6" />
-            <LanguageSwitcher variant="compact" />
             <ThemeToggle />
           </div>
         </div>
