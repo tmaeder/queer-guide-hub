@@ -357,7 +357,9 @@ export default function AdminVenueAmenities() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Amenities ({filteredAmenities.length})</CardTitle>
+          <CardTitle>
+            All Venue Amenities ({amenities.length} total, {filteredAmenities.length} shown)
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -410,7 +412,14 @@ export default function AdminVenueAmenities() {
                   </TableCell>
                 </TableRow>
               ))}
-              {filteredAmenities.length === 0 && (
+              {filteredAmenities.length === 0 && amenities.length > 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    No amenities match the current filter. Total amenities: {amenities.length}
+                  </TableCell>
+                </TableRow>
+              )}
+              {filteredAmenities.length === 0 && amenities.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     No amenities found. Create your first amenity to get started.
