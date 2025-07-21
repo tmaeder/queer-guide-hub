@@ -363,7 +363,16 @@ export default function EventDetail() {
                 <MapPin className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Location</p>
-                  <p className="font-medium">{event.venues?.name || event.venue_name || 'Location TBA'}</p>
+                  {event.venues?.id ? (
+                    <Link 
+                      to={`/venues/${event.venues.id}`} 
+                      className="font-medium text-primary hover:underline"
+                    >
+                      {event.venues.name}
+                    </Link>
+                  ) : (
+                    <p className="font-medium">{event.venue_name || 'Location TBA'}</p>
+                  )}
                   <p className="text-sm text-muted-foreground">{event.city}, {event.state}</p>
                 </div>
               </div>
