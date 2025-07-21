@@ -35,8 +35,14 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useNews } from "@/hooks/useNews";
+import { useVenues } from "@/hooks/useVenues";
+import { useEvents } from "@/hooks/useEvents";
 import CountryWeatherForecast from "@/components/weather/CountryWeatherForecast";
 import CountryHeroImages from "@/components/country/CountryHeroImages";
+import { NewsCard } from "@/components/news/NewsCard";
+import { VenueCard } from "@/components/venues/VenueCard";
+import { EventCard } from "@/components/events/EventCard";
 
 type CountryWithRelations = {
   id: string;
@@ -100,6 +106,9 @@ export default function CountryDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('country');
+  const { articles, loading: newsLoading, fetchArticles } = useNews();
+  const { venues, loading: venuesLoading, fetchVenues } = useVenues();
+  const { events, loading: eventsLoading, fetchEvents } = useEvents();
 
   const [country, setCountry] = useState<CountryWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,6 +118,23 @@ export default function CountryDetail() {
       fetchCountryDetails();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (country) {
+      loadRelatedContent();
+    }
+  }, [country]);
+
+  const loadRelatedContent = async () => {
+    if (!country) return;
+    
+    // Fetch related news, venues, and events for this country
+    await Promise.all([
+      fetchArticles({ search: country.name }),
+      fetchVenues({ search: country.name }),
+      fetchEvents({ search: country.name })
+    ]);
+  };
 
   const fetchCountryDetails = async () => {
     try {
@@ -287,7 +313,7 @@ export default function CountryDetail() {
         </Card>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-10">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="demographics">Demographics</TabsTrigger>
             <TabsTrigger value="economy">Economy</TabsTrigger>
@@ -295,6 +321,9 @@ export default function CountryDetail() {
             <TabsTrigger value="geography">Geography</TabsTrigger>
             <TabsTrigger value="culture">Culture</TabsTrigger>
             <TabsTrigger value="lgbti">LGBTI Rights</TabsTrigger>
+            <TabsTrigger value="news">News</TabsTrigger>
+            <TabsTrigger value="venues">Venues</TabsTrigger>
+            <TabsTrigger value="events">Events</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -937,6 +966,78 @@ export default function CountryDetail() {
                 </Card>
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="news" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Related News
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {newsLoading ? (
+                  <div className="text-center py-8">Loading news...</div>
+                ) : articles.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {articles.slice(0, 9).map((article) => (
+                      <NewsCard key={article.id} article={article} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">No news articles found for {country?.name}.</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="venues" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Local Venues
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {venuesLoading ? (
+                  <div className="text-center py-8">Loading venues...</div>
+                ) : venues.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {venues.slice(0, 9).map((venue) => (
+                      <VenueCard key={venue.id} venue={venue} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">No venues found in {country?.name}.</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="events" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Upcoming Events
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {eventsLoading ? (
+                  <div className="text-center py-8">Loading events...</div>
+                ) : events.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {events.slice(0, 9).map((event) => (
+                      <EventCard key={event.id} event={event} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">No upcoming events found in {country?.name}.</p>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
