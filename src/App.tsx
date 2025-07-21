@@ -50,6 +50,8 @@ import AdminVenueServices from "./pages/AdminVenueServices";
 import AdminEventTypes from "./pages/AdminEventTypes";
 import AdminEventAmenities from "./pages/AdminEventAmenities";
 import AdminEventServices from "./pages/AdminEventServices";
+import AdminAccessibilityAttributes from "./pages/AdminAccessibilityAttributes";
+import AdminTargetGroups from "./pages/AdminTargetGroups";
 import AdminEvents from "./pages/AdminEvents";
 import AdminMarketplace from "./pages/AdminMarketplace";
 import AdminNewsSources from "./pages/AdminNewsSources";
@@ -226,11 +228,21 @@ const App = () => {
                        <AdminEventAmenities />
                      </AdminRouteGuard>
                    } />
-                   <Route path="/admin/event-services" element={
-                     <AdminRouteGuard>
-                       <AdminEventServices />
-                     </AdminRouteGuard>
-                   } />
+                    <Route path="/admin/event-services" element={
+                      <AdminRouteGuard>
+                        <AdminEventServices />
+                      </AdminRouteGuard>
+                    } />
+                    <Route path="/admin/accessibility-attributes" element={
+                      <AdminRouteGuard>
+                        <AdminAccessibilityAttributes />
+                      </AdminRouteGuard>
+                    } />
+                    <Route path="/admin/target-groups" element={
+                      <AdminRouteGuard>
+                        <AdminTargetGroups />
+                      </AdminRouteGuard>
+                    } />
                    <Route path="/admin/marketplace" element={
                      <AdminRouteGuard>
                        <AdminMarketplace />

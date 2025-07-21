@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      accessibility_attributes: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       auth_rate_limit: {
         Row: {
           attempt_count: number | null
@@ -932,6 +968,8 @@ export type Database = {
       }
       events: {
         Row: {
+          accessibility_attributes: string[] | null
+          accessibility_notes: string | null
           address: string | null
           age_restriction: string | null
           city: string
@@ -958,6 +996,7 @@ export type Database = {
           start_date: string
           state: string | null
           status: string | null
+          target_groups: string[] | null
           ticket_url: string | null
           title: string
           updated_at: string
@@ -966,6 +1005,8 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          accessibility_attributes?: string[] | null
+          accessibility_notes?: string | null
           address?: string | null
           age_restriction?: string | null
           city: string
@@ -992,6 +1033,7 @@ export type Database = {
           start_date: string
           state?: string | null
           status?: string | null
+          target_groups?: string[] | null
           ticket_url?: string | null
           title: string
           updated_at?: string
@@ -1000,6 +1042,8 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          accessibility_attributes?: string[] | null
+          accessibility_notes?: string | null
           address?: string | null
           age_restriction?: string | null
           city?: string
@@ -1026,6 +1070,7 @@ export type Database = {
           start_date?: string
           state?: string | null
           status?: string | null
+          target_groups?: string[] | null
           ticket_url?: string | null
           title?: string
           updated_at?: string
@@ -2534,6 +2579,42 @@ export type Database = {
         }
         Relationships: []
       }
+      target_groups: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       unified_tag_assignments: {
         Row: {
           created_at: string
@@ -3070,6 +3151,8 @@ export type Database = {
       }
       venues: {
         Row: {
+          accessibility_attributes: string[] | null
+          accessibility_notes: string | null
           address: string
           amenities: string[] | null
           category: string
@@ -3093,11 +3176,14 @@ export type Database = {
           services: string[] | null
           state: string | null
           tags: string[] | null
+          target_groups: string[] | null
           updated_at: string
           verified: boolean | null
           website: string | null
         }
         Insert: {
+          accessibility_attributes?: string[] | null
+          accessibility_notes?: string | null
           address: string
           amenities?: string[] | null
           category: string
@@ -3121,11 +3207,14 @@ export type Database = {
           services?: string[] | null
           state?: string | null
           tags?: string[] | null
+          target_groups?: string[] | null
           updated_at?: string
           verified?: boolean | null
           website?: string | null
         }
         Update: {
+          accessibility_attributes?: string[] | null
+          accessibility_notes?: string | null
           address?: string
           amenities?: string[] | null
           category?: string
@@ -3149,6 +3238,7 @@ export type Database = {
           services?: string[] | null
           state?: string | null
           tags?: string[] | null
+          target_groups?: string[] | null
           updated_at?: string
           verified?: boolean | null
           website?: string | null

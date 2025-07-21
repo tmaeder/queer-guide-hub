@@ -265,7 +265,9 @@ export default function AdminDashboard() {
         { title: "Events", path: "/admin/events", description: "Manage individual events" },
         { title: "Event Types", path: "/admin/event-types", description: "Event categories & types" },
         { title: "Event Amenities", path: "/admin/event-amenities", description: "Available amenities for events" },
-        { title: "Event Services", path: "/admin/event-services", description: "Services offered at events" }
+        { title: "Event Services", path: "/admin/event-services", description: "Services offered at events" },
+        { title: "Accessibility Attributes", path: "/admin/accessibility-attributes", description: "Manage accessibility features" },
+        { title: "Target Groups", path: "/admin/target-groups", description: "Manage target audience groups" }
       ]
     },
     {
