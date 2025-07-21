@@ -373,7 +373,15 @@ export default function EventDetail() {
                   ) : (
                     <p className="font-medium">{event.venue_name || 'Location TBA'}</p>
                   )}
-                  <p className="text-sm text-muted-foreground">{event.city}, {event.state}</p>
+                   <p className="text-sm text-muted-foreground">
+                     <Link 
+                       to={`/cities/${event.city?.toLowerCase().replace(/\s+/g, '-')}`} 
+                       className="text-primary hover:underline"
+                     >
+                       {event.city}
+                     </Link>
+                     {event.state && `, ${event.state}`}
+                   </p>
                 </div>
               </div>
             </div>
