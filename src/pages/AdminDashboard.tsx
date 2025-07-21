@@ -260,7 +260,13 @@ export default function AdminDashboard() {
       icon: Calendar,
       path: "/admin/events",
       color: "bg-gradient-to-br from-red-500 to-red-600",
-      stats: `${stats.upcomingEvents} upcoming`
+      stats: `${stats.upcomingEvents} upcoming`,
+      subItems: [
+        { title: "Events", path: "/admin/events", description: "Manage individual events" },
+        { title: "Event Types", path: "/admin/event-types", description: "Event categories & types" },
+        { title: "Event Amenities", path: "/admin/event-amenities", description: "Available amenities for events" },
+        { title: "Event Services", path: "/admin/event-services", description: "Services offered at events" }
+      ]
     },
     {
       title: "Marketplace Management",
