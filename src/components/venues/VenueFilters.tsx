@@ -26,6 +26,8 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Filter, X, Check, ChevronDown, Navigation, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnifiedTags } from '@/hooks/useUnifiedTags';
+import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
+import { useTargetGroups } from '@/hooks/useTargetGroups';
 
 interface VenueFiltersProps {
   onFiltersChange: (filters: {
@@ -35,6 +37,8 @@ interface VenueFiltersProps {
     tags?: string[];
     amenities?: string[];
     services?: string[];
+    accessibilityAttributes?: string[];
+    targetGroups?: string[];
     userLocation?: { latitude: number; longitude: number };
     nearMe?: boolean;
   }) => void;
@@ -96,9 +100,13 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedAccessibilityAttributes, setSelectedAccessibilityAttributes] = useState<string[]>([]);
+  const [selectedTargetGroups, setSelectedTargetGroups] = useState<string[]>([]);
   const [tagsOpen, setTagsOpen] = useState(false);
   const [amenitiesOpen, setAmenitiesOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [accessibilityOpen, setAccessibilityOpen] = useState(false);
+  const [targetGroupsOpen, setTargetGroupsOpen] = useState(false);
   const [showAllFilters, setShowAllFilters] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [nearMe, setNearMe] = useState(false);
@@ -106,6 +114,8 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   
   // Use unified tags from the tag wiki
   const { tags: unifiedTags, loading: tagsLoading, fetchTags } = useUnifiedTags();
+  const { accessibilityAttributes, loading: accessibilityLoading } = useAccessibilityAttributes();
+  const { targetGroups, loading: targetGroupsLoading } = useTargetGroups();
 
   useEffect(() => {
     // Fetch the main tags for venues/organizations
@@ -120,6 +130,8 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
       services: selectedServices.length > 0 ? selectedServices : undefined,
+      accessibilityAttributes: selectedAccessibilityAttributes.length > 0 ? selectedAccessibilityAttributes : undefined,
+      targetGroups: selectedTargetGroups.length > 0 ? selectedTargetGroups : undefined,
       userLocation: userLocation || undefined,
       nearMe: nearMe || undefined,
     });
@@ -208,6 +220,20 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
     setSelectedServices(newServices);
   };
 
+  const handleAccessibilityToggle = (attr: string) => {
+    const newAttributes = selectedAccessibilityAttributes.includes(attr)
+      ? selectedAccessibilityAttributes.filter(a => a !== attr)
+      : [...selectedAccessibilityAttributes, attr];
+    setSelectedAccessibilityAttributes(newAttributes);
+  };
+
+  const handleTargetGroupToggle = (group: string) => {
+    const newGroups = selectedTargetGroups.includes(group)
+      ? selectedTargetGroups.filter(g => g !== group)
+      : [...selectedTargetGroups, group];
+    setSelectedTargetGroups(newGroups);
+  };
+
   const clearFilters = () => {
     setSearch('');
     setCity('');
@@ -215,12 +241,14 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
     setSelectedTags([]);
     setSelectedAmenities([]);
     setSelectedServices([]);
+    setSelectedAccessibilityAttributes([]);
+    setSelectedTargetGroups([]);
     setNearMe(false);
     setUserLocation(null);
     onFiltersChange({});
   };
 
-  const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0 || selectedAmenities.length > 0 || selectedServices.length > 0 || nearMe;
+  const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0 || selectedAmenities.length > 0 || selectedServices.length > 0 || selectedAccessibilityAttributes.length > 0 || selectedTargetGroups.length > 0 || nearMe;
 
   return (
     <div className="space-y-6 p-6 bg-card rounded-xl border shadow-sm">
@@ -296,8 +324,8 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             </div>
           </div>
 
-          {/* Filter Categories */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Filter Categories - Updated to 5 columns */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             {/* Tags */}
             <div className="space-y-3">
               <Label className="text-sm font-medium flex items-center gap-2">
@@ -491,25 +519,165 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                     />
                   </Badge>
                 ))}
-              </div>
-            )}
-          </div>
-          </div>
+             </div>
+           )}
+           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button onClick={handleSearch} className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none sm:px-8">
-              Apply Filters
-            </Button>
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters} className="gap-2 flex-1 sm:flex-none">
-                <X className="h-4 w-4" />
-                Clear All
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+           {/* Accessibility Attributes */}
+           <div className="space-y-3">
+             <Label className="text-sm font-medium flex items-center gap-2">
+               <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+               Accessibility
+             </Label>
+             <Popover open={accessibilityOpen} onOpenChange={setAccessibilityOpen}>
+               <PopoverTrigger asChild>
+                 <Button
+                   variant="outline"
+                   role="combobox"
+                   aria-expanded={accessibilityOpen}
+                   className="w-full justify-between h-10"
+                 >
+                   {selectedAccessibilityAttributes.length > 0
+                     ? `${selectedAccessibilityAttributes.length} feature${selectedAccessibilityAttributes.length !== 1 ? 's' : ''} selected`
+                     : "Select accessibility..."}
+                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                 </Button>
+               </PopoverTrigger>
+               <PopoverContent className="w-full p-0" align="start">
+                 <Command>
+                   <CommandInput placeholder="Search accessibility features..." />
+                   <CommandList>
+                     <CommandEmpty>No accessibility features found.</CommandEmpty>
+                     <CommandGroup>
+                       {accessibilityLoading ? (
+                         <div className="flex items-center justify-center p-4">
+                           <Loader2 className="h-4 w-4 animate-spin" />
+                         </div>
+                       ) : (
+                         accessibilityAttributes.map((attr) => (
+                           <CommandItem
+                             key={attr.id}
+                             value={attr.name}
+                             onSelect={() => handleAccessibilityToggle(attr.name)}
+                           >
+                             <Check
+                               className={cn(
+                                 "mr-2 h-4 w-4",
+                                 selectedAccessibilityAttributes.includes(attr.name) ? "opacity-100" : "opacity-0"
+                               )}
+                             />
+                             {attr.name}
+                           </CommandItem>
+                         ))
+                       )}
+                     </CommandGroup>
+                   </CommandList>
+                 </Command>
+               </PopoverContent>
+             </Popover>
+             {selectedAccessibilityAttributes.length > 0 && (
+               <div className="flex flex-wrap gap-1 mt-2">
+                 {selectedAccessibilityAttributes.map((attr) => (
+                   <Badge key={attr} variant="secondary" className="gap-1 text-xs">
+                     {attr}
+                     <X
+                       className="h-3 w-3 cursor-pointer hover:text-destructive"
+                       onClick={() => handleAccessibilityToggle(attr)}
+                     />
+                   </Badge>
+                 ))}
+               </div>
+             )}
+           </div>
+
+           {/* Target Groups */}
+           <div className="space-y-3">
+             <Label className="text-sm font-medium flex items-center gap-2">
+               <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+               Target Groups
+             </Label>
+             <Popover open={targetGroupsOpen} onOpenChange={setTargetGroupsOpen}>
+               <PopoverTrigger asChild>
+                 <Button
+                   variant="outline"
+                   role="combobox"
+                   aria-expanded={targetGroupsOpen}
+                   className="w-full justify-between h-10"
+                 >
+                   {selectedTargetGroups.length > 0
+                     ? `${selectedTargetGroups.length} group${selectedTargetGroups.length !== 1 ? 's' : ''} selected`
+                     : "Select target groups..."}
+                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                 </Button>
+               </PopoverTrigger>
+               <PopoverContent className="w-full p-0" align="start">
+                 <Command>
+                   <CommandInput placeholder="Search target groups..." />
+                   <CommandList>
+                     <CommandEmpty>No target groups found.</CommandEmpty>
+                     <CommandGroup>
+                       {targetGroupsLoading ? (
+                         <div className="flex items-center justify-center p-4">
+                           <Loader2 className="h-4 w-4 animate-spin" />
+                         </div>
+                       ) : (
+                         targetGroups.map((group) => (
+                           <CommandItem
+                             key={group.id}
+                             value={group.name}
+                             onSelect={() => handleTargetGroupToggle(group.name)}
+                           >
+                             <Check
+                               className={cn(
+                                 "mr-2 h-4 w-4",
+                                 selectedTargetGroups.includes(group.name) ? "opacity-100" : "opacity-0"
+                               )}
+                             />
+                             <div className="flex items-center gap-2">
+                               <div 
+                                 className="w-3 h-3 rounded-full border"
+                                 style={{ backgroundColor: group.color }}
+                               />
+                               {group.name}
+                             </div>
+                           </CommandItem>
+                         ))
+                       )}
+                     </CommandGroup>
+                   </CommandList>
+                 </Command>
+               </PopoverContent>
+             </Popover>
+             {selectedTargetGroups.length > 0 && (
+               <div className="flex flex-wrap gap-1 mt-2">
+                 {selectedTargetGroups.map((group) => (
+                   <Badge key={group} variant="secondary" className="gap-1 text-xs">
+                     {group}
+                     <X
+                       className="h-3 w-3 cursor-pointer hover:text-destructive"
+                       onClick={() => handleTargetGroupToggle(group)}
+                     />
+                   </Badge>
+                 ))}
+               </div>
+             )}
+           </div>
+           </div>
+
+           {/* Action Buttons */}
+           <div className="flex flex-col sm:flex-row gap-3 pt-4">
+             <Button onClick={handleSearch} className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none sm:px-8">
+               Apply Filters
+             </Button>
+             {hasActiveFilters && (
+               <Button variant="outline" onClick={clearFilters} className="gap-2 flex-1 sm:flex-none">
+                 <X className="h-4 w-4" />
+                 Clear All
+               </Button>
+             )}
+            </div>
+         </div>
+       )}
 
       {/* Active Filters Display */}
       {hasActiveFilters && !showAllFilters && (
@@ -559,8 +727,26 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                 onClick={() => handleServiceToggle(service)}
               />
             </Badge>
-          ))}
-          {nearMe && (
+           ))}
+           {selectedAccessibilityAttributes.map((attr) => (
+             <Badge key={attr} variant="secondary" className="gap-1">
+               {attr}
+               <X
+                 className="h-3 w-3 cursor-pointer"
+                 onClick={() => handleAccessibilityToggle(attr)}
+               />
+             </Badge>
+           ))}
+           {selectedTargetGroups.map((group) => (
+             <Badge key={group} variant="secondary" className="gap-1">
+               {group}
+               <X
+                 className="h-3 w-3 cursor-pointer"
+                 onClick={() => handleTargetGroupToggle(group)}
+               />
+             </Badge>
+           ))}
+           {nearMe && (
             <Badge variant="secondary" className="gap-1">
               Near Me
               <X className="h-3 w-3 cursor-pointer" onClick={handleNearMeToggle} />

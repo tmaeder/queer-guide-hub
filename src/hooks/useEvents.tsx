@@ -15,6 +15,8 @@ export function useEvents() {
     eventType?: string;
     dateRange?: { start: string; end: string };
     tags?: string[];
+    accessibilityAttributes?: string[];
+    targetGroups?: string[];
     search?: string;
     nearMe?: { lat: number; lng: number };
   }) => {
@@ -58,6 +60,14 @@ export function useEvents() {
 
       if (filters?.tags && filters.tags.length > 0) {
         query = query.overlaps('tags', filters.tags);
+      }
+
+      if (filters?.accessibilityAttributes?.length) {
+        query = query.overlaps('accessibility_attributes', filters.accessibilityAttributes);
+      }
+
+      if (filters?.targetGroups?.length) {
+        query = query.overlaps('target_groups', filters.targetGroups);
       }
 
       if (filters?.search) {

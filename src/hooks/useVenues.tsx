@@ -16,6 +16,8 @@ export function useVenues() {
     tags?: string[];
     amenities?: string[];
     services?: string[];
+    accessibilityAttributes?: string[];
+    targetGroups?: string[];
     search?: string;
     userLocation?: { latitude: number; longitude: number };
     nearMe?: boolean;
@@ -51,8 +53,16 @@ export function useVenues() {
         query = query.overlaps('services', filters.services);
       }
 
+      if (filters?.accessibilityAttributes?.length) {
+        query = query.overlaps('accessibility_attributes', filters.accessibilityAttributes);
+      }
+
+      if (filters?.targetGroups?.length) {
+        query = query.overlaps('target_groups', filters.targetGroups);
+      }
+
       if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,address.ilike.%${filters.search}%`);
       }
 
       const { data, error } = await query;
