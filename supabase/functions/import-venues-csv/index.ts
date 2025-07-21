@@ -130,14 +130,9 @@ function parseCSV(csvText: string): VenueData[] {
     });
 
     // Validate required fields
-    if (!venueData.name || !venueData.address || !venueData.city || !venueData.country) {
+    if (!venueData.name || !venueData.category || !venueData.address || !venueData.city || !venueData.country) {
       console.warn(`Skipping row ${i + 1}: missing required fields`);
       continue;
-    }
-
-    // Set default category if not provided
-    if (!venueData.category) {
-      venueData.category = 'general';
     }
 
     // Set defaults

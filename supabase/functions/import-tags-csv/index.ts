@@ -90,12 +90,12 @@ serve(async (req) => {
     console.log('CSV headers:', headers);
 
     // Validate required headers
-    const requiredHeaders = ['name'];
+    const requiredHeaders = ['name', 'category'];
     const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
     
     if (missingHeaders.length > 0) {
       return new Response(JSON.stringify({ 
-        error: `Missing required headers: ${missingHeaders.join(', ')}. Required: name. Optional: category, description` 
+        error: `Missing required headers: ${missingHeaders.join(', ')}. Required: name, category. Optional: description` 
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -156,9 +156,9 @@ serve(async (req) => {
         continue;
       }
 
-      // Category is optional, set default if empty
       if (!tag.category.trim()) {
-        tag.category = 'general';
+        errors.push(`Row ${i + 1}: Missing category`);
+        continue;
       }
 
       tags.push(tag);
