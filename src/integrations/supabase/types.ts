@@ -2701,6 +2701,47 @@ export type Database = {
         }
         Relationships: []
       }
+      venue_checkins: {
+        Row: {
+          checked_in_at: string
+          created_at: string
+          distance_meters: number | null
+          id: string
+          latitude: number
+          longitude: number
+          user_id: string
+          venue_id: string
+        }
+        Insert: {
+          checked_in_at?: string
+          created_at?: string
+          distance_meters?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          user_id: string
+          venue_id: string
+        }
+        Update: {
+          checked_in_at?: string
+          created_at?: string
+          distance_meters?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          user_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_checkins_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       venue_favorites: {
         Row: {
           created_at: string

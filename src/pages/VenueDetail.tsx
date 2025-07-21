@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { VenueEvents } from '@/components/venues/VenueEvents';
+import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
+import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { Database } from '@/integrations/supabase/types';
@@ -21,6 +23,7 @@ export default function VenueDetail() {
   const [venue, setVenue] = useState<Venue | null>(null);
   const [reviews, setReviews] = useState<VenueReview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkinRefresh, setCheckinRefresh] = useState(0);
   const { events } = useEvents();
 
   const venueEvents = events.filter(event => event.venue_id === id);
@@ -187,6 +190,13 @@ export default function VenueDetail() {
           </div>
 
           <div className="flex gap-2">
+            <VenueCheckInButton
+              venueId={venue.id}
+              venueName={venue.name}
+              venueLatitude={venue.latitude}
+              venueLongitude={venue.longitude}
+              onCheckInSuccess={() => setCheckinRefresh(prev => prev + 1)}
+            />
             {venue.phone && (
               <Button variant="outline" size="sm">
                 <Phone className="h-4 w-4 mr-2" />
@@ -337,6 +347,12 @@ export default function VenueDetail() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Recent Check-ins */}
+          <VenueRecentCheckins 
+            venueId={venue.id} 
+            refreshTrigger={checkinRefresh}
+          />
+          
           {/* Contact Info */}
           <Card>
             <CardHeader>
