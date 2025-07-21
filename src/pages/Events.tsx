@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEvents } from '@/hooks/useEvents';
 import { EventCard } from '@/components/events/EventCard';
 import { EventsCalendarView } from '@/components/events/EventsCalendarView';
+import { TagSelector } from '@/components/tags/TagSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -34,20 +35,6 @@ const eventTypes = [
   'performance'
 ];
 
-const commonTags = [
-  'lgbt-friendly',
-  'trans-friendly',
-  'drag',
-  'music',
-  'dance',
-  'educational',
-  'networking',
-  'all-ages',
-  '18+',
-  '21+',
-  'outdoor',
-  'virtual'
-];
 
 const Events = () => {
   const navigate = useNavigate();
@@ -63,7 +50,6 @@ const Events = () => {
   const [city, setCity] = useState('');
   const [eventType, setEventType] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [tagsOpen, setTagsOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
@@ -137,12 +123,6 @@ const Events = () => {
     }
   };
 
-  const handleTagToggle = (tag: string) => {
-    const newTags = selectedTags.includes(tag)
-      ? selectedTags.filter(t => t !== tag)
-      : [...selectedTags, tag];
-    setSelectedTags(newTags);
-  };
 
   const clearFilters = () => {
     setSearch('');
@@ -416,62 +396,14 @@ const Events = () => {
               </div>
 
               {/* Tags */}
-              <div className="space-y-2">
-                <Label>Tags</Label>
-                <Popover open={tagsOpen} onOpenChange={setTagsOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={tagsOpen}
-                      className="w-full justify-between"
-                    >
-                      {selectedTags.length > 0
-                        ? `${selectedTags.length} tag${selectedTags.length !== 1 ? 's' : ''} selected`
-                        : "Select tags..."}
-                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search tags..." />
-                      <CommandList>
-                        <CommandEmpty>No tags found.</CommandEmpty>
-                        <CommandGroup>
-                          {commonTags.map((tag) => (
-                            <CommandItem
-                              key={tag}
-                              value={tag}
-                              onSelect={() => handleTagToggle(tag)}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  selectedTags.includes(tag) ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {tag}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                {selectedTags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {selectedTags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="gap-1">
-                        {tag}
-                        <X
-                          className="h-3 w-3 cursor-pointer"
-                          onClick={() => handleTagToggle(tag)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <TagSelector
+                selectedTags={selectedTags}
+                onTagsChange={setSelectedTags}
+                placeholder="Filter events by tags..."
+                maxTags={5}
+                allowCustomTags={false}
+                categories={['events']}
+              />
 
               {/* Action Buttons */}
               <div className="flex gap-2 pt-2">
@@ -533,7 +465,7 @@ const Events = () => {
                   {tag}
                   <X
                     className="h-3 w-3 cursor-pointer"
-                    onClick={() => handleTagToggle(tag)}
+                    onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
                   />
                 </Badge>
               ))}
