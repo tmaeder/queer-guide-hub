@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, X, Sliders } from 'lucide-react';
+import { TagSelector } from '@/components/tags/TagSelector';
 
 interface MarketplaceFiltersProps {
   onFiltersChange: (filters: {
@@ -41,20 +42,6 @@ const businessTypes = [
   'both'
 ];
 
-const commonTags = [
-  'women-owned',
-  'trans-owned',
-  'poc-owned',
-  'handmade',
-  'organic',
-  'sustainable',
-  'local',
-  'custom-orders',
-  'lgbt-friendly',
-  'queer-owned',
-  'small-business',
-  'eco-friendly'
-];
 
 export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps) {
   const [search, setSearch] = useState('');
@@ -84,12 +71,6 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
     });
   };
 
-  const handleTagToggle = (tag: string) => {
-    const newTags = selectedTags.includes(tag)
-      ? selectedTags.filter(t => t !== tag)
-      : [...selectedTags, tag];
-    setSelectedTags(newTags);
-  };
 
   const clearFilters = () => {
     setSearch('');
@@ -229,21 +210,14 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
           </div>
 
           {/* Tags */}
-          <div className="space-y-2">
-            <Label>Tags</Label>
-            <div className="flex flex-wrap gap-2">
-              {commonTags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant={selectedTags.includes(tag) ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary/10 transition-colors"
-                  onClick={() => handleTagToggle(tag)}
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </div>
+          <TagSelector
+            selectedTags={selectedTags}
+            onTagsChange={setSelectedTags}
+            placeholder="Select marketplace tags..."
+            maxTags={10}
+            categories={['business', 'commerce', 'product', 'service', 'identity']}
+            className="space-y-2"
+          />
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
@@ -301,15 +275,15 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
               <X className="h-3 w-3 cursor-pointer" onClick={() => { setMinPrice(''); setMaxPrice(''); }} />
             </Badge>
           )}
-          {selectedTags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="gap-1">
-              {tag}
-              <X
-                className="h-3 w-3 cursor-pointer"
-                onClick={() => handleTagToggle(tag)}
-              />
-            </Badge>
-          ))}
+           {selectedTags.map((tag) => (
+             <Badge key={tag} variant="secondary" className="gap-1">
+               {tag}
+               <X
+                 className="h-3 w-3 cursor-pointer"
+                 onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
+               />
+             </Badge>
+           ))}
         </div>
       )}
     </div>
