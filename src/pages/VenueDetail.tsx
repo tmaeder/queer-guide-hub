@@ -267,12 +267,20 @@ export default function VenueDetail() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {venue.amenities.map((amenity, index) => (
-                    <div key={index} className="flex items-center gap-2">
+                    <button 
+                      key={index} 
+                      className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => {
+                        navigator.clipboard.writeText(amenity);
+                        // You could add a toast notification here
+                      }}
+                      title={`Click to copy "${amenity}" to clipboard`}
+                    >
                       {amenity === 'wifi' && <Wifi className="h-4 w-4 text-primary" />}
                       {amenity === 'parking' && <Car className="h-4 w-4 text-primary" />}
                       {amenity === 'wheelchair-accessible' && <Accessibility className="h-4 w-4 text-primary" />}
                       <span className="text-sm capitalize">{amenity.replace('-', ' ')}</span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </CardContent>
