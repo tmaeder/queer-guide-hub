@@ -36,7 +36,7 @@ export default function AdminAccessibilityAttributes() {
   const [attributes, setAttributes] = useState<AccessibilityAttribute[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [showActiveOnly, setShowActiveOnly] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAttribute, setEditingAttribute] = useState<AccessibilityAttribute | null>(null);
@@ -170,7 +170,7 @@ export default function AdminAccessibilityAttributes() {
   const filteredAttributes = attributes.filter(attribute => {
     const matchesSearch = attribute.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          attribute.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || attribute.category === selectedCategory;
+    const matchesCategory = selectedCategory === "all" || attribute.category === selectedCategory;
     const matchesActive = !showActiveOnly || attribute.is_active;
     
     return matchesSearch && matchesCategory && matchesActive;
@@ -304,7 +304,7 @@ export default function AdminAccessibilityAttributes() {
                 <SelectValue placeholder="Filter by category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.value} value={category.value}>
                     {category.label}
