@@ -24,11 +24,10 @@ interface NewsArticle {
 // Auto-apply tags by matching existing tags against article content
 async function autoApplyTags(title: string, content: string, supabaseClient: any): Promise<string[]> {
   try {
-    // Get all active tags from the database
+    // Get all active tags from the centralized unified_tags table
     const { data: allTags, error } = await supabaseClient
-      .from('tags')
-      .select('name')
-      .eq('is_active', true);
+      .from('unified_tags')
+      .select('name');
     
     if (error) {
       console.error('Error fetching tags:', error);
@@ -448,14 +447,58 @@ serve(async (req) => {
         .eq('id', source.id);
     }
 
-    // Insert articles (ignore duplicates based on URL)
+    // Insert articles and create tag assignments
     if (allArticles.length > 0) {
       for (const article of allArticles) {
         try {
-          await supabaseClient
+          // Insert the article
+          const { data: insertedArticle, error: insertError } = await supabaseClient
             .from('news_articles')
-            .insert(article)
-            .select();
+            .insert({
+              title: article.title,
+              content: article.content,
+              excerpt: article.excerpt,
+              url: article.url,
+              image_url: article.image_url,
+              author: article.author,
+              published_at: article.published_at,
+              category: article.category,
+              source_id: article.source_id,
+              country_ids: article.country_ids,
+              city_ids: article.city_ids
+              // Don't insert tags array - we'll use unified_tag_assignments instead
+            })
+            .select()
+            .single();
+
+          if (!insertError && insertedArticle && article.tags && article.tags.length > 0) {
+            // Create unified tag assignments for auto-detected tags
+            for (const tagName of article.tags) {
+              try {
+                // Get the tag ID from unified_tags
+                const { data: tag } = await supabaseClient
+                  .from('unified_tags')
+                  .select('id')
+                  .eq('name', tagName)
+                  .single();
+
+                if (tag) {
+                  // Create the tag assignment
+                  await supabaseClient
+                    .from('unified_tag_assignments')
+                    .insert({
+                      tag_id: tag.id,
+                      entity_type: 'news',
+                      entity_id: insertedArticle.id,
+                      assigned_by_system: true
+                    });
+                }
+              } catch (tagError) {
+                // Ignore tag assignment errors (might be duplicates)
+                console.log(`Skipping tag assignment for ${tagName}:`, tagError.message);
+              }
+            }
+          }
         } catch (error) {
           // Ignore duplicate key errors, log others
           if (!error.message?.includes('duplicate key') && !error.message?.includes('unique constraint')) {

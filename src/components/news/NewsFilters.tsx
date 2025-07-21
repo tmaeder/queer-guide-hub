@@ -10,6 +10,7 @@ import { Search, X, Filter, MapPin, Calendar, Tag, Building, Globe, Map } from "
 import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { TagSelector } from "@/components/tags/TagSelector";
 
 type NewsSource = Tables<'news_sources'>;
 
@@ -54,9 +55,8 @@ export const NewsFilters = ({
   const [dateRange, setDateRange] = useState<string>("");
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [cities, setCities] = useState<CityOption[]>([]);
-  const [allTags, setAllTags] = useState<string[]>([]);
 
-  // Fetch countries, cities, and tags
+  // Fetch countries and cities
   useEffect(() => {
     const fetchData = async () => {
       // Fetch countries
@@ -72,16 +72,10 @@ export const NewsFilters = ({
         .select('id, name')
         .order('name');
       if (citiesData) setCities(citiesData);
-
-      // For now, use trending tags as available tags if no unified tags found
-      if (trendingTags.length > 0) {
-        const tagNames = trendingTags.map(t => t.tag);
-        setAllTags(tagNames);
-      }
     };
 
     fetchData();
-  }, [trendingTags]);
+  }, []);
 
   const triggerFiltersChange = () => {
     onFiltersChange({
@@ -101,13 +95,6 @@ export const NewsFilters = ({
     setTimeout(triggerFiltersChange, 0);
   };
 
-  const handleTagToggle = (tag: string) => {
-    const newTags = selectedTags.includes(tag) 
-      ? selectedTags.filter(t => t !== tag) 
-      : [...selectedTags, tag];
-    setSelectedTags(newTags);
-    setTimeout(triggerFiltersChange, 0);
-  };
 
   const handleCountryToggle = (countryId: string) => {
     const newCountries = selectedCountries.includes(countryId) 
@@ -290,41 +277,19 @@ export const NewsFilters = ({
         )}
 
         {/* Tags Filter */}
-        {allTags.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Tag className="h-4 w-4" />
-              <span className="text-sm font-medium">Tags</span>
-            </div>
-            <Select onValueChange={handleTagToggle}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select tags" />
-              </SelectTrigger>
-              <SelectContent className="max-h-48 overflow-y-auto">
-                {allTags.map((tag) => (
-                  <SelectItem key={tag} value={tag}>
-                    {tag}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selectedTags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {selectedTags.map(tag => (
-                  <Badge
-                    key={tag}
-                    variant="default"
-                    className="cursor-pointer text-xs"
-                    onClick={() => handleTagToggle(tag)}
-                  >
-                    {tag}
-                    <X className="h-3 w-3 ml-1" />
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        <div className="space-y-3">
+          <TagSelector
+            selectedTags={selectedTags}
+            onTagsChange={(tags) => {
+              setSelectedTags(tags);
+              setTimeout(triggerFiltersChange, 0);
+            }}
+            placeholder="Select news tags..."
+            maxTags={10}
+            categories={['news', 'politics', 'culture', 'business', 'education', 'health']}
+            className="space-y-2"
+          />
+        </div>
 
         {/* Source Filter */}
         {sources.length > 0 && (
@@ -384,7 +349,13 @@ export const NewsFilters = ({
                     key={tag}
                     variant={selectedTags.includes(tag) ? "default" : "outline"}
                     className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs"
-                    onClick={() => handleTagToggle(tag)}
+                    onClick={() => {
+                      const newTags = selectedTags.includes(tag) 
+                        ? selectedTags.filter(t => t !== tag) 
+                        : [...selectedTags, tag];
+                      setSelectedTags(newTags);
+                      setTimeout(triggerFiltersChange, 0);
+                    }}
                   >
                     {tag} ({count})
                   </Badge>

@@ -6,6 +6,9 @@ import { formatDistanceToNow } from "date-fns";
 import { Tables } from "@/integrations/supabase/types";
 import { Link } from "react-router-dom";
 import { FavoriteButton } from "@/components/ui/favorite-button";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 type NewsArticle = Tables<'news_articles'> & {
   news_sources: Tables<'news_sources'>;
 };
@@ -19,6 +22,32 @@ export const NewsCard = ({
   onViewArticle,
   showFullContent = false
 }: NewsCardProps) => {
+  const [tags, setTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const { data } = await supabase
+          .from('unified_tag_assignments')
+          .select(`
+            unified_tags!inner(name, color)
+          `)
+          .eq('entity_type', 'news')
+          .eq('entity_id', article.id);
+
+        if (data) {
+          const tagNames = data.map(assignment => 
+            (assignment.unified_tags as any).name
+          );
+          setTags(tagNames);
+        }
+      } catch (error) {
+        console.error('Error fetching article tags:', error);
+      }
+    };
+
+    fetchTags();
+  }, [article.id]);
   const handleViewClick = () => {
     onViewArticle?.(article.id);
     window.open(article.url, '_blank');
@@ -91,7 +120,22 @@ export const NewsCard = ({
             
           </div>}
 
-        {/* Tags will be loaded via unified tag assignments - remove for now */}
+        {/* Tags */}
+        {tags.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <Tag className="h-4 w-4 text-muted-foreground" />
+            {tags.slice(0, 5).map(tag => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+            {tags.length > 5 && (
+              <Badge variant="outline" className="text-xs">
+                +{tags.length - 5} more
+              </Badge>
+            )}
+          </div>
+        )}
 
         {(article.country_ids?.length > 0 || article.city_ids?.length > 0) && <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MapPin className="h-4 w-4" />

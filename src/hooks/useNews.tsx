@@ -58,7 +58,17 @@ export const useNews = () => {
       }
 
       if (filters?.tags && filters.tags.length > 0) {
-        query = query.overlaps('tags', filters.tags);
+        // Filter by unified tag assignments
+        const { data: taggedArticles } = await supabase
+          .from('unified_tag_assignments')
+          .select('entity_id')
+          .eq('entity_type', 'news')
+          .in('unified_tags.name', filters.tags);
+        
+        if (taggedArticles) {
+          const articleIds = taggedArticles.map(ta => ta.entity_id);
+          query = query.in('id', articleIds);
+        }
       }
 
       if (filters?.countryIds && filters.countryIds.length > 0) {
@@ -232,20 +242,32 @@ export const useNews = () => {
 
   const getTrendingTags = async () => {
     try {
+      // Get trending tags from unified tag assignments for news articles
       const { data, error: fetchError } = await supabase
-        .from('news_articles')
-        .select('tags')
-        .gte('published_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+        .from('unified_tag_assignments')
+        .select(`
+          unified_tags!inner(name, usage_count),
+          entity_type
+        `)
+        .eq('entity_type', 'news')
+        .order('unified_tags.usage_count', { ascending: false })
+        .limit(20);
 
       if (fetchError) {
         throw fetchError;
       }
 
-      // Tags are now handled via unified tag assignments
+      // Process the data to get tag counts
       const tagCounts: Record<string, number> = {};
-      // Will implement unified tag trending later
+      data?.forEach(assignment => {
+        const tag = assignment.unified_tags as any;
+        if (tag?.name) {
+          tagCounts[tag.name] = tag.usage_count || 0;
+        }
+      });
       
-      return []
+      return Object.entries(tagCounts)
+        .sort(([,a], [,b]) => b - a)
         .map(([tag, count]) => ({ tag, count }));
     } catch (err) {
       console.error('Error fetching trending tags:', err);
