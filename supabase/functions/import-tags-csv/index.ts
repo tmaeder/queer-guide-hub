@@ -76,8 +76,8 @@ serve(async (req) => {
     const csvText = await file.text();
     console.log('CSV content length:', csvText.length);
 
-    // Parse CSV content
-    const lines = csvText.trim().split('\n');
+    // Parse CSV content - Handle different line endings
+    const lines = csvText.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
     if (lines.length === 0) {
       return new Response(JSON.stringify({ error: 'Empty CSV file' }), {
         status: 400,
@@ -85,8 +85,27 @@ serve(async (req) => {
       });
     }
 
-    // Parse header row
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+    // Parse header row - improved parsing to handle quotes
+    const headerLine = lines[0];
+    console.log('Raw header line:', headerLine);
+    
+    const headers = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < headerLine.length; i++) {
+      const char = headerLine[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        headers.push(current.trim().toLowerCase().replace(/"/g, ''));
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    headers.push(current.trim().toLowerCase().replace(/"/g, ''));
+    
     console.log('CSV headers:', headers);
 
     // Validate required headers
@@ -110,7 +129,9 @@ serve(async (req) => {
       const line = lines[i].trim();
       if (!line) continue;
 
-      // Simple CSV parsing (handles quoted fields)
+      console.log(`Processing row ${i}: ${line}`);
+
+      // Better CSV parsing that handles quoted fields with commas
       const values: string[] = [];
       let current = '';
       let inQuotes = false;
@@ -120,13 +141,15 @@ serve(async (req) => {
         if (char === '"') {
           inQuotes = !inQuotes;
         } else if (char === ',' && !inQuotes) {
-          values.push(current.trim());
+          values.push(current.trim().replace(/^"(.*)"$/, '$1'));
           current = '';
         } else {
           current += char;
         }
       }
-      values.push(current.trim());
+      values.push(current.trim().replace(/^"(.*)"$/, '$1'));
+
+      console.log(`Row ${i} values:`, values);
 
       // Create tag object
       const tag: TagRow = {
@@ -135,14 +158,15 @@ serve(async (req) => {
       };
 
       headers.forEach((header, index) => {
-        const value = values[index]?.replace(/^"(.*)"$/, '$1') || '';
+        const value = (values[index] || '').trim();
+        console.log(`Setting ${header} = ${value}`);
         
         switch (header) {
           case 'name':
             tag.name = value;
             break;
           case 'category':
-            tag.category = value;
+            if (value) tag.category = value;
             break;
           case 'description':
             if (value) tag.description = value;
@@ -153,6 +177,7 @@ serve(async (req) => {
       // Validate tag
       if (!tag.name.trim()) {
         errors.push(`Row ${i + 1}: Missing tag name`);
+        console.log(`Row ${i + 1}: Missing tag name, tag object:`, tag);
         continue;
       }
 
@@ -160,6 +185,8 @@ serve(async (req) => {
       if (!tag.category.trim()) {
         tag.category = 'general';
       }
+
+      console.log(`Row ${i + 1}: Valid tag:`, tag);
 
       tags.push(tag);
     }
