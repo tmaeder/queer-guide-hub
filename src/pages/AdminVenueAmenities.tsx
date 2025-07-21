@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Edit, Trash2, Save, X } from "lucide-react";
+import { Plus, Edit, Trash2, Save, X, ChevronDown, ChevronRight, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { Tables } from "@/integrations/supabase/types";
 
@@ -68,6 +68,7 @@ export default function AdminVenueAmenities() {
   const [editingAmenity, setEditingAmenity] = useState<VenueAmenity | null>(null);
   const [formData, setFormData] = useState<AmenityFormData>(defaultFormData);
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
 
   // Fetch venue amenities
@@ -84,6 +85,17 @@ export default function AdminVenueAmenities() {
       return data as VenueAmenity[];
     }
   });
+
+  // Fetch linked venues for an amenity
+  const fetchLinkedVenues = async (amenityName: string) => {
+    const { data, error } = await supabase
+      .from('venues')
+      .select('id, name, city, country')
+      .contains('amenities', [amenityName]);
+    
+    if (error) throw error;
+    return data || [];
+  };
 
   // Create amenity mutation
   const createAmenityMutation = useMutation({
@@ -199,6 +211,16 @@ export default function AdminVenueAmenities() {
   const filteredAmenities = filterCategory === 'all' 
     ? amenities 
     : amenities.filter(amenity => amenity.category === filterCategory);
+
+  const toggleRowExpansion = (amenityId: string) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(amenityId)) {
+      newExpanded.delete(amenityId);
+    } else {
+      newExpanded.add(amenityId);
+    }
+    setExpandedRows(newExpanded);
+  };
 
   if (isLoading) {
     return (
@@ -374,9 +396,26 @@ export default function AdminVenueAmenities() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAmenities.map((amenity) => (
-                <TableRow key={amenity.id}>
-                  <TableCell className="font-medium">{amenity.name}</TableCell>
+              {filteredAmenities.map((amenity) => {
+                const isExpanded = expandedRows.has(amenity.id);
+                return (
+                  <>
+                    <TableRow key={amenity.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => toggleRowExpansion(amenity.id)}
+                            className="p-1 hover:bg-muted rounded transition-colors"
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4" />
+                            )}
+                          </button>
+                          {amenity.name}
+                        </div>
+                      </TableCell>
                   <TableCell>
                     <Badge variant="outline">
                       {amenity.category?.charAt(0).toUpperCase() + amenity.category?.slice(1)}
@@ -391,27 +430,34 @@ export default function AdminVenueAmenities() {
                     </Badge>
                   </TableCell>
                   <TableCell>{amenity.sort_order}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(amenity)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(amenity.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(amenity)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(amenity.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    
+                    {/* Expanded row showing linked venues */}
+                    {isExpanded && (
+                      <LinkedVenuesRow amenityName={amenity.name} />
+                    )}
+                  </>
+                );
+              })}
               {filteredAmenities.length === 0 && amenities.length > 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
@@ -431,5 +477,67 @@ export default function AdminVenueAmenities() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// Component to show linked venues
+function LinkedVenuesRow({ amenityName }: { amenityName: string }) {
+  const [venues, setVenues] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchVenues = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('venues')
+          .select('id, name, city, country')
+          .contains('amenities', [amenityName]);
+        
+        if (error) throw error;
+        setVenues(data || []);
+      } catch (error) {
+        console.error('Error fetching linked venues:', error);
+        setVenues([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVenues();
+  }, [amenityName]);
+
+  return (
+    <TableRow className="bg-muted/20">
+      <TableCell colSpan={6} className="py-4">
+        <div className="ml-8">
+          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            Linked Venues ({venues.length})
+          </h4>
+          {loading ? (
+            <div className="text-sm text-muted-foreground">Loading venues...</div>
+          ) : venues.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {venues.map((venue) => (
+                <div 
+                  key={venue.id} 
+                  className="text-sm p-2 bg-background rounded border"
+                >
+                  <div className="font-medium">{venue.name}</div>
+                  <div className="text-muted-foreground text-xs">
+                    {venue.city}, {venue.country}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              No venues currently use this amenity
+            </div>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }
