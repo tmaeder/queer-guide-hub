@@ -44,6 +44,9 @@ import AdminGroups from "./pages/AdminGroups";
 import CityDetail from "./pages/CityDetail";
 import CountryDetail from "./pages/CountryDetail";
 import AdminVenues from "./pages/AdminVenues";
+import AdminVenueCategories from "./pages/AdminVenueCategories";
+import AdminVenueAmenities from "./pages/AdminVenueAmenities";
+import AdminVenueServices from "./pages/AdminVenueServices";
 import AdminEvents from "./pages/AdminEvents";
 import AdminMarketplace from "./pages/AdminMarketplace";
 import AdminNewsSources from "./pages/AdminNewsSources";
@@ -185,11 +188,26 @@ const App = () => {
                       <AdminCities />
                     </AdminRouteGuard>
                   } />
-                  <Route path="/admin/venues" element={
-                    <AdminRouteGuard>
-                      <AdminVenues />
-                    </AdminRouteGuard>
-                  } />
+                   <Route path="/admin/venues" element={
+                     <AdminRouteGuard>
+                       <AdminVenues />
+                     </AdminRouteGuard>
+                   } />
+                   <Route path="/admin/venue-categories" element={
+                     <AdminRouteGuard>
+                       <AdminVenueCategories />
+                     </AdminRouteGuard>
+                   } />
+                   <Route path="/admin/venue-amenities" element={
+                     <AdminRouteGuard>
+                       <AdminVenueAmenities />
+                     </AdminRouteGuard>
+                   } />
+                   <Route path="/admin/venue-services" element={
+                     <AdminRouteGuard>
+                       <AdminVenueServices />
+                     </AdminRouteGuard>
+                   } />
                   <Route path="/admin/events" element={
                     <AdminRouteGuard>
                       <AdminEvents />

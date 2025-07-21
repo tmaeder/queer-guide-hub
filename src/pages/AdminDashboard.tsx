@@ -242,11 +242,17 @@ export default function AdminDashboard() {
     },
     {
       title: "Venues Management",
-      description: "Manage venues and locations",
+      description: "Manage venues and organization settings",
       icon: Building,
       path: "/admin/venues",
       color: "bg-gradient-to-br from-orange-500 to-orange-600",
-      stats: `${stats.activeVenues} active`
+      stats: `${stats.activeVenues} active`,
+      subItems: [
+        { title: "Venues", path: "/admin/venues", description: "Manage individual venues" },
+        { title: "Categories", path: "/admin/venue-categories", description: "Venue types & categories" },
+        { title: "Amenities", path: "/admin/venue-amenities", description: "Venue amenities & features" },
+        { title: "Services", path: "/admin/venue-services", description: "Services offered by venues" }
+      ]
     },
     {
       title: "Events Management",
@@ -525,14 +531,35 @@ export default function AdminDashboard() {
                   <p className="text-sm text-muted-foreground mb-4">
                     {section.description}
                   </p>
-                  <Button 
-                    variant="outline" 
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                    onClick={() => navigate(section.path)}
-                  >
-                    <ArrowUpRight className="h-4 w-4 mr-2" />
-                    Manage
-                  </Button>
+                  
+                  {/* Show sub-items if they exist */}
+                  {(section as any).subItems ? (
+                    <div className="space-y-2">
+                      {(section as any).subItems.map((subItem: any) => (
+                        <Button 
+                          key={subItem.path}
+                          variant="outline" 
+                          size="sm"
+                          className="w-full justify-start text-left h-auto p-2"
+                          onClick={() => navigate(subItem.path)}
+                        >
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">{subItem.title}</span>
+                            <span className="text-xs text-muted-foreground">{subItem.description}</span>
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                      onClick={() => navigate(section.path)}
+                    >
+                      <ArrowUpRight className="h-4 w-4 mr-2" />
+                      Manage
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}
