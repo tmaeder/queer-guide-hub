@@ -304,8 +304,8 @@ export default function EventDetail() {
         </Link>
         
         {/* Hero Section */}
-        <div className="relative mb-8">
-          {event.images && event.images.length > 0 && (
+        {event.images && event.images.length > 0 && (
+          <div className="relative mb-8">
             <div className="aspect-[21/9] rounded-2xl overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20">
               <img
                 src={event.images[0]}
@@ -317,13 +317,8 @@ export default function EventDetail() {
                 }}
               />
             </div>
-          )}
-          {(!event.images || event.images.length === 0) && (
-            <div className="aspect-[21/9] bg-gradient-to-r from-primary/20 to-accent/20 flex items-center justify-center">
-              <Calendar className="h-16 w-16 text-primary/60" />
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
           <div className="flex-1">
