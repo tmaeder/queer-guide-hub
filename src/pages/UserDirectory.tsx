@@ -12,7 +12,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, Briefcase, GraduationCap, Navigation, Loader2, ExternalLink } from "lucide-react";
+import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, Briefcase, GraduationCap, Navigation, Loader2, ExternalLink, Sparkles, TrendingUp, Star } from "lucide-react";
 import { StartConversationButton } from "@/components/messaging/StartConversationButton";
 import { UserModeBadge } from "@/components/profile/UserModeBadge";
 import { Tables } from "@/integrations/supabase/types";
@@ -290,458 +290,604 @@ const UserDirectory = () => {
   };
 
   return (
-    <div className="w-full px-4 py-8">
-      <div className="w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold gradient-text mb-4">User Directory</h1>
-          <p className="text-lg text-muted-foreground mb-6">
-            Discover and connect with community members
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-background to-background/50">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Hero Section */}
+        <div className="text-center space-y-6">
+          <div className="space-y-4">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Community Directory
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Discover amazing people, build meaningful connections, and grow your network within our 
+              inclusive LGBTQ+ community.
+            </p>
+          </div>
           
-          {/* Search and Filter Bar */}
-          <div className="max-w-4xl mx-auto space-y-4">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search users by name, bio, or location..."
-                  value={filters.searchQuery}
-                  onChange={(e) => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
-                  className="pl-10"
-                />
-              </div>
-              <Button
-                variant={nearMe ? "default" : "outline"}
-                onClick={handleNearMeToggle}
-                disabled={isDetectingLocation}
-                className="gap-2 whitespace-nowrap"
-              >
-                {isDetectingLocation ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Navigation className="h-4 w-4" />
-                )}
-                Near Me
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="gap-2 whitespace-nowrap"
-              >
-                <Filter className="h-4 w-4" />
-                Filters
-                {activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className="ml-1">
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </Button>
+          {/* Stats */}
+          <div className="flex flex-wrap justify-center gap-6 text-sm">
+            <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
+              <Users className="h-4 w-4 text-primary" />
+              <span className="font-medium">{profiles?.length || 0} Members</span>
             </div>
-
-            {/* Advanced Filters */}
-            {showFilters && (
-              <Card className="p-6 bg-card border">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Advanced Filters</h3>
-                    {activeFiltersCount > 0 && (
-                      <Button variant="ghost" size="sm" onClick={clearAllFilters} className="gap-2">
-                        <X className="h-4 w-4" />
-                        Clear All
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Location Filter */}
-                    <div className="space-y-2">
-                      <Label>Location</Label>
-                      <Input
-                        placeholder="Enter city or region"
-                        value={filters.location}
-                        onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
-                      />
-                    </div>
-
-                    {/* Age Range Filter */}
-                    <div className="space-y-2">
-                      <Label>Age Range</Label>
-                      <Select value={filters.ageRange} onValueChange={(value) => setFilters(prev => ({ ...prev, ageRange: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select age range" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All ages</SelectItem>
-                          {ageRanges.map((range) => (
-                            <SelectItem key={range} value={range}>{range}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Relationship Status */}
-                    <div className="space-y-2">
-                      <Label>Relationship Status</Label>
-                      <Select value={filters.relationshipStatus} onValueChange={(value) => setFilters(prev => ({ ...prev, relationshipStatus: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Any status</SelectItem>
-                          {relationshipStatuses.map((status) => (
-                            <SelectItem key={status} value={status}>{status}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Occupation */}
-                    <div className="space-y-2">
-                      <Label>Occupation</Label>
-                      <Input
-                        placeholder="Enter occupation"
-                        value={filters.occupation}
-                        onChange={(e) => setFilters(prev => ({ ...prev, occupation: e.target.value }))}
-                      />
-                    </div>
-
-                    {/* Education */}
-                    <div className="space-y-2">
-                      <Label>Education</Label>
-                      <Select value={filters.education} onValueChange={(value) => setFilters(prev => ({ ...prev, education: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select education" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Any education</SelectItem>
-                          {educationLevels.map((level) => (
-                            <SelectItem key={level} value={level}>{level}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Gender Identity */}
-                    <div className="space-y-2">
-                      <Label>Gender Identity</Label>
-                      <Select value={filters.genderIdentity} onValueChange={(value) => setFilters(prev => ({ ...prev, genderIdentity: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Any gender</SelectItem>
-                          {genderIdentities.map((gender) => (
-                            <SelectItem key={gender} value={gender}>{gender}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Interests Filter */}
-                  <div className="space-y-2">
-                    <Label>Interests</Label>
-                    <Popover open={interestsOpen} onOpenChange={setInterestsOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={interestsOpen}
-                          className="w-full justify-between"
-                        >
-                          {filters.interests.length > 0
-                            ? `${filters.interests.length} interest${filters.interests.length !== 1 ? 's' : ''} selected`
-                            : "Select interests..."}
-                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
-                          <CommandInput placeholder="Search interests..." />
-                          <CommandList>
-                            <CommandEmpty>No interests found.</CommandEmpty>
-                            <CommandGroup>
-                              {commonInterests.map((interest) => (
-                                <CommandItem
-                                  key={interest}
-                                  value={interest}
-                                  onSelect={() => handleInterestToggle(interest)}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      filters.interests.includes(interest) ? "opacity-100" : "opacity-0"
-                                    )}
-                                  />
-                                  {interest}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    {filters.interests.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {filters.interests.map((interest) => (
-                          <Badge key={interest} variant="secondary" className="gap-1">
-                            {interest}
-                            <X
-                              className="h-3 w-3 cursor-pointer"
-                              onClick={() => handleInterestToggle(interest)}
-                            />
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Boolean Filters */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="verified"
-                        checked={filters.isVerified}
-                        onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isVerified: !!checked }))}
-                      />
-                      <Label htmlFor="verified">Verified profiles</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="business"
-                        checked={filters.isBusiness}
-                        onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isBusiness: !!checked }))}
-                      />
-                      <Label htmlFor="business">Business accounts</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="children"
-                        checked={filters.hasChildren}
-                        onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasChildren: !!checked }))}
-                      />
-                      <Label htmlFor="children">Has children</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="pets"
-                        checked={filters.hasPets}
-                        onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasPets: !!checked }))}
-                      />
-                      <Label htmlFor="pets">Has pets</Label>
-                    </div>
-                  </div>
-
-                  {/* Sort Options */}
-                  <div className="space-y-2">
-                    <Label>Sort By</Label>
-                    <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value as any }))}>
-                      <SelectTrigger className="w-full md:w-[200px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="newest">Newest members</SelectItem>
-                        <SelectItem value="oldest">Oldest members</SelectItem>
-                        <SelectItem value="alphabetical">Alphabetical</SelectItem>
-                        <SelectItem value="last_active">Last active</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Active Filters Display */}
-            {activeFiltersCount > 0 && !showFilters && (
-              <div className="flex flex-wrap gap-2 items-center justify-center">
-                <span className="text-sm text-muted-foreground">Active filters:</span>
-                {nearMe && (
-                  <Badge variant="secondary" className="gap-1">
-                    Near Me
-                    <X className="h-3 w-3 cursor-pointer" onClick={handleNearMeToggle} />
-                  </Badge>
-                )}
-                {filters.location && (
-                  <Badge variant="secondary" className="gap-1">
-                    Location: {filters.location}
-                    <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, location: "" }))} />
-                  </Badge>
-                )}
-                {filters.ageRange && filters.ageRange !== 'all' && (
-                  <Badge variant="secondary" className="gap-1">
-                    Age: {filters.ageRange}
-                    <X className="h-3 w-3 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, ageRange: "all" }))} />
-                  </Badge>
-                )}
-                {filters.interests.map((interest) => (
-                  <Badge key={interest} variant="secondary" className="gap-1">
-                    {interest}
-                    <X className="h-3 w-3 cursor-pointer" onClick={() => handleInterestToggle(interest)} />
-                  </Badge>
-                ))}
-              </div>
-            )}
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-full">
+              <Sparkles className="h-4 w-4 text-blue-600" />
+              <span className="font-medium">Active Community</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-full">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              <span className="font-medium">Growing Daily</span>
+            </div>
           </div>
         </div>
-
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="p-6 animate-pulse">
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-12 h-12 bg-muted rounded-full" />
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted rounded w-24" />
-                    <div className="h-3 bg-muted rounded w-16" />
-                  </div>
+          
+        {/* Search and Filter Section */}
+        <Card className="bg-gradient-to-r from-card to-card/90 border-2 shadow-lg">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    placeholder="Search by name, bio, location, or interests..."
+                    value={filters.searchQuery}
+                    onChange={(e) => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
+                    className="pl-10 h-12 text-base border-2 focus:border-primary/50 transition-colors"
+                  />
                 </div>
-                <div className="space-y-2">
-                  <div className="h-3 bg-muted rounded" />
-                  <div className="h-3 bg-muted rounded w-2/3" />
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {profiles?.map((profile) => (
-              <Link key={profile.id} to={`/user/${profile.user_id}`} className="block">
-                <Card className="p-6 hover:shadow-lg transition-all duration-200 hover-scale group cursor-pointer">
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="relative">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={profile.avatar_url || undefined} />
-                      <AvatarFallback>
-                        {profile.display_name?.charAt(0)?.toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    {profile.verified_identity && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
-                        <Check className="h-2.5 w-2.5 text-primary-foreground" />
-                      </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={nearMe ? "default" : "outline"}
+                    onClick={handleNearMeToggle}
+                    disabled={isDetectingLocation}
+                    className={`gap-2 whitespace-nowrap h-12 px-6 ${nearMe ? 'bg-gradient-primary hover:opacity-90' : ''}`}
+                  >
+                    {isDetectingLocation ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Navigation className="h-4 w-4" />
                     )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                      {profile.display_name || "Anonymous User"}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      {profile.pronouns && <span>{profile.pronouns}</span>}
-                      {profile.age_range && (
-                        <>
-                          {profile.pronouns && <span>•</span>}
-                          <span>{profile.age_range}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                   <div className="flex flex-col gap-1">
-                    {(profile as any)?.user_mode && (
-                      <UserModeBadge mode={(profile as any).user_mode} size="sm" />
-                    )}
-                    {profile.is_business && (
-                      <Badge variant="outline" className="text-xs">
-                        <Briefcase className="h-3 w-3 mr-1" />
-                        Business
+                    Near Me
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="gap-2 whitespace-nowrap h-12 px-6 hover:bg-accent/50 transition-colors"
+                  >
+                    <Filter className="h-4 w-4" />
+                    <span className="hidden sm:inline">Filters</span>
+                    {activeFiltersCount > 0 && (
+                      <Badge variant="secondary" className="ml-1 bg-primary text-primary-foreground">
+                        {activeFiltersCount}
                       </Badge>
                     )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Advanced Filters */}
+              {showFilters && (
+                <div className="animate-fade-in">
+                  <Card className="bg-background/80 backdrop-blur border-2 border-dashed border-muted">
+                    <CardContent className="p-6">
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Star className="h-5 w-5 text-primary" />
+                            <h3 className="text-lg font-semibold">Advanced Filters</h3>
+                          </div>
+                          {activeFiltersCount > 0 && (
+                            <Button variant="ghost" size="sm" onClick={clearAllFilters} className="gap-2 hover:bg-destructive/10 hover:text-destructive">
+                              <X className="h-4 w-4" />
+                              Clear All ({activeFiltersCount})
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {/* Location Filter */}
+                          <div className="space-y-3">
+                            <Label className="text-sm font-medium flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-primary" />
+                              Location
+                            </Label>
+                            <Input
+                              placeholder="Enter city or region"
+                              value={filters.location}
+                              onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
+                              className="border-2 focus:border-primary/50"
+                            />
+                          </div>
+
+                          {/* Age Range Filter */}
+                          <div className="space-y-3">
+                            <Label className="text-sm font-medium flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-primary" />
+                              Age Range
+                            </Label>
+                            <Select value={filters.ageRange} onValueChange={(value) => setFilters(prev => ({ ...prev, ageRange: value }))}>
+                              <SelectTrigger className="border-2 focus:border-primary/50">
+                                <SelectValue placeholder="Select age range" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background backdrop-blur border-2">
+                                <SelectItem value="all">All ages</SelectItem>
+                                {ageRanges.map((range) => (
+                                  <SelectItem key={range} value={range}>{range}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Relationship Status */}
+                          <div className="space-y-3">
+                            <Label className="text-sm font-medium flex items-center gap-2">
+                              <Heart className="h-4 w-4 text-primary" />
+                              Relationship Status
+                            </Label>
+                            <Select value={filters.relationshipStatus} onValueChange={(value) => setFilters(prev => ({ ...prev, relationshipStatus: value }))}>
+                              <SelectTrigger className="border-2 focus:border-primary/50">
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background backdrop-blur border-2">
+                                <SelectItem value="all">Any status</SelectItem>
+                                {relationshipStatuses.map((status) => (
+                                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Occupation */}
+                          <div className="space-y-3">
+                            <Label className="text-sm font-medium flex items-center gap-2">
+                              <Briefcase className="h-4 w-4 text-primary" />
+                              Occupation
+                            </Label>
+                            <Input
+                              placeholder="Enter occupation"
+                              value={filters.occupation}
+                              onChange={(e) => setFilters(prev => ({ ...prev, occupation: e.target.value }))}
+                              className="border-2 focus:border-primary/50"
+                            />
+                          </div>
+
+                          {/* Education */}
+                          <div className="space-y-3">
+                            <Label className="text-sm font-medium flex items-center gap-2">
+                              <GraduationCap className="h-4 w-4 text-primary" />
+                              Education
+                            </Label>
+                            <Select value={filters.education} onValueChange={(value) => setFilters(prev => ({ ...prev, education: value }))}>
+                              <SelectTrigger className="border-2 focus:border-primary/50">
+                                <SelectValue placeholder="Select education" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background backdrop-blur border-2">
+                                <SelectItem value="all">Any education</SelectItem>
+                                {educationLevels.map((level) => (
+                                  <SelectItem key={level} value={level}>{level}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Gender Identity */}
+                          <div className="space-y-3">
+                            <Label className="text-sm font-medium flex items-center gap-2">
+                              <Users className="h-4 w-4 text-primary" />
+                              Gender Identity
+                            </Label>
+                            <Select value={filters.genderIdentity} onValueChange={(value) => setFilters(prev => ({ ...prev, genderIdentity: value }))}>
+                              <SelectTrigger className="border-2 focus:border-primary/50">
+                                <SelectValue placeholder="Select gender" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background backdrop-blur border-2">
+                                <SelectItem value="all">Any gender</SelectItem>
+                                {genderIdentities.map((gender) => (
+                                  <SelectItem key={gender} value={gender}>{gender}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        {/* Interests Filter */}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-medium flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-primary" />
+                            Interests
+                          </Label>
+                          <Popover open={interestsOpen} onOpenChange={setInterestsOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={interestsOpen}
+                                className="w-full justify-between border-2"
+                              >
+                                {filters.interests.length > 0
+                                  ? `${filters.interests.length} interest${filters.interests.length !== 1 ? 's' : ''} selected`
+                                  : "Select interests..."}
+                                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0 bg-background backdrop-blur border-2">
+                              <Command>
+                                <CommandInput placeholder="Search interests..." />
+                                <CommandList>
+                                  <CommandEmpty>No interests found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {commonInterests.map((interest) => (
+                                      <CommandItem
+                                        key={interest}
+                                        value={interest}
+                                        onSelect={() => handleInterestToggle(interest)}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            filters.interests.includes(interest) ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        {interest}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          {filters.interests.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {filters.interests.map((interest) => (
+                                <Badge key={interest} variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
+                                  <Sparkles className="h-3 w-3" />
+                                  {interest}
+                                  <X
+                                    className="h-3 w-3 cursor-pointer hover:text-destructive"
+                                    onClick={() => handleInterestToggle(interest)}
+                                  />
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Boolean Filters */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="verified"
+                              checked={filters.isVerified}
+                              onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isVerified: !!checked }))}
+                            />
+                            <Label htmlFor="verified" className="text-sm">Verified profiles</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="business"
+                              checked={filters.isBusiness}
+                              onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isBusiness: !!checked }))}
+                            />
+                            <Label htmlFor="business" className="text-sm">Business accounts</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="children"
+                              checked={filters.hasChildren}
+                              onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasChildren: !!checked }))}
+                            />
+                            <Label htmlFor="children" className="text-sm">Has children</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="pets"
+                              checked={filters.hasPets}
+                              onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasPets: !!checked }))}
+                            />
+                            <Label htmlFor="pets" className="text-sm">Has pets</Label>
+                          </div>
+                        </div>
+
+                        {/* Sort Options */}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-medium flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-primary" />
+                            Sort By
+                          </Label>
+                          <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value as any }))}>
+                            <SelectTrigger className="w-full md:w-[200px] border-2">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background backdrop-blur border-2">
+                              <SelectItem value="newest">Newest members</SelectItem>
+                              <SelectItem value="oldest">Oldest members</SelectItem>
+                              <SelectItem value="alphabetical">Alphabetical</SelectItem>
+                              <SelectItem value="last_active">Last active</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Active Filters Display */}
+              {activeFiltersCount > 0 && !showFilters && (
+                <div className="animate-fade-in">
+                  <div className="flex flex-wrap gap-2 items-center justify-center p-4 bg-accent/30 rounded-lg border">
+                    <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Filter className="h-4 w-4" />
+                      Active filters:
+                    </span>
+                    {nearMe && (
+                      <Badge variant="secondary" className="gap-1 bg-blue-500/10 text-blue-700 border-blue-200">
+                        <Navigation className="h-3 w-3" />
+                        Near Me
+                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={handleNearMeToggle} />
+                      </Badge>
+                    )}
+                    {filters.location && (
+                      <Badge variant="secondary" className="gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {filters.location}
+                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => setFilters(prev => ({ ...prev, location: "" }))} />
+                      </Badge>
+                    )}
+                    {filters.ageRange && filters.ageRange !== 'all' && (
+                      <Badge variant="secondary" className="gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {filters.ageRange}
+                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => setFilters(prev => ({ ...prev, ageRange: "all" }))} />
+                      </Badge>
+                    )}
+                    {filters.interests.map((interest) => (
+                      <Badge key={interest} variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
+                        <Sparkles className="h-3 w-3" />
+                        {interest}
+                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => handleInterestToggle(interest)} />
+                      </Badge>
+                    ))}
                   </div>
                 </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-                {profile.bio && (
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {profile.bio}
-                  </p>
-                )}
-
-                <div className="space-y-2 mb-4">
-                  {profile.location && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {profile.location}
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <span className="text-sm font-medium text-primary">Finding amazing people...</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="p-6 animate-pulse border-2">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-16 h-16 bg-muted rounded-full" />
+                    <div className="space-y-2 flex-1">
+                      <div className="h-5 bg-muted rounded w-3/4" />
+                      <div className="h-4 bg-muted rounded w-1/2" />
                     </div>
-                  )}
-                  
-                  {profile.occupation && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Briefcase className="h-4 w-4 mr-2" />
-                      {profile.occupation}
-                    </div>
-                  )}
-
-                  {profile.education && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <GraduationCap className="h-4 w-4 mr-2" />
-                      {profile.education}
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Joined {new Date(profile.created_at).toLocaleDateString()}
                   </div>
-                </div>
-
-                {/* Profile Tags */}
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {profile.relationship_status && (
+                  <div className="space-y-3">
+                    <div className="h-4 bg-muted rounded" />
+                    <div className="h-4 bg-muted rounded w-2/3" />
+                    <div className="flex gap-2">
+                      <div className="h-6 bg-muted rounded w-16" />
+                      <div className="h-6 bg-muted rounded w-20" />
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Results Header */}
+            {profiles && profiles.length > 0 && (
+              <div className="flex items-center justify-between p-4 bg-accent/20 rounded-lg border">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  <span className="font-medium">
+                    {profiles.length} member{profiles.length !== 1 ? 's' : ''} found
+                  </span>
+                  {activeFiltersCount > 0 && (
                     <Badge variant="outline" className="text-xs">
-                      <Heart className="h-3 w-3 mr-1" />
-                      {profile.relationship_status}
+                      Filtered
                     </Badge>
                   )}
-                  {profile.has_children && (
-                    <Badge variant="outline" className="text-xs">Children</Badge>
-                  )}
-                  {profile.has_pets && (
-                    <Badge variant="outline" className="text-xs">Pets</Badge>
-                  )}
-                  {profile.gender_identity && (
-                    <Badge variant="secondary" className="text-xs">{profile.gender_identity}</Badge>
-                  )}
                 </div>
+                <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value as any }))}>
+                  <SelectTrigger className="w-auto border-0 bg-transparent">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest members</SelectItem>
+                    <SelectItem value="oldest">Oldest members</SelectItem>
+                    <SelectItem value="alphabetical">Alphabetical</SelectItem>
+                    <SelectItem value="last_active">Last active</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
-                
-                <div className="mt-4 flex items-center justify-between">
-                  {profile.website && (
-                    <a
-                      href={profile.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline flex items-center gap-1"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Visit Website
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  )}
-                  
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <StartConversationButton
-                      userId={profile.user_id}
-                      userName={profile.display_name || "Anonymous User"}
-                      variant="outline"
-                      size="sm"
-                    />
-                  </div>
-                </div>
-              </Card>
-              </Link>
-            ))}
+            {/* User Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {profiles?.map((profile) => (
+                <Link key={profile.id} to={`/user/${profile.user_id}`} className="block group">
+                  <Card className="p-6 h-full hover:shadow-elegant transition-all duration-300 hover-scale border-2 hover:border-primary/20 animate-fade-in group-hover:bg-accent/30">
+                    <div className="flex items-start space-x-4 mb-4">
+                      <div className="relative group/avatar">
+                        <Avatar className="h-16 w-16 border-4 border-background shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          <AvatarImage src={profile.avatar_url || undefined} />
+                          <AvatarFallback className="bg-gradient-primary text-primary-foreground text-lg font-bold">
+                            {profile.display_name?.charAt(0)?.toUpperCase() || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        {profile.verified_identity && (
+                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-primary rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                            <Check className="h-3 w-3 text-primary-foreground" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-lg text-foreground truncate group-hover:text-primary transition-colors duration-300">
+                          {profile.display_name || "Anonymous User"}
+                        </h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                          {profile.pronouns && <span className="font-medium">{profile.pronouns}</span>}
+                          {profile.age_range && (
+                            <>
+                              {profile.pronouns && <span>•</span>}
+                              <span>{profile.age_range}</span>
+                            </>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {(profile as any)?.user_mode && (
+                            <UserModeBadge mode={(profile as any).user_mode} size="sm" />
+                          )}
+                          {profile.is_business && (
+                            <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-200 text-blue-700">
+                              <Briefcase className="h-3 w-3 mr-1" />
+                              Business
+                            </Badge>
+                          )}
+                          {profile.verified_identity && (
+                            <Badge variant="outline" className="text-xs bg-green-500/10 border-green-200 text-green-700">
+                              <Check className="h-3 w-3 mr-1" />
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {profile.bio && (
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
+                        {profile.bio}
+                      </p>
+                    )}
+
+                    <div className="space-y-2 mb-4">
+                      {profile.location && (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4 mr-2" />
+                          {profile.location}
+                        </div>
+                      )}
+                      
+                      {profile.occupation && (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Briefcase className="h-4 w-4 mr-2" />
+                          {profile.occupation}
+                        </div>
+                      )}
+
+                      {profile.education && (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <GraduationCap className="h-4 w-4 mr-2" />
+                          {profile.education}
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Joined {new Date(profile.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    {/* Profile Tags */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {profile.relationship_status && (
+                        <Badge variant="outline" className="text-xs bg-pink-500/10 border-pink-200 text-pink-700">
+                          <Heart className="h-3 w-3 mr-1" />
+                          {profile.relationship_status}
+                        </Badge>
+                      )}
+                      {profile.has_children && (
+                        <Badge variant="outline" className="text-xs bg-orange-500/10 border-orange-200 text-orange-700">
+                          Children
+                        </Badge>
+                      )}
+                      {profile.has_pets && (
+                        <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-200 text-amber-700">
+                          Pets
+                        </Badge>
+                      )}
+                      {profile.gender_identity && (
+                        <Badge variant="secondary" className="text-xs bg-purple-500/10 border-purple-200 text-purple-700">
+                          {profile.gender_identity}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Action Footer */}
+                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/50">
+                      {profile.website ? (
+                        <a
+                          href={profile.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline flex items-center gap-1 font-medium transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Visit Website
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <div />
+                      )}
+                      
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <StartConversationButton
+                          userId={profile.user_id}
+                          userName={profile.display_name || "Anonymous User"}
+                          variant="outline"
+                          size="sm"
+                          className="hover:bg-primary hover:text-primary-foreground transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 
+        {/* Empty State */}
         {profiles && profiles.length === 0 && (
-          <div className="text-center py-12">
-            <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">No users found</h3>
-            <p className="text-muted-foreground">
-              {filters.searchQuery || activeFiltersCount > 0
-                ? "Try adjusting your search terms or filters" 
-                : "Be the first to join the community!"
-              }
-            </p>
-          </div>
+          <Card className="border-2 border-dashed border-muted">
+            <CardContent className="p-12 text-center space-y-6">
+              <div className="relative">
+                <Users className="mx-auto h-16 w-16 text-muted-foreground/50" />
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Search className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-foreground">No members found</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  {filters.searchQuery || activeFiltersCount > 0
+                    ? "Try adjusting your search terms or filters to discover more amazing people in our community." 
+                    : "Be among the first to join our growing community of inclusive and welcoming members!"}
+                </p>
+              </div>
+              {(filters.searchQuery || activeFiltersCount > 0) && (
+                <Button variant="outline" onClick={clearAllFilters} className="gap-2">
+                  <X className="h-4 w-4" />
+                  Clear all filters
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
