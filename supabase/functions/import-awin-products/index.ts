@@ -169,7 +169,7 @@ function mapAwinRowToMarketplace(row: AwinCsvRow) {
       commission_group: row.commission_group,
       last_updated: row.last_updated
     },
-    created_by: null // Will be set to a system user or admin
+    created_by: 'a60e7b7f-a454-4b13-8cd9-458d46d67e2b' // System admin user for imports
   }
 }
 
