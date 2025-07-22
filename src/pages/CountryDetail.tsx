@@ -768,7 +768,30 @@ export default function CountryDetail() {
                     )}
                   </CardContent>
                 </Card>
-              )}
+                )}
+
+              {/* Tours & Activities */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    Tours & Activities
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div 
+                    data-gyg-widget="auto" 
+                    data-gyg-partner-id="2PBDXWH"
+                    data-gyg-locale="en-US"
+                    data-gyg-location-name={country?.name}
+                    data-gyg-country-code={country?.code}
+                    data-gyg-cta="Book Now"
+                    data-gyg-exclude-soldout="true"
+                    data-gyg-number-of-items="6"
+                    style={{ minHeight: '400px' }}
+                  />
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
@@ -1072,30 +1095,6 @@ export default function CountryDetail() {
           </TabsContent>
         </Tabs>
 
-        {/* GetYourGuide Widget */}
-        <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Tours & Activities
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div 
-                data-gyg-widget="auto" 
-                data-gyg-partner-id="2PBDXWH"
-                data-gyg-locale="en-US"
-                data-gyg-location-name={country?.name}
-                data-gyg-country-code={country?.code}
-                data-gyg-cta="Book Now"
-                data-gyg-exclude-soldout="true"
-                data-gyg-number-of-items="6"
-                style={{ minHeight: '400px' }}
-              />
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
