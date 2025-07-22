@@ -648,6 +648,199 @@ export default function TagsDirectory() {
           </Tabs>
         </div>}
 
+      {viewMode === "category" && selectedCategory && (() => {
+        const categoryData = tagsByCategory.find(cat => cat.category === selectedCategory);
+        const categoryTags = categoryData?.tags || [];
+        const categoryUsageCount = categoryTags.reduce((total, tag) => total + (tagUsageCounts[tag.name] || 0), 0);
+        const IconComponent = getCategoryIcon(selectedCategory);
+        
+        return (
+          <div className="space-y-6">
+            {/* Category Header */}
+            <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-xl border p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-primary/20 rounded-lg">
+                  <IconComponent className="h-8 w-8 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold mb-2 capitalize">
+                    {selectedCategory.replace(/[-_]/g, ' ')} Tags
+                  </h2>
+                  <p className="text-muted-foreground mb-4">
+                    Explore all tags in the {selectedCategory.replace(/[-_]/g, ' ')} category
+                  </p>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Tag className="h-4 w-4 text-primary" />
+                      <span className="font-medium">{categoryTags.length} tags</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-primary" />
+                      <span className="font-medium">{categoryUsageCount} total uses</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Heart className="h-4 w-4 text-primary" />
+                      <span className="font-medium">
+                        {Math.round(categoryUsageCount / Math.max(categoryTags.length, 1))} avg uses per tag
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-card rounded-lg border p-4">
+                <div className="text-2xl font-bold text-primary">{categoryTags.length}</div>
+                <div className="text-sm text-muted-foreground">Total Tags</div>
+              </div>
+              <div className="bg-card rounded-lg border p-4">
+                <div className="text-2xl font-bold text-green-600">{categoryTags.filter(tag => tagUsageCounts[tag.name] > 0).length}</div>
+                <div className="text-sm text-muted-foreground">Used Tags</div>
+              </div>
+              <div className="bg-card rounded-lg border p-4">
+                <div className="text-2xl font-bold text-blue-600">{categoryUsageCount}</div>
+                <div className="text-sm text-muted-foreground">Total Usage</div>
+              </div>
+              <div className="bg-card rounded-lg border p-4">
+                <div className="text-2xl font-bold text-purple-600">
+                  {categoryTags.length > 0 ? Math.max(...categoryTags.map(tag => tagUsageCounts[tag.name] || 0)) : 0}
+                </div>
+                <div className="text-sm text-muted-foreground">Most Used</div>
+              </div>
+            </div>
+
+            {/* Tags Grid */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">All Tags in Category</h3>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>Sorted by usage</span>
+                </div>
+              </div>
+              
+              {categoryTags.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                  {categoryTags
+                    .sort((a, b) => (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0))
+                    .map((tag, index) => (
+                    <div 
+                      key={tag.id} 
+                      className="group bg-card rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1 animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                      onClick={() => handleTagClick(tag)}
+                    >
+                      {/* Tag Image */}
+                      <div className="aspect-square w-full overflow-hidden bg-muted rounded-lg mb-3">
+                        {tag.image_url ? (
+                          <img 
+                            src={tag.image_url} 
+                            alt={`${tag.name} themed image`} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder.svg';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Tag className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Tag Info */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
+                          <span className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-1">
+                            {tag.name}
+                          </span>
+                        </div>
+                        
+                        {/* Usage Stats */}
+                        <div className="flex items-center justify-between">
+                          {tagUsageCounts[tag.name] > 0 ? (
+                            <Badge variant="secondary" className="text-xs">
+                              {tagUsageCounts[tag.name]} {tagUsageCounts[tag.name] === 1 ? 'use' : 'uses'}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs text-muted-foreground">
+                              Unused
+                            </Badge>
+                          )}
+                          
+                          {/* Popularity Indicator */}
+                          {tagUsageCounts[tag.name] > 0 && (
+                            <div className="flex gap-1">
+                              {Array.from({ length: Math.min(Math.ceil((tagUsageCounts[tag.name] || 0) / 5), 3) }, (_, i) => (
+                                <div key={i} className="w-1 h-1 bg-primary rounded-full" />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Description Preview */}
+                        {tag.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {tag.description}
+                          </p>
+                        )}
+                      </div>
+                      
+                      {/* Hover Indicator */}
+                      <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-center text-xs text-primary">
+                          <span>Click to explore</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Tag className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h4 className="text-lg font-semibold mb-2">No tags in this category</h4>
+                  <p className="text-muted-foreground">
+                    This category doesn't have any tags yet. They may be added over time.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Related Categories */}
+            {tagsByCategory.length > 1 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Explore Other Categories</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {tagsByCategory
+                    .filter(cat => cat.category !== selectedCategory)
+                    .slice(0, 8)
+                    .map(({ category, count }) => {
+                      const RelatedIconComponent = getCategoryIcon(category);
+                      return (
+                        <div
+                          key={category}
+                          className="flex items-center gap-2 p-3 bg-card border rounded-lg cursor-pointer hover:shadow-md transition-shadow"
+                          onClick={() => handleCategoryClick(category)}
+                        >
+                          <RelatedIconComponent className="h-4 w-4 text-primary" />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm capitalize truncate">
+                              {category.replace(/[-_]/g, ' ')}
+                            </div>
+                            <div className="text-xs text-muted-foreground">{count} tags</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {viewMode === "search" && <div className="space-y-6">
           <h2 className="text-xl font-semibold">Search Results</h2>
           
