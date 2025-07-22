@@ -466,44 +466,183 @@ export default function TagsDirectory() {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tagsByCategory
-                  .sort((a, b) => b.count - a.count) // Sort by tag count descending
-                  .map(({ category, tags, count }) => {
-                  const IconComponent = getCategoryIcon(category);
-                  return (
-                    <div 
-                      key={category} 
-                      className="bg-card border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => handleCategoryClick(category)}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <IconComponent className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium capitalize">{category.replace(/[-_]/g, ' ')}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {count} tags • {tags.reduce((total, tag) => total + (tagUsageCounts[tag.name] || 0), 0)} uses
-                          </p>
-                        </div>
+              
+              {/* Category Stats Overview */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Tag className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Categories</span>
+                  </div>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{tagsByCategory.length}</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <span className="text-sm font-medium text-green-700 dark:text-green-300">Total Tags</span>
+                  </div>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">{allTags.length}</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Heart className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Active Usage</span>
+                  </div>
+                  <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                    {Object.values(tagUsageCounts).reduce((total, count) => total + count, 0)}
+                  </p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Brain className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                    <span className="text-sm font-medium text-orange-700 dark:text-orange-300">Avg per Category</span>
+                  </div>
+                  <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                    {Math.round(allTags.length / Math.max(tagsByCategory.length, 1))}
+                  </p>
+                </div>
+              </div>
+
+              {/* Categories Grid */}
+              <div className="space-y-8">
+                {/* Group categories by theme */}
+                {[
+                  {
+                    title: "Identity & Expression",
+                    description: "Core aspects of LGBTQ+ identity and self-expression",
+                    categories: tagsByCategory.filter(({ category }) => 
+                      ['gender-identity', 'sexual-orientation', 'romantic-orientation', 'expression', 'community-terms'].includes(category)
+                    ),
+                    color: "from-pink-500 to-rose-500"
+                  },
+                  {
+                    title: "Relationships & Dynamics", 
+                    description: "Connection, intimacy, and relationship structures",
+                    categories: tagsByCategory.filter(({ category }) => 
+                      ['relationship-structure', 'relationship-roles', 'power-dynamics', 'communication'].includes(category)
+                    ),
+                    color: "from-purple-500 to-violet-500"
+                  },
+                  {
+                    title: "Activities & Practices",
+                    description: "Intimate practices, activities, and expressions of connection",
+                    categories: tagsByCategory.filter(({ category }) => 
+                      ['intimacy', 'kink-practice', 'sexual-activity', 'roleplay'].includes(category)
+                    ),
+                    color: "from-red-500 to-pink-500"
+                  },
+                  {
+                    title: "Community & Culture",
+                    description: "Events, subcultures, and community spaces",
+                    categories: tagsByCategory.filter(({ category }) => 
+                      ['subculture', 'events-gatherings', 'celebrations', 'venues', 'online-spaces'].includes(category)
+                    ),
+                    color: "from-blue-500 to-cyan-500"
+                  },
+                  {
+                    title: "Health & Wellness",
+                    description: "Physical health, mental wellness, and safety resources",
+                    categories: tagsByCategory.filter(({ category }) => 
+                      ['physical-health', 'mental-wellness', 'safety-practices', 'support-resources'].includes(category)
+                    ),
+                    color: "from-green-500 to-emerald-500"
+                  },
+                  {
+                    title: "Lifestyle & Interests",
+                    description: "Personal interests, lifestyle choices, and general topics",
+                    categories: tagsByCategory.filter(({ category }) => 
+                      !['gender-identity', 'sexual-orientation', 'romantic-orientation', 'expression', 'community-terms',
+                        'relationship-structure', 'relationship-roles', 'power-dynamics', 'communication',
+                        'intimacy', 'kink-practice', 'sexual-activity', 'roleplay',
+                        'subculture', 'events-gatherings', 'celebrations', 'venues', 'online-spaces',
+                        'physical-health', 'mental-wellness', 'safety-practices', 'support-resources'].includes(category)
+                    ),
+                    color: "from-amber-500 to-orange-500"
+                  }
+                ].filter(group => group.categories.length > 0).map((group, groupIndex) => (
+                  <div key={group.title} className="animate-fade-in" style={{ animationDelay: `${groupIndex * 100}ms` }}>
+                    <div className="mb-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`h-1 w-12 bg-gradient-to-r ${group.color} rounded-full`} />
+                        <h3 className="text-lg font-semibold text-foreground">{group.title}</h3>
                       </div>
-                      <div className="flex flex-wrap gap-1">
-                        {tags.slice(0, 4).map((tag) => (
-                          <div key={tag.id} className="flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tag.color }} />
-                            {tag.name}
-                          </div>
-                        ))}
-                        {count > 4 && (
-                          <div className="text-xs bg-muted px-2 py-1 rounded text-muted-foreground">
-                            +{count - 4} more
-                          </div>
-                        )}
-                      </div>
+                      <p className="text-sm text-muted-foreground ml-15">{group.description}</p>
                     </div>
-                  );
-                })}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {group.categories
+                        .sort((a, b) => b.count - a.count)
+                        .map(({ category, tags, count }, index) => {
+                        const IconComponent = getCategoryIcon(category);
+                        const usageCount = tags.reduce((total, tag) => total + (tagUsageCounts[tag.name] || 0), 0);
+                        
+                        return (
+                          <div 
+                            key={category} 
+                            className="group bg-card border rounded-xl p-5 cursor-pointer hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1 animate-scale-in"
+                            style={{ animationDelay: `${(groupIndex * 100) + (index * 50)}ms` }}
+                            onClick={() => handleCategoryClick(category)}
+                          >
+                            <div className="flex items-start gap-4 mb-4">
+                              <div className={`p-3 bg-gradient-to-br ${group.color} rounded-lg shadow-sm group-hover:shadow-md transition-shadow`}>
+                                <IconComponent className="h-5 w-5 text-white" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-foreground capitalize group-hover:text-primary transition-colors line-clamp-1">
+                                  {category.replace(/[-_]/g, ' ')}
+                                </h4>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="secondary" className="text-xs font-medium">
+                                    {count} tags
+                                  </Badge>
+                                  {usageCount > 0 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {usageCount} uses
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Tag Preview */}
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-1">
+                                {tags.slice(0, 3).map((tag) => (
+                                  <div 
+                                    key={tag.id} 
+                                    className="flex items-center gap-1.5 text-xs bg-muted/50 group-hover:bg-muted px-2 py-1 rounded-md transition-colors"
+                                  >
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tag.color }} />
+                                    <span className="font-medium truncate max-w-[80px]">{tag.name}</span>
+                                    {tagUsageCounts[tag.name] > 0 && (
+                                      <span className="text-muted-foreground">({tagUsageCounts[tag.name]})</span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                              {count > 3 && (
+                                <div className="text-xs text-muted-foreground font-medium">
+                                  +{count - 3} more tags
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Hover indicator */}
+                            <div className="mt-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-xs text-muted-foreground">Click to explore</span>
+                              <div className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform">
+                                →
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                   </div>
+                 ))}
               </div>
             </TabsContent>
           </Tabs>
