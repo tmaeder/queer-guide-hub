@@ -27,9 +27,12 @@ import {
   ShoppingBag,
   DollarSign,
   Eye,
-  Star
+  Star,
+  Download,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminMarketplace() {
   const navigate = useNavigate();
@@ -42,6 +45,17 @@ export default function AdminMarketplace() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [filteredListings, setFilteredListings] = useState(listings);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isAwinImportOpen, setIsAwinImportOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importParams, setImportParams] = useState({
+    category: "",
+    limit: 50,
+    page: 1,
+    brand: "",
+    minPrice: "",
+    maxPrice: "",
+    keywords: ""
+  });
   const [editingListing, setEditingListing] = useState<any>(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -160,6 +174,41 @@ export default function AdminMarketplace() {
     setEditingListing(null);
   };
 
+  const handleAwinImport = async () => {
+    setIsImporting(true);
+    try {
+      console.log("Starting Awin import with params:", importParams);
+      
+      const { data, error } = await supabase.functions.invoke('import-awin-products', {
+        body: importParams
+      });
+
+      if (error) {
+        console.error("Awin import error:", error);
+        throw new Error(error.message || "Failed to import from Awin");
+      }
+
+      toast({
+        title: "Import Successful",
+        description: `Imported ${data.imported} products from Awin (${data.total} total available)`
+      });
+
+      setIsAwinImportOpen(false);
+      // Refresh listings
+      window.location.reload();
+      
+    } catch (error) {
+      console.error("Import error:", error);
+      toast({
+        title: "Import Failed",
+        description: error.message || "Failed to import products from Awin",
+        variant: "destructive"
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   if (rolesLoading || loading) {
     return (
       <div className="container mx-auto p-6">
@@ -182,13 +231,124 @@ export default function AdminMarketplace() {
             <p className="text-muted-foreground">Manage marketplace listings and products</p>
           </div>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Listing
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={isAwinImportOpen} onOpenChange={setIsAwinImportOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Import from Awin
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Import Products from Awin</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Import products from your Awin affiliate network. Configure filters below to target specific products.
+                </p>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="awin-category">Category Filter</Label>
+                    <Input
+                      id="awin-category"
+                      placeholder="e.g., fashion, electronics"
+                      value={importParams.category}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, category: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="awin-brand">Brand Filter</Label>
+                    <Input
+                      id="awin-brand"
+                      placeholder="e.g., Nike, Apple"
+                      value={importParams.brand}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, brand: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="awin-limit">Products Limit</Label>
+                    <Input
+                      id="awin-limit"
+                      type="number"
+                      min="1"
+                      max="1000"
+                      value={importParams.limit}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, limit: parseInt(e.target.value) || 50 }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="awin-min-price">Min Price</Label>
+                    <Input
+                      id="awin-min-price"
+                      type="number"
+                      step="0.01"
+                      value={importParams.minPrice}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, minPrice: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="awin-max-price">Max Price</Label>
+                    <Input
+                      id="awin-max-price"
+                      type="number"
+                      step="0.01"
+                      value={importParams.maxPrice}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, maxPrice: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="awin-keywords">Keywords</Label>
+                  <Input
+                    id="awin-keywords"
+                    placeholder="Search terms to filter products"
+                    value={importParams.keywords}
+                    onChange={(e) => setImportParams(prev => ({ ...prev, keywords: e.target.value }))}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAwinImportOpen(false)}
+                    disabled={isImporting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAwinImport}
+                    disabled={isImporting}
+                  >
+                    {isImporting ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        Start Import
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Listing
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Listing</DialogTitle>
@@ -413,6 +573,7 @@ export default function AdminMarketplace() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Filters */}
