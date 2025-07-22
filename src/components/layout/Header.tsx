@@ -123,6 +123,21 @@ export function Header() {
                     </Select>
                   </div>
 
+                  {/* Quick actions grid */}
+                  <div className="grid grid-cols-3 gap-2 p-2">
+                    {userMenuItems.map((item) => (
+                      <Button 
+                        key={item.to}
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex flex-col items-center p-3 h-auto gap-1" 
+                        onClick={() => navigate(item.to)}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span className="text-xs">{item.label}</span>
+                      </Button>
+                    ))}
+                  </div>
 
                   <DropdownMenuSeparator />
                   
