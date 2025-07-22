@@ -1089,6 +1089,21 @@ export default function CountryDetail() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* GetYourGuide Widget */}
+        <div className="mt-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Tours & Activities
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div data-gyg-widget="auto" data-gyg-partner-id="2PBDXWH"></div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
