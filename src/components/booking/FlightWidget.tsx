@@ -44,7 +44,27 @@ export default function FlightWidget({
   }, [airportCode, currency]);
 
   if (!airportCode) {
-    return null;
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plane className="h-5 w-5" />
+            {title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <Plane className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">
+              Airport information not available for this location.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              You can search for flights directly on travel booking sites.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
