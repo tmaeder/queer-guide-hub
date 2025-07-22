@@ -260,106 +260,123 @@ Deno.serve(async (req) => {
     console.log('Downloaded compressed file size:', compressedData.byteLength, 'bytes')
 
     // Decompress the gzip data using built-in Deno decompression
-    const decompressedStream = new DecompressionStream('gzip')
-    const writer = decompressedStream.writable.getWriter()
-    const reader = decompressedStream.readable.getReader()
-    
-    await writer.write(new Uint8Array(compressedData))
-    await writer.close()
-    
-    const chunks = []
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      chunks.push(value)
-    }
-    
-    const decompressedData = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0))
-    let offset = 0
-    for (const chunk of chunks) {
-      decompressedData.set(chunk, offset)
-      offset += chunk.length
-    }
-    
-    const csvContent = new TextDecoder().decode(decompressedData)
-    console.log('Decompressed CSV content size:', csvContent.length, 'characters')
+    console.log('Starting decompression...')
+    try {
+      const decompressedStream = new DecompressionStream('gzip')
+      const writer = decompressedStream.writable.getWriter()
+      const reader = decompressedStream.readable.getReader()
+      
+      console.log('Writing compressed data to stream...')
+      await writer.write(new Uint8Array(compressedData))
+      await writer.close()
+      
+      console.log('Reading decompressed data...')
+      const chunks = []
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        chunks.push(value)
+      }
+      
+      console.log(`Got ${chunks.length} chunks from decompression`)
+      const decompressedData = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0))
+      let offset = 0
+      for (const chunk of chunks) {
+        decompressedData.set(chunk, offset)
+        offset += chunk.length
+      }
+      
+      const csvContent = new TextDecoder().decode(decompressedData)
+      console.log('Decompressed CSV content size:', csvContent.length, 'characters')
+      console.log('First 500 chars of CSV:', csvContent.substring(0, 500))
+      
+      // Parse CSV content
+      const csvRows = parseCSV(csvContent)
+      console.log('Parsed CSV rows:', csvRows.length)
 
-    // Parse CSV content
-    const csvRows = parseCSV(csvContent)
-    console.log('Parsed CSV rows:', csvRows.length)
+      if (csvRows.length === 0) {
+        return new Response(
+          JSON.stringify({ 
+            message: 'No products found in CSV feed',
+            imported: 0,
+            total: 0
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
-    if (csvRows.length === 0) {
+      // Limit the number of products to process
+      const productsToProcess = csvRows.slice(skipRows, skipRows + maxProducts)
+      console.log(`Processing ${productsToProcess.length} products (skipped ${skipRows}, max ${maxProducts})`)
+
+      // Map CSV rows to marketplace listings format
+      const marketplaceListings = productsToProcess
+        .map(mapAwinRowToMarketplace)
+        .filter(listing => listing.title && listing.title !== 'Untitled Product') // Filter out invalid products
+
+      console.log(`Prepared ${marketplaceListings.length} valid listings for import`)
+      
+      // Log sample of first few products for debugging
+      if (marketplaceListings.length > 0) {
+        console.log('Sample product:', JSON.stringify(marketplaceListings[0], null, 2))
+      }
+
+      // Insert products in batches to avoid timeout
+      let totalInserted = 0
+      const errors: string[] = []
+
+      for (let i = 0; i < marketplaceListings.length; i += batchSize) {
+        const batch = marketplaceListings.slice(i, i + batchSize)
+        console.log(`Inserting batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(marketplaceListings.length / batchSize)} (${batch.length} items)`)
+
+        try {
+          const { data: insertedListings, error: insertError } = await supabase
+            .from('marketplace_listings')
+            .insert(batch)
+            .select('id, title, price, category')
+
+          if (insertError) {
+            console.error('Batch insert error:', insertError)
+            errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${insertError.message}`)
+          } else {
+            totalInserted += insertedListings?.length || 0
+            console.log(`Successfully inserted batch: ${insertedListings?.length || 0} items`)
+          }
+        } catch (error) {
+          console.error('Batch processing error:', error)
+          errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message}`)
+        }
+      }
+
+      console.log(`Import completed. Total inserted: ${totalInserted}`)
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: `Successfully imported ${totalInserted} products from Awin CSV feed`,
+          imported: totalInserted,
+          total: csvRows.length,
+          processed: productsToProcess.length,
+          skipped: skipRows,
+          errors: errors.length > 0 ? errors : undefined,
+          feed_url: feedUrl
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+
+    } catch (decompressError) {
+      console.error('Decompression error:', decompressError)
       return new Response(
         JSON.stringify({ 
-          message: 'No products found in CSV feed',
-          imported: 0,
-          total: 0
+          error: 'Failed to decompress CSV data',
+          details: decompressError.message 
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    // Limit the number of products to process
-    const productsToProcess = csvRows.slice(skipRows, skipRows + maxProducts)
-    console.log(`Processing ${productsToProcess.length} products (skipped ${skipRows}, max ${maxProducts})`)
-
-    // Map CSV rows to marketplace listings format
-    const marketplaceListings = productsToProcess
-      .map(mapAwinRowToMarketplace)
-      .filter(listing => listing.title && listing.title !== 'Untitled Product') // Filter out invalid products
-
-    console.log(`Prepared ${marketplaceListings.length} valid listings for import`)
-    
-    // Log sample of first few products for debugging
-    if (marketplaceListings.length > 0) {
-      console.log('Sample product:', JSON.stringify(marketplaceListings[0], null, 2))
-    }
-
-    // Insert products in batches to avoid timeout
-    let totalInserted = 0
-    const errors: string[] = []
-
-    for (let i = 0; i < marketplaceListings.length; i += batchSize) {
-      const batch = marketplaceListings.slice(i, i + batchSize)
-      console.log(`Inserting batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(marketplaceListings.length / batchSize)} (${batch.length} items)`)
-
-      try {
-        const { data: insertedListings, error: insertError } = await supabase
-          .from('marketplace_listings')
-          .insert(batch)
-          .select('id, title, price, category')
-
-        if (insertError) {
-          console.error('Batch insert error:', insertError)
-          errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${insertError.message}`)
-        } else {
-          totalInserted += insertedListings?.length || 0
-          console.log(`Successfully inserted batch: ${insertedListings?.length || 0} items`)
-        }
-      } catch (error) {
-        console.error('Batch processing error:', error)
-        errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message}`)
-      }
-    }
-
-    console.log(`Import completed. Total inserted: ${totalInserted}`)
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: `Successfully imported ${totalInserted} products from Awin CSV feed`,
-        imported: totalInserted,
-        total: csvRows.length,
-        processed: productsToProcess.length,
-        skipped: skipRows,
-        errors: errors.length > 0 ? errors : undefined,
-        feed_url: feedUrl
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
 
   } catch (error) {
     console.error('Error in import-awin-products function:', error)
