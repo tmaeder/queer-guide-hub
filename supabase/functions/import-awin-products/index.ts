@@ -1,5 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { gunzip } from 'https://deno.land/x/compress@v0.4.5/gzip/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -260,8 +259,28 @@ Deno.serve(async (req) => {
     const compressedData = await response.arrayBuffer()
     console.log('Downloaded compressed file size:', compressedData.byteLength, 'bytes')
 
-    // Decompress the gzip data
-    const decompressedData = gunzip(new Uint8Array(compressedData))
+    // Decompress the gzip data using built-in Deno decompression
+    const decompressedStream = new DecompressionStream('gzip')
+    const writer = decompressedStream.writable.getWriter()
+    const reader = decompressedStream.readable.getReader()
+    
+    await writer.write(new Uint8Array(compressedData))
+    await writer.close()
+    
+    const chunks = []
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      chunks.push(value)
+    }
+    
+    const decompressedData = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0))
+    let offset = 0
+    for (const chunk of chunks) {
+      decompressedData.set(chunk, offset)
+      offset += chunk.length
+    }
+    
     const csvContent = new TextDecoder().decode(decompressedData)
     console.log('Decompressed CSV content size:', csvContent.length, 'characters')
 
@@ -290,6 +309,11 @@ Deno.serve(async (req) => {
       .filter(listing => listing.title && listing.title !== 'Untitled Product') // Filter out invalid products
 
     console.log(`Prepared ${marketplaceListings.length} valid listings for import`)
+    
+    // Log sample of first few products for debugging
+    if (marketplaceListings.length > 0) {
+      console.log('Sample product:', JSON.stringify(marketplaceListings[0], null, 2))
+    }
 
     // Insert products in batches to avoid timeout
     let totalInserted = 0
