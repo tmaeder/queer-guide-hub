@@ -88,7 +88,7 @@ export default function Groups() {
   return <div className="space-y-8 py-8">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-slate-950">
           Community Groups
         </h1>
         <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
