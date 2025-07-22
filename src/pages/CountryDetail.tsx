@@ -18,6 +18,7 @@ import { NewsCard } from "@/components/news/NewsCard";
 import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
 import FlightWidget from "@/components/booking/FlightWidget";
+import HotelWidget from "@/components/booking/HotelWidget";
 type CountryWithRelations = {
   id: string;
   name: string;
@@ -583,11 +584,12 @@ export default function CountryDetail() {
               {/* Flight Widget */}
               <FlightWidget airportCode={country.airport_codes?.[0]} currency={country.currency} title={`Flights to ${country.name}`} />
               
-              {/* Airport Information */}
-              {(country.airport_codes || country.major_airports) && <Card>
-                  
-                  
-                </Card>}
+              {/* Hotel Widget */}
+              <HotelWidget
+                latitude={country.latitude}
+                longitude={country.longitude}
+                title={`Hotels in ${country.name}`}
+              />
 
               {/* Tours & Activities */}
               <Card>

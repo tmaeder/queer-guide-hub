@@ -41,6 +41,7 @@ import { NewsCard } from "@/components/news/NewsCard";
 import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
 import FlightWidget from "@/components/booking/FlightWidget";
+import HotelWidget from "@/components/booking/HotelWidget";
 
 type CityWithCountry = {
   id: string;
@@ -646,17 +647,24 @@ export default function CityDetail() {
           </TabsContent>
 
           <TabsContent value="travel" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {/* Flight Widget */}
               <FlightWidget
                 airportCode={city.major_airport_code}
                 currency={city.countries?.currency}
                 title={`Flights to ${city.name}`}
-                className="md:col-span-2"
               />
               
-              {/* Transportation */}
-              <Card>
+              {/* Hotel Widget */}
+              <HotelWidget
+                latitude={city.latitude}
+                longitude={city.longitude}
+                title={`Hotels in ${city.name}`}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Transportation */}
+                <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Bus className="h-5 w-5" />
@@ -710,10 +718,11 @@ export default function CityDetail() {
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+                 </CardContent>
+               </Card>
+               </div>
+             </div>
+           </TabsContent>
 
           <TabsContent value="news" className="space-y-6">
             <Card>
