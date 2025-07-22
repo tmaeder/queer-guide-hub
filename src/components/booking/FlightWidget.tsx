@@ -20,6 +20,9 @@ export default function FlightWidget({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('FlightWidget: airportCode =', airportCode);
+    console.log('FlightWidget: widgetRef.current =', widgetRef.current);
+    
     if (!widgetRef.current) {
       setIsLoading(false);
       return;
