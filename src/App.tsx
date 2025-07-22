@@ -57,7 +57,7 @@ import AdminMarketplace from "./pages/AdminMarketplace";
 import AdminNewsSources from "./pages/AdminNewsSources";
 import News from "./pages/News";
 import Travel from "./pages/Travel";
-import MyBookings from "./pages/MyBookings";
+
 import ProfileSettings from "./pages/ProfileSettings";
 import UserProfile from "./pages/UserProfile";
 
@@ -281,7 +281,7 @@ const App = () => {
                    <Route path="/accessibility" element={<AccessibilityHub />} />
                    <Route path="/messages" element={<Messages />} />
                    <Route path="/friends" element={<Friends />} />
-                    <Route path="/my-bookings" element={<MyBookings />} />
+                    
                    <Route path="/favorites" element={<Favorites />} />
                    <Route path="/profile/settings" element={<ProfileSettings />} />
                    <Route path="/user/:userId" element={<UserProfile />} />
