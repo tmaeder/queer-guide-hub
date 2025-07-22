@@ -115,7 +115,7 @@ export function HotelResults({ hotels, searchParams }: HotelResultsProps) {
                             {IconComponent && typeof IconComponent === 'function' ? (
                               <IconComponent className="h-3 w-3 mr-1" />
                             ) : (
-                              <span className="mr-1">{amenityIcons[amenity] || '•'}</span>
+                              <span className="mr-1">{IconComponent || '•'}</span>
                             )}
                             {amenity}
                           </Badge>
