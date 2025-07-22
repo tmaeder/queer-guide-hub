@@ -115,8 +115,12 @@ export default function CityDetail() {
     if (!city) return;
     
     // Fetch related news, venues, and events for this city
+    // Use city ID for precise news filtering, fallback to name search for venues/events
     await Promise.all([
-      fetchArticles({ search: city.name }),
+      fetchArticles({ 
+        cityIds: [city.id],
+        countryIds: city.countries?.id ? [city.countries.id] : undefined
+      }),
       fetchVenues({ city: city.name }),
       fetchEvents({ city: city.name })
     ]);

@@ -123,13 +123,18 @@ export default function CountryDetail() {
     if (!country) return;
 
     // Fetch related news, venues, and events for this country
-    await Promise.all([fetchArticles({
-      search: country.name
-    }), fetchVenues({
-      search: country.name
-    }), fetchEvents({
-      search: country.name
-    })]);
+    // Use country ID for precise news filtering, fallback to name search for venues/events
+    await Promise.all([
+      fetchArticles({
+        countryIds: [country.id]
+      }), 
+      fetchVenues({
+        search: country.name
+      }), 
+      fetchEvents({
+        search: country.name
+      })
+    ]);
   };
   const fetchCountryDetails = async () => {
     try {
