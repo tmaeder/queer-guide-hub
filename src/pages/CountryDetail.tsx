@@ -227,40 +227,47 @@ export default function CountryDetail() {
         </div>
 
         {/* Hero Section */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            {/* Country Images */}
-            <CountryHeroImages countryName={country.name} />
-            <div className="flex items-center gap-4 mb-4">
-              {country.flag_emoji && <span className="text-6xl">{country.flag_emoji}</span>}
-              <div>
-                <h1 className="text-4xl font-bold">{country.name}</h1>
-                <p className="text-xl text-muted-foreground flex items-center gap-2">
-                  {country.capital && <>
-                      <Landmark className="h-5 w-5" />
-                      <button onClick={async () => {
-                    const {
-                      data: cities
-                    } = await supabase.from('cities').select('id').eq('name', country.capital).eq('country_id', country.id).eq('is_capital', true).maybeSingle();
-                    if (cities?.id) {
-                      navigate(`/city/${cities.id}`);
-                    } else {
-                      navigate(`/directory?search=${encodeURIComponent(country.capital)}&type=cities`);
-                    }
-                  }} className="text-primary hover:underline font-medium">
-                        {country.capital}
-                      </button>
-                    </>}
-                </p>
+        <Card className="mb-8 overflow-hidden">
+          <CardContent className="p-0">
+            {/* Country Images with overlay */}
+            <div className="relative">
+              <CountryHeroImages countryName={country.name} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                <div className="flex items-center gap-4 mb-4">
+                  {country.flag_emoji && <span className="text-6xl drop-shadow-lg">{country.flag_emoji}</span>}
+                  <div>
+                    <h1 className="text-5xl font-bold mb-2 drop-shadow-lg">{country.name}</h1>
+                    <p className="text-xl text-white/90 flex items-center gap-2">
+                      {country.capital && <>
+                          <Landmark className="h-5 w-5" />
+                          <button onClick={async () => {
+                        const {
+                          data: cities
+                        } = await supabase.from('cities').select('id').eq('name', country.capital).eq('country_id', country.id).eq('is_capital', true).maybeSingle();
+                        if (cities?.id) {
+                          navigate(`/city/${cities.id}`);
+                        } else {
+                          navigate(`/directory?search=${encodeURIComponent(country.capital)}&type=cities`);
+                        }
+                      }} className="text-white hover:text-white/80 font-medium hover:underline">
+                            {country.capital}
+                          </button>
+                        </>}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Weather Forecast */}
-            {country.latitude && country.longitude && <div className="mt-4 pt-4 border-t border-border">
+            {country.latitude && country.longitude && <div className="p-6 border-b border-border">
                 <CountryWeatherForecast latitude={country.latitude} longitude={country.longitude} countryName={country.name} capital={country.capital} />
               </div>}
 
-            {country.description && <p className="text-muted-foreground leading-relaxed mt-4">{country.description}</p>}
+            {country.description && <div className="p-6">
+                <p className="text-muted-foreground leading-relaxed text-lg">{country.description}</p>
+              </div>}
           </CardContent>
         </Card>
 

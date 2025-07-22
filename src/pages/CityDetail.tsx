@@ -243,54 +243,63 @@ export default function CityDetail() {
         </div>
 
         {/* Hero Section */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            {/* City Images */}
-            <CityHeroImages cityName={city.name} countryName={city.countries?.name} />
-            <div className="flex items-center gap-4 mb-4">
-              {city.countries?.flag_emoji && (
-                <span className="text-6xl">{city.countries.flag_emoji}</span>
-              )}
-              <div>
-                <h1 className="text-4xl font-bold">{city.name}</h1>
-                <p className="text-xl text-muted-foreground">
-                  {city.region_name && `${city.region_name}, `}{city.countries?.name}
-                </p>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {city.is_capital && (
-                    <Badge variant="secondary">
-                      <Building className="h-3 w-3 mr-1" />
-                      Capital City
-                    </Badge>
+        <Card className="mb-8 overflow-hidden">
+          <CardContent className="p-0">
+            {/* City Images with overlay */}
+            <div className="relative">
+              <CityHeroImages cityName={city.name} countryName={city.countries?.name} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                <div className="flex items-center gap-4 mb-4">
+                  {city.countries?.flag_emoji && (
+                    <span className="text-6xl drop-shadow-lg">{city.countries.flag_emoji}</span>
                   )}
-                  {city.is_major_city && (
-                    <Badge variant="outline">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      Major City
-                    </Badge>
-                  )}
+                  <div>
+                    <h1 className="text-5xl font-bold mb-2 drop-shadow-lg">{city.name}</h1>
+                    <p className="text-xl text-white/90 mb-3">
+                      {city.region_name && `${city.region_name}, `}{city.countries?.name}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {city.is_capital && (
+                        <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                          <Building className="h-3 w-3 mr-1" />
+                          Capital City
+                        </Badge>
+                      )}
+                      {city.is_major_city && (
+                        <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          Major City
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {city.description && (
-              <p className="text-muted-foreground leading-relaxed mt-4">{city.description}</p>
+              <div className="p-6 border-t border-border">
+                <p className="text-muted-foreground leading-relaxed text-lg">{city.description}</p>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="demographics">Demographics</TabsTrigger>
-            <TabsTrigger value="economy">Economy</TabsTrigger>
-            <TabsTrigger value="geography">Geography</TabsTrigger>
-            <TabsTrigger value="culture">Culture</TabsTrigger>
-            <TabsTrigger value="travel">Travel</TabsTrigger>
-            <TabsTrigger value="news">News</TabsTrigger>
-            <TabsTrigger value="venues">Venues</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="overview" className="space-y-8">
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-4 mb-6">
+            <TabsList className="grid w-full grid-cols-9 h-12">
+              <TabsTrigger value="overview" className="text-sm font-medium">Overview</TabsTrigger>
+              <TabsTrigger value="demographics" className="text-sm font-medium">Demographics</TabsTrigger>
+              <TabsTrigger value="economy" className="text-sm font-medium">Economy</TabsTrigger>
+              <TabsTrigger value="geography" className="text-sm font-medium">Geography</TabsTrigger>
+              <TabsTrigger value="culture" className="text-sm font-medium">Culture</TabsTrigger>
+              <TabsTrigger value="travel" className="text-sm font-medium">Travel</TabsTrigger>
+              <TabsTrigger value="news" className="text-sm font-medium">News</TabsTrigger>
+              <TabsTrigger value="venues" className="text-sm font-medium">Venues</TabsTrigger>
+              <TabsTrigger value="events" className="text-sm font-medium">Events</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
