@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon, Plane, Users, MapPin } from 'lucide-react';
+import { CalendarIcon, Plane, Users, MapPin, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,51 +9,33 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { useBookings, type Flight, type FlightSearchParams } from '@/hooks/useBookings';
-import { FlightResults } from './FlightResults';
 
 export function FlightSearch() {
-  const [searchParams, setSearchParams] = useState<FlightSearchParams>({
+  const [searchParams, setSearchParams] = useState({
     origin: '',
     destination: '',
-    departureDate: '',
-    returnDate: '',
     passengers: 1,
     class: 'economy'
   });
   const [departureDate, setDepartureDate] = useState<Date>();
   const [returnDate, setReturnDate] = useState<Date>();
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<Flight[]>([]);
-  const [hasSearched, setHasSearched] = useState(false);
 
-  const { searchFlights } = useBookings();
-
-  const handleSearch = async () => {
-    if (!searchParams.origin || !searchParams.destination || !departureDate) {
-      return;
-    }
-
-    setIsSearching(true);
-    setHasSearched(false);
-
-    try {
-      const params = {
-        ...searchParams,
-        departureDate: format(departureDate, 'yyyy-MM-dd'),
-        returnDate: returnDate ? format(returnDate, 'yyyy-MM-dd') : undefined,
-      };
-
-      const result = await searchFlights(params);
-      setSearchResults(result.flights);
-      setHasSearched(true);
-    } catch (error) {
-      console.error('Flight search error:', error);
-      setSearchResults([]);
-      setHasSearched(true);
-    } finally {
-      setIsSearching(false);
-    }
+  const handleSearchOnAviasales = () => {
+    // Build Aviasales URL with search parameters
+    const baseUrl = 'https://www.aviasales.com/search';
+    const params = new URLSearchParams();
+    
+    if (searchParams.origin) params.append('origin_iata', searchParams.origin);
+    if (searchParams.destination) params.append('destination_iata', searchParams.destination);
+    if (departureDate) params.append('depart_date', format(departureDate, 'yyyy-MM-dd'));
+    if (returnDate) params.append('return_date', format(returnDate, 'yyyy-MM-dd'));
+    params.append('adults', searchParams.passengers.toString());
+    params.append('children', '0');
+    params.append('infants', '0');
+    params.append('trip_class', searchParams.class === 'economy' ? '0' : searchParams.class === 'business' ? '1' : '2');
+    
+    const aviasalesUrl = `${baseUrl}?${params.toString()}`;
+    window.open(aviasalesUrl, '_blank');
   };
 
   return (
@@ -62,7 +44,7 @@ export function FlightSearch() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Plane className="h-5 w-5" />
-            Search Flights
+            Search Flights on Aviasales
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -195,25 +177,19 @@ export function FlightSearch() {
           </div>
 
           <Button 
-            onClick={handleSearch} 
+            onClick={handleSearchOnAviasales} 
             className="w-full"
-            disabled={isSearching || !searchParams.origin || !searchParams.destination || !departureDate}
+            disabled={!searchParams.origin || !searchParams.destination || !departureDate}
           >
-            {isSearching ? 'Searching...' : 'Search Flights'}
+            Search Flights on Aviasales
+            <ExternalLink className="ml-2 h-4 w-4" />
           </Button>
+          
+          <div className="text-center text-sm text-muted-foreground">
+            You will be redirected to Aviasales to complete your flight search and booking
+          </div>
         </CardContent>
       </Card>
-
-      {hasSearched && (
-        <FlightResults 
-          flights={searchResults}
-          searchParams={{
-            ...searchParams,
-            departureDate: departureDate ? format(departureDate, 'yyyy-MM-dd') : '',
-            returnDate: returnDate ? format(returnDate, 'yyyy-MM-dd') : undefined,
-          }}
-        />
-      )}
     </div>
   );
 }
