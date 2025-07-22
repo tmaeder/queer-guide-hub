@@ -306,7 +306,10 @@ export default function TagsDirectory() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-semibold">All Tags</h2>
-                  <Badge variant="secondary">{allTags.length}</Badge>
+                  <Badge variant="secondary">{allTags.length} tags</Badge>
+                  <Badge variant="outline">
+                    {allTags.reduce((total, tag) => total + (tag.usage_count || 0), 0)} total uses
+                  </Badge>
                 </div>
                 <Button onClick={storeTagImages} disabled={processingImages} variant="outline" size="sm">
                   <Upload className="h-4 w-4 mr-2" />
@@ -342,6 +345,11 @@ export default function TagsDirectory() {
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
                           <span className="text-sm font-medium truncate">{tag.name}</span>
                         </div>
+                        {tag.usage_count > 0 && (
+                          <div className="text-xs text-muted-foreground">
+                            {tag.usage_count} {tag.usage_count === 1 ? 'use' : 'uses'}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -408,7 +416,9 @@ export default function TagsDirectory() {
                         </div>
                         <div>
                           <h3 className="font-medium capitalize">{category.replace(/[-_]/g, ' ')}</h3>
-                          <p className="text-sm text-muted-foreground">{count} tags</p>
+                          <p className="text-sm text-muted-foreground">
+                            {count} tags • {tags.reduce((total, tag) => total + (tag.usage_count || 0), 0)} uses
+                          </p>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-1">
