@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { decompress } from 'https://deno.land/x/compress@v0.4.5/gzip/gzip.ts'
+import { gunzip } from 'https://deno.land/x/compress@v0.4.5/gzip/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -261,7 +261,7 @@ Deno.serve(async (req) => {
     console.log('Downloaded compressed file size:', compressedData.byteLength, 'bytes')
 
     // Decompress the gzip data
-    const decompressedData = decompress(new Uint8Array(compressedData))
+    const decompressedData = gunzip(new Uint8Array(compressedData))
     const csvContent = new TextDecoder().decode(decompressedData)
     console.log('Decompressed CSV content size:', csvContent.length, 'characters')
 
