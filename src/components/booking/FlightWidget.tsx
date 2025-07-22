@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plane, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Plane } from 'lucide-react';
 
 interface FlightWidgetProps {
   airportCode?: string;
@@ -14,42 +13,37 @@ interface FlightWidgetProps {
 
 export default function FlightWidget({ 
   airportCode, 
-  currency = 'USD', 
   title = 'Flight Search',
-  className = '',
-  cityName,
-  countryName
+  className = ''
 }: FlightWidgetProps) {
   const widgetRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    if (!airportCode || !widgetRef.current) {
+    if (!widgetRef.current) {
       setIsLoading(false);
       return;
     }
 
     // Reset states
     setIsLoading(true);
-    setHasError(false);
     
     // Clear any existing content
     widgetRef.current.innerHTML = '';
     
-    // Create script element with better error handling
+    // Create script element for the flight widget
     const script = document.createElement('script');
     script.async = true;
     script.charset = 'utf-8';
-    script.src = `https://tpscr.com/content?currency=${currency}&trs=241762&shmarker=452012&locale=en&powered_by=false&to_name=${airportCode}&stops=0&limit=3&primary_color=000000ff&results_background_color=FFFFFF&form_background_color=FFFFFF&promo_id=4563&campaign_id=111`;
+    const targetAirport = airportCode || 'LHR';
+    script.src = `https://tpscr.com/content?currency=usd&trs=241762&shmarker=452012&powered_by=false&locale=en&to_name=${targetAirport}&show_header=true&limit=2&primary_color=FFFFFF00&results_background_color=FFFFFF00&form_background_color=FFFFFF00&campaign_id=111&promo_id=4478`;
     
     // Add error handling
-    script.onerror = () => {
-      setHasError(true);
+    script.onload = () => {
       setIsLoading(false);
     };
     
-    script.onload = () => {
+    script.onerror = () => {
       setIsLoading(false);
     };
     
@@ -68,53 +62,7 @@ export default function FlightWidget({
         widgetRef.current.innerHTML = '';
       }
     };
-  }, [airportCode, currency]);
-
-  const locationName = cityName || countryName || 'this location';
-  const searchQuery = cityName ? `${cityName} ${countryName}` : countryName;
-
-  if (!airportCode) {
-    return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plane className="h-5 w-5" />
-            {title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-            <div 
-              ref={widgetRef}
-              dangerouslySetInnerHTML={{
-                __html: `<script async src="https://tpscr.com/content?currency=usd&trs=241762&shmarker=452012&locale=en&powered_by=false&to_name=${airportCode || 'BER'}&limit=4&primary_color=FFFFFF00&results_background_color=FFFFFF00&form_background_color=FFFFFF00&promo_id=4563&campaign_id=111" charset="utf-8"></script>`
-              }}
-              className="min-h-[300px]"
-            />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plane className="h-5 w-5" />
-            {title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-            <div 
-              dangerouslySetInnerHTML={{
-                __html: `<script async src="https://tpscr.com/content?currency=usd&trs=241762&shmarker=452012&powered_by=false&locale=en&to_name=${airportCode || 'LHR'}&show_header=true&limit=2&primary_color=FFFFFF00&results_background_color=FFFFFF00&form_background_color=FFFFFF00&campaign_id=111&promo_id=4478" charset="utf-8"></script>`
-              }}
-              className="min-h-[300px]"
-            />
-        </CardContent>
-      </Card>
-    );
-  }
+  }, [airportCode]);
 
   return (
     <Card className={className}>
@@ -132,10 +80,9 @@ export default function FlightWidget({
           </div>
         )}
         <div 
-          dangerouslySetInnerHTML={{
-            __html: `<script async src="https://tpscr.com/content?currency=usd&trs=241762&shmarker=452012&powered_by=false&locale=en&to_name=${airportCode || 'LHR'}&show_header=true&limit=2&primary_color=FFFFFF00&results_background_color=FFFFFF00&form_background_color=FFFFFF00&campaign_id=111&promo_id=4478" charset="utf-8"></script>`
-          }}
-          className="min-h-[200px]"
+          ref={widgetRef} 
+          className="min-h-[400px]" 
+          style={{ display: isLoading ? 'none' : 'block' }} 
         />
       </CardContent>
     </Card>
