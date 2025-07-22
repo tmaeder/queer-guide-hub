@@ -5,33 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Globe, 
-  Users, 
-  Calendar,
-  Building,
-  Star,
-  Heart,
-  ExternalLink,
-  Clock,
-  Thermometer,
-  Mountain,
-  Phone,
-  Mail,
-  DollarSign,
-  GraduationCap,
-  Landmark,
-  Info,
-  Scale,
-  Flag,
-  Plane,
-  Shield,
-  Briefcase,
-  TrendingUp,
-  FileText
-} from "lucide-react";
+import { ArrowLeft, MapPin, Globe, Users, Calendar, Building, Star, Heart, ExternalLink, Clock, Thermometer, Mountain, Phone, Mail, DollarSign, GraduationCap, Landmark, Info, Scale, Flag, Plane, Shield, Briefcase, TrendingUp, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -44,7 +18,6 @@ import { NewsCard } from "@/components/news/NewsCard";
 import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
 import FlightWidget from "@/components/booking/FlightWidget";
-
 type CountryWithRelations = {
   id: string;
   name: string;
@@ -104,50 +77,65 @@ type CountryWithRelations = {
   flag_emoji?: string;
   national_symbols?: any;
 };
-
 export default function CountryDetail() {
-  const { id } = useParams<{ id: string }>();
+  const {
+    id
+  } = useParams<{
+    id: string;
+  }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { toggleFavorite, isFavorited } = useFavorites('country');
-  const { articles, loading: newsLoading, fetchArticles } = useNews();
-  const { venues, loading: venuesLoading, fetchVenues } = useVenues();
-  const { events, loading: eventsLoading, fetchEvents } = useEvents();
-
+  const {
+    toast
+  } = useToast();
+  const {
+    toggleFavorite,
+    isFavorited
+  } = useFavorites('country');
+  const {
+    articles,
+    loading: newsLoading,
+    fetchArticles
+  } = useNews();
+  const {
+    venues,
+    loading: venuesLoading,
+    fetchVenues
+  } = useVenues();
+  const {
+    events,
+    loading: eventsLoading,
+    fetchEvents
+  } = useEvents();
   const [country, setCountry] = useState<CountryWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     if (id) {
       fetchCountryDetails();
     }
   }, [id]);
-
   useEffect(() => {
     if (country) {
       loadRelatedContent();
     }
   }, [country]);
-
   const loadRelatedContent = async () => {
     if (!country) return;
-    
-    // Fetch related news, venues, and events for this country
-    await Promise.all([
-      fetchArticles({ search: country.name }),
-      fetchVenues({ search: country.name }),
-      fetchEvents({ search: country.name })
-    ]);
-  };
 
+    // Fetch related news, venues, and events for this country
+    await Promise.all([fetchArticles({
+      search: country.name
+    }), fetchVenues({
+      search: country.name
+    }), fetchEvents({
+      search: country.name
+    })]);
+  };
   const fetchCountryDetails = async () => {
     try {
-      const { data, error } = await supabase
-        .from('countries')
-        .select('*')
-        .eq('id', id)
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from('countries').select('*').eq('id', id).single();
       if (error) throw error;
       setCountry(data);
     } catch (error) {
@@ -155,95 +143,75 @@ export default function CountryDetail() {
       toast({
         title: "Error",
         description: "Failed to load country details",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleFavoriteToggle = async () => {
     if (!country) return;
-    
     try {
       await toggleFavorite(country.id);
       toast({
         title: isFavorited(country.id) ? "Removed from favorites" : "Added to favorites",
-        description: `${country.name} ${isFavorited(country.id) ? 'removed from' : 'added to'} your favorites`,
+        description: `${country.name} ${isFavorited(country.id) ? 'removed from' : 'added to'} your favorites`
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update favorites",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const formatCurrency = (value: number): string => {
     if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
     if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
     if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
     return `$${value.toLocaleString()}`;
   };
-
   const renderLGBTStatus = () => {
     if (!country?.lgbt_rights_status && !country?.lgbt_legal_status) return null;
-    
     const getStatusColor = (status: string) => {
       const lowerStatus = status.toLowerCase();
       if (lowerStatus.includes('legal') || lowerStatus.includes('protected')) return 'bg-green-100 text-green-800';
       if (lowerStatus.includes('illegal') || lowerStatus.includes('criminalized')) return 'bg-red-100 text-red-800';
       return 'bg-yellow-100 text-yellow-800';
     };
-
-    return (
-      <div className="space-y-2">
-        {country.lgbt_rights_status && (
-          <div>
+    return <div className="space-y-2">
+        {country.lgbt_rights_status && <div>
             <span className="text-sm font-medium">LGBTQ+ Rights Status:</span>
             <Badge className={`ml-2 ${getStatusColor(country.lgbt_rights_status)}`}>
               {country.lgbt_rights_status}
             </Badge>
-          </div>
-        )}
-        {country.lgbt_legal_status && (
-          <div>
+          </div>}
+        {country.lgbt_legal_status && <div>
             <span className="text-sm font-medium">Legal Status:</span>
             <Badge className={`ml-2 ${getStatusColor(country.lgbt_legal_status)}`}>
               {country.lgbt_legal_status}
             </Badge>
-          </div>
-        )}
-      </div>
-    );
+          </div>}
+      </div>;
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">Loading country details...</div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   if (!country) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Country Not Found</h1>
             <Button onClick={() => navigate('/directory')}>Back to Directory</Button>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -263,56 +231,35 @@ export default function CountryDetail() {
             {/* Country Images */}
             <CountryHeroImages countryName={country.name} />
             <div className="flex items-center gap-4 mb-4">
-              {country.flag_emoji && (
-                <span className="text-6xl">{country.flag_emoji}</span>
-              )}
+              {country.flag_emoji && <span className="text-6xl">{country.flag_emoji}</span>}
               <div>
                 <h1 className="text-4xl font-bold">{country.name}</h1>
                 <p className="text-xl text-muted-foreground flex items-center gap-2">
-                  {country.capital && (
-                    <>
+                  {country.capital && <>
                       <Landmark className="h-5 w-5" />
-                      <button 
-                        onClick={async () => {
-                          const { data: cities } = await supabase
-                            .from('cities')
-                            .select('id')
-                            .eq('name', country.capital)
-                            .eq('country_id', country.id)
-                            .eq('is_capital', true)
-                            .maybeSingle();
-                          
-                          if (cities?.id) {
-                            navigate(`/city/${cities.id}`);
-                          } else {
-                            navigate(`/directory?search=${encodeURIComponent(country.capital)}&type=cities`);
-                          }
-                        }}
-                        className="text-primary hover:underline font-medium"
-                      >
+                      <button onClick={async () => {
+                    const {
+                      data: cities
+                    } = await supabase.from('cities').select('id').eq('name', country.capital).eq('country_id', country.id).eq('is_capital', true).maybeSingle();
+                    if (cities?.id) {
+                      navigate(`/city/${cities.id}`);
+                    } else {
+                      navigate(`/directory?search=${encodeURIComponent(country.capital)}&type=cities`);
+                    }
+                  }} className="text-primary hover:underline font-medium">
                         {country.capital}
                       </button>
-                    </>
-                  )}
+                    </>}
                 </p>
               </div>
             </div>
 
             {/* Weather Forecast */}
-            {country.latitude && country.longitude && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <CountryWeatherForecast
-                  latitude={country.latitude}
-                  longitude={country.longitude}
-                  countryName={country.name}
-                  capital={country.capital}
-                />
-              </div>
-            )}
+            {country.latitude && country.longitude && <div className="mt-4 pt-4 border-t border-border">
+                <CountryWeatherForecast latitude={country.latitude} longitude={country.longitude} countryName={country.name} capital={country.capital} />
+              </div>}
 
-            {country.description && (
-              <p className="text-muted-foreground leading-relaxed mt-4">{country.description}</p>
-            )}
+            {country.description && <p className="text-muted-foreground leading-relaxed mt-4">{country.description}</p>}
           </CardContent>
         </Card>
 
@@ -337,42 +284,30 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {country.population && (
-                    <div className="flex items-center justify-between">
+                  {country.population && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Population</span>
                       <span className="font-medium">{country.population.toLocaleString()}</span>
-                    </div>
-                  )}
-                  {country.area_km2 && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.area_km2 && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Area</span>
                       <span className="font-medium">{country.area_km2.toLocaleString()} km²</span>
-                    </div>
-                  )}
-                  {country.currency && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.currency && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Currency</span>
                       <span className="font-medium">{country.currency}</span>
-                    </div>
-                  )}
-                  {country.calling_code && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.calling_code && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Calling Code</span>
                       <span className="font-medium">{country.calling_code}</span>
-                    </div>
-                  )}
-                  {country.internet_tld && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.internet_tld && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Internet TLD</span>
                       <span className="font-medium">{country.internet_tld}</span>
-                    </div>
-                  )}
-                  {country.driving_side && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.driving_side && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Driving Side</span>
                       <span className="font-medium capitalize">{country.driving_side}</span>
-                    </div>
-                  )}
+                    </div>}
                 </CardContent>
               </Card>
 
@@ -385,38 +320,28 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {country.population && (
-                    <div className="flex items-center justify-between">
+                  {country.population && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Total Population</span>
                       <span className="font-medium">{country.population.toLocaleString()}</span>
-                    </div>
-                  )}
-                  {country.area_km2 && country.population && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.area_km2 && country.population && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Population Density</span>
                       <span className="font-medium">
                         {Math.round(country.population / country.area_km2)} people/km²
                       </span>
-                    </div>
-                  )}
-                  {country.life_expectancy && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.life_expectancy && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Life Expectancy</span>
                       <span className="font-medium">{country.life_expectancy} years</span>
-                    </div>
-                  )}
-                  {country.literacy_rate && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.literacy_rate && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Literacy Rate</span>
                       <span className="font-medium">{country.literacy_rate}%</span>
-                    </div>
-                  )}
-                  {country.human_development_index && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.human_development_index && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">HDI</span>
                       <span className="font-medium">{country.human_development_index}</span>
-                    </div>
-                  )}
+                    </div>}
                 </CardContent>
               </Card>
 
@@ -429,38 +354,26 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {country.languages && country.languages.length > 0 && (
-                    <div>
+                  {country.languages && country.languages.length > 0 && <div>
                       <span className="text-sm text-muted-foreground block mb-2">Languages</span>
                       <div className="flex flex-wrap gap-1">
-                        {country.languages.map((language, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">{language}</Badge>
-                        ))}
+                        {country.languages.map((language, index) => <Badge key={index} variant="outline" className="text-xs">{language}</Badge>)}
                       </div>
-                    </div>
-                  )}
-                  {country.major_religions && country.major_religions.length > 0 && (
-                    <div>
+                    </div>}
+                  {country.major_religions && country.major_religions.length > 0 && <div>
                       <span className="text-sm text-muted-foreground block mb-2">Major Religions</span>
                       <div className="flex flex-wrap gap-1">
-                        {country.major_religions.map((religion, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">{religion}</Badge>
-                        ))}
+                        {country.major_religions.map((religion, index) => <Badge key={index} variant="outline" className="text-xs">{religion}</Badge>)}
                       </div>
-                    </div>
-                  )}
-                  {country.national_anthem && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.national_anthem && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">National Anthem</span>
                       <span className="font-medium text-sm">{country.national_anthem}</span>
-                    </div>
-                  )}
-                  {country.national_day && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.national_day && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">National Day</span>
                       <span className="font-medium">{new Date(country.national_day).toLocaleDateString()}</span>
-                    </div>
-                  )}
+                    </div>}
                 </CardContent>
               </Card>
 
@@ -473,24 +386,18 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {country.gdp_usd && (
-                    <div className="flex items-center justify-between">
+                  {country.gdp_usd && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">GDP</span>
                       <span className="font-medium">{formatCurrency(country.gdp_usd)}</span>
-                    </div>
-                  )}
-                  {country.gdp_per_capita_usd && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.gdp_per_capita_usd && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">GDP per Capita</span>
                       <span className="font-medium">{formatCurrency(country.gdp_per_capita_usd)}</span>
-                    </div>
-                  )}
-                  {country.currency && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.currency && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Currency</span>
                       <span className="font-medium">{country.currency}</span>
-                    </div>
-                  )}
+                    </div>}
                 </CardContent>
               </Card>
 
@@ -503,18 +410,14 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {country.government_type && (
-                    <div className="flex items-center justify-between">
+                  {country.government_type && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Government Type</span>
                       <span className="font-medium">{country.government_type}</span>
-                    </div>
-                  )}
-                  {country.capital && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.capital && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Capital</span>
                       <span className="font-medium">{country.capital}</span>
-                    </div>
-                  )}
+                    </div>}
                 </CardContent>
               </Card>
 
@@ -527,30 +430,22 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {country.climate_zones && country.climate_zones.length > 0 && (
-                    <div>
+                  {country.climate_zones && country.climate_zones.length > 0 && <div>
                       <span className="text-sm text-muted-foreground block mb-2">Climate Zones</span>
                       <div className="flex flex-wrap gap-1">
-                        {country.climate_zones.map((zone, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">{zone}</Badge>
-                        ))}
+                        {country.climate_zones.map((zone, index) => <Badge key={index} variant="outline" className="text-xs">{zone}</Badge>)}
                       </div>
-                    </div>
-                  )}
-                  {country.latitude && country.longitude && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.latitude && country.longitude && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Coordinates</span>
                       <span className="font-medium text-xs">
                         {country.latitude.toFixed(4)}, {country.longitude.toFixed(4)}
                       </span>
-                    </div>
-                  )}
-                  {country.timezone && (
-                    <div className="flex items-center justify-between">
+                    </div>}
+                  {country.timezone && <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Timezone</span>
                       <span className="font-medium">{country.timezone}</span>
-                    </div>
-                  )}
+                    </div>}
                 </CardContent>
               </Card>
 
@@ -563,15 +458,9 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {country.major_industries && country.major_industries.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {country.major_industries.map((industry, index) => (
-                        <Badge key={index} variant="outline">{industry}</Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No industry information available.</p>
-                  )}
+                  {country.major_industries && country.major_industries.length > 0 ? <div className="flex flex-wrap gap-2">
+                      {country.major_industries.map((industry, index) => <Badge key={index} variant="outline">{industry}</Badge>)}
+                    </div> : <p className="text-muted-foreground">No industry information available.</p>}
                 </CardContent>
               </Card>
 
@@ -584,15 +473,9 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {country.natural_resources && country.natural_resources.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {country.natural_resources.map((resource, index) => (
-                        <Badge key={index} variant="outline">{resource}</Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No natural resource information available.</p>
-                  )}
+                  {country.natural_resources && country.natural_resources.length > 0 ? <div className="flex flex-wrap gap-2">
+                      {country.natural_resources.map((resource, index) => <Badge key={index} variant="outline">{resource}</Badge>)}
+                    </div> : <p className="text-muted-foreground">No natural resource information available.</p>}
                 </CardContent>
               </Card>
 
@@ -605,15 +488,9 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {country.unesco_sites && country.unesco_sites.length > 0 ? (
-                    <ul className="space-y-2">
-                      {country.unesco_sites.map((site, index) => (
-                        <li key={index} className="text-sm">• {site}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-muted-foreground">No UNESCO sites information available.</p>
-                  )}
+                  {country.unesco_sites && country.unesco_sites.length > 0 ? <ul className="space-y-2">
+                      {country.unesco_sites.map((site, index) => <li key={index} className="text-sm">• {site}</li>)}
+                    </ul> : <p className="text-muted-foreground">No UNESCO sites information available.</p>}
                 </CardContent>
               </Card>
 
@@ -627,9 +504,7 @@ export default function CountryDetail() {
                 </CardHeader>
                 <CardContent>
                   {renderLGBTStatus()}
-                  {!country.lgbt_rights_status && !country.lgbt_legal_status && (
-                    <p className="text-muted-foreground text-sm">No LGBTQ+ rights information available.</p>
-                  )}
+                  {!country.lgbt_rights_status && !country.lgbt_legal_status && <p className="text-muted-foreground text-sm">No LGBTQ+ rights information available.</p>}
                 </CardContent>
               </Card>
             </div>
@@ -642,15 +517,9 @@ export default function CountryDetail() {
                   <CardTitle>Major Exports</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {country.exports && country.exports.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {country.exports.map((export_item, index) => (
-                        <Badge key={index} variant="secondary">{export_item}</Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No export information available.</p>
-                  )}
+                  {country.exports && country.exports.length > 0 ? <div className="flex flex-wrap gap-2">
+                      {country.exports.map((export_item, index) => <Badge key={index} variant="secondary">{export_item}</Badge>)}
+                    </div> : <p className="text-muted-foreground">No export information available.</p>}
                 </CardContent>
               </Card>
 
@@ -660,15 +529,9 @@ export default function CountryDetail() {
                   <CardTitle>Major Imports</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {country.imports && country.imports.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {country.imports.map((import_item, index) => (
-                        <Badge key={index} variant="outline">{import_item}</Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No import information available.</p>
-                  )}
+                  {country.imports && country.imports.length > 0 ? <div className="flex flex-wrap gap-2">
+                      {country.imports.map((import_item, index) => <Badge key={index} variant="outline">{import_item}</Badge>)}
+                    </div> : <p className="text-muted-foreground">No import information available.</p>}
                 </CardContent>
               </Card>
             </div>
@@ -682,20 +545,14 @@ export default function CountryDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {country.visa_requirements && Object.keys(country.visa_requirements).length > 0 ? (
-                  <div className="space-y-2">
-                    {Object.entries(country.visa_requirements).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between">
+                {country.visa_requirements && Object.keys(country.visa_requirements).length > 0 ? <div className="space-y-2">
+                    {Object.entries(country.visa_requirements).map(([key, value]) => <div key={key} className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground capitalize">
                           {key.replace(/_/g, ' ')}
                         </span>
                         <span className="font-medium text-sm">{String(value)}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No visa requirement information available.</p>
-                )}
+                      </div>)}
+                  </div> : <p className="text-muted-foreground">No visa requirement information available.</p>}
               </CardContent>
             </Card>
 
@@ -708,20 +565,14 @@ export default function CountryDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {country.national_symbols && Object.keys(country.national_symbols).length > 0 ? (
-                  <div className="space-y-2">
-                    {Object.entries(country.national_symbols).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between">
+                {country.national_symbols && Object.keys(country.national_symbols).length > 0 ? <div className="space-y-2">
+                    {Object.entries(country.national_symbols).map(([key, value]) => <div key={key} className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground capitalize">
                           {key.replace(/_/g, ' ')}
                         </span>
                         <span className="font-medium text-sm">{String(value)}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No national symbols information available.</p>
-                )}
+                      </div>)}
+                  </div> : <p className="text-muted-foreground">No national symbols information available.</p>}
               </CardContent>
             </Card>
           </TabsContent>
@@ -730,45 +581,13 @@ export default function CountryDetail() {
           <TabsContent value="travel" className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
               {/* Flight Widget */}
-              <FlightWidget
-                airportCode={country.airport_codes?.[0]}
-                currency={country.currency}
-                title={`Flights to ${country.name}`}
-              />
+              <FlightWidget airportCode={country.airport_codes?.[0]} currency={country.currency} title={`Flights to ${country.name}`} />
               
               {/* Airport Information */}
-              {(country.airport_codes || country.major_airports) && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Plane className="h-5 w-5" />
-                      Airport Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {country.airport_codes && country.airport_codes.length > 0 && (
-                      <div>
-                        <span className="text-sm text-muted-foreground block mb-2">Airport Codes</span>
-                        <div className="flex flex-wrap gap-1">
-                          {country.airport_codes.map((code, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">{code}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {country.major_airports && country.major_airports.length > 0 && (
-                      <div>
-                        <span className="text-sm text-muted-foreground block mb-2">Major Airports</span>
-                        <ul className="space-y-1">
-                          {country.major_airports.map((airport, index) => (
-                            <li key={index} className="text-sm">• {airport}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-                )}
+              {(country.airport_codes || country.major_airports) && <Card>
+                  
+                  
+                </Card>}
 
               {/* Tours & Activities */}
               <Card>
@@ -779,17 +598,9 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div 
-                    data-gyg-widget="auto" 
-                    data-gyg-partner-id="2PBDXWH"
-                    data-gyg-locale="en-US"
-                    data-gyg-location-name={country?.name}
-                    data-gyg-country-code={country?.code}
-                    data-gyg-cta="Book Now"
-                    data-gyg-exclude-soldout="true"
-                    data-gyg-number-of-items="6"
-                    style={{ minHeight: '400px' }}
-                  />
+                  <div data-gyg-widget="auto" data-gyg-partner-id="2PBDXWH" data-gyg-locale="en-US" data-gyg-location-name={country?.name} data-gyg-country-code={country?.code} data-gyg-cta="Book Now" data-gyg-exclude-soldout="true" data-gyg-number-of-items="6" style={{
+                  minHeight: '400px'
+                }} />
                 </CardContent>
               </Card>
             </div>
@@ -806,34 +617,22 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {country.lgbti_criminalization ? (
-                    <div className="space-y-3">
-                      {country.lgbti_criminalization.status && (
-                        <div className="flex items-center justify-between">
+                  {country.lgbti_criminalization ? <div className="space-y-3">
+                      {country.lgbti_criminalization.status && <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">Status</span>
-                          <Badge 
-                            variant={country.lgbti_criminalization.status.toLowerCase().includes('legal') ? 'default' : 'destructive'}
-                          >
+                          <Badge variant={country.lgbti_criminalization.status.toLowerCase().includes('legal') ? 'default' : 'destructive'}>
                             {country.lgbti_criminalization.status}
                           </Badge>
-                        </div>
-                      )}
-                      {country.lgbti_criminalization.penalty && (
-                        <div className="flex items-center justify-between">
+                        </div>}
+                      {country.lgbti_criminalization.penalty && <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">Penalty</span>
                           <span className="font-medium text-sm">{country.lgbti_criminalization.penalty}</span>
-                        </div>
-                      )}
-                      {country.lgbti_criminalization.last_amended && (
-                        <div className="flex items-center justify-between">
+                        </div>}
+                      {country.lgbti_criminalization.last_amended && <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">Last Amendment</span>
                           <span className="font-medium text-sm">{country.lgbti_criminalization.last_amended}</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No criminalization data available.</p>
-                  )}
+                        </div>}
+                    </div> : <p className="text-muted-foreground">No criminalization data available.</p>}
                 </CardContent>
               </Card>
 
@@ -846,40 +645,50 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {country.lgbti_constitutional_protection ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {['SO', 'GI', 'GE', 'SC'].map((type) => (
-                        <div key={type} className="text-center">
+                  {country.lgbti_constitutional_protection ? <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {['SO', 'GI', 'GE', 'SC'].map(type => <div key={type} className="text-center">
                           <div className="text-xs text-muted-foreground mb-1">
-                            {type === 'SO' ? 'Sexual Orientation' : 
-                             type === 'GI' ? 'Gender Identity' :
-                             type === 'GE' ? 'Gender Expression' : 'Sex Characteristics'}
+                            {type === 'SO' ? 'Sexual Orientation' : type === 'GI' ? 'Gender Identity' : type === 'GE' ? 'Gender Expression' : 'Sex Characteristics'}
                           </div>
-                          <Badge 
-                            variant={country.lgbti_constitutional_protection[type] === 'Yes' ? 'default' : 'secondary'}
-                          >
+                          <Badge variant={country.lgbti_constitutional_protection[type] === 'Yes' ? 'default' : 'secondary'}>
                             {country.lgbti_constitutional_protection[type] || 'No'}
                           </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No constitutional protection data available.</p>
-                  )}
+                        </div>)}
+                    </div> : <p className="text-muted-foreground">No constitutional protection data available.</p>}
                 </CardContent>
               </Card>
 
               {/* Discrimination Protection Areas */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  { key: 'lgbti_goods_services_protection', title: 'Goods & Services', icon: DollarSign },
-                  { key: 'lgbti_health_protection', title: 'Healthcare', icon: Heart },
-                  { key: 'lgbti_education_protection', title: 'Education', icon: GraduationCap },
-                  { key: 'lgbti_employment_protection', title: 'Employment', icon: Briefcase },
-                  { key: 'lgbti_housing_protection', title: 'Housing', icon: Building },
-                  { key: 'lgbti_hate_crime_law', title: 'Hate Crime Law', icon: Scale }
-                ].map(({ key, title, icon: Icon }) => (
-                  <Card key={key}>
+                {[{
+                key: 'lgbti_goods_services_protection',
+                title: 'Goods & Services',
+                icon: DollarSign
+              }, {
+                key: 'lgbti_health_protection',
+                title: 'Healthcare',
+                icon: Heart
+              }, {
+                key: 'lgbti_education_protection',
+                title: 'Education',
+                icon: GraduationCap
+              }, {
+                key: 'lgbti_employment_protection',
+                title: 'Employment',
+                icon: Briefcase
+              }, {
+                key: 'lgbti_housing_protection',
+                title: 'Housing',
+                icon: Building
+              }, {
+                key: 'lgbti_hate_crime_law',
+                title: 'Hate Crime Law',
+                icon: Scale
+              }].map(({
+                key,
+                title,
+                icon: Icon
+              }) => <Card key={key}>
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-center gap-2 text-base">
                         <Icon className="h-4 w-4" />
@@ -887,26 +696,16 @@ export default function CountryDetail() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {country[key as keyof CountryWithRelations] ? (
-                        <div className="grid grid-cols-2 gap-2">
-                          {['SO', 'GI', 'GE', 'SC'].map((type) => (
-                            <div key={type} className="flex items-center justify-between">
+                      {country[key as keyof CountryWithRelations] ? <div className="grid grid-cols-2 gap-2">
+                          {['SO', 'GI', 'GE', 'SC'].map(type => <div key={type} className="flex items-center justify-between">
                               <span className="text-xs text-muted-foreground">{type}</span>
-                              <Badge 
-                                variant={(country[key as keyof CountryWithRelations] as any)?.[type] === 'Yes' ? 'default' : 'secondary'}
-                                className="text-xs"
-                              >
+                              <Badge variant={(country[key as keyof CountryWithRelations] as any)?.[type] === 'Yes' ? 'default' : 'secondary'} className="text-xs">
                                 {(country[key as keyof CountryWithRelations] as any)?.[type] || 'No'}
                               </Badge>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground text-sm">No data available.</p>
-                      )}
+                            </div>)}
+                        </div> : <p className="text-muted-foreground text-sm">No data available.</p>}
                     </CardContent>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
 
               {/* Legal Rights */}
@@ -919,10 +718,7 @@ export default function CountryDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Badge 
-                      variant={country.lgbti_same_sex_unions?.toLowerCase().includes('yes') || 
-                               country.lgbti_same_sex_unions?.toLowerCase().includes('legal') ? 'default' : 'secondary'}
-                    >
+                    <Badge variant={country.lgbti_same_sex_unions?.toLowerCase().includes('yes') || country.lgbti_same_sex_unions?.toLowerCase().includes('legal') ? 'default' : 'secondary'}>
                       {country.lgbti_same_sex_unions || 'No data'}
                     </Badge>
                   </CardContent>
@@ -936,10 +732,7 @@ export default function CountryDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Badge 
-                      variant={country.lgbti_adoption_rights?.toLowerCase().includes('possible') || 
-                               country.lgbti_adoption_rights?.toLowerCase().includes('legal') ? 'default' : 'secondary'}
-                    >
+                    <Badge variant={country.lgbti_adoption_rights?.toLowerCase().includes('possible') || country.lgbti_adoption_rights?.toLowerCase().includes('legal') ? 'default' : 'secondary'}>
                       {country.lgbti_adoption_rights || 'No data'}
                     </Badge>
                   </CardContent>
@@ -953,10 +746,7 @@ export default function CountryDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Badge 
-                      variant={country.lgbti_intersex_protection?.toLowerCase().includes('yes') || 
-                               country.lgbti_intersex_protection?.toLowerCase().includes('protected') ? 'default' : 'secondary'}
-                    >
+                    <Badge variant={country.lgbti_intersex_protection?.toLowerCase().includes('yes') || country.lgbti_intersex_protection?.toLowerCase().includes('protected') ? 'default' : 'secondary'}>
                       {country.lgbti_intersex_protection || 'No data'}
                     </Badge>
                   </CardContent>
@@ -972,10 +762,7 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Badge 
-                    variant={country.lgbti_conversion_therapy_regulation?.toLowerCase().includes('banned') || 
-                             country.lgbti_conversion_therapy_regulation?.toLowerCase().includes('restricted') ? 'default' : 'secondary'}
-                  >
+                  <Badge variant={country.lgbti_conversion_therapy_regulation?.toLowerCase().includes('banned') || country.lgbti_conversion_therapy_regulation?.toLowerCase().includes('restricted') ? 'default' : 'secondary'}>
                     {country.lgbti_conversion_therapy_regulation || 'No regulation'}
                   </Badge>
                 </CardContent>
@@ -990,35 +777,27 @@ export default function CountryDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {country.lgbti_gender_recognition ? (
-                    <div className="space-y-3">
-                      {Object.entries(country.lgbti_gender_recognition).map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between">
+                  {country.lgbti_gender_recognition ? <div className="space-y-3">
+                      {Object.entries(country.lgbti_gender_recognition).map(([key, value]) => <div key={key} className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground capitalize">
                             {key.replace(/_/g, ' ')}
                           </span>
                           <Badge variant="outline" className="text-xs">
                             {String(value)}
                           </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No legal gender recognition data available.</p>
-                  )}
+                        </div>)}
+                    </div> : <p className="text-muted-foreground">No legal gender recognition data available.</p>}
                 </CardContent>
               </Card>
 
               {/* Data Last Updated */}
-              {country.lgbti_data_last_updated && (
-                <Card>
+              {country.lgbti_data_last_updated && <Card>
                   <CardContent className="pt-6">
                     <div className="text-center text-sm text-muted-foreground">
                       LGBTI data last updated: {new Date(country.lgbti_data_last_updated).toLocaleDateString()}
                     </div>
                   </CardContent>
-                </Card>
-              )}
+                </Card>}
             </div>
           </TabsContent>
 
@@ -1031,17 +810,9 @@ export default function CountryDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {newsLoading ? (
-                  <div className="text-center py-8">Loading news...</div>
-                ) : articles.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {articles.slice(0, 9).map((article) => (
-                      <NewsCard key={article.id} article={article} />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-center py-8">No news articles found for {country?.name}.</p>
-                )}
+                {newsLoading ? <div className="text-center py-8">Loading news...</div> : articles.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {articles.slice(0, 9).map(article => <NewsCard key={article.id} article={article} />)}
+                  </div> : <p className="text-muted-foreground text-center py-8">No news articles found for {country?.name}.</p>}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1055,17 +826,9 @@ export default function CountryDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {venuesLoading ? (
-                  <div className="text-center py-8">Loading venues...</div>
-                ) : venues.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {venues.slice(0, 9).map((venue) => (
-                      <VenueCard key={venue.id} venue={venue} />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-center py-8">No venues found in {country?.name}.</p>
-                )}
+                {venuesLoading ? <div className="text-center py-8">Loading venues...</div> : venues.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {venues.slice(0, 9).map(venue => <VenueCard key={venue.id} venue={venue} />)}
+                  </div> : <p className="text-muted-foreground text-center py-8">No venues found in {country?.name}.</p>}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1079,23 +842,14 @@ export default function CountryDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {eventsLoading ? (
-                  <div className="text-center py-8">Loading events...</div>
-                ) : events.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {events.slice(0, 9).map((event) => (
-                      <EventCard key={event.id} event={event} />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-center py-8">No upcoming events found in {country?.name}.</p>
-                )}
+                {eventsLoading ? <div className="text-center py-8">Loading events...</div> : events.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {events.slice(0, 9).map(event => <EventCard key={event.id} event={event} />)}
+                  </div> : <p className="text-muted-foreground text-center py-8">No upcoming events found in {country?.name}.</p>}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
 
       </div>
-    </div>
-  );
+    </div>;
 }
