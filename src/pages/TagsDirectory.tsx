@@ -33,6 +33,57 @@ export default function TagsDirectory() {
   const [tagImages, setTagImages] = useState<Record<string, string>>({});
   const [processingImages, setProcessingImages] = useState(false);
   const [categorizingTags, setCategorizingTags] = useState(false);
+  const [tagUsageCounts, setTagUsageCounts] = useState<Record<string, number>>({});
+
+  // Calculate real usage counts for tags
+  useEffect(() => {
+    const calculateUsageCounts = async () => {
+      if (allTags.length === 0) return;
+      
+      const usageCounts: Record<string, number> = {};
+      
+      try {
+        // Get venue tag usage
+        const { data: venues } = await supabase
+          .from('venues')
+          .select('tags')
+          .not('tags', 'is', null);
+        
+        // Get community group tag usage  
+        const { data: groups } = await supabase
+          .from('community_groups')
+          .select('tags')
+          .not('tags', 'is', null);
+          
+        // Count usage across all content types
+        for (const tag of allTags) {
+          let count = 0;
+          
+          // Count in venues
+          if (venues) {
+            count += venues.filter(venue => 
+              venue.tags && venue.tags.includes(tag.name)
+            ).length;
+          }
+          
+          // Count in groups
+          if (groups) {
+            count += groups.filter(group => 
+              group.tags && group.tags.includes(tag.name)
+            ).length;
+          }
+          
+          usageCounts[tag.name] = count;
+        }
+        
+        setTagUsageCounts(usageCounts);
+      } catch (error) {
+        console.error('Error calculating tag usage:', error);
+      }
+    };
+    
+    calculateUsageCounts();
+  }, [allTags]);
 
   // Store images for all tags (reimport all)
   const storeTagImages = async () => {
@@ -308,7 +359,7 @@ export default function TagsDirectory() {
                   <h2 className="text-xl font-semibold">All Tags</h2>
                   <Badge variant="secondary">{allTags.length} tags</Badge>
                   <Badge variant="outline">
-                    {allTags.reduce((total, tag) => total + (tag.usage_count || 0), 0)} total uses
+                    {Object.values(tagUsageCounts).reduce((total, count) => total + count, 0)} total uses
                   </Badge>
                 </div>
                 <Button onClick={storeTagImages} disabled={processingImages} variant="outline" size="sm">
@@ -345,9 +396,9 @@ export default function TagsDirectory() {
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
                           <span className="text-sm font-medium truncate">{tag.name}</span>
                         </div>
-                        {tag.usage_count > 0 && (
+                        {tagUsageCounts[tag.name] > 0 && (
                           <div className="text-xs text-muted-foreground">
-                            {tag.usage_count} {tag.usage_count === 1 ? 'use' : 'uses'}
+                            {tagUsageCounts[tag.name]} {tagUsageCounts[tag.name] === 1 ? 'use' : 'uses'}
                           </div>
                         )}
                       </div>
@@ -417,7 +468,7 @@ export default function TagsDirectory() {
                         <div>
                           <h3 className="font-medium capitalize">{category.replace(/[-_]/g, ' ')}</h3>
                           <p className="text-sm text-muted-foreground">
-                            {count} tags • {tags.reduce((total, tag) => total + (tag.usage_count || 0), 0)} uses
+                            {count} tags • {tags.reduce((total, tag) => total + (tagUsageCounts[tag.name] || 0), 0)} uses
                           </p>
                         </div>
                       </div>
