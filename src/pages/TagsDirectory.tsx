@@ -440,16 +440,32 @@ export default function TagsDirectory() {
                   <h2 className="text-xl font-semibold">Browse by Category</h2>
                   <Badge variant="secondary">{tagsByCategory.length} categories</Badge>
                 </div>
-                <Button 
-                  onClick={categorizeAllTags} 
-                  disabled={categorizingTags} 
-                  variant="outline" 
-                  size="sm"
-                >
-                  <Brain className="h-4 w-4 mr-2" />
-                  {categorizingTags ? 'Categorizing...' : 'Auto-Categorize Tags'}
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={categorizeAllTags} 
+                    disabled={categorizingTags} 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <Brain className="h-4 w-4 mr-2" />
+                    {categorizingTags ? 'Categorizing...' : 'AI Auto-Categorize'}
+                  </Button>
+                </div>
               </div>
+              
+              {categorizingTags && (
+                <div className="bg-muted/50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
+                    <div>
+                      <p className="font-medium">AI Categorization in Progress</p>
+                      <p className="text-sm text-muted-foreground">
+                        Using advanced AI to analyze and categorize tags based on LGBTQ+ community context...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {tagsByCategory
                   .sort((a, b) => b.count - a.count) // Sort by tag count descending

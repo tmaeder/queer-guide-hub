@@ -13,26 +13,58 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Updated categories for tag wiki
+// Enhanced categories for tag wiki with more granular classification
 const TAG_CATEGORIES = {
-  'consent': 'Consent',
-  'genders': 'Genders', 
-  'sexual-orientations': 'Sexual Orientations',
-  'romantic-orientations': 'Romantic Orientations',
-  'relationships': 'Relationships',
-  'roles': 'Roles',
-  'gay-culture': 'Gay Culture',
-  'kink-activities': 'Kink Activities', 
-  'sexual-activities': 'Sexual Activities',
-  'philia': 'Philia',
-  'toys-equipment': 'Toys & Equipment',
-  'play-spaces': 'Play Spaces',
-  'events': 'Events',
-  'holidays': 'Holidays',
-  'sexual-health': 'Sexual Health',
-  'mental-health': 'Mental Health',
-  'scene-safety': 'Scene Safety',
-  'safety-resources': 'Safety Resources'
+  // Identity & Orientation
+  'gender-identity': 'Gender Identity',
+  'sexual-orientation': 'Sexual Orientation', 
+  'romantic-orientation': 'Romantic Orientation',
+  'expression': 'Expression & Presentation',
+  
+  // Relationships & Dynamics
+  'relationship-structure': 'Relationship Structure',
+  'relationship-roles': 'Relationship Roles',
+  'power-dynamics': 'Power Dynamics',
+  'communication': 'Communication & Consent',
+  
+  // Activities & Practices
+  'intimacy': 'Intimacy & Connection',
+  'kink-practice': 'Kink & BDSM Practice',
+  'sexual-activity': 'Sexual Activity',
+  'roleplay': 'Roleplay & Fantasy',
+  
+  // Equipment & Tools
+  'toys-accessories': 'Toys & Accessories',
+  'equipment': 'Equipment & Gear',
+  'clothing-fashion': 'Clothing & Fashion',
+  
+  // Community & Culture
+  'community-terms': 'Community Terms',
+  'subculture': 'Subculture & Scene',
+  'events-gatherings': 'Events & Gatherings',
+  'celebrations': 'Celebrations & Holidays',
+  
+  // Health & Safety
+  'physical-health': 'Physical Health',
+  'mental-wellness': 'Mental Wellness',
+  'safety-practices': 'Safety & Risk Awareness',
+  'support-resources': 'Support & Resources',
+  
+  // Spaces & Environments
+  'venues': 'Venues & Locations',
+  'online-spaces': 'Online Spaces',
+  'private-spaces': 'Private Spaces',
+  
+  // Interests & Preferences
+  'attraction-type': 'Attraction & Preference',
+  'lifestyle': 'Lifestyle & Living',
+  'hobbies-interests': 'Hobbies & Interests',
+  'body-modification': 'Body Modification',
+  
+  // General
+  'educational': 'Educational & Informational',
+  'advocacy': 'Advocacy & Activism',
+  'general': 'General'
 };
 
 interface TagData {
@@ -105,47 +137,78 @@ serve(async (req) => {
         // Prepare batch of tag names for AI categorization
         const tagNames = batch.map(tag => tag.name);
         const prompt = `
-You are an AI assistant that categorizes tags for an LGBTQ+ community platform with kink/BDSM content. Given a list of tag names, categorize each one into the most appropriate category from this list:
+You are an expert AI categorization system for an inclusive LGBTQ+ community platform that encompasses all aspects of queer identity, relationships, and culture. Your task is to categorize tags with precision and cultural sensitivity.
 
-Categories: ${Object.keys(TAG_CATEGORIES).join(', ')}
+Available Categories and Detailed Descriptions:
 
-Category descriptions:
-- consent: Consent, communication, safety protocols, negotiation
-- genders: Gender identity, expression, transgender, non-binary, etc.
-- sexual-orientations: Sexual attraction, sexuality labels (gay, lesbian, bi, pan, ace, etc.)
-- romantic-orientations: Romantic attraction types (aromantic, demiromantic, etc.)
-- relationships: Relationship structures (poly, mono, open, etc.)
-- roles: D/s roles, BDSM roles, power dynamics
-- gay-culture: LGBTQ+ culture, slang, community specific terms
-- kink-activities: BDSM activities, kink practices, power exchange
-- sexual-activities: Sexual acts, techniques, positions
-- philia: Specific attractions, fetishes, interests
-- toys-equipment: Sex toys, BDSM equipment, tools
-- play-spaces: Locations, venues, spaces for activities
-- events: Gatherings, parties, conventions, munches
-- holidays: Celebrations, special days, festivals
-- sexual-health: STI testing, sexual wellness, health
-- mental-health: Mental wellness, therapy, support
-- scene-safety: Safety practices, risk awareness, protocols  
-- safety-resources: Resources, hotlines, support services
+IDENTITY & ORIENTATION:
+- gender-identity: Trans, non-binary, genderfluid, agender, demigender, etc.
+- sexual-orientation: Gay, lesbian, bisexual, pansexual, asexual, demisexual, etc.
+- romantic-orientation: Aromantic, demiromantic, biromantic, etc.
+- expression: Drag, butch, femme, androgynous, gender presentation styles
 
-Instructions:
-- Assign exactly one category per tag
-- Choose the most specific and appropriate category
-- Be mindful of adult/kink content context
-- If unsure, use the most general applicable category
+RELATIONSHIPS & DYNAMICS:
+- relationship-structure: Polyamory, monogamy, relationship anarchy, open relationships
+- relationship-roles: Top, bottom, versatile, Dom, sub, switch, caregiver
+- power-dynamics: BDSM dynamics, D/s, M/s, ownership, protocol
+- communication: Consent, negotiation, boundaries, safe words, aftercare
 
-Tag names to categorize:
-${tagNames.join(', ')}
+ACTIVITIES & PRACTICES:
+- intimacy: Romantic connection, emotional bonding, sensual activities
+- kink-practice: BDSM scenes, kink activities, fetish practices, protocols
+- sexual-activity: Sexual acts, techniques, positions, pleasure practices
+- roleplay: Fantasy scenarios, character play, age play, pet play
 
-Return ONLY a JSON object with tag names as keys and category slugs as values. Example:
+EQUIPMENT & TOOLS:
+- toys-accessories: Sex toys, vibrators, dildos, plugs, intimate accessories
+- equipment: BDSM gear, restraints, impact toys, furniture, tools
+- clothing-fashion: Leather, latex, fetish wear, pride clothing, accessories
+
+COMMUNITY & CULTURE:
+- community-terms: Queer slang, community-specific language, cultural terms
+- subculture: Bear, twink, leather, puppy, specific scene identities
+- events-gatherings: Pride, munches, play parties, conventions, meetups
+- celebrations: Pride month, holidays, commemorative events
+
+HEALTH & SAFETY:
+- physical-health: Sexual health, STI testing, PrEP, sexual wellness
+- mental-wellness: Therapy, support, self-care, mental health resources
+- safety-practices: Risk awareness, safe sex, RACK, SSC, scene safety
+- support-resources: Hotlines, counseling, crisis support, community aid
+
+SPACES & ENVIRONMENTS:
+- venues: Clubs, bars, dungeons, play spaces, community centers
+- online-spaces: Apps, websites, forums, virtual communities
+- private-spaces: Home setups, private play areas, personal spaces
+
+INTERESTS & PREFERENCES:
+- attraction-type: Physical preferences, attraction patterns, compatibility
+- lifestyle: Living arrangements, daily practices, relationship styles
+- hobbies-interests: Non-sexual interests, activities, passions
+- body-modification: Tattoos, piercings, body art, modifications
+
+GENERAL:
+- educational: Learning resources, guides, educational content
+- advocacy: Activism, rights, political action, social justice
+- general: Miscellaneous terms that don't fit specific categories
+
+Categorization Rules:
+1. Choose the MOST SPECIFIC applicable category
+2. Consider context and nuance of LGBTQ+ and kink communities
+3. Be sensitive to identity terms vs. activity terms
+4. If a tag could fit multiple categories, prioritize: Identity > Practice > Equipment > General
+5. Use "general" only as a last resort
+
+Tags to categorize: ${tagNames.join(', ')}
+
+Return ONLY valid JSON with tag names as keys and category slugs as values:
 {
-  "gay": "sexual-orientations",
-  "transgender": "genders", 
-  "bondage": "kink-activities",
-  "aftercare": "scene-safety"
-}
-`;
+  "transgender": "gender-identity",
+  "polyamory": "relationship-structure", 
+  "bondage": "kink-practice",
+  "vibrator": "toys-accessories",
+  "bear": "subculture"
+}`;
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -154,13 +217,13 @@ Return ONLY a JSON object with tag names as keys and category slugs as values. E
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4.1-2025-04-14',
+            model: 'gpt-4o-mini', // Updated to newer model
             messages: [
-              { role: 'system', content: 'You are a helpful AI that categorizes LGBTQ+ community tags. Always respond with valid JSON only.' },
+              { role: 'system', content: 'You are an expert AI categorization system for an inclusive LGBTQ+ community platform. Always respond with valid JSON only.' },
               { role: 'user', content: prompt }
             ],
             temperature: 0.1,
-            max_tokens: 1000,
+            max_tokens: 1500, // Increased for more tags
           }),
         });
 
