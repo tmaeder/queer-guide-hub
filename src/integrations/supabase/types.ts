@@ -2642,13 +2642,6 @@ export type Database = {
             foreignKeyName: "unified_tag_assignments_tag_id_fkey"
             columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: "tag_usage_summary"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
             referencedRelation: "unified_tags"
             referencedColumns: ["id"]
           },
