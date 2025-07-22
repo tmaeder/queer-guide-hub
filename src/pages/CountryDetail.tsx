@@ -43,6 +43,7 @@ import CountryHeroImages from "@/components/country/CountryHeroImages";
 import { NewsCard } from "@/components/news/NewsCard";
 import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
+import FlightWidget from "@/components/booking/FlightWidget";
 
 type CountryWithRelations = {
   id: string;
@@ -64,6 +65,8 @@ type CountryWithRelations = {
   internet_tld?: string;
   driving_side?: string;
   major_religions?: string[];
+  airport_codes?: string[];
+  major_airports?: string[];
   gdp_usd?: number;
   gdp_per_capita_usd?: number;
   human_development_index?: number;
@@ -313,13 +316,14 @@ export default function CountryDetail() {
         </Card>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10">
+          <TabsList className="grid w-full grid-cols-11">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="demographics">Demographics</TabsTrigger>
             <TabsTrigger value="economy">Economy</TabsTrigger>
             <TabsTrigger value="government">Government</TabsTrigger>
             <TabsTrigger value="geography">Geography</TabsTrigger>
             <TabsTrigger value="culture">Culture</TabsTrigger>
+            <TabsTrigger value="travel">Travel</TabsTrigger>
             <TabsTrigger value="lgbti">LGBTI Rights</TabsTrigger>
             <TabsTrigger value="news">News</TabsTrigger>
             <TabsTrigger value="venues">Venues</TabsTrigger>
@@ -738,6 +742,51 @@ export default function CountryDetail() {
                   )}
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="travel" className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              {/* Flight Widget */}
+              <FlightWidget
+                airportCode={country.airport_codes?.[0]}
+                currency={country.currency}
+                title={`Flights to ${country.name}`}
+              />
+              
+              {/* Airport Information */}
+              {(country.airport_codes || country.major_airports) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Plane className="h-5 w-5" />
+                      Airport Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {country.airport_codes && country.airport_codes.length > 0 && (
+                      <div>
+                        <span className="text-sm text-muted-foreground block mb-2">Airport Codes</span>
+                        <div className="flex flex-wrap gap-1">
+                          {country.airport_codes.map((code, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">{code}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {country.major_airports && country.major_airports.length > 0 && (
+                      <div>
+                        <span className="text-sm text-muted-foreground block mb-2">Major Airports</span>
+                        <ul className="space-y-1">
+                          {country.major_airports.map((airport, index) => (
+                            <li key={index} className="text-sm">• {airport}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
 

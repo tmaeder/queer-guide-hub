@@ -40,6 +40,7 @@ import CityHeroImages from "@/components/city/CityHeroImages";
 import { NewsCard } from "@/components/news/NewsCard";
 import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
+import FlightWidget from "@/components/booking/FlightWidget";
 
 type CityWithCountry = {
   id: string;
@@ -53,6 +54,8 @@ type CityWithCountry = {
   is_major_city: boolean;
   elevation_m?: number;
   climate_type?: string;
+  major_airport_code?: string;
+  airport_codes?: string[];
   founded_year?: number;
   area_km2?: number;
   local_language?: string;
@@ -644,6 +647,14 @@ export default function CityDetail() {
 
           <TabsContent value="travel" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Flight Widget */}
+              <FlightWidget
+                airportCode={city.major_airport_code}
+                currency={city.countries?.currency}
+                title={`Flights to ${city.name}`}
+                className="md:col-span-2"
+              />
+              
               {/* Transportation */}
               <Card>
                 <CardHeader>
