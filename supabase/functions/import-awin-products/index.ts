@@ -1,52 +1,180 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { decompress } from 'https://deno.land/x/compress@v0.4.5/gzip/gzip.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface AwinProduct {
-  aw_product_id: string
-  merchant_product_id: string
-  merchant_name: string
-  merchant_id: string
-  product_name: string
-  description: string
-  price: {
-    amount: number
-    currency: string
-  }
-  category: {
-    name: string
-    id: string
-  }
-  subcategory?: {
-    name: string
-    id: string
-  }
-  product_image: string
-  product_url: string
-  merchant_category: string
+interface AwinCsvRow {
+  aw_deep_link?: string
+  product_name?: string
+  aw_product_id?: string
+  merchant_product_id?: string
+  merchant_image_url?: string
+  description?: string
+  merchant_category?: string
+  search_price?: string
+  merchant_name?: string
+  merchant_id?: string
+  category_name?: string
+  category_id?: string
+  aw_image_url?: string
+  currency?: string
+  store_price?: string
+  delivery_cost?: string
+  merchant_deep_link?: string
+  language?: string
+  last_updated?: string
+  display_price?: string
+  data_feed_id?: string
   brand_name?: string
+  brand_id?: string
   colour?: string
-  size?: string
-  gender?: string
-  age_range?: string
-  shipping_cost?: number
-  shipping_time?: string
-  stock_status: string
-  last_updated: string
+  product_short_description?: string
+  specifications?: string
+  condition?: string
+  product_model?: string
+  model_number?: string
+  dimensions?: string
+  keywords?: string
+  promotional_text?: string
+  product_type?: string
+  rrp_price?: string
+  saving?: string
+  savings_percent?: string
+  base_price?: string
+  base_price_amount?: string
+  base_price_text?: string
+  product_price_old?: string
+  merchant_thumb_url?: string
+  large_image?: string
+  alternate_image?: string
+  aw_thumb_url?: string
+  alternate_image_two?: string
+  alternate_image_three?: string
+  alternate_image_four?: string
+  commission_group?: string
+  merchant_product_category_path?: string
+  merchant_product_second_category?: string
+  merchant_product_third_category?: string
 }
 
-interface AwinProductsResponse {
-  products: AwinProduct[]
-  total_products: number
-  page: number
-  per_page: number
+function parseCSV(csvContent: string): AwinCsvRow[] {
+  const lines = csvContent.trim().split('\n')
+  if (lines.length < 2) return []
+  
+  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
+  const rows: AwinCsvRow[] = []
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''))
+    const row: AwinCsvRow = {}
+    
+    headers.forEach((header, index) => {
+      if (values[index]) {
+        row[header as keyof AwinCsvRow] = values[index]
+      }
+    })
+    
+    rows.push(row)
+  }
+  
+  return rows
+}
+
+function mapAwinRowToMarketplace(row: AwinCsvRow) {
+  // Determine category mapping
+  let mappedCategory = 'other'
+  let mappedSubcategory = row.merchant_product_second_category || null
+
+  const categoryName = (row.category_name || row.merchant_category || '').toLowerCase()
+  if (categoryName.includes('clothing') || categoryName.includes('fashion') || categoryName.includes('apparel')) {
+    mappedCategory = 'clothing'
+  } else if (categoryName.includes('book')) {
+    mappedCategory = 'books'
+  } else if (categoryName.includes('health') || categoryName.includes('beauty') || categoryName.includes('cosmetic')) {
+    mappedCategory = 'health'
+  } else if (categoryName.includes('tech') || categoryName.includes('electronic') || categoryName.includes('computer')) {
+    mappedCategory = 'technology'
+  } else if (categoryName.includes('art') || categoryName.includes('craft') || categoryName.includes('creative')) {
+    mappedCategory = 'art'
+  } else if (categoryName.includes('service')) {
+    mappedCategory = 'services'
+  } else if (categoryName.includes('food') || categoryName.includes('drink') || categoryName.includes('beverage')) {
+    mappedCategory = 'food_beverage'
+  } else if (categoryName.includes('home') || categoryName.includes('garden') || categoryName.includes('furniture')) {
+    mappedCategory = 'home_garden'
+  } else if (categoryName.includes('entertainment') || categoryName.includes('game') || categoryName.includes('music')) {
+    mappedCategory = 'entertainment'
+  }
+
+  // Parse price
+  const price = parseFloat(row.search_price || row.display_price || row.store_price || '0')
+
+  // Collect all available images
+  const images = [
+    row.merchant_image_url,
+    row.aw_image_url,
+    row.large_image,
+    row.alternate_image,
+    row.aw_thumb_url,
+    row.alternate_image_two,
+    row.alternate_image_three,
+    row.alternate_image_four,
+    row.merchant_thumb_url
+  ].filter(Boolean)
+
+  return {
+    title: row.product_name || 'Untitled Product',
+    description: row.description || row.product_short_description || '',
+    price: price || 0,
+    currency: row.currency || 'USD',
+    category: mappedCategory,
+    subcategory: mappedSubcategory,
+    business_name: row.merchant_name || 'Unknown Merchant',
+    business_type: 'business',
+    images: images.slice(0, 5), // Limit to 5 images
+    website: row.aw_deep_link || row.merchant_deep_link || '',
+    contact_email: null,
+    contact_phone: null,
+    location: null,
+    shipping_available: true,
+    shipping_info: row.delivery_cost ? `Delivery cost: ${row.delivery_cost} ${row.currency || 'USD'}` : null,
+    status: 'active',
+    featured: false,
+    price_type: 'fixed',
+    social_media: {
+      awin_product_id: row.aw_product_id,
+      merchant_product_id: row.merchant_product_id,
+      merchant_id: row.merchant_id,
+      brand_name: row.brand_name,
+      brand_id: row.brand_id,
+      colour: row.colour,
+      product_model: row.product_model,
+      model_number: row.model_number,
+      dimensions: row.dimensions,
+      keywords: row.keywords,
+      promotional_text: row.promotional_text,
+      product_type: row.product_type,
+      condition: row.condition,
+      specifications: row.specifications,
+      rrp_price: row.rrp_price,
+      saving: row.saving,
+      savings_percent: row.savings_percent,
+      original_category: row.category_name,
+      merchant_category: row.merchant_category,
+      category_path: row.merchant_product_category_path,
+      data_feed_id: row.data_feed_id,
+      commission_group: row.commission_group,
+      last_updated: row.last_updated
+    },
+    created_by: null // Will be set to a system user or admin
+  }
 }
 
 Deno.serve(async (req) => {
-  console.log('Starting Awin products import...')
+  console.log('Starting Awin CSV products import...')
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -90,68 +218,61 @@ Deno.serve(async (req) => {
     }
 
     const {
-      category = '',
-      limit = 100,
-      page = 1,
-      brand = '',
-      minPrice = '',
-      maxPrice = '',
-      keywords = ''
+      csvUrl = '',
+      maxProducts = 1000,
+      skipRows = 0,
+      batchSize = 100
     } = requestBody
 
-    console.log(`Fetching Awin products with params:`, {
-      category,
-      limit,
-      page,
-      brand,
-      minPrice,
-      maxPrice,
-      keywords
-    })
+    let feedUrl = csvUrl
 
-    // Build Awin API URL
-    const awinBaseUrl = 'https://productdata.awin.com/datafeed/list/apikey'
-    const params = new URLSearchParams({
-      apikey: awinApiToken,
-      advertiser_id: awinAdvertiserId,
-      limit: limit.toString(),
-      page: page.toString(),
-      format: 'json'
-    })
+    // If no custom URL provided, build default Awin CSV feed URL
+    if (!feedUrl) {
+      const columns = [
+        'aw_deep_link', 'product_name', 'aw_product_id', 'merchant_product_id',
+        'merchant_image_url', 'description', 'merchant_category', 'search_price',
+        'merchant_name', 'merchant_id', 'category_name', 'category_id',
+        'aw_image_url', 'currency', 'store_price', 'delivery_cost',
+        'merchant_deep_link', 'language', 'last_updated', 'display_price',
+        'data_feed_id', 'brand_name', 'brand_id', 'colour',
+        'product_short_description', 'specifications', 'condition',
+        'product_model', 'model_number', 'dimensions', 'keywords',
+        'promotional_text', 'product_type', 'rrp_price'
+      ].join(',')
 
-    // Add optional filters
-    if (category) params.append('category', category)
-    if (brand) params.append('brand', brand)
-    if (minPrice) params.append('min_price', minPrice.toString())
-    if (maxPrice) params.append('max_price', maxPrice.toString())
-    if (keywords) params.append('keywords', keywords)
+      feedUrl = `https://productdata.awin.com/datafeed/download/apikey/${awinApiToken}/language/en/cid/${awinAdvertiserId}/hasEnhancedFeeds/0/columns/${columns}/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/`
+    }
 
-    const awinUrl = `${awinBaseUrl}?${params.toString()}`
-    console.log('Fetching from Awin API:', awinUrl)
+    console.log('Downloading CSV feed from:', feedUrl)
 
-    // Fetch products from Awin API
-    const awinResponse = await fetch(awinUrl, {
-      headers: {
-        'Authorization': `Bearer ${awinApiToken}`,
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!awinResponse.ok) {
-      console.error('Awin API error:', awinResponse.status, await awinResponse.text())
+    // Download the gzipped CSV file
+    const response = await fetch(feedUrl)
+    
+    if (!response.ok) {
+      console.error('Failed to download CSV feed:', response.status, response.statusText)
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch from Awin API' }),
-        { status: awinResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: `Failed to download CSV feed: ${response.status} ${response.statusText}` }),
+        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const awinData: AwinProductsResponse = await awinResponse.json()
-    console.log(`Fetched ${awinData.products?.length || 0} products from Awin`)
+    // Get the compressed data as ArrayBuffer
+    const compressedData = await response.arrayBuffer()
+    console.log('Downloaded compressed file size:', compressedData.byteLength, 'bytes')
 
-    if (!awinData.products || awinData.products.length === 0) {
+    // Decompress the gzip data
+    const decompressedData = decompress(new Uint8Array(compressedData))
+    const csvContent = new TextDecoder().decode(decompressedData)
+    console.log('Decompressed CSV content size:', csvContent.length, 'characters')
+
+    // Parse CSV content
+    const csvRows = parseCSV(csvContent)
+    console.log('Parsed CSV rows:', csvRows.length)
+
+    if (csvRows.length === 0) {
       return new Response(
         JSON.stringify({ 
-          message: 'No products found',
+          message: 'No products found in CSV feed',
           imported: 0,
           total: 0
         }),
@@ -159,92 +280,56 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Map Awin products to marketplace listings format
-    const marketplaceListings = awinData.products.map((product: AwinProduct) => {
-      // Determine category mapping
-      let mappedCategory = 'other'
-      let mappedSubcategory = product.subcategory?.name || null
+    // Limit the number of products to process
+    const productsToProcess = csvRows.slice(skipRows, skipRows + maxProducts)
+    console.log(`Processing ${productsToProcess.length} products (skipped ${skipRows}, max ${maxProducts})`)
 
-      const categoryName = product.category?.name?.toLowerCase() || ''
-      if (categoryName.includes('clothing') || categoryName.includes('fashion')) {
-        mappedCategory = 'clothing'
-      } else if (categoryName.includes('book')) {
-        mappedCategory = 'books'
-      } else if (categoryName.includes('health') || categoryName.includes('beauty')) {
-        mappedCategory = 'health'
-      } else if (categoryName.includes('tech') || categoryName.includes('electronic')) {
-        mappedCategory = 'technology'
-      } else if (categoryName.includes('art') || categoryName.includes('craft')) {
-        mappedCategory = 'art'
-      } else if (categoryName.includes('service')) {
-        mappedCategory = 'services'
+    // Map CSV rows to marketplace listings format
+    const marketplaceListings = productsToProcess
+      .map(mapAwinRowToMarketplace)
+      .filter(listing => listing.title && listing.title !== 'Untitled Product') // Filter out invalid products
+
+    console.log(`Prepared ${marketplaceListings.length} valid listings for import`)
+
+    // Insert products in batches to avoid timeout
+    let totalInserted = 0
+    const errors: string[] = []
+
+    for (let i = 0; i < marketplaceListings.length; i += batchSize) {
+      const batch = marketplaceListings.slice(i, i + batchSize)
+      console.log(`Inserting batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(marketplaceListings.length / batchSize)} (${batch.length} items)`)
+
+      try {
+        const { data: insertedListings, error: insertError } = await supabase
+          .from('marketplace_listings')
+          .insert(batch)
+          .select('id, title, price, category')
+
+        if (insertError) {
+          console.error('Batch insert error:', insertError)
+          errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${insertError.message}`)
+        } else {
+          totalInserted += insertedListings?.length || 0
+          console.log(`Successfully inserted batch: ${insertedListings?.length || 0} items`)
+        }
+      } catch (error) {
+        console.error('Batch processing error:', error)
+        errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message}`)
       }
-
-      return {
-        title: product.product_name || 'Untitled Product',
-        description: product.description || '',
-        price: product.price?.amount || 0,
-        currency: product.price?.currency || 'USD',
-        category: mappedCategory,
-        subcategory: mappedSubcategory,
-        business_name: product.merchant_name || 'Unknown Merchant',
-        business_type: 'business',
-        images: product.product_image ? [product.product_image] : [],
-        website: product.product_url || '',
-        contact_email: null,
-        contact_phone: null,
-        location: null,
-        shipping_available: true,
-        shipping_info: product.shipping_time ? `Estimated delivery: ${product.shipping_time}` : null,
-        status: product.stock_status === 'in_stock' ? 'active' : 'inactive',
-        featured: false,
-        price_type: 'fixed',
-        social_media: {
-          awin_product_id: product.aw_product_id,
-          merchant_product_id: product.merchant_product_id,
-          merchant_id: product.merchant_id,
-          brand_name: product.brand_name,
-          colour: product.colour,
-          size: product.size,
-          gender: product.gender,
-          age_range: product.age_range,
-          original_category: product.category?.name,
-          last_updated: product.last_updated
-        },
-        created_by: null // Will be set to a system user or admin
-      }
-    })
-
-    console.log(`Prepared ${marketplaceListings.length} listings for import`)
-
-    // Insert products into marketplace_listings table
-    const { data: insertedListings, error: insertError } = await supabase
-      .from('marketplace_listings')
-      .insert(marketplaceListings)
-      .select('id, title, price, category')
-
-    if (insertError) {
-      console.error('Error inserting listings:', insertError)
-      return new Response(
-        JSON.stringify({ 
-          error: 'Failed to import products to marketplace',
-          details: insertError.message 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
     }
 
-    console.log(`Successfully imported ${insertedListings?.length || 0} products`)
+    console.log(`Import completed. Total inserted: ${totalInserted}`)
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Successfully imported ${insertedListings?.length || 0} products from Awin`,
-        imported: insertedListings?.length || 0,
-        total: awinData.total_products || 0,
-        page: awinData.page || page,
-        per_page: awinData.per_page || limit,
-        products: insertedListings
+        message: `Successfully imported ${totalInserted} products from Awin CSV feed`,
+        imported: totalInserted,
+        total: csvRows.length,
+        processed: productsToProcess.length,
+        skipped: skipRows,
+        errors: errors.length > 0 ? errors : undefined,
+        feed_url: feedUrl
       }),
       { 
         status: 200, 

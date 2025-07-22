@@ -48,13 +48,10 @@ export default function AdminMarketplace() {
   const [isAwinImportOpen, setIsAwinImportOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [importParams, setImportParams] = useState({
-    category: "",
-    limit: 50,
-    page: 1,
-    brand: "",
-    minPrice: "",
-    maxPrice: "",
-    keywords: ""
+    csvUrl: "",
+    maxProducts: 1000,
+    skipRows: 0,
+    batchSize: 100
   });
   const [editingListing, setEditingListing] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -241,76 +238,70 @@ export default function AdminMarketplace() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Import Products from Awin</DialogTitle>
+                <DialogTitle>Import Products from Awin CSV Feed</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Import products from your Awin affiliate network. Configure filters below to target specific products.
+                  Import products from Awin CSV data feeds. Leave CSV URL blank to use the default feed with your API credentials.
                 </p>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="awin-category">Category Filter</Label>
-                    <Input
-                      id="awin-category"
-                      placeholder="e.g., fashion, electronics"
-                      value={importParams.category}
-                      onChange={(e) => setImportParams(prev => ({ ...prev, category: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="awin-brand">Brand Filter</Label>
-                    <Input
-                      id="awin-brand"
-                      placeholder="e.g., Nike, Apple"
-                      value={importParams.brand}
-                      onChange={(e) => setImportParams(prev => ({ ...prev, brand: e.target.value }))}
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="awin-csv-url">Custom CSV Feed URL (Optional)</Label>
+                  <Input
+                    id="awin-csv-url"
+                    placeholder="https://productdata.awin.com/datafeed/download/..."
+                    value={importParams.csvUrl}
+                    onChange={(e) => setImportParams(prev => ({ ...prev, csvUrl: e.target.value }))}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leave blank to use default Awin CSV feed with your API credentials
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="awin-limit">Products Limit</Label>
+                    <Label htmlFor="awin-max-products">Max Products</Label>
                     <Input
-                      id="awin-limit"
+                      id="awin-max-products"
                       type="number"
                       min="1"
-                      max="1000"
-                      value={importParams.limit}
-                      onChange={(e) => setImportParams(prev => ({ ...prev, limit: parseInt(e.target.value) || 50 }))}
+                      max="10000"
+                      value={importParams.maxProducts}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, maxProducts: parseInt(e.target.value) || 1000 }))}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="awin-min-price">Min Price</Label>
+                    <Label htmlFor="awin-skip-rows">Skip Rows</Label>
                     <Input
-                      id="awin-min-price"
+                      id="awin-skip-rows"
                       type="number"
-                      step="0.01"
-                      value={importParams.minPrice}
-                      onChange={(e) => setImportParams(prev => ({ ...prev, minPrice: e.target.value }))}
+                      min="0"
+                      value={importParams.skipRows}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, skipRows: parseInt(e.target.value) || 0 }))}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="awin-max-price">Max Price</Label>
+                    <Label htmlFor="awin-batch-size">Batch Size</Label>
                     <Input
-                      id="awin-max-price"
+                      id="awin-batch-size"
                       type="number"
-                      step="0.01"
-                      value={importParams.maxPrice}
-                      onChange={(e) => setImportParams(prev => ({ ...prev, maxPrice: e.target.value }))}
+                      min="10"
+                      max="500"
+                      value={importParams.batchSize}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, batchSize: parseInt(e.target.value) || 100 }))}
                     />
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="awin-keywords">Keywords</Label>
-                  <Input
-                    id="awin-keywords"
-                    placeholder="Search terms to filter products"
-                    value={importParams.keywords}
-                    onChange={(e) => setImportParams(prev => ({ ...prev, keywords: e.target.value }))}
-                  />
+                <div className="bg-muted p-4 rounded-lg space-y-2">
+                  <h4 className="font-medium">Import Process:</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Downloads and decompresses gzipped CSV feed</li>
+                    <li>• Processes products in batches to avoid timeouts</li>
+                    <li>• Maps Awin categories to marketplace categories</li>
+                    <li>• Preserves all original Awin metadata</li>
+                    <li>• Supports multiple product images</li>
+                  </ul>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4">
@@ -333,7 +324,7 @@ export default function AdminMarketplace() {
                     ) : (
                       <>
                         <Download className="h-4 w-4 mr-2" />
-                        Start Import
+                        Import CSV Feed
                       </>
                     )}
                   </Button>
