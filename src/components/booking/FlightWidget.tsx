@@ -105,30 +105,12 @@ export default function FlightWidget({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <Plane className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground mb-4">
-              Unable to load flight widget. Search flights directly:
-            </p>
-            <div className="space-y-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.open(`https://www.expedia.com/Flights-Search?flight-type=on&starDate=&endDate=&_xpid=11905%7C1&mode=search&trip=oneway&leg1=from%3A%2Cto%3A${airportCode}&passengers=adults%3A1%2Cchildren%3A0%2Cseniors%3A0%2Cinfantinlap%3Ay`, '_blank')}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Search on Expedia
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.open(`https://www.kayak.com/flights/to/${airportCode}`, '_blank')}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Search on Kayak
-              </Button>
-            </div>
-          </div>
+            <div 
+              dangerouslySetInnerHTML={{
+                __html: `<script async src="https://tpscr.com/content?currency=usd&trs=241762&shmarker=452012&powered_by=false&locale=en&to_name=${airportCode || 'LHR'}&show_header=true&limit=2&primary_color=FFFFFF00&results_background_color=FFFFFF00&form_background_color=FFFFFF00&campaign_id=111&promo_id=4478" charset="utf-8"></script>`
+              }}
+              className="min-h-[300px]"
+            />
         </CardContent>
       </Card>
     );
