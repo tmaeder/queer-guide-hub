@@ -149,7 +149,12 @@ export default function FlightWidget({
             <p className="text-muted-foreground">Loading flight search...</p>
           </div>
         )}
-        <div ref={widgetRef} className="min-h-[200px]" style={{ display: isLoading ? 'none' : 'block' }} />
+        <div 
+          dangerouslySetInnerHTML={{
+            __html: `<script async src="https://tpscr.com/content?currency=usd&trs=241762&shmarker=452012&powered_by=false&locale=en&to_name=${airportCode || 'LHR'}&show_header=true&limit=2&primary_color=FFFFFF00&results_background_color=FFFFFF00&form_background_color=FFFFFF00&campaign_id=111&promo_id=4478" charset="utf-8"></script>`
+          }}
+          className="min-h-[200px]"
+        />
       </CardContent>
     </Card>
   );
