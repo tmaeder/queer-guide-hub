@@ -48,7 +48,8 @@ import FlightWidget from "@/components/booking/FlightWidget";
 type CountryWithRelations = {
   id: string;
   name: string;
-  code: string;
+  iso_code?: string;
+  code?: string;
   capital?: string;
   population?: number;
   area_km2?: number;
@@ -1100,7 +1101,17 @@ export default function CountryDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div data-gyg-widget="auto" data-gyg-partner-id="2PBDXWH"></div>
+              <div 
+                data-gyg-widget="auto" 
+                data-gyg-partner-id="2PBDXWH"
+                data-gyg-locale="en-US"
+                data-gyg-location-name={country?.name}
+                data-gyg-country-code={country?.code}
+                data-gyg-cta="Book Now"
+                data-gyg-exclude-soldout="true"
+                data-gyg-number-of-items="6"
+                style={{ minHeight: '400px' }}
+              />
             </CardContent>
           </Card>
         </div>

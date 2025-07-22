@@ -798,7 +798,17 @@ export default function CityDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div data-gyg-widget="auto" data-gyg-partner-id="2PBDXWH"></div>
+              <div 
+                data-gyg-widget="auto" 
+                data-gyg-partner-id="2PBDXWH"
+                data-gyg-locale="en-US"
+                data-gyg-location-name={`${city?.name}, ${city?.countries?.name}`}
+                data-gyg-country-code={city?.countries?.id}
+                data-gyg-cta="Book Now"
+                data-gyg-exclude-soldout="true"
+                data-gyg-number-of-items="6"
+                style={{ minHeight: '400px' }}
+              />
             </CardContent>
           </Card>
         </div>
