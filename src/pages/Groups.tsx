@@ -8,7 +8,7 @@ import { CreateGroupDialog } from "@/components/groups/CreateGroupDialog";
 import { GroupFilters } from "@/components/groups/GroupFilters";
 import { useGroups, Group } from "@/hooks/useGroups";
 import { useAuth } from "@/hooks/useAuth";
-import { Users, Plus, Search, TrendingUp, Globe, Lock, Sparkles } from "lucide-react";
+import { Users, Plus, Search, TrendingUp } from "lucide-react";
 export default function Groups() {
   const {
     user
@@ -72,22 +72,6 @@ export default function Groups() {
 
   // Popular groups (sorted by member count)
   const popularGroups = useMemo(() => [...groups].filter(g => !g.is_private).sort((a, b) => b.member_count - a.member_count).slice(0, 6), [groups]);
-
-  // Stats
-  const stats = useMemo(() => {
-    const totalGroups = groups.length;
-    const publicGroups = groups.filter(g => !g.is_private).length;
-    const privateGroups = groups.filter(g => g.is_private).length;
-    const totalMembers = groups.reduce((sum, g) => sum + g.member_count, 0);
-    
-    return {
-      totalGroups,
-      publicGroups,
-      privateGroups,
-      totalMembers,
-      myGroups: userGroups.length
-    };
-  }, [groups, userGroups]);
   if (!user) {
     return <div className="space-y-8 py-8">
         <div className="text-center">
@@ -103,253 +87,91 @@ export default function Groups() {
   }
   return <div className="space-y-8 py-8">
       {/* Header */}
-      <div className="text-center space-y-6">
-        <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Community Groups
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Connect with like-minded people, share experiences, and build meaningful relationships 
-            in safe and inclusive spaces designed for the LGBTQ+ community.
-          </p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+          Community Groups
+        </h1>
+        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Connect with like-minded people, share experiences, and build meaningful relationships 
+          in safe and inclusive spaces.
+        </p>
+        <div className="flex justify-center gap-4 mb-8">
           <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
-          {stats.totalGroups > 0 && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Sparkles className="h-4 w-4" />
-              <span>Join {stats.totalGroups.toLocaleString()} active groups</span>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-primary">{stats.totalGroups}</div>
-            <div className="text-sm text-muted-foreground">Total Groups</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.publicGroups}</div>
-            <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-              <Globe className="h-3 w-3" />
-              Public
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-amber-600">{stats.privateGroups}</div>
-            <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-              <Lock className="h-3 w-3" />
-              Private
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.totalMembers.toLocaleString()}</div>
-            <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-              <Users className="h-3 w-3" />
-              Members
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Stats */}
       
 
       <Tabs defaultValue="discover" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 h-auto p-1">
-          <TabsTrigger value="discover" className="flex items-center gap-2 px-4 py-3">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="discover" className="flex items-center gap-2 text-gray-950 font-bold text-right">
             <Search className="h-4 w-4" />
-            <span className="hidden sm:inline">Discover</span>
+            Discover
           </TabsTrigger>
-          <TabsTrigger value="my-groups" className="flex items-center gap-2 px-4 py-3">
+          <TabsTrigger value="my-groups" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">My Groups</span>
-            <Badge variant="secondary" className="ml-1 text-xs">
-              {userGroups.length}
-            </Badge>
+            My Groups ({userGroups.length})
           </TabsTrigger>
-          <TabsTrigger value="popular" className="flex items-center gap-2 px-4 py-3">
+          <TabsTrigger value="popular" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Popular</span>
+            Popular
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="discover" className="space-y-6">
           <GroupFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} activeFilters={activeFilters} onFilterChange={setActiveFilters} showMyGroups={showMyGroups} onShowMyGroupsChange={setShowMyGroups} selectedTags={selectedTags} onTagsChange={setSelectedTags} />
 
-          {isLoading ? (
-            <Card className="border-2 border-dashed border-muted">
+          {isLoading ? <Card>
               <CardContent className="p-8 text-center">
                 <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-                <p className="text-muted-foreground">Discovering amazing groups...</p>
+                <p className="text-muted-foreground">Loading groups...</p>
               </CardContent>
-            </Card>
-          ) : filteredGroups.length === 0 ? (
-            <Card className="border-2 border-dashed border-muted">
-              <CardContent className="p-8 text-center space-y-4">
-                <Users className="h-16 w-16 mx-auto text-muted-foreground/50" />
-                <div className="space-y-2">
-                  <h3 className="text-xl font-semibold">No groups found</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    {searchQuery || activeFilters.length > 0 || selectedTags.length > 0
-                      ? "Try adjusting your search criteria or explore different tags"
-                      : "Be the first to create a group and start building community!"}
-                  </p>
-                </div>
-                {!searchQuery && activeFilters.length === 0 && selectedTags.length === 0 && (
-                  <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {filteredGroups.length} group{filteredGroups.length !== 1 ? 's' : ''} found
+            </Card> : filteredGroups.length === 0 ? <Card>
+              <CardContent className="p-8 text-center">
+                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">No groups found</h3>
+                <p className="text-muted-foreground mb-4">
+                  {searchQuery || activeFilters.length > 0 ? "Try adjusting your search or filters" : "Be the first to create a group in this community!"}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span>Public</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                    <span>Private</span>
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredGroups.map(group => (
-                  <GroupCard 
-                    key={group.id} 
-                    group={group} 
-                    onJoin={joinGroup} 
-                    onLeave={leaveGroup} 
-                    isJoining={isJoining} 
-                    isLeaving={isLeaving} 
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+                {!searchQuery && activeFilters.length === 0 && <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />}
+              </CardContent>
+            </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredGroups.map(group => <GroupCard key={group.id} group={group} onJoin={joinGroup} onLeave={leaveGroup} isJoining={isJoining} isLeaving={isLeaving} />)}
+            </div>}
         </TabsContent>
 
         <TabsContent value="my-groups" className="space-y-6">
-          {userGroups.length === 0 ? (
-            <Card className="border-2 border-dashed border-muted">
-              <CardContent className="p-8 text-center space-y-4">
-                <div className="relative">
-                  <Users className="h-16 w-16 mx-auto text-muted-foreground/50" />
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                    <Plus className="h-3 w-3 text-primary-foreground" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-semibold">Start Your Journey</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    You haven't joined any groups yet. Explore our community and find your tribe!
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
-                  <Button variant="outline" onClick={() => {
-                    // Switch to discover tab
-                    const discoverTab = document.querySelector('[value="discover"]') as HTMLElement;
-                    discoverTab?.click();
-                  }}>
-                    <Search className="h-4 w-4 mr-2" />
-                    Explore Groups
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  You're a member of {userGroups.length} group{userGroups.length !== 1 ? 's' : ''}
+          {userGroups.length === 0 ? <Card>
+              <CardContent className="p-8 text-center">
+                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">You haven't joined any groups yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Start by joining existing groups or create your own!
                 </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {userGroups.map(group => (
-                  <GroupCard 
-                    key={group.id} 
-                    group={group} 
-                    onLeave={leaveGroup} 
-                    isLeaving={isLeaving} 
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+                <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
+              </CardContent>
+            </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {userGroups.map(group => <GroupCard key={group.id} group={group} onLeave={leaveGroup} isLeaving={isLeaving} />)}
+            </div>}
         </TabsContent>
 
         <TabsContent value="popular" className="space-y-6">
-          <div className="space-y-6">
-            <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary">
-                  <TrendingUp className="h-5 w-5" />
-                  Trending Groups
-                  <Badge variant="secondary" className="ml-2">
-                    {popularGroups.length}
-                  </Badge>
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Discover the most active and engaging communities
-                </p>
-              </CardHeader>
-            </Card>
-
-            {popularGroups.length === 0 ? (
-              <Card className="border-2 border-dashed border-muted">
-                <CardContent className="p-8 text-center space-y-4">
-                  <TrendingUp className="h-16 w-16 mx-auto text-muted-foreground/50" />
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">No trending groups yet</h3>
-                    <p className="text-muted-foreground max-w-md mx-auto">
-                      Be among the first to create popular groups that others will love to join!
-                    </p>
-                  </div>
-                  <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                <div className="text-sm text-muted-foreground">
-                  Showing top {popularGroups.length} most popular public groups
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {popularGroups.map((group, index) => (
-                    <div key={group.id} className="relative">
-                      {index < 3 && (
-                        <Badge 
-                          className="absolute -top-2 -right-2 z-10 bg-gradient-primary text-primary-foreground"
-                        >
-                          #{index + 1}
-                        </Badge>
-                      )}
-                      <GroupCard 
-                        group={group} 
-                        onJoin={joinGroup} 
-                        onLeave={leaveGroup} 
-                        isJoining={isJoining} 
-                        isLeaving={isLeaving} 
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Most Popular Groups
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {popularGroups.length === 0 ? <p className="text-center text-muted-foreground py-8">
+                  No popular groups available yet.
+                </p> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {popularGroups.map(group => <GroupCard key={group.id} group={group} onJoin={joinGroup} onLeave={leaveGroup} isJoining={isJoining} isLeaving={isLeaving} />)}
+                </div>}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>;
