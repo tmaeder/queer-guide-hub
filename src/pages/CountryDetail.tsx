@@ -317,13 +317,8 @@ export default function CountryDetail() {
         </Card>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-11">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="demographics">Demographics</TabsTrigger>
-            <TabsTrigger value="economy">Economy</TabsTrigger>
-            <TabsTrigger value="government">Government</TabsTrigger>
-            <TabsTrigger value="geography">Geography</TabsTrigger>
-            <TabsTrigger value="culture">Culture</TabsTrigger>
             <TabsTrigger value="travel">Travel</TabsTrigger>
             <TabsTrigger value="lgbti">LGBTI Rights</TabsTrigger>
             <TabsTrigger value="news">News</TabsTrigger>
@@ -381,6 +376,50 @@ export default function CountryDetail() {
                 </CardContent>
               </Card>
 
+              {/* Population Statistics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Population Statistics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {country.population && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Total Population</span>
+                      <span className="font-medium">{country.population.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {country.area_km2 && country.population && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Population Density</span>
+                      <span className="font-medium">
+                        {Math.round(country.population / country.area_km2)} people/km²
+                      </span>
+                    </div>
+                  )}
+                  {country.life_expectancy && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Life Expectancy</span>
+                      <span className="font-medium">{country.life_expectancy} years</span>
+                    </div>
+                  )}
+                  {country.literacy_rate && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Literacy Rate</span>
+                      <span className="font-medium">{country.literacy_rate}%</span>
+                    </div>
+                  )}
+                  {country.human_development_index && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">HDI</span>
+                      <span className="font-medium">{country.human_development_index}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Languages & Culture */}
               <Card>
                 <CardHeader>
@@ -425,73 +464,6 @@ export default function CountryDetail() {
                 </CardContent>
               </Card>
 
-              {/* LGBTQ+ Rights */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    LGBTQ+ Rights
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {renderLGBTStatus()}
-                  {!country.lgbt_rights_status && !country.lgbt_legal_status && (
-                    <p className="text-muted-foreground text-sm">No LGBTQ+ rights information available.</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="demographics" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Population Statistics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {country.population && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Total Population</span>
-                      <span className="font-medium">{country.population.toLocaleString()}</span>
-                    </div>
-                  )}
-                  {country.area_km2 && country.population && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Population Density</span>
-                      <span className="font-medium">
-                        {Math.round(country.population / country.area_km2)} people/km²
-                      </span>
-                    </div>
-                  )}
-                  {country.life_expectancy && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Life Expectancy</span>
-                      <span className="font-medium">{country.life_expectancy} years</span>
-                    </div>
-                  )}
-                  {country.literacy_rate && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Literacy Rate</span>
-                      <span className="font-medium">{country.literacy_rate}%</span>
-                    </div>
-                  )}
-                  {country.human_development_index && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">HDI</span>
-                      <span className="font-medium">{country.human_development_index}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="economy" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Economic Indicators */}
               <Card>
                 <CardHeader>
@@ -522,67 +494,7 @@ export default function CountryDetail() {
                 </CardContent>
               </Card>
 
-              {/* Industries */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="h-5 w-5" />
-                    Major Industries
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.major_industries && country.major_industries.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {country.major_industries.map((industry, index) => (
-                        <Badge key={index} variant="outline">{industry}</Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No industry information available.</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Exports */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Major Exports</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.exports && country.exports.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {country.exports.map((export_item, index) => (
-                        <Badge key={index} variant="secondary">{export_item}</Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No export information available.</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Imports */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Major Imports</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.imports && country.imports.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {country.imports.map((import_item, index) => (
-                        <Badge key={index} variant="outline">{import_item}</Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No import information available.</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="government" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Government Information */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -606,36 +518,6 @@ export default function CountryDetail() {
                 </CardContent>
               </Card>
 
-              {/* Visa Requirements */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Visa Requirements
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.visa_requirements && Object.keys(country.visa_requirements).length > 0 ? (
-                    <div className="space-y-2">
-                      {Object.entries(country.visa_requirements).map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground capitalize">
-                            {key.replace(/_/g, ' ')}
-                          </span>
-                          <span className="font-medium text-sm">{String(value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No visa requirement information available.</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="geography" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Climate & Geography */}
               <Card>
                 <CardHeader>
@@ -672,6 +554,27 @@ export default function CountryDetail() {
                 </CardContent>
               </Card>
 
+              {/* Major Industries */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Briefcase className="h-5 w-5" />
+                    Major Industries
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {country.major_industries && country.major_industries.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {country.major_industries.map((industry, index) => (
+                        <Badge key={index} variant="outline">{industry}</Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No industry information available.</p>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Natural Resources */}
               <Card>
                 <CardHeader>
@@ -692,11 +595,7 @@ export default function CountryDetail() {
                   )}
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
 
-          <TabsContent value="culture" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* UNESCO Sites */}
               <Card>
                 <CardHeader>
@@ -718,33 +617,115 @@ export default function CountryDetail() {
                 </CardContent>
               </Card>
 
-              {/* National Symbols */}
+              {/* LGBTQ+ Rights */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Flag className="h-5 w-5" />
-                    National Symbols
+                    <Shield className="h-5 w-5" />
+                    LGBTQ+ Rights
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {country.national_symbols && Object.keys(country.national_symbols).length > 0 ? (
-                    <div className="space-y-2">
-                      {Object.entries(country.national_symbols).map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground capitalize">
-                            {key.replace(/_/g, ' ')}
-                          </span>
-                          <span className="font-medium text-sm">{String(value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No national symbols information available.</p>
+                  {renderLGBTStatus()}
+                  {!country.lgbt_rights_status && !country.lgbt_legal_status && (
+                    <p className="text-muted-foreground text-sm">No LGBTQ+ rights information available.</p>
                   )}
                 </CardContent>
               </Card>
             </div>
+
+            {/* Trade Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Exports */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Major Exports</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {country.exports && country.exports.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {country.exports.map((export_item, index) => (
+                        <Badge key={index} variant="secondary">{export_item}</Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No export information available.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Imports */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Major Imports</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {country.imports && country.imports.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {country.imports.map((import_item, index) => (
+                        <Badge key={index} variant="outline">{import_item}</Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No import information available.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Visa Requirements */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Visa Requirements
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {country.visa_requirements && Object.keys(country.visa_requirements).length > 0 ? (
+                  <div className="space-y-2">
+                    {Object.entries(country.visa_requirements).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground capitalize">
+                          {key.replace(/_/g, ' ')}
+                        </span>
+                        <span className="font-medium text-sm">{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">No visa requirement information available.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* National Symbols */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Flag className="h-5 w-5" />
+                  National Symbols
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {country.national_symbols && Object.keys(country.national_symbols).length > 0 ? (
+                  <div className="space-y-2">
+                    {Object.entries(country.national_symbols).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground capitalize">
+                          {key.replace(/_/g, ' ')}
+                        </span>
+                        <span className="font-medium text-sm">{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">No national symbols information available.</p>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
+
 
           <TabsContent value="travel" className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
