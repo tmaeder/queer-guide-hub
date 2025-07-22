@@ -32,14 +32,37 @@ import {
   XCircle,
   ArrowUpRight,
   RefreshCw,
-  Newspaper
+  Newspaper,
+  Download,
+  Upload,
+  Database
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, isModerator, canManageContent, loading } = useAdminRoles();
+  const { toast } = useToast();
+  
+  const [isAwinImportOpen, setIsAwinImportOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importParams, setImportParams] = useState({
+    csvUrl: "",
+    maxProducts: 1000,
+    skipRows: 0,
+    batchSize: 100
+  });
   
   const [stats, setStats] = useState({
     totalContent: 0,
@@ -163,6 +186,41 @@ export default function AdminDashboard() {
       setRecentActivity(activities);
     } catch (error) {
       console.error('Error fetching recent activity:', error);
+    }
+  };
+
+  const handleAwinImport = async () => {
+    setIsImporting(true);
+    try {
+      console.log("Starting Awin import with params:", importParams);
+      
+      const { data, error } = await supabase.functions.invoke('import-awin-products', {
+        body: importParams
+      });
+
+      if (error) {
+        console.error("Awin import error:", error);
+        throw new Error(error.message || "Failed to import from Awin");
+      }
+
+      toast({
+        title: "Import Successful",
+        description: `Imported ${data.imported} products from Awin (${data.total} total available)`
+      });
+
+      setIsAwinImportOpen(false);
+      // Refresh stats
+      fetchStats();
+      
+    } catch (error) {
+      console.error("Import error:", error);
+      toast({
+        title: "Import Failed",
+        description: error.message || "Failed to import products from Awin",
+        variant: "destructive"
+      });
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -338,10 +396,116 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-        <Button onClick={fetchStats} variant="outline" size="sm" disabled={statsLoading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${statsLoading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Dialog open={isAwinImportOpen} onOpenChange={setIsAwinImportOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Import from Awin
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Import Products from Awin CSV Feed</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Import products from Awin CSV data feeds. Leave CSV URL blank to use the default feed with your API credentials.
+                </p>
+                
+                <div>
+                  <Label htmlFor="awin-csv-url">Custom CSV Feed URL (Optional)</Label>
+                  <Input
+                    id="awin-csv-url"
+                    placeholder="https://productdata.awin.com/datafeed/download/..."
+                    value={importParams.csvUrl}
+                    onChange={(e) => setImportParams(prev => ({ ...prev, csvUrl: e.target.value }))}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leave blank to use default Awin CSV feed with your API credentials
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="awin-max-products">Max Products</Label>
+                    <Input
+                      id="awin-max-products"
+                      type="number"
+                      min="1"
+                      max="10000"
+                      value={importParams.maxProducts}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, maxProducts: parseInt(e.target.value) || 1000 }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="awin-skip-rows">Skip Rows</Label>
+                    <Input
+                      id="awin-skip-rows"
+                      type="number"
+                      min="0"
+                      value={importParams.skipRows}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, skipRows: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="awin-batch-size">Batch Size</Label>
+                    <Input
+                      id="awin-batch-size"
+                      type="number"
+                      min="10"
+                      max="500"
+                      value={importParams.batchSize}
+                      onChange={(e) => setImportParams(prev => ({ ...prev, batchSize: parseInt(e.target.value) || 100 }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-muted p-4 rounded-lg space-y-2">
+                  <h4 className="font-medium">Import Process:</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Downloads and decompresses gzipped CSV feed</li>
+                    <li>• Processes products in batches to avoid timeouts</li>
+                    <li>• Maps Awin categories to marketplace categories</li>
+                    <li>• Preserves all original Awin metadata</li>
+                    <li>• Supports multiple product images</li>
+                  </ul>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAwinImportOpen(false)}
+                    disabled={isImporting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAwinImport}
+                    disabled={isImporting}
+                  >
+                    {isImporting ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        Import CSV Feed
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Button onClick={fetchStats} variant="outline" size="sm" disabled={statsLoading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${statsLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* System Health Alert */}
@@ -353,6 +517,73 @@ export default function AdminDashboard() {
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Quick Actions Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Quick Data Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="border-dashed">
+              <CardContent className="p-4 text-center">
+                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <h3 className="font-medium mb-1">Import Products</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Import products from Awin CSV feeds
+                </p>
+                <Dialog open={isAwinImportOpen} onOpenChange={setIsAwinImportOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="w-full">
+                      <Download className="h-4 w-4 mr-2" />
+                      Import from Awin
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-dashed">
+              <CardContent className="p-4 text-center">
+                <ShoppingBag className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <h3 className="font-medium mb-1">Marketplace</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Manage listings and products
+                </p>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate("/admin/marketplace")}
+                >
+                  Manage Marketplace
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-dashed">
+              <CardContent className="p-4 text-center">
+                <Tags className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <h3 className="font-medium mb-1">Content Tags</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Organize content with tags
+                </p>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate("/tags")}
+                >
+                  Manage Tags
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Quick Stats Dashboard */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
