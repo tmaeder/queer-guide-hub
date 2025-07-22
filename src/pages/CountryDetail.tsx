@@ -264,15 +264,17 @@ export default function CountryDetail() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="travel">Travel</TabsTrigger>
-            <TabsTrigger value="lgbti">LGBTI Rights</TabsTrigger>
-            <TabsTrigger value="news">News</TabsTrigger>
-            <TabsTrigger value="venues">Venues</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="overview" className="space-y-8">
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-4 mb-6">
+            <TabsList className="grid w-full grid-cols-6 h-12">
+              <TabsTrigger value="overview" className="text-sm font-medium">Overview</TabsTrigger>
+              <TabsTrigger value="travel" className="text-sm font-medium">Travel</TabsTrigger>
+              <TabsTrigger value="lgbti" className="text-sm font-medium">LGBTI Rights</TabsTrigger>
+              <TabsTrigger value="news" className="text-sm font-medium">News</TabsTrigger>
+              <TabsTrigger value="venues" className="text-sm font-medium">Venues</TabsTrigger>
+              <TabsTrigger value="events" className="text-sm font-medium">Events</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
