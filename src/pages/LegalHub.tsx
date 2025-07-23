@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FileText, Shield, Cookie, Copyright, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export default function LegalHub() {
+  const navigate = useNavigate();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     terms: false,
     privacy: false,
@@ -328,7 +330,7 @@ export default function LegalHub() {
               <p className="text-sm text-muted-foreground">dmca@thequeerguide.com</p>
             </div>
           </div>
-          <Button variant="outline" className="mt-4">
+          <Button variant="outline" className="mt-4" onClick={() => navigate('/contact')}>
             Contact Support
           </Button>
         </CardContent>
