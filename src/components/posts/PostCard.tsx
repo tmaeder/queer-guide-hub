@@ -13,13 +13,16 @@ import {
   Lock,
   ExternalLink,
   Trash2,
-  Edit
+  Edit,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { CommunityPost } from '@/hooks/useCommunityPosts';
+import { CommentsSection } from './CommentsSection';
 import { useAuth } from '@/hooks/useAuth';
 
 interface PostCardProps {
@@ -33,6 +36,7 @@ interface PostCardProps {
 export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCardProps) => {
   const { user } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   
   const isOwnPost = user?.id === post.user_id;
   
@@ -83,9 +87,50 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
   };
 
   const renderPostContent = () => {
-    const content = (
+    let content = post.content;
+    
+    // Handle mentions
+    if (post.mentions && Array.isArray(post.mentions)) {
+      (post.mentions as any[]).forEach((mention: any) => {
+        const mentionRegex = new RegExp(`@${mention.username}`, 'g');
+        content = content.replace(
+          mentionRegex,
+          `<span class="text-primary font-medium cursor-pointer hover:underline">@${mention.username}</span>`
+        );
+      });
+    }
+
+    // Handle hashtags
+    if (post.tags && Array.isArray(post.tags)) {
+      post.tags.forEach((tag: string) => {
+        const tagRegex = new RegExp(`#${tag}`, 'g');
+        content = content.replace(
+          tagRegex,
+          `<span class="text-primary font-medium cursor-pointer hover:underline">#${tag}</span>`
+        );
+      });
+    }
+
+    // Generic hashtag handling for tags not in the tags array
+    content = content.replace(
+      /#(\w+)/g,
+      '<span class="text-primary font-medium cursor-pointer hover:underline">#$1</span>'
+    );
+
+    const contentElement = (
       <div className="space-y-4">
-        <p className="whitespace-pre-wrap">{post.content}</p>
+        <div dangerouslySetInnerHTML={{ __html: content }} className="whitespace-pre-wrap" />
+        
+        {/* Display tags as badges */}
+        {post.tags && post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {post.tags.map((tag, index) => (
+              <Badge key={index} variant="secondary" className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                #{tag}
+              </Badge>
+            ))}
+          </div>
+        )}
         
         {/* Images */}
         {post.images && post.images.length > 0 && (
@@ -166,7 +211,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
       </div>
     );
 
-    return content;
+    return contentElement;
   };
 
   return (
@@ -257,9 +302,15 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               <span>{post.likes_count || 0}</span>
             </Button>
             
-            <Button variant="ghost" size="sm" disabled>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowComments(!showComments)}
+              disabled={!user}
+            >
               <MessageCircle className="h-4 w-4 mr-1" />
               <span>{post.comments_count || 0}</span>
+              {showComments ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
             </Button>
           </div>
           
@@ -267,6 +318,13 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
             <Share2 className="h-4 w-4" />
           </Button>
         </div>
+        
+        {/* Comments Section */}
+        {showComments && user && (
+          <div className="pt-4 border-t">
+            <CommentsSection postId={post.id} />
+          </div>
+        )}
       </CardContent>
       
       {/* Delete Confirmation Dialog */}

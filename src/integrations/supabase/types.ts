@@ -393,12 +393,14 @@ export type Database = {
           link_description: string | null
           link_title: string | null
           link_url: string | null
+          mentions: Json | null
           pinned: boolean | null
           poll_options: Json | null
           post_type: string | null
           referenced_id: string | null
           referenced_type: string | null
           shares_count: number | null
+          tags: string[] | null
           updated_at: string
           user_id: string
           visibility: string | null
@@ -413,12 +415,14 @@ export type Database = {
           link_description?: string | null
           link_title?: string | null
           link_url?: string | null
+          mentions?: Json | null
           pinned?: boolean | null
           poll_options?: Json | null
           post_type?: string | null
           referenced_id?: string | null
           referenced_type?: string | null
           shares_count?: number | null
+          tags?: string[] | null
           updated_at?: string
           user_id: string
           visibility?: string | null
@@ -433,12 +437,14 @@ export type Database = {
           link_description?: string | null
           link_title?: string | null
           link_url?: string | null
+          mentions?: Json | null
           pinned?: boolean | null
           poll_options?: Json | null
           post_type?: string | null
           referenced_id?: string | null
           referenced_type?: string | null
           shares_count?: number | null
+          tags?: string[] | null
           updated_at?: string
           user_id?: string
           visibility?: string | null
@@ -2033,6 +2039,7 @@ export type Database = {
           created_at: string
           id: string
           likes_count: number | null
+          mentions: Json | null
           parent_comment_id: string | null
           post_id: string
           updated_at: string
@@ -2043,6 +2050,7 @@ export type Database = {
           created_at?: string
           id?: string
           likes_count?: number | null
+          mentions?: Json | null
           parent_comment_id?: string | null
           post_id: string
           updated_at?: string
@@ -2053,6 +2061,7 @@ export type Database = {
           created_at?: string
           id?: string
           likes_count?: number | null
+          mentions?: Json | null
           parent_comment_id?: string | null
           post_id?: string
           updated_at?: string
@@ -3525,6 +3534,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      decrement_comment_likes: {
+        Args: { comment_id: string }
+        Returns: undefined
+      }
       decrement_post_likes: {
         Args: { post_id: string }
         Returns: undefined
@@ -3620,6 +3633,10 @@ export type Database = {
       }
       increment_article_views: {
         Args: { article_id: string }
+        Returns: undefined
+      }
+      increment_comment_likes: {
+        Args: { comment_id: string }
         Returns: undefined
       }
       increment_listing_views: {

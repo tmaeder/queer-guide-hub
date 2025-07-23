@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +23,8 @@ export interface CreatePostData {
   link_title?: string;
   link_description?: string;
   poll_options?: any;
+  mentions?: Array<{ user_id: string; username: string }>;
+  tags?: string[];
 }
 
 export const useCommunityPosts = (userId?: string) => {
@@ -96,6 +99,8 @@ export const useCommunityPosts = (userId?: string) => {
           link_title: postData.link_title,
           link_description: postData.link_description,
           poll_options: postData.poll_options,
+          mentions: postData.mentions || [],
+          tags: postData.tags || [],
         })
         .select()
         .single();
@@ -190,6 +195,50 @@ export const useCommunityPosts = (userId?: string) => {
       });
     },
   });
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    const channel = supabase
+      .channel('community-posts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'community_posts'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'post_likes'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'post_comments'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return {
     posts,

@@ -17,7 +17,9 @@ import {
   Users, 
   Lock,
   X,
-  Plus
+  Plus,
+  AtSign,
+  Hash
 } from 'lucide-react';
 import { useCommunityPosts, CreatePostData } from '@/hooks/useCommunityPosts';
 import { useAuth } from '@/hooks/useAuth';
@@ -41,14 +43,29 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
   const [linkTitle, setLinkTitle] = useState('');
   const [linkDescription, setLinkDescription] = useState('');
   const [pollOptions, setPollOptions] = useState<string[]>(['', '']);
+  const [mentions, setMentions] = useState<Array<{ user_id: string; username: string }>>([]);
+  const [tags, setTags] = useState<string[]>([]);
 
   const handleSubmit = () => {
     if (!content.trim()) return;
+
+    // Parse mentions and tags from content
+    const mentionMatches = content.match(/@(\w+)/g);
+    const tagMatches = content.match(/#(\w+)/g);
+    
+    const extractedMentions = mentionMatches?.map(match => ({
+      user_id: '', // In a real implementation, you'd look up user IDs
+      username: match.substring(1)
+    })) || [];
+    
+    const extractedTags = tagMatches?.map(match => match.substring(1)) || [];
 
     const postData: CreatePostData = {
       content: content.trim(),
       post_type: postType,
       visibility,
+      mentions: extractedMentions.length > 0 ? extractedMentions : undefined,
+      tags: extractedTags.length > 0 ? extractedTags : undefined,
     };
 
     if (postType === 'image' && images.length > 0) {
@@ -83,6 +100,8 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
     setLinkTitle('');
     setLinkDescription('');
     setPollOptions(['', '']);
+    setMentions([]);
+    setTags([]);
   };
 
   const addPollOption = () => {
@@ -198,13 +217,27 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
           </div>
 
           {/* Main Content */}
-          <Textarea
-            placeholder="What's on your mind?"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="min-h-[120px] resize-none"
-            maxLength={2000}
-          />
+          <div className="space-y-2">
+            <Textarea
+              placeholder="What's on your mind? Use @ to mention users and # for tags..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="min-h-[120px] resize-none"
+              maxLength={2000}
+            />
+            
+            {/* Mention and Tag Hints */}
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <AtSign className="h-3 w-3" />
+                <span>Type @ to mention users</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Hash className="h-3 w-3" />
+                <span>Type # to add tags</span>
+              </div>
+            </div>
+          </div>
 
           {/* Post Type Specific Content */}
           {postType === 'image' && (
