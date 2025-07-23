@@ -69,6 +69,9 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const tripadvisorApiKey = Deno.env.get('TRIPADVISOR_API_KEY')!;
     
+    console.log('TripAdvisor API Key configured:', tripadvisorApiKey ? 'Yes' : 'No');
+    console.log('API Key length:', tripadvisorApiKey?.length || 0);
+    
     if (!tripadvisorApiKey) {
       throw new Error('TripAdvisor API key not configured');
     }
