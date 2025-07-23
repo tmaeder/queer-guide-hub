@@ -60,7 +60,7 @@ export const NotificationBell = () => {
         <div className="flex items-center justify-between p-2 mb-3 border-b border-border">
           
           <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full">
               <SelectValue>
                 <div className="flex items-center gap-2">
                   {(() => {
