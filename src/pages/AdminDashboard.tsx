@@ -398,10 +398,7 @@ export default function AdminDashboard() {
         <div className="flex gap-2">
           <Dialog open={isAwinImportOpen} onOpenChange={setIsAwinImportOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Import from Awin
-              </Button>
+              
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
