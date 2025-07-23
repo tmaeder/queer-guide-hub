@@ -8,10 +8,14 @@ import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { LatestNewsSlider } from '@/components/home/LatestNewsSlider';
 const Index = () => {
-  const { user } = useAuth();
-  const { stats: realStats, loading } = useStats();
+  const {
+    user
+  } = useAuth();
+  const {
+    stats: realStats,
+    loading
+  } = useStats();
   const isMobile = useIsMobile();
-  
   const features = [{
     icon: MapPin,
     title: 'Safe Venues',
@@ -49,32 +53,25 @@ const Index = () => {
     color: 'text-accent',
     link: '/directory'
   }];
-
-  const testimonials = [
-    {
-      quote: "Queer Guide helped me find safe spaces when I moved to a new city. The community here is amazing!",
-      author: "Alex",
-      location: "Berlin, Germany"
-    },
-    {
-      quote: "As a business owner, being featured on Queer Guide has connected me with my community.",
-      author: "Sam",
-      location: "San Francisco, USA"
-    },
-    {
-      quote: "The events section keeps me connected with local LGBTQ+ happenings. It's become essential.",
-      author: "Jordan",
-      location: "Toronto, Canada"
-    }
-  ];
-
+  const testimonials = [{
+    quote: "Queer Guide helped me find safe spaces when I moved to a new city. The community here is amazing!",
+    author: "Alex",
+    location: "Berlin, Germany"
+  }, {
+    quote: "As a business owner, being featured on Queer Guide has connected me with my community.",
+    author: "Sam",
+    location: "San Francisco, USA"
+  }, {
+    quote: "The events section keeps me connected with local LGBTQ+ happenings. It's become essential.",
+    author: "Jordan",
+    location: "Toronto, Canada"
+  }];
   const formatNumber = (num: number) => {
     if (num >= 1000) {
       return `${Math.floor(num / 1000)}K+`;
     }
     return num.toString();
   };
-
   const stats = loading ? [{
     number: '---',
     label: 'Verified Venues'
@@ -100,8 +97,7 @@ const Index = () => {
     number: formatNumber(realStats.weeklyEvents),
     label: 'Weekly Events'
   }];
-  return (
-    <div className="min-h-screen">
+  return <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-background">
         <div className="absolute inset-0 opacity-5"></div>
@@ -124,31 +120,20 @@ const Index = () => {
             </div>
 
             {/* Subtitle */}
-            <p className={`text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed ${
-              isMobile ? 'text-lg' : 'text-xl md:text-2xl lg:text-3xl'
-            }`}>
+            <p className={`text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed ${isMobile ? 'text-lg' : 'text-xl md:text-2xl lg:text-3xl'}`}>
               Your comprehensive platform for discovering safe spaces, 
               connecting with community, and building an inclusive world together.
             </p>
 
             {/* CTA Buttons */}
             <div className={`flex gap-4 justify-center mb-12 ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'}`}>
-              <Button 
-                size={isMobile ? "default" : "lg"} 
-                className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} bg-primary hover:bg-primary/90 transition-all`} 
-                asChild
-              >
+              <Button size={isMobile ? "default" : "lg"} className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} bg-primary hover:bg-primary/90 transition-all`} asChild>
                 <Link to="/venues">
                   Explore Venues
                   <ArrowRight className={`ml-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
                 </Link>
               </Button>
-              <Button 
-                size={isMobile ? "default" : "lg"} 
-                variant="outline" 
-                className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} hover:bg-muted border-2`} 
-                asChild
-              >
+              <Button size={isMobile ? "default" : "lg"} variant="outline" className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} hover:bg-muted border-2`} asChild>
                 <Link to={user ? "/events" : "/auth"}>
                   {user ? "Browse Events" : "Join Community"}
                 </Link>
@@ -157,16 +142,14 @@ const Index = () => {
 
             {/* Stats */}
             <div className={`grid gap-8 max-w-3xl mx-auto ${isMobile ? 'grid-cols-2 gap-4' : 'grid-cols-2 md:grid-cols-4'}`}>
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
+              {stats.map((stat, index) => <div key={index} className="text-center">
                   <div className={`font-bold text-primary mb-2 ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>
                     {stat.number}
                   </div>
                   <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
                     {stat.label}
                   </div>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
         </div>
@@ -186,18 +169,11 @@ const Index = () => {
           </div>
 
           <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'}`}>
-            {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="group hover:shadow-lg transition-all duration-300 animate-fade-in hover:-translate-y-2 bg-card border-border" 
-                style={{
-                  animationDelay: `${index * 100}ms`
-                }}
-              >
+            {features.map((feature, index) => <Card key={index} className="group hover:shadow-lg transition-all duration-300 animate-fade-in hover:-translate-y-2 bg-card border-border" style={{
+            animationDelay: `${index * 100}ms`
+          }}>
                 <CardContent className={`text-center h-full flex flex-col ${isMobile ? 'p-6' : 'p-8'}`}>
-                  <div className={`mx-auto mb-6 rounded-full bg-background border border-border flex items-center justify-center group-hover:scale-110 transition-transform ${
-                    isMobile ? 'h-12 w-12' : 'h-16 w-16'
-                  }`}>
+                  <div className={`mx-auto mb-6 rounded-full bg-background border border-border flex items-center justify-center group-hover:scale-110 transition-transform ${isMobile ? 'h-12 w-12' : 'h-16 w-16'}`}>
                     <feature.icon className={`${feature.color} ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
                   </div>
                   <h3 className={`font-semibold mb-4 ${isMobile ? 'text-lg' : 'text-2xl'}`}>
@@ -213,8 +189,7 @@ const Index = () => {
                     </Link>
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -235,8 +210,7 @@ const Index = () => {
           </div>
 
           <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'}`}>
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-card border-border">
+            {testimonials.map((testimonial, index) => <Card key={index} className="bg-card border-border">
                 <CardContent className={`${isMobile ? 'p-6' : 'p-8'}`}>
                   <Quote className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-primary mb-4`} />
                   <p className={`text-foreground mb-6 ${isMobile ? 'text-sm' : 'text-base'}`}>
@@ -256,8 +230,7 @@ const Index = () => {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -273,33 +246,19 @@ const Index = () => {
               Connect with like-minded individuals, discover safe spaces, and help build a more inclusive world.
             </p>
             <div className={`flex gap-4 justify-center ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'}`}>
-              <Button 
-                size={isMobile ? "default" : "lg"} 
-                variant="secondary"
-                className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} bg-primary-foreground text-primary hover:bg-primary-foreground/90`} 
-                asChild
-              >
+              <Button size={isMobile ? "default" : "lg"} variant="secondary" className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} bg-primary-foreground text-primary hover:bg-primary-foreground/90`} asChild>
                 <Link to="/auth">
                   Get Started Today
                   <ArrowRight className={`ml-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
                 </Link>
               </Button>
-              <Button 
-                size={isMobile ? "default" : "lg"} 
-                variant="outline"
-                className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10`} 
-                asChild
-              >
-                <Link to="/about">
-                  Learn More
-                </Link>
+              <Button size={isMobile ? "default" : "lg"} variant="outline" className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10`} asChild>
+                
               </Button>
             </div>
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
