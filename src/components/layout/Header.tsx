@@ -93,33 +93,6 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80 p-4 bg-background border border-border">
-                  {/* User mode selector */}
-                  <div className="flex items-center justify-between p-2 mb-3">
-                    <span className="text-sm font-medium">Current Mode</span>
-                    <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
-                      <SelectTrigger className="w-40">
-                        <SelectValue>
-                          <div className="flex items-center gap-2">
-                            {(() => {
-                              const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
-                              return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
-                            })()}
-                            <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
-                          </div>
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {userModes.map((mode) => (
-                          <SelectItem key={mode.value} value={mode.value}>
-                            <div className="flex items-center gap-2">
-                              <mode.icon className="h-4 w-4" />
-                              <span>{mode.label}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
 
                   {/* Quick actions grid */}
                   <div className="grid grid-cols-3 gap-2 p-2">
