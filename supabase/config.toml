@@ -113,3 +113,6 @@ verify_jwt = true
 
 [functions.send-templated-email]
 verify_jwt = false
+
+[functions.import-foursquare-venues]
+verify_jwt = false

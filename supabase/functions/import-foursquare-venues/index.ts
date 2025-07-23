@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
                 .from('venues')
                 .select('id, foursquare_id')
                 .eq('foursquare_id', venue.fsq_id)
-                .single()
+                .maybeSingle()
 
               // Prepare venue data
               const venueData = {
