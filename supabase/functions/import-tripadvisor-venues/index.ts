@@ -87,11 +87,12 @@ serve(async (req) => {
         
         try {
           // Search for locations using TripAdvisor API
-          const searchUrl = `https://api.content.tripadvisor.com/api/v1/location/search?key=${tripadvisorApiKey}&searchQuery=${encodeURIComponent(keyword + ' ' + location)}&category=attractions,restaurants,hotels&language=en`;
+          const searchUrl = `https://api.content.tripadvisor.com/api/v1/location/search?searchQuery=${encodeURIComponent(keyword + ' ' + location)}&category=attractions,restaurants,hotels&language=en`;
           
           const searchResponse = await fetch(searchUrl, {
             headers: {
               'Accept': 'application/json',
+              'X-TripAdvisor-API-Key': tripadvisorApiKey,
             },
           });
 
@@ -111,9 +112,14 @@ serve(async (req) => {
           for (const item of searchData.data.slice(0, 5)) { // Limit to 5 per search to avoid rate limits
             try {
               // Get detailed information for each location
-              const detailsUrl = `https://api.content.tripadvisor.com/api/v1/location/${item.location_id}/details?key=${tripadvisorApiKey}&language=en&currency=USD`;
+              const detailsUrl = `https://api.content.tripadvisor.com/api/v1/location/${item.location_id}/details?language=en&currency=USD`;
               
-              const detailsResponse = await fetch(detailsUrl);
+              const detailsResponse = await fetch(detailsUrl, {
+                headers: {
+                  'Accept': 'application/json',
+                  'X-TripAdvisor-API-Key': tripadvisorApiKey,
+                },
+              });
               if (!detailsResponse.ok) {
                 console.error(`Failed to get details for location ${item.location_id}`);
                 continue;
