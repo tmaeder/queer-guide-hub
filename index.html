@@ -12,8 +12,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://widget.getyourguide.com https://cdn.jsdelivr.net https://*.supabase.co https://xqeacpakadqfxjxjcewc.supabase.co; connect-src 'self' https://*.supabase.co https://xqeacpakadqfxjxjcewc.supabase.co wss://*.supabase.co wss://xqeacpakadqfxjxjcewc.supabase.co https://api.mapbox.com https://events.mapbox.com https://widget.getyourguide.com; img-src 'self' data: blob: https://*.supabase.co https://xqeacpakadqfxjxjcewc.supabase.co https://api.mapbox.com https://static.getyourguide.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://widget.getyourguide.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://*.supabase.co;">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
     <!-- GetYourGuide Analytics -->
-    <script async defer src="https://widget.getyourguide.com/dist/pa.umd.production.min.js" data-gyg-partner-id="2PBDXWH"></script>
+    <script async defer src="https://widget.getyourguide.com/dist/pa.umd.production.min.js" data-gyg-partner-id="2PBDXWH" integrity="sha384-REPLACE_WITH_ACTUAL_HASH" crossorigin="anonymous"></script>
 
     <meta property="og:title" content="Queer Guide" />
     <meta property="og:description" content="Connecting the LGBTQ+ community with safe spaces, events, businesses, and each other." />
