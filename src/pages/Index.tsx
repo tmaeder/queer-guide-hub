@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { LatestNewsSlider } from '@/components/home/LatestNewsSlider';
+import { WeeklyEventsSlider } from '@/components/home/WeeklyEventsSlider';
 const Index = () => {
   const {
     user
@@ -193,6 +194,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Weekly Events Near You */}
+      <WeeklyEventsSlider />
 
       {/* Latest News Section */}
       <LatestNewsSlider />
