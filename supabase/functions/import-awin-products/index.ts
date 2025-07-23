@@ -271,30 +271,42 @@ Deno.serve(async (req) => {
     // Decompress the gzip data using built-in Deno decompression
     console.log('Starting decompression...')
     try {
+      console.log('Creating decompression stream...')
       const decompressedStream = new DecompressionStream('gzip')
-      const writer = decompressedStream.writable.getWriter()
-      const reader = decompressedStream.readable.getReader()
       
-      console.log('Writing compressed data to stream...')
-      await writer.write(new Uint8Array(compressedData))
-      await writer.close()
+      console.log('Setting up stream processing...')
+      const readable = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new Uint8Array(compressedData))
+          controller.close()
+        }
+      })
+
+      console.log('Piping through decompression...')
+      const decompressed = readable.pipeThrough(decompressedStream)
+      const reader = decompressed.getReader()
       
-      console.log('Reading decompressed data...')
+      console.log('Reading decompressed chunks...')
       const chunks = []
+      let totalSize = 0
+      
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
         chunks.push(value)
+        totalSize += value.length
+        console.log(`Read chunk ${chunks.length}, size: ${value.length}, total: ${totalSize}`)
       }
       
-      console.log(`Got ${chunks.length} chunks from decompression`)
-      const decompressedData = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0))
+      console.log(`Combining ${chunks.length} chunks with total size: ${totalSize}`)
+      const decompressedData = new Uint8Array(totalSize)
       let offset = 0
       for (const chunk of chunks) {
         decompressedData.set(chunk, offset)
         offset += chunk.length
       }
       
+      console.log('Decoding CSV content...')
       const csvContent = new TextDecoder().decode(decompressedData)
       console.log('Decompressed CSV content size:', csvContent.length, 'characters')
       console.log('First 500 chars of CSV:', csvContent.substring(0, 500))
