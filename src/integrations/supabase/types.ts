@@ -3421,6 +3421,14 @@ export type Database = {
         Args: { post_id: string }
         Returns: undefined
       }
+      get_algolia_sync_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          jobname: string
+          schedule: string
+          active: boolean
+        }[]
+      }
       get_or_create_direct_conversation: {
         Args: { user1_id: string; user2_id: string }
         Returns: string
