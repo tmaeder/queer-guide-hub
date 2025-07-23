@@ -39,6 +39,12 @@ interface FoursquareVenue {
       close: string
     }>
   }
+  hours_popular?: Array<{
+    day: number
+    open: string
+    close: string
+    popularity: number
+  }>
   rating?: number
   photos?: Array<{
     id: string
@@ -50,6 +56,26 @@ interface FoursquareVenue {
   }>
   description?: string
   verified?: boolean
+  price?: number // 1-4 price level
+  features?: Array<{
+    id: string
+    name: string
+  }>
+  popularity?: number
+  stats?: {
+    total_photos?: number
+    total_ratings?: number
+    total_tips?: number
+  }
+  tastes?: Array<string>
+  social_media?: {
+    facebook_id?: string
+    instagram?: string
+    twitter?: string
+  }
+  date_closed?: string
+  closed_bucket?: string
+  store_id?: string
 }
 
 const FOURSQUARE_CATEGORIES = {
@@ -103,8 +129,8 @@ Deno.serve(async (req) => {
 
       for (const [categoryName, categoryId] of Object.entries(FOURSQUARE_CATEGORIES)) {
         try {
-          // Search for venues using Foursquare Places API
-          const searchUrl = `https://api.foursquare.com/v3/places/search?ll=${city.lat},${city.lng}&radius=50000&categories=${categoryId}&limit=50&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified`
+          // Search for venues using Foursquare Places API with comprehensive field selection
+          const searchUrl = `https://api.foursquare.com/v3/places/search?ll=${city.lat},${city.lng}&radius=50000&categories=${categoryId}&limit=50&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
           
           const response = await fetch(searchUrl, {
             headers: {
@@ -139,7 +165,37 @@ Deno.serve(async (req) => {
                 return `${photo.prefix}${size}${photo.suffix}`
               }) || []
 
-              // Prepare venue data
+              // Extract amenities from features and tastes
+              const amenities = [
+                ...(venue.features?.map(feature => feature.name.toLowerCase().replace(/\s+/g, '-')) || []),
+                ...(venue.tastes?.map(taste => taste.toLowerCase().replace(/\s+/g, '-')) || [])
+              ]
+
+              // Process hours information
+              const hoursData = venue.hours?.regular ? {
+                regular: venue.hours.regular,
+                display: venue.hours.display,
+                open_now: venue.hours.open_now,
+                popular: venue.hours_popular || []
+              } : null
+
+              // Extract social media information
+              const socialMedia = venue.social_media ? {
+                facebook: venue.social_media.facebook_id ? `https://facebook.com/${venue.social_media.facebook_id}` : null,
+                instagram: venue.social_media.instagram ? `https://instagram.com/${venue.social_media.instagram}` : null,
+                twitter: venue.social_media.twitter ? `https://twitter.com/${venue.social_media.twitter}` : null
+              } : {}
+
+              // Enhanced tags from categories, features, and tastes
+              const enhancedTags = [
+                'lgbt-friendly',
+                categoryName === 'Gay Bar' ? 'gay-bar' : 'lgbtq-organization',
+                ...(venue.categories?.map(cat => cat.short_name.toLowerCase().replace(/\s+/g, '-')) || []),
+                ...(venue.features?.map(feature => feature.name.toLowerCase().replace(/\s+/g, '-')) || []),
+                ...(venue.tastes?.map(taste => taste.toLowerCase().replace(/\s+/g, '-')) || [])
+              ].filter((tag, index, self) => self.indexOf(tag) === index) // Remove duplicates
+
+              // Prepare venue data with comprehensive Foursquare information
               const venueData = {
                 name: venue.name,
                 description: venue.description || null,
@@ -154,20 +210,29 @@ Deno.serve(async (req) => {
                 website: venue.website || null,
                 email: venue.email || null,
                 category: categoryName === 'Gay Bar' ? 'bar' : 'organization',
-                tags: [
-                  'lgbt-friendly',
-                  categoryName === 'Gay Bar' ? 'gay-bar' : 'lgbtq-organization',
-                  ...(venue.categories?.map(cat => cat.short_name.toLowerCase().replace(/\s+/g, '-')) || [])
-                ],
-                amenities: [],
-                images: imageUrls, // Store processed image URLs
+                tags: enhancedTags,
+                amenities: amenities,
+                images: imageUrls,
+                price_range: venue.price || null, // Foursquare price level (1-4)
+                hours: hoursData,
                 verified: venue.verified || false,
+                featured: venue.popularity && venue.popularity > 0.7 ? true : false, // Feature popular venues
                 foursquare_id: venue.fsq_id,
                 foursquare_rating: venue.rating || null,
                 foursquare_data: {
                   categories: venue.categories,
                   hours: venue.hours,
-                  photos: venue.photos?.slice(0, 5) // Keep original photo metadata
+                  hours_popular: venue.hours_popular,
+                  photos: venue.photos?.slice(0, 5),
+                  features: venue.features,
+                  popularity: venue.popularity,
+                  stats: venue.stats,
+                  tastes: venue.tastes,
+                  social_media: venue.social_media,
+                  date_closed: venue.date_closed,
+                  closed_bucket: venue.closed_bucket,
+                  store_id: venue.store_id,
+                  social_links: socialMedia
                 }
               }
 
