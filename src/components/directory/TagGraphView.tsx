@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Maximize2, Tag, RefreshCw } from "lucide-react";
 import { useTagRelationships } from "@/hooks/useTagRelationships";
+import { AlgoliaTagRelationship } from "@/hooks/useAlgoliaSearch";
 
 interface TagData {
   id: string;
@@ -18,6 +19,8 @@ interface TagGraphViewProps {
   tags: TagData[];
   onTagClick?: (tag: TagData) => void;
   selectedTag?: TagData | null;
+  algoliaRelationships?: AlgoliaTagRelationship[];
+  onGetRelatedTags?: (tagId: string) => Promise<AlgoliaTagRelationship[]>;
 }
 
 interface GraphNode {
