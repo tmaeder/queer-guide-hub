@@ -1,6 +1,0 @@
-# Netlify redirects and security
-/*    /index.html   200
-
-# Security redirects - force HTTPS
-http://queerguide.netlify.app/*    https://queerguide.netlify.app/:splat    301!
-http://www.queerguide.netlify.app/*    https://queerguide.netlify.app/:splat    301!

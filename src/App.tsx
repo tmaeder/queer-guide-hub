@@ -9,7 +9,6 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { AccessibilityProvider } from "@/hooks/useAccessibility";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { SecurityValidation } from "@/components/security/SecurityValidation";
 import Index from "./pages/Index";
 import Venues from "./pages/Venues";
 import VenueDetail from "./pages/VenueDetail";
@@ -301,7 +300,6 @@ const App = () => {
                 </div>
               </main>
               <Footer />
-              <SecurityValidation />
             </div>
           </BrowserRouter>
         </TooltipProvider>
