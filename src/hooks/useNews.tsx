@@ -1,10 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const SUPABASE_URL = "https://xqeacpakadqfxjxjcewc.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8";
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+import { supabase } from '@/integrations/supabase/client';
 
 // Simplified type definitions to avoid TypeScript recursion issues
 type NewsArticle = any;
@@ -44,7 +39,15 @@ export const useNews = () => {
     try {
       const response = await supabase
         .from('news_articles')
-        .select('*, news_sources(*)')
+        .select(`
+          *,
+          news_sources (
+            id,
+            name,
+            url,
+            is_active
+          )
+        `)
         .not('published_at', 'is', null)
         .order('published_at', { ascending: false })
         .limit(50);
