@@ -48,6 +48,7 @@ export default function AdminVenues() {
   const [editingVenue, setEditingVenue] = useState<any>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [isImportingTripAdvisor, setIsImportingTripAdvisor] = useState(false);
+  const [isImportingTomTom, setIsImportingTomTom] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -286,6 +287,43 @@ export default function AdminVenues() {
     }
   };
 
+  const handleTomTomImport = async () => {
+    setIsImportingTomTom(true);
+    
+    try {
+      toast({
+        title: "Import Started",
+        description: "TomTom venue import has been triggered. This may take a few minutes...",
+      });
+
+      const { data, error } = await supabase.functions.invoke('import-tomtom-venues', {
+        body: { trigger: 'manual' }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Import Completed",
+        description: `${data.message}. Page will refresh to show new venues.`,
+      });
+
+      // Refresh the venues list
+      setTimeout(() => {
+        refetch();
+      }, 2000);
+
+    } catch (error) {
+      console.error('TomTom import error:', error);
+      toast({
+        title: "Import Failed",
+        description: "Failed to import venues from TomTom. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsImportingTomTom(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -350,6 +388,14 @@ export default function AdminVenues() {
           >
             <Download className="h-4 w-4 mr-2" />
             {isImportingTripAdvisor ? "Importing..." : "Import from TripAdvisor"}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handleTomTomImport}
+            disabled={isImportingTomTom}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {isImportingTomTom ? "Importing..." : "Import from TomTom"}
           </Button>
           <VenuesCsvImport onImportComplete={refetch} />
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
