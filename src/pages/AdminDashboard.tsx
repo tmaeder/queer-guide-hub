@@ -493,12 +493,7 @@ export default function AdminDashboard() {
 
       {/* Quick Actions Section */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Quick Data Management
-          </CardTitle>
-        </CardHeader>
+        
         
       </Card>
 
