@@ -20,11 +20,28 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const algoliaAppId = Deno.env.get('ALGOLIA_APPLICATION_ID')!;
-    const algoliaApiKey = Deno.env.get('ALGOLIA_API_KEY')!;
+    const algoliaAppId = Deno.env.get('ALGOLIA_APPLICATION_ID');
+    const algoliaApiKey = Deno.env.get('ALGOLIA_API_KEY');
+
+    console.log('Environment check:', {
+      supabaseUrl: !!supabaseUrl,
+      supabaseServiceKey: !!supabaseServiceKey,
+      algoliaAppId: !!algoliaAppId,
+      algoliaApiKey: !!algoliaApiKey
+    });
 
     if (!algoliaAppId || !algoliaApiKey) {
-      throw new Error('Algolia credentials not configured');
+      console.error('Missing Algolia credentials');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Algolia credentials not configured. Please add ALGOLIA_APPLICATION_ID and ALGOLIA_API_KEY to your Supabase secrets.',
+          configured: false
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);

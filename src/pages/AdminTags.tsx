@@ -235,6 +235,21 @@ export default function AdminTags() {
           description: `Failed to sync to Algolia: ${error.message}`,
           variant: "destructive",
         });
+      } else if (data?.error) {
+        console.error('Algolia API error:', data.error);
+        if (data.configured === false) {
+          toast({
+            title: "Configuration Required",
+            description: "Please configure your Algolia credentials in Supabase Edge Functions secrets before indexing.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Indexing failed",
+            description: `Algolia error: ${data.error}`,
+            variant: "destructive",
+          });
+        }
       } else if (data?.success) {
         console.log('Successfully indexed to Algolia:', data);
         toast({
