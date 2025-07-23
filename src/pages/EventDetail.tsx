@@ -521,61 +521,63 @@ export default function EventDetail() {
             </Card>
           )}
 
-          {/* Attendees */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Attendees ({attendeesGoing.length} going, {attendeesInterested.length} interested)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {attendeesGoing.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="font-medium mb-2 text-sm">Going</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {attendeesGoing.slice(0, 12).map((attendee) => (
-                      <div key={attendee.id} className="flex items-center gap-2 bg-muted/30 rounded-full px-3 py-1">
-                        <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-xs text-primary-foreground">
-                          {attendee.profiles?.display_name?.[0] || 'U'}
+          {/* Attendees - Only shown to logged in users */}
+          {user && (
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  Attendees ({attendeesGoing.length} going, {attendeesInterested.length} interested)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {attendeesGoing.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="font-medium mb-2 text-sm">Going</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {attendeesGoing.slice(0, 12).map((attendee) => (
+                        <div key={attendee.id} className="flex items-center gap-2 bg-muted/30 rounded-full px-3 py-1">
+                          <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-xs text-primary-foreground">
+                            {attendee.profiles?.display_name?.[0] || 'U'}
+                          </div>
+                          <span className="text-xs">{attendee.profiles?.display_name || 'Anonymous'}</span>
                         </div>
-                        <span className="text-xs">{attendee.profiles?.display_name || 'Anonymous'}</span>
-                      </div>
-                    ))}
-                    {attendeesGoing.length > 12 && (
-                      <div className="text-xs text-muted-foreground px-3 py-1">
-                        +{attendeesGoing.length - 12} more
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {attendeesInterested.length > 0 && (
-                <div>
-                  <h4 className="font-medium mb-2 text-sm">Interested</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {attendeesInterested.slice(0, 8).map((attendee) => (
-                      <div key={attendee.id} className="flex items-center gap-2 bg-muted/20 rounded-full px-3 py-1">
-                        <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center text-xs">
-                          {attendee.profiles?.display_name?.[0] || 'U'}
+                      ))}
+                      {attendeesGoing.length > 12 && (
+                        <div className="text-xs text-muted-foreground px-3 py-1">
+                          +{attendeesGoing.length - 12} more
                         </div>
-                        <span className="text-xs">{attendee.profiles?.display_name || 'Anonymous'}</span>
-                      </div>
-                    ))}
-                    {attendeesInterested.length > 8 && (
-                      <div className="text-xs text-muted-foreground px-3 py-1">
-                        +{attendeesInterested.length - 8} more
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {attendeesGoing.length === 0 && attendeesInterested.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">No attendees yet. Be the first!</p>
-              )}
-            </CardContent>
-          </Card>
+                {attendeesInterested.length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-2 text-sm">Interested</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {attendeesInterested.slice(0, 8).map((attendee) => (
+                        <div key={attendee.id} className="flex items-center gap-2 bg-muted/20 rounded-full px-3 py-1">
+                          <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center text-xs">
+                            {attendee.profiles?.display_name?.[0] || 'U'}
+                          </div>
+                          <span className="text-xs">{attendee.profiles?.display_name || 'Anonymous'}</span>
+                        </div>
+                      ))}
+                      {attendeesInterested.length > 8 && (
+                        <div className="text-xs text-muted-foreground px-3 py-1">
+                          +{attendeesInterested.length - 8} more
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {attendeesGoing.length === 0 && attendeesInterested.length === 0 && (
+                  <p className="text-muted-foreground text-center py-4">No attendees yet. Be the first!</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}
