@@ -165,10 +165,10 @@ Deno.serve(async (req) => {
                 return `${photo.prefix}${size}${photo.suffix}`
               }) || []
 
-              // Extract amenities from features and tastes
+              // Extract amenities from features and tastes (with proper type checking)
               const amenities = [
-                ...(venue.features?.map(feature => feature.name.toLowerCase().replace(/\s+/g, '-')) || []),
-                ...(venue.tastes?.map(taste => taste.toLowerCase().replace(/\s+/g, '-')) || [])
+                ...(Array.isArray(venue.features) ? venue.features.map(feature => feature.name.toLowerCase().replace(/\s+/g, '-')) : []),
+                ...(Array.isArray(venue.tastes) ? venue.tastes.map(taste => taste.toLowerCase().replace(/\s+/g, '-')) : [])
               ]
 
               // Process hours information
@@ -186,13 +186,13 @@ Deno.serve(async (req) => {
                 twitter: venue.social_media.twitter ? `https://twitter.com/${venue.social_media.twitter}` : null
               } : {}
 
-              // Enhanced tags from categories, features, and tastes
+              // Enhanced tags from categories, features, and tastes (with proper type checking)
               const enhancedTags = [
                 'lgbt-friendly',
                 categoryName === 'Gay Bar' ? 'gay-bar' : 'lgbtq-organization',
                 ...(venue.categories?.map(cat => cat.short_name.toLowerCase().replace(/\s+/g, '-')) || []),
-                ...(venue.features?.map(feature => feature.name.toLowerCase().replace(/\s+/g, '-')) || []),
-                ...(venue.tastes?.map(taste => taste.toLowerCase().replace(/\s+/g, '-')) || [])
+                ...(Array.isArray(venue.features) ? venue.features.map(feature => feature.name.toLowerCase().replace(/\s+/g, '-')) : []),
+                ...(Array.isArray(venue.tastes) ? venue.tastes.map(taste => taste.toLowerCase().replace(/\s+/g, '-')) : [])
               ].filter((tag, index, self) => self.indexOf(tag) === index) // Remove duplicates
 
               // Prepare venue data with comprehensive Foursquare information
