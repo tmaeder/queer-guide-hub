@@ -61,6 +61,7 @@ import Travel from "./pages/Travel";
 
 import ProfileSettings from "./pages/ProfileSettings";
 import UserProfile from "./pages/UserProfile";
+import Community from "./pages/Community";
 
 import Messages from "./pages/Messages";
 import Friends from "./pages/Friends";
@@ -288,9 +289,10 @@ const App = () => {
                    <Route path="/messages" element={<Messages />} />
                    <Route path="/friends" element={<Friends />} />
                     
-                   <Route path="/favorites" element={<Favorites />} />
-                   <Route path="/profile/settings" element={<ProfileSettings />} />
-                   <Route path="/user/:userId" element={<UserProfile />} />
+                    <Route path="/favorites" element={<Favorites />} />
+                    <Route path="/community" element={<Community />} />
+                    <Route path="/profile/settings" element={<ProfileSettings />} />
+                    <Route path="/user/:userId" element={<UserProfile />} />
                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
