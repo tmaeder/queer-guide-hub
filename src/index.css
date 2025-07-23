@@ -21,12 +21,12 @@
     --secondary: 0 0% 80%;
     --secondary-foreground: 0 0% 0%;
     
-    /* Muted: Light Gray */
-    --muted: 0 0% 90%;
-    --muted-foreground: 0 0% 40%;
+    /* Muted: Light Gray - improved contrast */
+    --muted: 0 0% 88%;
+    --muted-foreground: 0 0% 30%;
     
-    /* Accent: Dark Gray */
-    --accent: 0 0% 20%;
+    /* Accent: Dark Gray - improved contrast */
+    --accent: 0 0% 15%;
     --accent-foreground: 0 0% 100%;
     
     /* Destructive: Black */
@@ -71,13 +71,13 @@
     --primary-foreground: 0 0% 0%;
     --primary-glow: 0 0% 80%;
     
-    --secondary: 0 0% 20%;
+    --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 100%;
     
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 0 0% 70%;
     
-    --accent: 0 0% 80%;
+    --accent: 0 0% 85%;
     --accent-foreground: 0 0% 0%;
     
     --destructive: 0 0% 100%;

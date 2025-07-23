@@ -61,7 +61,7 @@ export default function CountryHeroImages({ countryName, className = "" }: Count
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${images[0]?.url})` }}
       >
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
       
       {/* Small thumbnail images overlay */}
@@ -78,13 +78,13 @@ export default function CountryHeroImages({ countryName, className = "" }: Count
       )}
       
       {/* Photographer credit */}
-      <div className="absolute bottom-2 left-2 text-xs text-white/80">
+      <div className="absolute bottom-2 left-2 text-xs text-primary-foreground drop-shadow-lg">
         Photo by{' '}
         <a 
           href={images[0]?.photographer_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline hover:text-white"
+          className="underline hover:text-primary-foreground/80"
         >
           {images[0]?.photographer}
         </a>

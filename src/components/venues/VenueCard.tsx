@@ -56,7 +56,7 @@ export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick, o
             }}
           />
           {venue.images.length > 1 && (
-            <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+            <div className="absolute top-2 right-2 bg-background/90 text-foreground text-xs px-2 py-1 rounded border">
               +{venue.images.length - 1} more
             </div>
           )}

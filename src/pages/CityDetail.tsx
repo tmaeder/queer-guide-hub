@@ -253,25 +253,25 @@ export default function CityDetail() {
             <div className="relative">
               <CityHeroImages cityName={city.name} countryName={city.countries?.name} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+              <div className="absolute bottom-0 left-0 right-0 p-8 text-primary-foreground">
                 <div className="flex items-center gap-4 mb-4">
                   {city.countries?.flag_emoji && (
                     <span className="text-6xl drop-shadow-lg">{city.countries.flag_emoji}</span>
                   )}
                   <div>
                     <h1 className="text-5xl font-bold mb-2 drop-shadow-lg">{city.name}</h1>
-                    <p className="text-xl text-white/90 mb-3">
+                    <p className="text-xl text-primary-foreground/90 mb-3 drop-shadow">
                       {city.region_name && `${city.region_name}, `}{city.countries?.name}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {city.is_capital && (
-                        <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                        <Badge className="bg-background/20 text-foreground border-border/30 backdrop-blur-sm">
                           <Building className="h-3 w-3 mr-1" />
                           Capital City
                         </Badge>
                       )}
                       {city.is_major_city && (
-                        <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                        <Badge className="bg-background/20 text-foreground border-border/30 backdrop-blur-sm">
                           <MapPin className="h-3 w-3 mr-1" />
                           Major City
                         </Badge>
