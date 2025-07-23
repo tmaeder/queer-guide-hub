@@ -6,10 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FlightSearch } from '@/components/booking/FlightSearch';
 import { HotelSearch } from '@/components/booking/HotelSearch';
 import { CarRentalSearch } from '@/components/booking/CarRentalSearch';
-
 export default function Travel() {
-  return (
-    <div className="w-full px-4 py-8">
+  return <div className="w-full px-4 py-8">
       <div className="w-full">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold gradient-text mb-4">Travel Booking</h1>
@@ -48,41 +46,7 @@ export default function Travel() {
           </TabsContent>
         </Tabs>
 
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Best Price Guarantee</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                We search hundreds of travel sites to find you the best deals on flights and hotels.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">24/7 Support</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Our customer support team is available around the clock to help with your bookings.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Secure Booking</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Your personal and payment information is protected with industry-standard encryption.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        
       </div>
-    </div>
-  );
+    </div>;
 }
