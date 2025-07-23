@@ -23,26 +23,33 @@ export const NewsCard = ({
   showFullContent = false
 }: NewsCardProps) => {
   const [tags, setTags] = useState<string[]>([]);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
 
   useEffect(() => {
     const fetchTags = async () => {
+      if (!article.id) return;
+      
+      setIsLoadingTags(true);
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('unified_tag_assignments')
-          .select(`
-            unified_tags!inner(name, color)
-          `)
+          .select('unified_tags!inner(name, color)')
           .eq('entity_type', 'news')
           .eq('entity_id', article.id);
 
+        if (error) {
+          console.warn('Failed to fetch tags for article:', error);
+          return;
+        }
+
         if (data) {
-          const tagNames = data.map(assignment => 
-            (assignment.unified_tags as any).name
-          );
+          const tagNames = data.map((item: any) => item.unified_tags.name);
           setTags(tagNames);
         }
       } catch (error) {
-        console.error('Error fetching article tags:', error);
+        console.warn('Error fetching tags:', error);
+      } finally {
+        setIsLoadingTags(false);
       }
     };
 
@@ -121,7 +128,15 @@ export const NewsCard = ({
           </div>}
 
         {/* Tags */}
-        {tags.length > 0 && (
+        {isLoadingTags ? (
+          <div className="flex items-center gap-2">
+            <Tag className="h-4 w-4 text-muted-foreground" />
+            <div className="flex space-x-1">
+              <div className="h-4 w-16 bg-muted animate-pulse rounded-full"></div>
+              <div className="h-4 w-12 bg-muted animate-pulse rounded-full"></div>
+            </div>
+          </div>
+        ) : tags.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap">
             <Tag className="h-4 w-4 text-muted-foreground" />
             {tags.slice(0, 5).map(tag => (

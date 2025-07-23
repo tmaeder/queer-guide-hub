@@ -13,20 +13,49 @@ export const LatestNewsSlider = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    fetchArticles();
+    const loadNews = async () => {
+      try {
+        await fetchArticles();
+      } catch (error) {
+        console.warn('Failed to load news articles:', error);
+      }
+    };
+    
+    loadNews();
   }, [fetchArticles]);
 
   if (loading) {
     return (
       <section className={`bg-muted/10 ${isMobile ? 'py-12' : 'py-20'} px-4`}>
         <div className="container mx-auto">
-          <div className={`text-center ${isMobile ? 'mb-8' : 'mb-12'}`}>
-            <h2 className={`font-bold mb-4 ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>
-              Latest News
-            </h2>
+          <div className={`flex items-center justify-between ${isMobile ? 'mb-8' : 'mb-12'}`}>
+            <div>
+              <h2 className={`font-bold mb-2 ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>
+                Latest News
+              </h2>
+              <p className={`text-muted-foreground ${isMobile ? 'text-sm' : 'text-lg'}`}>
+                Stay updated with the latest LGBTQ+ news and stories
+              </p>
+            </div>
+            <Button variant="outline" asChild className={isMobile ? 'px-3' : ''}>
+              <Link to="/news">
+                View All
+                <ArrowRight className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+              </Link>
+            </Button>
           </div>
-          <div className="flex justify-center">
-            <div className="animate-pulse text-muted-foreground">Loading latest news...</div>
+          
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+            {Array.from({ length: isMobile ? 2 : 3 }).map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-4">
+                  <div className="h-40 bg-muted rounded-lg mb-4"></div>
+                  <div className="h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-1/2"></div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
