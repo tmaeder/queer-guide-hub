@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useCentralizedTags } from "@/hooks/useCentralizedTags";
-import { useAlgoliaTagSearch, useAlgoliaTagRelationships } from "@/hooks/useAlgoliaSearch";
 import { TagCard } from "@/components/directory/TagCard";
 import { DirectorySearch } from "@/components/directory/DirectorySearch";
 import { TagGraphView } from "@/components/directory/TagGraphView";
@@ -26,21 +25,6 @@ export default function TagsDirectory() {
     error,
     searchTags
   } = useCentralizedTags();
-  
-  // Algolia search hooks
-  const { 
-    tags: algoliaTagResults, 
-    searchTags: searchAlgoliaTags, 
-    loading: algoliaTagsLoading,
-    error: algoliaTagsError 
-  } = useAlgoliaTagSearch();
-  
-  const { 
-    relationships: algoliaRelationships, 
-    getRelatedTags, 
-    loading: algoliaRelationshipsLoading 
-  } = useAlgoliaTagRelationships();
-  
   const { computeRelationships, computing } = useTagRelationships();
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -211,27 +195,6 @@ export default function TagsDirectory() {
     }
   };
 
-  // Sync data to Algolia when tags are updated
-  const syncToAlgolia = async (action: string, tagId?: string) => {
-    try {
-      await supabase.functions.invoke('sync-tags-to-algolia', {
-        body: { action, tag_id: tagId }
-      });
-    } catch (error) {
-      console.error('Error syncing to Algolia:', error);
-    }
-  };
-
-  // Enhanced tag relationships using Algolia
-  const getEnhancedTagRelationships = async (tagId: string) => {
-    try {
-      await getRelatedTags(tagId, 0.1); // Get relationships with minimum 10% similarity
-      return algoliaRelationships;
-    } catch (error) {
-      console.error('Error fetching relationships from Algolia:', error);
-      return [];
-    }
-  };
 
   // Handle route parameter for individual tag pages
   useEffect(() => {
@@ -252,39 +215,10 @@ export default function TagsDirectory() {
     setSelectedTag(tag);
     setViewMode("tag-detail");
   };
-  // Enhanced search with Algolia integration
   const handleSearch = async (query: string) => {
     if (query.trim()) {
-      try {
-        // Try Algolia search first
-        await searchAlgoliaTags(query);
-        
-        // Convert Algolia results to expected format
-        const convertedResults = algoliaTagResults.map(tag => ({
-          id: tag.id,
-          name: tag.name,
-          category: tag.category || 'general',
-          usage_count: tag.usage_count,
-          description: tag.description,
-          slug: tag.slug,
-          color: tag.color,
-          created_at: tag.created_at,
-          updated_at: tag.updated_at
-        }));
-        
-        if (convertedResults.length > 0) {
-          setSearchResults(convertedResults);
-        } else {
-          // Fallback to traditional search if Algolia returns no results
-          const results = await searchTags(query);
-          setSearchResults(results);
-        }
-      } catch (error) {
-        console.error('Search error:', error);
-        // Fallback to traditional search if Algolia fails
-        const results = await searchTags(query);
-        setSearchResults(results);
-      }
+      const results = await searchTags(query);
+      setSearchResults(results);
       setViewMode("search");
     } else {
       setViewMode("overview");
@@ -498,8 +432,6 @@ export default function TagsDirectory() {
                 tags={allTags} 
                 onTagClick={handleTagClick}
                 selectedTag={selectedTag}
-                algoliaRelationships={algoliaRelationships}
-                onGetRelatedTags={getEnhancedTagRelationships}
               />
             </TabsContent>
 

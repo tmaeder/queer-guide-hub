@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Maximize2, Tag, RefreshCw } from "lucide-react";
 import { useTagRelationships } from "@/hooks/useTagRelationships";
-import { AlgoliaTagRelationship } from "@/hooks/useAlgoliaSearch";
 
 interface TagData {
   id: string;
@@ -19,8 +18,6 @@ interface TagGraphViewProps {
   tags: TagData[];
   onTagClick?: (tag: TagData) => void;
   selectedTag?: TagData | null;
-  algoliaRelationships?: AlgoliaTagRelationship[];
-  onGetRelatedTags?: (tagId: string) => Promise<AlgoliaTagRelationship[]>;
 }
 
 interface GraphNode {
@@ -44,13 +41,7 @@ interface GraphLink {
   type: 'semantic' | 'category' | 'usage';
 }
 
-export const TagGraphView = ({ 
-  tags, 
-  onTagClick, 
-  selectedTag, 
-  algoliaRelationships = [],
-  onGetRelatedTags 
-}: TagGraphViewProps) => {
+export const TagGraphView = ({ tags, onTagClick, selectedTag }: TagGraphViewProps) => {
   const [zoom, setZoom] = useState(1);
   const { relationships, fetchRelationships } = useTagRelationships();
 
@@ -101,9 +92,7 @@ export const TagGraphView = ({
 
     console.log('Created', nodes.length, 'nodes and', links.length, 'links');
     return { nodes, links };
-  }, [tags]);
-
-
+  }, [tags, relationships]);
 
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev * 1.2, 3));
@@ -119,11 +108,6 @@ export const TagGraphView = ({
 
   const handleRefresh = async () => {
     await fetchRelationships();
-    
-    // Also refresh Algolia relationships if callback is provided
-    if (onGetRelatedTags && selectedTag) {
-      await onGetRelatedTags(selectedTag.id);
-    }
   };
 
   if (!tags || tags.length === 0) {

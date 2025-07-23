@@ -31,7 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TagCategorizer } from "@/components/admin/TagCategorizer";
 import { TagsCsvImport } from "@/components/admin/TagsCsvImport";
 import { TagImageUpload } from "@/components/admin/TagImageUpload";
-import { supabase } from "@/integrations/supabase/client";
+import { AlgoliaManager } from "@/components/admin/AlgoliaManager";
 
 export default function AdminTags() {
   const navigate = useNavigate();
@@ -55,7 +55,6 @@ export default function AdminTags() {
   const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<any>(null);
   const [bulkEditTags, setBulkEditTags] = useState<{[key: string]: string}>({});
-  const [isIndexingAlgolia, setIsIndexingAlgolia] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -218,80 +217,6 @@ export default function AdminTags() {
     }
   };
 
-  // Comprehensive Algolia indexing functionality
-  const handleAlgoliaIndexing = async (scope: 'tags' | 'all' = 'all') => {
-    setIsIndexingAlgolia(true);
-    try {
-      console.log(`Starting Algolia ${scope} indexing...`);
-      
-      const functionName = scope === 'tags' ? 'sync-tags-to-algolia' : 'sync-all-to-algolia';
-      const requestBody = scope === 'tags' 
-        ? { action: 'sync_all' }
-        : { tables: 'all' };
-      
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body: requestBody
-      });
-
-      if (error) {
-        console.error('Error indexing to Algolia:', error);
-        toast({
-          title: "Indexing failed",
-          description: `Failed to sync to Algolia: ${error.message}`,
-          variant: "destructive",
-        });
-      } else if (data?.error) {
-        console.error('Algolia API error:', data.error);
-        if (data.configured === false) {
-          toast({
-            title: "Configuration Required",
-            description: "Please configure your Algolia credentials in Supabase Edge Functions secrets before indexing.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Indexing failed",
-            description: `Algolia error: ${data.error}`,
-            variant: "destructive",
-          });
-        }
-      } else if (data?.success) {
-        console.log('Successfully indexed to Algolia:', data);
-        const message = scope === 'tags' 
-          ? `Successfully synced all tags and relationships to Algolia search index`
-          : `Successfully synced ${data.total_records} records across ${data.synced_tables?.length || 0} tables: ${data.synced_tables?.join(', ') || 'none'}`;
-        
-        toast({
-          title: "Algolia indexing complete",
-          description: message,
-        });
-
-        if (data.errors && data.errors.length > 0) {
-          toast({
-            title: "Some indexing errors occurred",
-            description: `Errors: ${data.errors.join(', ')}`,
-            variant: "destructive",
-          });
-        }
-      } else {
-        console.log('Unexpected response:', data);
-        toast({
-          title: "Indexing completed",
-          description: "Algolia indexing process completed",
-        });
-      }
-    } catch (error) {
-      console.error('Error in handleAlgoliaIndexing:', error);
-      toast({
-        title: "Error",
-        description: "Failed to trigger Algolia indexing",
-        variant: "destructive",
-      });
-    } finally {
-      setIsIndexingAlgolia(false);
-    }
-  };
-
   const uniqueCategories = Array.from(new Set(tags.map(tag => tag.category))).sort();
 
   if (rolesLoading || loading) {
@@ -317,30 +242,6 @@ export default function AdminTags() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => handleAlgoliaIndexing('tags')}
-            disabled={isIndexingAlgolia}
-          >
-            {isIndexingAlgolia ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Tag className="h-4 w-4 mr-2" />
-            )}
-            {isIndexingAlgolia ? "Indexing..." : "Sync Tags"}
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => handleAlgoliaIndexing('all')}
-            disabled={isIndexingAlgolia}
-          >
-            {isIndexingAlgolia ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Database className="h-4 w-4 mr-2" />
-            )}
-            {isIndexingAlgolia ? "Indexing..." : "Sync All Data"}
-          </Button>
           <TagsCsvImport onImportComplete={() => window.location.reload()} />
           <Button variant="outline" onClick={handleBulkEdit}>
             <Edit className="h-4 w-4 mr-2" />
@@ -505,6 +406,11 @@ export default function AdminTags() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Algolia Management */}
+      <div className="mb-6">
+        <AlgoliaManager />
+      </div>
 
       {/* Tag Categorizer */}
       <div className="mb-6">
