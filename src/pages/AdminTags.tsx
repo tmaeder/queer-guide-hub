@@ -218,14 +218,19 @@ export default function AdminTags() {
     }
   };
 
-  // Algolia indexing functionality
-  const handleAlgoliaIndexing = async () => {
+  // Comprehensive Algolia indexing functionality
+  const handleAlgoliaIndexing = async (scope: 'tags' | 'all' = 'all') => {
     setIsIndexingAlgolia(true);
     try {
-      console.log('Starting Algolia full indexing...');
+      console.log(`Starting Algolia ${scope} indexing...`);
       
-      const { data, error } = await supabase.functions.invoke('sync-tags-to-algolia', {
-        body: { action: 'sync_all' }
+      const functionName = scope === 'tags' ? 'sync-tags-to-algolia' : 'sync-all-to-algolia';
+      const requestBody = scope === 'tags' 
+        ? { action: 'sync_all' }
+        : { tables: 'all' };
+      
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: requestBody
       });
 
       if (error) {
@@ -252,10 +257,22 @@ export default function AdminTags() {
         }
       } else if (data?.success) {
         console.log('Successfully indexed to Algolia:', data);
+        const message = scope === 'tags' 
+          ? `Successfully synced all tags and relationships to Algolia search index`
+          : `Successfully synced ${data.total_records} records across ${data.synced_tables?.length || 0} tables: ${data.synced_tables?.join(', ') || 'none'}`;
+        
         toast({
           title: "Algolia indexing complete",
-          description: `Successfully synced all tags and relationships to Algolia search index`,
+          description: message,
         });
+
+        if (data.errors && data.errors.length > 0) {
+          toast({
+            title: "Some indexing errors occurred",
+            description: `Errors: ${data.errors.join(', ')}`,
+            variant: "destructive",
+          });
+        }
       } else {
         console.log('Unexpected response:', data);
         toast({
@@ -302,7 +319,19 @@ export default function AdminTags() {
         <div className="flex gap-2">
           <Button 
             variant="outline" 
-            onClick={handleAlgoliaIndexing}
+            onClick={() => handleAlgoliaIndexing('tags')}
+            disabled={isIndexingAlgolia}
+          >
+            {isIndexingAlgolia ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Tag className="h-4 w-4 mr-2" />
+            )}
+            {isIndexingAlgolia ? "Indexing..." : "Sync Tags"}
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => handleAlgoliaIndexing('all')}
             disabled={isIndexingAlgolia}
           >
             {isIndexingAlgolia ? (
@@ -310,7 +339,7 @@ export default function AdminTags() {
             ) : (
               <Database className="h-4 w-4 mr-2" />
             )}
-            {isIndexingAlgolia ? "Indexing..." : "Sync to Algolia"}
+            {isIndexingAlgolia ? "Indexing..." : "Sync All Data"}
           </Button>
           <TagsCsvImport onImportComplete={() => window.location.reload()} />
           <Button variant="outline" onClick={handleBulkEdit}>
