@@ -87,8 +87,9 @@ function mapAwinRowToMarketplace(row: AwinCsvRow) {
   const primaryCategory = row.category_name || row.merchant_category || 'Other'
   const secondaryCategory = row.merchant_product_second_category || row.merchant_product_third_category || null
 
-  // Parse price
-  const price = parseFloat(row.search_price || row.display_price || row.store_price || '0')
+  // Parse price - make it optional
+  const price = row.search_price || row.display_price || row.store_price ? 
+    parseFloat(row.search_price || row.display_price || row.store_price || '0') : null
 
   // Collect all available images
   const images = [
@@ -105,24 +106,24 @@ function mapAwinRowToMarketplace(row: AwinCsvRow) {
 
   return {
     title: row.product_name || 'Untitled Product',
-    description: row.description || row.product_short_description || '',
-    price: price || 0,
-    currency: row.currency || 'USD',
+    description: row.description || row.product_short_description || null,
+    price: price, // Optional - can be null
+    currency: row.currency || null, // Optional - can be null instead of defaulting to USD
     // We'll set category_id after creating/finding the category
     category: primaryCategory, // Keep for now, will be replaced with category_id
     subcategory: secondaryCategory,
-    business_name: row.merchant_name || 'Unknown Merchant',
-    business_type: 'business',
-    images: images.slice(0, 5), // Limit to 5 images
-    website: row.aw_deep_link || row.merchant_deep_link || '',
-    contact_email: null,
-    contact_phone: null,
-    location: null,
-    shipping_available: true,
-    shipping_info: row.delivery_cost ? `Delivery cost: ${row.delivery_cost} ${row.currency || 'USD'}` : null,
-    status: 'active',
-    featured: false,
-    price_type: 'fixed',
+    business_name: row.merchant_name || null, // Optional - can be null
+    business_type: row.merchant_name ? 'business' : null, // Optional - only set if we have merchant name
+    images: images.length > 0 ? images.slice(0, 5) : null, // Optional - only set if we have images
+    website: row.aw_deep_link || row.merchant_deep_link || null, // Optional
+    contact_email: null, // Always optional for imports
+    contact_phone: null, // Always optional for imports
+    location: null, // Always optional for imports - CSV doesn't typically have this
+    shipping_available: null, // Optional - let it be null instead of defaulting to true
+    shipping_info: row.delivery_cost ? `Delivery cost: ${row.delivery_cost} ${row.currency || ''}`.trim() : null,
+    status: 'active', // Keep this as it's needed for RLS
+    featured: false, // Optional - default to false but could be null
+    price_type: price ? 'fixed' : null, // Optional - only set if we have a price
     social_media: {
       awin_product_id: row.aw_product_id,
       merchant_product_id: row.merchant_product_id,
