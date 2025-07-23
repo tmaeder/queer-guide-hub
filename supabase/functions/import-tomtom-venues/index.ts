@@ -129,11 +129,25 @@ Deno.serve(async (req) => {
 
     let totalImported = 0
     let totalSkipped = 0
+    
+    // Process in batches to avoid overwhelming the API
+    const BATCH_SIZE = 3 // Process 3 cities at a time
+    const cityBatches = []
+    
+    for (let i = 0; i < MAJOR_CITIES.length; i += BATCH_SIZE) {
+      cityBatches.push(MAJOR_CITIES.slice(i, i + BATCH_SIZE))
+    }
 
-    for (const city of MAJOR_CITIES) {
-      console.log(`Searching venues in ${city.name}...`)
+    console.log(`Processing ${MAJOR_CITIES.length} cities in ${cityBatches.length} batches of ${BATCH_SIZE}`)
+
+    for (let batchIndex = 0; batchIndex < cityBatches.length; batchIndex++) {
+      const cityBatch = cityBatches[batchIndex]
+      console.log(`Processing batch ${batchIndex + 1}/${cityBatches.length}`)
       
-      for (const searchTerm of TOMTOM_SEARCH_TERMS) {
+      for (const city of cityBatch) {
+        console.log(`Searching venues in ${city.name}...`)
+        
+        for (const searchTerm of TOMTOM_SEARCH_TERMS) {
         try {
           console.log(`Searching for "${searchTerm}" in ${city.name}...`)
           
@@ -272,10 +286,16 @@ Deno.serve(async (req) => {
           console.error(`Error searching for "${searchTerm}" in ${city.name}:`, searchError)
           continue
         }
-      }
 
-      // Add delay between cities
-      await new Promise(resolve => setTimeout(resolve, 1000))
+        // Add delay between cities
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+      
+      // Add longer delay between batches
+      if (batchIndex < cityBatches.length - 1) {
+        console.log(`Waiting 5 seconds before next batch...`)
+        await new Promise(resolve => setTimeout(resolve, 5000))
+      }
     }
 
     console.log(`TomTom import completed. Imported: ${totalImported}, Skipped: ${totalSkipped}`)

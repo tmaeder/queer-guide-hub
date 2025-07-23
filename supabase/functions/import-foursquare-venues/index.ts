@@ -124,11 +124,25 @@ Deno.serve(async (req) => {
       { name: 'Milan', lat: 45.4642, lng: 9.1900, country: 'IT' },
     ]
 
-    for (const city of majorCities) {
-      console.log(`Searching venues in ${city.name}...`)
+    // Process in batches to avoid overwhelming the API
+    const BATCH_SIZE = 3 // Process 3 cities at a time
+    const cityBatches = []
+    
+    for (let i = 0; i < majorCities.length; i += BATCH_SIZE) {
+      cityBatches.push(majorCities.slice(i, i + BATCH_SIZE))
+    }
 
-      for (const [categoryName, categoryId] of Object.entries(FOURSQUARE_CATEGORIES)) {
-        try {
+    console.log(`Processing ${majorCities.length} cities in ${cityBatches.length} batches of ${BATCH_SIZE}`)
+
+    for (let batchIndex = 0; batchIndex < cityBatches.length; batchIndex++) {
+      const cityBatch = cityBatches[batchIndex]
+      console.log(`Processing batch ${batchIndex + 1}/${cityBatches.length}`)
+      
+      for (const city of cityBatch) {
+        console.log(`Searching venues in ${city.name}...`)
+
+        for (const [categoryName, categoryId] of Object.entries(FOURSQUARE_CATEGORIES)) {
+          try {
           // Search for venues using Foursquare Places API with comprehensive field selection
           const searchUrl = `https://api.foursquare.com/v3/places/search?ll=${city.lat},${city.lng}&radius=50000&categories=${categoryId}&limit=50&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
           
@@ -277,13 +291,20 @@ Deno.serve(async (req) => {
           // Add delay between category searches
           await new Promise(resolve => setTimeout(resolve, 1000))
 
-        } catch (categoryError) {
-          console.error(`Error searching ${categoryName} in ${city.name}:`, categoryError)
+          } catch (categoryError) {
+            console.error(`Error searching ${categoryName} in ${city.name}:`, categoryError)
+          }
         }
-      }
 
-      // Add delay between cities
-      await new Promise(resolve => setTimeout(resolve, 2000))
+        // Add delay between cities
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      }
+      
+      // Add longer delay between batches
+      if (batchIndex < cityBatches.length - 1) {
+        console.log(`Waiting 5 seconds before next batch...`)
+        await new Promise(resolve => setTimeout(resolve, 5000))
+      }
     }
 
     const result = {
