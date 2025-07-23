@@ -132,6 +132,13 @@ Deno.serve(async (req) => {
                 .eq('foursquare_id', venue.fsq_id)
                 .maybeSingle()
 
+              // Process photos from Foursquare
+              const imageUrls = venue.photos?.slice(0, 5).map(photo => {
+                // Foursquare photo URLs are constructed from prefix + size + suffix
+                const size = '300x300' // Use a reasonable size for venue photos
+                return `${photo.prefix}${size}${photo.suffix}`
+              }) || []
+
               // Prepare venue data
               const venueData = {
                 name: venue.name,
@@ -141,8 +148,8 @@ Deno.serve(async (req) => {
                 state: venue.location.region || null,
                 country: venue.location.country || city.country,
                 postal_code: venue.location.postcode || null,
-                latitude: venue.geocodes.main.latitude.toString(),
-                longitude: venue.geocodes.main.longitude.toString(),
+                latitude: venue.geocodes.main.latitude,
+                longitude: venue.geocodes.main.longitude,
                 phone: venue.tel || null,
                 website: venue.website || null,
                 email: venue.email || null,
@@ -153,14 +160,14 @@ Deno.serve(async (req) => {
                   ...(venue.categories?.map(cat => cat.short_name.toLowerCase().replace(/\s+/g, '-')) || [])
                 ],
                 amenities: [],
-                services: [],
+                images: imageUrls, // Store processed image URLs
                 verified: venue.verified || false,
                 foursquare_id: venue.fsq_id,
                 foursquare_rating: venue.rating || null,
                 foursquare_data: {
                   categories: venue.categories,
                   hours: venue.hours,
-                  photos: venue.photos?.slice(0, 5) // Limit to 5 photos
+                  photos: venue.photos?.slice(0, 5) // Keep original photo metadata
                 }
               }
 
