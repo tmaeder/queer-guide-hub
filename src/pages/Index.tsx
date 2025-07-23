@@ -6,6 +6,7 @@ import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, Check
 import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { LatestNewsSlider } from '@/components/home/LatestNewsSlider';
 const Index = () => {
   const { user } = useAuth();
   const { stats: realStats, loading } = useStats();
@@ -217,6 +218,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Latest News Section */}
+      <LatestNewsSlider />
 
       {/* Testimonials Section */}
       <section className={`bg-background ${isMobile ? 'py-12' : 'py-20'} px-4`}>
