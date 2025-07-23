@@ -148,143 +148,144 @@ Deno.serve(async (req) => {
         console.log(`Searching venues in ${city.name}...`)
         
         for (const searchTerm of TOMTOM_SEARCH_TERMS) {
-        try {
-          console.log(`Searching for "${searchTerm}" in ${city.name}...`)
-          
-          // TomTom Places API - Search
-          const searchUrl = `https://api.tomtom.com/search/2/search/${encodeURIComponent(searchTerm)}.json` +
-            `?key=${tomtomApiKey}` +
-            `&lat=${city.lat}` +
-            `&lon=${city.lon}` +
-            `&radius=10000` + // 10km radius
-            `&limit=20` +
-            `&categorySet=7315,7318,9361,9362,9663` + // Entertainment, Nightlife, Community Centers
-            `&extendedPostalCodesFor=POI`
+          try {
+            console.log(`Searching for "${searchTerm}" in ${city.name}...`)
+            
+            // TomTom Places API - Search
+            const searchUrl = `https://api.tomtom.com/search/2/search/${encodeURIComponent(searchTerm)}.json` +
+              `?key=${tomtomApiKey}` +
+              `&lat=${city.lat}` +
+              `&lon=${city.lon}` +
+              `&radius=10000` + // 10km radius
+              `&limit=20` +
+              `&categorySet=7315,7318,9361,9362,9663` + // Entertainment, Nightlife, Community Centers
+              `&extendedPostalCodesFor=POI`
 
-          const searchResponse = await fetch(searchUrl)
-          
-          if (!searchResponse.ok) {
-            console.error(`TomTom search failed for "${searchTerm}" in ${city.name}: ${searchResponse.status} ${searchResponse.statusText}`)
-            continue
-          }
-
-          const searchData = await searchResponse.json()
-          const pois = searchData.results || []
-
-          console.log(`Found ${pois.length} ${searchTerm} venues in ${city.name}`)
-
-          for (const poi of pois) {
-            try {
-              // Check if venue already exists
-              const { data: existingVenue } = await supabase
-                .from('venues')
-                .select('id, tomtom_id')
-                .eq('tomtom_id', poi.id)
-                .single()
-
-              if (existingVenue) {
-                console.log(`Skipping existing venue: ${poi.poi.name}`)
-                totalSkipped++
-                continue
-              }
-
-              // Extract venue data
-              const venueData = {
-                name: poi.poi.name || 'Unknown',
-                description: poi.info || null,
-                address: poi.address.freeformAddress || 
-                         `${poi.address.streetName || ''} ${poi.address.streetNumber || ''}`.trim() ||
-                         poi.address.localName || null,
-                city: poi.address.municipality || city.name,
-                state: poi.address.countrySubdivision || null,
-                country: poi.address.countryCode || city.country,
-                postal_code: poi.address.postalCode || null,
-                latitude: poi.position.lat,
-                longitude: poi.position.lon,
-                phone: poi.poi.phone || null,
-                website: poi.poi.url || null,
-                email: poi.poi.email || null,
-                category: 'bar', // Default category
-                tags: ['lgbt-friendly'], // Base tag
-                amenities: [],
-                verified: false,
-                featured: false,
-                tomtom_id: poi.id,
-                tomtom_rating: poi.score ? Math.round(poi.score * 10) / 10 : null,
-                tomtom_data: {
-                  categories: poi.poi.categories || [],
-                  categorySet: poi.poi.categorySet || [],
-                  classifications: poi.poi.classifications || [],
-                  brands: poi.poi.brands || [],
-                  entryPoints: poi.entryPoints || [],
-                  dataSources: poi.dataSources || {},
-                  entityType: poi.entityType || null,
-                  viewport: poi.viewport || null
-                },
-                created_by: null // System import
-              }
-
-              // Determine category from TomTom classifications
-              if (poi.poi.classifications) {
-                const classification = poi.poi.classifications.find(c => c.names?.[0]?.name)
-                if (classification) {
-                  const categoryName = classification.names[0].name.toLowerCase()
-                  if (categoryName.includes('bar') || categoryName.includes('pub')) {
-                    venueData.category = 'bar'
-                  } else if (categoryName.includes('restaurant')) {
-                    venueData.category = 'restaurant'
-                  } else if (categoryName.includes('club') || categoryName.includes('nightlife')) {
-                    venueData.category = 'club'
-                  } else if (categoryName.includes('center') || categoryName.includes('organization')) {
-                    venueData.category = 'organization'
-                  } else if (categoryName.includes('cafe')) {
-                    venueData.category = 'cafe'
-                  }
-                }
-              }
-
-              // Add search term specific tags
-              const enhancedTags = ['lgbt-friendly']
-              if (searchTerm.includes('gay')) enhancedTags.push('gay-friendly')
-              if (searchTerm.includes('lesbian')) enhancedTags.push('lesbian-friendly')
-              if (searchTerm.includes('trans')) enhancedTags.push('trans-friendly')
-              if (searchTerm.includes('drag')) enhancedTags.push('drag-shows')
-              if (searchTerm.includes('club')) enhancedTags.push('nightclub')
-              if (searchTerm.includes('center') || searchTerm.includes('organization')) {
-                enhancedTags.push('community-center')
-                venueData.category = 'organization'
-              }
-
-              venueData.tags = Array.from(new Set(enhancedTags))
-
-              // Insert venue
-              const { error: insertError } = await supabase
-                .from('venues')
-                .insert(venueData)
-
-              if (insertError) {
-                console.error(`Error inserting venue ${poi.poi.name}:`, insertError)
-                continue
-              }
-
-              console.log(`Imported venue: ${poi.poi.name}`)
-              totalImported++
-
-              // Add delay to avoid rate limiting
-              await new Promise(resolve => setTimeout(resolve, 200))
-
-            } catch (venueError) {
-              console.error(`Error processing venue ${poi.poi.name}:`, venueError)
+            const searchResponse = await fetch(searchUrl)
+            
+            if (!searchResponse.ok) {
+              console.error(`TomTom search failed for "${searchTerm}" in ${city.name}: ${searchResponse.status} ${searchResponse.statusText}`)
               continue
             }
+
+            const searchData = await searchResponse.json()
+            const pois = searchData.results || []
+
+            console.log(`Found ${pois.length} ${searchTerm} venues in ${city.name}`)
+
+            for (const poi of pois) {
+              try {
+                // Check if venue already exists
+                const { data: existingVenue } = await supabase
+                  .from('venues')
+                  .select('id, tomtom_id')
+                  .eq('tomtom_id', poi.id)
+                  .single()
+
+                if (existingVenue) {
+                  console.log(`Skipping existing venue: ${poi.poi.name}`)
+                  totalSkipped++
+                  continue
+                }
+
+                // Extract venue data
+                const venueData = {
+                  name: poi.poi.name || 'Unknown',
+                  description: poi.info || null,
+                  address: poi.address.freeformAddress || 
+                           `${poi.address.streetName || ''} ${poi.address.streetNumber || ''}`.trim() ||
+                           poi.address.localName || null,
+                  city: poi.address.municipality || city.name,
+                  state: poi.address.countrySubdivision || null,
+                  country: poi.address.countryCode || city.country,
+                  postal_code: poi.address.postalCode || null,
+                  latitude: poi.position.lat,
+                  longitude: poi.position.lon,
+                  phone: poi.poi.phone || null,
+                  website: poi.poi.url || null,
+                  email: poi.poi.email || null,
+                  category: 'bar', // Default category
+                  tags: ['lgbt-friendly'], // Base tag
+                  amenities: [],
+                  verified: false,
+                  featured: false,
+                  tomtom_id: poi.id,
+                  tomtom_rating: poi.score ? Math.round(poi.score * 10) / 10 : null,
+                  tomtom_data: {
+                    categories: poi.poi.categories || [],
+                    categorySet: poi.poi.categorySet || [],
+                    classifications: poi.poi.classifications || [],
+                    brands: poi.poi.brands || [],
+                    entryPoints: poi.entryPoints || [],
+                    dataSources: poi.dataSources || {},
+                    entityType: poi.entityType || null,
+                    viewport: poi.viewport || null
+                  },
+                  created_by: null // System import
+                }
+
+                // Determine category from TomTom classifications
+                if (poi.poi.classifications) {
+                  const classification = poi.poi.classifications.find(c => c.names?.[0]?.name)
+                  if (classification) {
+                    const categoryName = classification.names[0].name.toLowerCase()
+                    if (categoryName.includes('bar') || categoryName.includes('pub')) {
+                      venueData.category = 'bar'
+                    } else if (categoryName.includes('restaurant')) {
+                      venueData.category = 'restaurant'
+                    } else if (categoryName.includes('club') || categoryName.includes('nightlife')) {
+                      venueData.category = 'club'
+                    } else if (categoryName.includes('center') || categoryName.includes('organization')) {
+                      venueData.category = 'organization'
+                    } else if (categoryName.includes('cafe')) {
+                      venueData.category = 'cafe'
+                    }
+                  }
+                }
+
+                // Add search term specific tags
+                const enhancedTags = ['lgbt-friendly']
+                if (searchTerm.includes('gay')) enhancedTags.push('gay-friendly')
+                if (searchTerm.includes('lesbian')) enhancedTags.push('lesbian-friendly')
+                if (searchTerm.includes('trans')) enhancedTags.push('trans-friendly')
+                if (searchTerm.includes('drag')) enhancedTags.push('drag-shows')
+                if (searchTerm.includes('club')) enhancedTags.push('nightclub')
+                if (searchTerm.includes('center') || searchTerm.includes('organization')) {
+                  enhancedTags.push('community-center')
+                  venueData.category = 'organization'
+                }
+
+                venueData.tags = Array.from(new Set(enhancedTags))
+
+                // Insert venue
+                const { error: insertError } = await supabase
+                  .from('venues')
+                  .insert(venueData)
+
+                if (insertError) {
+                  console.error(`Error inserting venue ${poi.poi.name}:`, insertError)
+                  continue
+                }
+
+                console.log(`Imported venue: ${poi.poi.name}`)
+                totalImported++
+
+                // Add delay to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 200))
+
+              } catch (venueError) {
+                console.error(`Error processing venue ${poi.poi.name}:`, venueError)
+                continue
+              }
+            }
+
+            // Add delay between search terms
+            await new Promise(resolve => setTimeout(resolve, 500))
+
+          } catch (searchError) {
+            console.error(`Error searching for "${searchTerm}" in ${city.name}:`, searchError)
+            continue
           }
-
-          // Add delay between search terms
-          await new Promise(resolve => setTimeout(resolve, 500))
-
-        } catch (searchError) {
-          console.error(`Error searching for "${searchTerm}" in ${city.name}:`, searchError)
-          continue
         }
 
         // Add delay between cities
