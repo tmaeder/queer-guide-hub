@@ -260,7 +260,10 @@ const Index = React.memo(() => {
                 </Link>
               </Button>
               <Button size={isMobile ? "default" : "lg"} variant="outline" className={`${isMobile ? 'text-base px-6 py-6 h-12' : 'text-lg px-8 py-6'} border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10`} asChild>
-                
+                <Link to="/venues">
+                  Explore Venues
+                  <Search className={`ml-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+                </Link>
               </Button>
             </div>
           </div>
