@@ -26,10 +26,7 @@ export function useVenues() {
       setLoading(true);
       let query = supabase
         .from('venues')
-        .select(`
-          *,
-          venue_reviews(rating)
-        `)
+        .select('*')
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
 
