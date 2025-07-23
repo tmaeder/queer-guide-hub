@@ -3270,6 +3270,9 @@ export type Database = {
           description: string | null
           email: string | null
           featured: boolean | null
+          foursquare_data: Json | null
+          foursquare_id: string | null
+          foursquare_rating: number | null
           hours: Json | null
           id: string
           images: string[] | null
@@ -3301,6 +3304,9 @@ export type Database = {
           description?: string | null
           email?: string | null
           featured?: boolean | null
+          foursquare_data?: Json | null
+          foursquare_id?: string | null
+          foursquare_rating?: number | null
           hours?: Json | null
           id?: string
           images?: string[] | null
@@ -3332,6 +3338,9 @@ export type Database = {
           description?: string | null
           email?: string | null
           featured?: boolean | null
+          foursquare_data?: Json | null
+          foursquare_id?: string | null
+          foursquare_rating?: number | null
           hours?: Json | null
           id?: string
           images?: string[] | null
