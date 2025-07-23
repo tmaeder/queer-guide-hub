@@ -1,9 +1,10 @@
-import algoliasearch from 'algoliasearch';
+import { algoliasearch } from 'algoliasearch';
 
 // Initialize Algolia client with search-only API key for frontend
+// These will be replaced with actual Algolia credentials from secrets
 export const searchClient = algoliasearch(
-  'xqeacpakadqfxjxjcewc', // Using project ID as app ID placeholder - will be replaced with actual Algolia app ID
-  'search-api-key-placeholder' // Will be replaced with actual search API key
+  'placeholder-app-id', // Will be replaced with actual Algolia app ID
+  'placeholder-search-key' // Will be replaced with actual search API key
 );
 
 // Index names

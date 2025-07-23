@@ -44,7 +44,13 @@ interface GraphLink {
   type: 'semantic' | 'category' | 'usage';
 }
 
-export const TagGraphView = ({ tags, onTagClick, selectedTag }: TagGraphViewProps) => {
+export const TagGraphView = ({ 
+  tags, 
+  onTagClick, 
+  selectedTag, 
+  algoliaRelationships = [],
+  onGetRelatedTags 
+}: TagGraphViewProps) => {
   const [zoom, setZoom] = useState(1);
   const { relationships, fetchRelationships } = useTagRelationships();
 
@@ -113,6 +119,11 @@ export const TagGraphView = ({ tags, onTagClick, selectedTag }: TagGraphViewProp
 
   const handleRefresh = async () => {
     await fetchRelationships();
+    
+    // Also refresh Algolia relationships if callback is provided
+    if (onGetRelatedTags && selectedTag) {
+      await onGetRelatedTags(selectedTag.id);
+    }
   };
 
   if (!tags || tags.length === 0) {

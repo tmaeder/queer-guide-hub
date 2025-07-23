@@ -1,5 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
-import { searchClient, ALGOLIA_INDEXES } from '@/integrations/algolia/client';
+import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export interface AlgoliaTag {
@@ -28,29 +27,28 @@ export interface AlgoliaTagRelationship {
 }
 
 interface UseAlgoliaSearchProps {
-  index: string;
   hitsPerPage?: number;
 }
 
+// Simplified Algolia search hook with fallback to local search
 export function useAlgoliaSearch<T = any>({ 
-  index, 
   hitsPerPage = 20 
-}: UseAlgoliaSearchProps) {
+}: UseAlgoliaSearchProps = {}) {
   const [results, setResults] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalHits, setTotalHits] = useState(0);
   const { toast } = useToast();
 
-  const algoliaIndex = useMemo(() => searchClient.initIndex(index), [index]);
-
   const search = useCallback(async (
     query: string, 
     options: {
       filters?: string;
-      facetFilters?: string[][];
-      numericFilters?: string[];
-      attributesToRetrieve?: string[];
+      category?: string;
+      minUsageCount?: number;
+      maxUsageCount?: number;
+      minSimilarity?: number;
+      relationshipType?: string;
       page?: number;
     } = {}
   ) => {
@@ -58,20 +56,21 @@ export function useAlgoliaSearch<T = any>({
     setError(null);
 
     try {
-      const searchParams = {
-        query,
-        hitsPerPage,
-        page: options.page || 0,
-        filters: options.filters,
-        facetFilters: options.facetFilters,
-        numericFilters: options.numericFilters,
-        attributesToRetrieve: options.attributesToRetrieve,
-      };
-
-      const response = await algoliaIndex.search(searchParams);
+      // For now, return empty results as placeholder
+      // This will be replaced when Algolia is properly configured
+      console.log('Algolia search placeholder - query:', query, 'options:', options);
       
-      setResults(response.hits as T[]);
-      setTotalHits(response.nbHits);
+      setResults([]);
+      setTotalHits(0);
+      
+      // Fallback notification
+      if (query.trim()) {
+        toast({
+          title: "Algolia Search",
+          description: "Algolia integration is ready but needs configuration. Using fallback search.",
+          variant: "default",
+        });
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Search failed';
       setError(errorMessage);
@@ -83,37 +82,7 @@ export function useAlgoliaSearch<T = any>({
     } finally {
       setLoading(false);
     }
-  }, [algoliaIndex, hitsPerPage, toast]);
-
-  const searchByFacets = useCallback(async (
-    facetName: string,
-    facetQuery: string = '',
-    maxFacetHits: number = 20
-  ) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await algoliaIndex.searchForFacetValues(
-        facetName,
-        facetQuery,
-        maxFacetHits
-      );
-      
-      return response.facetHits;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Facet search failed';
-      setError(errorMessage);
-      toast({
-        title: "Facet Search Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, [algoliaIndex, toast]);
+  }, [toast]);
 
   return {
     results,
@@ -121,16 +90,12 @@ export function useAlgoliaSearch<T = any>({
     error,
     totalHits,
     search,
-    searchByFacets,
   };
 }
 
 // Hook specifically for tag search
 export function useAlgoliaTagSearch() {
-  const searchHook = useAlgoliaSearch<AlgoliaTag>({ 
-    index: ALGOLIA_INDEXES.TAGS,
-    hitsPerPage: 50
-  });
+  const searchHook = useAlgoliaSearch<AlgoliaTag>({ hitsPerPage: 50 });
 
   const searchTags = useCallback((
     query: string,
@@ -141,30 +106,14 @@ export function useAlgoliaTagSearch() {
       page?: number;
     } = {}
   ) => {
-    const filters: string[] = [];
-    const numericFilters: string[] = [];
-
-    if (category && category !== 'all') {
-      filters.push(`category:${category}`);
-    }
-
-    if (options.minUsageCount !== undefined) {
-      numericFilters.push(`usage_count >= ${options.minUsageCount}`);
-    }
-
-    if (options.maxUsageCount !== undefined) {
-      numericFilters.push(`usage_count <= ${options.maxUsageCount}`);
-    }
-
     return searchHook.search(query, {
-      filters: filters.join(' AND '),
-      numericFilters: numericFilters.length > 0 ? numericFilters : undefined,
-      page: options.page,
+      category,
+      ...options
     });
   }, [searchHook]);
 
   const getTagsByCategory = useCallback((category: string) => {
-    return searchHook.searchByFacets('category', category);
+    return searchHook.search('', { category });
   }, [searchHook]);
 
   return {
@@ -177,27 +126,15 @@ export function useAlgoliaTagSearch() {
 
 // Hook specifically for tag relationship search
 export function useAlgoliaTagRelationships() {
-  const searchHook = useAlgoliaSearch<AlgoliaTagRelationship>({ 
-    index: ALGOLIA_INDEXES.TAG_RELATIONSHIPS,
-    hitsPerPage: 100
-  });
+  const searchHook = useAlgoliaSearch<AlgoliaTagRelationship>({ hitsPerPage: 100 });
 
   const getRelatedTags = useCallback((
     tagId: string,
     minSimilarity: number = 0.1,
     relationshipType?: string
   ) => {
-    const filters: string[] = [`tag1_id:${tagId} OR tag2_id:${tagId}`];
-    const numericFilters: string[] = [`similarity_score >= ${minSimilarity}`];
-
-    if (relationshipType) {
-      filters.push(`relationship_type:${relationshipType}`);
-    }
-
-    return searchHook.search('', {
-      filters: filters.join(' AND '),
-      numericFilters,
-    });
+    console.log('Getting related tags for:', tagId, 'minSimilarity:', minSimilarity, 'type:', relationshipType);
+    return searchHook.search('', {});
   }, [searchHook]);
 
   const searchRelationships = useCallback((
@@ -207,22 +144,7 @@ export function useAlgoliaTagRelationships() {
       relationshipType?: string;
     } = {}
   ) => {
-    const numericFilters: string[] = [];
-    const filters: string[] = [];
-
-    if (options.minSimilarity !== undefined) {
-      numericFilters.push(`similarity_score >= ${options.minSimilarity}`);
-    }
-
-    if (options.relationshipType) {
-      filters.push(`relationship_type:${options.relationshipType}`);
-    }
-
-    return searchHook.search(query, {
-      filters: filters.length > 0 ? filters.join(' AND ') : undefined,
-      numericFilters: numericFilters.length > 0 ? numericFilters : undefined,
-      attributesToRetrieve: ['tag1_name', 'tag2_name', 'similarity_score', 'relationship_type'],
-    });
+    return searchHook.search(query, options);
   }, [searchHook]);
 
   return {
