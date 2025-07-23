@@ -32,17 +32,27 @@ export function Header() {
     { value: 'community', icon: Home, label: 'Community' },
   ];
 
-  const navigationItems = [
-    { to: "/venues", icon: MapPin, label: "Venues" },
-    { to: "/events", icon: Calendar, label: "Events" },
-    { to: "/marketplace", icon: Store, label: "Market" },
-    { to: "/community", icon: Users, label: "Community" },
-    { to: "/users", icon: UserCheck, label: "Users" },
-    { to: "/groups", icon: UserCheck, label: "Groups" },
-    { to: "/tags", icon: Tags, label: "Wiki" },
-    { to: "/directory", icon: Globe, label: "Locations" },
-    { to: "/travel", icon: Plane, label: "Travel" },
-    { to: "/news", icon: Newspaper, label: "News" },
+  const navigationSections = [
+    {
+      title: "Explore",
+      items: [
+        { to: "/events", icon: Calendar, label: "Events" },
+        { to: "/directory", icon: Globe, label: "Locations" },
+        { to: "/travel", icon: Plane, label: "Travel" },
+        { to: "/venues", icon: MapPin, label: "Venues/Organisations" },
+        { to: "/marketplace", icon: Store, label: "Market" },
+        { to: "/tags", icon: Tags, label: "Wiki" },
+        { to: "/news", icon: Newspaper, label: "News" },
+      ]
+    },
+    {
+      title: "Community",
+      items: [
+        { to: "/community", icon: Users, label: "Community" },
+        { to: "/users", icon: UserCheck, label: "Users" },
+        { to: "/groups", icon: UserCheck, label: "Groups" },
+      ]
+    }
   ];
 
   const userMenuItems = [
@@ -199,21 +209,23 @@ export function Header() {
 
                 {/* Main navigation */}
                 <div className="p-2">
-                  <div className="mb-2">
-                    <h3 className="text-sm font-medium text-muted-foreground mb-1 px-2">Explore</h3>
-                    {navigationItems.map((item) => (
-                      <DropdownMenuItem key={item.to} className="p-0">
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start h-11 text-base px-2"
-                          onClick={() => handleMenuItemClick(item.to)}
-                        >
-                          <item.icon className="h-5 w-5 mr-3" />
-                          {item.label}
-                        </Button>
-                      </DropdownMenuItem>
-                    ))}
-                  </div>
+                  {navigationSections.map((section) => (
+                    <div key={section.title} className="mb-2">
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1 px-2">{section.title}</h3>
+                      {section.items.map((item) => (
+                        <DropdownMenuItem key={item.to} className="p-0">
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start h-11 text-base px-2"
+                            onClick={() => handleMenuItemClick(item.to)}
+                          >
+                            <item.icon className="h-5 w-5 mr-3" />
+                            {item.label}
+                          </Button>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                  ))}
 
                   {/* Mobile logout */}
                   {isMobile && user && (
