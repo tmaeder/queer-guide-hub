@@ -81,19 +81,14 @@ interface TomTomPOI {
   }
 }
 
-// Common LGBTQ+ related categories and search terms
+// Specific LGBTQ+ venue keywords
 const TOMTOM_SEARCH_TERMS = [
+  'gay sauna',
+  'lgbt',
+  'sexual health clinic',
   'gay bar',
-  'lgbt center',
-  'pride center',
-  'queer space',
-  'lgbt organization',
-  'transgender clinic',
-  'gay club',
-  'lesbian bar',
-  'drag bar',
-  'community center',
-  'rainbow cafe'
+  'gay beach',
+  'nude beach'
 ]
 
 // Major cities to search in
