@@ -76,18 +76,16 @@ export function Header() {
             )}
           </Link>
 
-          {/* Search - Hidden on mobile when menu is open */}
+          {/* Search - Always visible on desktop, in menu on mobile */}
           {!isMobile && <UniversalSearchBar />}
-
-          {/* All navigation now in hamburger menu */}
 
           {/* Right side controls */}
           <div className="flex items-center gap-2">
             {/* Notifications */}
             {user && <NotificationBell />}
             
-            {/* User menu */}
-            {user && !isMobile ? (
+            {/* User menu - Always visible when logged in */}
+            {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
@@ -152,14 +150,14 @@ export function Header() {
                   </Button>
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : !user && !isMobile && (
+            ) : !user ? (
               <Button onClick={() => setAuthDialogOpen(true)} size="sm" className="h-9">
                 <User className="h-4 w-4 mr-2" />
-                Sign In
+                {!isMobile && "Sign In"}
               </Button>
-            )}
+            ) : null}
 
-            {/* Hamburger menu for all navigation */}
+            {/* Main menu - Always accessible */}
             <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-11 w-11 p-0">
@@ -168,9 +166,62 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
-                className="w-[300px] max-h-[80vh] overflow-y-auto p-0 bg-background border border-border"
+                className="w-[300px] max-h-[80vh] overflow-y-auto p-0 bg-background border border-border z-[100]"
                 sideOffset={8}
               >
+                {/* Mobile search bar */}
+                {isMobile && (
+                  <div className="p-3 border-b border-border">
+                    <UniversalSearchBar />
+                  </div>
+                )}
+
+                {/* Mobile user actions */}
+                {isMobile && user && (
+                  <div className="p-3 border-b border-border">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium">Current Mode</span>
+                      <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue>
+                            <div className="flex items-center gap-2">
+                              {(() => {
+                                const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
+                                return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
+                              })()}
+                              <span className="text-xs">{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
+                            </div>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {userModes.map((mode) => (
+                            <SelectItem key={mode.value} value={mode.value}>
+                              <div className="flex items-center gap-2">
+                                <mode.icon className="h-4 w-4" />
+                                <span>{mode.label}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      {userMenuItems.map((item) => (
+                        <Button 
+                          key={item.to}
+                          variant="ghost" 
+                          size="sm" 
+                          className="flex items-center justify-start p-2 h-auto gap-2" 
+                          onClick={() => handleMenuItemClick(item.to)}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span className="text-xs">{item.label}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Main navigation */}
                 <div className="p-2">
@@ -190,8 +241,24 @@ export function Header() {
                     ))}
                   </div>
 
+                  {/* Mobile logout */}
+                  {isMobile && user && (
+                    <div className="border-t border-border pt-2 mt-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="w-full justify-start text-destructive hover:text-destructive" 
+                        onClick={() => {
+                          signOut();
+                          setMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </div>
+                  )}
                 </div>
-
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
