@@ -26,11 +26,13 @@ import {
   ArrowLeft,
   Building,
   MapPin,
-  Star
+  Star,
+  Download
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { VenueImageUpload } from "@/components/venues/VenueImageUpload";
 import { VenuesCsvImport } from "@/components/venues/VenuesCsvImport";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminVenues() {
   const navigate = useNavigate();
@@ -44,6 +46,7 @@ export default function AdminVenues() {
   const [filteredVenues, setFilteredVenues] = useState(venues);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingVenue, setEditingVenue] = useState<any>(null);
+  const [isImporting, setIsImporting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -208,6 +211,43 @@ export default function AdminVenues() {
     }
   };
 
+  const handleFoursquareImport = async () => {
+    setIsImporting(true);
+    
+    try {
+      toast({
+        title: "Import Started",
+        description: "Foursquare venue import has been triggered. This may take a few minutes...",
+      });
+
+      const { data, error } = await supabase.functions.invoke('import-foursquare-venues', {
+        body: { trigger: 'manual' }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Import Completed",
+        description: `${data.message}. Page will refresh to show new venues.`,
+      });
+
+      // Refresh the venues list after import
+      setTimeout(() => {
+        refetch();
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Foursquare import error:', error);
+      toast({
+        title: "Import Failed",
+        description: "Failed to import venues from Foursquare. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -257,6 +297,14 @@ export default function AdminVenues() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            onClick={handleFoursquareImport}
+            disabled={isImporting}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {isImporting ? "Importing..." : "Import from Foursquare"}
+          </Button>
           <VenuesCsvImport onImportComplete={refetch} />
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
