@@ -345,6 +345,14 @@ export default function AdminDashboard() {
       stats: `${stats.totalGroups} groups`
     },
     {
+      title: "Email Templates",
+      description: "Manage email templates and send notifications",
+      icon: FileText,
+      path: "/admin/email-templates",
+      color: "bg-gradient-to-br from-violet-500 to-violet-600",
+      stats: "Email system"
+    },
+    {
       title: "News Sources",
       description: "Manage RSS feeds and news API sources",
       icon: Newspaper,
