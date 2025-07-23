@@ -30,6 +30,7 @@ import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
+import { UserPostsList } from '@/components/posts/UserPostsList';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
@@ -260,8 +261,9 @@ export default function UserProfile() {
 
       {/* Profile Content */}
       <Tabs defaultValue="about" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="about">About</TabsTrigger>
+          <TabsTrigger value="posts">Posts</TabsTrigger>
           <TabsTrigger value="photos">Photos</TabsTrigger>
           <TabsTrigger value="identity">Identity</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
@@ -324,6 +326,10 @@ export default function UserProfile() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="posts" className="space-y-6">
+          <UserPostsList userId={userId!} isOwnProfile={isOwnProfile} />
         </TabsContent>
 
         <TabsContent value="photos" className="space-y-6">
