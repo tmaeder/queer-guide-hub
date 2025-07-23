@@ -44,7 +44,7 @@ export const useNews = () => {
     try {
       const response = await supabase
         .from('news_articles')
-        .select('*')
+        .select('*, news_sources(*)')
         .not('published_at', 'is', null)
         .order('published_at', { ascending: false })
         .limit(50);
