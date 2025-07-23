@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./i18n";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AccessibilityProvider } from "@/hooks/useAccessibility";
@@ -61,7 +61,7 @@ import Travel from "./pages/Travel";
 
 import ProfileSettings from "./pages/ProfileSettings";
 import UserProfile from "./pages/UserProfile";
-import Community from "./pages/Community";
+import Feed from "./pages/Feed";
 
 import Messages from "./pages/Messages";
 import Friends from "./pages/Friends";
@@ -290,7 +290,8 @@ const App = () => {
                    <Route path="/friends" element={<Friends />} />
                     
                     <Route path="/favorites" element={<Favorites />} />
-                    <Route path="/community" element={<Community />} />
+                     <Route path="/feed" element={<Feed />} />
+                     <Route path="/community" element={<Navigate to="/feed" replace />} />
                     <Route path="/profile/settings" element={<ProfileSettings />} />
                     <Route path="/user/:userId" element={<UserProfile />} />
                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -48,7 +48,7 @@ export function Header() {
     {
       title: "Community",
       items: [
-        { to: "/community", icon: Users, label: "Community" },
+        { to: "/feed", icon: Users, label: "Feed" },
         { to: "/users", icon: UserCheck, label: "Users" },
         { to: "/groups", icon: UsersRound, label: "Groups" },
       ]

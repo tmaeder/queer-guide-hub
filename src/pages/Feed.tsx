@@ -18,7 +18,7 @@ import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
 import { useAuth } from '@/hooks/useAuth';
 
-export default function Community() {
+export default function Feed() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('recent');
@@ -91,11 +91,11 @@ export default function Community() {
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-3 mb-4">
           <Users className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold">Community</h1>
+          <h1 className="text-4xl font-bold">Feed</h1>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Connect, share, and engage with the LGBTQ+ community. Share your thoughts, 
-          experiences, and discover stories from community members worldwide.
+          Stay connected with the latest posts, stories, and conversations from the LGBTQ+ community. 
+          Share your thoughts and discover what's happening around you.
         </p>
       </div>
 
@@ -215,7 +215,7 @@ export default function Community() {
         <Card className="mt-8 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
           <CardContent className="p-8 text-center">
             <Heart className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h3 className="text-xl font-medium mb-2">Join the Community</h3>
+            <h3 className="text-xl font-medium mb-2">Join the Feed</h3>
             <p className="text-muted-foreground mb-6">
               Sign up to share your thoughts, connect with others, and be part of our growing community.
             </p>
