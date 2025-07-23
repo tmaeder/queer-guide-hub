@@ -104,3 +104,12 @@ verify_jwt = false
 
 [functions.import-awin-products]
 verify_jwt = false
+
+[functions.manage-email-templates]
+verify_jwt = true
+
+[functions.send-bulk-email]
+verify_jwt = true
+
+[functions.send-templated-email]
+verify_jwt = false
