@@ -51,6 +51,27 @@ export function logSecurityStatus(): void {
     console.group('🔒 Security Status');
     console.log('Secure Context:', secure);
     console.log('Security Headers:', headers);
+    
+    // Check CSP strictness
+    const cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+    const cspContent = cspMeta?.getAttribute('content') || '';
+    const hasStrictCSP = cspContent.includes("default-src 'none'");
+    const hasUnsafeInline = cspContent.includes("'unsafe-inline'");
+    const hasUnsafeEval = cspContent.includes("'unsafe-eval'");
+    
+    console.log('CSP Configuration:');
+    console.log('  - Strict default-src none:', hasStrictCSP);
+    console.log('  - Uses unsafe-inline:', hasUnsafeInline);
+    console.log('  - Uses unsafe-eval:', hasUnsafeEval);
+    console.log('  - Frame ancestors none:', cspContent.includes("frame-ancestors 'none'"));
+    
+    if (!hasStrictCSP) {
+      console.warn('⚠️ CSP is not using strict default-src none policy');
+    }
+    if (hasUnsafeInline && !import.meta.env.DEV) {
+      console.warn('⚠️ Production CSP should not use unsafe-inline');
+    }
+    
     console.groupEnd();
   }
 }

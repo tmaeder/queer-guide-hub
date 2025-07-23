@@ -2,102 +2,38 @@
  * Security headers configuration for deployment and edge functions
  */
 
+import { getCSPPolicy, generateCSPString } from './cspBuilder';
+
 export const SECURITY_HEADERS = {
   // Prevent MIME type sniffing
   'X-Content-Type-Options': 'nosniff',
   
-  // Prevent clickjacking
-  'X-Frame-Options': 'SAMEORIGIN',
+  // Prevent clickjacking - deny all framing
+  'X-Frame-Options': 'DENY',
   
   // Enable XSS protection (legacy but still useful)
   'X-XSS-Protection': '1; mode=block',
   
-  // Force HTTPS and enable HSTS
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+  // Force HTTPS and enable HSTS with preload
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
   
   // Control referrer information
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   
   // Permission policy to restrict dangerous features
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(self), payment=(), usb=()',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), ambient-light-sensor=()',
   
   // Cross-Origin Resource Policy
-  'Cross-Origin-Resource-Policy': 'cross-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin',
   
   // Cross-Origin Embedder Policy
   'Cross-Origin-Embedder-Policy': 'credentialless',
   
   // Cross-Origin Opener Policy
-  'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+  'Cross-Origin-Opener-Policy': 'same-origin',
 };
 
-export const CSP_POLICY = {
-  'default-src': ["'self'"],
-  'script-src': [
-    "'self'",
-    'https://widget.getyourguide.com',
-    'https://*.supabase.co',
-    'https://xqeacpakadqfxjxjcewc.supabase.co'
-  ],
-  'connect-src': [
-    "'self'",
-    'https://*.supabase.co',
-    'https://xqeacpakadqfxjxjcewc.supabase.co',
-    'wss://*.supabase.co',
-    'wss://xqeacpakadqfxjxjcewc.supabase.co',
-    'https://api.mapbox.com',
-    'https://events.mapbox.com',
-    'https://widget.getyourguide.com',
-    'https://api.openweathermap.org',
-    'https://newsapi.org'
-  ],
-  'img-src': [
-    "'self'",
-    'data:',
-    'blob:',
-    'https://*.supabase.co',
-    'https://xqeacpakadqfxjxjcewc.supabase.co',
-    'https://api.mapbox.com',
-    'https://static.getyourguide.com',
-    'https://images.unsplash.com',
-    'https://api.pexels.com'
-  ],
-  'style-src': [
-    "'self'",
-    "'unsafe-inline'", // Required for Tailwind CSS and dynamic styles
-    'https://fonts.googleapis.com',
-    'https://api.mapbox.com'
-  ],
-  'font-src': [
-    "'self'",
-    'https://fonts.gstatic.com'
-  ],
-  'frame-src': [
-    "'self'",
-    'https://widget.getyourguide.com'
-  ],
-  'frame-ancestors': ["'self'"],
-  'object-src': ["'none'"],
-  'base-uri': ["'self'"],
-  'form-action': [
-    "'self'",
-    'https://*.supabase.co'
-  ],
-  'upgrade-insecure-requests': []
-};
-
-export function generateCSPString(policy: typeof CSP_POLICY): string {
-  return Object.entries(policy)
-    .map(([directive, sources]) => {
-      if (sources.length === 0) {
-        return directive;
-      }
-      return `${directive} ${sources.join(' ')}`;
-    })
-    .join('; ');
-}
-
-export function applySecurityHeaders(response: Response): Response {
+export function applySecurityHeaders(response: Response, isDev: boolean = false): Response {
   const headers = new Headers(response.headers);
   
   // Apply all security headers
@@ -105,8 +41,9 @@ export function applySecurityHeaders(response: Response): Response {
     headers.set(key, value);
   });
   
-  // Apply CSP
-  headers.set('Content-Security-Policy', generateCSPString(CSP_POLICY));
+  // Apply environment-appropriate CSP
+  const cspPolicy = getCSPPolicy(isDev);
+  headers.set('Content-Security-Policy', generateCSPString(cspPolicy));
   
   return new Response(response.body, {
     status: response.status,
@@ -118,8 +55,9 @@ export function applySecurityHeaders(response: Response): Response {
 // For use in edge functions
 export function createSecureResponse(
   body: string | ArrayBuffer | Uint8Array | ReadableStream,
-  init?: ResponseInit
+  init?: ResponseInit,
+  isDev: boolean = false
 ): Response {
   const response = new Response(body, init);
-  return applySecurityHeaders(response);
+  return applySecurityHeaders(response, isDev);
 }
