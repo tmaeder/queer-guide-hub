@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlgoliaManager } from "@/components/admin/AlgoliaManager";
+import { NewsModeration } from "@/components/admin/NewsModeration";
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const {
@@ -658,10 +659,20 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="management" className="space-y-6">
-          {/* Algolia Search Management */}
-          <div className="mb-6">
-            <AlgoliaManager />
-          </div>
+          <Tabs defaultValue="algolia" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="algolia">Search & Indexing</TabsTrigger>
+              <TabsTrigger value="news">News Moderation</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="algolia">
+              <AlgoliaManager />
+            </TabsContent>
+            
+            <TabsContent value="news">
+              <NewsModeration />
+            </TabsContent>
+          </Tabs>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {adminSections.map(section => <Card key={section.path} className="hover-scale group transition-all duration-300 hover:shadow-elegant">
