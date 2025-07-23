@@ -14,9 +14,10 @@ CREATE TABLE public.venue_checkins (
 ALTER TABLE public.venue_checkins ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for venue check-ins
-CREATE POLICY "Check-ins are viewable by everyone" 
+CREATE POLICY "Check-ins are viewable by authenticated users" 
 ON public.venue_checkins 
 FOR SELECT 
+TO authenticated
 USING (true);
 
 CREATE POLICY "Authenticated users can create check-ins" 
