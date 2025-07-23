@@ -1483,6 +1483,7 @@ export type Database = {
           business_name: string
           business_type: string | null
           category: string
+          category_id: string | null
           contact_email: string | null
           contact_phone: string | null
           created_at: string
@@ -1510,6 +1511,7 @@ export type Database = {
           business_name: string
           business_type?: string | null
           category: string
+          category_id?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
@@ -1537,6 +1539,7 @@ export type Database = {
           business_name?: string
           business_type?: string | null
           category?: string
+          category_id?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
@@ -1561,6 +1564,13 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "marketplace_listings_created_by_fkey"
             columns: ["created_by"]

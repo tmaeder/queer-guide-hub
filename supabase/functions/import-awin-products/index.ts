@@ -83,30 +83,9 @@ function parseCSV(csvContent: string): AwinCsvRow[] {
 }
 
 function mapAwinRowToMarketplace(row: AwinCsvRow) {
-  // Determine category mapping
-  let mappedCategory = 'other'
-  let mappedSubcategory = row.merchant_product_second_category || null
-
-  const categoryName = (row.category_name || row.merchant_category || '').toLowerCase()
-  if (categoryName.includes('clothing') || categoryName.includes('fashion') || categoryName.includes('apparel')) {
-    mappedCategory = 'clothing'
-  } else if (categoryName.includes('book')) {
-    mappedCategory = 'books'
-  } else if (categoryName.includes('health') || categoryName.includes('beauty') || categoryName.includes('cosmetic')) {
-    mappedCategory = 'health'
-  } else if (categoryName.includes('tech') || categoryName.includes('electronic') || categoryName.includes('computer')) {
-    mappedCategory = 'technology'
-  } else if (categoryName.includes('art') || categoryName.includes('craft') || categoryName.includes('creative')) {
-    mappedCategory = 'art'
-  } else if (categoryName.includes('service')) {
-    mappedCategory = 'services'
-  } else if (categoryName.includes('food') || categoryName.includes('drink') || categoryName.includes('beverage')) {
-    mappedCategory = 'food_beverage'
-  } else if (categoryName.includes('home') || categoryName.includes('garden') || categoryName.includes('furniture')) {
-    mappedCategory = 'home_garden'
-  } else if (categoryName.includes('entertainment') || categoryName.includes('game') || categoryName.includes('music')) {
-    mappedCategory = 'entertainment'
-  }
+  // Use the original category names from Awin data for dynamic category creation
+  const primaryCategory = row.category_name || row.merchant_category || 'Other'
+  const secondaryCategory = row.merchant_product_second_category || row.merchant_product_third_category || null
 
   // Parse price
   const price = parseFloat(row.search_price || row.display_price || row.store_price || '0')
@@ -129,8 +108,9 @@ function mapAwinRowToMarketplace(row: AwinCsvRow) {
     description: row.description || row.product_short_description || '',
     price: price || 0,
     currency: row.currency || 'USD',
-    category: mappedCategory,
-    subcategory: mappedSubcategory,
+    // We'll set category_id after creating/finding the category
+    category: primaryCategory, // Keep for now, will be replaced with category_id
+    subcategory: secondaryCategory,
     business_name: row.merchant_name || 'Unknown Merchant',
     business_type: 'business',
     images: images.slice(0, 5), // Limit to 5 images
@@ -169,6 +149,34 @@ function mapAwinRowToMarketplace(row: AwinCsvRow) {
       last_updated: row.last_updated
     },
     created_by: 'a60e7b7f-a454-4b13-8cd9-458d46d67e2b' // System admin user for imports
+  }
+}
+
+// Function to create categories dynamically and get their IDs
+async function getCategoryId(supabase: any, categoryName: string, subcategoryName?: string): Promise<string> {
+  try {
+    // Use the database function to get or create the category
+    const { data, error } = await supabase.rpc('get_or_create_marketplace_category', {
+      category_name: categoryName,
+      parent_category_name: subcategoryName
+    })
+
+    if (error) {
+      console.error('Error getting/creating category:', error)
+      // Fallback to 'Other' category
+      const { data: fallbackData } = await supabase
+        .from('marketplace_categories')
+        .select('id')
+        .eq('slug', 'other')
+        .single()
+      
+      return fallbackData?.id || null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Category creation error:', error)
+    return null
   }
 }
 
@@ -327,13 +335,38 @@ Deno.serve(async (req) => {
 
       for (let i = 0; i < marketplaceListings.length; i += batchSize) {
         const batch = marketplaceListings.slice(i, i + batchSize)
-        console.log(`Inserting batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(marketplaceListings.length / batchSize)} (${batch.length} items)`)
+        console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(marketplaceListings.length / batchSize)} (${batch.length} items)`)
+
+        // Process each item in the batch to get or create categories
+        const processedBatch = []
+        for (const listing of batch) {
+          try {
+            // Get or create category ID dynamically
+            const categoryId = await getCategoryId(supabase, listing.category, listing.subcategory)
+            
+            // Prepare the listing with category_id instead of category text
+            const processedListing = {
+              ...listing,
+              category_id: categoryId,
+              // Remove the old text-based category field
+              category: undefined,
+              subcategory: undefined
+            }
+            
+            processedBatch.push(processedListing)
+          } catch (error) {
+            console.error(`Error processing listing "${listing.title}":`, error)
+            errors.push(`Failed to process listing: ${listing.title}`)
+          }
+        }
+
+        console.log(`Inserting batch ${Math.floor(i / batchSize) + 1} with ${processedBatch.length} processed items`)
 
         try {
           const { data: insertedListings, error: insertError } = await supabase
             .from('marketplace_listings')
-            .insert(batch)
-            .select('id, title, price, category')
+            .insert(processedBatch)
+            .select('id, title, price, category_id')
 
           if (insertError) {
             console.error('Batch insert error:', insertError)
