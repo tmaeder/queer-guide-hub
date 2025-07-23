@@ -54,14 +54,7 @@ export const NotificationBell = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <div className="p-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-semibold">Notifications</h4>
-            {unreadCount > 0 && <Badge variant="secondary" className="text-xs">
-                {unreadCount} new
-              </Badge>}
-          </div>
-        </div>
+        
         
         {/* User mode selector */}
         <div className="flex items-center justify-between p-2 mb-3 border-b border-border">
