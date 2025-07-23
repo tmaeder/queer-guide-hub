@@ -3429,6 +3429,15 @@ export type Database = {
           active: boolean
         }[]
       }
+      get_news_cron_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          jobname: string
+          schedule: string
+          active: boolean
+          jobid: number
+        }[]
+      }
       get_or_create_direct_conversation: {
         Args: { user1_id: string; user2_id: string }
         Returns: string

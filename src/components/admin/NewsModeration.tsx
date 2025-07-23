@@ -49,10 +49,17 @@ export function NewsModeration() {
     featured: 0,
     categories: {} as Record<string, number>
   });
+  const [cronStatus, setCronStatus] = useState<{
+    jobname: string;
+    schedule: string;
+    active: boolean;
+    jobid: number;
+  } | null>(null);
 
   useEffect(() => {
     fetchArticles();
     fetchStats();
+    fetchCronStatus();
   }, [filters]);
 
   const fetchArticles = async () => {
@@ -191,6 +198,23 @@ export function NewsModeration() {
     }
   };
 
+  const fetchCronStatus = async () => {
+    try {
+      const { data, error } = await supabase.rpc('get_news_cron_status');
+      
+      if (error) {
+        console.error('Error fetching cron status:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setCronStatus(data[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching cron status:', error);
+    }
+  };
+
   const triggerNewsFetch = async () => {
     try {
       const { error } = await supabase.functions.invoke('fetch-news');
@@ -239,10 +263,21 @@ export function NewsModeration() {
           <h2 className="text-2xl font-bold">News Moderation</h2>
           <p className="text-muted-foreground">Manage and moderate news articles</p>
         </div>
-        <Button onClick={triggerNewsFetch}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Fetch Latest News
-        </Button>
+        <div className="flex items-center gap-4">
+          <Button onClick={triggerNewsFetch}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Fetch Latest News
+          </Button>
+          
+          {cronStatus && (
+            <div className="flex items-center gap-2 text-sm">
+              <div className={`w-2 h-2 rounded-full ${cronStatus.active ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-muted-foreground">
+                Auto-fetch: {cronStatus.active ? 'Active' : 'Inactive'} ({cronStatus.schedule})
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
