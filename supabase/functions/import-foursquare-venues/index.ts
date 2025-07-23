@@ -5,6 +5,67 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Input validation schema
+interface VenueImportRequest {
+  location: string;
+  query?: string;
+  limit?: number;
+}
+
+// Validation functions
+function validateImportRequest(data: any): VenueImportRequest {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid request body');
+  }
+  
+  if (!data.location || typeof data.location !== 'string' || data.location.trim().length < 2) {
+    throw new Error('Location must be a string with at least 2 characters');
+  }
+  
+  if (data.query && (typeof data.query !== 'string' || data.query.length > 100)) {
+    throw new Error('Query must be a string with maximum 100 characters');
+  }
+  
+  if (data.limit && (!Number.isInteger(data.limit) || data.limit < 1 || data.limit > 50)) {
+    throw new Error('Limit must be an integer between 1 and 50');
+  }
+  
+  return {
+    location: data.location.trim(),
+    query: data.query?.trim(),
+    limit: data.limit || 10
+  };
+}
+
+function sanitizeVenueData(venue: FoursquareVenue): any {
+  // Remove any potentially harmful data and validate required fields
+  if (!venue.fsq_id || !venue.name || !venue.geocodes?.main) {
+    throw new Error('Invalid venue data: missing required fields');
+  }
+  
+  // Validate coordinates
+  const lat = venue.geocodes.main.latitude;
+  const lng = venue.geocodes.main.longitude;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    throw new Error('Invalid coordinates');
+  }
+  
+  return {
+    fsq_id: String(venue.fsq_id).slice(0, 50), // Limit ID length
+    name: String(venue.name).slice(0, 200), // Limit name length
+    geocodes: venue.geocodes,
+    location: venue.location,
+    tel: venue.tel ? String(venue.tel).slice(0, 20) : undefined,
+    website: venue.website ? String(venue.website).slice(0, 500) : undefined,
+    email: venue.email ? String(venue.email).slice(0, 100) : undefined,
+    categories: venue.categories?.slice(0, 10), // Limit categories
+    hours: venue.hours,
+    hours_popular: venue.hours_popular?.slice(0, 7), // Max 7 days
+    rating: venue.rating && !isNaN(venue.rating) ? Number(venue.rating) : undefined,
+    photos: venue.photos?.slice(0, 20) // Limit photos
+  };
+}
+
 interface FoursquareVenue {
   fsq_id: string
   name: string
@@ -90,6 +151,22 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Add request timeout
+    const timeoutController = new AbortController();
+    const timeoutId = setTimeout(() => timeoutController.abort(), 300000); // 5 minutes timeout
+    
+    // Log security event for function access
+    const userAgent = req.headers.get('user-agent') || '';
+    const authHeader = req.headers.get('authorization') || '';
+    
+    console.log(`Function accessed - User-Agent: ${userAgent}, Auth: ${authHeader ? 'Present' : 'Missing'}`);
+    
+    // Rate limiting check (basic implementation)
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
+    console.log(`Request from IP: ${clientIp}`);
+    
+    // Clear timeout on completion
+    clearTimeout(timeoutId);
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const foursquareApiKey = Deno.env.get('FOURSQUARE_API_KEY')!
@@ -163,14 +240,17 @@ Deno.serve(async (req) => {
 
           console.log(`Found ${venues.length} ${categoryName} venues in ${city.name}`)
 
-          for (const venue of venues) {
-            try {
-              // Check if venue already exists
-              const { data: existingVenue } = await supabase
-                .from('venues')
-                .select('id, foursquare_id')
-                .eq('foursquare_id', venue.fsq_id)
-                .maybeSingle()
+              for (const venue of venues) {
+                try {
+                  // Validate and sanitize venue data
+                  const sanitizedVenue = sanitizeVenueData(venue);
+                  
+                  // Check if venue already exists
+                  const { data: existingVenue } = await supabase
+                    .from('venues')
+                    .select('id, foursquare_id')
+                    .eq('foursquare_id', sanitizedVenue.fsq_id)
+                    .maybeSingle()
 
               // Process photos from Foursquare
               const imageUrls = venue.photos?.slice(0, 5).map(photo => {

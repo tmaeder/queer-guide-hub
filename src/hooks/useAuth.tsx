@@ -88,11 +88,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      // Log security event for sign-in attempt
+      console.log('Sign-in attempt for email:', email);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('Sign in error:', error);
+        
+        // Log failed sign-in attempt
+        try {
+          await supabase.rpc('log_enhanced_security_event', {
+            event_type: 'FAILED_SIGNIN_ATTEMPT',
+            user_id_param: null,
+            details: {
+              email: email,
+              error_message: error.message,
+              timestamp: new Date().toISOString()
+            },
+            severity: 'medium'
+          });
+        } catch (logError) {
+          console.error('Failed to log security event:', logError);
+        }
+        
+        return { error };
+      }
+      
+      // Log successful sign-in
+      if (data.user) {
+        try {
+          await supabase.rpc('log_enhanced_security_event', {
+            event_type: 'SUCCESSFUL_SIGNIN',
+            user_id_param: data.user.id,
+            details: {
+              email: email,
+              timestamp: new Date().toISOString()
+            },
+            severity: 'info'
+          });
+        } catch (logError) {
+          console.error('Failed to log security event:', logError);
+        }
+      }
+      
+      return { error };
+    } catch (unexpectedError) {
+      console.error('Unexpected sign-in error:', unexpectedError);
+      return { error: { message: 'An unexpected error occurred during sign-in' } };
+    }
   };
 
   const signOut = async () => {

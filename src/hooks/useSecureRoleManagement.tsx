@@ -13,7 +13,7 @@ export function useSecureRoleManagement() {
     try {
       setLoading(true);
       
-      // Use the secure function instead of direct table manipulation
+      // Use the existing secure function with enhanced logging
       const { data, error } = await supabase.rpc('assign_user_role', {
         target_user_id: userId,
         new_role: role,
@@ -21,6 +21,22 @@ export function useSecureRoleManagement() {
       });
 
       if (error) throw error;
+
+      // Log successful role assignment
+      try {
+        await supabase.rpc('log_enhanced_security_event', {
+          event_type: 'ROLE_ASSIGNMENT_SUCCESS',
+          user_id_param: null,
+          details: {
+            target_user_id: userId,
+            assigned_role: role,
+            timestamp: new Date().toISOString()
+          },
+          severity: 'info'
+        });
+      } catch (logError) {
+        console.error('Failed to log security event:', logError);
+      }
 
       toast({
         title: "Role Assigned",
@@ -30,6 +46,24 @@ export function useSecureRoleManagement() {
       return { success: true };
     } catch (error: any) {
       console.error('Error assigning role:', error);
+      
+      // Log failed role assignment attempt
+      try {
+        await supabase.rpc('log_enhanced_security_event', {
+          event_type: 'ROLE_ASSIGNMENT_FAILED',
+          user_id_param: null,
+          details: {
+            target_user_id: userId,
+            attempted_role: role,
+            error_message: error.message,
+            timestamp: new Date().toISOString()
+          },
+          severity: 'high'
+        });
+      } catch (logError) {
+        console.error('Failed to log security event:', logError);
+      }
+      
       toast({
         title: "Error",
         description: error.message || "Failed to assign role",
