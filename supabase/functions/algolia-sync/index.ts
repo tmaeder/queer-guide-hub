@@ -156,6 +156,7 @@ async function syncTags(supabase: any, algoliaAppId: string, algoliaApiKey: stri
     category: tag.category || 'general',
     color: tag.color || '#6366f1',
     usage_count: tag.usage_count || 0,
+    image_url: tag.image_url || null,
     created_at: tag.created_at,
     updated_at: tag.updated_at,
   }));
@@ -196,6 +197,8 @@ async function syncVenues(supabase: any, algoliaAppId: string, algoliaApiKey: st
     phone: venue.phone || '',
     website: venue.website || '',
     rating: venue.rating || 0,
+    images: venue.images || [],
+    image_url: venue.image_url || null,
     created_at: venue.created_at,
     updated_at: venue.updated_at,
   }));
@@ -236,6 +239,7 @@ async function syncEvents(supabase: any, algoliaAppId: string, algoliaApiKey: st
     country: event.country || '',
     is_free: event.is_free || false,
     featured: event.featured || false,
+    images: event.images || [],
     created_at: event.created_at,
     updated_at: event.updated_at,
   }));
@@ -274,6 +278,7 @@ async function syncMarketplace(supabase: any, algoliaAppId: string, algoliaApiKe
     currency: listing.currency || 'USD',
     location: listing.location || '',
     featured: listing.featured || false,
+    images: listing.images || [],
     created_at: listing.created_at,
     updated_at: listing.updated_at,
   }));
