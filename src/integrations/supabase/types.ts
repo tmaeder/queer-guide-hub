@@ -1395,6 +1395,53 @@ export type Database = {
           },
         ]
       }
+      marketplace_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          parent_id: string | null
+          slug: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          parent_id?: string | null
+          slug: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          parent_id?: string | null
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_favorites: {
         Row: {
           created_at: string
@@ -3460,6 +3507,10 @@ export type Database = {
       }
       get_or_create_direct_conversation: {
         Args: { user1_id: string; user2_id: string }
+        Returns: string
+      }
+      get_or_create_marketplace_category: {
+        Args: { category_name: string; parent_category_name?: string }
         Returns: string
       }
       get_user_conversation_ids: {
