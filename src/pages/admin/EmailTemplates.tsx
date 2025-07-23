@@ -550,7 +550,6 @@ export default function EmailTemplates() {
                           </Label>
                           <Input
                             id={`preview-${variable.name}`}
-                            size="sm"
                             value={previewData[variable.name] || ''}
                             onChange={(e) =>
                               setPreviewData({

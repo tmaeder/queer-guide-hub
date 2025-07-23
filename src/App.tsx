@@ -55,6 +55,7 @@ import AdminTargetGroups from "./pages/AdminTargetGroups";
 import AdminEvents from "./pages/AdminEvents";
 import AdminMarketplace from "./pages/AdminMarketplace";
 import AdminNewsSources from "./pages/AdminNewsSources";
+import EmailTemplates from "./pages/admin/EmailTemplates";
 import News from "./pages/News";
 import Travel from "./pages/Travel";
 
@@ -268,11 +269,16 @@ const App = () => {
                       <AdminUsers />
                     </AdminRouteGuard>
                   } />
-                  <Route path="/admin/countries" element={
-                    <AdminRouteGuard>
-                      <AdminCountries />
-                    </AdminRouteGuard>
-                  } />
+                   <Route path="/admin/countries" element={
+                     <AdminRouteGuard>
+                       <AdminCountries />
+                     </AdminRouteGuard>
+                   } />
+                   <Route path="/admin/email-templates" element={
+                     <AdminRouteGuard requiredRole="admin">
+                       <EmailTemplates />
+                     </AdminRouteGuard>
+                   } />
                    <Route path="/news" element={<News />} />
                    <Route path="/search" element={<SearchResults />} />
                    <Route path="/travel" element={<Travel />} />
