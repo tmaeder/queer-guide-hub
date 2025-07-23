@@ -156,11 +156,24 @@ export default function AdminDashboard() {
           community_groups!inner(name)
         `)
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(3);
 
       const { data: recentEvents } = await supabase
         .from('events')
         .select('id, title, created_at, event_type')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const { data: recentTemplates } = await supabase
+        .from('email_templates')
+        .select('id, name, created_at, template_key, updated_at')
+        .order('updated_at', { ascending: false })
+        .limit(3);
+
+      const { data: recentListings } = await supabase
+        .from('marketplace_listings')
+        .select('id, title, created_at, status')
+        .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(3);
 
@@ -180,8 +193,24 @@ export default function AdminDashboard() {
           description: event.title,
           timestamp: event.created_at,
           icon: Calendar
+        })) || []),
+        ...(recentTemplates?.map(template => ({
+          id: template.id,
+          type: 'email_template',
+          title: `Email template: ${template.name}`,
+          description: `Template key: ${template.template_key}`,
+          timestamp: template.updated_at || template.created_at,
+          icon: FileText
+        })) || []),
+        ...(recentListings?.map(listing => ({
+          id: listing.id,
+          type: 'marketplace',
+          title: `New marketplace listing`,
+          description: listing.title,
+          timestamp: listing.created_at,
+          icon: ShoppingBag
         })) || [])
-      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 8);
+      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10);
 
       setRecentActivity(activities);
     } catch (error) {
