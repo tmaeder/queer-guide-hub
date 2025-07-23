@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useEvents } from '@/hooks/useEvents';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,7 +15,7 @@ interface UserLocation {
   city?: string;
 }
 
-export const WeeklyEventsSlider = () => {
+export const WeeklyEventsSlider = React.memo(() => {
   const { events, loading, fetchEvents } = useEvents();
   const isMobile = useIsMobile();
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
@@ -67,7 +67,7 @@ export const WeeklyEventsSlider = () => {
   }, [userLocation, fetchEvents]);
 
   // Filter and sort events by distance and date
-  const weeklyEvents = events
+  const weeklyEvents = useMemo(() => events
     .filter(event => {
       const eventDate = new Date(event.start_date);
       const now = new Date();
@@ -75,7 +75,7 @@ export const WeeklyEventsSlider = () => {
       const weekEnd = endOfWeek(now);
       return eventDate >= weekStart && eventDate <= weekEnd;
     })
-    .slice(0, 10); // Limit to 10 events
+    .slice(0, 10), [events]); // Limit to 10 events
 
   if (locationLoading || loading) {
     return (
@@ -242,4 +242,6 @@ export const WeeklyEventsSlider = () => {
       </div>
     </section>
   );
-};
+});
+
+WeeklyEventsSlider.displayName = 'WeeklyEventsSlider';

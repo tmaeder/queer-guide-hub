@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,16 +7,13 @@ import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, Check
 import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { LatestNewsSlider } from '@/components/home/LatestNewsSlider';
-import { WeeklyEventsSlider } from '@/components/home/WeeklyEventsSlider';
-const Index = () => {
-  const {
-    user
-  } = useAuth();
-  const {
-    stats: realStats,
-    loading
-  } = useStats();
+
+// Lazy load slider components for better performance
+const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider').then(module => ({ default: module.LatestNewsSlider })));
+const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider').then(module => ({ default: module.WeeklyEventsSlider })));
+const Index = React.memo(() => {
+  const { user } = useAuth();
+  const { stats: realStats, loading } = useStats();
   const isMobile = useIsMobile();
   const features = [{
     icon: MapPin,
@@ -73,7 +71,8 @@ const Index = () => {
     }
     return num.toString();
   };
-  const stats = loading ? [{
+
+  const stats = useMemo(() => loading ? [{
     number: '---',
     label: 'Verified Venues'
   }, {
@@ -97,7 +96,7 @@ const Index = () => {
   }, {
     number: formatNumber(realStats.weeklyEvents),
     label: 'Weekly Events'
-  }];
+  }], [loading, realStats, formatNumber]);
   return <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-background">
@@ -196,10 +195,14 @@ const Index = () => {
       </section>
 
       {/* Weekly Events Near You */}
-      <WeeklyEventsSlider />
+      <React.Suspense fallback={<SliderSkeleton title="This Week Near You" />}>
+        <WeeklyEventsSlider />
+      </React.Suspense>
 
       {/* Latest News Section */}
-      <LatestNewsSlider />
+      <React.Suspense fallback={<SliderSkeleton title="Latest News" />}>
+        <LatestNewsSlider />
+      </React.Suspense>
 
       {/* Testimonials Section */}
       <section className={`bg-background ${isMobile ? 'py-12' : 'py-20'} px-4`}>
@@ -264,5 +267,37 @@ const Index = () => {
         </div>
       </section>
     </div>;
+});
+
+// Skeleton component for lazy-loaded sliders
+const SliderSkeleton = ({ title }: { title: string }) => {
+  const isMobile = useIsMobile();
+  return (
+    <section className={`bg-muted/10 ${isMobile ? 'py-8' : 'py-16'} px-4`}>
+      <div className="container mx-auto">
+        <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
+          <div className={`h-8 bg-muted rounded animate-pulse ${isMobile ? 'w-48' : 'w-64'} mb-4`}></div>
+          <div className={`h-4 bg-muted rounded animate-pulse ${isMobile ? 'w-72' : 'w-96'}`}></div>
+        </div>
+        <div className="flex gap-4">
+          {Array.from({ length: isMobile ? 1 : 3 }).map((_, i) => (
+            <div key={i} className={`${isMobile ? 'w-full' : 'w-80'}`}>
+              <Card className="h-64">
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="h-4 bg-muted rounded animate-pulse"></div>
+                    <div className="h-3 bg-muted rounded animate-pulse w-3/4"></div>
+                    <div className="h-3 bg-muted rounded animate-pulse w-1/2"></div>
+                    <div className="h-20 bg-muted rounded animate-pulse"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 };
+
 export default Index;
