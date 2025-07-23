@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Tables } from '@/integrations/supabase/types';
 
+// Simplified type definitions to avoid TypeScript recursion issues
 type NewsArticle = any;
-
 type NewsCategory = any;
 type NewsSource = any;
 
