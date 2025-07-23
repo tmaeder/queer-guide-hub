@@ -3287,6 +3287,9 @@ export type Database = {
           state: string | null
           tags: string[] | null
           target_groups: string[] | null
+          tomtom_data: Json | null
+          tomtom_id: string | null
+          tomtom_rating: number | null
           tripadvisor_id: string | null
           tripadvisor_rating: number | null
           tripadvisor_review_count: number | null
@@ -3324,6 +3327,9 @@ export type Database = {
           state?: string | null
           tags?: string[] | null
           target_groups?: string[] | null
+          tomtom_data?: Json | null
+          tomtom_id?: string | null
+          tomtom_rating?: number | null
           tripadvisor_id?: string | null
           tripadvisor_rating?: number | null
           tripadvisor_review_count?: number | null
@@ -3361,6 +3367,9 @@ export type Database = {
           state?: string | null
           tags?: string[] | null
           target_groups?: string[] | null
+          tomtom_data?: Json | null
+          tomtom_id?: string | null
+          tomtom_rating?: number | null
           tripadvisor_id?: string | null
           tripadvisor_rating?: number | null
           tripadvisor_review_count?: number | null
