@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = "https://xqeacpakadqfxjxjcewc.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // Simplified type definitions to avoid TypeScript recursion issues
 type NewsArticle = any;
@@ -37,12 +42,14 @@ export const useNews = () => {
     setError(null);
     
     try {
-      const { data, error: fetchError } = await supabase
+      const response = await supabase
         .from('news_articles')
         .select('*')
         .eq('published', true)
         .order('published_at', { ascending: false })
         .limit(50);
+
+      const { data, error: fetchError } = response as { data: any[] | null; error: any };
 
       if (fetchError) {
         console.error('Error fetching articles:', fetchError);
@@ -63,11 +70,13 @@ export const useNews = () => {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      const response = await supabase
         .from('news_categories')
         .select('*')
         .eq('is_active', true)
         .order('sort_order', { ascending: true });
+
+      const { data, error: fetchError } = response as { data: any[] | null; error: any };
 
       if (fetchError) {
         console.warn('Error fetching categories:', fetchError);
@@ -84,11 +93,13 @@ export const useNews = () => {
 
   const fetchSources = useCallback(async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      const response = await supabase
         .from('news_sources')
         .select('*')
         .eq('is_active', true)
         .order('name', { ascending: true });
+
+      const { data, error: fetchError } = response as { data: any[] | null; error: any };
 
       if (fetchError) {
         console.warn('Error fetching sources:', fetchError);
@@ -105,9 +116,11 @@ export const useNews = () => {
 
   const incrementViews = useCallback(async (articleId: string) => {
     try {
-      const { error } = await supabase.rpc('increment_article_views', {
+      const response = await supabase.rpc('increment_article_views', {
         article_id: articleId
       });
+
+      const { error } = response as { error: any };
 
       if (error) {
         console.warn('Error incrementing views:', error);
@@ -128,7 +141,7 @@ export const useNews = () => {
 
   const getTrendingTags = useCallback(async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      const response = await supabase
         .from('unified_tag_assignments')
         .select(`
           unified_tags!inner(
@@ -140,6 +153,8 @@ export const useNews = () => {
         .eq('entity_type', 'news')
         .order('unified_tags(usage_count)', { ascending: false })
         .limit(10);
+
+      const { data, error: fetchError } = response as { data: any[] | null; error: any };
 
       if (fetchError) {
         console.warn('Error fetching trending tags:', fetchError);
