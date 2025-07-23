@@ -47,6 +47,7 @@ export default function AdminVenues() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingVenue, setEditingVenue] = useState<any>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [isImportingTripAdvisor, setIsImportingTripAdvisor] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -248,6 +249,43 @@ export default function AdminVenues() {
     }
   };
 
+  const handleTripAdvisorImport = async () => {
+    setIsImportingTripAdvisor(true);
+    
+    try {
+      toast({
+        title: "Import Started",
+        description: "TripAdvisor venue import has been triggered. This may take a few minutes...",
+      });
+
+      const { data, error } = await supabase.functions.invoke('import-tripadvisor-venues', {
+        body: { trigger: 'manual' }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Import Completed",
+        description: `${data.message}. Page will refresh to show new venues.`,
+      });
+
+      // Refresh the venues list after import
+      setTimeout(() => {
+        refetch();
+      }, 2000);
+      
+    } catch (error) {
+      console.error('TripAdvisor import error:', error);
+      toast({
+        title: "Import Failed",
+        description: "Failed to import venues from TripAdvisor. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsImportingTripAdvisor(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -304,6 +342,14 @@ export default function AdminVenues() {
           >
             <Download className="h-4 w-4 mr-2" />
             {isImporting ? "Importing..." : "Import from Foursquare"}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handleTripAdvisorImport}
+            disabled={isImportingTripAdvisor}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {isImportingTripAdvisor ? "Importing..." : "Import from TripAdvisor"}
           </Button>
           <VenuesCsvImport onImportComplete={refetch} />
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>

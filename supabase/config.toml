@@ -116,3 +116,6 @@ verify_jwt = false
 
 [functions.import-foursquare-venues]
 verify_jwt = false
+
+[functions.import-tripadvisor-venues]
+verify_jwt = false

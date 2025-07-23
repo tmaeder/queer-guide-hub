@@ -3287,6 +3287,9 @@ export type Database = {
           state: string | null
           tags: string[] | null
           target_groups: string[] | null
+          tripadvisor_id: string | null
+          tripadvisor_rating: number | null
+          tripadvisor_review_count: number | null
           updated_at: string
           verified: boolean | null
           website: string | null
@@ -3321,6 +3324,9 @@ export type Database = {
           state?: string | null
           tags?: string[] | null
           target_groups?: string[] | null
+          tripadvisor_id?: string | null
+          tripadvisor_rating?: number | null
+          tripadvisor_review_count?: number | null
           updated_at?: string
           verified?: boolean | null
           website?: string | null
@@ -3355,6 +3361,9 @@ export type Database = {
           state?: string | null
           tags?: string[] | null
           target_groups?: string[] | null
+          tripadvisor_id?: string | null
+          tripadvisor_rating?: number | null
+          tripadvisor_review_count?: number | null
           updated_at?: string
           verified?: boolean | null
           website?: string | null
