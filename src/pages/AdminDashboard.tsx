@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AlgoliaManager } from "@/components/admin/AlgoliaManager";
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const {
@@ -657,6 +658,11 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="management" className="space-y-6">
+          {/* Algolia Search Management */}
+          <div className="mb-6">
+            <AlgoliaManager />
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {adminSections.map(section => <Card key={section.path} className="hover-scale group transition-all duration-300 hover:shadow-elegant">
                 <CardHeader className="pb-3">

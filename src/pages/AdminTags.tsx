@@ -31,7 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TagCategorizer } from "@/components/admin/TagCategorizer";
 import { TagsCsvImport } from "@/components/admin/TagsCsvImport";
 import { TagImageUpload } from "@/components/admin/TagImageUpload";
-import { AlgoliaManager } from "@/components/admin/AlgoliaManager";
+
 
 export default function AdminTags() {
   const navigate = useNavigate();
@@ -407,10 +407,6 @@ export default function AdminTags() {
         </CardContent>
       </Card>
 
-      {/* Algolia Management */}
-      <div className="mb-6">
-        <AlgoliaManager />
-      </div>
 
       {/* Tag Categorizer */}
       <div className="mb-6">
