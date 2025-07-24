@@ -8,8 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Dialog, 
@@ -18,20 +16,12 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from "@/components/ui/dialog";
-import { 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
-  ArrowLeft,
-  Building,
-  MapPin,
-  Star,
-  Download
-} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { VenueImageUpload } from "@/components/venues/VenueImageUpload";
-import { VenuesCsvImport } from "@/components/venues/VenuesCsvImport";
+import { VenuesHeader } from "@/components/admin/venues/VenuesHeader";
+import { VenuesFilters } from "@/components/admin/venues/VenuesFilters";
+import { VenuesStats } from "@/components/admin/venues/VenuesStats";
+import { VenuesList } from "@/components/admin/venues/VenuesList";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminVenues() {
@@ -359,407 +349,252 @@ export default function AdminVenues() {
   }
 
   return (
-    <div className="w-full p-6">
+    <div className="w-full space-y-8 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => navigate("/admin")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Venues Management</h1>
-            <p className="text-muted-foreground">Manage venues and locations</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            onClick={handleFoursquareImport}
-            disabled={isImporting}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            {isImporting ? "Importing..." : "Import from Foursquare"}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleTripAdvisorImport}
-            disabled={isImportingTripAdvisor}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            {isImportingTripAdvisor ? "Importing..." : "Import from TripAdvisor"}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleTomTomImport}
-            disabled={isImportingTomTom}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            {isImportingTomTom ? "Importing..." : "Import from TomTom"}
-          </Button>
-          <VenuesCsvImport onImportComplete={refetch} />
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Venue
-              </Button>
-            </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingVenue ? 'Edit Venue' : 'Add New Venue'}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Info */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Basic Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Venue Name</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="category">Category</Label>
-                    <Select
-                      value={formData.category}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {venueCategories.map(category => (
-                          <SelectItem key={category} value={category}>
-                            {category.charAt(0).toUpperCase() + category.slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+      <VenuesHeader
+        onBack={() => navigate("/admin")}
+        onAddVenue={() => {
+          resetForm();
+          setIsCreateDialogOpen(true);
+        }}
+        onFoursquareImport={handleFoursquareImport}
+        onTripAdvisorImport={handleTripAdvisorImport}
+        onTomTomImport={handleTomTomImport}
+        onImportComplete={refetch}
+        isImporting={isImporting}
+        isImportingTripAdvisor={isImportingTripAdvisor}
+        isImportingTomTom={isImportingTomTom}
+      />
 
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    rows={3}
-                  />
-                </div>
-              </div>
+      {/* Stats */}
+      <VenuesStats venues={venues} />
 
-              {/* Location */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Location</h3>
+      {/* Filters */}
+      <VenuesFilters
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        categories={venueCategories}
+        totalResults={filteredVenues.length}
+      />
+
+      {/* Venues List */}
+      <VenuesList
+        venues={filteredVenues}
+        onEdit={handleEditVenue}
+        onDelete={handleDeleteVenue}
+      />
+
+      {/* Add/Edit Venue Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingVenue ? 'Edit Venue' : 'Add New Venue'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Info */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Basic Information</h3>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="address">Address</Label>
+                  <Label htmlFor="name">Venue Name</Label>
                   <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     required
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">State</Label>
-                    <Input
-                      id="state"
-                      value={formData.state}
-                      onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="postal_code">Postal Code</Label>
-                    <Input
-                      id="postal_code"
-                      value={formData.postal_code}
-                      onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="latitude">Latitude</Label>
-                    <Input
-                      id="latitude"
-                      type="number"
-                      step="any"
-                      value={formData.latitude}
-                      onChange={(e) => setFormData(prev => ({ ...prev, latitude: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="longitude">Longitude</Label>
-                    <Input
-                      id="longitude"
-                      type="number"
-                      step="any"
-                      value={formData.longitude}
-                      onChange={(e) => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {venueCategories.map(category => (
+                        <SelectItem key={category} value={category}>
+                          {category.charAt(0).toUpperCase() + category.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              {/* Contact */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Contact Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="website">Website</Label>
-                    <Input
-                      id="website"
-                      value={formData.website}
-                      onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="instagram">Instagram</Label>
-                    <Input
-                      id="instagram"
-                      value={formData.instagram}
-                      onChange={(e) => setFormData(prev => ({ ...prev, instagram: e.target.value }))}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Settings */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Settings</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="price_range">Price Range (1-4)</Label>
-                    <Select
-                      value={formData.price_range}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, price_range: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">$ - Budget</SelectItem>
-                        <SelectItem value="2">$$ - Moderate</SelectItem>
-                        <SelectItem value="3">$$$ - Expensive</SelectItem>
-                        <SelectItem value="4">$$$$ - Very Expensive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="featured"
-                      checked={formData.featured}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked as boolean }))}
-                    />
-                    <Label htmlFor="featured">Featured Venue</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="verified"
-                      checked={formData.verified}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, verified: checked as boolean }))}
-                    />
-                    <Label htmlFor="verified">Verified</Label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Venue Images */}
-              <VenueImageUpload
-                images={formData.images}
-                onChange={(images) => setFormData(prev => ({ ...prev, images }))}
-                maxImages={8}
-              />
-
-              <Button type="submit" className="w-full">
-                {editingVenue ? 'Update Venue' : 'Add Venue'}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search venues..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
                 />
               </div>
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {venueCategories.map(category => (
-                  <SelectItem key={category} value={category}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Building className="h-5 w-5 text-primary" />
+            {/* Location */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Location</h3>
               <div>
-                <p className="text-2xl font-bold">{venues.length}</p>
-                <p className="text-sm text-muted-foreground">Total Venues</p>
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                  required
+                />
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-accent" />
-              <div>
-                <p className="text-2xl font-bold">{venues.filter(v => v.featured).length}</p>
-                <p className="text-sm text-muted-foreground">Featured</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-accent" />
-              <div>
-                <p className="text-2xl font-bold">{venues.filter(v => v.verified).length}</p>
-                <p className="text-sm text-muted-foreground">Verified</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Building className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-2xl font-bold">{new Set(venues.map(v => v.city)).size}</p>
-                <p className="text-sm text-muted-foreground">Cities</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Venues List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Venues ({filteredVenues.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredVenues.map((venue) => (
-              <div key={venue.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-semibold">{venue.name}</h3>
-                    <Badge variant="outline">{venue.category}</Badge>
-                    {venue.featured && (
-                      <Badge className="bg-secondary/10 text-secondary">Featured</Badge>
-                    )}
-                    {venue.verified && (
-                      <Badge className="bg-accent/10 text-accent">Verified</Badge>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {venue.city}, {venue.state}
-                    </div>
-                    <div>
-                      Price: {"$".repeat(venue.price_range || 1)}
-                    </div>
-                  </div>
-
-                  {venue.description && (
-                    <p className="text-sm text-muted-foreground">
-                      {venue.description.slice(0, 100)}...
-                    </p>
-                  )}
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    required
+                  />
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEditVenue(venue)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteVenue(venue)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <div>
+                  <Label htmlFor="state">State</Label>
+                  <Input
+                    id="state"
+                    value={formData.state}
+                    onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="postal_code">Postal Code</Label>
+                  <Input
+                    id="postal_code"
+                    value={formData.postal_code}
+                    onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
+                  />
                 </div>
               </div>
-            ))}
-            
-            {filteredVenues.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No venues found</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="latitude">Latitude</Label>
+                  <Input
+                    id="latitude"
+                    type="number"
+                    step="any"
+                    value={formData.latitude}
+                    onChange={(e) => setFormData(prev => ({ ...prev, latitude: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="longitude">Longitude</Label>
+                  <Input
+                    id="longitude"
+                    type="number"
+                    step="any"
+                    value={formData.longitude}
+                    onChange={(e) => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
+                  />
+                </div>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+
+            {/* Contact */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Contact Information</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    value={formData.website}
+                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="instagram">Instagram</Label>
+                  <Input
+                    id="instagram"
+                    value={formData.instagram}
+                    onChange={(e) => setFormData(prev => ({ ...prev, instagram: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Settings */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Settings</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="price_range">Price Range (1-4)</Label>
+                  <Select
+                    value={formData.price_range}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, price_range: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">$ - Budget</SelectItem>
+                      <SelectItem value="2">$$ - Moderate</SelectItem>
+                      <SelectItem value="3">$$$ - Expensive</SelectItem>
+                      <SelectItem value="4">$$$$ - Very Expensive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="featured"
+                    checked={formData.featured}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked as boolean }))}
+                  />
+                  <Label htmlFor="featured">Featured Venue</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="verified"
+                    checked={formData.verified}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, verified: checked as boolean }))}
+                  />
+                  <Label htmlFor="verified">Verified</Label>
+                </div>
+              </div>
+            </div>
+
+            {/* Venue Images */}
+            <VenueImageUpload
+              images={formData.images}
+              onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+              maxImages={8}
+            />
+
+            <Button type="submit" className="w-full">
+              {editingVenue ? 'Update Venue' : 'Add Venue'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
