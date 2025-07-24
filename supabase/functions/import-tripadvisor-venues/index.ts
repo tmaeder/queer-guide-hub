@@ -335,11 +335,11 @@ serve(async (req) => {
 
               const venue: TripAdvisorLocation = await detailsResponse.json();
               
-              // Check if venue already exists (by name and location)
+              // Check if venue already exists (by external ID or tripadvisor_id)
               const { data: existingVenue } = await supabase
                 .from('venues')
-                .select('id, tripadvisor_id')
-                .eq('tripadvisor_id', venue.location_id)
+                .select('id, tripadvisor_id, data_source, external_id')
+                .or(`tripadvisor_id.eq.${venue.location_id},and(data_source.eq.tripadvisor,external_id.eq.${venue.location_id})`)
                 .maybeSingle();
 
               if (existingVenue) {
@@ -444,6 +444,10 @@ serve(async (req) => {
                 tripadvisor_id: venue.location_id,
                 tripadvisor_rating: venue.rating ? parseFloat(venue.rating) : null,
                 tripadvisor_review_count: venue.num_reviews ? parseInt(venue.num_reviews) : null,
+                data_source: 'tripadvisor',
+                external_id: venue.location_id,
+                last_synced_at: new Date().toISOString(),
+                sync_status: 'synced',
                 created_by: null // System import
               };
 

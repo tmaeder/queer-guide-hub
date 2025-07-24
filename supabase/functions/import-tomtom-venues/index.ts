@@ -403,11 +403,11 @@ Deno.serve(async (req) => {
 
           for (const poi of pois) {
             try {
-              // Check if venue already exists
+              // Check if venue already exists by external ID or TomTom ID
               const { data: existingVenue } = await supabase
                 .from('venues')
-                .select('id, tomtom_id')
-                .eq('tomtom_id', poi.id)
+                .select('id, tomtom_id, data_source, external_id')
+                .or(`tomtom_id.eq.${poi.id},and(data_source.eq.tomtom,external_id.eq.${poi.id})`)
                 .maybeSingle()
 
               // Get or create city
@@ -468,6 +468,10 @@ Deno.serve(async (req) => {
                   entityType: poi.entityType || null,
                   viewport: poi.viewport || null
                 },
+                data_source: 'tomtom',
+                external_id: poi.id,
+                last_synced_at: new Date().toISOString(),
+                sync_status: 'synced',
                 created_by: null // System import
               }
 

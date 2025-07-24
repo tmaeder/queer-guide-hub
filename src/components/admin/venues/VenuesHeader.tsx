@@ -1,13 +1,19 @@
-import { ArrowLeft, Plus, Download } from "lucide-react";
+import { ArrowLeft, Plus, Download, ChevronDown, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { VenuesCsvImport } from "@/components/venues/VenuesCsvImport";
 
 interface VenuesHeaderProps {
   onBack: () => void;
   onAddVenue: () => void;
-  onFoursquareImport: () => void;
-  onTripAdvisorImport: () => void;
-  onTomTomImport: () => void;
+  onFoursquareImport: (isReimport?: boolean) => void;
+  onTripAdvisorImport: (isReimport?: boolean) => void;
+  onTomTomImport: (isReimport?: boolean) => void;
   onImportComplete: () => void;
   isImporting: boolean;
   isImportingTripAdvisor: boolean;
@@ -40,36 +46,80 @@ export function VenuesHeader({
       
       <div className="flex flex-col gap-2 md:flex-row">
         <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onFoursquareImport}
-            disabled={isImporting}
-            className="text-xs"
-          >
-            <Download className="h-3 w-3 mr-1" />
-            {isImporting ? "Importing..." : "Foursquare"}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onTripAdvisorImport}
-            disabled={isImportingTripAdvisor}
-            className="text-xs"
-          >
-            <Download className="h-3 w-3 mr-1" />
-            {isImportingTripAdvisor ? "Importing..." : "TripAdvisor"}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onTomTomImport}
-            disabled={isImportingTomTom}
-            className="text-xs"
-          >
-            <Download className="h-3 w-3 mr-1" />
-            {isImportingTomTom ? "Importing..." : "TomTom"}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={isImporting}
+                className="text-xs"
+              >
+                <Download className="h-3 w-3 mr-1" />
+                {isImporting ? "Importing..." : "Foursquare"}
+                <ChevronDown className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => onFoursquareImport(false)}>
+                <Download className="h-3 w-3 mr-2" />
+                Import New
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onFoursquareImport(true)}>
+                <RefreshCw className="h-3 w-3 mr-2" />
+                Re-import/Update
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={isImportingTripAdvisor}
+                className="text-xs"
+              >
+                <Download className="h-3 w-3 mr-1" />
+                {isImportingTripAdvisor ? "Importing..." : "TripAdvisor"}
+                <ChevronDown className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => onTripAdvisorImport(false)}>
+                <Download className="h-3 w-3 mr-2" />
+                Import New
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onTripAdvisorImport(true)}>
+                <RefreshCw className="h-3 w-3 mr-2" />
+                Re-import/Update
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={isImportingTomTom}
+                className="text-xs"
+              >
+                <Download className="h-3 w-3 mr-1" />
+                {isImportingTomTom ? "Importing..." : "TomTom"}
+                <ChevronDown className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => onTomTomImport(false)}>
+                <Download className="h-3 w-3 mr-2" />
+                Import New
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onTomTomImport(true)}>
+                <RefreshCw className="h-3 w-3 mr-2" />
+                Re-import/Update
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         
         <div className="flex gap-2">

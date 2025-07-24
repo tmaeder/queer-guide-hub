@@ -203,24 +203,24 @@ export default function AdminVenues() {
     }
   };
 
-  const handleFoursquareImport = async () => {
+  const handleFoursquareImport = async (isReimport = false) => {
     setIsImporting(true);
     
     try {
       toast({
-        title: "Import Started",
-        description: "Foursquare venue import has been triggered. This may take a few minutes...",
+        title: isReimport ? "Re-import Started" : "Import Started",
+        description: `Foursquare venue ${isReimport ? 're-import' : 'import'} has been triggered. This may take a few minutes...`,
       });
 
       const { data, error } = await supabase.functions.invoke('import-foursquare-venues', {
-        body: { trigger: 'manual' }
+        body: { trigger: 'manual', isReimport }
       });
 
       if (error) throw error;
 
       toast({
-        title: "Import Completed",
-        description: `${data.message}. Page will refresh to show new venues.`,
+        title: isReimport ? "Re-import Completed" : "Import Completed",
+        description: `${data.message}. Page will refresh to show updated venues.`,
       });
 
       // Refresh the venues list after import
@@ -231,8 +231,8 @@ export default function AdminVenues() {
     } catch (error) {
       console.error('Foursquare import error:', error);
       toast({
-        title: "Import Failed",
-        description: "Failed to import venues from Foursquare. Please try again.",
+        title: isReimport ? "Re-import Failed" : "Import Failed",
+        description: `Failed to ${isReimport ? 're-import' : 'import'} venues from Foursquare. Please try again.`,
         variant: "destructive"
       });
     } finally {
@@ -240,24 +240,24 @@ export default function AdminVenues() {
     }
   };
 
-  const handleTripAdvisorImport = async () => {
+  const handleTripAdvisorImport = async (isReimport = false) => {
     setIsImportingTripAdvisor(true);
     
     try {
       toast({
-        title: "Import Started",
-        description: "TripAdvisor venue import has been triggered. This may take a few minutes...",
+        title: isReimport ? "Re-import Started" : "Import Started",
+        description: `TripAdvisor venue ${isReimport ? 're-import' : 'import'} has been triggered. This may take a few minutes...`,
       });
 
       const { data, error } = await supabase.functions.invoke('import-tripadvisor-venues', {
-        body: { trigger: 'manual' }
+        body: { trigger: 'manual', isReimport }
       });
 
       if (error) throw error;
 
       toast({
-        title: "Import Completed",
-        description: `${data.message}. Page will refresh to show new venues.`,
+        title: isReimport ? "Re-import Completed" : "Import Completed",
+        description: `${data.message}. Page will refresh to show updated venues.`,
       });
 
       // Refresh the venues list after import
@@ -268,8 +268,8 @@ export default function AdminVenues() {
     } catch (error) {
       console.error('TripAdvisor import error:', error);
       toast({
-        title: "Import Failed",
-        description: "Failed to import venues from TripAdvisor. Please try again.",
+        title: isReimport ? "Re-import Failed" : "Import Failed",
+        description: `Failed to ${isReimport ? 're-import' : 'import'} venues from TripAdvisor. Please try again.`,
         variant: "destructive"
       });
     } finally {
@@ -277,24 +277,24 @@ export default function AdminVenues() {
     }
   };
 
-  const handleTomTomImport = async () => {
+  const handleTomTomImport = async (isReimport = false) => {
     setIsImportingTomTom(true);
     
     try {
       toast({
-        title: "Import Started",
-        description: "TomTom venue import has been triggered. This may take a few minutes...",
+        title: isReimport ? "Re-import Started" : "Import Started",
+        description: `TomTom venue ${isReimport ? 're-import' : 'import'} has been triggered. This may take a few minutes...`,
       });
 
       const { data, error } = await supabase.functions.invoke('import-tomtom-venues', {
-        body: { trigger: 'manual' }
+        body: { trigger: 'manual', isReimport }
       });
 
       if (error) throw error;
 
       toast({
-        title: "Import Completed",
-        description: `${data.message}. Page will refresh to show new venues.`,
+        title: isReimport ? "Re-import Completed" : "Import Completed",
+        description: `${data.message}. Page will refresh to show updated venues.`,
       });
 
       // Refresh the venues list
@@ -305,8 +305,8 @@ export default function AdminVenues() {
     } catch (error) {
       console.error('TomTom import error:', error);
       toast({
-        title: "Import Failed",
-        description: "Failed to import venues from TomTom. Please try again.",
+        title: isReimport ? "Re-import Failed" : "Import Failed",
+        description: `Failed to ${isReimport ? 're-import' : 'import'} venues from TomTom. Please try again.`,
         variant: "destructive"
       });
     } finally {

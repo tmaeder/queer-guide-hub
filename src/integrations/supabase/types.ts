@@ -3375,8 +3375,10 @@ export type Database = {
           country: string
           created_at: string
           created_by: string | null
+          data_source: string | null
           description: string | null
           email: string | null
+          external_id: string | null
           featured: boolean | null
           foursquare_data: Json | null
           foursquare_id: string | null
@@ -3385,6 +3387,7 @@ export type Database = {
           id: string
           images: string[] | null
           instagram: string | null
+          last_synced_at: string | null
           latitude: number | null
           longitude: number | null
           name: string
@@ -3393,6 +3396,7 @@ export type Database = {
           price_range: number | null
           services: string[] | null
           state: string | null
+          sync_status: string | null
           tags: string[] | null
           target_groups: string[] | null
           tomtom_data: Json | null
@@ -3415,8 +3419,10 @@ export type Database = {
           country?: string
           created_at?: string
           created_by?: string | null
+          data_source?: string | null
           description?: string | null
           email?: string | null
+          external_id?: string | null
           featured?: boolean | null
           foursquare_data?: Json | null
           foursquare_id?: string | null
@@ -3425,6 +3431,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           instagram?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           longitude?: number | null
           name: string
@@ -3433,6 +3440,7 @@ export type Database = {
           price_range?: number | null
           services?: string[] | null
           state?: string | null
+          sync_status?: string | null
           tags?: string[] | null
           target_groups?: string[] | null
           tomtom_data?: Json | null
@@ -3455,8 +3463,10 @@ export type Database = {
           country?: string
           created_at?: string
           created_by?: string | null
+          data_source?: string | null
           description?: string | null
           email?: string | null
+          external_id?: string | null
           featured?: boolean | null
           foursquare_data?: Json | null
           foursquare_id?: string | null
@@ -3465,6 +3475,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           instagram?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           longitude?: number | null
           name?: string
@@ -3473,6 +3484,7 @@ export type Database = {
           price_range?: number | null
           services?: string[] | null
           state?: string | null
+          sync_status?: string | null
           tags?: string[] | null
           target_groups?: string[] | null
           tomtom_data?: Json | null

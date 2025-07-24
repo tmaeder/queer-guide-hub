@@ -10,6 +10,7 @@ interface VenueImportRequest {
   location: string;
   query?: string;
   limit?: number;
+  isReimport?: boolean;
 }
 
 // Validation functions
@@ -33,7 +34,8 @@ function validateImportRequest(data: any): VenueImportRequest {
   return {
     location: data.location.trim(),
     query: data.query?.trim(),
-    limit: data.limit || 10
+    limit: data.limit || 10,
+    isReimport: data.isReimport || false
   };
 }
 
@@ -476,11 +478,11 @@ Deno.serve(async (req) => {
               // Validate and sanitize venue data
               const sanitizedVenue = sanitizeVenueData(venue);
               
-              // Check if venue already exists
+              // Check if venue already exists (by external ID or foursquare_id)
               const { data: existingVenue } = await supabase
                 .from('venues')
-                .select('id, foursquare_id')
-                .eq('foursquare_id', sanitizedVenue.fsq_id)
+                .select('id, foursquare_id, data_source, external_id')
+                .or(`foursquare_id.eq.${sanitizedVenue.fsq_id},and(data_source.eq.foursquare,external_id.eq.${sanitizedVenue.fsq_id})`)
                 .maybeSingle()
 
               // Get or create city
@@ -551,6 +553,10 @@ Deno.serve(async (req) => {
                 featured: venue.popularity && venue.popularity > 0.7 ? true : false,
                 foursquare_id: venue.fsq_id,
                 foursquare_rating: venue.rating || null,
+                data_source: 'foursquare',
+                external_id: venue.fsq_id,
+                last_synced_at: new Date().toISOString(),
+                sync_status: 'synced',
                 foursquare_data: {
                   categories: venue.categories,
                   hours: venue.hours,
