@@ -416,40 +416,38 @@ serve(async (req) => {
                 });
               }
 
-              // Prepare venue data
-              const venueData = {
-                name: venue.name,
-                description: venue.description || `${category} found via TripAdvisor import for "${keyword}"`,
-                address: venue.address_obj?.address_string || '',
-                city: cityName,
-                state: venue.address_obj?.state || '',
-                country: countryCode,
-                postal_code: venue.address_obj?.postalcode || '',
-                latitude: parseFloat(venue.latitude) || null,
-                longitude: parseFloat(venue.longitude) || null,
-                phone: venue.phone || null,
-                website: venue.website || null,
-                email: venue.email || null,
-                category: category,
-                category_id: categoryId,
-                city_id: cityId,
-                tags: tags,
-                amenities: amenityNames,
-                services: serviceNames,
-                price_range: venue.price_level ? parseInt(venue.price_level) : null,
-                hours: hours,
-                images: imageUrls,
-                verified: false,
-                featured: false,
-                tripadvisor_id: venue.location_id,
-                tripadvisor_rating: venue.rating ? parseFloat(venue.rating) : null,
-                tripadvisor_review_count: venue.num_reviews ? parseInt(venue.num_reviews) : null,
-                data_source: 'tripadvisor',
-                external_id: venue.location_id,
-                last_synced_at: new Date().toISOString(),
-                sync_status: 'synced',
-                created_by: null // System import
-              };
+               // Prepare venue data
+               const venueData = {
+                 name: venue.name,
+                 description: venue.description || `${category} found via TripAdvisor import for "${keyword}"`,
+                 address: venue.address_obj?.address_string || '',
+                 city: cityName,
+                 state: venue.address_obj?.state || '',
+                 country: countryCode,
+                 postal_code: venue.address_obj?.postalcode || '',
+                 latitude: parseFloat(venue.latitude) || null,
+                 longitude: parseFloat(venue.longitude) || null,
+                 phone: venue.phone || null,
+                 website: venue.website || null,
+                 email: venue.email || null,
+                 category: category,
+                 tags: tags,
+                 amenities: amenityNames,
+                 services: serviceNames,
+                 price_range: venue.price_level ? parseInt(venue.price_level) : null,
+                 hours: hours,
+                 images: imageUrls,
+                 verified: false,
+                 featured: false,
+                 tripadvisor_id: venue.location_id,
+                 tripadvisor_rating: venue.rating ? parseFloat(venue.rating) : null,
+                 tripadvisor_review_count: venue.num_reviews ? parseInt(venue.num_reviews) : null,
+                 data_source: 'tripadvisor',
+                 external_id: venue.location_id,
+                 last_synced_at: new Date().toISOString(),
+                 sync_status: 'synced',
+                 created_by: null // System import
+               };
 
               // Insert venue
               const { data: insertedVenue, error: insertError } = await supabase

@@ -449,8 +449,6 @@ Deno.serve(async (req) => {
                 website: poi.poi.url || null,
                 email: poi.poi.email || null,
                 category: categorySlug,
-                category_id: categoryId,
-                city_id: cityId,
                 tags: Array.from(new Set(enhancedTags)),
                 amenities: amenityNames,
                 services: serviceNames,

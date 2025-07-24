@@ -541,8 +541,6 @@ Deno.serve(async (req) => {
                 website: venue.website || null,
                 email: venue.email || null,
                 category: categorySlug,
-                category_id: venueCategoryId,
-                city_id: cityId,
                 tags: enhancedTags,
                 amenities: amenityNames,
                 services: serviceNames,
