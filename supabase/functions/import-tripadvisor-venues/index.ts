@@ -55,6 +55,211 @@ interface TripAdvisorLocation {
   }>;
 }
 
+// Helper functions for data management
+async function getOrCreateCity(supabase: any, cityName: string, countryCode: string, lat: number, lon: number) {
+  const { data: existingCity } = await supabase
+    .from('cities')
+    .select('id')
+    .eq('name', cityName)
+    .maybeSingle()
+
+  if (existingCity) {
+    return existingCity.id
+  }
+
+  const { data: country } = await supabase
+    .from('countries')
+    .select('id')
+    .eq('code', countryCode)
+    .maybeSingle()
+
+  const { data: newCity, error } = await supabase
+    .from('cities')
+    .insert({
+      name: cityName,
+      country_id: country?.id || null,
+      latitude: lat,
+      longitude: lon,
+      is_major_city: false
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newCity) {
+    console.log(`Created new city: ${cityName}`)
+    return newCity.id
+  }
+
+  return null
+}
+
+async function getOrCreateVenueCategory(supabase: any, categoryName: string, categorySlug: string) {
+  const { data: existing } = await supabase
+    .from('venue_categories')
+    .select('id')
+    .eq('slug', categorySlug)
+    .maybeSingle()
+
+  if (existing) {
+    return existing.id
+  }
+
+  // Create new category
+  const { data: newCategory, error } = await supabase
+    .from('venue_categories')
+    .insert({
+      name: categoryName,
+      slug: categorySlug,
+      description: `Auto-created from TripAdvisor import`,
+      icon: categorySlug.includes('entertainment') ? 'Music' : 
+            categorySlug.includes('restaurant') ? 'UtensilsCrossed' : 
+            categorySlug.includes('hotel') ? 'Bed' : 'MapPin',
+      color: categorySlug.includes('entertainment') ? '#8b5cf6' : 
+             categorySlug.includes('restaurant') ? '#ef4444' : 
+             categorySlug.includes('hotel') ? '#f59e0b' : '#6366f1'
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newCategory) {
+    console.log(`Created new venue category: ${categoryName}`)
+    return newCategory.id
+  }
+
+  return null
+}
+
+async function getOrCreateAmenity(supabase: any, amenityName: string, amenitySlug: string) {
+  const { data: existing } = await supabase
+    .from('venue_amenities')
+    .select('id')
+    .eq('slug', amenitySlug)
+    .maybeSingle()
+
+  if (existing) {
+    return existing.id
+  }
+
+  const { data: newAmenity, error } = await supabase
+    .from('venue_amenities')
+    .insert({
+      name: amenityName,
+      slug: amenitySlug,
+      description: `Auto-created from TripAdvisor import`,
+      icon: amenitySlug.includes('wifi') ? 'Wifi' : 
+            amenitySlug.includes('parking') ? 'Car' : 
+            amenitySlug.includes('phone') ? 'Phone' : 'MapPin'
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newAmenity) {
+    console.log(`Created new amenity: ${amenityName}`)
+    return newAmenity.id
+  }
+
+  return null
+}
+
+async function getOrCreateService(supabase: any, serviceName: string, serviceSlug: string) {
+  const { data: existing } = await supabase
+    .from('venue_services')
+    .select('id')
+    .eq('slug', serviceSlug)
+    .maybeSingle()
+
+  if (existing) {
+    return existing.id
+  }
+
+  const { data: newService, error } = await supabase
+    .from('venue_services')
+    .insert({
+      name: serviceName,
+      slug: serviceSlug,
+      description: `Auto-created from TripAdvisor import`,
+      icon: serviceSlug.includes('dining') ? 'UtensilsCrossed' : 
+            serviceSlug.includes('beverage') ? 'Wine' : 
+            serviceSlug.includes('accommodation') ? 'Bed' : 
+            serviceSlug.includes('wellness') ? 'Heart' : 'MapPin'
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newService) {
+    console.log(`Created new service: ${serviceName}`)
+    return newService.id
+  }
+
+  return null
+}
+
+async function mapVenueCategoryAndAmenities(supabase: any, venue: TripAdvisorLocation, keyword: string) {
+  let categoryName = 'Entertainment & Nightlife'
+  let categorySlug = 'entertainment-nightlife'
+  let category = 'bar'
+  
+  const amenityNames = []
+  const serviceNames = []
+  const amenityIds = []
+  const serviceIds = []
+
+  // Determine category based on keyword and venue data
+  if (keyword.includes('sauna')) {
+    categoryName = 'Health & Wellness'
+    categorySlug = 'health-wellness'
+    category = 'sauna'
+    serviceNames.push('Wellness Services', 'Relaxation')
+  } else if (venue.category?.name?.toLowerCase().includes('restaurant')) {
+    categoryName = 'Restaurants & Dining'
+    categorySlug = 'restaurants-dining'
+    category = 'restaurant'
+    serviceNames.push('Dine-In', 'Food Service')
+  } else if (venue.category?.name?.toLowerCase().includes('hotel')) {
+    categoryName = 'Accommodation'
+    categorySlug = 'accommodation'
+    category = 'hotel'
+    serviceNames.push('Accommodation', 'Lodging')
+  } else {
+    categoryName = 'Entertainment & Nightlife'
+    categorySlug = 'entertainment-nightlife'
+    category = 'bar'
+    serviceNames.push('Beverages', 'Entertainment')
+  }
+
+  // Get or create category
+  const categoryId = await getOrCreateVenueCategory(supabase, categoryName, categorySlug)
+
+  // Basic amenities
+  if (venue.phone) {
+    amenityNames.push('Phone Service')
+    const amenityId = await getOrCreateAmenity(supabase, 'Phone Service', 'phone-service')
+    if (amenityId) amenityIds.push(amenityId)
+  }
+
+  if (venue.website) {
+    amenityNames.push('WiFi')
+    const amenityId = await getOrCreateAmenity(supabase, 'WiFi', 'wifi')
+    if (amenityId) amenityIds.push(amenityId)
+  }
+
+  // Create services
+  for (const serviceName of serviceNames) {
+    const serviceSlug = serviceName.toLowerCase().replace(/\s+/g, '-')
+    const serviceId = await getOrCreateService(supabase, serviceName, serviceSlug)
+    if (serviceId) serviceIds.push(serviceId)
+  }
+
+  return {
+    category,
+    categoryId,
+    amenityNames,
+    serviceNames,
+    amenityIds,
+    serviceIds
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -143,6 +348,14 @@ serve(async (req) => {
                 continue;
               }
 
+              // Get or create city
+              const cityName = venue.address_obj?.city || location
+              const countryCode = venue.address_obj?.country || 'US'
+              const cityId = await getOrCreateCity(supabase, cityName, countryCode, parseFloat(venue.latitude), parseFloat(venue.longitude))
+
+              // Map category, amenities, and services
+              const { category, categoryId, amenityNames, serviceNames, amenityIds, serviceIds } = await mapVenueCategoryAndAmenities(supabase, venue, keyword)
+
               // Download and store photos
               let imageUrls: string[] = [];
               if (venue.photos && Array.isArray(venue.photos)) {
@@ -173,16 +386,6 @@ serve(async (req) => {
                     }
                   }
                 }
-              }
-
-              // Determine category based on keyword and venue data
-              let category = 'bar';
-              if (keyword.includes('sauna')) {
-                category = 'sauna';
-              } else if (venue.category?.name?.toLowerCase().includes('restaurant')) {
-                category = 'restaurant';
-              } else if (venue.category?.name?.toLowerCase().includes('hotel')) {
-                category = 'hotel';
               }
 
               // Prepare tags
@@ -218,9 +421,9 @@ serve(async (req) => {
                 name: venue.name,
                 description: venue.description || `${category} found via TripAdvisor import for "${keyword}"`,
                 address: venue.address_obj?.address_string || '',
-                city: venue.address_obj?.city || location,
+                city: cityName,
                 state: venue.address_obj?.state || '',
-                country: venue.address_obj?.country || 'US',
+                country: countryCode,
                 postal_code: venue.address_obj?.postalcode || '',
                 latitude: parseFloat(venue.latitude) || null,
                 longitude: parseFloat(venue.longitude) || null,
@@ -228,8 +431,11 @@ serve(async (req) => {
                 website: venue.website || null,
                 email: venue.email || null,
                 category: category,
+                category_id: categoryId,
+                city_id: cityId,
                 tags: tags,
-                amenities: [],
+                amenities: amenityNames,
+                services: serviceNames,
                 price_range: venue.price_level ? parseInt(venue.price_level) : null,
                 hours: hours,
                 images: imageUrls,
@@ -253,7 +459,7 @@ serve(async (req) => {
                 continue;
               }
 
-              console.log(`Successfully imported venue: ${venue.name}`);
+              console.log(`Successfully imported venue: ${venue.name} with ${amenityNames.length} amenities and ${serviceNames.length} services`);
               totalImported++;
 
             } catch (venueError) {

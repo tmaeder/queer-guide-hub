@@ -66,9 +66,8 @@ function sanitizeVenueData(venue: FoursquareVenue): any {
   };
 }
 
-// Helper functions for city and category management
+// Helper functions for data management
 async function getOrCreateCity(supabase: any, cityName: string, countryCode: string, lat: number, lon: number) {
-  // First try to find existing city
   const { data: existingCity } = await supabase
     .from('cities')
     .select('id')
@@ -79,14 +78,12 @@ async function getOrCreateCity(supabase: any, cityName: string, countryCode: str
     return existingCity.id
   }
 
-  // Get country_id from countries table
   const { data: country } = await supabase
     .from('countries')
     .select('id')
     .eq('code', countryCode)
     .maybeSingle()
 
-  // Create new city
   const { data: newCity, error } = await supabase
     .from('cities')
     .insert({
@@ -107,70 +104,204 @@ async function getOrCreateCity(supabase: any, cityName: string, countryCode: str
   return null
 }
 
-async function mapVenueCategory(supabase: any, categoryName: string) {
-  let categorySlug = 'entertainment-nightlife' // Default
-
-  if (categoryName === 'Gay Bar') {
-    categorySlug = 'entertainment-nightlife'
-  } else {
-    categorySlug = 'community-organizations'
-  }
-
-  // Get category ID
-  const { data: category } = await supabase
+async function getOrCreateVenueCategory(supabase: any, categoryName: string, categorySlug: string) {
+  const { data: existing } = await supabase
     .from('venue_categories')
     .select('id')
     .eq('slug', categorySlug)
     .maybeSingle()
 
+  if (existing) {
+    return existing.id
+  }
+
+  // Create new category
+  const { data: newCategory, error } = await supabase
+    .from('venue_categories')
+    .insert({
+      name: categoryName,
+      slug: categorySlug,
+      description: `Auto-created from Foursquare import`,
+      icon: categorySlug.includes('entertainment') ? 'Music' : categorySlug.includes('community') ? 'Users' : 'UtensilsCrossed',
+      color: categorySlug.includes('entertainment') ? '#8b5cf6' : categorySlug.includes('community') ? '#10b981' : '#ef4444'
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newCategory) {
+    console.log(`Created new venue category: ${categoryName}`)
+    return newCategory.id
+  }
+
+  return null
+}
+
+async function getOrCreateAmenity(supabase: any, amenityName: string, amenitySlug: string) {
+  const { data: existing } = await supabase
+    .from('venue_amenities')
+    .select('id')
+    .eq('slug', amenitySlug)
+    .maybeSingle()
+
+  if (existing) {
+    return existing.id
+  }
+
+  const { data: newAmenity, error } = await supabase
+    .from('venue_amenities')
+    .insert({
+      name: amenityName,
+      slug: amenitySlug,
+      description: `Auto-created from Foursquare import`,
+      icon: amenitySlug.includes('wifi') ? 'Wifi' : 
+            amenitySlug.includes('parking') ? 'Car' : 
+            amenitySlug.includes('wheelchair') ? 'Accessibility' : 
+            amenitySlug.includes('outdoor') ? 'Trees' : 'MapPin'
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newAmenity) {
+    console.log(`Created new amenity: ${amenityName}`)
+    return newAmenity.id
+  }
+
+  return null
+}
+
+async function getOrCreateService(supabase: any, serviceName: string, serviceSlug: string) {
+  const { data: existing } = await supabase
+    .from('venue_services')
+    .select('id')
+    .eq('slug', serviceSlug)
+    .maybeSingle()
+
+  if (existing) {
+    return existing.id
+  }
+
+  const { data: newService, error } = await supabase
+    .from('venue_services')
+    .insert({
+      name: serviceName,
+      slug: serviceSlug,
+      description: `Auto-created from Foursquare import`,
+      icon: serviceSlug.includes('beverage') ? 'Wine' : 
+            serviceSlug.includes('dine') ? 'UtensilsCrossed' : 
+            serviceSlug.includes('delivery') ? 'Truck' : 
+            serviceSlug.includes('community') ? 'Users' : 'MapPin'
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newService) {
+    console.log(`Created new service: ${serviceName}`)
+    return newService.id
+  }
+
+  return null
+}
+
+async function mapVenueCategory(supabase: any, categoryName: string) {
+  let venueCategory = 'Entertainment & Nightlife'
+  let categorySlug = 'entertainment-nightlife'
+
+  if (categoryName === 'Gay Bar') {
+    venueCategory = 'Entertainment & Nightlife'
+    categorySlug = 'entertainment-nightlife'
+  } else {
+    venueCategory = 'Community Organizations'
+    categorySlug = 'community-organizations'
+  }
+
+  const categoryId = await getOrCreateVenueCategory(supabase, venueCategory, categorySlug)
+
   return {
     categorySlug: categoryName === 'Gay Bar' ? 'bar' : 'organization',
-    categoryId: category?.id || null
+    categoryId
   }
 }
 
-function mapAmenitiesAndServices(venue: FoursquareVenue, categoryName: string) {
-  const amenities = []
-  const services = []
+async function mapAmenitiesAndServices(supabase: any, venue: FoursquareVenue, categoryName: string) {
+  const amenityIds = []
+  const serviceIds = []
+  const amenityNames = []
+  const serviceNames = []
 
   // Extract amenities from features
   if (Array.isArray(venue.features)) {
-    venue.features.forEach(feature => {
+    for (const feature of venue.features) {
       const featureName = feature.name.toLowerCase()
+      let amenityName = ''
+      let amenitySlug = ''
+      
       if (featureName.includes('wifi') || featureName.includes('internet')) {
-        amenities.push('wifi')
+        amenityName = 'WiFi'
+        amenitySlug = 'wifi'
       } else if (featureName.includes('parking')) {
-        amenities.push('parking')
+        amenityName = 'Parking'
+        amenitySlug = 'parking'
       } else if (featureName.includes('wheelchair') || featureName.includes('accessible')) {
-        amenities.push('wheelchair-accessible')
+        amenityName = 'Wheelchair Accessible'
+        amenitySlug = 'wheelchair-accessible'
       } else if (featureName.includes('outdoor') || featureName.includes('patio')) {
-        amenities.push('outdoor-seating')
+        amenityName = 'Outdoor Seating'
+        amenitySlug = 'outdoor-seating'
       } else if (featureName.includes('credit') || featureName.includes('card')) {
-        amenities.push('accepts-credit-cards')
+        amenityName = 'Accepts Credit Cards'
+        amenitySlug = 'accepts-credit-cards'
       }
-    })
+
+      if (amenityName) {
+        amenityNames.push(amenityName)
+        const amenityId = await getOrCreateAmenity(supabase, amenityName, amenitySlug)
+        if (amenityId) amenityIds.push(amenityId)
+      }
+    }
   }
 
-  // Add services based on category and features
+  // Extract services from features and category
   if (categoryName === 'Gay Bar') {
-    services.push('beverages', 'entertainment')
+    serviceNames.push('Beverages', 'Entertainment')
+    const beverageId = await getOrCreateService(supabase, 'Beverages', 'beverages')
+    const entertainmentId = await getOrCreateService(supabase, 'Entertainment', 'entertainment')
+    if (beverageId) serviceIds.push(beverageId)
+    if (entertainmentId) serviceIds.push(entertainmentId)
+
+    // Additional services from features
     if (Array.isArray(venue.features)) {
-      venue.features.forEach(feature => {
+      for (const feature of venue.features) {
         const featureName = feature.name.toLowerCase()
+        let serviceName = ''
+        let serviceSlug = ''
+
         if (featureName.includes('food') || featureName.includes('kitchen')) {
-          services.push('dine-in')
+          serviceName = 'Dine-In'
+          serviceSlug = 'dine-in'
         } else if (featureName.includes('delivery')) {
-          services.push('delivery')
+          serviceName = 'Delivery'
+          serviceSlug = 'delivery'
         } else if (featureName.includes('takeout')) {
-          services.push('takeout')
+          serviceName = 'Takeout'
+          serviceSlug = 'takeout'
         }
-      })
+
+        if (serviceName && !serviceNames.includes(serviceName)) {
+          serviceNames.push(serviceName)
+          const serviceId = await getOrCreateService(supabase, serviceName, serviceSlug)
+          if (serviceId) serviceIds.push(serviceId)
+        }
+      }
     }
   } else {
-    services.push('community-support', 'social-services')
+    serviceNames.push('Community Support', 'Social Services')
+    const communityId = await getOrCreateService(supabase, 'Community Support', 'community-support')
+    const socialId = await getOrCreateService(supabase, 'Social Services', 'social-services')
+    if (communityId) serviceIds.push(communityId)
+    if (socialId) serviceIds.push(socialId)
   }
 
-  return { amenities, services }
+  return { amenityIds, serviceIds, amenityNames, serviceNames }
 }
 
 interface FoursquareVenue {
@@ -361,7 +492,7 @@ Deno.serve(async (req) => {
               const { categorySlug, categoryId: venueCategoryId } = await mapVenueCategory(supabase, categoryName)
 
               // Map amenities and services
-              const { amenities, services } = mapAmenitiesAndServices(venue, categoryName)
+              const { amenityIds, serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, venue, categoryName)
 
               // Process photos from Foursquare
               const imageUrls = venue.photos?.slice(0, 3).map(photo => {
@@ -411,8 +542,8 @@ Deno.serve(async (req) => {
                 category_id: venueCategoryId,
                 city_id: cityId,
                 tags: enhancedTags,
-                amenities: amenities,
-                services: services,
+                amenities: amenityNames,
+                services: serviceNames,
                 images: imageUrls,
                 price_range: venue.price || null,
                 hours: hoursData,
@@ -451,7 +582,7 @@ Deno.serve(async (req) => {
                   console.error(`Error updating venue ${venue.name}:`, error)
                 } else {
                   totalUpdated++
-                  console.log(`Updated venue: ${venue.name}`)
+                  console.log(`Updated venue: ${venue.name} with ${amenityNames.length} amenities and ${serviceNames.length} services`)
                 }
               } else {
                 // Create new venue
@@ -463,7 +594,7 @@ Deno.serve(async (req) => {
                   console.error(`Error creating venue ${venue.name}:`, error)
                 } else {
                   totalImported++
-                  console.log(`Imported new venue: ${venue.name}`)
+                  console.log(`Imported new venue: ${venue.name} with ${amenityNames.length} amenities and ${serviceNames.length} services`)
                 }
               }
 

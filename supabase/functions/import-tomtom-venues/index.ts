@@ -81,9 +81,8 @@ interface TomTomPOI {
   }
 }
 
-// Helper functions for city and category management
+// Helper functions for data management
 async function getOrCreateCity(supabase: any, cityName: string, countryCode: string, lat: number, lon: number) {
-  // First try to find existing city
   const { data: existingCity } = await supabase
     .from('cities')
     .select('id')
@@ -94,14 +93,12 @@ async function getOrCreateCity(supabase: any, cityName: string, countryCode: str
     return existingCity.id
   }
 
-  // Get country_id from countries table
   const { data: country } = await supabase
     .from('countries')
     .select('id')
     .eq('code', countryCode)
     .maybeSingle()
 
-  // Create new city
   const { data: newCity, error } = await supabase
     .from('cities')
     .insert({
@@ -122,67 +119,196 @@ async function getOrCreateCity(supabase: any, cityName: string, countryCode: str
   return null
 }
 
+async function getOrCreateVenueCategory(supabase: any, categoryName: string, categorySlug: string) {
+  const { data: existing } = await supabase
+    .from('venue_categories')
+    .select('id')
+    .eq('slug', categorySlug)
+    .maybeSingle()
+
+  if (existing) {
+    return existing.id
+  }
+
+  // Create new category
+  const { data: newCategory, error } = await supabase
+    .from('venue_categories')
+    .insert({
+      name: categoryName,
+      slug: categorySlug,
+      description: `Auto-created from TomTom import`,
+      icon: categorySlug.includes('bar') ? 'Wine' : categorySlug.includes('restaurant') ? 'UtensilsCrossed' : 'MapPin',
+      color: categorySlug.includes('bar') ? '#8b5cf6' : categorySlug.includes('restaurant') ? '#ef4444' : '#6366f1'
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newCategory) {
+    console.log(`Created new venue category: ${categoryName}`)
+    return newCategory.id
+  }
+
+  return null
+}
+
+async function getOrCreateAmenity(supabase: any, amenityName: string, amenitySlug: string) {
+  const { data: existing } = await supabase
+    .from('venue_amenities')
+    .select('id')
+    .eq('slug', amenitySlug)
+    .maybeSingle()
+
+  if (existing) {
+    return existing.id
+  }
+
+  const { data: newAmenity, error } = await supabase
+    .from('venue_amenities')
+    .insert({
+      name: amenityName,
+      slug: amenitySlug,
+      description: `Auto-created from TomTom import`,
+      icon: amenitySlug.includes('wifi') ? 'Wifi' : amenitySlug.includes('parking') ? 'Car' : 'MapPin'
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newAmenity) {
+    console.log(`Created new amenity: ${amenityName}`)
+    return newAmenity.id
+  }
+
+  return null
+}
+
+async function getOrCreateService(supabase: any, serviceName: string, serviceSlug: string) {
+  const { data: existing } = await supabase
+    .from('venue_services')
+    .select('id')
+    .eq('slug', serviceSlug)
+    .maybeSingle()
+
+  if (existing) {
+    return existing.id
+  }
+
+  const { data: newService, error } = await supabase
+    .from('venue_services')
+    .insert({
+      name: serviceName,
+      slug: serviceSlug,
+      description: `Auto-created from TomTom import`,
+      icon: serviceSlug.includes('beverage') ? 'Wine' : serviceSlug.includes('food') ? 'UtensilsCrossed' : 'MapPin'
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newService) {
+    console.log(`Created new service: ${serviceName}`)
+    return newService.id
+  }
+
+  return null
+}
+
 async function mapVenueCategory(supabase: any, classifications: any[], searchTerm: string) {
-  let categorySlug = 'restaurants-dining' // Default
+  let categoryName = 'Entertainment & Nightlife'
+  let categorySlug = 'entertainment-nightlife'
 
   if (classifications) {
     const classification = classifications.find(c => c.names?.[0]?.name)
     if (classification) {
-      const categoryName = classification.names[0].name.toLowerCase()
-      if (categoryName.includes('bar') || categoryName.includes('pub')) {
-        categorySlug = 'entertainment-nightlife'
-      } else if (categoryName.includes('restaurant')) {
+      const classificationName = classification.names[0].name.toLowerCase()
+      if (classificationName.includes('restaurant')) {
+        categoryName = 'Restaurants & Dining'
         categorySlug = 'restaurants-dining'
-      } else if (categoryName.includes('club') || categoryName.includes('nightlife')) {
-        categorySlug = 'entertainment-nightlife'
-      } else if (categoryName.includes('center') || categoryName.includes('organization')) {
+      } else if (classificationName.includes('center') || classificationName.includes('organization')) {
+        categoryName = 'Community Organizations'
         categorySlug = 'community-organizations'
-      } else if (categoryName.includes('cafe')) {
-        categorySlug = 'restaurants-dining'
+      } else if (classificationName.includes('health')) {
+        categoryName = 'Health & Wellness'
+        categorySlug = 'health-wellness'
       }
     }
   }
 
   // Override based on search term
   if (searchTerm.includes('center') || searchTerm.includes('organization')) {
+    categoryName = 'Community Organizations'
     categorySlug = 'community-organizations'
+  } else if (searchTerm.includes('health') || searchTerm.includes('clinic')) {
+    categoryName = 'Health & Wellness'
+    categorySlug = 'health-wellness'
   }
 
-  // Get category ID
-  const { data: category } = await supabase
-    .from('venue_categories')
-    .select('id')
-    .eq('slug', categorySlug)
-    .maybeSingle()
+  const categoryId = await getOrCreateVenueCategory(supabase, categoryName, categorySlug)
 
   return {
-    categorySlug: categorySlug === 'entertainment-nightlife' ? 'bar' : 
-                 categorySlug === 'community-organizations' ? 'organization' : 'restaurant',
-    categoryId: category?.id || null
+    categorySlug: categorySlug.includes('entertainment') ? 'bar' : 
+                 categorySlug.includes('restaurants') ? 'restaurant' :
+                 categorySlug.includes('community') ? 'organization' : 'other',
+    categoryId
   }
 }
 
-function mapAmenitiesAndServices(poi: TomTomPOI, searchTerm: string) {
-  const amenities = []
-  const services = []
+async function mapAmenitiesAndServices(supabase: any, poi: TomTomPOI, searchTerm: string) {
+  const amenityIds = []
+  const serviceIds = []
+  const amenityNames = []
+  const serviceNames = []
 
   // Basic amenities from POI data
-  if (poi.poi.phone) amenities.push('phone-service')
-  if (poi.poi.url) amenities.push('wifi')
-  if (poi.entryPoints && poi.entryPoints.length > 1) amenities.push('multiple-entrances')
+  if (poi.poi.phone) {
+    amenityNames.push('Phone Service')
+    const amenityId = await getOrCreateAmenity(supabase, 'Phone Service', 'phone-service')
+    if (amenityId) amenityIds.push(amenityId)
+  }
   
-  // Services based on search term and classification
-  if (searchTerm.includes('bar') || searchTerm.includes('club')) {
-    services.push('beverages', 'entertainment')
-  } else if (searchTerm.includes('restaurant') || searchTerm.includes('cafe')) {
-    services.push('dine-in', 'food-service')
-  } else if (searchTerm.includes('health') || searchTerm.includes('clinic')) {
-    services.push('health-services', 'counseling')
-  } else if (searchTerm.includes('center') || searchTerm.includes('organization')) {
-    services.push('community-support', 'social-services')
+  if (poi.poi.url) {
+    amenityNames.push('WiFi')
+    const amenityId = await getOrCreateAmenity(supabase, 'WiFi', 'wifi')
+    if (amenityId) amenityIds.push(amenityId)
+  }
+  
+  if (poi.entryPoints && poi.entryPoints.length > 1) {
+    amenityNames.push('Multiple Entrances')
+    const amenityId = await getOrCreateAmenity(supabase, 'Multiple Entrances', 'multiple-entrances')
+    if (amenityId) amenityIds.push(amenityId)
   }
 
-  return { amenities, services }
+  // Services based on search term and classification
+  if (searchTerm.includes('bar') || searchTerm.includes('club')) {
+    serviceNames.push('Beverages', 'Entertainment')
+    const beverageId = await getOrCreateService(supabase, 'Beverages', 'beverages')
+    const entertainmentId = await getOrCreateService(supabase, 'Entertainment', 'entertainment')
+    if (beverageId) serviceIds.push(beverageId)
+    if (entertainmentId) serviceIds.push(entertainmentId)
+  } else if (searchTerm.includes('restaurant') || searchTerm.includes('cafe')) {
+    serviceNames.push('Dine-In', 'Food Service')
+    const dineInId = await getOrCreateService(supabase, 'Dine-In', 'dine-in')
+    const foodServiceId = await getOrCreateService(supabase, 'Food Service', 'food-service')
+    if (dineInId) serviceIds.push(dineInId)
+    if (foodServiceId) serviceIds.push(foodServiceId)
+  } else if (searchTerm.includes('health') || searchTerm.includes('clinic')) {
+    serviceNames.push('Health Services', 'Counseling')
+    const healthId = await getOrCreateService(supabase, 'Health Services', 'health-services')
+    const counselingId = await getOrCreateService(supabase, 'Counseling', 'counseling')
+    if (healthId) serviceIds.push(healthId)
+    if (counselingId) serviceIds.push(counselingId)
+  } else if (searchTerm.includes('center') || searchTerm.includes('organization')) {
+    serviceNames.push('Community Support', 'Social Services')
+    const communityId = await getOrCreateService(supabase, 'Community Support', 'community-support')
+    const socialId = await getOrCreateService(supabase, 'Social Services', 'social-services')
+    if (communityId) serviceIds.push(communityId)
+    if (socialId) serviceIds.push(socialId)
+  }
+
+  return { 
+    amenityIds, 
+    serviceIds, 
+    amenityNames, 
+    serviceNames 
+  }
 }
 
 // Specific LGBTQ+ venue keywords
@@ -293,7 +419,7 @@ Deno.serve(async (req) => {
               const { categorySlug, categoryId } = await mapVenueCategory(supabase, poi.poi.classifications, searchTerm)
 
               // Map amenities and services
-              const { amenities, services } = mapAmenitiesAndServices(poi, searchTerm)
+              const { amenityIds, serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, poi, searchTerm)
 
               // Add search term specific tags
               const enhancedTags = ['lgbt-friendly']
@@ -326,8 +452,8 @@ Deno.serve(async (req) => {
                 category_id: categoryId,
                 city_id: cityId,
                 tags: Array.from(new Set(enhancedTags)),
-                amenities: amenities,
-                services: services,
+                amenities: amenityNames,
+                services: serviceNames,
                 verified: false,
                 featured: false,
                 tomtom_id: poi.id,
@@ -360,7 +486,7 @@ Deno.serve(async (req) => {
                   continue
                 }
 
-                console.log(`Updated venue: ${poi.poi.name}`)
+                console.log(`Updated venue: ${poi.poi.name} with ${amenityNames.length} amenities and ${serviceNames.length} services`)
                 totalUpdated++
               } else {
                 // Insert new venue
@@ -373,7 +499,7 @@ Deno.serve(async (req) => {
                   continue
                 }
 
-                console.log(`Imported venue: ${poi.poi.name}`)
+                console.log(`Imported venue: ${poi.poi.name} with ${amenityNames.length} amenities and ${serviceNames.length} services`)
                 totalImported++
               }
 
