@@ -1,0 +1,177 @@
+# Queer Guide - LLM Information File
+
+## Project Overview
+Queer Guide is a black-and-white, multilingual Progressive Web App (PWA) that maps queer-friendly locations, events, products/services, and knowledge (Tags/Wiki) around the world. It includes country/city profiles with local LGBTQ+ rights, news, weather, and travel data.
+
+## Tech Stack
+- Frontend: React 18, TypeScript, Vite
+- UI: Tailwind CSS, Radix UI, shadcn/ui components
+- Backend: Supabase (Database, Auth, Storage, Edge Functions)
+- Maps: Mapbox GL JS for location mapping and geocoding
+- APIs: Foursquare Places, OpenWeather, Unsplash, RSS feeds
+- State Management: TanStack React Query
+- Routing: React Router DOM
+- Internationalization: i18next, react-i18next
+- Build Tool: Vite with performance optimizations
+- PWA: Service Worker, offline functionality, manifest.json
+
+## Core Features
+
+### 1. Venues & Locations
+- Queer-friendly bars, cafés, organizations, health services
+- Mapbox integration for discovery
+- Foursquare enrichment (hours, categories, ratings)
+- Safe space indicators and accessibility info
+- Check-in functionality and recent activity
+
+### 2. Events
+- LGBTQ+ events filterable by city, tag, date
+- Calendar view and export functionality
+- Auto-expiry after end date
+- Markdown descriptions with image support
+- RSVP links and organizer information
+
+### 3. Marketplace
+Split into Products and Services:
+- Products: books, clothing, art, etc.
+- Services: therapy, design, drag performances
+- Tags for filtering (trans-owned, handmade, local)
+- Verified contributor system
+
+### 4. Directory & Community
+- City/Country pages with LGBTQ+ rights data
+- User profiles with pronouns, location, expertise
+- Groups: regional or interest-based communities
+- Tags system: markdown-based wiki articles
+- News aggregation from RSS/API feeds
+
+### 5. Travel & Booking
+- Weather forecasts for cities
+- Flight and hotel search integration
+- Country-specific LGBTQ+ rights information
+- Safe travel recommendations
+
+## Architecture
+
+### Database (Supabase)
+Key tables:
+- users, user_profiles (auth and user data)
+- countries, cities (location hierarchy)
+- venues, events (main content)
+- products, services (marketplace)
+- tags, content_tags (wiki system and categorization)
+- groups, group_memberships (community features)
+- news_articles, feeds (news aggregation)
+- bookmarks, favorites (user preferences)
+
+### Security & Access Control
+- Row Level Security (RLS) enabled on all tables
+- Role-based access: admin, moderator, contributor, user
+- Authentication via Supabase Auth
+- Content moderation workflow via submissions table
+
+### Performance Optimizations
+- Lazy loading of admin components
+- React Query caching (5min stale, 10min gc)
+- Service Worker with Cache First strategy for APIs
+- Code splitting with manual chunks
+- Image optimization and caching
+
+### Offline Support (PWA)
+- Service Worker handles fetch fallbacks
+- IndexedDB/localStorage for offline data
+- Background sync for queued actions
+- Offline detection with user notifications
+
+## File Structure
+```
+src/
+├── components/           # Reusable UI components
+│   ├── ui/              # shadcn/ui base components
+│   ├── admin/           # Admin panel components
+│   ├── auth/            # Authentication components
+│   ├── layout/          # Header, Footer, navigation
+│   └── [feature]/       # Feature-specific components
+├── hooks/               # Custom React hooks
+├── pages/               # Route components
+├── i18n/                # Internationalization
+├── lib/                 # Utilities and configs
+└── integrations/        # External service integrations
+
+supabase/
+├── functions/           # Edge Functions
+└── migrations/          # Database schema changes
+```
+
+## API Integrations
+
+### External APIs
+- Foursquare Places: Venue enrichment
+- OpenWeather: City weather data
+- Unsplash: Image sourcing and caching
+- Mapbox: Geocoding and mapping
+- RSS/API feeds: News aggregation
+
+### Edge Functions
+- fetch-news: Daily news parsing
+- get-weather-forecast: Weather updates
+- mapbox-geocoding: Location services
+- import-*: CSV and API data imports
+- search-flights/hotels: Travel booking
+- send-bulk-email: Communication
+
+## Design System
+- Black and white theme with subtle rainbow accents
+- HSL color system in index.css
+- Semantic tokens (no direct colors in components)
+- Responsive design with mobile-first approach
+- Accessibility features and controls
+- Dark/light mode support
+
+## Content Management
+- Markdown support for descriptions
+- Image upload and management via Supabase Storage
+- Tag-based categorization system
+- Content moderation workflow
+- CSV import capabilities for bulk data
+
+## Internationalization
+Supported languages:
+- English (en) - default
+- Spanish (es)
+- French (fr)
+- German (de)
+- Italian (it)
+- Portuguese (pt)
+- Russian (ru)
+- Arabic (ar)
+- Japanese (ja)
+- Korean (ko)
+- Chinese (zh)
+
+## Development Guidelines
+- TypeScript strict mode
+- ESLint configuration
+- Component-driven development
+- Semantic HTML and accessibility
+- Performance monitoring hooks
+- Error boundaries and fallbacks
+
+## Key Features for LLMs to Understand
+1. This is an LGBTQ+ focused application with safety and inclusivity as core values
+2. Global scope with local community features
+3. Real-time data from multiple external sources
+4. Comprehensive admin system for content management
+5. Progressive Web App with offline capabilities
+6. Multilingual support for global accessibility
+7. Community-driven content with moderation
+8. Privacy-focused with user control over data
+
+## Contact & Contribution
+- Moderation system for community contributions
+- Admin roles for content oversight
+- User reporting and feedback systems
+- Privacy-focused data handling
+
+---
+This file helps LLMs understand the Queer Guide codebase structure, features, and technical implementation for better assistance and code generation.
