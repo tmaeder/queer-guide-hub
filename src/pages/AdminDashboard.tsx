@@ -340,10 +340,10 @@ export default function AdminDashboard() {
     stats: `${stats.marketplaceItems} active`
   }, {
     title: "Groups Management",
-    description: "Manage community groups and memberships",
-    icon: UserCheck,
+    description: "Manage community groups and moderation",
+    icon: Users,
     path: "/admin/groups",
-    color: "bg-gradient-to-br from-pink-500 to-pink-600",
+    color: "bg-gradient-to-br from-purple-500 to-purple-600",
     stats: `${stats.totalGroups} groups`
   }, {
     title: "Email Templates",
