@@ -33,6 +33,9 @@ export default function AdminVenues() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCity, setSelectedCity] = useState("all");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [filteredVenues, setFilteredVenues] = useState(venues);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingVenue, setEditingVenue] = useState<any>(null);
@@ -87,7 +90,7 @@ export default function AdminVenues() {
 
   useEffect(() => {
     filterVenues();
-  }, [venues, searchQuery, selectedCategory]);
+  }, [venues, searchQuery, selectedCategory, selectedCity, selectedTags, selectedAmenities]);
 
   const filterVenues = () => {
     let filtered = venues;
@@ -102,6 +105,22 @@ export default function AdminVenues() {
 
     if (selectedCategory !== "all") {
       filtered = filtered.filter(venue => venue.category === selectedCategory);
+    }
+
+    if (selectedCity !== "all") {
+      filtered = filtered.filter(venue => venue.city === selectedCity);
+    }
+
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(venue => 
+        venue.tags && selectedTags.some(tag => venue.tags?.includes(tag))
+      );
+    }
+
+    if (selectedAmenities.length > 0) {
+      filtered = filtered.filter(venue => 
+        venue.amenities && selectedAmenities.some(amenity => venue.amenities?.includes(amenity))
+      );
     }
 
     setFilteredVenues(filtered);
@@ -375,6 +394,12 @@ export default function AdminVenues() {
         onSearchChange={setSearchQuery}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
+        selectedCity={selectedCity}
+        onCityChange={setSelectedCity}
+        selectedTags={selectedTags}
+        onTagsChange={setSelectedTags}
+        selectedAmenities={selectedAmenities}
+        onAmenitiesChange={setSelectedAmenities}
         categories={venueCategories}
         totalResults={filteredVenues.length}
       />
