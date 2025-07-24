@@ -128,6 +128,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     let totalImported = 0
+    let totalUpdated = 0
     let totalSkipped = 0
     
     // Process in batches to avoid overwhelming the API
@@ -180,13 +181,7 @@ Deno.serve(async (req) => {
                   .from('venues')
                   .select('id, tomtom_id')
                   .eq('tomtom_id', poi.id)
-                  .single()
-
-                if (existingVenue) {
-                  console.log(`Skipping existing venue: ${poi.poi.name}`)
-                  totalSkipped++
-                  continue
-                }
+                  .maybeSingle()
 
                 // Extract venue data
                 const venueData = {
@@ -257,18 +252,37 @@ Deno.serve(async (req) => {
 
                 venueData.tags = Array.from(new Set(enhancedTags))
 
-                // Insert venue
-                const { error: insertError } = await supabase
-                  .from('venues')
-                  .insert(venueData)
+                if (existingVenue) {
+                  // Update existing venue
+                  const { error: updateError } = await supabase
+                    .from('venues')
+                    .update({
+                      ...venueData,
+                      updated_at: new Date().toISOString()
+                    })
+                    .eq('id', existingVenue.id)
 
-                if (insertError) {
-                  console.error(`Error inserting venue ${poi.poi.name}:`, insertError)
-                  continue
+                  if (updateError) {
+                    console.error(`Error updating venue ${poi.poi.name}:`, updateError)
+                    continue
+                  }
+
+                  console.log(`Updated venue: ${poi.poi.name}`)
+                  totalUpdated++
+                } else {
+                  // Insert new venue
+                  const { error: insertError } = await supabase
+                    .from('venues')
+                    .insert(venueData)
+
+                  if (insertError) {
+                    console.error(`Error inserting venue ${poi.poi.name}:`, insertError)
+                    continue
+                  }
+
+                  console.log(`Imported venue: ${poi.poi.name}`)
+                  totalImported++
                 }
-
-                console.log(`Imported venue: ${poi.poi.name}`)
-                totalImported++
 
                 // Add delay to avoid rate limiting
                 await new Promise(resolve => setTimeout(resolve, 200))
@@ -299,13 +313,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`TomTom import completed. Imported: ${totalImported}, Skipped: ${totalSkipped}`)
+    console.log(`TomTom import completed. Imported: ${totalImported}, Updated: ${totalUpdated}, Skipped: ${totalSkipped}`)
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `TomTom import completed successfully. Imported ${totalImported} venues, skipped ${totalSkipped} duplicates.`,
+        message: `TomTom import completed successfully. Imported ${totalImported} venues, updated ${totalUpdated} venues, skipped ${totalSkipped} duplicates.`,
         imported: totalImported,
+        updated: totalUpdated,
         skipped: totalSkipped
       }),
       {
