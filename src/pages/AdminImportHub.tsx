@@ -30,7 +30,7 @@ export default function AdminImportHub() {
 
       toast({
         title: "Import Successful",
-        description: `${type} data imported successfully`,
+        description: `${type} data imported successfully. Processed ${data?.imported || 'unknown'} items.`,
       });
     } catch (error) {
       toast({
@@ -53,8 +53,8 @@ export default function AdminImportHub() {
       if (error) throw error;
 
       toast({
-        title: "Import Successful",
-        description: `Data imported successfully via ${functionName}`,
+        title: "Import Successful", 
+        description: `Data imported successfully. ${data?.message || `Processed ${data?.imported || data?.processed_articles || 'items'} successfully.`}`,
       });
     } catch (error) {
       toast({
