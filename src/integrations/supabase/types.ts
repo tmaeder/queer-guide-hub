@@ -86,6 +86,45 @@ export type Database = {
         }
         Relationships: []
       }
+      attributes: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       auth_rate_limit: {
         Row: {
           attempt_count: number | null
@@ -887,6 +926,38 @@ export type Database = {
           variables?: Json | null
         }
         Relationships: []
+      }
+      entity_attribute_assignments: {
+        Row: {
+          attribute_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          attribute_id: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          attribute_id?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_attribute_assignments_attribute_id_fkey"
+            columns: ["attribute_id"]
+            isOneToOne: false
+            referencedRelation: "attributes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_amenities: {
         Row: {
@@ -1831,6 +1902,78 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      news_article_cities: {
+        Row: {
+          article_id: string
+          city_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          article_id: string
+          city_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          article_id?: string
+          city_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_article_cities_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_article_cities_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_article_countries: {
+        Row: {
+          article_id: string
+          country_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          article_id: string
+          country_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          article_id?: string
+          country_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_article_countries_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_article_countries_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2873,15 +3016,7 @@ export type Database = {
           updated_at?: string
           usage_count?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "unified_tags_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "tag_categories"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_follows: {
         Row: {
@@ -3582,6 +3717,27 @@ export type Database = {
           jobname: string
           schedule: string
           active: boolean
+        }[]
+      }
+      get_entity_attributes: {
+        Args: { entity_id_param: string; entity_type_param: string }
+        Returns: {
+          attribute_id: string
+          attribute_name: string
+          attribute_description: string
+          attribute_icon: string
+          attribute_type: string
+          attribute_category: string
+        }[]
+      }
+      get_entity_tags: {
+        Args: { entity_id_param: string; entity_type_param: string }
+        Returns: {
+          tag_id: string
+          tag_name: string
+          tag_description: string
+          tag_color: string
+          category_name: string
         }[]
       }
       get_news_cron_status: {
