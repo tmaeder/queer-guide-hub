@@ -151,9 +151,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Add request timeout
+    // Add request timeout - reduced for better reliability
     const timeoutController = new AbortController();
-    const timeoutId = setTimeout(() => timeoutController.abort(), 300000); // 5 minutes timeout
+    const timeoutId = setTimeout(() => timeoutController.abort(), 120000); // 2 minutes timeout
     
     // Log security event for function access
     const userAgent = req.headers.get('user-agent') || '';
@@ -164,6 +164,11 @@ Deno.serve(async (req) => {
     // Rate limiting check (basic implementation)
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
     console.log(`Request from IP: ${clientIp}`);
+    
+    // Parse request body for city selection
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const selectedCities = body.cities || ['New York']; // Default to single city for quick testing
+    const limit = Math.min(body.limit || 5, 20); // Limit venues per category to prevent timeouts
     
     // Clear timeout on completion
     clearTimeout(timeoutId);
@@ -182,7 +187,7 @@ Deno.serve(async (req) => {
     let totalImported = 0
     let totalUpdated = 0
 
-    // Search for venues in major cities worldwide
+    // Reduced city list for faster processing
     const majorCities = [
       { name: 'New York', lat: 40.7128, lng: -74.0060, country: 'US' },
       { name: 'Los Angeles', lat: 34.0522, lng: -118.2437, country: 'US' },
@@ -194,34 +199,22 @@ Deno.serve(async (req) => {
       { name: 'Amsterdam', lat: 52.3676, lng: 4.9041, country: 'NL' },
       { name: 'Toronto', lat: 43.6532, lng: -79.3832, country: 'CA' },
       { name: 'Sydney', lat: -33.8688, lng: 151.2093, country: 'AU' },
-      { name: 'Tokyo', lat: 35.6762, lng: 139.6503, country: 'JP' },
-      { name: 'Madrid', lat: 40.4168, lng: -3.7038, country: 'ES' },
-      { name: 'Barcelona', lat: 41.3851, lng: 2.1734, country: 'ES' },
-      { name: 'Rome', lat: 41.9028, lng: 12.4964, country: 'IT' },
-      { name: 'Milan', lat: 45.4642, lng: 9.1900, country: 'IT' },
     ]
 
-    // Process in batches to avoid overwhelming the API
-    const BATCH_SIZE = 3 // Process 3 cities at a time
-    const cityBatches = []
-    
-    for (let i = 0; i < majorCities.length; i += BATCH_SIZE) {
-      cityBatches.push(majorCities.slice(i, i + BATCH_SIZE))
-    }
+    // Filter cities based on request
+    const citiesToProcess = majorCities.filter(city => 
+      selectedCities.includes(city.name) || selectedCities.includes('all')
+    ).slice(0, 3); // Limit to 3 cities max per request
 
-    console.log(`Processing ${majorCities.length} cities in ${cityBatches.length} batches of ${BATCH_SIZE}`)
+    console.log(`Processing ${citiesToProcess.length} cities: ${citiesToProcess.map(c => c.name).join(', ')}`)
 
-    for (let batchIndex = 0; batchIndex < cityBatches.length; batchIndex++) {
-      const cityBatch = cityBatches[batchIndex]
-      console.log(`Processing batch ${batchIndex + 1}/${cityBatches.length}`)
-      
-      for (const city of cityBatch) {
-        console.log(`Searching venues in ${city.name}...`)
+    for (const city of citiesToProcess) {
+      console.log(`Searching venues in ${city.name}...`)
 
-        for (const [categoryName, categoryId] of Object.entries(FOURSQUARE_CATEGORIES)) {
-          try {
-          // Search for venues using Foursquare Places API with comprehensive field selection
-          const searchUrl = `https://api.foursquare.com/v3/places/search?ll=${city.lat},${city.lng}&radius=50000&categories=${categoryId}&limit=50&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
+      for (const [categoryName, categoryId] of Object.entries(FOURSQUARE_CATEGORIES)) {
+        try {
+          // Search for venues using Foursquare Places API with reduced limit
+          const searchUrl = `https://api.foursquare.com/v3/places/search?ll=${city.lat},${city.lng}&radius=30000&categories=${categoryId}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
           
           const response = await fetch(searchUrl, {
             headers: {
@@ -240,26 +233,25 @@ Deno.serve(async (req) => {
 
           console.log(`Found ${venues.length} ${categoryName} venues in ${city.name}`)
 
-              for (const venue of venues) {
-                try {
-                  // Validate and sanitize venue data
-                  const sanitizedVenue = sanitizeVenueData(venue);
-                  
-                  // Check if venue already exists
-                  const { data: existingVenue } = await supabase
-                    .from('venues')
-                    .select('id, foursquare_id')
-                    .eq('foursquare_id', sanitizedVenue.fsq_id)
-                    .maybeSingle()
+          for (const venue of venues) {
+            try {
+              // Validate and sanitize venue data
+              const sanitizedVenue = sanitizeVenueData(venue);
+              
+              // Check if venue already exists
+              const { data: existingVenue } = await supabase
+                .from('venues')
+                .select('id, foursquare_id')
+                .eq('foursquare_id', sanitizedVenue.fsq_id)
+                .maybeSingle()
 
               // Process photos from Foursquare
-              const imageUrls = venue.photos?.slice(0, 5).map(photo => {
-                // Foursquare photo URLs are constructed from prefix + size + suffix
-                const size = '300x300' // Use a reasonable size for venue photos
+              const imageUrls = venue.photos?.slice(0, 3).map(photo => {
+                const size = '300x300'
                 return `${photo.prefix}${size}${photo.suffix}`
               }) || []
 
-              // Extract amenities from features and tastes (with proper type checking)
+              // Extract amenities from features and tastes
               const amenities = [
                 ...(Array.isArray(venue.features) ? venue.features.map(feature => feature.name.toLowerCase().replace(/\s+/g, '-')) : []),
                 ...(Array.isArray(venue.tastes) ? venue.tastes.map(taste => taste.toLowerCase().replace(/\s+/g, '-')) : [])
@@ -280,16 +272,16 @@ Deno.serve(async (req) => {
                 twitter: venue.social_media.twitter ? `https://twitter.com/${venue.social_media.twitter}` : null
               } : {}
 
-              // Enhanced tags from categories, features, and tastes (with proper type checking)
+              // Enhanced tags from categories, features, and tastes
               const enhancedTags = [
                 'lgbt-friendly',
                 categoryName === 'Gay Bar' ? 'gay-bar' : 'lgbtq-organization',
                 ...(venue.categories?.map(cat => cat.short_name.toLowerCase().replace(/\s+/g, '-')) || []),
                 ...(Array.isArray(venue.features) ? venue.features.map(feature => feature.name.toLowerCase().replace(/\s+/g, '-')) : []),
                 ...(Array.isArray(venue.tastes) ? venue.tastes.map(taste => taste.toLowerCase().replace(/\s+/g, '-')) : [])
-              ].filter((tag, index, self) => self.indexOf(tag) === index) // Remove duplicates
+              ].filter((tag, index, self) => self.indexOf(tag) === index)
 
-              // Prepare venue data with comprehensive Foursquare information
+              // Prepare venue data
               const venueData = {
                 name: venue.name,
                 description: venue.description || null,
@@ -307,17 +299,17 @@ Deno.serve(async (req) => {
                 tags: enhancedTags,
                 amenities: amenities,
                 images: imageUrls,
-                price_range: venue.price || null, // Foursquare price level (1-4)
+                price_range: venue.price || null,
                 hours: hoursData,
                 verified: venue.verified || false,
-                featured: venue.popularity && venue.popularity > 0.7 ? true : false, // Feature popular venues
+                featured: venue.popularity && venue.popularity > 0.7 ? true : false,
                 foursquare_id: venue.fsq_id,
                 foursquare_rating: venue.rating || null,
                 foursquare_data: {
                   categories: venue.categories,
                   hours: venue.hours,
                   hours_popular: venue.hours_popular,
-                  photos: venue.photos?.slice(0, 5),
+                  photos: venue.photos?.slice(0, 3),
                   features: venue.features,
                   popularity: venue.popularity,
                   stats: venue.stats,
@@ -360,31 +352,24 @@ Deno.serve(async (req) => {
                 }
               }
 
-              // Add delay to avoid rate limiting
-              await new Promise(resolve => setTimeout(resolve, 100))
+              // Reduced delay
+              await new Promise(resolve => setTimeout(resolve, 50))
 
             } catch (venueError) {
               console.error(`Error processing venue ${venue.name}:`, venueError)
             }
           }
 
-          // Add delay between category searches
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          // Reduced delay between category searches
+          await new Promise(resolve => setTimeout(resolve, 200))
 
-          } catch (categoryError) {
-            console.error(`Error searching ${categoryName} in ${city.name}:`, categoryError)
-          }
+        } catch (categoryError) {
+          console.error(`Error searching ${categoryName} in ${city.name}:`, categoryError)
         }
+      }
 
-        // Add delay between cities
-        await new Promise(resolve => setTimeout(resolve, 2000))
-      }
-      
-      // Add longer delay between batches
-      if (batchIndex < cityBatches.length - 1) {
-        console.log(`Waiting 5 seconds before next batch...`)
-        await new Promise(resolve => setTimeout(resolve, 5000))
-      }
+      // Reduced delay between cities
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
 
     const result = {
