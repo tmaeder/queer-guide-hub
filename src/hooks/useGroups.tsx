@@ -37,22 +37,29 @@ export const useGroups = () => {
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ['groups'],
     queryFn: async () => {
+      if (!user?.id) return [];
+
+      // Get all public groups and private groups the user is a member of
       const { data, error } = await supabase
         .from('community_groups')
         .select(`
           *,
-          group_memberships!inner(role)
+          group_memberships!left(role, user_id)
         `)
+        .or(`is_private.eq.false,and(is_private.eq.true,group_memberships.user_id.eq.${user.id})`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       // Transform data to include user membership info
-      return data.map(group => ({
-        ...group,
-        user_role: group.group_memberships?.[0]?.role,
-        is_member: !!group.group_memberships?.[0]
-      }));
+      return data.map(group => {
+        const userMembership = group.group_memberships?.find(m => m.user_id === user.id);
+        return {
+          ...group,
+          user_role: userMembership?.role,
+          is_member: !!userMembership
+        };
+      });
     },
     enabled: !!user
   });
