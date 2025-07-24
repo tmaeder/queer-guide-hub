@@ -66,6 +66,113 @@ function sanitizeVenueData(venue: FoursquareVenue): any {
   };
 }
 
+// Helper functions for city and category management
+async function getOrCreateCity(supabase: any, cityName: string, countryCode: string, lat: number, lon: number) {
+  // First try to find existing city
+  const { data: existingCity } = await supabase
+    .from('cities')
+    .select('id')
+    .eq('name', cityName)
+    .maybeSingle()
+
+  if (existingCity) {
+    return existingCity.id
+  }
+
+  // Get country_id from countries table
+  const { data: country } = await supabase
+    .from('countries')
+    .select('id')
+    .eq('code', countryCode)
+    .maybeSingle()
+
+  // Create new city
+  const { data: newCity, error } = await supabase
+    .from('cities')
+    .insert({
+      name: cityName,
+      country_id: country?.id || null,
+      latitude: lat,
+      longitude: lon,
+      is_major_city: false
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newCity) {
+    console.log(`Created new city: ${cityName}`)
+    return newCity.id
+  }
+
+  return null
+}
+
+async function mapVenueCategory(supabase: any, categoryName: string) {
+  let categorySlug = 'entertainment-nightlife' // Default
+
+  if (categoryName === 'Gay Bar') {
+    categorySlug = 'entertainment-nightlife'
+  } else {
+    categorySlug = 'community-organizations'
+  }
+
+  // Get category ID
+  const { data: category } = await supabase
+    .from('venue_categories')
+    .select('id')
+    .eq('slug', categorySlug)
+    .maybeSingle()
+
+  return {
+    categorySlug: categoryName === 'Gay Bar' ? 'bar' : 'organization',
+    categoryId: category?.id || null
+  }
+}
+
+function mapAmenitiesAndServices(venue: FoursquareVenue, categoryName: string) {
+  const amenities = []
+  const services = []
+
+  // Extract amenities from features
+  if (Array.isArray(venue.features)) {
+    venue.features.forEach(feature => {
+      const featureName = feature.name.toLowerCase()
+      if (featureName.includes('wifi') || featureName.includes('internet')) {
+        amenities.push('wifi')
+      } else if (featureName.includes('parking')) {
+        amenities.push('parking')
+      } else if (featureName.includes('wheelchair') || featureName.includes('accessible')) {
+        amenities.push('wheelchair-accessible')
+      } else if (featureName.includes('outdoor') || featureName.includes('patio')) {
+        amenities.push('outdoor-seating')
+      } else if (featureName.includes('credit') || featureName.includes('card')) {
+        amenities.push('accepts-credit-cards')
+      }
+    })
+  }
+
+  // Add services based on category and features
+  if (categoryName === 'Gay Bar') {
+    services.push('beverages', 'entertainment')
+    if (Array.isArray(venue.features)) {
+      venue.features.forEach(feature => {
+        const featureName = feature.name.toLowerCase()
+        if (featureName.includes('food') || featureName.includes('kitchen')) {
+          services.push('dine-in')
+        } else if (featureName.includes('delivery')) {
+          services.push('delivery')
+        } else if (featureName.includes('takeout')) {
+          services.push('takeout')
+        }
+      })
+    }
+  } else {
+    services.push('community-support', 'social-services')
+  }
+
+  return { amenities, services }
+}
+
 interface FoursquareVenue {
   fsq_id: string
   name: string
@@ -245,17 +352,22 @@ Deno.serve(async (req) => {
                 .eq('foursquare_id', sanitizedVenue.fsq_id)
                 .maybeSingle()
 
+              // Get or create city
+              const cityName = venue.location.locality || city.name
+              const countryCode = venue.location.country || city.country
+              const cityId = await getOrCreateCity(supabase, cityName, countryCode, venue.geocodes.main.latitude, venue.geocodes.main.longitude)
+
+              // Map category
+              const { categorySlug, categoryId: venueCategoryId } = await mapVenueCategory(supabase, categoryName)
+
+              // Map amenities and services
+              const { amenities, services } = mapAmenitiesAndServices(venue, categoryName)
+
               // Process photos from Foursquare
               const imageUrls = venue.photos?.slice(0, 3).map(photo => {
                 const size = '300x300'
                 return `${photo.prefix}${size}${photo.suffix}`
               }) || []
-
-              // Extract amenities from features and tastes
-              const amenities = [
-                ...(Array.isArray(venue.features) ? venue.features.map(feature => feature.name.toLowerCase().replace(/\s+/g, '-')) : []),
-                ...(Array.isArray(venue.tastes) ? venue.tastes.map(taste => taste.toLowerCase().replace(/\s+/g, '-')) : [])
-              ]
 
               // Process hours information
               const hoursData = venue.hours?.regular ? {
@@ -286,18 +398,21 @@ Deno.serve(async (req) => {
                 name: venue.name,
                 description: venue.description || null,
                 address: venue.location.formatted_address || venue.location.address || '',
-                city: venue.location.locality || city.name,
+                city: cityName,
                 state: venue.location.region || null,
-                country: venue.location.country || city.country,
+                country: countryCode,
                 postal_code: venue.location.postcode || null,
                 latitude: venue.geocodes.main.latitude,
                 longitude: venue.geocodes.main.longitude,
                 phone: venue.tel || null,
                 website: venue.website || null,
                 email: venue.email || null,
-                category: categoryName === 'Gay Bar' ? 'bar' : 'organization',
+                category: categorySlug,
+                category_id: venueCategoryId,
+                city_id: cityId,
                 tags: enhancedTags,
                 amenities: amenities,
+                services: services,
                 images: imageUrls,
                 price_range: venue.price || null,
                 hours: hoursData,

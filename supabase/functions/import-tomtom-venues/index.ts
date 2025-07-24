@@ -81,6 +81,110 @@ interface TomTomPOI {
   }
 }
 
+// Helper functions for city and category management
+async function getOrCreateCity(supabase: any, cityName: string, countryCode: string, lat: number, lon: number) {
+  // First try to find existing city
+  const { data: existingCity } = await supabase
+    .from('cities')
+    .select('id')
+    .eq('name', cityName)
+    .maybeSingle()
+
+  if (existingCity) {
+    return existingCity.id
+  }
+
+  // Get country_id from countries table
+  const { data: country } = await supabase
+    .from('countries')
+    .select('id')
+    .eq('code', countryCode)
+    .maybeSingle()
+
+  // Create new city
+  const { data: newCity, error } = await supabase
+    .from('cities')
+    .insert({
+      name: cityName,
+      country_id: country?.id || null,
+      latitude: lat,
+      longitude: lon,
+      is_major_city: false
+    })
+    .select('id')
+    .maybeSingle()
+
+  if (!error && newCity) {
+    console.log(`Created new city: ${cityName}`)
+    return newCity.id
+  }
+
+  return null
+}
+
+async function mapVenueCategory(supabase: any, classifications: any[], searchTerm: string) {
+  let categorySlug = 'restaurants-dining' // Default
+
+  if (classifications) {
+    const classification = classifications.find(c => c.names?.[0]?.name)
+    if (classification) {
+      const categoryName = classification.names[0].name.toLowerCase()
+      if (categoryName.includes('bar') || categoryName.includes('pub')) {
+        categorySlug = 'entertainment-nightlife'
+      } else if (categoryName.includes('restaurant')) {
+        categorySlug = 'restaurants-dining'
+      } else if (categoryName.includes('club') || categoryName.includes('nightlife')) {
+        categorySlug = 'entertainment-nightlife'
+      } else if (categoryName.includes('center') || categoryName.includes('organization')) {
+        categorySlug = 'community-organizations'
+      } else if (categoryName.includes('cafe')) {
+        categorySlug = 'restaurants-dining'
+      }
+    }
+  }
+
+  // Override based on search term
+  if (searchTerm.includes('center') || searchTerm.includes('organization')) {
+    categorySlug = 'community-organizations'
+  }
+
+  // Get category ID
+  const { data: category } = await supabase
+    .from('venue_categories')
+    .select('id')
+    .eq('slug', categorySlug)
+    .maybeSingle()
+
+  return {
+    categorySlug: categorySlug === 'entertainment-nightlife' ? 'bar' : 
+                 categorySlug === 'community-organizations' ? 'organization' : 'restaurant',
+    categoryId: category?.id || null
+  }
+}
+
+function mapAmenitiesAndServices(poi: TomTomPOI, searchTerm: string) {
+  const amenities = []
+  const services = []
+
+  // Basic amenities from POI data
+  if (poi.poi.phone) amenities.push('phone-service')
+  if (poi.poi.url) amenities.push('wifi')
+  if (poi.entryPoints && poi.entryPoints.length > 1) amenities.push('multiple-entrances')
+  
+  // Services based on search term and classification
+  if (searchTerm.includes('bar') || searchTerm.includes('club')) {
+    services.push('beverages', 'entertainment')
+  } else if (searchTerm.includes('restaurant') || searchTerm.includes('cafe')) {
+    services.push('dine-in', 'food-service')
+  } else if (searchTerm.includes('health') || searchTerm.includes('clinic')) {
+    services.push('health-services', 'counseling')
+  } else if (searchTerm.includes('center') || searchTerm.includes('organization')) {
+    services.push('community-support', 'social-services')
+  }
+
+  return { amenities, services }
+}
+
 // Specific LGBTQ+ venue keywords
 const TOMTOM_SEARCH_TERMS = [
   'gay sauna',
@@ -89,20 +193,6 @@ const TOMTOM_SEARCH_TERMS = [
   'gay bar',
   'gay beach',
   'nude beach'
-]
-
-// Major cities to search in
-const MAJOR_CITIES = [
-  { name: 'New York', lat: 40.7128, lon: -74.0060, country: 'US' },
-  { name: 'San Francisco', lat: 37.7749, lon: -122.4194, country: 'US' },
-  { name: 'Los Angeles', lat: 34.0522, lon: -118.2437, country: 'US' },
-  { name: 'Chicago', lat: 41.8781, lon: -87.6298, country: 'US' },
-  { name: 'Miami', lat: 25.7617, lon: -80.1918, country: 'US' },
-  { name: 'London', lat: 51.5074, lon: -0.1278, country: 'GB' },
-  { name: 'Berlin', lat: 52.5200, lon: 13.4050, country: 'DE' },
-  { name: 'Amsterdam', lat: 52.3676, lon: 4.9041, country: 'NL' },
-  { name: 'Barcelona', lat: 41.3851, lon: 2.1734, country: 'ES' },
-  { name: 'Paris', lat: 48.8566, lon: 2.3522, country: 'FR' }
 ]
 
 Deno.serve(async (req) => {
@@ -194,6 +284,28 @@ Deno.serve(async (req) => {
                 .eq('tomtom_id', poi.id)
                 .maybeSingle()
 
+              // Get or create city
+              const cityName = poi.address.municipality || city.name
+              const countryCode = poi.address.countryCode || city.country
+              const cityId = await getOrCreateCity(supabase, cityName, countryCode, poi.position.lat, poi.position.lon)
+
+              // Map category
+              const { categorySlug, categoryId } = await mapVenueCategory(supabase, poi.poi.classifications, searchTerm)
+
+              // Map amenities and services
+              const { amenities, services } = mapAmenitiesAndServices(poi, searchTerm)
+
+              // Add search term specific tags
+              const enhancedTags = ['lgbt-friendly']
+              if (searchTerm.includes('gay')) enhancedTags.push('gay-friendly')
+              if (searchTerm.includes('lesbian')) enhancedTags.push('lesbian-friendly')
+              if (searchTerm.includes('trans')) enhancedTags.push('trans-friendly')
+              if (searchTerm.includes('drag')) enhancedTags.push('drag-shows')
+              if (searchTerm.includes('club')) enhancedTags.push('nightclub')
+              if (searchTerm.includes('center') || searchTerm.includes('organization')) {
+                enhancedTags.push('community-center')
+              }
+
               // Extract venue data
               const venueData = {
                 name: poi.poi.name || 'Unknown',
@@ -201,18 +313,21 @@ Deno.serve(async (req) => {
                 address: poi.address.freeformAddress || 
                          `${poi.address.streetName || ''} ${poi.address.streetNumber || ''}`.trim() ||
                          poi.address.localName || null,
-                city: poi.address.municipality || city.name,
+                city: cityName,
                 state: poi.address.countrySubdivision || null,
-                country: poi.address.countryCode || city.country,
+                country: countryCode,
                 postal_code: poi.address.postalCode || null,
                 latitude: poi.position.lat,
                 longitude: poi.position.lon,
                 phone: poi.poi.phone || null,
                 website: poi.poi.url || null,
                 email: poi.poi.email || null,
-                category: 'bar', // Default category
-                tags: ['lgbt-friendly'], // Base tag
-                amenities: [],
+                category: categorySlug,
+                category_id: categoryId,
+                city_id: cityId,
+                tags: Array.from(new Set(enhancedTags)),
+                amenities: amenities,
+                services: services,
                 verified: false,
                 featured: false,
                 tomtom_id: poi.id,
@@ -229,39 +344,6 @@ Deno.serve(async (req) => {
                 },
                 created_by: null // System import
               }
-
-              // Determine category from TomTom classifications
-              if (poi.poi.classifications) {
-                const classification = poi.poi.classifications.find(c => c.names?.[0]?.name)
-                if (classification) {
-                  const categoryName = classification.names[0].name.toLowerCase()
-                  if (categoryName.includes('bar') || categoryName.includes('pub')) {
-                    venueData.category = 'bar'
-                  } else if (categoryName.includes('restaurant')) {
-                    venueData.category = 'restaurant'
-                  } else if (categoryName.includes('club') || categoryName.includes('nightlife')) {
-                    venueData.category = 'club'
-                  } else if (categoryName.includes('center') || categoryName.includes('organization')) {
-                    venueData.category = 'organization'
-                  } else if (categoryName.includes('cafe')) {
-                    venueData.category = 'cafe'
-                  }
-                }
-              }
-
-              // Add search term specific tags
-              const enhancedTags = ['lgbt-friendly']
-              if (searchTerm.includes('gay')) enhancedTags.push('gay-friendly')
-              if (searchTerm.includes('lesbian')) enhancedTags.push('lesbian-friendly')
-              if (searchTerm.includes('trans')) enhancedTags.push('trans-friendly')
-              if (searchTerm.includes('drag')) enhancedTags.push('drag-shows')
-              if (searchTerm.includes('club')) enhancedTags.push('nightclub')
-              if (searchTerm.includes('center') || searchTerm.includes('organization')) {
-                enhancedTags.push('community-center')
-                venueData.category = 'organization'
-              }
-
-              venueData.tags = Array.from(new Set(enhancedTags))
 
               if (existingVenue) {
                 // Update existing venue
