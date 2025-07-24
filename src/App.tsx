@@ -56,6 +56,7 @@ import AdminEvents from "./pages/AdminEvents";
 import AdminMarketplace from "./pages/AdminMarketplace";
 import AdminNewsSources from "./pages/AdminNewsSources";
 import EmailTemplates from "./pages/admin/EmailTemplates";
+import AdminImportHub from "./pages/AdminImportHub";
 import News from "./pages/News";
 import Travel from "./pages/Travel";
 
@@ -278,6 +279,11 @@ const App = () => {
                    <Route path="/admin/email-templates" element={
                      <AdminRouteGuard requiredRole="admin">
                        <EmailTemplates />
+                     </AdminRouteGuard>
+                   } />
+                   <Route path="/admin/import-hub" element={
+                     <AdminRouteGuard>
+                       <AdminImportHub />
                      </AdminRouteGuard>
                    } />
                    <Route path="/news" element={<News />} />

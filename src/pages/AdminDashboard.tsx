@@ -359,6 +359,13 @@ export default function AdminDashboard() {
     path: "/admin/news-sources",
     color: "bg-gradient-to-br from-cyan-500 to-cyan-600",
     stats: "Content feeds"
+  }, {
+    title: "Import Hub",
+    description: "Import data from CSV files and external APIs",
+    icon: Download,
+    path: "/admin/import-hub",
+    color: "bg-gradient-to-br from-emerald-500 to-emerald-600",
+    stats: "Data import"
   }];
   if (isAdmin) {
     adminSections.push({
