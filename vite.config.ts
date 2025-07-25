@@ -19,23 +19,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
-          'query-vendor': ['@tanstack/react-query'],
-          'router-vendor': ['react-router-dom'],
-          'supabase-vendor': ['@supabase/supabase-js'],
-        },
-      },
-    },
-    target: 'esnext',
-    minify: 'terser',
-    sourcemap: false,
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom', '@tanstack/react-query', 'react-router-dom'],
-  },
 }));

@@ -7,22 +7,12 @@ import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, Check
 import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useSEO, generateOrganizationStructuredData } from '@/hooks/useSEO';
 
 // Lazy load slider components for better performance
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider').then(module => ({ default: module.LatestNewsSlider })));
 const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider').then(module => ({ default: module.WeeklyEventsSlider })));
 const Index = React.memo(() => {
   const { user } = useAuth();
-  
-  // SEO optimization for homepage
-  useSEO({
-    title: "Queer Guide - LGBTQ+ Community & Safe Spaces Worldwide",
-    description: "Discover queer-friendly venues, events, businesses, and connect with the LGBTQ+ community worldwide. Find safe spaces, local events, and inclusive businesses.",
-    keywords: "LGBTQ+, queer, gay, lesbian, bisexual, transgender, safe spaces, queer venues, LGBTQ events, gay bars, inclusive businesses, pride events, LGBTQ travel",
-    url: "https://queerguide.app/",
-    structuredData: generateOrganizationStructuredData()
-  });
   const { stats: realStats, loading } = useStats();
   const isMobile = useIsMobile();
   const features = [{
