@@ -8,9 +8,8 @@ import { LocationInfo } from "@/components/location/LocationInfo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Zap } from "lucide-react";
+import { ArrowLeft, Globe, MapPin, Building2, Users, Map } from "lucide-react";
 import { DirectoryMapView } from "@/components/directory/DirectoryMapView";
-import { PerformanceDashboard } from "@/components/directory/PerformanceDashboard";
 
 type ViewMode = "overview" | "country" | "city" | "search";
 
@@ -172,10 +171,6 @@ export default function Directory() {
               <Map className="h-4 w-4" />
               Map View
             </TabsTrigger>
-            <TabsTrigger value="performance" className="flex items-center gap-2">
-              <Zap className="h-4 w-4" />
-              Performance Dashboard
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="countries" className="space-y-4">
@@ -288,14 +283,6 @@ export default function Directory() {
               onCountryClick={handleCountryClick}
               onCityClick={handleCityClick}
             />
-          </TabsContent>
-
-          <TabsContent value="performance" className="space-y-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">Performance & Search Dashboard</h2>
-              <Badge variant="secondary">Optimized Queries</Badge>
-            </div>
-            <PerformanceDashboard />
           </TabsContent>
         </Tabs>
       )}

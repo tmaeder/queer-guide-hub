@@ -86,145 +86,6 @@ export type Database = {
         }
         Relationships: []
       }
-      aid_offers: {
-        Row: {
-          availability: string
-          city_id: string | null
-          contact_method: string | null
-          created_at: string
-          description: string
-          expires_at: string | null
-          id: string
-          latitude: number | null
-          location_text: string | null
-          longitude: number | null
-          offer_type: string
-          status: string
-          tags: string[] | null
-          title: string
-          updated_at: string
-          user_id: string
-          visibility: string
-        }
-        Insert: {
-          availability?: string
-          city_id?: string | null
-          contact_method?: string | null
-          created_at?: string
-          description: string
-          expires_at?: string | null
-          id?: string
-          latitude?: number | null
-          location_text?: string | null
-          longitude?: number | null
-          offer_type?: string
-          status?: string
-          tags?: string[] | null
-          title: string
-          updated_at?: string
-          user_id: string
-          visibility?: string
-        }
-        Update: {
-          availability?: string
-          city_id?: string | null
-          contact_method?: string | null
-          created_at?: string
-          description?: string
-          expires_at?: string | null
-          id?: string
-          latitude?: number | null
-          location_text?: string | null
-          longitude?: number | null
-          offer_type?: string
-          status?: string
-          tags?: string[] | null
-          title?: string
-          updated_at?: string
-          user_id?: string
-          visibility?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aid_offers_city_id_fkey"
-            columns: ["city_id"]
-            isOneToOne: false
-            referencedRelation: "cities"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      aid_requests: {
-        Row: {
-          city_id: string | null
-          contact_method: string | null
-          created_at: string
-          description: string
-          expires_at: string | null
-          fulfillment_notes: string | null
-          id: string
-          latitude: number | null
-          location_text: string | null
-          longitude: number | null
-          request_type: string
-          status: string
-          tags: string[] | null
-          title: string
-          updated_at: string
-          urgency: string
-          user_id: string
-          visibility: string
-        }
-        Insert: {
-          city_id?: string | null
-          contact_method?: string | null
-          created_at?: string
-          description: string
-          expires_at?: string | null
-          fulfillment_notes?: string | null
-          id?: string
-          latitude?: number | null
-          location_text?: string | null
-          longitude?: number | null
-          request_type?: string
-          status?: string
-          tags?: string[] | null
-          title: string
-          updated_at?: string
-          urgency?: string
-          user_id: string
-          visibility?: string
-        }
-        Update: {
-          city_id?: string | null
-          contact_method?: string | null
-          created_at?: string
-          description?: string
-          expires_at?: string | null
-          fulfillment_notes?: string | null
-          id?: string
-          latitude?: number | null
-          location_text?: string | null
-          longitude?: number | null
-          request_type?: string
-          status?: string
-          tags?: string[] | null
-          title?: string
-          updated_at?: string
-          urgency?: string
-          user_id?: string
-          visibility?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aid_requests_city_id_fkey"
-            columns: ["city_id"]
-            isOneToOne: false
-            referencedRelation: "cities"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       attributes: {
         Row: {
           category: string | null
@@ -670,53 +531,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      community_reviews: {
-        Row: {
-          comment: string | null
-          created_at: string
-          id: string
-          is_anonymous: boolean | null
-          rating: number
-          request_id: string | null
-          review_type: string
-          reviewee_user_id: string
-          reviewer_user_id: string
-          updated_at: string
-        }
-        Insert: {
-          comment?: string | null
-          created_at?: string
-          id?: string
-          is_anonymous?: boolean | null
-          rating: number
-          request_id?: string | null
-          review_type: string
-          reviewee_user_id: string
-          reviewer_user_id: string
-          updated_at?: string
-        }
-        Update: {
-          comment?: string | null
-          created_at?: string
-          id?: string
-          is_anonymous?: boolean | null
-          rating?: number
-          request_id?: string | null
-          review_type?: string
-          reviewee_user_id?: string
-          reviewer_user_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "community_reviews_request_id_fkey"
-            columns: ["request_id"]
-            isOneToOne: false
-            referencedRelation: "aid_requests"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -1325,7 +1139,6 @@ export type Database = {
           created_by: string | null
           description: string | null
           end_date: string | null
-          event_category: string | null
           event_type: string
           featured: boolean | null
           group_id: string | null
@@ -1363,7 +1176,6 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
-          event_category?: string | null
           event_type: string
           featured?: boolean | null
           group_id?: string | null
@@ -1401,7 +1213,6 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
-          event_category?: string | null
           event_type?: string
           featured?: boolean | null
           group_id?: string | null
@@ -2520,7 +2331,6 @@ export type Database = {
           content_warnings: string[] | null
           created_at: string
           cultural_background: string[] | null
-          current_mode: string | null
           current_relationship_status: string | null
           date_of_birth: string | null
           dating_preferences: Json | null
@@ -2614,7 +2424,6 @@ export type Database = {
           updated_at: string
           user_id: string
           user_mode: Database["public"]["Enums"]["user_mode"] | null
-          verification_status: string | null
           verified_email: boolean | null
           verified_identity: boolean | null
           verified_phone: boolean | null
@@ -2650,7 +2459,6 @@ export type Database = {
           content_warnings?: string[] | null
           created_at?: string
           cultural_background?: string[] | null
-          current_mode?: string | null
           current_relationship_status?: string | null
           date_of_birth?: string | null
           dating_preferences?: Json | null
@@ -2744,7 +2552,6 @@ export type Database = {
           updated_at?: string
           user_id: string
           user_mode?: Database["public"]["Enums"]["user_mode"] | null
-          verification_status?: string | null
           verified_email?: boolean | null
           verified_identity?: boolean | null
           verified_phone?: boolean | null
@@ -2780,7 +2587,6 @@ export type Database = {
           content_warnings?: string[] | null
           created_at?: string
           cultural_background?: string[] | null
-          current_mode?: string | null
           current_relationship_status?: string | null
           date_of_birth?: string | null
           dating_preferences?: Json | null
@@ -2874,7 +2680,6 @@ export type Database = {
           updated_at?: string
           user_id?: string
           user_mode?: Database["public"]["Enums"]["user_mode"] | null
-          verification_status?: string | null
           verified_email?: boolean | null
           verified_identity?: boolean | null
           verified_phone?: boolean | null
@@ -2956,53 +2761,6 @@ export type Database = {
           },
         ]
       }
-      request_responses: {
-        Row: {
-          actual_completion: string | null
-          contact_info: string | null
-          created_at: string
-          estimated_completion: string | null
-          id: string
-          notes: string | null
-          request_id: string
-          responder_user_id: string
-          response_status: string
-          updated_at: string
-        }
-        Insert: {
-          actual_completion?: string | null
-          contact_info?: string | null
-          created_at?: string
-          estimated_completion?: string | null
-          id?: string
-          notes?: string | null
-          request_id: string
-          responder_user_id: string
-          response_status?: string
-          updated_at?: string
-        }
-        Update: {
-          actual_completion?: string | null
-          contact_info?: string | null
-          created_at?: string
-          estimated_completion?: string | null
-          id?: string
-          notes?: string | null
-          request_id?: string
-          responder_user_id?: string
-          response_status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "request_responses_request_id_fkey"
-            columns: ["request_id"]
-            isOneToOne: false
-            referencedRelation: "aid_requests"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       security_events: {
         Row: {
           created_at: string
@@ -3030,39 +2788,6 @@ export type Database = {
           ip_address?: unknown | null
           user_agent?: string | null
           user_id?: string | null
-        }
-        Relationships: []
-      }
-      skills: {
-        Row: {
-          category: string
-          created_at: string
-          description: string | null
-          id: string
-          is_active: boolean
-          name: string
-          sort_order: number | null
-          updated_at: string
-        }
-        Insert: {
-          category?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          name: string
-          sort_order?: number | null
-          updated_at?: string
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          name?: string
-          sort_order?: number | null
-          updated_at?: string
         }
         Relationships: []
       }
@@ -3293,36 +3018,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_connections: {
-        Row: {
-          created_at: string
-          id: string
-          status: string
-          type: string
-          updated_at: string
-          user_one_id: string
-          user_two_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          status?: string
-          type?: string
-          updated_at?: string
-          user_one_id: string
-          user_two_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          status?: string
-          type?: string
-          updated_at?: string
-          user_one_id?: string
-          user_two_id?: string
-        }
-        Relationships: []
-      }
       user_follows: {
         Row: {
           created_at: string
@@ -3544,44 +3239,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      user_skills: {
-        Row: {
-          created_at: string
-          id: string
-          is_offering: boolean | null
-          proficiency_level: string | null
-          skill_id: string
-          user_id: string
-          years_experience: number | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_offering?: boolean | null
-          proficiency_level?: string | null
-          skill_id: string
-          user_id: string
-          years_experience?: number | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_offering?: boolean | null
-          proficiency_level?: string | null
-          skill_id?: string
-          user_id?: string
-          years_experience?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_skills_skill_id_fkey"
-            columns: ["skill_id"]
-            isOneToOne: false
-            referencedRelation: "skills"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       venue_amenities: {
         Row: {
