@@ -5,16 +5,49 @@ import { Tables } from "@/integrations/supabase/types";
 export type Continent = Tables<"continents">;
 export type Region = Tables<"regions">;
 export type Country = Tables<"countries"> & {
-  regions?: Region;
+  regions?: Partial<Region>;
 };
 export type City = Tables<"cities"> & {
-  countries?: Country;
+  countries?: Partial<Country>;
+  distance?: number;
+};
+
+// Optimized partial types for better performance
+export type OptimizedCountry = Partial<Tables<"countries">> & {
+  id: string;
+  name: string;
+  code: string;
+  regions?: {
+    id: string;
+    name: string;
+  };
+};
+
+export type OptimizedCity = Partial<Tables<"cities">> & {
+  id: string;
+  name: string;
+  population?: number;
+  latitude?: number;
+  longitude?: number;
+  is_capital?: boolean;
+  is_major_city?: boolean;
+  region_name?: string;
+  timezone?: string;
+  country_id: string;
+  countries?: {
+    id: string;
+    name: string;
+    code: string;
+    flag_emoji?: string;
+    continent_id?: string;
+  };
+  distance?: number;
 };
 
 export const useDirectory = () => {
   const [continents, setContinents] = useState<Continent[]>([]);
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
+  const [countries, setCountries] = useState<OptimizedCountry[]>([]);
+  const [cities, setCities] = useState<OptimizedCity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,12 +90,13 @@ export const useDirectory = () => {
         .from("countries")
         .select(`
           *,
-          regions (*)
+          regions (id, name)
         `)
-        .order("name");
+        .order("name")
+        .limit(250); // Reasonable limit for performance
 
       if (error) throw error;
-      setCountries(data || []);
+      setCountries(data as OptimizedCountry[] || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     }
@@ -73,11 +107,21 @@ export const useDirectory = () => {
       const { data, error } = await supabase
         .from("cities")
         .select(`
-          *,
-          countries (*)
+          id,
+          name,
+          population,
+          latitude,
+          longitude,
+          is_capital,
+          is_major_city,
+          region_name,
+          timezone,
+          country_id,
+          countries (id, name, code, flag_emoji)
         `)
         .eq("country_id", countryId)
-        .order("population", { ascending: false });
+        .order("population", { ascending: false })
+        .limit(50); // Reasonable limit per country
 
       if (error) throw error;
       return data || [];
@@ -92,14 +136,24 @@ export const useDirectory = () => {
       const { data, error } = await supabase
         .from("cities")
         .select(`
-          *,
-          countries (*)
+          id,
+          name,
+          population,
+          latitude,
+          longitude,
+          is_capital,
+          is_major_city,
+          region_name,
+          timezone,
+          country_id,
+          countries (id, name, code, flag_emoji, continent_id)
         `)
         .eq("is_major_city", true)
-        .order("population", { ascending: false });
+        .order("population", { ascending: false })
+        .limit(100); // Limit for better performance
 
       if (error) throw error;
-      setCities(data || []);
+      setCities(data as OptimizedCity[] || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     }
@@ -109,25 +163,30 @@ export const useDirectory = () => {
     try {
       setLoading(true);
       
+      // Use the new optimized search with full-text search and better performance
       const [continentsResult, countriesResult, citiesResult] = await Promise.all([
         supabase
           .from("continents")
           .select("*")
-          .ilike("name", `%${query}%`),
+          .textSearch("name", `'${query.replace(/'/g, "''")}'`)
+          .limit(10),
         supabase
           .from("countries")
           .select(`
             *,
             regions (*)
           `)
-          .ilike("name", `%${query}%`),
+          .or(`name.ilike.%${query}%,capital.ilike.%${query}%`)
+          .order("population", { ascending: false })
+          .limit(15),
         supabase
           .from("cities")
           .select(`
             *,
-            countries (*)
+            countries (name, code, flag_emoji)
           `)
-          .ilike("name", `%${query}%`)
+          .or(`name.ilike.%${query}%,region_name.ilike.%${query}%`)
+          .order("population", { ascending: false })
           .limit(20)
       ]);
 
@@ -162,16 +221,25 @@ export const useDirectory = () => {
         return distance;
       };
 
-      // Fetch all cities with coordinates
+      // Fetch cities with coordinates for distance calculation
       const { data, error } = await supabase
         .from("cities")
         .select(`
-          *,
-          countries (*)
+          id,
+          name,
+          population,
+          latitude,
+          longitude,
+          is_capital,
+          is_major_city,
+          region_name,
+          country_id,
+          countries (id, name, code, flag_emoji)
         `)
         .not('latitude', 'is', null)
         .not('longitude', 'is', null)
-        .limit(100); // Reasonable limit for calculation
+        .gte('population', 50000) // Only include larger cities for nearby search
+        .limit(200); // Increased limit for better nearby results
 
       if (error) throw error;
 
@@ -190,7 +258,7 @@ export const useDirectory = () => {
         .sort((a: any, b: any) => a.distance - b.distance)
         .slice(0, 20); // Show top 20 closest cities
 
-      setCities(citiesWithDistance);
+      setCities(citiesWithDistance as OptimizedCity[]);
       
       return citiesWithDistance;
     } catch (err) {
