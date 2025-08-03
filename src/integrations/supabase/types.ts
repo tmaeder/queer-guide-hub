@@ -86,6 +86,24 @@ export type Database = {
         }
         Relationships: []
       }
+      amenities: {
+        Row: {
+          icon_name: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          icon_name?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          icon_name?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       attributes: {
         Row: {
           category: string | null
@@ -879,6 +897,27 @@ export type Database = {
         }
         Relationships: []
       }
+      currencies: {
+        Row: {
+          code: string
+          id: string
+          name: string
+          symbol: string | null
+        }
+        Insert: {
+          code: string
+          id?: string
+          name: string
+          symbol?: string | null
+        }
+        Update: {
+          code?: string
+          id?: string
+          name?: string
+          symbol?: string | null
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           created_at: string
@@ -1033,6 +1072,21 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      event_categories: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       event_favorites: {
         Row: {
@@ -1555,6 +1609,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      languages: {
+        Row: {
+          id: string
+          iso_639_1_code: string | null
+          name: string
+        }
+        Insert: {
+          id?: string
+          iso_639_1_code?: string | null
+          name: string
+        }
+        Update: {
+          id?: string
+          iso_639_1_code?: string | null
+          name?: string
+        }
+        Relationships: []
       }
       marketplace_categories: {
         Row: {
@@ -2306,6 +2378,27 @@ export type Database = {
           },
         ]
       }
+      presence_statuses: {
+        Row: {
+          description: string | null
+          id: string
+          is_selectable: boolean | null
+          name: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          is_selectable?: boolean | null
+          name: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          is_selectable?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           accessibility_needs: string | null
@@ -2941,6 +3034,24 @@ export type Database = {
           name?: string
           sort_order?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      ui_themes: {
+        Row: {
+          id: string
+          is_dark: boolean | null
+          name: string
+        }
+        Insert: {
+          id?: string
+          is_dark?: boolean | null
+          name: string
+        }
+        Update: {
+          id?: string
+          is_dark?: boolean | null
+          name?: string
         }
         Relationships: []
       }
