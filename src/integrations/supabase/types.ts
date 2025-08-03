@@ -3644,23 +3644,7 @@ export type Database = {
       }
     }
     Views: {
-      tag_usage_summary: {
-        Row: {
-          category: string | null
-          content_count: number | null
-          event_count: number | null
-          group_count: number | null
-          id: string | null
-          marketplace_count: number | null
-          name: string | null
-          news_count: number | null
-          post_count: number | null
-          slug: string | null
-          usage_count: number | null
-          venue_count: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       assign_admin_by_id: {
