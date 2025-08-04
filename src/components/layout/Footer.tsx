@@ -60,32 +60,23 @@ export function Footer() {
   }];
   return <footer className="bg-card border-t mt-auto">
       <div className="container mx-auto px-4 py-3">
-        
-
-        <Separator className="my-4" />
-
-        {/* Bottom Section */}
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
-          <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-            <p className="text-sm text-muted-foreground">
-              © {currentYear} Queer Guide. All rights reserved.
-            </p>
-            
-          </div>
+        {/* Single Row Layout */}
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            © {currentYear} Queer Guide. All rights reserved.
+          </p>
           
           {/* Quick Actions */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => navigate('/admin')}>
-                <Settings className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => window.scrollTo({
-              top: 0,
-              behavior: 'smooth'
-            })}>
-                <ChevronUp className="h-4 w-4" />
-              </Button>
-            </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => navigate('/admin')}>
+              <Settings className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          })}>
+              <ChevronUp className="h-4 w-4" />
+            </Button>
             <Separator orientation="vertical" className="h-6" />
             <ThemeToggle />
           </div>
