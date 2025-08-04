@@ -60,57 +60,7 @@ export function Footer() {
   }];
   return <footer className="bg-card border-t mt-auto">
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-          {/* Brand Section */}
-          <div className="lg:col-span-2 space-y-4">
-            
-            
-            
-            {/* Newsletter Signup */}
-            <div className="space-y-2">
-              
-              
-            </div>
-
-            {/* Social Links */}
-            <div className="space-y-2">
-              
-              
-            </div>
-          </div>
-
-          {/* Community Links */}
-          
-
-          {/* Resources & Help */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-foreground flex items-center gap-2">
-              <Info className="h-4 w-4 text-primary" />
-              Resources
-            </h3>
-            <ul className="space-y-3">
-              {helpLinks.map(link => <li key={link.href}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-all duration-200 flex items-center gap-2 group hover:translate-x-1">
-                    <link.icon className="h-4 w-4 group-hover:text-primary" />
-                    {link.label}
-                  </Link>
-                </li>)}
-            </ul>
-          </div>
-
-          {/* Legal & Privacy */}
-          <div className="space-y-4">
-            
-            <ul className="space-y-3">
-              {legalLinks.map(link => <li key={link.href}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-all duration-200 flex items-center gap-2 group hover:translate-x-1">
-                    <link.icon className="h-4 w-4 group-hover:text-primary" />
-                    {link.label}
-                  </Link>
-                </li>)}
-            </ul>
-          </div>
-        </div>
+        
 
         <Separator className="my-8" />
 
