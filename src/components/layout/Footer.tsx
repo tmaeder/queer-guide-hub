@@ -78,13 +78,7 @@ export function Footer() {
             {/* Social Links */}
             <div className="space-y-2">
               
-              <div className="flex items-center gap-2">
-                {socialLinks.map(social => <Button key={social.label} variant="ghost" size="sm" asChild className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 hover:scale-110">
-                    <a href={social.href} aria-label={social.label}>
-                      <social.icon className="h-4 w-4" />
-                    </a>
-                  </Button>)}
-              </div>
+              
             </div>
           </div>
 
@@ -109,10 +103,7 @@ export function Footer() {
 
           {/* Legal & Privacy */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-foreground flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" />
-              Legal & Privacy
-            </h3>
+            
             <ul className="space-y-3">
               {legalLinks.map(link => <li key={link.href}>
                   <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-all duration-200 flex items-center gap-2 group hover:translate-x-1">
