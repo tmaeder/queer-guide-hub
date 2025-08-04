@@ -73,7 +73,7 @@ export function Header() {
     setMenuOpen(false);
   };
   return (
-    <header className={`bg-card/50 backdrop-blur-sm sticky border-b border-border/50 ${isMobile ? 'bottom-0 top-auto' : 'top-0'} z-50`}>
+    <header className={`bg-card/50 backdrop-blur-sm sticky z-50 ${isMobile ? 'bottom-0 border-t' : 'top-0 border-b'} border-border/50`}>
       <div className="container mx-auto px-4">
         {/* Main header */}
         <div className="h-16 flex items-center justify-between gap-2">
