@@ -67,10 +67,7 @@ export function Footer() {
               <Heart className="h-8 w-8 text-primary fill-current group-hover:animate-pulse" />
               <h2 className="text-xl font-bold gradient-text">Queer Guide</h2>
             </Link>
-            <p className="text-muted-foreground max-w-sm leading-relaxed">
-              Connecting the LGBTQ+ community with safe spaces, events, businesses, and each other. 
-              Building a more inclusive world, one connection at a time.
-            </p>
+            
             
             {/* Newsletter Signup */}
             <div className="space-y-2">
