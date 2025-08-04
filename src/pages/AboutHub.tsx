@@ -140,27 +140,6 @@ export default function AboutHub() {
                     </div>
                   </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Our Impact</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                      <div>
-                        <div className="text-2xl font-bold text-primary">10,000+</div>
-                        <div className="text-sm text-muted-foreground">Community Members</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-primary">500+</div>
-                        <div className="text-sm text-muted-foreground">Verified Venues</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-primary">1,000+</div>
-                        <div className="text-sm text-muted-foreground">Events Listed</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-primary">50+</div>
-                        <div className="text-sm text-muted-foreground">Cities Covered</div>
-                      </div>
-                    </div>
-                  </div>
                 </section>
               </CardContent>
             </CollapsibleContent>
@@ -227,25 +206,6 @@ export default function AboutHub() {
                     </div>
                   </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Our Journey Forward</h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-sm">2024</div>
-                        <div>
-                          <h4 className="font-medium">Foundation</h4>
-                          <p className="text-sm text-muted-foreground">The Queer Guide was born from a simple idea: everyone deserves to find their community.</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-sm">2025</div>
-                        <div>
-                          <h4 className="font-medium">Expansion</h4>
-                          <p className="text-sm text-muted-foreground">Growing to serve 50+ cities worldwide with verified safe spaces.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </section>
               </CardContent>
             </CollapsibleContent>
@@ -314,27 +274,6 @@ export default function AboutHub() {
                     </div>
                   </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Values in Action</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                      <div>
-                        <div className="text-2xl font-bold text-primary">100%</div>
-                        <div className="text-sm text-muted-foreground">Verified safety checks</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-primary">24hr</div>
-                        <div className="text-sm text-muted-foreground">Response to safety reports</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-primary">0%</div>
-                        <div className="text-sm text-muted-foreground">Tolerance for discrimination</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-primary">50+</div>
-                        <div className="text-sm text-muted-foreground">Community partnerships</div>
-                      </div>
-                    </div>
-                  </div>
                 </section>
               </CardContent>
             </CollapsibleContent>
@@ -381,27 +320,6 @@ export default function AboutHub() {
                     </div>
                   </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Environmental Impact</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                      <div>
-                        <div className="text-2xl font-bold text-primary">500+</div>
-                        <div className="text-sm text-muted-foreground">Carbon Neutral Events</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-primary">75%</div>
-                        <div className="text-sm text-muted-foreground">Waste Reduction Goal</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-primary">1000+</div>
-                        <div className="text-sm text-muted-foreground">Members Engaged</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-primary">50+</div>
-                        <div className="text-sm text-muted-foreground">Green Partner Venues</div>
-                      </div>
-                    </div>
-                  </div>
 
                   <div>
                     <h3 className="text-xl font-semibold mb-3">Additional Commitments</h3>
