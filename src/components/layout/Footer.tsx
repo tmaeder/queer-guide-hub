@@ -63,10 +63,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-4">
-            <Link to="/" className="flex items-center gap-2 group transition-transform duration-200 hover:scale-105">
-              <Heart className="h-8 w-8 text-primary fill-current group-hover:animate-pulse" />
-              
-            </Link>
+            
             
             
             {/* Newsletter Signup */}
