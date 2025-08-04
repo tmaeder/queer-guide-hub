@@ -59,13 +59,13 @@ export function Footer() {
     label: "GitHub"
   }];
   return <footer className="bg-card border-t mt-auto">
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-3">
         
 
-        <Separator className="my-8" />
+        <Separator className="my-4" />
 
         {/* Bottom Section */}
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
           <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
             <p className="text-sm text-muted-foreground">
               © {currentYear} Queer Guide. All rights reserved.
