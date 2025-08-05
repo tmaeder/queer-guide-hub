@@ -168,8 +168,20 @@ const Marketplace = () => {
                     </p>
                   </div>
                   
-                  <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}>
-                    {getFilteredListings(category.id === 'all' ? undefined : category.id).map(listing => <MarketplaceCard key={listing.id} listing={listing} onViewDetails={handleViewDetails} onToggleFavorite={user ? handleToggleFavorite : undefined} showFavoriteButton={!!user} />)}
+                  <div className={viewMode === 'grid' 
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6" 
+                    : "space-y-3"
+                  }>
+                    {getFilteredListings(category.id === 'all' ? undefined : category.id).map(listing => 
+                      <div key={listing.id} className="animate-fade-in">
+                        <MarketplaceCard 
+                          listing={listing} 
+                          onViewDetails={handleViewDetails} 
+                          onToggleFavorite={user ? handleToggleFavorite : undefined} 
+                          showFavoriteButton={!!user} 
+                        />
+                      </div>
+                    )}
                   </div>
                 </>}
 
