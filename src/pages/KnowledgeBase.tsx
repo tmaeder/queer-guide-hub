@@ -17,9 +17,12 @@ import {
   Database,
   Zap,
   Eye,
-  BarChart3
+  BarChart3,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function KnowledgeBase() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,6 +30,8 @@ export default function KnowledgeBase() {
     'venue', 'event', 'tag', 'group', 'marketplace'
   ]);
   const [activeTab, setActiveTab] = useState('chat');
+  const [isPopulating, setIsPopulating] = useState(false);
+  const [embeddingsCount, setEmbeddingsCount] = useState<number | null>(null);
   const { toast } = useToast();
 
   const {
@@ -40,9 +45,56 @@ export default function KnowledgeBase() {
   } = useRAGGraphData();
 
   useEffect(() => {
-    // Load initial graph data
+    // Load initial graph data and check embeddings count
     fetchGraphData();
+    checkEmbeddingsCount();
   }, []);
+
+  const checkEmbeddingsCount = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('content_embeddings')
+        .select('id', { count: 'exact' });
+      
+      if (error) throw error;
+      setEmbeddingsCount(data?.length || 0);
+    } catch (error) {
+      console.error('Error checking embeddings count:', error);
+    }
+  };
+
+  const populateEmbeddings = async () => {
+    setIsPopulating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('populate-embeddings', {
+        body: {
+          content_types: selectedContentTypes,
+          force_refresh: false
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Embeddings populated successfully!",
+        description: `Processed ${data.total_processed} items. The knowledge graph is now connected to real data.`,
+      });
+
+      // Refresh the embeddings count and graph data
+      await checkEmbeddingsCount();
+      await fetchGraphData();
+      setActiveTab('graph');
+    } catch (error) {
+      console.error('Error populating embeddings:', error);
+      toast({
+        title: "Failed to populate embeddings",
+        description: error.message || "An error occurred while processing your content.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPopulating(false);
+    }
+  };
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -166,6 +218,78 @@ export default function KnowledgeBase() {
               )}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Data Status Panel */}
+      <Card className={embeddingsCount === 0 ? "border-orange-500 bg-orange-50 dark:bg-orange-950/20" : "border-green-500 bg-green-50 dark:bg-green-950/20"}>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Database className={`h-5 w-5 ${embeddingsCount === 0 ? 'text-orange-500' : 'text-green-500'}`} />
+              Knowledge Base Status
+            </span>
+            <Button 
+              onClick={checkEmbeddingsCount} 
+              variant="ghost" 
+              size="sm"
+              disabled={isPopulating}
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              {embeddingsCount === null ? (
+                <p className="text-sm text-muted-foreground">Checking embeddings status...</p>
+              ) : embeddingsCount === 0 ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-orange-500" />
+                    <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                      No embeddings found - Graph showing sample data
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Click "Populate Knowledge Base" to connect the graph to your real database content
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                      {embeddingsCount} embeddings ready
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Knowledge graph is connected to real database content
+                  </p>
+                </>
+              )}
+            </div>
+            {embeddingsCount === 0 && (
+              <Button 
+                onClick={populateEmbeddings} 
+                disabled={isPopulating}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                {isPopulating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Populating...
+                  </>
+                ) : (
+                  <>
+                    <Database className="h-4 w-4 mr-2" />
+                    Populate Knowledge Base
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 
