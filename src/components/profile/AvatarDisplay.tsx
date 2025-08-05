@@ -1,4 +1,3 @@
-import { BeanHead } from "@beanheads/react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { User } from "lucide-react";
 import type { AvatarConfig } from "./AvatarBuilder";
@@ -34,28 +33,16 @@ export const AvatarDisplay = ({
   }
 
   if (avatarConfig) {
+    const getAvatarInitials = () => {
+      return avatarConfig.hair.substring(0, 1).toUpperCase() + avatarConfig.shirt.substring(0, 1).toUpperCase();
+    };
+
     return (
-      <div className={`${sizeClasses[size]} ${className || ''} rounded-full overflow-hidden`}>
-        <BeanHead
-          accessory={avatarConfig.accessory}
-          body={avatarConfig.body}
-          circleColor={avatarConfig.circleColor}
-          clothing={avatarConfig.clothing}
-          clothingColor={avatarConfig.clothingColor}
-          eyebrows={avatarConfig.eyebrows}
-          eyes={avatarConfig.eyes}
-          facialHair={avatarConfig.facialHair}
-          graphic={avatarConfig.graphic}
-          hair={avatarConfig.hair}
-          hairColor={avatarConfig.hairColor}
-          hat={avatarConfig.hat}
-          hatColor={avatarConfig.hatColor}
-          lashes={avatarConfig.lashes === "true"}
-          lipColor={avatarConfig.lipColor}
-          mask={avatarConfig.mask}
-          mouth={avatarConfig.mouth}
-          skinTone={avatarConfig.skinTone}
-        />
+      <div 
+        className={`${sizeClasses[size]} ${className || ''} rounded-full flex items-center justify-center text-white font-bold`}
+        style={{ backgroundColor: avatarConfig.background }}
+      >
+        {getAvatarInitials()}
       </div>
     );
   }

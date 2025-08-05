@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { BeanHead } from "@beanheads/react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,76 +10,48 @@ interface AvatarBuilderProps {
 }
 
 export interface AvatarConfig {
-  accessory: string;
-  body: string;
-  circleColor: string;
-  clothing: string;
-  clothingColor: string;
-  eyebrows: string;
-  eyes: string;
-  facialHair: string;
-  graphic: string;
+  background: string;
+  face: string;
   hair: string;
-  hairColor: string;
-  hat: string;
-  hatColor: string;
-  lashes: string;
-  lipColor: string;
-  mask: boolean;
+  shirt: string;
+  accessory: string;
+  eyes: string;
   mouth: string;
-  skinTone: string;
 }
 
 const avatarOptions = {
-  accessory: ["none", "roundGlasses", "tinyGlasses", "shades"],
-  body: ["chest", "breasts"],
-  circleColor: ["blue", "orange", "red", "yellow", "green", "purple"],
-  clothing: ["naked", "shirt", "dressShirt", "vneck", "tankTop", "dress"],
-  clothingColor: ["white", "blue", "black", "green", "red"],
-  eyebrows: ["raised", "leftLowered", "serious", "angry", "concerned"],
-  eyes: ["normal", "leftTwitch", "happy", "content", "squint", "simple", "dizzy", "wink", "heart"],
-  facialHair: ["none", "stubble", "mediumBeard"],
-  graphic: ["none", "redwood", "gatsby", "vue", "react", "graphQL"],
-  hair: ["none", "long", "bun", "short", "pixie", "balding", "buzz", "afro", "bob"],
-  hairColor: ["blonde", "orange", "black", "white", "brown", "blue", "pink"],
-  hat: ["none", "beanie", "turban"],
-  hatColor: ["white", "blue", "black", "green", "red"],
-  lashes: ["true", "false"],
-  lipColor: ["red", "purple", "pink", "turqoise", "green"],
-  mouth: ["grin", "sad", "openSmile", "lips", "open", "serious", "tongue"],
-  skinTone: ["light", "yellow", "brown", "dark", "red", "black"]
+  background: ["#6366f1", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444"],
+  face: ["#fbbf24", "#f87171", "#34d399", "#60a5fa", "#a78bfa", "#fb7185"],
+  hair: ["short", "long", "curly", "straight", "bald", "ponytail"],
+  shirt: ["casual", "formal", "hoodie", "tshirt", "tank", "sweater"],
+  accessory: ["none", "glasses", "hat", "earrings", "necklace", "sunglasses"],
+  eyes: ["normal", "happy", "sleepy", "surprised", "wink", "closed"],
+  mouth: ["smile", "neutral", "laugh", "frown", "open", "kiss"]
 };
 
 const generateRandomConfig = (): AvatarConfig => ({
-  accessory: avatarOptions.accessory[Math.floor(Math.random() * avatarOptions.accessory.length)],
-  body: avatarOptions.body[Math.floor(Math.random() * avatarOptions.body.length)],
-  circleColor: avatarOptions.circleColor[Math.floor(Math.random() * avatarOptions.circleColor.length)],
-  clothing: avatarOptions.clothing[Math.floor(Math.random() * avatarOptions.clothing.length)],
-  clothingColor: avatarOptions.clothingColor[Math.floor(Math.random() * avatarOptions.clothingColor.length)],
-  eyebrows: avatarOptions.eyebrows[Math.floor(Math.random() * avatarOptions.eyebrows.length)],
-  eyes: avatarOptions.eyes[Math.floor(Math.random() * avatarOptions.eyes.length)],
-  facialHair: avatarOptions.facialHair[Math.floor(Math.random() * avatarOptions.facialHair.length)],
-  graphic: avatarOptions.graphic[Math.floor(Math.random() * avatarOptions.graphic.length)],
+  background: avatarOptions.background[Math.floor(Math.random() * avatarOptions.background.length)],
+  face: avatarOptions.face[Math.floor(Math.random() * avatarOptions.face.length)],
   hair: avatarOptions.hair[Math.floor(Math.random() * avatarOptions.hair.length)],
-  hairColor: avatarOptions.hairColor[Math.floor(Math.random() * avatarOptions.hairColor.length)],
-  hat: avatarOptions.hat[Math.floor(Math.random() * avatarOptions.hat.length)],
-  hatColor: avatarOptions.hatColor[Math.floor(Math.random() * avatarOptions.hatColor.length)],
-  lashes: avatarOptions.lashes[Math.floor(Math.random() * avatarOptions.lashes.length)],
-  lipColor: avatarOptions.lipColor[Math.floor(Math.random() * avatarOptions.lipColor.length)],
-  mask: Math.random() > 0.5,
+  shirt: avatarOptions.shirt[Math.floor(Math.random() * avatarOptions.shirt.length)],
+  accessory: avatarOptions.accessory[Math.floor(Math.random() * avatarOptions.accessory.length)],
+  eyes: avatarOptions.eyes[Math.floor(Math.random() * avatarOptions.eyes.length)],
   mouth: avatarOptions.mouth[Math.floor(Math.random() * avatarOptions.mouth.length)],
-  skinTone: avatarOptions.skinTone[Math.floor(Math.random() * avatarOptions.skinTone.length)],
 });
 
 export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => {
   const [config, setConfig] = useState<AvatarConfig>(initialConfig || generateRandomConfig());
 
-  const updateConfig = (key: keyof AvatarConfig, value: string | boolean) => {
+  const updateConfig = (key: keyof AvatarConfig, value: string) => {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 
   const randomize = () => {
     setConfig(generateRandomConfig());
+  };
+
+  const getAvatarInitials = () => {
+    return config.hair.substring(0, 1).toUpperCase() + config.shirt.substring(0, 1).toUpperCase();
   };
 
   return (
@@ -96,27 +67,11 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex justify-center mb-6">
-          <div className="w-32 h-32">
-            <BeanHead
-              accessory={config.accessory}
-              body={config.body}
-              circleColor={config.circleColor}
-              clothing={config.clothing}
-              clothingColor={config.clothingColor}
-              eyebrows={config.eyebrows}
-              eyes={config.eyes}
-              facialHair={config.facialHair}
-              graphic={config.graphic}
-              hair={config.hair}
-              hairColor={config.hairColor}
-              hat={config.hat}
-              hatColor={config.hatColor}
-              lashes={config.lashes === "true"}
-              lipColor={config.lipColor}
-              mask={config.mask}
-              mouth={config.mouth}
-              skinTone={config.skinTone}
-            />
+          <div 
+            className="w-32 h-32 rounded-full flex items-center justify-center text-white text-2xl font-bold"
+            style={{ backgroundColor: config.background }}
+          >
+            {getAvatarInitials()}
           </div>
         </div>
 
@@ -124,7 +79,7 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
           {Object.entries(avatarOptions).map(([key, options]) => (
             <div key={key}>
               <label className="text-sm font-medium capitalize mb-2 block">
-                {key.replace(/([A-Z])/g, ' $1').trim()}
+                {key}
               </label>
               <Select
                 value={config[key as keyof AvatarConfig] as string}
