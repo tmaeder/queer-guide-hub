@@ -734,6 +734,29 @@ export default function CityDetail() {
                  </CardContent>
                </Card>
                </div>
+
+               {/* GetYourGuide Widget */}
+               <Card>
+                 <CardHeader>
+                   <CardTitle className="flex items-center gap-2">
+                     <MapPin className="h-5 w-5" />
+                     Tours & Activities
+                   </CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                   <div 
+                     data-gyg-widget="auto" 
+                     data-gyg-partner-id="2PBDXWH"
+                     data-gyg-locale="en-US"
+                     data-gyg-location-name={`${city?.name}, ${city?.countries?.name}`}
+                     data-gyg-country-code={city?.countries?.id}
+                     data-gyg-cta="Book Now"
+                     data-gyg-exclude-soldout="true"
+                     data-gyg-number-of-items="6"
+                     style={{ minHeight: '400px' }}
+                   />
+                 </CardContent>
+               </Card>
              </div>
            </TabsContent>
 
@@ -809,31 +832,6 @@ export default function CityDetail() {
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* GetYourGuide Widget */}
-        <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Tours & Activities
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div 
-                data-gyg-widget="auto" 
-                data-gyg-partner-id="2PBDXWH"
-                data-gyg-locale="en-US"
-                data-gyg-location-name={`${city?.name}, ${city?.countries?.name}`}
-                data-gyg-country-code={city?.countries?.id}
-                data-gyg-cta="Book Now"
-                data-gyg-exclude-soldout="true"
-                data-gyg-number-of-items="6"
-                style={{ minHeight: '400px' }}
-              />
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
