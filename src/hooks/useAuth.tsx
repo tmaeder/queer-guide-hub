@@ -84,24 +84,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        console.error('Captcha verification error:', error);
+        console.error('Turnstile verification error:', error);
         return { success: false, error };
       }
 
       return { success: data.success, error: data.success ? null : data.error };
     } catch (error) {
-      console.error('Captcha verification failed:', error);
+      console.error('Turnstile verification failed:', error);
       return { success: false, error };
     }
   };
 
   const signUp = async (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => {
-    // Verify captcha if token provided
-    if (captchaToken) {
-      const captchaResult = await verifyCaptcha(captchaToken, 'signup');
-      if (!captchaResult.success) {
-        return { error: { message: 'Captcha verification failed. Please try again.' } };
-      }
+    // Verify Turnstile token first (required for signup)
+    if (!captchaToken) {
+      return { error: { message: 'Security verification is required. Please complete the verification and try again.' } };
+    }
+    
+    const captchaResult = await verifyCaptcha(captchaToken, 'signup');
+    if (!captchaResult.success) {
+      return { error: { message: 'Security verification failed. Please try again.' } };
     }
 
     const redirectUrl = `${window.location.origin}/`;
@@ -119,12 +121,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
-      // Verify captcha if token provided
-      if (captchaToken) {
-        const captchaResult = await verifyCaptcha(captchaToken, 'signin');
-        if (!captchaResult.success) {
-          return { error: { message: 'Captcha verification failed. Please try again.' } };
-        }
+      // Verify Turnstile token first (required for signin)
+      if (!captchaToken) {
+        return { error: { message: 'Security verification is required. Please complete the verification and try again.' } };
+      }
+      
+      const captchaResult = await verifyCaptcha(captchaToken, 'signin');
+      if (!captchaResult.success) {
+        return { error: { message: 'Security verification failed. Please try again.' } };
       }
 
       // Log security event for sign-in attempt

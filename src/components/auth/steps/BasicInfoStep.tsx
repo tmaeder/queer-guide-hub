@@ -96,9 +96,12 @@ export default function BasicInfoStep({ data, updateData, onCaptchaVerify }: Bas
         </ul>
       </div>
 
-      {/* Captcha Verification */}
+      {/* Turnstile Verification - Required for signup */}
       <div className="space-y-2">
-        <Label>Security Verification</Label>
+        <Label className="text-sm font-medium">Security Verification Required</Label>
+        <p className="text-xs text-muted-foreground">
+          Complete this verification to continue with account creation.
+        </p>
         <TurnstileWidget 
           onVerify={onCaptchaVerify || (() => {})}
           action="signup"
