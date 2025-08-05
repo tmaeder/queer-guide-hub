@@ -56,15 +56,15 @@ serve(async (req) => {
       throw new Error("Minimum donation amount is 5.00 CHF");
     }
 
-    // Get zahls.ch configuration
-    const zahlsBaseUrl = Deno.env.get("ZAHLS_BASE_URL") || "https://zahls.ch";
-    const zahlsPaymentPageId = Deno.env.get("ZAHLS_PAYMENT_PAGE_ID");
+    // Get zahls.ch API configuration
+    const zahlsApiKey = Deno.env.get("ZAHLS_API_KEY");
+    const zahlsInstanceName = Deno.env.get("ZAHLS_INSTANCE_NAME");
     
-    if (!zahlsPaymentPageId) {
-      throw new Error("zahls.ch payment page ID not configured");
+    if (!zahlsApiKey || !zahlsInstanceName) {
+      throw new Error("zahls.ch API credentials not configured");
     }
 
-    // Create donation record in database
+    // Create donation record in database first
     const donationId = crypto.randomUUID();
     const { error: dbError } = await supabaseService.from("donations").insert({
       id: donationId,
@@ -83,19 +83,43 @@ serve(async (req) => {
       throw new Error("Failed to create donation record");
     }
 
-    // Create zahls.ch payment URL with parameters
-    const paymentUrl = new URL(`${zahlsBaseUrl}/payment/${zahlsPaymentPageId}`);
-    paymentUrl.searchParams.set("amount", (amount / 100).toFixed(2)); // Convert cents to CHF
-    paymentUrl.searchParams.set("reference", donationId);
-    paymentUrl.searchParams.set("customer_email", userEmail);
-    paymentUrl.searchParams.set("success_url", `${req.headers.get("origin")}/donation-success?donation_id=${donationId}`);
-    paymentUrl.searchParams.set("cancel_url", `${req.headers.get("origin")}/donate`);
+    // Create zahls.ch gateway using their REST API
+    const zahlsApiUrl = `https://api.zahls.ch/v1.0/Gateway/`;
     
-    if (donor_name) {
-      paymentUrl.searchParams.set("customer_name", donor_name);
+    const gatewayData = {
+      amount: amount, // Amount in cents
+      currency: "CHF",
+      purpose: `Donation to Queer Guide - ${donationId}`,
+      successRedirectUrl: `${req.headers.get("origin")}/donation-success?donation_id=${donationId}`,
+      cancelRedirectUrl: `${req.headers.get("origin")}/donate`,
+      failedRedirectUrl: `${req.headers.get("origin")}/donate?error=payment_failed`,
+      referenceId: donationId,
+      contact: {
+        email: userEmail,
+        ...(donor_name && { name: donor_name }),
+      },
+      ...(message && { description: message }),
+    };
+
+    const response = await fetch(zahlsApiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${zahlsApiKey}`,
+        "Zahls-Instance": zahlsInstanceName,
+      },
+      body: JSON.stringify(gatewayData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("zahls.ch API error:", errorText);
+      throw new Error("Failed to create payment gateway");
     }
 
-    return new Response(JSON.stringify({ url: paymentUrl.toString() }), {
+    const gateway = await response.json();
+
+    return new Response(JSON.stringify({ url: gateway.link }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
