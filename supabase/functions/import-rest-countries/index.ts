@@ -82,10 +82,19 @@ Deno.serve(async (req) => {
 
     console.log('Starting REST Countries import...');
 
-    // Fetch countries from REST Countries API
-    const restCountriesResponse = await fetch('https://restcountries.com/v3.1/all');
+    // Fetch countries from REST Countries API with better error handling
+    console.log('Fetching data from REST Countries API...');
+    const restCountriesResponse = await fetch('https://restcountries.com/v3.1/all?fields=name,tld,cca2,ccn3,cca3,cioc,independent,status,unMember,currencies,idd,capital,altSpellings,region,subregion,languages,translations,latlng,landlocked,borders,area,demonyms,flag,maps,population,gini,fifa,car,timezones,continents,flags,coatOfArms,startOfWeek,capitalInfo,postalCode', {
+      headers: {
+        'User-Agent': 'Queer-Guide-App/1.0',
+        'Accept': 'application/json'
+      }
+    });
+    
     if (!restCountriesResponse.ok) {
-      throw new Error(`REST Countries API error: ${restCountriesResponse.status}`);
+      const errorText = await restCountriesResponse.text();
+      console.error(`REST Countries API error: ${restCountriesResponse.status} - ${errorText}`);
+      throw new Error(`REST Countries API error: ${restCountriesResponse.status} - ${errorText}`);
     }
 
     const restCountries: RestCountry[] = await restCountriesResponse.json();
