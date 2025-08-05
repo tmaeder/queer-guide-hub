@@ -220,13 +220,15 @@ const Events = () => {
                 Calendar
               </Button>
             </div>
-            <Button 
-              className="bg-primary gap-2"
-              onClick={() => navigate('/admin/events')}
-            >
-              <Plus className="h-4 w-4" />
-              Create Event
-            </Button>
+            {user && (
+              <Button 
+                className="bg-primary gap-2"
+                onClick={() => navigate('/admin/events')}
+              >
+                <Plus className="h-4 w-4" />
+                Create Event
+              </Button>
+            )}
           </div>
         </div>
 
@@ -490,12 +492,14 @@ const Events = () => {
               <p className="text-muted-foreground mb-4">
                 We couldn't find any events matching your criteria. Try adjusting your filters or be the first to create an event!
               </p>
-              <Button 
-                className="bg-primary"
-                onClick={() => navigate('/admin/events')}
-              >
-                Create the First Event
-              </Button>
+              {user && (
+                <Button 
+                  className="bg-primary"
+                  onClick={() => navigate('/admin/events')}
+                >
+                  Create the First Event
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}

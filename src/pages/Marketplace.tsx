@@ -108,10 +108,12 @@ const Marketplace = () => {
               Discover and support local businesses offering products and services
             </p>
           </div>
-          <Button className="bg-gradient-primary gap-2">
-            <Plus className="h-4 w-4" />
-            List Your Business
-          </Button>
+          {user && (
+            <Button className="bg-gradient-primary gap-2">
+              <Plus className="h-4 w-4" />
+              List Your Business
+            </Button>
+          )}
         </div>
 
         {/* Filters */}
@@ -153,9 +155,11 @@ const Marketplace = () => {
                 <p className="text-muted-foreground mb-4">
                   We couldn't find any listings matching your criteria. Try adjusting your filters or be the first to add your business!
                 </p>
-                <Button className="bg-gradient-primary">
-                  List Your Business
-                </Button>
+                {user && (
+                  <Button className="bg-gradient-primary">
+                    List Your Business
+                  </Button>
+                )}
               </CardContent>
             </Card>}
 

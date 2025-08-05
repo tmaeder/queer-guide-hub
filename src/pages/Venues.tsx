@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
+import { useAuth } from '@/hooks/useAuth';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { VenueFilters } from '@/components/venues/VenueFilters';
 import { VenueMapSearch } from '@/components/venues/VenueMapSearch';
@@ -16,6 +17,7 @@ type Venue = Database['public']['Tables']['venues']['Row'];
 
 const Venues = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { venues, loading, error, fetchVenues } = useVenues();
   const { events } = useEvents();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
@@ -103,13 +105,15 @@ const Venues = () => {
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Discover queer-friendly venues, businesses, and organizations in your area
           </p>
-          <Button 
-            className="bg-primary hover:bg-primary/90 gap-2 px-6 py-3 text-lg hover-scale"
-            onClick={() => navigate('/admin/venues')}
-          >
-            <Plus className="h-5 w-5" />
-            Add Your Business
-          </Button>
+          {user && (
+            <Button 
+              className="bg-primary hover:bg-primary/90 gap-2 px-6 py-3 text-lg hover-scale"
+              onClick={() => navigate('/admin/venues')}
+            >
+              <Plus className="h-5 w-5" />
+              Add Your Business
+            </Button>
+          )}
         </div>
 
         {/* Filters Section */}
@@ -188,12 +192,14 @@ const Venues = () => {
                   <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                     We couldn't find any venues matching your criteria. Try adjusting your filters or be the first to add a venue in this area!
                   </p>
-                  <Button 
-                    className="bg-primary hover:bg-primary/90 px-6 py-3"
-                    onClick={() => navigate('/admin/venues')}
-                  >
-                    Add the First Venue
-                  </Button>
+                  {user && (
+                    <Button 
+                      className="bg-primary hover:bg-primary/90 px-6 py-3"
+                      onClick={() => navigate('/admin/venues')}
+                    >
+                      Add the First Venue
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             )}
