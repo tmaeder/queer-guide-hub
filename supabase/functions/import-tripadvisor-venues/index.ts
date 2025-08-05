@@ -522,14 +522,44 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('TripAdvisor import error:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+    
+    let errorMessage = 'Unknown error occurred';
+    let statusCode = 500;
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      
+      // Check if it's an API authentication error
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+        statusCode = 401;
+        errorMessage = 'TripAdvisor API authentication failed. Please check your API key.';
+      } else if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
+        statusCode = 403;
+        errorMessage = 'TripAdvisor API access forbidden. Please check your API key permissions.';
+      } else if (errorMessage.includes('429') || errorMessage.includes('rate limit')) {
+        statusCode = 429;
+        errorMessage = 'TripAdvisor API rate limit exceeded. Please try again later.';
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || 'Failed to import venues from TripAdvisor'
+        error: errorMessage,
+        details: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        } : String(error)
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+        status: statusCode
       }
     );
   }
