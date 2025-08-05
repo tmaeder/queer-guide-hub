@@ -200,10 +200,7 @@ export default function News() {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button onClick={handleImportNews} disabled={isImporting} variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              {isImporting ? 'Importing...' : 'Import Latest'}
-            </Button>
+            
           </div>
         </div>
 
