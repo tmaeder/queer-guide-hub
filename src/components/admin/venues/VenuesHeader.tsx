@@ -14,10 +14,12 @@ interface VenuesHeaderProps {
   onFoursquareImport: (isReimport?: boolean) => void;
   onTripAdvisorImport: (isReimport?: boolean) => void;
   onTomTomImport: (isReimport?: boolean) => void;
+  onGooglePlacesImport: (isReimport?: boolean) => void;
   onImportComplete: () => void;
   isImporting: boolean;
   isImportingTripAdvisor: boolean;
   isImportingTomTom: boolean;
+  isImportingGooglePlaces: boolean;
 }
 
 export function VenuesHeader({ 
@@ -26,10 +28,12 @@ export function VenuesHeader({
   onFoursquareImport,
   onTripAdvisorImport,
   onTomTomImport,
+  onGooglePlacesImport,
   onImportComplete,
   isImporting,
   isImportingTripAdvisor,
-  isImportingTomTom
+  isImportingTomTom,
+  isImportingGooglePlaces
 }: VenuesHeaderProps) {
   return (
     <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -115,6 +119,31 @@ export function VenuesHeader({
                 Import New
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onTomTomImport(true)}>
+                <RefreshCw className="h-3 w-3 mr-2" />
+                Re-import/Update
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={isImportingGooglePlaces}
+                className="text-xs"
+              >
+                <Download className="h-3 w-3 mr-1" />
+                {isImportingGooglePlaces ? "Importing..." : "Google Places"}
+                <ChevronDown className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => onGooglePlacesImport(false)}>
+                <Download className="h-3 w-3 mr-2" />
+                Import New
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onGooglePlacesImport(true)}>
                 <RefreshCw className="h-3 w-3 mr-2" />
                 Re-import/Update
               </DropdownMenuItem>

@@ -42,6 +42,7 @@ export default function AdminVenues() {
   const [isImporting, setIsImporting] = useState(false);
   const [isImportingTripAdvisor, setIsImportingTripAdvisor] = useState(false);
   const [isImportingTomTom, setIsImportingTomTom] = useState(false);
+  const [isImportingGooglePlaces, setIsImportingGooglePlaces] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -333,6 +334,46 @@ export default function AdminVenues() {
     }
   };
 
+  const handleGooglePlacesImport = async () => {
+    setIsImportingGooglePlaces(true);
+    try {
+      toast({
+        title: "Import Started",
+        description: "Google Places venue import has been triggered. This may take a few minutes...",
+      });
+
+      const { data, error } = await supabase.functions.invoke('import-google-places-venues');
+      
+      if (error) {
+        console.error('Google Places import error:', error);
+        toast({
+          title: "Import Failed",
+          description: "Failed to import venues from Google Places. Please try again.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Import Completed",
+          description: `${data.message}. Page will refresh to show updated venues.`,
+        });
+        
+        // Refresh the venues list after import
+        setTimeout(() => {
+          refetch();
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Google Places import error:', error);
+      toast({
+        title: "Import Failed", 
+        description: "Failed to import venues from Google Places. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsImportingGooglePlaces(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -379,10 +420,12 @@ export default function AdminVenues() {
         onFoursquareImport={handleFoursquareImport}
         onTripAdvisorImport={handleTripAdvisorImport}
         onTomTomImport={handleTomTomImport}
+        onGooglePlacesImport={handleGooglePlacesImport}
         onImportComplete={refetch}
         isImporting={isImporting}
         isImportingTripAdvisor={isImportingTripAdvisor}
         isImportingTomTom={isImportingTomTom}
+        isImportingGooglePlaces={isImportingGooglePlaces}
       />
 
       {/* Stats */}
