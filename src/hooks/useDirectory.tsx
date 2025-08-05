@@ -170,8 +170,7 @@ export const useDirectory = () => {
           countries (*)
         `)
         .not('latitude', 'is', null)
-        .not('longitude', 'is', null)
-        .limit(100); // Reasonable limit for calculation
+        .not('longitude', 'is', null);
 
       if (error) throw error;
 

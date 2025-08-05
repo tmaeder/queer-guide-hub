@@ -20,30 +20,36 @@ export const useStats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Get venues count
-        const { count: venuesCount } = await supabase
+        // Get venues count - use proper count queries without limits
+        const { count: venuesCount, error: venuesError } = await supabase
           .from('venues')
-          .select('*', { count: 'exact', head: true });
+          .select('id', { count: 'exact', head: true });
 
         // Get members count
-        const { count: membersCount } = await supabase
+        const { count: membersCount, error: membersError } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact', head: true });
+          .select('id', { count: 'exact', head: true });
 
         // Get cities count
-        const { count: citiesCount } = await supabase
+        const { count: citiesCount, error: citiesError } = await supabase
           .from('cities')
-          .select('*', { count: 'exact', head: true });
+          .select('id', { count: 'exact', head: true });
 
         // Get weekly events count (events from the last 7 days or upcoming events)
         const oneWeekFromNow = new Date();
         oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
         
-        const { count: weeklyEventsCount } = await supabase
+        const { count: weeklyEventsCount, error: eventsError } = await supabase
           .from('events')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .gte('start_date', new Date().toISOString())
           .lte('start_date', oneWeekFromNow.toISOString());
+
+        // Log any errors
+        if (venuesError) console.error('Error counting venues:', venuesError);
+        if (membersError) console.error('Error counting members:', membersError);
+        if (citiesError) console.error('Error counting cities:', citiesError);
+        if (eventsError) console.error('Error counting events:', eventsError);
 
         setStats({
           venues: venuesCount || 0,

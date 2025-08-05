@@ -42,17 +42,27 @@ export default function TagsDirectory() {
       const usageCounts: Record<string, number> = {};
       
       try {
-        // Get venue tag usage
+        // Get venue tag usage - no limit to get all records
         const { data: venues } = await supabase
           .from('venues')
           .select('tags')
           .not('tags', 'is', null);
         
-        // Get community group tag usage  
+        // Get community group tag usage - no limit to get all records
         const { data: groups } = await supabase
           .from('community_groups')
           .select('tags')
           .not('tags', 'is', null);
+
+        // Get event tag usage
+        const { data: events } = await supabase
+          .from('events')
+          .select('target_groups')
+          .not('target_groups', 'is', null);
+
+        // Note: marketplace_listings doesn't have tags column in current schema
+        // Skip marketplace for now until tags column is added
+        const marketplace: any[] = [];
           
         // Count usage across all content types
         for (const tag of allTags) {
@@ -69,6 +79,20 @@ export default function TagsDirectory() {
           if (groups) {
             count += groups.filter(group => 
               group.tags && group.tags.includes(tag.name)
+            ).length;
+          }
+
+          // Count in events (target_groups)
+          if (events) {
+            count += events.filter(event => 
+              event.target_groups && event.target_groups.includes(tag.name)
+            ).length;
+          }
+
+          // Count in marketplace
+          if (marketplace) {
+            count += marketplace.filter(item => 
+              item.tags && item.tags.includes(tag.name)
             ).length;
           }
           

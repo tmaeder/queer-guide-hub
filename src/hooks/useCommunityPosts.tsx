@@ -56,7 +56,7 @@ export const useCommunityPosts = (userId?: string) => {
         query = query.eq('visibility', 'public');
       }
 
-      const { data, error } = await query.limit(50);
+      const { data, error } = await query;
       
       if (error) throw error;
 
