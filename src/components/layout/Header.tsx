@@ -61,6 +61,7 @@ export function Header() {
     { to: "/profile/settings", icon: Settings, label: "My Profile" },
     { to: "/messages", icon: MessageSquare, label: "Messages" },
     { to: "/friends", icon: Users, label: "Friends" },
+    { to: "/my-groups", icon: UsersRound, label: "My Groups" },
     { to: "/accessibility", icon: Accessibility, label: "Access" },
   ];
 

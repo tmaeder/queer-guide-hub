@@ -68,6 +68,7 @@ import Messages from "./pages/Messages";
 import Friends from "./pages/Friends";
 import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
+import MyGroups from "./pages/MyGroups";
 import AccessibilityHub from "./pages/AccessibilityHub";
 import NotFound from "./pages/NotFound";
 import SearchResults from "./pages/SearchResults";
@@ -289,8 +290,9 @@ const App = () => {
                    <Route path="/news" element={<News />} />
                    <Route path="/search" element={<SearchResults />} />
                    <Route path="/travel" element={<Travel />} />
-                   <Route path="/groups" element={<Groups />} />
-                   <Route path="/groups/:groupId" element={<GroupDetail />} />
+                    <Route path="/groups" element={<Groups />} />
+                    <Route path="/groups/:groupId" element={<GroupDetail />} />
+                    <Route path="/my-groups" element={<MyGroups />} />
                    <Route path="/accessibility" element={<AccessibilityHub />} />
                    <Route path="/messages" element={<Messages />} />
                    <Route path="/friends" element={<Friends />} />
