@@ -280,7 +280,7 @@ export default function News() {
             {/* Empty State */}
             {!loading && getSortedArticles().length === 0 && <Card className="p-8 text-center">
                 <CardContent>
-                  <Newspaper className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  
                   <h3 className="text-xl font-semibold mb-2">No articles found</h3>
                   
                   <Button onClick={handleImportNews} disabled={isImporting} className="gap-2">
