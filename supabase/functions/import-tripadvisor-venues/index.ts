@@ -283,8 +283,28 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const keywords = ['gay sauna', 'gay bar'];
-    const locations = ['New York', 'San Francisco', 'Los Angeles', 'Chicago', 'Miami', 'London', 'Berlin', 'Amsterdam', 'Barcelona', 'Paris'];
+    // Test API key validity first
+    console.log('Testing TripAdvisor API key validity...');
+    const testUrl = `https://api.content.tripadvisor.com/api/v1/location/search?key=${tripadvisorApiKey}&searchQuery=New%20York&language=en`;
+    
+    const testResponse = await fetch(testUrl, {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!testResponse.ok) {
+      console.error('API key test failed:', testResponse.status, testResponse.statusText);
+      const errorText = await testResponse.text();
+      console.error('Error response:', errorText);
+      throw new Error(`TripAdvisor API key invalid or expired. Status: ${testResponse.status}`);
+    }
+
+    console.log('API key test successful');
+
+    // Reduced dataset for testing
+    const keywords = ['gay bar'];
+    const locations = ['New York', 'San Francisco'];
     
     let totalImported = 0;
     let totalSkipped = 0;
@@ -294,18 +314,21 @@ serve(async (req) => {
         console.log(`Searching for "${keyword}" in ${location}...`);
         
         try {
-          // Search for locations using TripAdvisor API
-          const searchUrl = `https://api.content.tripadvisor.com/api/v1/location/search?searchQuery=${encodeURIComponent(keyword + ' ' + location)}&category=attractions,restaurants,hotels&language=en`;
+          // Updated API endpoint with query parameter authentication
+          const searchUrl = `https://api.content.tripadvisor.com/api/v1/location/search?key=${tripadvisorApiKey}&searchQuery=${encodeURIComponent(keyword + ' ' + location)}&language=en`;
+          
+          console.log('Search URL (without key):', searchUrl.replace(/key=[^&]+/, 'key=***'));
           
           const searchResponse = await fetch(searchUrl, {
             headers: {
               'Accept': 'application/json',
-              'X-TripAdvisor-API-Key': tripadvisorApiKey,
             },
           });
 
           if (!searchResponse.ok) {
             console.error(`TripAdvisor search failed for "${keyword}" in ${location}:`, searchResponse.status, searchResponse.statusText);
+            const errorText = await searchResponse.text();
+            console.error('Search error response:', errorText);
             continue;
           }
 
@@ -320,12 +343,13 @@ serve(async (req) => {
           for (const item of searchData.data.slice(0, 5)) { // Limit to 5 per search to avoid rate limits
             try {
               // Get detailed information for each location
-              const detailsUrl = `https://api.content.tripadvisor.com/api/v1/location/${item.location_id}/details?language=en&currency=USD`;
+              const detailsUrl = `https://api.content.tripadvisor.com/api/v1/location/${item.location_id}/details?key=${tripadvisorApiKey}&language=en&currency=USD`;
+              
+              console.log('Details URL (without key):', detailsUrl.replace(/key=[^&]+/, 'key=***'));
               
               const detailsResponse = await fetch(detailsUrl, {
                 headers: {
                   'Accept': 'application/json',
-                  'X-TripAdvisor-API-Key': tripadvisorApiKey,
                 },
               });
               if (!detailsResponse.ok) {
