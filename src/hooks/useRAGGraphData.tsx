@@ -71,7 +71,7 @@ export function useRAGGraphData() {
             content_type: item.content_type,
             content_text: item.content_text,
             metadata: item.metadata || {},
-            similarity: Math.random() * 0.5 + 0.5 // Mock similarity
+            similarity: 0.5 // Default similarity for embeddings
           })));
         }
       } else {
@@ -81,7 +81,7 @@ export function useRAGGraphData() {
           content_type: item.content_type,
           content_text: item.content_text,
           metadata: item.metadata || {},
-          similarity: Math.random() * 0.5 + 0.5 // Mock similarity
+          similarity: 1.0 // Default similarity for non-query embeddings
         })) || []);
       }
 
@@ -99,23 +99,8 @@ export function useRAGGraphData() {
           relationship_type: rel.relationship_type || 'semantic'
         })));
       } else {
-        // Generate mock connections
-        const mockConnections: GraphConnection[] = [];
-        const nodeIds = nodes.map(n => n.id);
-        
-        for (let i = 0; i < Math.min(nodeIds.length, 50); i++) {
-          for (let j = i + 1; j < Math.min(nodeIds.length, 50); j++) {
-            if (Math.random() > 0.8) { // 20% chance of connection
-              mockConnections.push({
-                source_id: nodeIds[i],
-                target_id: nodeIds[j],
-                similarity_score: Math.random() * 0.5 + 0.5,
-                relationship_type: 'semantic'
-              });
-            }
-          }
-        }
-        setConnections(mockConnections);
+        // No connections if no real relationships exist
+        setConnections([]);
       }
 
     } catch (error) {

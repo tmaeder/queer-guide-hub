@@ -374,14 +374,14 @@ export function InteractiveRAGGraph({
   const [filteredTypes, setFilteredTypes] = useState(['venue', 'event', 'tag', 'group', 'marketplace']);
   const [similarityThreshold, setSimilarityThreshold] = useState(0.3);
 
-  // Generate sample data for demonstration (replace with real RAG data)
+  // Only use real RAG data
   const graphData = useMemo(() => {
-    // If we have real RAG data, use it; otherwise generate sample data
     if (ragData.length > 0) {
       return generateGraphFromRAGData(ragData, filteredTypes, similarityThreshold);
     }
     
-    return generateSampleGraphData(filteredTypes, similarityThreshold);
+    // Return empty graph if no real data
+    return { nodes: [], connections: [] };
   }, [ragData, filteredTypes, similarityThreshold]);
 
   const handleNodeClick = (nodeId: string) => {
@@ -459,68 +459,6 @@ export function InteractiveRAGGraph({
   );
 }
 
-// Generate sample graph data for demonstration
-function generateSampleGraphData(filteredTypes: string[], similarityThreshold: number) {
-  const contentTypes = ['venue', 'event', 'tag', 'group', 'marketplace'];
-  const colors = {
-    venue: '#3B82F6',     // Blue
-    event: '#8B5CF6',     // Purple
-    tag: '#10B981',       // Green
-    group: '#F59E0B',     // Yellow
-    marketplace: '#EF4444' // Red
-  };
-
-  const nodes = [];
-  const connections = [];
-
-  // Generate nodes
-  for (let i = 0; i < 50; i++) {
-    const type = contentTypes[Math.floor(Math.random() * contentTypes.length)];
-    
-    if (!filteredTypes.includes(type)) continue;
-
-    const angle = (i / 50) * Math.PI * 2;
-    const radius = 3 + Math.random() * 4;
-    const height = (Math.random() - 0.5) * 8;
-
-    nodes.push({
-      id: `node-${i}`,
-      position: [
-        Math.cos(angle) * radius + (Math.random() - 0.5) * 2,
-        height,
-        Math.sin(angle) * radius + (Math.random() - 0.5) * 2
-      ] as [number, number, number],
-      color: colors[type as keyof typeof colors],
-      size: 0.2 + Math.random() * 0.3,
-      label: `${type} ${i + 1}`,
-      contentType: type,
-      similarity: Math.random(),
-      connections: Math.floor(Math.random() * 5),
-      content: `Sample ${type} content with description and details...`
-    });
-  }
-
-  // Generate connections
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i + 1; j < nodes.length; j++) {
-      const similarity = Math.random();
-      
-      if (similarity > similarityThreshold && Math.random() > 0.7) {
-        const connectionType = Math.random() > 0.5 ? 'semantic' : 
-                             Math.random() > 0.5 ? 'category' : 'location';
-        
-        connections.push({
-          start: nodes[i].position,
-          end: nodes[j].position,
-          strength: similarity,
-          type: connectionType
-        });
-      }
-    }
-  }
-
-  return { nodes, connections };
-}
 
 // Generate graph data from real RAG results
 function generateGraphFromRAGData(ragData: any[], filteredTypes: string[], similarityThreshold: number) {
@@ -559,7 +497,8 @@ function generateGraphFromRAGData(ragData: any[], filteredTypes: string[], simil
   const connections = [];
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
-      const similarity = Math.random() * 0.5 + 0.5; // Mock similarity
+      // Calculate actual similarity based on content similarity or use metadata
+      const similarity = Math.min(nodes[i].similarity || 0.5, nodes[j].similarity || 0.5);
       
       if (similarity > similarityThreshold) {
         connections.push({

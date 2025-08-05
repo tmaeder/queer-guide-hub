@@ -249,7 +249,7 @@ export default function KnowledgeBase() {
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 text-orange-500" />
                     <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
-                      No embeddings found - Graph showing sample data
+                      No embeddings found - Please populate embeddings first
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -343,7 +343,7 @@ export default function KnowledgeBase() {
                 </p>
                 <Button onClick={() => fetchGraphData()} variant="outline">
                   <Database className="h-4 w-4 mr-2" />
-                  Load Sample Data
+                  Populate Real Data
                 </Button>
               </CardContent>
             </Card>

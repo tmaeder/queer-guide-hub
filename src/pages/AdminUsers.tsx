@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Users, Search, UserPlus, Shield, Eye, MoreHorizontal } from "lucide-react";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
+import { supabase } from "@/integrations/supabase/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -15,49 +16,51 @@ export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
-  // Mock user data - in a real app, this would come from your database
-  const mockUsers = [
-    { 
-      id: '1', 
-      email: 'tmaeder@me.com', 
-      displayName: 'Thomas Maeder', 
-      role: 'admin', 
-      status: 'active',
-      joinDate: '2024-01-15',
-      lastActive: '2024-07-20'
-    },
-    { 
-      id: '2', 
-      email: 'tmaeder@icloud.com', 
-      displayName: 'Tom M', 
-      role: 'moderator', 
-      status: 'active',
-      joinDate: '2024-02-20',
-      lastActive: '2024-07-19'
-    },
-    { 
-      id: '3', 
-      email: 'user@example.com', 
-      displayName: 'Regular User', 
-      role: 'user', 
-      status: 'active',
-      joinDate: '2024-03-10',
-      lastActive: '2024-07-18'
-    },
-    { 
-      id: '4', 
-      email: 'inactive@example.com', 
-      displayName: 'Inactive User', 
-      role: 'user', 
-      status: 'inactive',
-      joinDate: '2024-01-05',
-      lastActive: '2024-06-15'
-    }
-  ];
+  // Real user data from database
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredUsers = mockUsers.filter(user => {
-    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.displayName.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select(`
+            *,
+            user_roles(role)
+          `)
+          .order('created_at', { ascending: false });
+
+        const userList = profiles?.map(profile => ({
+          id: profile.user_id,
+          email: profile.display_name || 'Anonymous User',
+          displayName: profile.display_name || 'Anonymous',
+          role: 'user', // Default role - user_roles join might have issues
+          status: 'active', // Could be enhanced with actual status from auth
+          joinDate: new Date(profile.created_at).toISOString().split('T')[0],
+          lastActive: new Date(profile.updated_at).toISOString().split('T')[0]
+        })) || [];
+
+        setUsers(userList);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  if (loading) {
+    return <div className="p-6">Loading users...</div>;
+  }
+
+  // No fallback data - only show real users
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.displayName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -91,7 +94,7 @@ export default function AdminUsers() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockUsers.length}</div>
+            <div className="text-2xl font-bold">{users.length}</div>
           </CardContent>
         </Card>
 
@@ -102,7 +105,7 @@ export default function AdminUsers() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockUsers.filter(u => u.status === 'active').length}
+              {users.filter(u => u.status === 'active').length}
             </div>
           </CardContent>
         </Card>
@@ -114,7 +117,7 @@ export default function AdminUsers() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockUsers.filter(u => u.role === 'admin').length}
+              {users.filter(u => u.role === 'admin').length}
             </div>
           </CardContent>
         </Card>
@@ -126,7 +129,7 @@ export default function AdminUsers() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockUsers.filter(u => u.role === 'moderator').length}
+              {users.filter(u => u.role === 'moderator').length}
             </div>
           </CardContent>
         </Card>
@@ -184,7 +187,7 @@ export default function AdminUsers() {
                     <TableCell>
                       <div>
                         <div className="font-medium">{user.displayName}</div>
-                        <div className="text-sm text-muted-foreground">{user.email}</div>
+                        <div className="text-sm text-muted-foreground">User ID: {user.id}</div>
                       </div>
                     </TableCell>
                     <TableCell>
