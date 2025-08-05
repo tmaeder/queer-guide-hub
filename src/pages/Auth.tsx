@@ -46,13 +46,8 @@ export default function Auth() {
     setIsLoading(true);
     setError(null);
 
-    if (!captchaToken) {
-      setError('Please complete the security verification first.');
-      return;
-    }
-
     try {
-      const { error } = await signIn(loginData.email, loginData.password, captchaToken);
+      const { error } = await signIn(loginData.email, loginData.password);
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           setError('Invalid email or password. Please check your credentials and try again.');
@@ -160,18 +155,6 @@ export default function Auth() {
               
               <PasskeyButton mode="signin" className="w-full" />
             </form>
-
-            {/* Turnstile Verification - Required for login */}
-            <div className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Security Verification Required</Label>
-                <TurnstileWidget 
-                  onVerify={setCaptchaToken}
-                  action="signin"
-                  className="flex justify-center"
-                />
-              </div>
-            </div>
 
             <div className="text-center mt-4">
               <Button

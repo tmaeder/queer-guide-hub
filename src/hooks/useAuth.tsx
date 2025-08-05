@@ -121,15 +121,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
-      // Verify Turnstile token first (required for signin)
-      if (!captchaToken) {
-        return { error: { message: 'Security verification is required. Please complete the verification and try again.' } };
-      }
-      
-      const captchaResult = await verifyCaptcha(captchaToken, 'signin');
-      if (!captchaResult.success) {
-        return { error: { message: 'Security verification failed. Please try again.' } };
-      }
 
       // Log security event for sign-in attempt
       console.log('Sign-in attempt for email:', email);
