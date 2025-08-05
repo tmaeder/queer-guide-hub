@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Fingerprint, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PasskeyButtonProps {
   mode: 'enroll' | 'signin';
@@ -16,7 +17,7 @@ export const PasskeyButton = ({
   variant = 'outline'
 }: PasskeyButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { enrollPasskey, signInWithPasskey, hasPasskey } = useAuth();
+  const { enrollPasskey, signInWithPasskey, hasPasskey, user } = useAuth();
   const { toast } = useToast();
 
   const handlePasskeyAction = async () => {
@@ -26,12 +27,30 @@ export const PasskeyButton = ({
       if (mode === 'enroll') {
         const { error } = await enrollPasskey();
         if (error) {
+          // Log security event for failed passkey enrollment
+          if (user) {
+            await supabase.rpc('log_enhanced_security_event', {
+              event_type: 'PASSKEY_ENROLLMENT_FAILED',
+              user_id_param: user.id,
+              details: { error: error.message },
+              severity: 'medium'
+            });
+          }
           toast({
             title: "Passkey Setup Failed",
             description: error.message || "Failed to set up passkey. Please try again.",
             variant: "destructive",
           });
         } else {
+          // Log successful passkey enrollment
+          if (user) {
+            await supabase.rpc('log_enhanced_security_event', {
+              event_type: 'PASSKEY_ENROLLMENT_SUCCESS',
+              user_id_param: user.id,
+              details: { timestamp: new Date().toISOString() },
+              severity: 'info'
+            });
+          }
           toast({
             title: "Passkey Setup Complete",
             description: "Your passkey has been successfully set up for passwordless sign-in.",
@@ -40,6 +59,13 @@ export const PasskeyButton = ({
       } else {
         const { error } = await signInWithPasskey();
         if (error) {
+          // Log security event for failed passkey sign-in
+          await supabase.rpc('log_enhanced_security_event', {
+            event_type: 'PASSKEY_SIGNIN_FAILED',
+            user_id_param: null,
+            details: { error: error.message },
+            severity: 'medium'
+          });
           toast({
             title: "Passkey Sign-in Failed",
             description: error.message || "Failed to sign in with passkey. Please try again.",

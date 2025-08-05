@@ -122,20 +122,15 @@ export const useGroupNotifications = () => {
     post_url?: string;
   }) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-group-notifications`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify(data),
+      const { data: result, error } = await supabase.functions.invoke('send-group-notifications', {
+        body: data
       });
 
-      if (!response.ok) {
+      if (error) {
         throw new Error('Failed to send email notification');
       }
 
-      return await response.json();
+      return result;
     } catch (error) {
       console.error('Error sending email notification:', error);
       throw error;

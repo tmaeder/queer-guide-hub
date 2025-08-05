@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlgoliaManager } from "@/components/admin/AlgoliaManager";
 import { NewsModeration } from "@/components/admin/NewsModeration";
+import { SecurityMonitoringDashboard } from "@/components/admin/SecurityMonitoringDashboard";
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const {
@@ -750,5 +751,10 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Security Monitoring Section */}
+      <div className="mt-8">
+        <SecurityMonitoringDashboard />
+      </div>
     </div>;
 }

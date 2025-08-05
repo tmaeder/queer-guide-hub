@@ -9,6 +9,8 @@ import { useVenues } from '@/hooks/useVenues';
 import { useRestrooms } from '@/hooks/useRestrooms';
 import { VenueCard } from './VenueCard';
 import { Database } from '@/integrations/supabase/types';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type SelectedItem = Venue | { type: 'restroom'; id: number; name: string; city: string; state: string; accessible: boolean; unisex: boolean; };
@@ -33,15 +35,28 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
   const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
   const [showRestrooms, setShowRestrooms] = useState(true);
-  // Use the Mapbox token from environment - remove hardcoded fallback for security
-  const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
+  const { user } = useAuth();
   
   const { venues, loading: venuesLoading, fetchVenues } = useVenues();
   const { restrooms, loading: restroomsLoading, fetchRestrooms } = useRestrooms();
 
+  // Fetch secure Mapbox token from edge function
+  const fetchMapboxToken = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('secure-mapbox-proxy');
+      if (error) throw error;
+      setMapboxToken(data.token);
+    } catch (error) {
+      console.error('Failed to fetch Mapbox token:', error);
+    }
+  };
+
   const initializeMap = () => {
     if (!mapContainer.current || !mapboxToken) {
-      console.error('Mapbox token not configured. Please add VITE_MAPBOX_ACCESS_TOKEN to your environment.');
+      console.error('Mapbox token not available');
       return;
     }
 
@@ -88,17 +103,25 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
   const loading = venuesLoading || restroomsLoading;
 
   useEffect(() => {
-    initializeMap();
-    // Fetch initial restrooms for a general area (NYC)
-    fetchRestrooms({
-      lat: 40.7128,
-      lng: -74.006,
-      per_page: 50
-    });
+    if (user) {
+      fetchMapboxToken();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (mapboxToken) {
+      initializeMap();
+      // Fetch initial restrooms for a general area (NYC)
+      fetchRestrooms({
+        lat: 40.7128,
+        lng: -74.006,
+        per_page: 50
+      });
+    }
     return () => {
       map.current?.remove();
     };
-  }, []);
+  }, [mapboxToken]);
 
   // Apply filters when they change
   useEffect(() => {
