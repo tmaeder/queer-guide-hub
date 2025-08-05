@@ -287,24 +287,40 @@ serve(async (req) => {
     console.log('Testing TripAdvisor API key validity...');
     const testUrl = `https://api.content.tripadvisor.com/api/v1/location/search?key=${tripadvisorApiKey}&searchQuery=New%20York&language=en`;
     
+    console.log('Making test request to verify API key...');
     const testResponse = await fetch(testUrl, {
       headers: {
         'Accept': 'application/json',
+        'User-Agent': 'Queer-Guide-Import/1.0'
       },
     });
+
+    console.log('Test response status:', testResponse.status);
+    console.log('Test response headers:', Object.fromEntries(testResponse.headers.entries()));
 
     if (!testResponse.ok) {
       console.error('API key test failed:', testResponse.status, testResponse.statusText);
       const errorText = await testResponse.text();
-      console.error('Error response:', errorText);
-      throw new Error(`TripAdvisor API key invalid or expired. Status: ${testResponse.status}`);
+      console.error('Error response body:', errorText);
+      
+      // Check for specific error types
+      if (testResponse.status === 401) {
+        throw new Error('TripAdvisor API key is invalid or unauthorized. Please verify your API key.');
+      } else if (testResponse.status === 403) {
+        throw new Error('TripAdvisor API access forbidden. Your API key may not have the required permissions.');
+      } else if (testResponse.status === 429) {
+        throw new Error('TripAdvisor API rate limit exceeded. Please try again later.');
+      } else {
+        throw new Error(`TripAdvisor API test failed with status ${testResponse.status}: ${errorText}`);
+      }
     }
 
-    console.log('API key test successful');
+    const testData = await testResponse.json();
+    console.log('API key test successful. Sample response:', JSON.stringify(testData, null, 2));
 
     // Reduced dataset for testing
     const keywords = ['gay bar'];
-    const locations = ['New York', 'San Francisco'];
+    const locations = ['New York'];
     
     let totalImported = 0;
     let totalSkipped = 0;
