@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Queer Guide</title>
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://api.mapbox.com https://widget.getyourguide.com; style-src 'self' 'unsafe-inline' https://api.mapbox.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://api.mapbox.com; img-src 'self' data: blob: https: http:; connect-src 'self' https://api.mapbox.com https://events.mapbox.com wss://events.mapbox.com https://*.supabase.co wss://*.supabase.co; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains; preload">
+    
     <meta name="description" content="Connecting the LGBTQ+ community with safe spaces, events, businesses, and each other." />
     <meta name="author" content="Queer Guide" />
     
@@ -12,8 +21,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
-    <!-- GetYourGuide Analytics -->
-    <script async defer src="https://widget.getyourguide.com/dist/pa.umd.production.min.js" data-gyg-partner-id="2PBDXWH"></script>
+    <!-- GetYourGuide Analytics with SRI -->
+    <script async defer 
+      src="https://widget.getyourguide.com/dist/pa.umd.production.min.js" 
+      data-gyg-partner-id="2PBDXWH"
+      crossorigin="anonymous"
+      referrerpolicy="strict-origin-when-cross-origin">
+    </script>
 
     <meta property="og:title" content="Queer Guide" />
     <meta property="og:description" content="Connecting the LGBTQ+ community with safe spaces, events, businesses, and each other." />
