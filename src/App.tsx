@@ -75,6 +75,8 @@ import SearchResults from "./pages/SearchResults";
 import Favorites from "./pages/Favorites";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import Donate from "./pages/Donate";
+import DonationSuccess from "./pages/DonationSuccess";
 
 const queryClient = new QueryClient();
 
@@ -302,9 +304,11 @@ const App = () => {
                     <Route path="/favorites" element={<Favorites />} />
                      <Route path="/feed" element={<Feed />} />
                      <Route path="/community" element={<Navigate to="/feed" replace />} />
-                    <Route path="/profile/settings" element={<ProfileSettings />} />
-                    <Route path="/user/:userId" element={<UserProfile />} />
-                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                     <Route path="/profile/settings" element={<ProfileSettings />} />
+                     <Route path="/user/:userId" element={<UserProfile />} />
+                     <Route path="/donate" element={<Donate />} />
+                     <Route path="/donation-success" element={<DonationSuccess />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
                 </div>

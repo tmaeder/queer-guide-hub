@@ -978,6 +978,51 @@ export type Database = {
         }
         Relationships: []
       }
+      donations: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string | null
+          donor_name: string | null
+          email: string
+          id: string
+          is_anonymous: boolean | null
+          message: string | null
+          status: string | null
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string | null
+          donor_name?: string | null
+          email: string
+          id?: string
+          is_anonymous?: boolean | null
+          message?: string | null
+          status?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          donor_name?: string | null
+          email?: string
+          id?: string
+          is_anonymous?: boolean | null
+          message?: string | null
+          status?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           created_at: string
@@ -3854,6 +3899,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_rls_policy_indexes: {
+        Args: { p_schema_name?: string }
+        Returns: {
+          table_name: string
+          column_name: string
+          index_name: string
+          index_sql: string
+        }[]
+      }
+      analyze_rls_policy_performance: {
+        Args: Record<PropertyKey, never> | { p_schema_name?: string }
+        Returns: {
+          policy_name: string
+          table_name: string
+          performance_score: number
+          optimization_suggestion: string
+        }[]
+      }
       assign_admin_by_id: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -3878,6 +3941,24 @@ export type Database = {
         }
         Returns: boolean
       }
+      consolidate_rls_policies: {
+        Args: {
+          p_schema_name: string
+          p_table_name: string
+          p_role_name: string
+          p_action: string
+        }
+        Returns: undefined
+      }
+      consolidate_rls_policies_v2: {
+        Args: {
+          p_schema_name: string
+          p_table_name: string
+          p_role_name: string
+          p_action: string
+        }
+        Returns: undefined
+      }
       create_notification: {
         Args: {
           target_user_id: string
@@ -3901,6 +3982,48 @@ export type Database = {
       decrement_post_likes: {
         Args: { post_id: string }
         Returns: undefined
+      }
+      fix_rls_policies: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      fix_table_rls_policies: {
+        Args: { table_name: string }
+        Returns: undefined
+      }
+      generate_optimized_rls_policy: {
+        Args:
+          | Record<PropertyKey, never>
+          | {
+              p_schema_name: string
+              p_table_name: string
+              p_role_name: string
+              p_action: string
+            }
+        Returns: string
+      }
+      generate_optimized_rls_policy_v2: {
+        Args: {
+          p_schema_name: string
+          p_table_name: string
+          p_role_name: string
+          p_action: string
+        }
+        Returns: string
+      }
+      generate_rls_optimization_report: {
+        Args: { p_schema_name?: string }
+        Returns: string
+      }
+      generate_search_path_fixes: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          fix_sql: string
+        }[]
+      }
+      generate_table_optimization_script: {
+        Args: { p_schema_name: string; p_table_name: string }
+        Returns: string
       }
       get_algolia_sync_status: {
         Args: Record<PropertyKey, never>
@@ -3960,6 +4083,15 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      identify_missing_rls_indexes: {
+        Args: Record<PropertyKey, never> | { p_schema_name?: string }
+        Returns: {
+          schema_name: string
+          table_name: string
+          column_name: string
+          suggested_index_sql: string
+        }[]
       }
       increment_article_views: {
         Args: { article_id: string }
@@ -4026,6 +4158,23 @@ export type Database = {
           metadata: Json
           similarity: number
         }[]
+      }
+      optimize_auth_uid_in_policies: {
+        Args: { p_schema_name?: string }
+        Returns: {
+          table_name: string
+          policy_name: string
+          original_definition: string
+          optimized_definition: string
+        }[]
+      }
+      optimize_auth_uid_in_policy: {
+        Args: {
+          p_schema_name: string
+          p_table_name: string
+          p_policy_name: string
+        }
+        Returns: string
       }
     }
     Enums: {

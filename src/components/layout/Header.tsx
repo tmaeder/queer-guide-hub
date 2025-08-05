@@ -43,6 +43,7 @@ export function Header() {
         { to: "/marketplace", icon: Store, label: "Market" },
         { to: "/tags", icon: Tags, label: "Wiki" },
         { to: "/news", icon: Newspaper, label: "News" },
+        { to: "/donate", icon: Heart, label: "Donate" },
       ]
     },
     {
