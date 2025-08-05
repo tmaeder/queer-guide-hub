@@ -83,22 +83,22 @@ serve(async (req) => {
       throw new Error("Failed to create donation record");
     }
 
-    // Create zahls.ch gateway using their REST API
-    const zahlsApiUrl = `https://api.zahls.ch/v1.0/Gateway/`;
+    // Create zahls.ch gateway using their REST API (same as payrexx format)
+    const zahlsApiUrl = `https://${zahlsInstanceName}.zahls.ch/v1.0/Gateway/`;
     
     const gatewayData = {
+      instance: zahlsInstanceName,
       amount: amount, // Amount in cents
       currency: "CHF",
-      purpose: `Donation to Queer Guide - ${donationId}`,
+      purpose: `Donation to Queer Guide`,
       successRedirectUrl: `${req.headers.get("origin")}/donation-success?donation_id=${donationId}`,
       cancelRedirectUrl: `${req.headers.get("origin")}/donate`,
       failedRedirectUrl: `${req.headers.get("origin")}/donate?error=payment_failed`,
       referenceId: donationId,
-      contact: {
-        email: userEmail,
-        ...(donor_name && { name: donor_name }),
-      },
-      ...(message && { description: message }),
+      "fields[forename]": donor_name?.split(' ')[0] || '',
+      "fields[surname]": donor_name?.split(' ').slice(1).join(' ') || '',
+      "fields[email]": userEmail,
+      "fields[custom_field_1]": message || '',
     };
 
     console.log("Creating zahls.ch gateway with data:", JSON.stringify(gatewayData, null, 2));
@@ -106,25 +106,25 @@ serve(async (req) => {
     const response = await fetch(zahlsApiUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${zahlsApiKey}`,
-        "Zahls-Instance": zahlsInstanceName,
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Basic ${btoa(`${zahlsInstanceName}:${zahlsApiKey}`)}`,
       },
-      body: JSON.stringify(gatewayData),
+      body: new URLSearchParams(gatewayData).toString(),
     });
 
     console.log("zahls.ch API response status:", response.status);
+    const responseText = await response.text();
+    console.log("zahls.ch API response body:", responseText);
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("zahls.ch API error:", response.status, errorText);
-      throw new Error(`zahls.ch API error: ${response.status} - ${errorText}`);
+      console.error("zahls.ch API error:", response.status, responseText);
+      throw new Error(`zahls.ch API error: ${response.status} - ${responseText}`);
     }
 
-    const gateway = await response.json();
+    const gateway = JSON.parse(responseText);
     console.log("zahls.ch gateway created:", JSON.stringify(gateway, null, 2));
 
-    return new Response(JSON.stringify({ url: gateway.link }), {
+    return new Response(JSON.stringify({ url: gateway.data?.link || gateway.link }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
