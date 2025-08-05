@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -8,7 +7,7 @@ const corsHeaders = {
 };
 
 interface DonationRequest {
-  amount: number; // Amount in cents
+  amount: number; // Amount in cents (CHF)
   donor_name?: string;
   message?: string;
   is_anonymous?: boolean;
@@ -53,72 +52,50 @@ serve(async (req) => {
     const { amount, donor_name, message, is_anonymous }: DonationRequest = await req.json();
 
     // Validate amount
-    if (!amount || amount < 100) { // Minimum $1.00
-      throw new Error("Minimum donation amount is $1.00");
+    if (!amount || amount < 500) { // Minimum 5.00 CHF
+      throw new Error("Minimum donation amount is 5.00 CHF");
     }
 
-    // Initialize Stripe
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      throw new Error("Stripe secret key not configured");
-    }
+    // Get zahls.ch configuration
+    const zahlsBaseUrl = Deno.env.get("ZAHLS_BASE_URL") || "https://zahls.ch";
+    const zahlsPaymentPageId = Deno.env.get("ZAHLS_PAYMENT_PAGE_ID");
     
-    const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
-    });
-
-    // Check if a Stripe customer record exists for this email
-    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
+    if (!zahlsPaymentPageId) {
+      throw new Error("zahls.ch payment page ID not configured");
     }
-
-    // Create a one-time payment session
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : userEmail,
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: { 
-              name: "Donation to Queer Guide",
-              description: "Supporting LGBTQ+ community resources and visibility"
-            },
-            unit_amount: amount,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: `${req.headers.get("origin")}/donation-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/donate`,
-      metadata: {
-        donor_name: donor_name || "",
-        message: message || "",
-        is_anonymous: is_anonymous ? "true" : "false",
-      },
-    });
 
     // Create donation record in database
+    const donationId = crypto.randomUUID();
     const { error: dbError } = await supabaseService.from("donations").insert({
+      id: donationId,
       user_id: userId,
       email: userEmail,
       amount: amount,
-      stripe_session_id: session.id,
       donor_name: donor_name,
       message: message,
       is_anonymous: is_anonymous || false,
       status: "pending",
+      currency: "CHF",
     });
 
     if (dbError) {
       console.error("Database error:", dbError);
-      // Continue anyway, we can handle this in a webhook or verification function
+      throw new Error("Failed to create donation record");
     }
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    // Create zahls.ch payment URL with parameters
+    const paymentUrl = new URL(`${zahlsBaseUrl}/payment/${zahlsPaymentPageId}`);
+    paymentUrl.searchParams.set("amount", (amount / 100).toFixed(2)); // Convert cents to CHF
+    paymentUrl.searchParams.set("reference", donationId);
+    paymentUrl.searchParams.set("customer_email", userEmail);
+    paymentUrl.searchParams.set("success_url", `${req.headers.get("origin")}/donation-success?donation_id=${donationId}`);
+    paymentUrl.searchParams.set("cancel_url", `${req.headers.get("origin")}/donate`);
+    
+    if (donor_name) {
+      paymentUrl.searchParams.set("customer_name", donor_name);
+    }
+
+    return new Response(JSON.stringify({ url: paymentUrl.toString() }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

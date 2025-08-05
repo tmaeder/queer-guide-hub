@@ -8,7 +8,8 @@ import { Footer } from "@/components/layout/Footer";
 
 export default function DonationSuccess() {
   const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get("session_id");
+  const donationId = searchParams.get("donation_id");
+  const sessionId = searchParams.get("session_id"); // Keep for backward compatibility
   const [isShared, setIsShared] = useState(false);
 
   const handleShare = async () => {
@@ -96,13 +97,13 @@ export default function DonationSuccess() {
                 </div>
               </div>
 
-              {sessionId && (
+              {(donationId || sessionId) && (
                 <div className="bg-muted p-4 rounded-lg">
                   <p className="text-sm">
-                    <strong>Transaction ID:</strong> {sessionId}
+                    <strong>Transaction ID:</strong> {donationId || sessionId}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Save this for your records. You'll receive an email receipt shortly.
+                    Save this for your records. You'll receive a receipt from zahls.ch.
                   </p>
                 </div>
               )}

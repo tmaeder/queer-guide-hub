@@ -12,12 +12,12 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Heart, Users, Globe, Shield } from "lucide-react";
 
-const PRESET_AMOUNTS = [10, 25, 50, 100, 250, 500];
+const PRESET_AMOUNTS = [5, 10, 25, 50, 100, 250]; // CHF amounts
 
 export default function Donate() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(25);
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(10);
   const [customAmount, setCustomAmount] = useState("");
   const [donorName, setDonorName] = useState("");
   const [message, setMessage] = useState("");
@@ -43,10 +43,10 @@ export default function Donate() {
   const handleDonate = async () => {
     const amount = getDonationAmount();
     
-    if (amount < 100) {
+    if (amount < 500) {
       toast({
         title: "Invalid Amount",
-        description: "Minimum donation amount is $1.00",
+        description: "Minimum donation amount is 5.00 CHF",
         variant: "destructive",
       });
       return;
@@ -66,7 +66,7 @@ export default function Donate() {
       if (error) throw error;
 
       if (data?.url) {
-        // Open Stripe checkout in a new tab
+        // Open zahls.ch payment page in a new tab
         window.open(data.url, '_blank');
       }
     } catch (error) {
@@ -152,7 +152,7 @@ export default function Donate() {
             <CardContent className="space-y-6">
               {/* Amount Selection */}
               <div>
-                <Label className="text-base font-medium mb-4 block">Select Amount (USD)</Label>
+                <Label className="text-base font-medium mb-4 block">Select Amount (CHF)</Label>
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   {PRESET_AMOUNTS.map((amount) => (
                     <Button
@@ -161,7 +161,7 @@ export default function Donate() {
                       onClick={() => handleAmountSelect(amount)}
                       className="h-12"
                     >
-                      ${amount}
+                      {amount} CHF
                     </Button>
                   ))}
                 </div>
@@ -169,17 +169,17 @@ export default function Donate() {
                 <div className="flex items-center space-x-2">
                   <Label htmlFor="custom-amount" className="whitespace-nowrap">Other:</Label>
                   <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">$</span>
                     <Input
                       id="custom-amount"
                       type="number"
-                      placeholder="0.00"
+                      placeholder="5.00"
                       value={customAmount}
                       onChange={(e) => handleCustomAmountChange(e.target.value)}
-                      className="pl-8"
-                      min="1"
+                      className="pr-12"
+                      min="5"
                       step="0.01"
                     />
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">CHF</span>
                   </div>
                 </div>
               </div>
@@ -228,7 +228,7 @@ export default function Donate() {
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Donation Amount:</span>
                   <span className="text-xl font-bold">
-                    ${selectedAmount || (customAmount ? parseFloat(customAmount).toFixed(2) : "0.00")}
+                    {selectedAmount || (customAmount ? parseFloat(customAmount).toFixed(2) : "0.00")} CHF
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
@@ -239,15 +239,15 @@ export default function Donate() {
               {/* Donate Button */}
               <Button
                 onClick={handleDonate}
-                disabled={isLoading || getDonationAmount() < 100}
+                disabled={isLoading || getDonationAmount() < 500}
                 className="w-full h-12 text-lg"
                 size="lg"
               >
-                {isLoading ? "Processing..." : `Donate $${selectedAmount || (customAmount ? parseFloat(customAmount).toFixed(2) : "0.00")}`}
+                {isLoading ? "Processing..." : `Donate ${selectedAmount || (customAmount ? parseFloat(customAmount).toFixed(2) : "0.00")} CHF`}
               </Button>
 
               <p className="text-xs text-muted-foreground text-center">
-                Secure payment processing by Stripe. Your donation is processed securely and safely.
+                Secure payment processing by zahls.ch. Your donation is processed securely with TWINT, credit cards, and PostFinance.
               </p>
             </CardContent>
           </Card>
