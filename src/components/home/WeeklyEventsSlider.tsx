@@ -8,15 +8,17 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Calendar, MapPin, Clock, ArrowRight, Navigation } from 'lucide-react';
 import { format, addDays, startOfWeek, endOfWeek } from 'date-fns';
 import { Link } from 'react-router-dom';
-
 interface UserLocation {
   latitude: number;
   longitude: number;
   city?: string;
 }
-
 export const WeeklyEventsSlider = React.memo(() => {
-  const { events, loading, fetchEvents } = useEvents();
+  const {
+    events,
+    loading,
+    fetchEvents
+  } = useEvents();
   const isMobile = useIsMobile();
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
@@ -28,7 +30,6 @@ export const WeeklyEventsSlider = React.memo(() => {
         // Use a free IP geolocation service
         const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
-        
         if (data.latitude && data.longitude) {
           setUserLocation({
             latitude: data.latitude,
@@ -42,7 +43,6 @@ export const WeeklyEventsSlider = React.memo(() => {
         setLocationLoading(false);
       }
     };
-
     getUserLocation();
   }, []);
 
@@ -52,7 +52,6 @@ export const WeeklyEventsSlider = React.memo(() => {
       const now = new Date();
       const weekStart = startOfWeek(now);
       const weekEnd = endOfWeek(now);
-
       fetchEvents({
         dateRange: {
           start: weekStart.toISOString(),
@@ -67,51 +66,21 @@ export const WeeklyEventsSlider = React.memo(() => {
   }, [userLocation, fetchEvents]);
 
   // Filter and sort events by distance and date
-  const weeklyEvents = useMemo(() => events
-    .filter(event => {
-      const eventDate = new Date(event.start_date);
-      const now = new Date();
-      const weekStart = startOfWeek(now);
-      const weekEnd = endOfWeek(now);
-      return eventDate >= weekStart && eventDate <= weekEnd;
-    })
-    .slice(0, 10), [events]); // Limit to 10 events
+  const weeklyEvents = useMemo(() => events.filter(event => {
+    const eventDate = new Date(event.start_date);
+    const now = new Date();
+    const weekStart = startOfWeek(now);
+    const weekEnd = endOfWeek(now);
+    return eventDate >= weekStart && eventDate <= weekEnd;
+  }).slice(0, 10), [events]); // Limit to 10 events
 
   if (locationLoading || loading) {
-    return (
-      <section className={`bg-muted/10 ${isMobile ? 'py-8' : 'py-16'} px-4`}>
-        <div className="container mx-auto">
-          <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
-            <div className={`h-8 bg-muted rounded animate-pulse ${isMobile ? 'w-48' : 'w-64'} mb-4`}></div>
-            <div className={`h-4 bg-muted rounded animate-pulse ${isMobile ? 'w-72' : 'w-96'}`}></div>
-          </div>
-          <div className="flex gap-4">
-            {Array.from({ length: isMobile ? 1 : 3 }).map((_, i) => (
-              <div key={i} className={`${isMobile ? 'w-full' : 'w-80'}`}>
-                <Card className="h-64">
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="h-4 bg-muted rounded animate-pulse"></div>
-                      <div className="h-3 bg-muted rounded animate-pulse w-3/4"></div>
-                      <div className="h-3 bg-muted rounded animate-pulse w-1/2"></div>
-                      <div className="h-20 bg-muted rounded animate-pulse"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
+    return;
   }
-
   if (!userLocation || weeklyEvents.length === 0) {
     return null;
   }
-
-  return (
-    <section className={`bg-muted/10 ${isMobile ? 'py-8' : 'py-16'} px-4`}>
+  return <section className={`bg-muted/10 ${isMobile ? 'py-8' : 'py-16'} px-4`}>
       <div className="container mx-auto">
         <div className={`flex items-center justify-between ${isMobile ? 'mb-6' : 'mb-8'}`}>
           <div>
@@ -133,41 +102,26 @@ export const WeeklyEventsSlider = React.memo(() => {
           </Button>
         </div>
 
-        <Carousel
-          opts={{
-            align: "start",
-            loop: false,
-          }}
-          className="w-full"
-        >
+        <Carousel opts={{
+        align: "start",
+        loop: false
+      }} className="w-full">
           <CarouselContent className="-ml-2 md:-ml-4">
-            {weeklyEvents.map((event) => (
-              <CarouselItem 
-                key={event.id} 
-                className={`pl-2 md:pl-4 ${
-                  isMobile ? 'basis-full' : 'basis-full md:basis-1/2 lg:basis-1/3'
-                }`}
-              >
+            {weeklyEvents.map(event => <CarouselItem key={event.id} className={`pl-2 md:pl-4 ${isMobile ? 'basis-full' : 'basis-full md:basis-1/2 lg:basis-1/3'}`}>
                 <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
                   <CardContent className="p-6 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4">
                       <Badge variant="secondary" className="text-xs">
                         {event.event_type}
                       </Badge>
-                      {event.is_free ? (
-                        <Badge variant="outline" className="text-xs">
+                      {event.is_free ? <Badge variant="outline" className="text-xs">
                           Free
-                        </Badge>
-                      ) : event.price_min && (
-                        <Badge variant="outline" className="text-xs">
+                        </Badge> : event.price_min && <Badge variant="outline" className="text-xs">
                           ${event.price_min}+
-                        </Badge>
-                      )}
+                        </Badge>}
                     </div>
                     
-                    <h3 className={`font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors ${
-                      isMobile ? 'text-base' : 'text-lg'
-                    }`}>
+                    <h3 className={`font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors ${isMobile ? 'text-base' : 'text-lg'}`}>
                       {event.title}
                     </h3>
                     
@@ -186,28 +140,19 @@ export const WeeklyEventsSlider = React.memo(() => {
                         </span>
                       </div>
                       
-                      {(event.city || event.venue_name) && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
+                      {(event.city || event.venue_name) && <div className="flex items-center gap-2 text-muted-foreground">
                           <MapPin className="h-4 w-4 flex-shrink-0" />
                           <span className="text-sm truncate">
                             {event.venue_name || event.city}
                           </span>
-                        </div>
-                      )}
+                        </div>}
                     </div>
 
-                    {event.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                    {event.description && <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
                         {event.description}
-                      </p>
-                    )}
+                      </p>}
 
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="mt-auto self-start group-hover:bg-muted/50" 
-                      asChild
-                    >
+                    <Button variant="ghost" size="sm" className="mt-auto self-start group-hover:bg-muted/50" asChild>
                       <Link to={`/events/${event.id}`}>
                         Learn More
                         <ArrowRight className="ml-2 h-3 w-3" />
@@ -215,33 +160,21 @@ export const WeeklyEventsSlider = React.memo(() => {
                     </Button>
                   </CardContent>
                 </Card>
-              </CarouselItem>
-            ))}
+              </CarouselItem>)}
           </CarouselContent>
           
-          {!isMobile && weeklyEvents.length > 3 && (
-            <>
+          {!isMobile && weeklyEvents.length > 3 && <>
               <CarouselPrevious className="hidden md:flex" />
               <CarouselNext className="hidden md:flex" />
-            </>
-          )}
+            </>}
         </Carousel>
 
-        {isMobile && weeklyEvents.length > 1 && (
-          <div className="flex justify-center mt-4">
+        {isMobile && weeklyEvents.length > 1 && <div className="flex justify-center mt-4">
             <div className="flex space-x-2">
-              {weeklyEvents.slice(0, 5).map((_, index) => (
-                <div
-                  key={index}
-                  className="w-2 h-2 rounded-full bg-muted"
-                />
-              ))}
+              {weeklyEvents.slice(0, 5).map((_, index) => <div key={index} className="w-2 h-2 rounded-full bg-muted" />)}
             </div>
-          </div>
-        )}
+          </div>}
       </div>
-    </section>
-  );
+    </section>;
 });
-
 WeeklyEventsSlider.displayName = 'WeeklyEventsSlider';
