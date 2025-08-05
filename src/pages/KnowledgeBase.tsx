@@ -341,8 +341,16 @@ export default function KnowledgeBase() {
                 <p className="text-muted-foreground mb-4">
                   Enter a search query above to generate an interactive knowledge graph
                 </p>
-                <Button onClick={() => fetchGraphData()} variant="outline">
-                  <Database className="h-4 w-4 mr-2" />
+                <Button 
+                  onClick={populateEmbeddings}
+                  disabled={isPopulating}
+                  className="gap-2"
+                >
+                  {isPopulating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Database className="h-4 w-4" />
+                  )}
                   Populate Real Data
                 </Button>
               </CardContent>
