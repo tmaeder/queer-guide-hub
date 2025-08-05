@@ -30,6 +30,8 @@ import Blog from "./pages/Blog";
 import Sustainability from "./pages/Sustainability";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Donate from "./pages/Donate";
+import DonationSuccess from "./pages/DonationSuccess";
 import CookiePolicy from "./pages/CookiePolicy";
 import DMCA from "./pages/DMCA";
 import LegalHub from "./pages/LegalHub";
@@ -75,8 +77,6 @@ import SearchResults from "./pages/SearchResults";
 import Favorites from "./pages/Favorites";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 import KnowledgeBase from "./pages/KnowledgeBase";
-import Donate from "./pages/Donate";
-import DonationSuccess from "./pages/DonationSuccess";
 
 const queryClient = new QueryClient();
 
