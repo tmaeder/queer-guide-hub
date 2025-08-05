@@ -101,6 +101,8 @@ serve(async (req) => {
       ...(message && { description: message }),
     };
 
+    console.log("Creating zahls.ch gateway with data:", JSON.stringify(gatewayData, null, 2));
+
     const response = await fetch(zahlsApiUrl, {
       method: "POST",
       headers: {
@@ -111,13 +113,16 @@ serve(async (req) => {
       body: JSON.stringify(gatewayData),
     });
 
+    console.log("zahls.ch API response status:", response.status);
+    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("zahls.ch API error:", errorText);
-      throw new Error("Failed to create payment gateway");
+      console.error("zahls.ch API error:", response.status, errorText);
+      throw new Error(`zahls.ch API error: ${response.status} - ${errorText}`);
     }
 
     const gateway = await response.json();
+    console.log("zahls.ch gateway created:", JSON.stringify(gateway, null, 2));
 
     return new Response(JSON.stringify({ url: gateway.link }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
