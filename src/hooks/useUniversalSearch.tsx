@@ -202,7 +202,8 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
           population: city.population,
           isCapital: city.is_capital,
           timezone: city.timezone,
-          coordinates: { lat: city.latitude, lng: city.longitude }
+          coordinates: { lat: city.latitude, lng: city.longitude },
+          isCountry: false
         }
       })));
     }
@@ -217,7 +218,8 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
         metadata: {
           population: country.population,
           currency: country.currency,
-          languages: country.languages
+          languages: country.languages,
+          isCountry: true
         }
       })));
     }

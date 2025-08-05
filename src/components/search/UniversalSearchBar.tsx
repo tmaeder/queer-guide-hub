@@ -102,19 +102,26 @@ export const UniversalSearchBar = () => {
         navigate(`/marketplace/${result.id}`);
         break;
       case 'user':
-        navigate(`/users/${result.id}`);
+        navigate(`/user/${result.id}`);
         break;
       case 'news':
-        navigate(`/news/${result.id}`);
+        // Navigate to news page with search query for this article
+        navigate(`/news`);
         break;
       case 'location':
-        navigate(`/locations/${result.id}`);
+        // Check if it's a city or country based on metadata
+        if (result.metadata?.isCountry) {
+          navigate(`/country/${result.id}`);
+        } else {
+          navigate(`/city/${result.id}`);
+        }
         break;
       case 'content':
-        navigate(`/wiki/${result.metadata?.slug || result.id}`);
+        // Navigate to tags directory for content
+        navigate(`/tags/${result.metadata?.slug || result.title}`);
         break;
       case 'travel':
-        navigate(`/travel/bookings/${result.id}`);
+        navigate(`/travel`);
         break;
       default:
         handleSearch(result.title);
