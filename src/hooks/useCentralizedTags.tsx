@@ -34,7 +34,8 @@ export const useCentralizedTags = () => {
       const { data, error: fetchError } = await supabase
         .from("unified_tags")
         .select("*")
-        .order("usage_count", { ascending: false });
+        .order("usage_count", { ascending: false })
+        .limit(10000); // Set explicit high limit to get all tags
 
       if (fetchError) {
         throw fetchError;
