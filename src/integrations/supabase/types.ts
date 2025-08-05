@@ -4069,6 +4069,20 @@ export type Database = {
             }
         Returns: undefined
       }
+      match_content_embeddings: {
+        Args: {
+          query_embedding: string
+          similarity_threshold?: number
+          match_count?: number
+        }
+        Returns: {
+          content_id: string
+          content_type: string
+          content_text: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
       sparsevec_out: {
         Args: { "": unknown }
         Returns: unknown

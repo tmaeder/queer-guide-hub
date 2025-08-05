@@ -74,6 +74,7 @@ import NotFound from "./pages/NotFound";
 import SearchResults from "./pages/SearchResults";
 import Favorites from "./pages/Favorites";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
+import KnowledgeBase from "./pages/KnowledgeBase";
 
 const queryClient = new QueryClient();
 
@@ -165,8 +166,9 @@ const App = () => {
                   <Route path="/city/:id" element={<CityDetail />} />
                   <Route path="/country/:id" element={<CountryDetail />} />
                   <Route path="/users" element={<UserDirectory />} />
-                  <Route path="/tags" element={<TagsDirectory />} />
-                  <Route path="/tags/:tagName" element={<TagsDirectory />} />
+                   <Route path="/tags" element={<TagsDirectory />} />
+                   <Route path="/tags/:tagName" element={<TagsDirectory />} />
+                   <Route path="/knowledge" element={<KnowledgeBase />} />
                    <Route path="/about-hub" element={<AboutHub />} />
                    <Route path="/about" element={<About />} />
                    <Route path="/contact" element={<Contact />} />
