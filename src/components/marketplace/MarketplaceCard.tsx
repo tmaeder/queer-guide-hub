@@ -79,80 +79,71 @@ export function MarketplaceCard({
   };
 
   return (
-    <Card className="group hover:shadow-elegant transition-all duration-300 relative">
+    <Card className="group hover:shadow-lg transition-all duration-200 border-0 bg-card/50 backdrop-blur-sm relative overflow-hidden">
+      {/* Subtle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
       
-      {/* Favorite Button */}
-      {showFavoriteButton && onToggleFavorite && (
-        <Button
-          size="sm"
-          variant="ghost"
-          className={`absolute top-2 right-2 z-10 h-8 w-8 p-0 ${
-            isFavorited ? 'text-destructive hover:text-destructive/80' : 'text-muted-foreground hover:text-destructive'
-          }`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavorite(listing.id);
-          }}
-        >
-          <Heart className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
-        </Button>
+      {showFavoriteButton && (
+        <div className="absolute top-3 right-3 z-10">
+          <FavoriteButton 
+            itemId={listing.id} 
+            type="marketplace" 
+            variant="ghost" 
+            size="sm"
+            className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+          />
+        </div>
       )}
 
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
-              {listing.title}
-              {listing.featured && (
-                <Badge variant="secondary" className="ml-2 text-xs">
-                  Featured
-                </Badge>
-              )}
-            </CardTitle>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="font-medium text-sm">{listing.business_name}</span>
-              {listing.business_type && getBusinessTypeIcon(listing.business_type)}
+      <div className="p-6 space-y-4 relative">
+        {/* Header */}
+        <div className="space-y-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-base leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+                {listing.title}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {listing.business_name}
+              </p>
             </div>
-            {listing.venues && (
-              <div className="flex items-center gap-1 mt-1 text-muted-foreground">
-                <Building className="h-3 w-3" />
-                <span className="text-sm">{listing.venues.name}, {listing.venues.city}</span>
-              </div>
-            )}
-            {!listing.venues && listing.location && (
-              <div className="flex items-center gap-1 mt-1 text-muted-foreground">
-                <MapPin className="h-3 w-3" />
-                <span className="text-sm">{listing.location}</span>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            <Badge className={getCategoryColor(listing.category)}>
-              {listing.category}
-            </Badge>
-            {listing.subcategory && (
-              <Badge variant="outline" className="text-xs">
-                {listing.subcategory}
+            
+            <div className="flex items-center gap-1 shrink-0">
+              <Badge variant="secondary" className="text-xs font-medium">
+                {listing.category}
               </Badge>
-            )}
+              {listing.featured && (
+                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              )}
+            </div>
           </div>
-        </div>
-      </CardHeader>
 
-      <CardContent className="space-y-3">
+          {/* Location */}
+          {(listing.venues?.name || listing.location) && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="truncate">
+                {listing.venues ? `${listing.venues.name}, ${listing.venues.city}` : listing.location}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Description */}
         {listing.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
             {listing.description}
           </p>
         )}
 
+        {/* Price and Rating */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-primary">
+            <span className="text-lg font-bold text-foreground">
               {formatPrice()}
             </span>
             {listing.shipping_available && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs border-muted">
                 Ships
               </Badge>
             )}
@@ -160,39 +151,35 @@ export function MarketplaceCard({
 
           {averageRating > 0 && (
             <div className="flex items-center gap-1">
-              <Star className="h-3 w-3 fill-current text-accent" />
+              <Star className="h-3.5 w-3.5 fill-accent text-accent" />
               <span className="text-sm font-medium">{averageRating.toFixed(1)}</span>
-              <span className="text-xs text-muted-foreground">
-                ({listing.marketplace_reviews?.length})
-              </span>
             </div>
           )}
         </div>
 
-        {/* Tags will be loaded via unified tag assignments - remove for now */}
-
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-2">
-            <FavoriteButton itemId={listing.id} type="marketplace" />
-            {listing.contact_phone && (
-              <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                <Phone className="h-3 w-3" />
-              </Button>
-            )}
-            {listing.contact_email && (
-              <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                <Mail className="h-3 w-3" />
-              </Button>
-            )}
+        {/* Actions */}
+        <div className="flex items-center justify-between pt-2 border-t border-border/50">
+          <div className="flex items-center gap-1">
             {listing.website && (
-              <Button size="sm" variant="ghost" className="h-6 w-6 p-0" asChild>
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 hover:bg-muted/50" asChild>
                 <a href={listing.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </Button>
             )}
+            {listing.contact_phone && (
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 hover:bg-muted/50">
+                <Phone className="h-3 w-3" />
+              </Button>
+            )}
+            {listing.contact_email && (
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 hover:bg-muted/50">
+                <Mail className="h-3 w-3" />
+              </Button>
+            )}
+            
             {listing.views_count && listing.views_count > 0 && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground ml-2">
                 <Eye className="h-3 w-3" />
                 <span>{listing.views_count}</span>
               </div>
@@ -200,12 +187,12 @@ export function MarketplaceCard({
           </div>
           
           <Link to={`/marketplace/${listing.id}`}>
-            <Button size="sm" variant="outline" className="text-xs">
-              View Details
+            <Button size="sm" className="h-7 text-xs bg-primary/90 hover:bg-primary">
+              View
             </Button>
           </Link>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 }
