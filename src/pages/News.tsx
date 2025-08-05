@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Newspaper, Download, Loader, Search, Grid3X3, List, SortAsc, SortDesc, Filter, X, Calendar, Eye, Clock, TrendingUp } from "lucide-react";
+import { Newspaper, Loader, Search, Grid3X3, List, SortAsc, SortDesc, Filter, X, Calendar, Eye, Clock, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 interface SortOption {
@@ -65,35 +65,13 @@ export default function News() {
     tag: string;
     count: number;
   }[]>([]);
-  const [isImporting, setIsImporting] = useState(false);
+  // Manual import functionality removed - news is now automatically imported via cron job
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('date-desc');
   const [quickSearch, setQuickSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<any>({});
-  const handleImportNews = async () => {
-    setIsImporting(true);
-    try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke('fetch-news', {
-        body: {
-          manual_trigger: true
-        }
-      });
-      if (error) {
-        toast.error(`Import failed: ${error.message}`);
-      } else {
-        toast.success(`Successfully imported ${data.articlesProcessed} articles from ${data.sources} sources!`);
-        fetchArticles(currentFilters);
-      }
-    } catch (err: any) {
-      toast.error(`Import error: ${err.message}`);
-    } finally {
-      setIsImporting(false);
-    }
-  };
+  // Manual import removed - news is now automatically imported via cron job
   useEffect(() => {
     const loadAdditionalData = async () => {
       const [featured, trending] = await Promise.all([getFeaturedArticles(), getTrendingTags()]);
@@ -283,10 +261,9 @@ export default function News() {
                   
                   <h3 className="text-xl font-semibold mb-2">No articles found</h3>
                   
-                  <Button onClick={handleImportNews} disabled={isImporting} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Import Latest News
-                  </Button>
+                  <div className="text-sm text-muted-foreground">
+                    News is automatically imported every 2 hours via cron job
+                  </div>
                 </CardContent>
               </Card>}
 

@@ -218,14 +218,13 @@ export default function AdminImportHub() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Button
-                onClick={() => handleApiImport('fetch-news')}
-                disabled={loading === 'fetch-news'}
-                className="w-full"
+                disabled={true}
+                className="w-full opacity-50 cursor-not-allowed"
               >
-                {loading === 'fetch-news' ? 'Fetching...' : 'Fetch Latest News'}
+                News Auto-Import Active (Every 2 Hours)
               </Button>
               <p className="text-sm text-muted-foreground">
-                Imports news from configured RSS feeds and news APIs (NewsAPI, GNews, etc.)
+                News is automatically imported every 2 hours via cron job. Manual import has been disabled for security.
               </p>
             </CardContent>
           </Card>

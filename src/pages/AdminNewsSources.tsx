@@ -241,28 +241,7 @@ export default function AdminNewsSources() {
     }
   };
 
-  const triggerNewsFetch = async () => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabase.functions.invoke('fetch-news');
-      
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "News fetch triggered successfully",
-      });
-    } catch (error) {
-      console.error('Error triggering news fetch:', error);
-      toast({
-        title: "Error",
-        description: "Failed to trigger news fetch",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Manual fetch removed - news is now automatically imported via cron job
 
   const triggerIndividualFetch = async (sourceId: string, sourceName: string) => {
     try {
@@ -375,9 +354,8 @@ export default function AdminNewsSources() {
         </div>
         <div className="flex gap-2">
           <Button
-            onClick={triggerNewsFetch}
+            disabled={true} // Manual trigger disabled - automatic cron job is now active
             variant="outline"
-            disabled={isLoading}
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
