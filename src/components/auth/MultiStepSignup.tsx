@@ -78,6 +78,7 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
   const [data, setData] = useState<SignupData>(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const { signUp } = useAuth();
   const { toast } = useToast();
 
@@ -159,7 +160,7 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
         pronouns: data.pronouns,
         gender_identity: data.genderIdentity,
         looking_for: data.lookingFor,
-      });
+      }, captchaToken || undefined);
       
       if (error) {
         if (error.message.includes('User already registered')) {
@@ -185,8 +186,14 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
 
   const renderStep = () => {
     switch (currentStep) {
-      case 1:
-        return <BasicInfoStep data={data} updateData={updateData} />;
+        case 1:
+          return (
+            <BasicInfoStep 
+              data={data} 
+              updateData={updateData} 
+              onCaptchaVerify={setCaptchaToken}
+            />
+          );
       case 2:
         return <PersonalDetailsStep data={data} updateData={updateData} />;
       case 3:

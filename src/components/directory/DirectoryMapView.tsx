@@ -50,11 +50,11 @@ export function DirectoryMapView({
   const map = useRef<mapboxgl.Map | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
   const [showCities, setShowCities] = useState(true);
-  const [mapboxToken, setMapboxToken] = useState(import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || 'pk.eyJ1IjoidG1hZWRlciIsImEiOiJjazh4Ym9wOTEwN3F4M21zN3FqdnM4MHE2In0.24RlCLiCNxxX-c6h_4rwWw');
-  const [showTokenInput, setShowTokenInput] = useState(false);
+  const [mapboxToken, setMapboxToken] = useState('');
+  const [showTokenInput, setShowTokenInput] = useState(true);
   
-  // Use the provided token or environment token
-  const activeToken = mapboxToken || import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+  // Use the provided token
+  const activeToken = mapboxToken;
 
   const initializeMap = () => {
     if (!mapContainer.current || !activeToken) {

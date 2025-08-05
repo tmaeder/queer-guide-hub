@@ -18,12 +18,13 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata?: SignUpMetadata) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   enrollPasskey: () => Promise<{ error: any }>;
   signInWithPasskey: () => Promise<{ error: any }>;
   hasPasskey: boolean;
+  verifyCaptcha: (token: string, action?: string) => Promise<{ success: boolean; error?: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,7 +74,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, metadata?: SignUpMetadata) => {
+  const verifyCaptcha = async (token: string, action: string = 'login') => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-turnstile', {
+        body: { token, action }
+      });
+
+      if (error) {
+        console.error('Captcha verification error:', error);
+        return { success: false, error };
+      }
+
+      return { success: data.success, error: data.success ? null : data.error };
+    } catch (error) {
+      console.error('Captcha verification failed:', error);
+      return { success: false, error };
+    }
+  };
+
+  const signUp = async (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => {
+    // Verify captcha if token provided
+    if (captchaToken) {
+      const captchaResult = await verifyCaptcha(captchaToken, 'signup');
+      if (!captchaResult.success) {
+        return { error: { message: 'Captcha verification failed. Please try again.' } };
+      }
+    }
+
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -87,8 +114,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
+      // Verify captcha if token provided
+      if (captchaToken) {
+        const captchaResult = await verifyCaptcha(captchaToken, 'signin');
+        if (!captchaResult.success) {
+          return { error: { message: 'Captcha verification failed. Please try again.' } };
+        }
+      }
+
       // Log security event for sign-in attempt
       console.log('Sign-in attempt for email:', email);
       
@@ -250,6 +285,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       enrollPasskey,
       signInWithPasskey,
       hasPasskey,
+      verifyCaptcha,
     }}>
       {children}
     </AuthContext.Provider>
