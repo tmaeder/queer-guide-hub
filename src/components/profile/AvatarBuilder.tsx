@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RefreshCw, Save } from "lucide-react";
+import { BigHead } from "@bigheads/core";
 
 interface AvatarBuilderProps {
   onSave: (avatarConfig: AvatarConfig) => void;
@@ -10,202 +11,72 @@ interface AvatarBuilderProps {
 }
 
 export interface AvatarConfig {
-  skinColor: string;
-  hairStyle: string;
-  hairColor: string;
-  eyeStyle: string;
-  eyeColor: string;
-  noseStyle: string;
-  mouthStyle: string;
-  clothingStyle: string;
-  clothingColor: string;
-  accessory: string;
-  facialHair: string;
-  backgroundColor: string;
+  accessory: "none" | "roundGlasses" | "tinyGlasses" | "shades";
+  body: "chest" | "breasts";
+  clothing: "naked" | "shirt" | "dressShirt" | "vneck" | "tankTop" | "dress";
+  clothingColor: "white" | "blue" | "black" | "green" | "red";
+  eyebrows: "raised" | "leftLowered" | "serious" | "angry" | "concerned";
+  eyes: "content" | "normal" | "leftTwitch" | "happy" | "squint" | "simple" | "dizzy" | "wink" | "heart";
+  facialHair: "none" | "none2" | "none3" | "stubble" | "mediumBeard";
+  graphic: "none" | "redwood" | "gatsby" | "vue" | "react" | "graphQL";
+  hair: "none" | "long" | "bun" | "short" | "pixie" | "balding" | "buzz" | "afro" | "bob";
+  hairColor: "white" | "blue" | "black" | "blonde" | "orange" | "brown" | "pink";
+  hat: "none" | "none2" | "none3" | "none4" | "none5" | "beanie" | "turban";
+  hatColor: "white" | "blue" | "black" | "green" | "red";
+  lashes: boolean;
+  lipColor: "green" | "red" | "pink" | "purple" | "turqoise";
+  mask: boolean;
+  mouth: "serious" | "grin" | "sad" | "openSmile" | "lips" | "open" | "tongue";
+  skinTone: "black" | "red" | "brown" | "light" | "yellow" | "dark";
+  circleColor: "blue";
 }
 
 const avatarOptions = {
-  skinColor: ["#F5D5B7", "#E8B894", "#D4A574", "#C4915C", "#A67B5B", "#8B6F47"],
-  hairStyle: ["short", "long", "curly", "wavy", "buzz", "ponytail", "braid", "bun"],
-  hairColor: ["#2C1B18", "#8B4513", "#D2691E", "#CD853F", "#F4A460", "#FFD700", "#FF69B4", "#00BFFF"],
-  eyeStyle: ["normal", "wide", "sleepy", "wink", "surprised", "closed"],
-  eyeColor: ["#8B4513", "#228B22", "#4169E1", "#808080", "#000000"],
-  noseStyle: ["small", "medium", "large", "button", "pointed"],
-  mouthStyle: ["smile", "neutral", "frown", "laugh", "open", "kiss"],
-  clothingStyle: ["tshirt", "hoodie", "dress", "suit", "tank", "sweater"],
-  clothingColor: ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FFA500", "#800080"],
-  accessory: ["none", "glasses", "sunglasses", "hat", "cap", "headband", "earrings"],
-  facialHair: ["none", "mustache", "beard", "goatee", "stubble"],
-  backgroundColor: ["#F0F8FF", "#E6E6FA", "#F5F5DC", "#FFE4E1", "#F0FFFF", "#F5FFFA"]
+  accessory: ["none", "roundGlasses", "tinyGlasses", "shades"],
+  body: ["chest", "breasts"],
+  clothing: ["naked", "shirt", "dressShirt", "vneck", "tankTop", "dress"],
+  clothingColor: ["white", "blue", "black", "green", "red"],
+  eyebrows: ["raised", "leftLowered", "serious", "angry", "concerned"],
+  eyes: ["content", "normal", "leftTwitch", "happy", "squint", "simple", "dizzy", "wink", "heart"],
+  facialHair: ["none", "none2", "none3", "stubble", "mediumBeard"],
+  graphic: ["none", "redwood", "gatsby", "vue", "react", "graphQL"],
+  hair: ["none", "long", "bun", "short", "pixie", "balding", "buzz", "afro", "bob"],
+  hairColor: ["white", "blue", "black", "blonde", "orange", "brown", "pink"],
+  hat: ["none", "none2", "none3", "none4", "none5", "beanie", "turban"],
+  hatColor: ["white", "blue", "black", "green", "red"],
+  lashes: [true, false],
+  lipColor: ["green", "red", "pink", "purple", "turqoise"],
+  mask: [true, false],
+  mouth: ["serious", "grin", "sad", "openSmile", "lips", "open", "tongue"],
+  skinTone: ["black", "red", "brown", "light", "yellow", "dark"],
+  circleColor: ["blue"]
 };
 
 const generateRandomConfig = (): AvatarConfig => ({
-  skinColor: avatarOptions.skinColor[Math.floor(Math.random() * avatarOptions.skinColor.length)],
-  hairStyle: avatarOptions.hairStyle[Math.floor(Math.random() * avatarOptions.hairStyle.length)],
-  hairColor: avatarOptions.hairColor[Math.floor(Math.random() * avatarOptions.hairColor.length)],
-  eyeStyle: avatarOptions.eyeStyle[Math.floor(Math.random() * avatarOptions.eyeStyle.length)],
-  eyeColor: avatarOptions.eyeColor[Math.floor(Math.random() * avatarOptions.eyeColor.length)],
-  noseStyle: avatarOptions.noseStyle[Math.floor(Math.random() * avatarOptions.noseStyle.length)],
-  mouthStyle: avatarOptions.mouthStyle[Math.floor(Math.random() * avatarOptions.mouthStyle.length)],
-  clothingStyle: avatarOptions.clothingStyle[Math.floor(Math.random() * avatarOptions.clothingStyle.length)],
-  clothingColor: avatarOptions.clothingColor[Math.floor(Math.random() * avatarOptions.clothingColor.length)],
-  accessory: avatarOptions.accessory[Math.floor(Math.random() * avatarOptions.accessory.length)],
-  facialHair: avatarOptions.facialHair[Math.floor(Math.random() * avatarOptions.facialHair.length)],
-  backgroundColor: avatarOptions.backgroundColor[Math.floor(Math.random() * avatarOptions.backgroundColor.length)]
+  accessory: avatarOptions.accessory[Math.floor(Math.random() * avatarOptions.accessory.length)] as AvatarConfig["accessory"],
+  body: avatarOptions.body[Math.floor(Math.random() * avatarOptions.body.length)] as AvatarConfig["body"],
+  clothing: avatarOptions.clothing[Math.floor(Math.random() * avatarOptions.clothing.length)] as AvatarConfig["clothing"],
+  clothingColor: avatarOptions.clothingColor[Math.floor(Math.random() * avatarOptions.clothingColor.length)] as AvatarConfig["clothingColor"],
+  eyebrows: avatarOptions.eyebrows[Math.floor(Math.random() * avatarOptions.eyebrows.length)] as AvatarConfig["eyebrows"],
+  eyes: avatarOptions.eyes[Math.floor(Math.random() * avatarOptions.eyes.length)] as AvatarConfig["eyes"],
+  facialHair: avatarOptions.facialHair[Math.floor(Math.random() * avatarOptions.facialHair.length)] as AvatarConfig["facialHair"],
+  graphic: avatarOptions.graphic[Math.floor(Math.random() * avatarOptions.graphic.length)] as AvatarConfig["graphic"],
+  hair: avatarOptions.hair[Math.floor(Math.random() * avatarOptions.hair.length)] as AvatarConfig["hair"],
+  hairColor: avatarOptions.hairColor[Math.floor(Math.random() * avatarOptions.hairColor.length)] as AvatarConfig["hairColor"],
+  hat: avatarOptions.hat[Math.floor(Math.random() * avatarOptions.hat.length)] as AvatarConfig["hat"],
+  hatColor: avatarOptions.hatColor[Math.floor(Math.random() * avatarOptions.hatColor.length)] as AvatarConfig["hatColor"],
+  lashes: avatarOptions.lashes[Math.floor(Math.random() * avatarOptions.lashes.length)] as boolean,
+  lipColor: avatarOptions.lipColor[Math.floor(Math.random() * avatarOptions.lipColor.length)] as AvatarConfig["lipColor"],
+  mask: avatarOptions.mask[Math.floor(Math.random() * avatarOptions.mask.length)] as boolean,
+  mouth: avatarOptions.mouth[Math.floor(Math.random() * avatarOptions.mouth.length)] as AvatarConfig["mouth"],
+  skinTone: avatarOptions.skinTone[Math.floor(Math.random() * avatarOptions.skinTone.length)] as AvatarConfig["skinTone"],
+  circleColor: "blue"
 });
-
-const AvatarPreview = ({ config }: { config: AvatarConfig }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    if (!canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Background
-    ctx.fillStyle = config.backgroundColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Face (circle)
-    ctx.fillStyle = config.skinColor;
-    ctx.beginPath();
-    ctx.arc(80, 90, 50, 0, 2 * Math.PI);
-    ctx.fill();
-
-    // Hair
-    ctx.fillStyle = config.hairColor;
-    ctx.beginPath();
-    switch (config.hairStyle) {
-      case 'short':
-        ctx.arc(80, 75, 35, Math.PI, 2 * Math.PI);
-        break;
-      case 'long':
-        ctx.arc(80, 70, 40, Math.PI, 2 * Math.PI);
-        ctx.fillRect(40, 70, 80, 30);
-        break;
-      case 'curly':
-        for (let i = 0; i < 5; i++) {
-          ctx.arc(50 + i * 15, 60 + Math.sin(i) * 5, 8, 0, 2 * Math.PI);
-        }
-        break;
-      default:
-        ctx.arc(80, 75, 35, Math.PI, 2 * Math.PI);
-    }
-    ctx.fill();
-
-    // Eyes
-    ctx.fillStyle = config.eyeColor;
-    const eyeY = 80;
-    if (config.eyeStyle === 'closed') {
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(65, eyeY);
-      ctx.lineTo(75, eyeY);
-      ctx.moveTo(85, eyeY);
-      ctx.lineTo(95, eyeY);
-      ctx.stroke();
-    } else if (config.eyeStyle === 'wink') {
-      ctx.beginPath();
-      ctx.arc(70, eyeY, 3, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(85, eyeY);
-      ctx.lineTo(95, eyeY);
-      ctx.stroke();
-    } else {
-      ctx.beginPath();
-      ctx.arc(70, eyeY, 3, 0, 2 * Math.PI);
-      ctx.arc(90, eyeY, 3, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-
-    // Nose
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(80, 85);
-    ctx.lineTo(82, 95);
-    ctx.stroke();
-
-    // Mouth
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    const mouthY = 105;
-    switch (config.mouthStyle) {
-      case 'smile':
-        ctx.arc(80, mouthY - 5, 10, 0, Math.PI);
-        break;
-      case 'frown':
-        ctx.arc(80, mouthY + 5, 10, Math.PI, 2 * Math.PI);
-        break;
-      case 'laugh':
-        ctx.arc(80, mouthY - 8, 15, 0, Math.PI);
-        break;
-      case 'open':
-        ctx.arc(80, mouthY, 5, 0, 2 * Math.PI);
-        break;
-      default:
-        ctx.moveTo(75, mouthY);
-        ctx.lineTo(85, mouthY);
-    }
-    ctx.stroke();
-
-    // Clothing (simplified as a rectangle at bottom)
-    ctx.fillStyle = config.clothingColor;
-    ctx.fillRect(40, 130, 80, 30);
-
-    // Accessories
-    if (config.accessory === 'glasses') {
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(70, 80, 8, 0, 2 * Math.PI);
-      ctx.arc(90, 80, 8, 0, 2 * Math.PI);
-      ctx.moveTo(78, 80);
-      ctx.lineTo(82, 80);
-      ctx.stroke();
-    } else if (config.accessory === 'hat') {
-      ctx.fillStyle = '#4B0082';
-      ctx.fillRect(60, 45, 40, 20);
-      ctx.fillRect(55, 35, 50, 10);
-    }
-
-    // Facial Hair
-    if (config.facialHair === 'mustache') {
-      ctx.fillStyle = config.hairColor;
-      ctx.fillRect(75, 98, 10, 3);
-    } else if (config.facialHair === 'beard') {
-      ctx.fillStyle = config.hairColor;
-      ctx.beginPath();
-      ctx.arc(80, 115, 15, 0, Math.PI);
-      ctx.fill();
-    }
-  }, [config]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={160}
-      height={160}
-      className="border rounded-lg"
-      style={{ width: '128px', height: '128px' }}
-    />
-  );
-};
 
 export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => {
   const [config, setConfig] = useState<AvatarConfig>(initialConfig || generateRandomConfig());
 
-  const updateConfig = (key: keyof AvatarConfig, value: string) => {
+  const updateConfig = (key: keyof AvatarConfig, value: any) => {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 
@@ -226,7 +97,28 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex justify-center mb-6">
-          <AvatarPreview config={config} />
+          <div className="w-32 h-32">
+            <BigHead
+              accessory={config.accessory}
+              body={config.body}
+              clothing={config.clothing}
+              clothingColor={config.clothingColor}
+              eyebrows={config.eyebrows}
+              eyes={config.eyes}
+              facialHair={config.facialHair}
+              graphic={config.graphic}
+              hair={config.hair}
+              hairColor={config.hairColor}
+              hat={config.hat}
+              hatColor={config.hatColor}
+              lashes={config.lashes}
+              lipColor={config.lipColor}
+              mask={config.mask}
+              mouth={config.mouth}
+              skinTone={config.skinTone}
+              circleColor={config.circleColor}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
@@ -236,23 +128,26 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
                 {key.replace(/([A-Z])/g, ' $1').trim()}
               </label>
               <Select
-                value={config[key as keyof AvatarConfig]}
-                onValueChange={(value) => updateConfig(key as keyof AvatarConfig, value)}
+                value={String(config[key as keyof AvatarConfig])}
+                onValueChange={(value) => {
+                  const parsedValue = key === 'lashes' || key === 'mask' ? value === 'true' : value;
+                  updateConfig(key as keyof AvatarConfig, parsedValue);
+                }}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {options.map((option: string) => (
-                    <SelectItem key={option} value={option}>
+                  {options.map((option: any) => (
+                    <SelectItem key={String(option)} value={String(option)}>
                       <div className="flex items-center gap-2">
-                        {(key.includes('Color') || key === 'backgroundColor') && (
+                        {key.includes('Color') && typeof option === 'string' && (
                           <div
                             className="w-4 h-4 rounded border"
                             style={{ backgroundColor: option }}
                           />
                         )}
-                        {option}
+                        {String(option)}
                       </div>
                     </SelectItem>
                   ))}
