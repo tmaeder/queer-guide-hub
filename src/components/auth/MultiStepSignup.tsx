@@ -44,6 +44,8 @@ export interface SignupData {
   profileVisibility: string;
   emailNotifications: boolean;
   matchNotifications: boolean;
+  avatarUrl?: string;
+  avatarConfig?: any;
 }
 
 const initialData: SignupData = {
@@ -67,6 +69,8 @@ const initialData: SignupData = {
   profileVisibility: 'public',
   emailNotifications: true,
   matchNotifications: true,
+  avatarUrl: undefined,
+  avatarConfig: undefined,
 };
 
 interface MultiStepSignupProps {
@@ -82,12 +86,13 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
   const { signUp } = useAuth();
   const { toast } = useToast();
 
-  const totalSteps = 5;
+  const totalSteps = 6;
   const stepTitles = [
     'Account Info',
     'Personal Details', 
     'Identity',
     'Preferences',
+    'Avatar & Setup',
     'Review & Complete'
   ];
 
@@ -160,6 +165,9 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
         pronouns: data.pronouns,
         gender_identity: data.genderIdentity,
         looking_for: data.lookingFor,
+        bio: data.bio,
+        avatar_url: data.avatarUrl,
+        avatar_config: data.avatarConfig,
       }, captchaToken || undefined);
       
       if (error) {
@@ -201,6 +209,8 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
       case 4:
         return <PreferencesStep data={data} updateData={updateData} />;
       case 5:
+        return <AccountSetupStep data={data} updateData={updateData} />;
+      case 6:
         return <ReviewStep data={data} updateData={updateData} />;
       default:
         return null;

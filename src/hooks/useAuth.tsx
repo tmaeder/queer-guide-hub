@@ -12,6 +12,9 @@ interface SignUpMetadata {
   pronouns?: string;
   gender_identity?: string;
   looking_for?: string[];
+  bio?: string;
+  avatar_url?: string;
+  avatar_config?: any;
 }
 
 interface AuthContextType {
