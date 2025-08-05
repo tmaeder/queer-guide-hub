@@ -21,13 +21,13 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, metadata?: SignUpMetadata) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   enrollPasskey: () => Promise<{ error: any }>;
   signInWithPasskey: () => Promise<{ error: any }>;
   hasPasskey: boolean;
-  verifyCaptcha: (token: string, action?: string) => Promise<{ success: boolean; error?: any }>;
+  
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -77,34 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const verifyCaptcha = async (token: string, action: string = 'login') => {
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-turnstile', {
-        body: { token, action }
-      });
 
-      if (error) {
-        console.error('Turnstile verification error:', error);
-        return { success: false, error };
-      }
-
-      return { success: data.success, error: data.success ? null : data.error };
-    } catch (error) {
-      console.error('Turnstile verification failed:', error);
-      return { success: false, error };
-    }
-  };
-
-  const signUp = async (email: string, password: string, metadata?: SignUpMetadata, captchaToken?: string) => {
-    // Verify Turnstile token first (required for signup)
-    if (!captchaToken) {
-      return { error: { message: 'Security verification is required. Please complete the verification and try again.' } };
-    }
-    
-    const captchaResult = await verifyCaptcha(captchaToken, 'signup');
-    if (!captchaResult.success) {
-      return { error: { message: 'Security verification failed. Please try again.' } };
-    }
+  const signUp = async (email: string, password: string, metadata?: SignUpMetadata) => {
 
     const redirectUrl = `${window.location.origin}/`;
     
@@ -119,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
-  const signIn = async (email: string, password: string, captchaToken?: string) => {
+  const signIn = async (email: string, password: string) => {
     try {
 
       // Log security event for sign-in attempt
@@ -283,7 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       enrollPasskey,
       signInWithPasskey,
       hasPasskey,
-      verifyCaptcha,
+      
     }}>
       {children}
     </AuthContext.Provider>

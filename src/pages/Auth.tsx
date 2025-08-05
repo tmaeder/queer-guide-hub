@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import MultiStepSignup from '@/components/auth/MultiStepSignup';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
-import { TurnstileWidget } from '@/components/auth/TurnstileWidget';
+
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showMultiStepSignup, setShowMultiStepSignup] = useState(true);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  
 
   // Login form state
   const [loginData, setLoginData] = useState({

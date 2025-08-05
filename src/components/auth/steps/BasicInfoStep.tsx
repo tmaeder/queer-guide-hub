@@ -4,15 +4,14 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import type { SignupData } from '../MultiStepSignup';
-import { TurnstileWidget } from '@/components/auth/TurnstileWidget';
+
 
 interface BasicInfoStepProps {
   data: SignupData;
   updateData: (updates: Partial<SignupData>) => void;
-  onCaptchaVerify?: (token: string) => void;
 }
 
-export default function BasicInfoStep({ data, updateData, onCaptchaVerify }: BasicInfoStepProps) {
+export default function BasicInfoStep({ data, updateData }: BasicInfoStepProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -96,18 +95,6 @@ export default function BasicInfoStep({ data, updateData, onCaptchaVerify }: Bas
         </ul>
       </div>
 
-      {/* Turnstile Verification - Required for signup */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">Security Verification Required</Label>
-        <p className="text-xs text-muted-foreground">
-          Complete this verification to continue with account creation.
-        </p>
-        <TurnstileWidget 
-          onVerify={onCaptchaVerify || (() => {})}
-          action="signup"
-          className="flex justify-center"
-        />
-      </div>
     </div>
   );
 }
