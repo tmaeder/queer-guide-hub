@@ -282,9 +282,7 @@ export default function News() {
                 <CardContent>
                   <Newspaper className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-xl font-semibold mb-2">No articles found</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Try adjusting your filters or check back later for new content.
-                  </p>
+                  
                   <Button onClick={handleImportNews} disabled={isImporting} className="gap-2">
                     <Download className="h-4 w-4" />
                     Import Latest News
