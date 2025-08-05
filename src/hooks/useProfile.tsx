@@ -61,6 +61,33 @@ export const useProfile = () => {
     }
   };
 
+  const saveAvatarConfig = async (avatarConfig: any) => {
+    if (!user) {
+      return { error: "No user found" };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({
+          avatar_config: avatarConfig,
+          avatar_url: null, // Clear uploaded avatar when using generated one
+          updated_at: new Date().toISOString()
+        })
+        .eq("user_id", user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+      return { data, error: null };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      setError(errorMessage);
+      return { data: null, error: errorMessage };
+    }
+  };
+
   const uploadAvatar = async (file: File) => {
     if (!user) {
       return { error: "No user found" };
@@ -115,6 +142,7 @@ export const useProfile = () => {
     error,
     updateProfile,
     uploadAvatar,
+    saveAvatarConfig,
     refetchProfile: fetchProfile
   };
 };
