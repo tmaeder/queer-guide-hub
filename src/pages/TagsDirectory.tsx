@@ -89,10 +89,20 @@ export default function TagsDirectory() {
   const storeTagImages = async () => {
     if (allTags.length === 0) return;
     setProcessingImages(true);
+    
+    // Show initial toast
+    toast({
+      title: "Processing Started",
+      description: `Processing images for ${allTags.length} tags. This may take a while...`,
+    });
+
     try {
       console.log(`Processing ${allTags.length} tags (reimporting all images)`);
+      let successCount = 0;
+      let errorCount = 0;
 
-      for (const tag of allTags) {
+      for (let i = 0; i < allTags.length; i++) {
+        const tag = allTags[i];
         try {
           console.log(`Calling store-tag-images for tag: ${tag.name}`);
           const { data, error } = await supabase.functions.invoke('store-tag-images', {
@@ -106,40 +116,35 @@ export default function TagsDirectory() {
           
           if (error) {
             console.error(`Error for tag ${tag.name}:`, error);
-            toast({
-              title: "Image fetch failed",
-              description: `Failed to fetch image for ${tag.name}: ${error.message}`,
-              variant: "destructive",
-            });
+            errorCount++;
           } else if (data?.success) {
             console.log(`Successfully stored image for tag: ${tag.name}`);
-            toast({
-              title: "Image stored",
-              description: `Image stored for ${tag.name}`,
-            });
+            successCount++;
           } else {
             console.log(`No success flag for tag ${tag.name}:`, data);
+            errorCount++;
+          }
+
+          // Show progress every 10 tags
+          if ((i + 1) % 10 === 0 || i === allTags.length - 1) {
             toast({
-              title: "Unexpected response",
-              description: `Unexpected response for ${tag.name}`,
-              variant: "destructive",
+              title: "Processing Progress",
+              description: `Processed ${i + 1}/${allTags.length} tags (${successCount} successful)`,
             });
           }
         } catch (err) {
           console.error(`Failed to store image for tag ${tag.name}:`, err);
-          toast({
-            title: "Error",
-            description: `Failed to store image for ${tag.name}`,
-            variant: "destructive",
-          });
+          errorCount++;
         }
       }
 
+      // Final summary toast
       toast({
-        title: "Processing complete",
-        description: "Image processing complete! Refreshing page...",
+        title: "Processing Complete",
+        description: `Processed ${allTags.length} tags. ${successCount} successful, ${errorCount} failed.`,
+        variant: errorCount > 0 ? "destructive" : "default"
       });
-      setTimeout(() => window.location.reload(), 2000);
+
     } catch (error) {
       console.error('Error processing tag images:', error);
       toast({
