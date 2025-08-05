@@ -579,6 +579,39 @@ export type Database = {
           },
         ]
       }
+      content_embeddings: {
+        Row: {
+          content_id: string
+          content_text: string
+          content_type: string
+          created_at: string
+          embedding: string | null
+          id: string
+          metadata: Json | null
+          updated_at: string
+        }
+        Insert: {
+          content_id: string
+          content_text: string
+          content_type: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          content_id?: string
+          content_text?: string
+          content_type?: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       continents: {
         Row: {
           code: string
@@ -2852,6 +2885,39 @@ export type Database = {
         }
         Relationships: []
       }
+      rag_conversations: {
+        Row: {
+          context_used: Json | null
+          created_at: string
+          embedding: string | null
+          id: string
+          query: string
+          response: string
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          context_used?: Json | null
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          query: string
+          response: string
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          context_used?: Json | null
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          query?: string
+          response?: string
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       regions: {
         Row: {
           continent_id: string
@@ -3804,6 +3870,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
       check_rate_limit: {
         Args: {
           identifier: string
@@ -3888,12 +3958,44 @@ export type Database = {
           conversation_id: string
         }[]
       }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
       has_role: {
         Args: {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
       }
       increment_article_views: {
         Args: { article_id: string }
@@ -3926,6 +4028,26 @@ export type Database = {
         Args: { group_id: string; check_admin?: boolean }
         Returns: boolean
       }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: string
+      }
       log_enhanced_security_event: {
         Args: {
           event_type: string
@@ -3946,6 +4068,42 @@ export type Database = {
               details?: Json
             }
         Returns: undefined
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
       }
     }
     Enums: {
