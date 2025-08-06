@@ -110,13 +110,19 @@ export const UmamiAnalyticsDashboard = () => {
         setLoading(true);
       }
       
+      // Get current session for auth header
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const { data: analyticsData, error } = await supabase.functions.invoke('umami-dashboard', {
         body: { 
           action: 'get_enhanced_stats',
           dateRange,
           deviceFilter,
           countryFilter
-        }
+        },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : {}
       });
 
       if (error) {
@@ -141,13 +147,19 @@ export const UmamiAnalyticsDashboard = () => {
 
   const handleExport = async () => {
     try {
+      // Get current session for auth header
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const { data } = await supabase.functions.invoke('umami-dashboard', {
         body: { 
           action: 'export_data',
           dateRange,
           deviceFilter,
           countryFilter
-        }
+        },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : {}
       });
       
       if (data) {

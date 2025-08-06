@@ -21,6 +21,30 @@ serve(async (req) => {
     const url = new URL(req.url);
     const path = url.pathname;
 
+    // Helper function to check if user is admin
+    const checkAdminAccess = async (authHeader: string | null) => {
+      if (!authHeader) return false;
+      
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        
+        if (error || !user) return false;
+        
+        // Check if user has admin role
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .single();
+          
+        return !!userRoles;
+      } catch {
+        return false;
+      }
+    };
+
     // Serve the umami tracking script
     if (path === '/umami.js') {
       const script = `
@@ -157,6 +181,20 @@ serve(async (req) => {
 
     // Handle stats request from React app
     if (req.method === 'POST') {
+      // Check admin access for analytics data
+      const authHeader = req.headers.get('authorization');
+      const isAdmin = await checkAdminAccess(authHeader);
+      
+      if (!isAdmin) {
+        return new Response(
+          JSON.stringify({ error: 'Admin access required' }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 403 
+          }
+        );
+      }
+      
       const body = await req.json();
       
       if (body.action === 'get_enhanced_stats' || body.action === 'get_stats') {
