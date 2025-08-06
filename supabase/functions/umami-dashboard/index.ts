@@ -144,20 +144,7 @@ serve(async (req) => {
     // Analytics dashboard endpoint
     if (path === '/analytics' && req.method === 'GET') {
       const { data: stats, error } = await supabase
-        .from('umami.website_event')
-        .select(`
-          *,
-          umami.session(*)
-        `)
-        .eq('website_id', (
-          await supabase
-            .from('umami.website')
-            .select('website_id')
-            .eq('name', 'Queer Guide')
-            .single()
-        ).data?.website_id)
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .rpc('get_umami_analytics');
 
       if (error) {
         throw error;
@@ -166,6 +153,104 @@ serve(async (req) => {
       return new Response(JSON.stringify(stats), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // Handle stats request from React app
+    if (req.method === 'POST') {
+      const body = await req.json();
+      
+      if (body.action === 'get_stats') {
+        // Get website ID
+        const { data: website } = await supabase
+          .schema('umami')
+          .from('website')
+          .select('website_id')
+          .eq('name', 'Queer Guide')
+          .single();
+
+        if (!website) {
+          throw new Error('Website not found');
+        }
+
+        const websiteId = website.website_id;
+
+        // Get events and sessions
+        const [eventsResult, sessionsResult] = await Promise.all([
+          supabase
+            .schema('umami')
+            .from('website_event')
+            .select('*')
+            .eq('website_id', websiteId)
+            .order('created_at', { ascending: false })
+            .limit(100),
+          supabase
+            .schema('umami')
+            .from('session')
+            .select('*')
+            .eq('website_id', websiteId)
+            .order('created_at', { ascending: false })
+            .limit(100)
+        ]);
+
+        const events = eventsResult.data || [];
+        const sessions = sessionsResult.data || [];
+
+        // Calculate stats
+        const totalPageViews = events.filter(e => e.event_type === 1).length;
+        const totalSessions = sessions.length;
+        const uniqueVisitors = new Set(sessions.map(s => s.session_id)).size;
+
+        // Top pages
+        const pageCounts = events
+          .filter(e => e.event_type === 1)
+          .reduce((acc, event) => {
+            acc[event.url_path] = (acc[event.url_path] || 0) + 1;
+            return acc;
+          }, {});
+
+        const topPages = Object.entries(pageCounts)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 5)
+          .map(([path, views]) => ({ path, views }));
+
+        // Top browsers
+        const browserCounts = sessions.reduce((acc, session) => {
+          acc[session.browser] = (acc[session.browser] || 0) + 1;
+          return acc;
+        }, {});
+
+        const topBrowsers = Object.entries(browserCounts)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 5)
+          .map(([browser, count]) => ({ browser, count }));
+
+        // Top countries
+        const countryCounts = sessions.reduce((acc, session) => {
+          if (session.country) {
+            acc[session.country] = (acc[session.country] || 0) + 1;
+          }
+          return acc;
+        }, {});
+
+        const topCountries = Object.entries(countryCounts)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 5)
+          .map(([country, count]) => ({ country, count }));
+
+        const analyticsStats = {
+          totalPageViews,
+          totalSessions,
+          uniqueVisitors,
+          topPages,
+          topBrowsers,
+          topCountries,
+          recentEvents: events.slice(0, 20)
+        };
+
+        return new Response(JSON.stringify(analyticsStats), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     return new Response('Not Found', { status: 404, headers: corsHeaders });
