@@ -6,203 +6,127 @@ import { Database } from '@/integrations/supabase/types';
 import { VenueEvents } from './VenueEvents';
 import { Link } from 'react-router-dom';
 import { FavoriteButton } from '@/components/ui/favorite-button';
-
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
-
 interface VenueCardProps {
   venue: Venue & {
-    venue_reviews?: Array<{ rating: number }>;
+    venue_reviews?: Array<{
+      rating: number;
+    }>;
   };
   events?: Event[];
   onViewDetails?: (venue: Venue) => void;
   onAmenityClick?: (amenity: string) => void;
   onServiceClick?: (service: string) => void;
-  onTagClick?: (tag: string) => void;
 }
-
-export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick, onServiceClick, onTagClick }: VenueCardProps) {
-  const averageRating = venue.venue_reviews?.length 
-    ? venue.venue_reviews.reduce((sum, review) => sum + review.rating, 0) / venue.venue_reviews.length
-    : 0;
-
+export function VenueCard({
+  venue,
+  events = [],
+  onViewDetails,
+  onAmenityClick,
+  onServiceClick
+}: VenueCardProps) {
+  const averageRating = venue.venue_reviews?.length ? venue.venue_reviews.reduce((sum, review) => sum + review.rating, 0) / venue.venue_reviews.length : 0;
   const getPriceRange = (range: number | null) => {
     if (!range) return '';
     return '$'.repeat(range);
   };
-
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       bar: 'bg-primary/10 text-primary',
       restaurant: 'bg-accent/10 text-accent',
       cafe: 'bg-secondary/10 text-secondary',
       club: 'bg-destructive/10 text-destructive',
-      hotel: 'bg-muted-foreground/10 text-muted-foreground',
+      hotel: 'bg-muted-foreground/10 text-muted-foreground'
     };
     return colors[category] || 'bg-muted/10 text-muted-foreground';
   };
-
-  return (
-    <Card className="group hover:shadow-elegant transition-all duration-300">
+  return <Card className="group hover:shadow-elegant transition-all duration-300">
       {/* Venue Images */}
-      {venue.images && venue.images.length > 0 && (
-        <div className="relative h-48 overflow-hidden rounded-t-lg">
-          <img
-            src={venue.images[0]}
-            alt={venue.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
-          />
-          {venue.images.length > 1 && (
-            <div className="absolute top-2 right-2 bg-background/90 text-foreground text-xs px-2 py-1 rounded border">
+      {venue.images && venue.images.length > 0 && <div className="relative h-48 overflow-hidden rounded-t-lg">
+          <img src={venue.images[0]} alt={venue.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError={e => {
+        const target = e.target as HTMLImageElement;
+        target.style.display = 'none';
+      }} />
+          {venue.images.length > 1 && <div className="absolute top-2 right-2 bg-background/90 text-foreground text-xs px-2 py-1 rounded border">
               +{venue.images.length - 1} more
-            </div>
-          )}
-        </div>
-      )}
+            </div>}
+        </div>}
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg group-hover:text-primary transition-colors">
               {venue.name}
-              {venue.verified && (
-                <Badge variant="secondary" className="ml-2 text-xs">
+              {venue.verified && <Badge variant="secondary" className="ml-2 text-xs">
                   Verified
-                </Badge>
-              )}
+                </Badge>}
             </CardTitle>
             <div className="flex items-center gap-2 mt-1 text-muted-foreground">
               <MapPin className="h-3 w-3" />
               <span className="text-sm">{venue.city}, {venue.state}</span>
-              {venue.price_range && (
-                <span className="text-sm font-medium text-accent">
+              {venue.price_range && <span className="text-sm font-medium text-accent">
                   {getPriceRange(venue.price_range)}
-                </span>
-              )}
+                </span>}
             </div>
           </div>
           <div className="flex flex-col items-end gap-1">
             <Badge className={getCategoryColor(venue.category)}>
               {venue.category}
             </Badge>
-            {averageRating > 0 && (
-              <div className="flex items-center gap-1">
+            {averageRating > 0 && <div className="flex items-center gap-1">
                 <Star className="h-3 w-3 fill-current text-accent" />
                 <span className="text-sm font-medium">{averageRating.toFixed(1)}</span>
-              </div>
-            )}
+              </div>}
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {venue.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+        {venue.description && <p className="text-sm text-muted-foreground line-clamp-2">
             {venue.description}
-          </p>
-        )}
+          </p>}
 
-        {venue.tags && venue.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {venue.tags.slice(0, 3).map((tag, index) => (
-              <Badge 
-                key={index} 
-                variant="outline" 
-                className="text-xs cursor-pointer hover:bg-primary/10 transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onTagClick?.(tag);
-                }}
-              >
+        {venue.tags && venue.tags.length > 0 && <div className="flex flex-wrap gap-1">
+            {venue.tags.slice(0, 3).map((tag, index) => <Badge key={index} variant="outline" className="text-xs">
                 {tag}
-              </Badge>
-            ))}
-            {venue.tags.length > 3 && (
-              <Badge variant="outline" className="text-xs">
+              </Badge>)}
+            {venue.tags.length > 3 && <Badge variant="outline" className="text-xs">
                 +{venue.tags.length - 3} more
-              </Badge>
-            )}
-          </div>
-        )}
+              </Badge>}
+          </div>}
 
-        {venue.amenities && venue.amenities.length > 0 && (
-          <div className="space-y-1">
+        {venue.amenities && venue.amenities.length > 0 && <div className="space-y-1">
             <span className="text-xs font-medium text-muted-foreground">Amenities:</span>
-            <div className="flex flex-wrap gap-1">
-              {venue.amenities.slice(0, 4).map((amenity, index) => (
-                <Badge 
-                  key={index} 
-                  variant="secondary" 
-                  className="text-xs cursor-pointer hover:bg-accent/20 transition-colors"
-                  onClick={() => onAmenityClick?.(amenity)}
-                >
-                  {amenity}
-                </Badge>
-              ))}
-              {venue.amenities.length > 4 && (
-                <Badge variant="secondary" className="text-xs">
-                  +{venue.amenities.length - 4} more
-                </Badge>
-              )}
-            </div>
-          </div>
-        )}
+            
+          </div>}
 
-        {venue.services && venue.services.length > 0 && (
-          <div className="space-y-1">
+        {venue.services && venue.services.length > 0 && <div className="space-y-1">
             <span className="text-xs font-medium text-muted-foreground">Services:</span>
             <div className="flex flex-wrap gap-1">
-              {venue.services.slice(0, 4).map((service, index) => (
-                <Badge 
-                  key={index} 
-                  variant="outline" 
-                  className="text-xs cursor-pointer hover:bg-primary/10 transition-colors"
-                  onClick={() => onServiceClick?.(service)}
-                >
+              {venue.services.slice(0, 4).map((service, index) => <Badge key={index} variant="outline" className="text-xs cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => onServiceClick?.(service)}>
                   {service}
-                </Badge>
-              ))}
-              {venue.services.length > 4 && (
-                <Badge variant="outline" className="text-xs">
+                </Badge>)}
+              {venue.services.length > 4 && <Badge variant="outline" className="text-xs">
                   +{venue.services.length - 4} more
-                </Badge>
-              )}
+                </Badge>}
             </div>
-          </div>
-        )}
+          </div>}
 
         {/* Upcoming Events */}
-        {events.length > 0 && (
-          <VenueEvents 
-            venueId={venue.id} 
-            venueName={venue.name}
-            events={events}
-            compact={true}
-          />
-        )}
+        {events.length > 0 && <VenueEvents venueId={venue.id} venueName={venue.name} events={events} compact={true} />}
 
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
             <FavoriteButton itemId={venue.id} type="venue" />
-            {venue.phone && (
-              <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+            {venue.phone && <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
                 <Phone className="h-3 w-3" />
-              </Button>
-            )}
-            {venue.website && (
-              <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+              </Button>}
+            {venue.website && <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
                 <Globe className="h-3 w-3" />
-              </Button>
-            )}
-            {venue.instagram && (
-              <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+              </Button>}
+            {venue.instagram && <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
                 <Instagram className="h-3 w-3" />
-              </Button>
-            )}
+              </Button>}
           </div>
           
           <Link to={`/venues/${venue.id}`}>
@@ -212,6 +136,5 @@ export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick, o
           </Link>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
