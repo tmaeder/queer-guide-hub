@@ -143,44 +143,116 @@ export default function AdminDashboard() {
 
   const fetchRecentActivity = async () => {
     try {
-      const { data: recentPosts } = await supabase.from('group_posts').select(`
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      
+      // Fetch recent posts from groups
+      const { data: recentPosts } = await supabase
+        .from('group_posts')
+        .select(`
           id,
           content,
           created_at,
           group_id,
           community_groups!inner(name)
-        `).order('created_at', { ascending: false }).limit(3);
+        `)
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(5);
       
-      const { data: recentEvents } = await supabase.from('events').select('id, title, created_at, event_type').order('created_at', { ascending: false }).limit(5);
+      // Fetch recent events
+      const { data: recentEvents } = await supabase
+        .from('events')
+        .select('id, title, created_at, event_type, city, country')
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(5);
       
-      const { data: recentTemplates } = await supabase.from('email_templates').select('id, name, created_at, template_key, updated_at').order('updated_at', { ascending: false }).limit(3);
+      // Fetch recent email template updates
+      const { data: recentTemplates } = await supabase
+        .from('email_templates')
+        .select('id, name, created_at, template_key, updated_at')
+        .gte('updated_at', sevenDaysAgo)
+        .order('updated_at', { ascending: false })
+        .limit(3);
       
-      const { data: recentListings } = await supabase.from('marketplace_listings').select('id, title, created_at, status').eq('status', 'active').order('created_at', { ascending: false }).limit(3);
+      // Fetch recent marketplace listings
+      const { data: recentListings } = await supabase
+        .from('marketplace_listings')
+        .select('id, title, created_at, status')
+        .eq('status', 'active')
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      // Fetch recent user registrations
+      const { data: recentUsers } = await supabase
+        .from('profiles')
+        .select('id, display_name, created_at')
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // Fetch recent venues
+      const { data: recentVenues } = await supabase
+        .from('venues')
+        .select('id, name, created_at, city, country')
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      // Fetch recent groups
+      const { data: recentGroups } = await supabase
+        .from('community_groups')
+        .select('id, name, created_at, member_count')
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      // Fetch recent donations
+      const { data: recentDonations } = await supabase
+        .from('donations')
+        .select('id, amount, created_at, status, donor_name, is_anonymous')
+        .eq('status', 'completed')
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      // Fetch recent bookings
+      const { data: recentBookings } = await supabase
+        .from('bookings')
+        .select('id, booking_type, created_at, status, total_price, currency')
+        .gte('created_at', sevenDaysAgo)
+        .order('created_at', { ascending: false })
+        .limit(3);
       
       const activities = [
         ...(recentPosts?.map(post => ({
           id: post.id,
           type: 'post',
           title: `New post in ${post.community_groups.name}`,
-          description: post.content.substring(0, 50) + '...',
+          description: post.content.substring(0, 80) + '...',
           timestamp: post.created_at,
-          icon: MessageSquare
+          icon: MessageSquare,
+          badge: 'Community'
         })) || []),
         ...(recentEvents?.map(event => ({
           id: event.id,
           type: 'event',
           title: `New ${event.event_type} event`,
-          description: event.title,
+          description: `${event.title} in ${event.city}, ${event.country}`,
           timestamp: event.created_at,
-          icon: Calendar
+          icon: Calendar,
+          badge: 'Events'
         })) || []),
         ...(recentTemplates?.map(template => ({
           id: template.id,
           type: 'email_template',
-          title: `Email template: ${template.name}`,
-          description: `Template key: ${template.template_key}`,
+          title: `Email template updated`,
+          description: `${template.name} (${template.template_key})`,
           timestamp: template.updated_at || template.created_at,
-          icon: FileText
+          icon: FileText,
+          badge: 'Templates'
         })) || []),
         ...(recentListings?.map(listing => ({
           id: listing.id,
@@ -188,9 +260,55 @@ export default function AdminDashboard() {
           title: `New marketplace listing`,
           description: listing.title,
           timestamp: listing.created_at,
-          icon: ShoppingBag
+          icon: ShoppingBag,
+          badge: 'Marketplace'
+        })) || []),
+        ...(recentUsers?.map(user => ({
+          id: user.id,
+          type: 'user',
+          title: 'New user registration',
+          description: user.display_name || 'Anonymous user',
+          timestamp: user.created_at,
+          icon: Users,
+          badge: 'Users'
+        })) || []),
+        ...(recentVenues?.map(venue => ({
+          id: venue.id,
+          type: 'venue',
+          title: 'New venue added',
+          description: `${venue.name} in ${venue.city}, ${venue.country}`,
+          timestamp: venue.created_at,
+          icon: Building,
+          badge: 'Venues'
+        })) || []),
+        ...(recentGroups?.map(group => ({
+          id: group.id,
+          type: 'group',
+          title: 'New community group',
+          description: `${group.name} (${group.member_count} members)`,
+          timestamp: group.created_at,
+          icon: Users,
+          badge: 'Groups'
+        })) || []),
+        ...(recentDonations?.map(donation => ({
+          id: donation.id,
+          type: 'donation',
+          title: 'New donation received',
+          description: `$${(donation.amount / 100).toFixed(2)} from ${donation.is_anonymous ? 'Anonymous' : (donation.donor_name || 'Anonymous')}`,
+          timestamp: donation.created_at,
+          icon: Heart,
+          badge: 'Donations'
+        })) || []),
+        ...(recentBookings?.map(booking => ({
+          id: booking.id,
+          type: 'booking',
+          title: `New ${booking.booking_type} booking`,
+          description: `${booking.status} - ${booking.total_price ? `${booking.currency?.toUpperCase()} ${booking.total_price}` : 'Free'}`,
+          timestamp: booking.created_at,
+          icon: Calendar,
+          badge: 'Bookings'
         })) || [])
-      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10);
+      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 15);
       
       setRecentActivity(activities);
     } catch (error) {
@@ -789,30 +907,38 @@ export default function AdminDashboard() {
                   
                   <div className="space-y-4">
                     {recentActivity.map((activity) => (
-                      <div key={activity.id} className="flex items-center justify-between p-4 border rounded-lg bg-card">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-muted rounded">
-                            <activity.icon className="h-4 w-4" />
+                      <div key={`${activity.type}-${activity.id}`} className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <activity.icon className="h-4 w-4 text-primary" />
                           </div>
-                          <div>
-                            <h4 className="font-medium">{activity.title}</h4>
-                            <p className="text-sm text-muted-foreground">{activity.description}</p>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-medium text-sm">{activity.title}</h4>
+                              {activity.badge && (
+                                <Badge variant="outline" className="text-xs">
+                                  {activity.badge}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground truncate">{activity.description}</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">
+                        <div className="text-right flex-shrink-0 ml-3">
+                          <p className="text-xs text-muted-foreground">
                             {new Date(activity.timestamp).toLocaleDateString()}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(activity.timestamp).toLocaleTimeString()}
+                            {new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
                       </div>
                     ))}
                     {recentActivity.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground">
+                      <div className="text-center py-12 text-muted-foreground">
                         <Activity className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                        <p>No recent activity to display</p>
+                        <p className="text-lg font-medium mb-1">No recent activity</p>
+                        <p className="text-sm">Activity from the last 7 days will appear here</p>
                       </div>
                     )}
                   </div>
