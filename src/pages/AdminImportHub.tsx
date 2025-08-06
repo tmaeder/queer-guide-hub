@@ -9,7 +9,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, Download, Rss, Globe, MapPin, Calendar, Building2, Newspaper } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RestCountriesImport } from "@/components/admin/RestCountriesImport";
 import { NewsSourcesManager } from "@/components/admin/NewsSourcesManager";
 
 export default function AdminImportHub() {
@@ -244,26 +243,55 @@ export default function AdminImportHub() {
               <CardDescription>Import city information and images</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <Button
-                  onClick={() => handleApiImport('fetch-and-store-city-images')}
-                  disabled={loading === 'fetch-and-store-city-images'}
+                  onClick={() => handleApiImport('import-city-data', { action: 'fetch_images' })}
+                  disabled={loading === 'import-city-data'}
                 >
-                  {loading === 'fetch-and-store-city-images' ? 'Fetching...' : 'Fetch City Images'}
+                  {loading === 'import-city-data' ? 'Fetching...' : 'Fetch All City Images'}
                 </Button>
                 <Button
-                  onClick={() => handleApiImport('get-wikipedia-info')}
-                  disabled={loading === 'get-wikipedia-info'}
+                  onClick={() => handleApiImport('import-city-data', { action: 'fetch_wikipedia' })}
+                  disabled={loading === 'import-city-data'}
                 >
-                  {loading === 'get-wikipedia-info' ? 'Fetching...' : 'Get Wikipedia Info'}
+                  {loading === 'import-city-data' ? 'Fetching...' : 'Fetch Wikipedia Data'}
+                </Button>
+                <Button
+                  onClick={() => handleApiImport('import-city-data', { action: 'fetch_all' })}
+                  disabled={loading === 'import-city-data'}
+                >
+                  {loading === 'import-city-data' ? 'Processing...' : 'Import All City Data'}
                 </Button>
               </div>
+              <p className="text-sm text-muted-foreground">
+                Import city images from Pexels/Unsplash and descriptions from Wikipedia
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="countries" className="space-y-6">
-          <RestCountriesImport />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                REST Countries Import
+              </CardTitle>
+              <CardDescription>Import country data from REST Countries API</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button
+                onClick={() => handleApiImport('import-country-data')}
+                disabled={loading === 'import-country-data'}
+                className="w-full"
+              >
+                {loading === 'import-country-data' ? 'Importing...' : 'Import Countries & Capitals'}
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Imports all countries and capital cities from REST Countries API, preserving existing LGBTI data
+              </p>
+            </CardContent>
+          </Card>
           
           <Card>
             <CardHeader>
