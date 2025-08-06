@@ -7,10 +7,12 @@
 /*.js
   Cache-Control: public, max-age=604800
   Expires: Thu, 13 Aug 2025 00:00:00 GMT
+  Content-Encoding: gzip
 
 /*.css
   Cache-Control: public, max-age=604800
   Expires: Thu, 13 Aug 2025 00:00:00 GMT
+  Content-Encoding: gzip
 
 /*.woff2
   Cache-Control: public, max-age=31536000
@@ -31,6 +33,7 @@
 /*.svg
   Cache-Control: public, max-age=604800
   Expires: Thu, 13 Aug 2025 00:00:00 GMT
+  Content-Encoding: gzip
 
 # Cache manifest and service worker for short time
 /manifest.json
@@ -44,6 +47,15 @@
 # HTML should be revalidated
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
+  Content-Encoding: gzip
 
 /
   Cache-Control: public, max-age=0, must-revalidate
+  Content-Encoding: gzip
+
+# Enable gzip compression for compressible content
+/*.json
+  Content-Encoding: gzip
+
+/*.xml
+  Content-Encoding: gzip
