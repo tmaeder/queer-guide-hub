@@ -1,0 +1,39 @@
+# Cache static assets for 1 year (immutable files with hashes)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache other static files for 1 week
+/*.js
+  Cache-Control: public, max-age=604800
+
+/*.css
+  Cache-Control: public, max-age=604800
+
+/*.woff2
+  Cache-Control: public, max-age=31536000
+
+/*.woff
+  Cache-Control: public, max-age=31536000
+
+/*.png
+  Cache-Control: public, max-age=604800
+
+/*.jpg
+  Cache-Control: public, max-age=604800
+
+/*.svg
+  Cache-Control: public, max-age=604800
+
+# Cache manifest and service worker for short time
+/manifest.json
+  Cache-Control: public, max-age=3600
+
+/sw.js
+  Cache-Control: public, max-age=0
+
+# HTML should be revalidated
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
