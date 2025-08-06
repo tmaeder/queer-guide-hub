@@ -1142,7 +1142,7 @@ export default function AdminDashboard() {
                       </AlertDescription>
                     </Alert>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <Card className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-green-100 dark:bg-green-900 rounded">
@@ -1178,6 +1178,71 @@ export default function AdminDashboard() {
                             <p className="text-sm font-medium">Failed Imports</p>
                             <p className="text-2xl font-bold">2</p>
                             <p className="text-xs text-muted-foreground">Needs attention</p>
+                          </div>
+                        </div>
+                      </Card>
+
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded">
+                            <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Events Imported</p>
+                            <p className="text-2xl font-bold">847</p>
+                            <p className="text-xs text-muted-foreground">This month</p>
+                          </div>
+                        </div>
+                      </Card>
+
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded">
+                            <Building className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Venues Imported</p>
+                            <p className="text-2xl font-bold">1.2K</p>
+                            <p className="text-xs text-muted-foreground">Total</p>
+                          </div>
+                        </div>
+                      </Card>
+
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded">
+                            <Tags className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Tags Imported</p>
+                            <p className="text-2xl font-bold">356</p>
+                            <p className="text-xs text-muted-foreground">Categories</p>
+                          </div>
+                        </div>
+                      </Card>
+
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-pink-100 dark:bg-pink-900 rounded">
+                            <Clock className="h-4 w-4 text-pink-600 dark:text-pink-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Avg Import Time</p>
+                            <p className="text-2xl font-bold">3.2m</p>
+                            <p className="text-xs text-muted-foreground">Per batch</p>
+                          </div>
+                        </div>
+                      </Card>
+
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-teal-100 dark:bg-teal-900 rounded">
+                            <TrendingUp className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Success Rate</p>
+                            <p className="text-2xl font-bold">98.5%</p>
+                            <p className="text-xs text-muted-foreground">Overall</p>
                           </div>
                         </div>
                       </Card>
