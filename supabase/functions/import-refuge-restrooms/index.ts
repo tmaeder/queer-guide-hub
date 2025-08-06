@@ -53,6 +53,7 @@ serve(async (req) => {
         .from('venue_categories')
         .insert({
           name: 'Toilet',
+          slug: 'toilet',
           description: 'Public restrooms and toilet facilities',
           icon: 'restroom'
         })
