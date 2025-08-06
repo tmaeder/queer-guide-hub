@@ -190,7 +190,7 @@ export default function Sustainability() {
               We monitor and work to minimize our digital carbon footprint. See how this website performs below:
             </p>
             <div className="flex justify-center">
-              <div id="wcb" className="carbonbadge"></div>
+              <div id="wcb" className="carbonbadge wcb-d"></div>
             </div>
           </div>
         </div>
