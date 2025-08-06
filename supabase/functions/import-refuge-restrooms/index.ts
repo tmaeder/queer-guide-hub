@@ -122,38 +122,50 @@ serve(async (req) => {
         }
 
         // Get or create city
-        let { data: city, error: cityError } = await supabaseClient
-          .from('cities')
-          .select('id')
-          .ilike('name', restroom.city)
-          .single()
-
-        if (cityError && cityError.code === 'PGRST116') {
-          // City doesn't exist, create basic city record
-          const { data: newCity, error: createCityError } = await supabaseClient
+        let city = null;
+        if (restroom.city && restroom.city.trim()) {
+          console.log(`Looking for city: ${restroom.city}`)
+          const { data: existingCity, error: cityError } = await supabaseClient
             .from('cities')
-            .insert({
-              name: restroom.city,
-              country_id: (await supabaseClient
-                .from('countries')
-                .select('id')
-                .eq('code', restroom.country || 'US')
-                .single()).data?.id || null,
-              latitude: restroom.latitude,
-              longitude: restroom.longitude
-            })
-            .select()
+            .select('id')
+            .ilike('name', restroom.city.trim())
             .single()
 
-          if (createCityError) {
-            console.error('Error creating city:', createCityError)
-            city = null
-          } else {
-            city = newCity
+          if (cityError && cityError.code === 'PGRST116') {
+            // City doesn't exist, need to get country first
+            let countryId = null;
+            if (restroom.country) {
+              const { data: country } = await supabaseClient
+                .from('countries')
+                .select('id')
+                .or(`code.eq.${restroom.country},name.ilike.%${restroom.country}%`)
+                .single()
+              countryId = country?.id
+            }
+
+            // Only create city if we have required data
+            if (countryId && restroom.latitude && restroom.longitude) {
+              console.log(`Creating city: ${restroom.city} in country: ${restroom.country}`)
+              const { data: newCity, error: createCityError } = await supabaseClient
+                .from('cities')
+                .insert({
+                  name: restroom.city.trim(),
+                  country_id: countryId,
+                  latitude: restroom.latitude,
+                  longitude: restroom.longitude
+                })
+                .select()
+                .single()
+
+              if (!createCityError) {
+                city = newCity
+              } else {
+                console.error('Error creating city:', createCityError)
+              }
+            }
+          } else if (!cityError) {
+            city = existingCity
           }
-        } else if (cityError) {
-          console.error('Error fetching city:', cityError)
-          city = null
         }
 
         // Prepare venue data
