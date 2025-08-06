@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -46,11 +46,11 @@ export default function ProfileSettings() {
     );
   }
 
-  return <ProfileSettingsContent profile={profile} updateProfile={updateProfile} uploadAvatar={uploadAvatar} toast={toast} navigate={navigate} hasPasskey={hasPasskey} />;
+  return <ProfileSettingsContent profile={profile} updateProfile={updateProfile} uploadAvatar={uploadAvatar} toast={toast} navigate={navigate} hasPasskey={hasPasskey} user={user} />;
 }
 
 // Separate component with all the state logic
-function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, navigate, hasPasskey }: any) {
+function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, navigate, hasPasskey, user }: any) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
@@ -352,12 +352,13 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={profile?.avatar_url || undefined} />
-                  <AvatarFallback>
-                    <User className="h-10 w-10" />
-                  </AvatarFallback>
-                </Avatar>
+                <AvatarDisplay 
+                  avatarUrl={profile?.avatar_url || undefined}
+                  avatarConfig={profile?.avatar_config}
+                  email={user?.email}
+                  size="lg"
+                  className="h-20 w-20"
+                />
                 
                 <div className="space-y-2">
                   <Label htmlFor="avatar-upload" className="cursor-pointer">

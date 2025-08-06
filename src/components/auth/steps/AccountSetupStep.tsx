@@ -73,6 +73,7 @@ export default function AccountSetupStep({ data, updateData }: AccountSetupStepP
           <AvatarDisplay 
             avatarUrl={data.avatarUrl} 
             avatarConfig={data.avatarConfig}
+            email={data.email}
             size="lg"
           />
         </div>

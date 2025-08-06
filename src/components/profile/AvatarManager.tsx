@@ -6,6 +6,7 @@ import { Upload, Palette, User } from "lucide-react";
 import { AvatarBuilder, generateRandomConfig, type AvatarConfig } from "./AvatarBuilder";
 import { AvatarDisplay } from "./AvatarDisplay";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
 interface AvatarManagerProps {
@@ -14,6 +15,7 @@ interface AvatarManagerProps {
 }
 
 export const AvatarManager = ({ currentAvatarUrl, currentAvatarConfig }: AvatarManagerProps) => {
+  const { user } = useAuth();
   const { uploadAvatar, saveAvatarConfig } = useProfile();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -114,6 +116,7 @@ export const AvatarManager = ({ currentAvatarUrl, currentAvatarConfig }: AvatarM
           <AvatarDisplay 
             avatarUrl={currentAvatarUrl} 
             avatarConfig={currentAvatarConfig}
+            email={user?.email}
             size="lg"
           />
         </div>
