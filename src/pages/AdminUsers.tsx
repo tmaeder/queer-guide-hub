@@ -25,13 +25,10 @@ export default function AdminUsers() {
       try {
         setLoading(true);
         
-        // Fetch profiles with user roles
+        // Fetch all profiles first
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select(`
-            *,
-            user_roles(role)
-          `)
+          .select('*')
           .order('created_at', { ascending: false });
 
         if (profilesError) {
@@ -40,38 +37,32 @@ export default function AdminUsers() {
           return;
         }
 
-        // Fetch actual user emails from auth.users if we're admin
-        let authUsers: any[] = [];
-        if (isAdmin) {
-          try {
-            // This might not work due to RLS, but we'll try
-            const { data } = await supabase.auth.admin.listUsers();
-            authUsers = data.users || [];
-          } catch (error) {
-            console.log('Could not fetch auth users:', error);
-          }
-        }
+        // Fetch user roles separately for each user
+        const userList = await Promise.all(
+          profiles?.map(async (profile) => {
+            // Fetch role for this user
+            const { data: roleData } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', profile.user_id)
+              .single();
 
-        const userList = profiles?.map(profile => {
-          // Find matching auth user for email
-          const authUser = authUsers.find(u => u.id === profile.user_id);
-          const userRole = Array.isArray(profile.user_roles) && profile.user_roles.length > 0 
-            ? profile.user_roles[0].role 
-            : 'user';
-          
-          return {
-            id: profile.user_id,
-            email: authUser?.email || profile.display_name || `user-${profile.user_id.slice(0, 8)}`,
-            displayName: profile.display_name || profile.first_name || profile.last_name || 'Anonymous User',
-            role: userRole,
-            status: profile.is_online ? 'active' : 'inactive',
-            joinDate: new Date(profile.created_at).toLocaleDateString(),
-            lastActive: profile.last_seen_at ? new Date(profile.last_seen_at).toLocaleDateString() : 'Never',
-            profileCompletion: profile.profile_completion_percentage || 0,
-            location: profile.location || 'Not specified',
-            userMode: profile.user_mode || 'Not set'
-          };
-        }) || [];
+            const userRole = roleData?.role || 'user';
+            
+            return {
+              id: profile.user_id,
+              email: profile.display_name || `user-${profile.user_id.slice(0, 8)}`,
+              displayName: profile.display_name || profile.first_name || profile.last_name || 'Anonymous User',
+              role: userRole,
+              status: profile.is_online ? 'active' : 'inactive',
+              joinDate: new Date(profile.created_at).toLocaleDateString(),
+              lastActive: profile.last_seen_at ? new Date(profile.last_seen_at).toLocaleDateString() : 'Never',
+              profileCompletion: profile.profile_completion_percentage || 0,
+              location: profile.location || 'Not specified',
+              userMode: profile.user_mode || 'Not set'
+            };
+          }) || []
+        );
 
         setUsers(userList);
       } catch (error) {
@@ -82,10 +73,8 @@ export default function AdminUsers() {
       }
     };
 
-    if (isAdmin !== undefined) {
-      fetchUsers();
-    }
-  }, [isAdmin]);
+    fetchUsers();
+  }, []);
 
   if (loading) {
     return <div className="p-6">Loading users...</div>;
