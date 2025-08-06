@@ -75,22 +75,20 @@ export function Header() {
     setMenuOpen(false);
   };
   return (
-    <header className={`bg-card/50 backdrop-blur-sm sticky z-50 ${isMobile ? 'bottom-0 border-t border-border/50' : 'top-0 border-b border-border/50'}`}>
+    <header className="bg-background border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4">
         {/* Main header */}
         <div className="h-16 flex items-center justify-between gap-2">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
             <Heart className="h-8 w-8 text-primary fill-current" />
-            {!isMobile && (
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Queer Guide
-              </span>
-            )}
+            <span className="text-xl font-bold text-primary">
+              Queer Guide
+            </span>
           </Link>
 
-          {/* Search - Always visible on desktop, in menu on mobile */}
-          {!isMobile && <UniversalSearchBar />}
+          {/* Search */}
+          <UniversalSearchBar />
 
           {/* Right side controls */}
           <div className="flex items-center gap-2">
@@ -105,7 +103,7 @@ export function Header() {
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 p-4 bg-background border border-border">
+                <DropdownMenuContent align="end" className="w-80 p-4 bg-background border border-border z-50">
 
                   {/* Quick actions grid */}
                   <div className="grid grid-cols-3 gap-2 p-2">
@@ -136,117 +134,74 @@ export function Header() {
                   </Button>
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : !user ? (
-              <Button onClick={() => setAuthDialogOpen(true)} size="sm" className="h-9">
+            ) : (
+              <Button onClick={() => setAuthDialogOpen(true)} size="sm">
                 <User className="h-4 w-4 mr-2" />
-                {!isMobile && "Sign In"}
+                Sign In
               </Button>
-            ) : null}
+            )}
 
-            {/* Main menu - Always accessible */}
+            {/* Main menu */}
             <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-11 w-11 p-0">
-                  {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                <Button variant="ghost" size="sm">
+                  <Menu className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
-                className="w-[300px] max-h-[80vh] overflow-y-auto p-0 bg-background border border-border z-[100]"
-                sideOffset={8}
+                className="w-72 max-h-[80vh] overflow-y-auto p-4 bg-background border border-border z-50"
               >
-                {/* Mobile search bar */}
-                {isMobile && (
-                  <div className="p-3 border-b border-border">
-                    <UniversalSearchBar />
-                  </div>
-                )}
-
-                {/* Mobile user actions */}
-                {isMobile && user && (
-                  <div className="p-3 border-b border-border">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-medium">Current Mode</span>
-                      <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
-                        <SelectTrigger className="w-32">
-                          <SelectValue>
-                            <div className="flex items-center gap-2">
-                              {(() => {
-                                const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
-                                return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
-                              })()}
-                              <span className="text-xs">{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
-                            </div>
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {userModes.map((mode) => (
-                            <SelectItem key={mode.value} value={mode.value}>
-                              <div className="flex items-center gap-2">
-                                <mode.icon className="h-4 w-4" />
-                                <span>{mode.label}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      {userMenuItems.map((item) => (
-                        <Button 
+                {/* Main navigation */}
+                {navigationSections.map((section) => (
+                  <div key={section.title} className="mb-6">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">{section.title}</h3>
+                    <div className="space-y-1">
+                      {section.items.map((item) => (
+                        <Button
                           key={item.to}
-                          variant="ghost" 
-                          size="sm" 
-                          className="flex items-center justify-start p-2 h-auto gap-2" 
+                          variant="ghost"
+                          className="w-full justify-start"
                           onClick={() => handleMenuItemClick(item.to)}
                         >
-                          <item.icon className="h-4 w-4" />
-                          <span className="text-xs">{item.label}</span>
+                          <item.icon className="h-4 w-4 mr-3" />
+                          {item.label}
                         </Button>
                       ))}
                     </div>
                   </div>
-                )}
+                ))}
 
-                {/* Main navigation */}
-                <div className="p-2">
-                  {navigationSections.map((section) => (
-                    <div key={section.title} className="mb-2">
-                      <h3 className="text-sm font-medium text-muted-foreground mb-1 px-2">{section.title}</h3>
-                      {section.items.map((item) => (
-                        <DropdownMenuItem key={item.to} className="p-0">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start h-11 text-base px-2"
-                            onClick={() => handleMenuItemClick(item.to)}
-                          >
-                            <item.icon className="h-5 w-5 mr-3" />
-                            {item.label}
-                          </Button>
-                        </DropdownMenuItem>
+                {/* User actions for logged in users */}
+                {user && (
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Account</h3>
+                    <div className="space-y-1">
+                      {userMenuItems.map((item) => (
+                        <Button
+                          key={item.to}
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => handleMenuItemClick(item.to)}
+                        >
+                          <item.icon className="h-4 w-4 mr-3" />
+                          {item.label}
+                        </Button>
                       ))}
-                    </div>
-                  ))}
-
-                  {/* Mobile logout */}
-                  {isMobile && user && (
-                    <div className="border-t border-border pt-2 mt-2">
                       <Button 
                         variant="ghost" 
-                        size="sm" 
                         className="w-full justify-start text-destructive hover:text-destructive" 
                         onClick={() => {
                           signOut();
                           setMenuOpen(false);
                         }}
                       >
-                        <LogOut className="h-4 w-4 mr-2" />
+                        <LogOut className="h-4 w-4 mr-3" />
                         Logout
                       </Button>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

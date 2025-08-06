@@ -85,30 +85,6 @@ import KnowledgeBase from "./pages/KnowledgeBase";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
-  const [scrollY, setScrollY] = useState(0);
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    setMousePosition({
-      x: e.clientX / window.innerWidth,
-      y: e.clientY / window.innerHeight
-    });
-  }, []);
-
-  const handleScroll = useCallback(() => {
-    setScrollY(window.scrollY);
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('scroll', handleScroll);
-    
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [handleMouseMove, handleScroll]);
-
   return (
     <QueryClientProvider client={queryClient}>
       <AccessibilityProvider>
@@ -118,48 +94,10 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen flex flex-col relative">
-              {/* Enhanced Rainbow Background Animation - Dark Mode Compatible */}
-              <div
-                className="fixed inset-0 opacity-[0.03] dark:opacity-[0.02] pointer-events-none z-0"
-                style={{
-                  background: `
-                    radial-gradient(
-                      ellipse 120% 80% at ${mousePosition.x * 100}% ${mousePosition.y * 100}%,
-                      hsl(${(mousePosition.x * 360 + scrollY * 0.05) % 360}, 30%, 50%) 0%,
-                      hsl(${(mousePosition.x * 360 + 72 + scrollY * 0.08) % 360}, 25%, 60%) 15%,
-                      hsl(${(mousePosition.x * 360 + 144 + scrollY * 0.1) % 360}, 20%, 55%) 30%,
-                      hsl(${(mousePosition.x * 360 + 216 + scrollY * 0.12) % 360}, 15%, 65%) 50%,
-                      hsl(${(mousePosition.x * 360 + 288 + scrollY * 0.15) % 360}, 10%, 70%) 70%,
-                      transparent 100%
-                    )
-                  `,
-                  filter: 'blur(120px)',
-                  transition: 'all 1.5s cubic-bezier(0.23, 1, 0.320, 1)'
-                }}
-              />
-              
-              {/* Secondary Layer for More Depth - Dark Mode Compatible */}
-              <div
-                className="fixed inset-0 opacity-[0.02] dark:opacity-[0.015] pointer-events-none z-0"
-                style={{
-                  background: `
-                    conic-gradient(
-                      from ${mousePosition.x * 360 + scrollY * 0.02}deg at ${50 + mousePosition.x * 15}% ${50 + mousePosition.y * 15}%,
-                      hsl(${(scrollY * 0.03) % 360}, 20%, 80%) 0deg,
-                      hsl(${(90 + scrollY * 0.03) % 360}, 15%, 85%) 90deg,
-                      hsl(${(180 + scrollY * 0.03) % 360}, 25%, 75%) 180deg,
-                      hsl(${(270 + scrollY * 0.03) % 360}, 10%, 90%) 270deg,
-                      hsl(${(scrollY * 0.03) % 360}, 20%, 80%) 360deg
-                    )
-                  `,
-                  filter: 'blur(180px)',
-                  transition: 'all 2.5s cubic-bezier(0.165, 0.84, 0.44, 1)'
-                }}
-              />
+            <div className="min-h-screen flex flex-col relative bg-background">
               <AnalyticsTracker />
               <Header />
-              <main className="flex-1 relative z-10">
+              <main className="flex-1">
                 <div className="container mx-auto px-2 sm:px-4">
                   <Routes>
                   <Route path="/" element={<Index />} />

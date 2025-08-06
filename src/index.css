@@ -4,10 +4,10 @@
 
 @layer base {
   :root {
-    /* Black and White Only Color Palette */
+    /* Ultra-minimal Black and White Color Palette */
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;
-    --card: 0 0% 95%;
+    --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
@@ -15,90 +15,78 @@
     /* Primary: Black */
     --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 0 0% 20%;
     
-    /* Secondary: Gray */
-    --secondary: 0 0% 80%;
+    /* Secondary: Very Light Gray */
+    --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 0%;
     
-    /* Muted: Light Gray - improved contrast */
-    --muted: 0 0% 88%;
-    --muted-foreground: 0 0% 30%;
+    /* Muted: Light Gray */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
     
-    /* Accent: Dark Gray - improved contrast */
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent: Medium Gray */
+    --accent: 0 0% 90%;
+    --accent-foreground: 0 0% 0%;
     
     /* Destructive: Black */
     --destructive: 0 0% 0%;
     --destructive-foreground: 0 0% 100%;
     
-    /* UI Elements */
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 80%;
-    --radius: 8px;
+    /* UI Elements - Very subtle */
+    --border: 0 0% 94%;
+    --input: 0 0% 96%;
+    --ring: 0 0% 85%;
+    --radius: 4px;
     
     /* Sidebar */
-    --sidebar-background: 0 0% 95%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 0%;
     --sidebar-primary: 0 0% 0%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 90%;
+    --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 0 0% 80%;
+    --sidebar-border: 0 0% 94%;
+    --sidebar-ring: 0 0% 85%;
     
-    /* Background removed gradients */
-    
-    /* Shadows - Removed */
-    --shadow-elegant: none;
-    --shadow-glow: none;
-    
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Minimal animations */
+    --transition-smooth: all 0.15s ease;
   }
 
   .dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
-    --card: 0 0% 5%;
+    --card: 0 0% 0%;
     --card-foreground: 0 0% 100%;
     --popover: 0 0% 0%;
     --popover-foreground: 0 0% 100%;
     
     --primary: 0 0% 100%;
     --primary-foreground: 0 0% 0%;
-    --primary-glow: 0 0% 80%;
     
-    --secondary: 0 0% 15%;
+    --secondary: 0 0% 4%;
     --secondary-foreground: 0 0% 100%;
     
-    --muted: 0 0% 8%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 0 0% 4%;
+    --muted-foreground: 0 0% 60%;
     
-    --accent: 0 0% 85%;
-    --accent-foreground: 0 0% 0%;
+    --accent: 0 0% 10%;
+    --accent-foreground: 0 0% 100%;
     
     --destructive: 0 0% 100%;
     --destructive-foreground: 0 0% 0%;
     
-    --border: 0 0% 15%;
-    --input: 0 0% 10%;
-    --ring: 0 0% 20%;
+    --border: 0 0% 6%;
+    --input: 0 0% 4%;
+    --ring: 0 0% 15%;
     
-    --sidebar-background: 0 0% 5%;
+    --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent: 0 0% 4%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 0 0% 20%;
-    
-    /* Dark mode gradients removed */
-    --shadow-elegant: none;
-    --shadow-glow: none;
+    --sidebar-border: 0 0% 6%;
+    --sidebar-ring: 0 0% 15%;
   }
 
   * {
@@ -108,7 +96,6 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -137,23 +124,21 @@
   }
 }
 
-/* Animation Utilities */
-.hover-scale {
-  @apply transition-transform duration-200 hover:scale-105;
+/* Minimal Animation Utilities */
+.hover-minimal {
+  @apply transition-colors duration-150;
 }
 
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+  animation: fade-in 0.2s ease-out;
 }
 
 @keyframes fade-in {
-  0% {
+  from {
     opacity: 0;
-    transform: translateY(10px);
   }
-  100% {
+  to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
