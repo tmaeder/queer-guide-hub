@@ -3941,6 +3941,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      consolidate_all_multiple_policies: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      consolidate_policies: {
+        Args: { p_table_name: string; p_role_name: string; p_action: string }
+        Returns: undefined
+      }
       consolidate_rls_policies: {
         Args: {
           p_schema_name: string
@@ -3957,6 +3965,10 @@ export type Database = {
           p_role_name: string
           p_action: string
         }
+        Returns: undefined
+      }
+      consolidate_table_policies: {
+        Args: { table_name_param: string }
         Returns: undefined
       }
       create_notification: {
@@ -3982,6 +3994,16 @@ export type Database = {
       decrement_post_likes: {
         Args: { post_id: string }
         Returns: undefined
+      }
+      examine_table_policies: {
+        Args: { table_name_param: string }
+        Returns: {
+          policy_name: string
+          role_names: string[]
+          command: string
+          using_expression: string
+          with_check_expression: string
+        }[]
       }
       fix_rls_policies: {
         Args: Record<PropertyKey, never>
@@ -4014,12 +4036,6 @@ export type Database = {
       generate_rls_optimization_report: {
         Args: { p_schema_name?: string }
         Returns: string
-      }
-      generate_search_path_fixes: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          fix_sql: string
-        }[]
       }
       generate_table_optimization_script: {
         Args: { p_schema_name: string; p_table_name: string }
@@ -4070,6 +4086,16 @@ export type Database = {
       get_or_create_marketplace_category: {
         Args: { category_name: string; parent_category_name?: string }
         Returns: string
+      }
+      get_table_policies: {
+        Args: { table_name_param: string }
+        Returns: {
+          policy_name: string
+          role_name: string
+          command: string
+          using_expr: string
+          with_check_expr: string
+        }[]
       }
       get_user_conversation_ids: {
         Args: Record<PropertyKey, never> | { user_id_param: string }
@@ -4123,6 +4149,16 @@ export type Database = {
       is_group_member_or_admin: {
         Args: { group_id: string; check_admin?: boolean }
         Returns: boolean
+      }
+      list_tables_with_multiple_policies: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          table_schema: string
+          table_name: string
+          role_name: string
+          action_name: string
+          policy_count: number
+        }[]
       }
       log_enhanced_security_event: {
         Args: {
