@@ -48,6 +48,38 @@ Deno.serve(async (req) => {
                     '127.0.0.1';
     const userAgent = req.headers.get('user-agent') || 'unknown';
 
+    // Rate limiting for verification attempts
+    const { data: rateLimitResult, error: rateLimitError } = await supabase
+      .rpc('check_rate_limit', {
+        identifier: clientIP,
+        max_attempts: 5,
+        time_window_minutes: 15
+      });
+
+    if (rateLimitError || !rateLimitResult) {
+      // Log security event for rate limit exceeded
+      await supabase
+        .rpc('log_enhanced_security_event', {
+          event_type: 'TURNSTILE_RATE_LIMIT_EXCEEDED',
+          user_id: null,
+          details: {
+            ip_address: clientIP,
+            user_agent: userAgent,
+            action: action,
+            timestamp: new Date().toISOString()
+          },
+          severity: 'high'
+        });
+
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded' }),
+        { 
+          status: 429, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     // Verify the token with Cloudflare
     const formData = new FormData();
     formData.append('secret', turnstileSecret);
@@ -84,6 +116,20 @@ Deno.serve(async (req) => {
     });
 
     if (verifyResult.success) {
+      // Log successful verification
+      await supabase
+        .rpc('log_enhanced_security_event', {
+          event_type: 'TURNSTILE_VERIFICATION_SUCCESS',
+          user_id: authData.user?.id || null,
+          details: {
+            ip_address: clientIP,
+            user_agent: userAgent,
+            action: action,
+            timestamp: new Date().toISOString()
+          },
+          severity: 'low'
+        });
+
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -96,6 +142,21 @@ Deno.serve(async (req) => {
         }
       );
     } else {
+      // Log failed verification with security monitoring
+      await supabase
+        .rpc('log_enhanced_security_event', {
+          event_type: 'TURNSTILE_VERIFICATION_FAILED',
+          user_id: authData.user?.id || null,
+          details: {
+            ip_address: clientIP,
+            user_agent: userAgent,
+            action: action,
+            error_codes: verifyResult['error-codes'],
+            timestamp: new Date().toISOString()
+          },
+          severity: 'medium'
+        });
+
       return new Response(
         JSON.stringify({ 
           success: false, 

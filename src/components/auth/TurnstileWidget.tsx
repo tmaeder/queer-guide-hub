@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ExternalLink } from 'lucide-react';
+import { useSecureTurnstile } from '@/hooks/useSecureTurnstile';
+import { Loader2, Shield } from 'lucide-react';
 
 interface TurnstileWidgetProps {
   onVerify: (token: string) => void;
@@ -14,82 +14,61 @@ interface TurnstileWidgetProps {
 }
 
 export function TurnstileWidget({ onVerify, onError, action = 'login', className }: TurnstileWidgetProps) {
-  const [siteKey, setSiteKey] = useState(localStorage.getItem('turnstile_site_key') || '');
-  const [showSiteKeyInput, setShowSiteKeyInput] = useState(!siteKey);
-  const [isConfiguring, setIsConfiguring] = useState(false);
-
-  const handleSiteKeySubmit = () => {
-    if (siteKey.trim()) {
-      localStorage.setItem('turnstile_site_key', siteKey.trim());
-      setShowSiteKeyInput(false);
-      setIsConfiguring(false);
-    }
-  };
+  const { config, loading, error, refreshConfig, isConfigured } = useSecureTurnstile();
+  const [verificationError, setVerificationError] = useState<string | null>(null);
 
   const handleVerificationSuccess = (token: string) => {
     console.log('Turnstile verification successful');
+    setVerificationError(null);
     onVerify(token);
   };
 
   const handleVerificationError = (error: any) => {
     console.error('Turnstile verification error:', error);
+    setVerificationError('Verification failed. Please try again.');
     onError?.(error);
   };
 
-  if (showSiteKeyInput || !siteKey) {
+  if (loading) {
+    return (
+      <Card className={className}>
+        <CardContent className="flex items-center justify-center p-6">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Loading security verification...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error || !isConfigured) {
     return (
       <Card className={className}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <span>🔒</span>
-            Turnstile Configuration Required
+            <Shield className="h-5 w-5" />
+            Security Verification Unavailable
           </CardTitle>
           <CardDescription>
-            Please enter your Cloudflare Turnstile Site Key to enable captcha verification.
+            {error || 'Captcha verification is not configured.'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <Alert>
             <AlertDescription>
-              Get your free Turnstile Site Key from{' '}
-              <a 
-                href="https://dash.cloudflare.com/profile/api-tokens" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 underline"
-              >
-                Cloudflare Dashboard
-                <ExternalLink className="h-3 w-3" />
-              </a>
+              Security verification is currently unavailable. Please contact support if this issue persists.
             </AlertDescription>
           </Alert>
-          
-          <div className="space-y-3">
-            <Input
-              type="text"
-              placeholder="0x4AAAAAAABkMYinukNVyZ8-"
-              value={siteKey}
-              onChange={(e) => setSiteKey(e.target.value)}
-              className="font-mono text-sm"
-            />
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleSiteKeySubmit} 
-                disabled={!siteKey.trim()}
-                className="flex-1"
-              >
-                Save Site Key
-              </Button>
-              {!isConfiguring && (
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setIsConfiguring(true)}
-                >
-                  Skip for now
-                </Button>
-              )}
-            </div>
-          </div>
+          {error?.includes('Rate limit') && (
+            <Button 
+              variant="outline" 
+              onClick={refreshConfig}
+              className="mt-3"
+            >
+              Try Again
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
@@ -98,7 +77,7 @@ export function TurnstileWidget({ onVerify, onError, action = 'login', className
   return (
     <div className={className}>
       <Turnstile
-        siteKey={siteKey}
+        siteKey={config.siteKey}
         onSuccess={handleVerificationSuccess}
         onError={handleVerificationError}
         options={{
@@ -107,14 +86,24 @@ export function TurnstileWidget({ onVerify, onError, action = 'login', className
           size: 'normal',
         }}
       />
-      <div className="mt-2 flex justify-end">
+      {verificationError && (
+        <Alert className="mt-2">
+          <AlertDescription className="text-sm text-destructive">
+            {verificationError}
+          </AlertDescription>
+        </Alert>
+      )}
+      <div className="mt-2 flex justify-between items-center">
+        <span className="text-xs text-muted-foreground">
+          Security verification v{config.version}
+        </span>
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setShowSiteKeyInput(true)}
+          onClick={refreshConfig}
           className="text-xs text-muted-foreground"
         >
-          Update Site Key
+          Refresh
         </Button>
       </div>
     </div>
