@@ -18,9 +18,10 @@ interface VenueCardProps {
   onViewDetails?: (venue: Venue) => void;
   onAmenityClick?: (amenity: string) => void;
   onServiceClick?: (service: string) => void;
+  onTagClick?: (tag: string) => void;
 }
 
-export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick, onServiceClick }: VenueCardProps) {
+export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick, onServiceClick, onTagClick }: VenueCardProps) {
   const averageRating = venue.venue_reviews?.length 
     ? venue.venue_reviews.reduce((sum, review) => sum + review.rating, 0) / venue.venue_reviews.length
     : 0;
@@ -107,7 +108,16 @@ export function VenueCard({ venue, events = [], onViewDetails, onAmenityClick, o
         {venue.tags && venue.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {venue.tags.slice(0, 3).map((tag, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
+              <Badge 
+                key={index} 
+                variant="outline" 
+                className="text-xs cursor-pointer hover:bg-primary/10 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onTagClick?.(tag);
+                }}
+              >
                 {tag}
               </Badge>
             ))}

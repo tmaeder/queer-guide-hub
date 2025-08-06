@@ -39,6 +39,10 @@ const Venues = () => {
     fetchVenues({ services: [service] });
   };
 
+  const handleTagClick = (tag: string) => {
+    fetchVenues({ tags: [tag] });
+  };
+
   const handleViewDetails = (venue: Venue) => {
     setSelectedVenue(venue);
     // In a real app, this would navigate to a detailed venue page
@@ -219,6 +223,7 @@ const Venues = () => {
                       onViewDetails={handleViewDetails}
                       onAmenityClick={handleAmenityClick}
                       onServiceClick={handleServiceClick}
+                      onTagClick={handleTagClick}
                     />
                   </div>
                 ))}
