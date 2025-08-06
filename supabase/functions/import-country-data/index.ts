@@ -82,7 +82,19 @@ async function initializeSupabaseClient() {
 async function fetchRestCountriesData(): Promise<RestCountry[]> {
   console.log('Fetching data from REST Countries API...');
   
-  const response = await fetch('https://restcountries.com/v3.1/all', {
+  // Specify the fields we need to comply with the API requirements
+  const fields = [
+    'name', 'tld', 'cca2', 'ccn3', 'cca3', 'cioc', 'independent', 'status',
+    'unMember', 'currencies', 'idd', 'capital', 'altSpellings', 'region',
+    'subregion', 'languages', 'translations', 'latlng', 'landlocked',
+    'borders', 'area', 'demonyms', 'flag', 'maps', 'population', 'gini',
+    'fifa', 'car', 'timezones', 'continents', 'flags', 'coatOfArms',
+    'startOfWeek', 'capitalInfo', 'postalCode'
+  ].join(',');
+  
+  const apiUrl = `https://restcountries.com/v3.1/all?fields=${fields}`;
+  
+  const response = await fetch(apiUrl, {
     headers: {
       'User-Agent': 'Queer-Guide-App/1.0',
       'Accept': 'application/json'
