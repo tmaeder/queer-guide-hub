@@ -23,7 +23,11 @@ export function CookieConsentBanner() {
                 <h3 className="font-semibold text-lg mb-2">Cookie Settings</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   We use cookies to enhance your experience, analyze site traffic, and personalize content. 
-                  You can manage your preferences or learn more about our cookie usage in our{' '}
+                  You can manage your preferences or learn more in our{' '}
+                  <Link to="/legal" className="underline hover:text-foreground">
+                    Legal Hub
+                  </Link>
+                  , including our{' '}
                   <Link to="/privacy" className="underline hover:text-foreground">
                     Privacy Policy
                   </Link>
