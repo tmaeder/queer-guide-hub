@@ -23,8 +23,6 @@ interface NewsArticle {
   author: string;
   published_at: string;
   created_at: string;
-  category: string;
-  sentiment: string;
   views_count: number;
   is_featured: boolean;
   news_sources: {
@@ -40,14 +38,11 @@ export function NewsModeration() {
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
   const [filters, setFilters] = useState({
     search: "",
-    category: "all",
-    sentiment: "all",
     featured: "all"
   });
   const [stats, setStats] = useState({
     total: 0,
-    featured: 0,
-    categories: {} as Record<string, number>
+    featured: 0
   });
   const [cronStatus, setCronStatus] = useState<{
     jobname: string;
@@ -76,14 +71,6 @@ export function NewsModeration() {
 
       if (filters.search) {
         query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
-      }
-
-      if (filters.category !== "all") {
-        query = query.eq('category', filters.category);
-      }
-
-      if (filters.sentiment !== "all") {
-        query = query.eq('sentiment', filters.sentiment);
       }
 
       if (filters.featured !== "all") {
@@ -121,20 +108,9 @@ export function NewsModeration() {
         .select('id', { count: 'exact', head: true })
         .eq('is_featured', true);
 
-      const { data: categoryData } = await supabase
-        .from('news_articles')
-        .select('category');
-
-      const categories = {};
-      categoryData?.forEach(article => {
-        const cat = article.category || 'general';
-        categories[cat] = (categories[cat] || 0) + 1;
-      });
-
       setStats({
         total: totalCount || 0,
-        featured: featuredCount || 0,
-        categories
+        featured: featuredCount || 0
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -242,18 +218,6 @@ export function NewsModeration() {
     }
   };
 
-  const getSentimentBadge = (sentiment: string) => {
-    if (!sentiment) return <Badge variant="secondary">Unknown</Badge>;
-    
-    switch (sentiment.toLowerCase()) {
-      case 'positive':
-        return <Badge className="bg-green-500">Positive</Badge>;
-      case 'negative':
-        return <Badge className="bg-red-500">Negative</Badge>;
-      default:
-        return <Badge variant="secondary">Neutral</Badge>;
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -280,7 +244,7 @@ export function NewsModeration() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Total Articles</CardTitle>
@@ -295,14 +259,6 @@ export function NewsModeration() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.featured}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Categories</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{Object.keys(stats.categories).length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -324,7 +280,7 @@ export function NewsModeration() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Search</Label>
               <div className="relative">
@@ -336,37 +292,6 @@ export function NewsModeration() {
                   className="pl-9"
                 />
               </div>
-            </div>
-            <div>
-              <Label>Category</Label>
-              <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="politics">Politics</SelectItem>
-                  <SelectItem value="entertainment">Entertainment</SelectItem>
-                  <SelectItem value="sports">Sports</SelectItem>
-                  <SelectItem value="business">Business</SelectItem>
-                  <SelectItem value="health">Health</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Sentiment</Label>
-              <Select value={filters.sentiment} onValueChange={(value) => setFilters(prev => ({ ...prev, sentiment: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sentiments</SelectItem>
-                  <SelectItem value="positive">Positive</SelectItem>
-                  <SelectItem value="negative">Negative</SelectItem>
-                  <SelectItem value="neutral">Neutral</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div>
               <Label>Featured</Label>
@@ -404,7 +329,6 @@ export function NewsModeration() {
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold line-clamp-1">{article.title}</h3>
                         {article.is_featured && <Badge>Featured</Badge>}
-                        {getSentimentBadge(article.sentiment)}
                       </div>
                       
                       <p className="text-sm text-muted-foreground line-clamp-2">
@@ -464,33 +388,12 @@ export function NewsModeration() {
           
           {selectedArticle && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Title</Label>
-                  <Input 
-                    value={selectedArticle.title} 
-                    onChange={(e) => setSelectedArticle({...selectedArticle, title: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label>Category</Label>
-                  <Select 
-                    value={selectedArticle.category} 
-                    onValueChange={(value) => setSelectedArticle({...selectedArticle, category: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="general">General</SelectItem>
-                      <SelectItem value="politics">Politics</SelectItem>
-                      <SelectItem value="entertainment">Entertainment</SelectItem>
-                      <SelectItem value="sports">Sports</SelectItem>
-                      <SelectItem value="business">Business</SelectItem>
-                      <SelectItem value="health">Health</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <Label>Title</Label>
+                <Input 
+                  value={selectedArticle.title} 
+                  onChange={(e) => setSelectedArticle({...selectedArticle, title: e.target.value})}
+                />
               </div>
 
               <div>
@@ -553,7 +456,6 @@ export function NewsModeration() {
                     onClick={() => {
                       updateArticle(selectedArticle.id, {
                         title: selectedArticle.title,
-                        category: selectedArticle.category,
                         excerpt: selectedArticle.excerpt
                       });
                     }}

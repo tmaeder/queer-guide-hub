@@ -7,13 +7,11 @@ type NewsCategory = any;
 type NewsSource = any;
 
 interface NewsFilters {
-  category?: string;
   tags?: string[];
   dateRange?: {
     from?: string;
     to?: string;
   };
-  sentiment?: string;
   search?: string;
   featured?: boolean;
   location?: {
@@ -27,7 +25,6 @@ interface NewsFilters {
 
 export const useNews = () => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [categories, setCategories] = useState<NewsCategory[]>([]);
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,28 +68,6 @@ export const useNews = () => {
     }
   }, []);
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      const response = await supabase
-        .from('news_categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
-
-      const { data, error: fetchError } = response as { data: any[] | null; error: any };
-
-      if (fetchError) {
-        console.warn('Error fetching categories:', fetchError);
-        return;
-      }
-
-      if (data) {
-        setCategories(data);
-      }
-    } catch (err) {
-      console.warn('Unexpected error fetching categories:', err);
-    }
-  }, []);
 
   const fetchSources = useCallback(async () => {
     try {
@@ -177,25 +152,20 @@ export const useNews = () => {
   const refreshData = useCallback(async () => {
     await Promise.allSettled([
       fetchArticles(),
-      fetchCategories(),
       fetchSources()
     ]);
-  }, [fetchArticles, fetchCategories, fetchSources]);
+  }, [fetchArticles, fetchSources]);
 
   useEffect(() => {
     const initializeData = async () => {
-      await Promise.allSettled([
-        fetchCategories(),
-        fetchSources()
-      ]);
+      await fetchSources();
     };
 
     initializeData();
-  }, [fetchCategories, fetchSources]);
+  }, [fetchSources]);
 
   return {
     articles,
-    categories,
     sources,
     loading,
     error,

@@ -51,7 +51,6 @@ const sortOptions: SortOption[] = [{
 export default function News() {
   const {
     articles,
-    categories,
     sources,
     loading,
     error,

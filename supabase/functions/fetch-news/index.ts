@@ -13,12 +13,10 @@ interface NewsArticle {
   image_url?: string;
   author?: string;
   published_at: string;
-  sentiment?: string;
   tags?: string[];
   country_ids?: string[];
   city_ids?: string[];
   source_id: string;
-  category: string;
 }
 
 // Auto-apply tags by matching keywords
@@ -99,7 +97,7 @@ async function extractGeoInfo(title: string, content: string, sourceUrl: string,
 }
 
 // Simple XML/RSS parser using regex (Deno-compatible)
-async function parseRSSFeed(url: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
+async function parseRSSFeed(url: string, sourceId: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
     const urlObj = new URL(url);
     if (!['http:', 'https:'].includes(urlObj.protocol)) {
@@ -183,8 +181,7 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
           tags,
           country_ids: countryIds,
           city_ids: cityIds,
-          source_id: sourceId,
-          category
+          source_id: sourceId
         });
       } catch (itemError) {
         console.error('Error parsing RSS item:', itemError);
@@ -200,7 +197,7 @@ async function parseRSSFeed(url: string, sourceId: string, category: string, sup
 }
 
 // Fetch from NewsAPI.org
-async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
+async function fetchFromNewsAPI(apiKey: string, sourceId: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
     const response = await fetch(`https://newsapi.org/v2/everything?q=LGBT OR LGBTQ OR queer OR gay OR lesbian OR transgender&language=en&sortBy=publishedAt&pageSize=10`, {
       headers: {
@@ -232,8 +229,7 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: stri
             tags,
             country_ids: countryIds,
             city_ids: cityIds,
-            source_id: sourceId,
-            category
+            source_id: sourceId
           });
         }
       }
@@ -247,7 +243,7 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, category: stri
 }
 
 // Fetch from NewsData.io
-async function fetchFromNewsData(apiKey: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
+async function fetchFromNewsData(apiKey: string, sourceId: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
     const response = await fetch(`https://newsdata.io/api/1/news?apikey=${apiKey}&q=LGBT OR LGBTQ&language=en&size=10`);
     
@@ -275,8 +271,7 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, category: str
             tags,
             country_ids: countryIds,
             city_ids: cityIds,
-            source_id: sourceId,
-            category
+            source_id: sourceId
           });
         }
       }
@@ -290,7 +285,7 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, category: str
 }
 
 // Fetch from GNews.io
-async function fetchFromGNews(apiKey: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
+async function fetchFromGNews(apiKey: string, sourceId: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
     const response = await fetch(`https://gnews.io/api/v4/search?q=LGBT OR LGBTQ&lang=en&max=10&apikey=${apiKey}`);
     
@@ -318,8 +313,7 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
             tags,
             country_ids: countryIds,
             city_ids: cityIds,
-            source_id: sourceId,
-            category
+            source_id: sourceId
           });
         }
       }
@@ -333,7 +327,7 @@ async function fetchFromGNews(apiKey: string, sourceId: string, category: string
 }
 
 // Fetch from TheNewsAPI.com
-async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: string, supabaseClient: any): Promise<NewsArticle[]> {
+async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, supabaseClient: any): Promise<NewsArticle[]> {
   try {
     const response = await fetch(`https://api.thenewsapi.com/v1/news/all?api_token=${apiKey}&search=LGBT OR LGBTQ&language=en&limit=10`);
     
@@ -361,8 +355,7 @@ async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, category: s
             tags,
             country_ids: countryIds,
             city_ids: cityIds,
-            source_id: sourceId,
-            category
+            source_id: sourceId
           });
         }
       }
@@ -428,7 +421,7 @@ Deno.serve(async (req) => {
 
         // Fetch articles based on source type
         if (source.type === 'rss' && source.url) {
-          articles = await parseRSSFeed(source.url, source.id, source.category, supabase);
+          articles = await parseRSSFeed(source.url, source.id, supabase);
         } else if (source.type === 'api') {
           // Get API keys from environment
           const newsApiKey = Deno.env.get('NEWS_API_KEY');
@@ -437,13 +430,13 @@ Deno.serve(async (req) => {
           const thenewsApiKey = Deno.env.get('THENEWSAPI_API_KEY');
 
           if (source.api_endpoint?.includes('newsapi.org') && newsApiKey) {
-            articles = await fetchFromNewsAPI(newsApiKey, source.id, source.category, supabase);
+            articles = await fetchFromNewsAPI(newsApiKey, source.id, supabase);
           } else if (source.api_endpoint?.includes('newsdata.io') && newsdataApiKey) {
-            articles = await fetchFromNewsData(newsdataApiKey, source.id, source.category, supabase);
+            articles = await fetchFromNewsData(newsdataApiKey, source.id, supabase);
           } else if (source.api_endpoint?.includes('gnews.io') && gnewsApiKey) {
-            articles = await fetchFromGNews(gnewsApiKey, source.id, source.category, supabase);
+            articles = await fetchFromGNews(gnewsApiKey, source.id, supabase);
           } else if (source.api_endpoint?.includes('thenewsapi.com') && thenewsApiKey) {
-            articles = await fetchFromTheNewsAPI(thenewsApiKey, source.id, source.category, supabase);
+            articles = await fetchFromTheNewsAPI(thenewsApiKey, source.id, supabase);
           }
         }
 
@@ -460,9 +453,7 @@ Deno.serve(async (req) => {
                 image_url: article.image_url,
                 author: article.author,
                 published_at: article.published_at,
-                sentiment: article.sentiment,
                 source_id: article.source_id,
-                category: article.category,
                 views_count: 0,
                 featured: false
               })),

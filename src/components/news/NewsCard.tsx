@@ -74,16 +74,6 @@ export const NewsCard = ({
     };
     return colors[category] || 'hsl(var(--muted))';
   };
-  const getSentimentColor = (sentiment?: string) => {
-    switch (sentiment) {
-      case 'positive':
-        return 'hsl(var(--success))';
-      case 'negative':
-        return 'hsl(var(--destructive))';
-      default:
-        return 'hsl(var(--muted))';
-    }
-  };
   return <Card className="group hover:shadow-lg transition-all duration-300">
       <CardHeader className="space-y-3">
         {article.image_url && <div className="relative overflow-hidden">
@@ -97,14 +87,7 @@ export const NewsCard = ({
           <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
             {article.title}
           </h3>
-          {article.sentiment && <Badge variant="outline" style={{
-          borderColor: getSentimentColor(article.sentiment)
-        }} className="text-xs shrink-0">
-              {article.sentiment}
-            </Badge>}
         </div>
-
-        
 
         <div className="flex items-center gap-2">
           <Badge style={{
