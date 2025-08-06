@@ -330,6 +330,28 @@ export default function AdminImportHub() {
               </p>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Location Linking
+              </CardTitle>
+              <CardDescription>Link venues and events to cities and countries</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button
+                onClick={() => handleApiImport('link-locations')}
+                disabled={loading === 'link-locations'}
+                className="w-full"
+              >
+                {loading === 'link-locations' ? 'Processing...' : 'Link Locations Now'}
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Automatically links venues and events to cities/countries, creating missing ones. Runs hourly via cron job.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 

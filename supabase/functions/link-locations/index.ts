@@ -40,7 +40,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('Starting location linking process...')
+    const { scheduled = false } = req.method === 'POST' ? await req.json() : {}
+    const triggerType = scheduled ? 'scheduled' : 'manual'
+    
+    console.log(`Starting location linking process (${triggerType} trigger)...`)
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -111,10 +114,11 @@ Deno.serve(async (req) => {
       processedEvents,
       createdCities,
       createdCountries,
+      triggerType,
       timestamp: new Date().toISOString()
     }
 
-    console.log('Location linking completed:', summary)
+    console.log(`Location linking completed (${triggerType}):`, summary)
 
     return new Response(JSON.stringify(summary), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
