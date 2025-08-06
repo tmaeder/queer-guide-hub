@@ -20,6 +20,7 @@ import { SecurityMonitoringDashboard } from "@/components/admin/SecurityMonitori
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { UmamiAnalyticsDashboard } from "@/components/analytics/UmamiAnalyticsDashboard";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -363,13 +364,6 @@ export default function AdminDashboard() {
       icon: Newspaper,
       path: "/admin/news-sources",
       stats: "Content feeds"
-    },
-    {
-      title: "Import Hub",
-      description: "Import data from CSV files and external APIs",
-      icon: Download,
-      path: "/admin/import-hub",
-      stats: "Data import"
     }
   ];
 
@@ -381,13 +375,6 @@ export default function AdminDashboard() {
         icon: Users,
         path: "/admin/users",
         stats: `${stats.totalUsers} users`
-      },
-      {
-        title: "Analytics",
-        description: "View site analytics and reports",
-        icon: BarChart3,
-        path: "/admin/analytics",
-        stats: "Insights & reports"
       }
     );
   }
@@ -455,191 +442,64 @@ export default function AdminDashboard() {
                 )}
               </div>
               
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                >
-                  {viewMode === 'grid' ? <Activity className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => { fetchStats(); fetchRecentActivity(); checkSystemHealth(); }}>
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <Dialog open={isAwinImportOpen} onOpenChange={setIsAwinImportOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Import Data
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Import Products from Awin CSV Feed</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      Import products from Awin CSV data feeds. Leave CSV URL blank to use the default feed with your API credentials.
-                    </p>
-                    
-                    <div>
-                      <Label htmlFor="awin-csv-url">Custom CSV Feed URL (Optional)</Label>
-                      <Input 
-                        id="awin-csv-url" 
-                        placeholder="https://productdata.awin.com/datafeed/download/..." 
-                        value={importParams.csvUrl} 
-                        onChange={e => setImportParams(prev => ({
-                          ...prev,
-                          csvUrl: e.target.value
-                        }))} 
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Leave blank to use default Awin CSV feed with your API credentials
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="awin-max-products">Max Products</Label>
-                        <Input 
-                          id="awin-max-products" 
-                          type="number" 
-                          min="1" 
-                          max="10000" 
-                          value={importParams.maxProducts} 
-                          onChange={e => setImportParams(prev => ({
-                            ...prev,
-                            maxProducts: parseInt(e.target.value) || 1000
-                          }))} 
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="awin-skip-rows">Skip Rows</Label>
-                        <Input 
-                          id="awin-skip-rows" 
-                          type="number" 
-                          min="0" 
-                          value={importParams.skipRows} 
-                          onChange={e => setImportParams(prev => ({
-                            ...prev,
-                            skipRows: parseInt(e.target.value) || 0
-                          }))} 
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="awin-batch-size">Batch Size</Label>
-                        <Input 
-                          id="awin-batch-size" 
-                          type="number" 
-                          min="10" 
-                          max="500" 
-                          value={importParams.batchSize} 
-                          onChange={e => setImportParams(prev => ({
-                            ...prev,
-                            batchSize: parseInt(e.target.value) || 100
-                          }))} 
-                        />
-                      </div>
-                    </div>
-
-                    <div className="bg-muted p-4 rounded space-y-2">
-                      <h4 className="font-medium">Import Process:</h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• Downloads and decompresses gzipped CSV feed</li>
-                        <li>• Processes products in batches to avoid timeouts</li>
-                        <li>• Maps Awin categories to marketplace categories</li>
-                        <li>• Preserves all original Awin metadata</li>
-                        <li>• Supports multiple product images</li>
-                      </ul>
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-4">
-                      <Button variant="outline" onClick={() => setIsAwinImportOpen(false)} disabled={isImporting}>
-                        Cancel
-                      </Button>
-                      <Button onClick={handleAwinImport} disabled={isImporting}>
-                        {isImporting ? (
-                          <>
-                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                            Importing...
-                          </>
-                        ) : (
-                          <>
-                            <Download className="h-4 w-4 mr-2" />
-                            Import CSV Feed
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Select value={filterPeriod} onValueChange={setFilterPeriod}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7d">Last 7 days</SelectItem>
+                  <SelectItem value="30d">Last 30 days</SelectItem>
+                  <SelectItem value="90d">Last 90 days</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button variant="outline" size="sm" onClick={() => {
+                fetchStats();
+                fetchRecentActivity();
+                checkSystemHealth();
+              }}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* System Health Alert */}
-      {systemHealth.status !== 'healthy' && (
-        <Alert variant="destructive" className="container mx-auto mt-4">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            System issues detected: {systemHealth.issues.join(', ')}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Enhanced Filter Controls */}
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <Label className="text-sm font-medium">Time Period:</Label>
-            <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7d">Last 7 days</SelectItem>
-                <SelectItem value="30d">Last 30 days</SelectItem>
-                <SelectItem value="90d">Last 90 days</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-6 space-y-8">
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-fit">
+      <div className="container mx-auto p-6 space-y-6">
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
+              <Monitor className="h-4 w-4" />
               Overview
-            </TabsTrigger>
-            <TabsTrigger value="management" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Management
             </TabsTrigger>
             <TabsTrigger value="activity" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
               Activity
             </TabsTrigger>
+            <TabsTrigger value="imports" className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Imports
+            </TabsTrigger>
             <TabsTrigger value="system" className="flex items-center gap-2">
-              <Monitor className="h-4 w-4" />
+              <Server className="h-4 w-4" />
               System
+            </TabsTrigger>
+            <TabsTrigger value="management" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Management
             </TabsTrigger>
           </TabsList>
 
+          {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            {/* Enhanced Statistics Grid */}
+            {/* Enhanced Stats Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {statsLoading ? (
-                Array.from({ length: 8 }).map((_, i) => (
-                  <Card key={i} className="h-32">
+                Array.from({ length: 8 }, (_, i) => (
+                  <Card key={i}>
                     <CardContent className="p-6">
-                      <Skeleton className="h-4 w-20 mb-3" />
+                      <Skeleton className="h-4 w-20 mb-2" />
                       <Skeleton className="h-8 w-16 mb-2" />
                       <Skeleton className="h-3 w-24" />
                     </CardContent>
@@ -647,460 +507,763 @@ export default function AdminDashboard() {
                 ))
               ) : (
                 <>
-                  <Card className="relative overflow-hidden border-l-4 border-l-primary hover:shadow-lg transition-all group">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Content</CardTitle>
-                      <Database className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">{stats.totalContent.toLocaleString()}</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <TrendingUp className="h-3 w-3 inline mr-1" />
-                        All published content
-                      </p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="relative overflow-hidden border-l-4 border-l-accent hover:shadow-lg transition-all group">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Active Venues</CardTitle>
-                      <Building className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">{stats.activeVenues.toLocaleString()}</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <CheckCircle className="h-3 w-3 inline mr-1" />
-                        Verified locations
-                      </p>
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Total Content</p>
+                          <p className="text-2xl font-bold">{stats.totalContent.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground flex items-center mt-1">
+                            <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+                            All content types
+                          </p>
+                        </div>
+                        <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                          <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="relative overflow-hidden border-l-4 border-l-secondary hover:shadow-lg transition-all group">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Upcoming Events</CardTitle>
-                      <Calendar className="h-5 w-5 text-muted-foreground group-hover:text-secondary transition-colors" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">{stats.upcomingEvents.toLocaleString()}</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <Clock className="h-3 w-3 inline mr-1" />
-                        Scheduled events
-                      </p>
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Active Venues</p>
+                          <p className="text-2xl font-bold">{stats.activeVenues.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground flex items-center mt-1">
+                            <Eye className="h-3 w-3 mr-1 text-blue-500" />
+                            Verified locations
+                          </p>
+                        </div>
+                        <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                          <Building className="h-6 w-6 text-green-600 dark:text-green-400" />
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="relative overflow-hidden border-l-4 border-l-muted hover:shadow-lg transition-all group">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Marketplace</CardTitle>
-                      <ShoppingBag className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">{stats.marketplaceItems.toLocaleString()}</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <Star className="h-3 w-3 inline mr-1" />
-                        Active listings
-                      </p>
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Upcoming Events</p>
+                          <p className="text-2xl font-bold">{stats.upcomingEvents.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground flex items-center mt-1">
+                            <Calendar className="h-3 w-3 mr-1 text-purple-500" />
+                            Active events
+                          </p>
+                        </div>
+                        <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                          <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="relative overflow-hidden border-l-4 border-l-primary hover:shadow-lg transition-all group">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                      <Users className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">{stats.totalUsers.toLocaleString()}</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <ArrowUpRight className="h-3 w-3 inline mr-1" />
-                        +{stats.weeklyGrowth}% this week
-                      </p>
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+                          <p className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground flex items-center mt-1">
+                            <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+                            +{stats.weeklyGrowth}% this week
+                          </p>
+                        </div>
+                        <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                          <Users className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="relative overflow-hidden border-l-4 border-l-accent hover:shadow-lg transition-all group">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Active Groups</CardTitle>
-                      <Users className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">{stats.activeGroups.toLocaleString()}</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <Activity className="h-3 w-3 inline mr-1" />
-                        of {stats.totalGroups} total
-                      </p>
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Monthly Users</p>
+                          <p className="text-2xl font-bold">{stats.monthlyUsers.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground flex items-center mt-1">
+                            <Eye className="h-3 w-3 mr-1 text-indigo-500" />
+                            New this month
+                          </p>
+                        </div>
+                        <div className="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
+                          <UserCheck className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="relative overflow-hidden border-l-4 border-l-secondary hover:shadow-lg transition-all group">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Community Posts</CardTitle>
-                      <MessageSquare className="h-5 w-5 text-muted-foreground group-hover:text-secondary transition-colors" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">{stats.totalPosts.toLocaleString()}</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <Heart className="h-3 w-3 inline mr-1" />
-                        Community engagement
-                      </p>
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Avg Session</p>
+                          <p className="text-2xl font-bold">{Math.floor(stats.avgSessionTime / 60)}m {stats.avgSessionTime % 60}s</p>
+                          <p className="text-xs text-muted-foreground flex items-center mt-1">
+                            <Clock className="h-3 w-3 mr-1 text-pink-500" />
+                            User engagement
+                          </p>
+                        </div>
+                        <div className="p-3 bg-pink-100 dark:bg-pink-900 rounded-lg">
+                          <Clock className="h-6 w-6 text-pink-600 dark:text-pink-400" />
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="relative overflow-hidden border-l-4 border-l-muted hover:shadow-lg transition-all group">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Avg Session</CardTitle>
-                      <Clock className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">{Math.floor(stats.avgSessionTime / 60)}m</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <Eye className="h-3 w-3 inline mr-1" />
-                        {stats.avgSessionTime}s average
-                      </p>
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Conversion Rate</p>
+                          <p className="text-2xl font-bold">{stats.conversionRate}%</p>
+                          <p className="text-xs text-muted-foreground flex items-center mt-1">
+                            <Star className="h-3 w-3 mr-1 text-yellow-500" />
+                            User conversion
+                          </p>
+                        </div>
+                        <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+                          <TrendingUp className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">API Calls</p>
+                          <p className="text-2xl font-bold">{systemHealth.apiCalls.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground flex items-center mt-1">
+                            <Zap className="h-3 w-3 mr-1 text-cyan-500" />
+                            24h volume
+                          </p>
+                        </div>
+                        <div className="p-3 bg-cyan-100 dark:bg-cyan-900 rounded-lg">
+                          <Zap className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </>
               )}
             </div>
 
-            {/* Enhanced Quick Actions & Insights */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Platform Insights
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-4 border rounded">
-                      <div className="text-2xl font-bold">{stats.monthlyUsers}</div>
-                      <p className="text-sm text-muted-foreground">New Users</p>
-                      <p className="text-xs text-muted-foreground">This {filterPeriod.replace('d', ' days')}</p>
-                    </div>
-                    <div className="text-center p-4 border rounded">
-                      <div className="text-2xl font-bold">{stats.conversionRate}%</div>
-                      <p className="text-sm text-muted-foreground">Engagement Rate</p>
-                      <p className="text-xs text-muted-foreground">User activity</p>
-                    </div>
-                    <div className="text-center p-4 border rounded">
-                      <div className="text-2xl font-bold">{systemHealth.apiCalls.toLocaleString()}</div>
-                      <p className="text-sm text-muted-foreground">API Calls</p>
-                      <p className="text-xs text-muted-foreground">Daily average</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-5 w-5" />
-                    Quick Actions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full justify-start" variant="outline" onClick={() => navigate('/admin/venues')}>
-                    <Building className="h-4 w-4 mr-2" />
-                    Add New Venue
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center gap-2"
+                    onClick={() => navigate("/admin/venues")}
+                  >
+                    <Building className="h-6 w-6" />
+                    <span className="text-sm">Add Venue</span>
                   </Button>
-                  <Button className="w-full justify-start" variant="outline" onClick={() => navigate('/admin/events')}>
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Create Event
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center gap-2"
+                    onClick={() => navigate("/admin/events")}
+                  >
+                    <Calendar className="h-6 w-6" />
+                    <span className="text-sm">Create Event</span>
                   </Button>
-                  <Button className="w-full justify-start" variant="outline" onClick={() => navigate('/admin/analytics')}>
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    View Analytics
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center gap-2"
+                    onClick={() => navigate("/admin/users")}
+                  >
+                    <Users className="h-6 w-6" />
+                    <span className="text-sm">Manage Users</span>
                   </Button>
-                  <Button className="w-full justify-start" variant="outline" onClick={() => setIsAwinImportOpen(true)}>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Import Data
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center gap-2"
+                    onClick={() => navigate("/admin/import-hub")}
+                  >
+                    <Upload className="h-6 w-6" />
+                    <span className="text-sm">Import Data</span>
                   </Button>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          <TabsContent value="management" className="space-y-6">
-            <Tabs defaultValue="tools" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="tools" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Tools
-                </TabsTrigger>
-                <TabsTrigger value="moderation" className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Moderation
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="tools" className="space-y-6">
-                <AlgoliaManager />
-              </TabsContent>
-
-              <TabsContent value="moderation" className="space-y-6">
-                <NewsModeration />
-              </TabsContent>
-            </Tabs>
-
-            {/* Enhanced Management Grid */}
-            <div className={`grid gap-6 ${
-              viewMode === 'grid' 
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                : 'grid-cols-1'
-            }`}>
-              {adminSections.map((section, index) => (
-                <Card 
-                  key={index} 
-                  className="group cursor-pointer border hover:shadow-lg hover:border-primary/20 transition-all duration-300 animate-fade-in" 
-                  onClick={() => navigate(section.path)}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 rounded border bg-card text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                        <section.icon className="h-6 w-6" />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {section.stats}
-                        </Badge>
-                        <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                      </div>
-                    </div>
-                    
-                    <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
-                      {section.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {section.description}
-                    </p>
-                    
-                    {section.subItems && (
-                      <div className="mt-4 pt-4 border-t space-y-3">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs font-medium text-muted-foreground">Sub-modules</p>
-                          <Badge variant="outline" className="text-xs">
-                            {section.subItems.length} items
-                          </Badge>
-                        </div>
-                        <div className="space-y-2">
-                          {section.subItems.slice(0, viewMode === 'list' ? 6 : 3).map((subItem, subIndex) => (
-                            <div
-                              key={subIndex}
-                              className="flex items-center justify-between p-2 rounded border bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(subItem.path);
-                              }}
-                            >
-                              <div>
-                                <p className="text-xs font-medium">{subItem.title}</p>
-                                <p className="text-xs text-muted-foreground">{subItem.description}</p>
-                              </div>
-                              <ArrowUpRight className="h-3 w-3 text-muted-foreground" />
-                            </div>
-                          ))}
-                          {section.subItems.length > (viewMode === 'list' ? 6 : 3) && (
-                            <div className="text-center">
-                              <Badge variant="outline" className="text-xs">
-                                +{section.subItems.length - (viewMode === 'list' ? 6 : 3)} more
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
+          {/* Activity Tab with Analytics */}
+          <TabsContent value="activity" className="space-y-6">
+            <div className="grid gap-6">
+              {/* Analytics Section */}
+              {isAdmin && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5" />
+                      Website Analytics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <UmamiAnalyticsDashboard />
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </TabsContent>
+              )}
 
-          <TabsContent value="activity" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-2">
+              {/* Platform Activity Section */}
+              <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Activity className="h-5 w-5" />
                     Recent Platform Activity
                   </CardTitle>
-                  <Button variant="outline" size="sm" onClick={fetchRecentActivity}>
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={fetchRecentActivity}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Search className="h-4 w-4 text-muted-foreground" />
+                      <Input placeholder="Search activity..." className="w-48" />
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {recentActivity.length === 0 ? (
-                      <div className="text-center py-12">
-                        <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground">No recent activity found</p>
-                        <p className="text-sm text-muted-foreground">Activity will appear here as users interact with the platform</p>
-                      </div>
-                    ) : (
-                      recentActivity.map((activity) => (
-                        <div key={`${activity.type}-${activity.id}`} className="flex items-start gap-4 p-4 border rounded hover:bg-muted/30 transition-all group cursor-pointer">
-                          <div className="p-2 bg-muted rounded group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                            <activity.icon className="h-4 w-4" />
+                  <div className="grid gap-6 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded">
+                            <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1">
-                              <p className="font-medium text-sm group-hover:text-primary transition-colors">{activity.title}</p>
-                              <Badge variant="secondary" className="text-xs">
-                                {activity.type}
-                              </Badge>
-                            </div>
-                            <p className="text-muted-foreground text-xs mb-2 line-clamp-2">{activity.description}</p>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {new Date(activity.timestamp).toLocaleString()}
-                              </span>
-                            </div>
+                          <div>
+                            <p className="text-sm font-medium">Recent Posts</p>
+                            <p className="text-2xl font-bold">{recentActivity.filter(a => a.type === 'post').length}</p>
                           </div>
                         </div>
-                      ))
+                      </Card>
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 dark:bg-green-900 rounded">
+                            <Calendar className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">New Events</p>
+                            <p className="text-2xl font-bold">{recentActivity.filter(a => a.type === 'event').length}</p>
+                          </div>
+                        </div>
+                      </Card>
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded">
+                            <ShoppingBag className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Marketplace</p>
+                            <p className="text-2xl font-bold">{recentActivity.filter(a => a.type === 'marketplace').length}</p>
+                          </div>
+                        </div>
+                      </Card>
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded">
+                            <FileText className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Templates</p>
+                            <p className="text-2xl font-bold">{recentActivity.filter(a => a.type === 'email_template').length}</p>
+                          </div>
+                        </div>
+                      </Card>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {recentActivity.map((activity) => (
+                      <div key={activity.id} className="flex items-center justify-between p-4 border rounded-lg bg-card">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-muted rounded">
+                            <activity.icon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{activity.title}</h4>
+                            <p className="text-sm text-muted-foreground">{activity.description}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(activity.timestamp).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(activity.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {recentActivity.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Activity className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p>No recent activity to display</p>
+                      </div>
                     )}
                   </div>
                 </CardContent>
               </Card>
-
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Bell className="h-4 w-4" />
-                      Activity Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Posts</span>
-                        <Badge variant="outline">
-                          {recentActivity.filter(a => a.type === 'post').length}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Events</span>
-                        <Badge variant="outline">
-                          {recentActivity.filter(a => a.type === 'event').length}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Listings</span>
-                        <Badge variant="outline">
-                          {recentActivity.filter(a => a.type === 'marketplace').length}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Templates</span>
-                        <Badge variant="outline">
-                          {recentActivity.filter(a => a.type === 'email_template').length}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Search className="h-4 w-4" />
-                      Quick Search
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <Input placeholder="Search content..." className="text-sm" />
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline" className="text-xs cursor-pointer hover:bg-muted">
-                          #venues
-                        </Badge>
-                        <Badge variant="outline" className="text-xs cursor-pointer hover:bg-muted">
-                          #events
-                        </Badge>
-                        <Badge variant="outline" className="text-xs cursor-pointer hover:bg-muted">
-                          #users
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="system" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Imports Tab */}
+          <TabsContent value="imports" className="space-y-6">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Upload className="h-5 w-5" />
+                    Data Import Tools
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Import data from various sources including CSV files and external APIs
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/admin/import-hub")}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded">
+                          <Download className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <h3 className="font-semibold">Import Hub</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Centralized import management for all data types
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <ArrowUpRight className="h-4 w-4" />
+                        <span className="text-sm">Open Import Hub</span>
+                      </div>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-green-100 dark:bg-green-900 rounded">
+                          <Calendar className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <h3 className="font-semibold">CSV Imports</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Import events, venues, and other data from CSV files
+                      </p>
+                      <div className="space-y-2">
+                        <div className="text-xs text-muted-foreground">Supported formats:</div>
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="outline" className="text-xs">Events</Badge>
+                          <Badge variant="outline" className="text-xs">Venues</Badge>
+                          <Badge variant="outline" className="text-xs">Tags</Badge>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded">
+                          <Database className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <h3 className="font-semibold">API Imports</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Import from external APIs like Foursquare, TripAdvisor, TomTom
+                      </p>
+                      <div className="space-y-2">
+                        <div className="text-xs text-muted-foreground">Available sources:</div>
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="outline" className="text-xs">Foursquare</Badge>
+                          <Badge variant="outline" className="text-xs">TripAdvisor</Badge>
+                          <Badge variant="outline" className="text-xs">TomTom</Badge>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <Dialog open={isAwinImportOpen} onOpenChange={setIsAwinImportOpen}>
+                      <DialogTrigger asChild>
+                        <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded">
+                              <ShoppingBag className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            <h3 className="font-semibold">Awin Products</h3>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Import products from Awin affiliate network
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Download className="h-4 w-4" />
+                            <span className="text-sm">Configure Import</span>
+                          </div>
+                        </Card>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Import Awin Products</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="csvUrl">CSV URL</Label>
+                            <Input
+                              id="csvUrl"
+                              value={importParams.csvUrl}
+                              onChange={(e) => setImportParams(prev => ({ ...prev, csvUrl: e.target.value }))}
+                              placeholder="https://..."
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="maxProducts">Max Products</Label>
+                              <Input
+                                id="maxProducts"
+                                type="number"
+                                value={importParams.maxProducts}
+                                onChange={(e) => setImportParams(prev => ({ ...prev, maxProducts: parseInt(e.target.value) }))}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="skipRows">Skip Rows</Label>
+                              <Input
+                                id="skipRows"
+                                type="number"
+                                value={importParams.skipRows}
+                                onChange={(e) => setImportParams(prev => ({ ...prev, skipRows: parseInt(e.target.value) }))}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label htmlFor="batchSize">Batch Size</Label>
+                            <Input
+                              id="batchSize"
+                              type="number"
+                              value={importParams.batchSize}
+                              onChange={(e) => setImportParams(prev => ({ ...prev, batchSize: parseInt(e.target.value) }))}
+                            />
+                          </div>
+                          <Button onClick={handleAwinImport} disabled={isImporting} className="w-full">
+                            {isImporting ? "Importing..." : "Start Import"}
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-red-100 dark:bg-red-900 rounded">
+                          <Newspaper className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        </div>
+                        <h3 className="font-semibold">News Import</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Automatic RSS feed imports for news content
+                      </p>
+                      <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm">Auto-configured</span>
+                      </div>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded">
+                          <Globe className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <h3 className="font-semibold">Countries & Cities</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Import geographical data and location information
+                      </p>
+                      <div className="space-y-2">
+                        <Button variant="outline" size="sm" className="w-full">
+                          Import Countries
+                        </Button>
+                        <Button variant="outline" size="sm" className="w-full">
+                          Update Weather Data
+                        </Button>
+                      </div>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Import Status */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Monitor className="h-5 w-5" />
-                    System Health
+                    Import Status & Logs
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 border rounded">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">Status</span>
-                        <div className={`w-3 h-3 rounded-full ${
-                          systemHealth.status === 'healthy' ? 'bg-green-500' : 
-                          systemHealth.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-                        }`}></div>
-                      </div>
-                      <p className="text-lg font-bold capitalize">{systemHealth.status}</p>
-                    </div>
-                    <div className="p-4 border rounded">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">Uptime</span>
-                        <Wifi className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <p className="text-lg font-bold">{systemHealth.uptime}</p>
-                    </div>
-                    <div className="p-4 border rounded">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">DB Latency</span>
-                        <Cpu className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <p className="text-lg font-bold">{systemHealth.dbLatency}ms</p>
-                    </div>
-                    <div className="p-4 border rounded">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">Storage</span>
-                        <Server className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <p className="text-lg font-bold">{systemHealth.storageUsed}%</p>
-                    </div>
-                  </div>
-                  
-                  {systemHealth.issues.length > 0 && (
+                <CardContent>
+                  <div className="space-y-4">
                     <Alert>
-                      <AlertTriangle className="h-4 w-4" />
+                      <Bell className="h-4 w-4" />
                       <AlertDescription>
-                        <ul className="list-disc list-inside space-y-1">
-                          {systemHealth.issues.map((issue, index) => (
-                            <li key={index} className="text-sm">{issue}</li>
-                          ))}
-                        </ul>
+                        For detailed import logs and status, check the Supabase Edge Functions logs in your dashboard.
                       </AlertDescription>
                     </Alert>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 dark:bg-green-900 rounded">
+                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Recent Imports</p>
+                            <p className="text-2xl font-bold">12</p>
+                            <p className="text-xs text-muted-foreground">Last 24h</p>
+                          </div>
+                        </div>
+                      </Card>
+                      
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded">
+                            <Database className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Records Imported</p>
+                            <p className="text-2xl font-bold">2.4K</p>
+                            <p className="text-xs text-muted-foreground">This week</p>
+                          </div>
+                        </div>
+                      </Card>
+                      
+                      <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded">
+                            <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Failed Imports</p>
+                            <p className="text-2xl font-bold">2</p>
+                            <p className="text-xs text-muted-foreground">Needs attention</p>
+                          </div>
+                        </div>
+                      </Card>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* System Health Tab */}
+          <TabsContent value="system" className="space-y-6">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Server className="h-5 w-5" />
+                    System Health Monitor
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`p-2 rounded ${
+                          systemHealth.status === 'healthy' ? 'bg-green-100 dark:bg-green-900' :
+                          systemHealth.status === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900' : 'bg-red-100 dark:bg-red-900'
+                        }`}>
+                          <CheckCircle className={`h-4 w-4 ${
+                            systemHealth.status === 'healthy' ? 'text-green-600 dark:text-green-400' :
+                            systemHealth.status === 'warning' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
+                          }`} />
+                        </div>
+                        <h3 className="font-semibold">System Status</h3>
+                      </div>
+                      <p className="text-2xl font-bold capitalize">{systemHealth.status}</p>
+                      <p className="text-sm text-muted-foreground">Overall system health</p>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded">
+                          <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <h3 className="font-semibold">Uptime</h3>
+                      </div>
+                      <p className="text-2xl font-bold">{systemHealth.uptime}</p>
+                      <p className="text-sm text-muted-foreground">Service availability</p>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded">
+                          <Database className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <h3 className="font-semibold">DB Latency</h3>
+                      </div>
+                      <p className="text-2xl font-bold">{systemHealth.dbLatency}ms</p>
+                      <p className="text-sm text-muted-foreground">Database response time</p>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded">
+                          <Monitor className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <h3 className="font-semibold">Storage Used</h3>
+                      </div>
+                      <p className="text-2xl font-bold">{systemHealth.storageUsed}%</p>
+                      <Progress value={systemHealth.storageUsed} className="mt-2" />
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-cyan-100 dark:bg-cyan-900 rounded">
+                          <Zap className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+                        </div>
+                        <h3 className="font-semibold">API Calls</h3>
+                      </div>
+                      <p className="text-2xl font-bold">{systemHealth.apiCalls.toLocaleString()}</p>
+                      <p className="text-sm text-muted-foreground">Last 24 hours</p>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-red-100 dark:bg-red-900 rounded">
+                          <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        </div>
+                        <h3 className="font-semibold">Issues</h3>
+                      </div>
+                      <p className="text-2xl font-bold">{systemHealth.issues.length}</p>
+                      <p className="text-sm text-muted-foreground">Active issues</p>
+                    </Card>
+                  </div>
+
+                  {systemHealth.issues.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="font-semibold mb-3 text-destructive">Active Issues</h4>
+                      <div className="space-y-2">
+                        {systemHealth.issues.map((issue, index) => (
+                          <Alert key={index} variant="destructive">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertDescription>{issue}</AlertDescription>
+                          </Alert>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </CardContent>
               </Card>
 
+              <SecurityMonitoringDashboard />
+            </div>
+          </TabsContent>
+
+          {/* Management Tab */}
+          <TabsContent value="management" className="space-y-6">
+            <div className="grid gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Security Overview
+                    <Settings className="h-5 w-5" />
+                    Management Tools
                   </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Comprehensive platform management and administration tools
+                  </p>
                 </CardHeader>
                 <CardContent>
-                  <SecurityMonitoringDashboard />
+                  <div className="grid gap-6">
+                    {/* Quick Actions */}
+                    <div>
+                      <h3 className="font-semibold mb-3">Quick Actions</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <Button variant="outline" size="sm" onClick={() => navigate("/admin/users")}>
+                          <Users className="h-4 w-4 mr-2" />
+                          Manage Users
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => navigate("/admin/groups")}>
+                          <Users className="h-4 w-4 mr-2" />
+                          Manage Groups
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => navigate("/admin/news-sources")}>
+                          <Newspaper className="h-4 w-4 mr-2" />
+                          News Sources
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => navigate("/admin/email-templates")}>
+                          <FileText className="h-4 w-4 mr-2" />
+                          Email Templates
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Admin Sections Grid */}
+                    <div>
+                      <h3 className="font-semibold mb-3">Administration Modules</h3>
+                      <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                        {adminSections.map((section) => (
+                          <Card 
+                            key={section.path} 
+                            className="hover:shadow-lg transition-shadow cursor-pointer" 
+                            onClick={() => navigate(section.path)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-3 mb-3">
+                                <div className="p-2 bg-primary/10 rounded">
+                                  <section.icon className="h-5 w-5 text-primary" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <h3 className="font-semibold">{section.title}</h3>
+                                    <Badge variant="secondary" className="text-xs">
+                                      {section.stats}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mb-3">
+                                    {section.description}
+                                  </p>
+                                  
+                                  {section.subItems && (
+                                    <div className="space-y-1">
+                                      <div className="text-xs font-medium text-muted-foreground">Sub-modules:</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {section.subItems.slice(0, 3).map((subItem) => (
+                                          <Badge key={subItem.path} variant="outline" className="text-xs">
+                                            {subItem.title}
+                                          </Badge>
+                                        ))}
+                                        {section.subItems.length > 3 && (
+                                          <Badge variant="outline" className="text-xs">
+                                            +{section.subItems.length - 3} more
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <AlgoliaManager />
+                <NewsModeration />
+              </div>
             </div>
           </TabsContent>
         </Tabs>
