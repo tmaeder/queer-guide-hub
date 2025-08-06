@@ -3987,6 +3987,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      can_view_sensitive_profile_data: {
+        Args: { profile_user_id: string; requesting_user_id: string }
+        Returns: boolean
+      }
       check_rate_limit: {
         Args: {
           identifier: string
@@ -3996,6 +4000,10 @@ export type Database = {
         Returns: boolean
       }
       consolidate_all_multiple_policies: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      consolidate_all_policies: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
@@ -4022,7 +4030,9 @@ export type Database = {
         Returns: undefined
       }
       consolidate_table_policies: {
-        Args: { table_name_param: string }
+        Args:
+          | { p_table_name: string; p_role_name: string; p_action: string }
+          | { table_name_param: string }
         Returns: undefined
       }
       create_notification: {
