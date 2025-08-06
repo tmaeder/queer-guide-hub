@@ -119,3 +119,6 @@ verify_jwt = false
 
 [functions.import-tripadvisor-venues]
 verify_jwt = false
+
+[functions.umami-analytics]
+verify_jwt = false

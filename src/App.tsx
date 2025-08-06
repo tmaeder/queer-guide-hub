@@ -3,10 +3,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import "./i18n";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AccessibilityProvider } from "@/hooks/useAccessibility";
+import { useUmamiAnalytics } from "@/hooks/useUmamiAnalytics";
+import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import Index from "./pages/Index";
@@ -152,6 +154,7 @@ const App = () => {
                   transition: 'all 2.5s cubic-bezier(0.165, 0.84, 0.44, 1)'
                 }}
               />
+              <AnalyticsTracker />
               <Header />
               <main className="flex-1 relative z-10">
                 <div className="container mx-auto px-2 sm:px-4">
