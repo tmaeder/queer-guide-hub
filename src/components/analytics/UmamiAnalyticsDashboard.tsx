@@ -9,7 +9,6 @@ import { Progress } from "@/components/ui/progress";
 import { Calendar, MapPin, Monitor, Users, Eye, Activity, Clock, Globe, Smartphone, TrendingUp, Filter, Download, RefreshCw } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
-
 interface UmamiSession {
   session_id: string;
   hostname: string;
@@ -22,7 +21,6 @@ interface UmamiSession {
   city: string;
   created_at: string;
 }
-
 interface UmamiEvent {
   event_id: string;
   url_path: string;
@@ -32,7 +30,6 @@ interface UmamiEvent {
   created_at: string;
   session: UmamiSession;
 }
-
 interface UmamiStats {
   totalPageViews: number;
   totalSessions: number;
@@ -41,22 +38,53 @@ interface UmamiStats {
   bounceRate: number;
   newVisitors: number;
   returningVisitors: number;
-  topPages: Array<{ path: string; views: number; percentage: number }>;
-  topBrowsers: Array<{ browser: string; count: number; percentage: number }>;
-  topCountries: Array<{ country: string; count: number; percentage: number }>;
-  topDevices: Array<{ device: string; count: number; percentage: number }>;
-  topLanguages: Array<{ language: string; count: number; percentage: number }>;
-  topScreens: Array<{ screen: string; count: number; percentage: number }>;
-  hourlyData: Array<{ hour: string; views: number; sessions: number }>;
-  dailyData: Array<{ date: string; views: number; sessions: number; visitors: number }>;
+  topPages: Array<{
+    path: string;
+    views: number;
+    percentage: number;
+  }>;
+  topBrowsers: Array<{
+    browser: string;
+    count: number;
+    percentage: number;
+  }>;
+  topCountries: Array<{
+    country: string;
+    count: number;
+    percentage: number;
+  }>;
+  topDevices: Array<{
+    device: string;
+    count: number;
+    percentage: number;
+  }>;
+  topLanguages: Array<{
+    language: string;
+    count: number;
+    percentage: number;
+  }>;
+  topScreens: Array<{
+    screen: string;
+    count: number;
+    percentage: number;
+  }>;
+  hourlyData: Array<{
+    hour: string;
+    views: number;
+    sessions: number;
+  }>;
+  dailyData: Array<{
+    date: string;
+    views: number;
+    sessions: number;
+    visitors: number;
+  }>;
   recentEvents: UmamiEvent[];
   liveVisitors: number;
   totalUptime: number;
   conversionRate: number;
 }
-
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', 'hsl(var(--destructive))', 'hsl(var(--warning))'];
-
 export const UmamiAnalyticsDashboard = () => {
   const [stats, setStats] = useState<UmamiStats>({
     totalPageViews: 0,
@@ -85,10 +113,9 @@ export const UmamiAnalyticsDashboard = () => {
   const [deviceFilter, setDeviceFilter] = useState<'all' | 'desktop' | 'mobile' | 'tablet'>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [autoRefresh, setAutoRefresh] = useState(true);
-
   useEffect(() => {
     fetchUmamiStats();
-    
+
     // Auto-refresh every 5 minutes if enabled
     let interval: NodeJS.Timeout;
     if (autoRefresh) {
@@ -96,12 +123,10 @@ export const UmamiAnalyticsDashboard = () => {
         fetchUmamiStats(true);
       }, 5 * 60 * 1000);
     }
-    
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [dateRange, deviceFilter, countryFilter, autoRefresh]);
-
   const fetchUmamiStats = async (isRefresh = false) => {
     try {
       if (isRefresh) {
@@ -109,12 +134,18 @@ export const UmamiAnalyticsDashboard = () => {
       } else {
         setLoading(true);
       }
-      
+
       // Get current session for auth header
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const { data: analyticsData, error } = await supabase.functions.invoke('umami-dashboard', {
-        body: { 
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
+      const {
+        data: analyticsData,
+        error
+      } = await supabase.functions.invoke('umami-dashboard', {
+        body: {
           action: 'get_enhanced_stats',
           dateRange,
           deviceFilter,
@@ -124,12 +155,10 @@ export const UmamiAnalyticsDashboard = () => {
           Authorization: `Bearer ${session.access_token}`
         } : {}
       });
-
       if (error) {
         console.error('Error fetching Umami stats:', error);
         return;
       }
-
       if (analyticsData) {
         setStats(analyticsData);
       }
@@ -140,18 +169,21 @@ export const UmamiAnalyticsDashboard = () => {
       setRefreshing(false);
     }
   };
-
   const handleRefresh = () => {
     fetchUmamiStats(true);
   };
-
   const handleExport = async () => {
     try {
       // Get current session for auth header
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const { data } = await supabase.functions.invoke('umami-dashboard', {
-        body: { 
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
+      const {
+        data
+      } = await supabase.functions.invoke('umami-dashboard', {
+        body: {
           action: 'export_data',
           dateRange,
           deviceFilter,
@@ -161,9 +193,10 @@ export const UmamiAnalyticsDashboard = () => {
           Authorization: `Bearer ${session.access_token}`
         } : {}
       });
-      
       if (data) {
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+          type: 'application/json'
+        });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -177,52 +210,34 @@ export const UmamiAnalyticsDashboard = () => {
       console.error('Error exporting data:', error);
     }
   };
-
   if (loading) {
-    return (
-      <div className="space-y-6">
+    return <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
+          {[...Array(3)].map((_, i) => <Card key={i} className="animate-pulse">
               <CardHeader className="space-y-2">
                 <div className="h-4 bg-muted rounded w-3/4"></div>
                 <div className="h-8 bg-muted rounded w-1/2"></div>
               </CardHeader>
-            </Card>
-          ))}
+            </Card>)}
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Umami Analytics</h2>
-          <p className="text-muted-foreground">Self-hosted website analytics dashboard</p>
+          
+          
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             {stats.liveVisitors} Live
           </Badge>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="gap-2"
-          >
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} className="gap-2">
             <RefreshCw className={`h-3 w-3 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            className="gap-2"
-          >
+          <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
             <Download className="h-3 w-3" />
             Export
           </Button>
@@ -271,11 +286,7 @@ export const UmamiAnalyticsDashboard = () => {
             
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium">Auto Refresh:</label>
-              <Button
-                variant={autoRefresh ? "default" : "outline"}
-                size="sm"
-                onClick={() => setAutoRefresh(!autoRefresh)}
-              >
+              <Button variant={autoRefresh ? "default" : "outline"} size="sm" onClick={() => setAutoRefresh(!autoRefresh)}>
                 {autoRefresh ? "ON" : "OFF"}
               </Button>
             </div>
@@ -411,8 +422,7 @@ export const UmamiAnalyticsDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats.topPages.map((page, index) => (
-                  <div key={page.path} className="flex items-center justify-between">
+                {stats.topPages.map((page, index) => <div key={page.path} className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1">
                       <Badge variant="secondary" className="w-6 h-6 rounded-full p-0 flex items-center justify-center text-xs">
                         {index + 1}
@@ -426,8 +436,7 @@ export const UmamiAnalyticsDashboard = () => {
                       <p className="text-sm font-medium">{page.views.toLocaleString()} views</p>
                       <p className="text-xs text-muted-foreground">{page.percentage}%</p>
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
           </Card>
@@ -444,19 +453,11 @@ export const UmamiAnalyticsDashboard = () => {
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
-                    <Pie
-                      data={stats.topCountries.slice(0, 5)}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({country, percentage}) => `${country} ${percentage}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="count"
-                    >
-                      {stats.topCountries.slice(0, 5).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
+                    <Pie data={stats.topCountries.slice(0, 5)} cx="50%" cy="50%" labelLine={false} label={({
+                    country,
+                    percentage
+                  }) => `${country} ${percentage}%`} outerRadius={80} fill="#8884d8" dataKey="count">
+                      {stats.topCountries.slice(0, 5).map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                     </Pie>
                     <Tooltip />
                   </PieChart>
@@ -473,19 +474,16 @@ export const UmamiAnalyticsDashboard = () => {
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
-                    <Pie
-                      data={[
-                        { name: 'New Visitors', value: stats.newVisitors },
-                        { name: 'Returning Visitors', value: stats.returningVisitors }
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({name, value}) => `${name}: ${value}`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
+                    <Pie data={[{
+                    name: 'New Visitors',
+                    value: stats.newVisitors
+                  }, {
+                    name: 'Returning Visitors',
+                    value: stats.returningVisitors
+                  }]} cx="50%" cy="50%" labelLine={false} label={({
+                    name,
+                    value
+                  }) => `${name}: ${value}`} outerRadius={80} fill="#8884d8" dataKey="value">
                       <Cell fill="hsl(var(--primary))" />
                       <Cell fill="hsl(var(--secondary))" />
                     </Pie>
@@ -507,8 +505,7 @@ export const UmamiAnalyticsDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {stats.topBrowsers.map((browser, index) => (
-                    <div key={browser.browser} className="flex items-center justify-between">
+                  {stats.topBrowsers.map((browser, index) => <div key={browser.browser} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
                         <Badge variant="secondary" className="w-6 h-6 rounded-full p-0 flex items-center justify-center text-xs">
                           {index + 1}
@@ -519,8 +516,7 @@ export const UmamiAnalyticsDashboard = () => {
                         <p className="text-sm font-medium">{browser.count}</p>
                         <p className="text-xs text-muted-foreground">{browser.percentage}%</p>
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </CardContent>
             </Card>
@@ -533,8 +529,7 @@ export const UmamiAnalyticsDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {stats.topDevices.map((device, index) => (
-                    <div key={device.device} className="flex items-center justify-between">
+                  {stats.topDevices.map((device, index) => <div key={device.device} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
                         <Smartphone className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">{device.device}</span>
@@ -543,8 +538,7 @@ export const UmamiAnalyticsDashboard = () => {
                         <p className="text-sm font-medium">{device.count}</p>
                         <p className="text-xs text-muted-foreground">{device.percentage}%</p>
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </CardContent>
             </Card>
@@ -557,8 +551,7 @@ export const UmamiAnalyticsDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {stats.topScreens.map((screen, index) => (
-                    <div key={screen.screen} className="flex items-center justify-between">
+                  {stats.topScreens.map((screen, index) => <div key={screen.screen} className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
                         <Monitor className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-mono">{screen.screen}</span>
@@ -567,8 +560,7 @@ export const UmamiAnalyticsDashboard = () => {
                         <p className="text-sm font-medium">{screen.count}</p>
                         <p className="text-xs text-muted-foreground">{screen.percentage}%</p>
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </CardContent>
             </Card>
@@ -617,8 +609,7 @@ export const UmamiAnalyticsDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 max-h-80 overflow-y-auto">
-                  {stats.recentEvents.slice(0, 10).map((event) => (
-                    <div key={event.event_id} className="flex items-center justify-between text-sm">
+                  {stats.recentEvents.slice(0, 10).map(event => <div key={event.event_id} className="flex items-center justify-between text-sm">
                       <div className="flex-1 min-w-0">
                         <p className="truncate font-mono">{event.url_path}</p>
                         <p className="text-xs text-muted-foreground">
@@ -628,8 +619,7 @@ export const UmamiAnalyticsDashboard = () => {
                       <div className="text-xs text-muted-foreground">
                         {new Date(event.created_at).toLocaleTimeString()}
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </CardContent>
             </Card>
@@ -637,6 +627,5 @@ export const UmamiAnalyticsDashboard = () => {
         </TabsContent>
       </Tabs>
 
-    </div>
-  );
+    </div>;
 };
