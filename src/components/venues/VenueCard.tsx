@@ -43,96 +43,176 @@ export function VenueCard({
     };
     return colors[category] || 'bg-muted/10 text-muted-foreground';
   };
-  return <Card className="group hover:shadow-elegant transition-all duration-300">
+  return <Card className="group relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-1">
       {/* Venue Images */}
-      {venue.images && venue.images.length > 0 && <div className="relative h-48 overflow-hidden rounded-t-lg">
-          <img src={venue.images[0]} alt={venue.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError={e => {
-        const target = e.target as HTMLImageElement;
-        target.style.display = 'none';
-      }} />
-          {venue.images.length > 1 && <div className="absolute top-2 right-2 bg-background/90 text-foreground text-xs px-2 py-1 rounded border">
+      {venue.images && venue.images.length > 0 ? (
+        <div className="relative h-56 overflow-hidden">
+          <img 
+            src={venue.images[0]} 
+            alt={venue.name} 
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+            onError={e => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+            }} 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+          {venue.images.length > 1 && (
+            <div className="absolute top-3 right-3 bg-background/95 backdrop-blur-sm text-foreground text-xs px-3 py-1 rounded-full border shadow-lg">
               +{venue.images.length - 1} more
-            </div>}
-        </div>}
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg group-hover:text-primary transition-colors">
+            </div>
+          )}
+          {venue.verified && (
+            <Badge className="absolute top-3 left-3 bg-primary/90 backdrop-blur-sm text-primary-foreground border-0">
+              <Star className="h-3 w-3 mr-1 fill-current" />
+              Verified
+            </Badge>
+          )}
+        </div>
+      ) : (
+        <div className="h-56 bg-gradient-to-br from-muted/50 to-muted flex items-center justify-center">
+          <MapPin className="h-12 w-12 text-muted-foreground/30" />
+        </div>
+      )}
+      
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors duration-300 line-clamp-1">
               {venue.name}
-              {venue.verified && <Badge variant="secondary" className="ml-2 text-xs">
-                  Verified
-                </Badge>}
             </CardTitle>
-            <div className="flex items-center gap-2 mt-1 text-muted-foreground">
-              <MapPin className="h-3 w-3" />
-              <span className="text-sm">{venue.city}, {venue.state}</span>
-              {venue.price_range && <span className="text-sm font-medium text-accent">
+            <div className="flex items-center gap-2 mt-2 text-muted-foreground">
+              <MapPin className="h-4 w-4 flex-shrink-0" />
+              <span className="text-sm truncate">{venue.city}, {venue.state}</span>
+              {venue.price_range && (
+                <span className="text-sm font-semibold text-primary ml-auto">
                   {getPriceRange(venue.price_range)}
-                </span>}
+                </span>
+              )}
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <Badge className={getCategoryColor(venue.category)}>
+          <div className="flex flex-col items-end gap-2">
+            <Badge variant="secondary" className={`${getCategoryColor(venue.category)} font-medium`}>
               {venue.category}
             </Badge>
-            {averageRating > 0 && <div className="flex items-center gap-1">
+            {averageRating > 0 && (
+              <div className="flex items-center gap-1 bg-accent/10 px-2 py-1 rounded-full">
                 <Star className="h-3 w-3 fill-current text-accent" />
-                <span className="text-sm font-medium">{averageRating.toFixed(1)}</span>
-              </div>}
+                <span className="text-sm font-semibold text-accent">{averageRating.toFixed(1)}</span>
+              </div>
+            )}
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
-        {venue.description && <p className="text-sm text-muted-foreground line-clamp-2">
+      <CardContent className="space-y-4">
+        {venue.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
             {venue.description}
-          </p>}
+          </p>
+        )}
 
-        {venue.tags && venue.tags.length > 0 && <div className="flex flex-wrap gap-1">
-            {venue.tags.slice(0, 3).map((tag, index) => <Badge key={index} variant="outline" className="text-xs cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => onTagClick?.(tag)}>
-                {tag}
-              </Badge>)}
-            {venue.tags.length > 3 && <Badge variant="outline" className="text-xs">
-                +{venue.tags.length - 3} more
-              </Badge>}
-          </div>}
-
-        {venue.amenities && venue.amenities.length > 0 && <div className="space-y-1">
-            <span className="text-xs font-medium text-muted-foreground">Amenities:</span>
-            
-          </div>}
-
-        {venue.services && venue.services.length > 0 && <div className="space-y-1">
-            <span className="text-xs font-medium text-muted-foreground">Services:</span>
-            <div className="flex flex-wrap gap-1">
-              {venue.services.slice(0, 4).map((service, index) => <Badge key={index} variant="outline" className="text-xs cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => onServiceClick?.(service)}>
-                  {service}
-                </Badge>)}
-              {venue.services.length > 4 && <Badge variant="outline" className="text-xs">
-                  +{venue.services.length - 4} more
-                </Badge>}
+        {venue.tags && venue.tags.length > 0 && (
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tags</span>
+            <div className="flex flex-wrap gap-1.5">
+              {venue.tags.slice(0, 3).map((tag, index) => (
+                <Badge 
+                  key={index} 
+                  variant="outline" 
+                  className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-200 hover:scale-105" 
+                  onClick={() => onTagClick?.(tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
+              {venue.tags.length > 3 && (
+                <Badge variant="outline" className="text-xs bg-muted/50">
+                  +{venue.tags.length - 3}
+                </Badge>
+              )}
             </div>
-          </div>}
+          </div>
+        )}
+
+        {venue.amenities && venue.amenities.length > 0 && (
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Amenities</span>
+            <div className="flex flex-wrap gap-1.5">
+              {venue.amenities.slice(0, 4).map((amenity, index) => (
+                <Badge 
+                  key={index} 
+                  variant="outline" 
+                  className="text-xs cursor-pointer hover:bg-secondary hover:text-secondary-foreground transition-all duration-200" 
+                  onClick={() => onAmenityClick?.(amenity)}
+                >
+                  {amenity}
+                </Badge>
+              ))}
+              {venue.amenities.length > 4 && (
+                <Badge variant="outline" className="text-xs bg-muted/50">
+                  +{venue.amenities.length - 4}
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
+        {venue.services && venue.services.length > 0 && (
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Services</span>
+            <div className="flex flex-wrap gap-1.5">
+              {venue.services.slice(0, 4).map((service, index) => (
+                <Badge 
+                  key={index} 
+                  variant="outline" 
+                  className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-all duration-200" 
+                  onClick={() => onServiceClick?.(service)}
+                >
+                  {service}
+                </Badge>
+              ))}
+              {venue.services.length > 4 && (
+                <Badge variant="outline" className="text-xs bg-muted/50">
+                  +{venue.services.length - 4}
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Upcoming Events */}
-        {events.length > 0 && <VenueEvents venueId={venue.id} venueName={venue.name} events={events} compact={true} />}
+        {events.length > 0 && (
+          <div className="pt-2 border-t border-border/50">
+            <VenueEvents venueId={venue.id} venueName={venue.name} events={events} compact={true} />
+          </div>
+        )}
 
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between pt-4 border-t border-border/50">
+          <div className="flex items-center gap-1">
             <FavoriteButton itemId={venue.id} type="venue" />
-            {venue.phone && <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                <Phone className="h-3 w-3" />
-              </Button>}
-            {venue.website && <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                <Globe className="h-3 w-3" />
-              </Button>}
-            {venue.instagram && <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                <Instagram className="h-3 w-3" />
-              </Button>}
+            {venue.phone && (
+              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-colors">
+                <Phone className="h-4 w-4" />
+              </Button>
+            )}
+            {venue.website && (
+              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-colors">
+                <Globe className="h-4 w-4" />
+              </Button>
+            )}
+            {venue.instagram && (
+              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-colors">
+                <Instagram className="h-4 w-4" />
+              </Button>
+            )}
           </div>
           
           <Link to={`/venues/${venue.id}`}>
-            <Button size="sm" variant="outline" className="text-xs">
+            <Button 
+              size="sm" 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-4 hover:scale-105 transition-all duration-200"
+            >
               View Details
             </Button>
           </Link>
