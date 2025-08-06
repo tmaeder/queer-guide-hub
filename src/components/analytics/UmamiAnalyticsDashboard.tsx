@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Calendar, MapPin, Monitor, Users, Eye, Activity, Clock, Globe, Smartphone, TrendingUp, Filter, Download, RefreshCw } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
+import { UmamiMap } from './UmamiMap';
 interface UmamiSession {
   session_id: string;
   hostname: string;
@@ -369,6 +370,7 @@ export const UmamiAnalyticsDashboard = () => {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="pages">Pages</TabsTrigger>
           <TabsTrigger value="audience">Audience</TabsTrigger>
+          <TabsTrigger value="geography">Geography</TabsTrigger>
           <TabsTrigger value="technology">Technology</TabsTrigger>
           <TabsTrigger value="realtime">Real-time</TabsTrigger>
         </TabsList>
@@ -493,6 +495,41 @@ export const UmamiAnalyticsDashboard = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="geography" className="space-y-6">
+          <UmamiMap countryData={stats.topCountries} loading={loading} />
+          
+          {/* Country Details Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Country Details</CardTitle>
+              <CardDescription>Detailed breakdown of visitors by country</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {stats.topCountries.map((country, index) => (
+                  <div key={country.country} className="flex items-center justify-between p-3 rounded-lg border">
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="w-8 h-8 rounded-full p-0 flex items-center justify-center text-xs">
+                        {index + 1}
+                      </Badge>
+                      <div>
+                        <p className="font-medium">{country.country}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {country.percentage}% of total traffic
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{country.count.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">visitors</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="technology" className="space-y-6">
