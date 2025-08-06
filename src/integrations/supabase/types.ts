@@ -1422,6 +1422,36 @@ export type Database = {
           },
         ]
       }
+      failed_login_attempts: {
+        Row: {
+          attempt_type: string
+          blocked_until: string | null
+          created_at: string
+          id: string
+          identifier: string
+          ip_address: unknown
+          user_agent: string | null
+        }
+        Insert: {
+          attempt_type?: string
+          blocked_until?: string | null
+          created_at?: string
+          id?: string
+          identifier: string
+          ip_address: unknown
+          user_agent?: string | null
+        }
+        Update: {
+          attempt_type?: string
+          blocked_until?: string | null
+          created_at?: string
+          id?: string
+          identifier?: string
+          ip_address?: unknown
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       group_comment_likes: {
         Row: {
           comment_id: string
@@ -3076,6 +3106,33 @@ export type Database = {
           ip_address?: unknown | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      session_config: {
+        Row: {
+          created_at: string
+          id: string
+          max_concurrent_sessions: number
+          require_reauthentication_minutes: number
+          timeout_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_concurrent_sessions?: number
+          require_reauthentication_minutes?: number
+          timeout_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_concurrent_sessions?: number
+          require_reauthentication_minutes?: number
+          timeout_minutes?: number
+          updated_at?: string
         }
         Relationships: []
       }
