@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { UmamiAnalyticsDashboard } from "@/components/analytics/UmamiAnalyticsDashboard";
+import { CrawlForm } from "@/components/admin/CrawlForm";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -1451,8 +1452,9 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <NewsModeration />
+                <CrawlForm />
               </div>
             </div>
           </TabsContent>
