@@ -25,7 +25,11 @@ export function SecurityMonitoringDashboard() {
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching security events:', error);
+        throw error;
+      }
+      console.log('Security events fetched:', data?.length || 0);
       return data as SecurityEvent[];
     },
     refetchInterval: 30000
