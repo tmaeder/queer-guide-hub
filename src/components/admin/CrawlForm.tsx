@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Settings, ExternalLink, Key } from 'lucide-react';
+import { supabase } from "@/integrations/supabase/client";
 
 interface CrawlResult {
   success: boolean;
@@ -92,9 +93,26 @@ export const CrawlForm = () => {
       setProgress(75);
       
       if (result.success) {
+        // Save crawl job to database
+        const { error: saveError } = await (supabase as any)
+          .from('crawl_jobs')
+          .insert({
+            url,
+            status: result.data.status,
+            pages_crawled: result.data.completed,
+            total_pages: result.data.total,
+            credits_used: result.data.creditsUsed,
+            result_data: result.data.data,
+            expires_at: result.data.expiresAt ? new Date(result.data.expiresAt).toISOString() : null
+          });
+
+        if (saveError) {
+          console.error('Error saving crawl job:', saveError);
+        }
+
         toast({
           title: "Success",
-          description: "Website crawled successfully",
+          description: "Website crawled successfully and saved",
         });
         setCrawlResult(result.data);
         setProgress(100);
