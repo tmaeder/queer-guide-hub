@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlgoliaManager } from "@/components/admin/AlgoliaManager";
+
 import { NewsModeration } from "@/components/admin/NewsModeration";
 import { SecurityMonitoringDashboard } from "@/components/admin/SecurityMonitoringDashboard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -1451,8 +1451,7 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <AlgoliaManager />
+              <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                 <NewsModeration />
               </div>
             </div>
