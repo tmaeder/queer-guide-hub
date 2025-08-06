@@ -1,35 +1,45 @@
 # Cache static assets for 1 year (immutable files with hashes)
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+  Expires: Thu, 31 Dec 2025 23:59:59 GMT
 
 # Cache other static files for 1 week
 /*.js
   Cache-Control: public, max-age=604800
+  Expires: Thu, 13 Aug 2025 00:00:00 GMT
 
 /*.css
   Cache-Control: public, max-age=604800
+  Expires: Thu, 13 Aug 2025 00:00:00 GMT
 
 /*.woff2
   Cache-Control: public, max-age=31536000
+  Expires: Thu, 31 Dec 2025 23:59:59 GMT
 
 /*.woff
   Cache-Control: public, max-age=31536000
+  Expires: Thu, 31 Dec 2025 23:59:59 GMT
 
 /*.png
   Cache-Control: public, max-age=604800
+  Expires: Thu, 13 Aug 2025 00:00:00 GMT
 
 /*.jpg
   Cache-Control: public, max-age=604800
+  Expires: Thu, 13 Aug 2025 00:00:00 GMT
 
 /*.svg
   Cache-Control: public, max-age=604800
+  Expires: Thu, 13 Aug 2025 00:00:00 GMT
 
 # Cache manifest and service worker for short time
 /manifest.json
   Cache-Control: public, max-age=3600
+  Expires: Wed, 06 Aug 2025 01:00:00 GMT
 
 /sw.js
   Cache-Control: public, max-age=0
+  Expires: Wed, 06 Aug 2025 00:00:00 GMT
 
 # HTML should be revalidated
 /*.html
