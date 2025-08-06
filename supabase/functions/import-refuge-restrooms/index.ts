@@ -43,28 +43,44 @@ serve(async (req) => {
     // Get or create toilet category
     let { data: toiletCategory, error: categoryError } = await supabaseClient
       .from('venue_categories')
-      .select('id, name')
-      .eq('name', 'Toilet')
+      .select('id, name, slug')
+      .eq('slug', 'toilet')
       .single()
 
     if (categoryError && categoryError.code === 'PGRST116') {
       // Category doesn't exist, create it
+      console.log('Creating toilet category...')
       const { data: newCategory, error: createError } = await supabaseClient
         .from('venue_categories')
         .insert({
           name: 'Toilet',
           slug: 'toilet',
           description: 'Public restrooms and toilet facilities',
-          icon: 'restroom'
+          icon: 'restroom',
+          color: '#6366f1',
+          is_active: true,
+          sort_order: 0
         })
         .select()
         .single()
 
       if (createError) {
         console.error('Error creating toilet category:', createError)
-        throw createError
+        // Try to get existing category if it was created by another process
+        const { data: existingCategory } = await supabaseClient
+          .from('venue_categories')
+          .select('id, name, slug')
+          .eq('slug', 'toilet')
+          .single()
+        
+        if (existingCategory) {
+          toiletCategory = existingCategory
+        } else {
+          throw createError
+        }
+      } else {
+        toiletCategory = newCategory
       }
-      toiletCategory = newCategory
     } else if (categoryError) {
       console.error('Error fetching toilet category:', categoryError)
       throw categoryError
