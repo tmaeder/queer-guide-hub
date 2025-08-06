@@ -204,6 +204,22 @@ export default function AdminImportHub() {
                 </Button>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Refuge Restrooms Import</CardTitle>
+                <CardDescription>Import safe public restrooms from Refuge Restrooms API</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  onClick={() => handleApiImport('import-refuge-restrooms')}
+                  disabled={loading === 'import-refuge-restrooms'}
+                  className="w-full"
+                >
+                  {loading === 'import-refuge-restrooms' ? 'Importing...' : 'Import Restrooms'}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
