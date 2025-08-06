@@ -45,6 +45,24 @@ export function SecurityMonitoringDashboard() {
     }
   });
 
+  // Get additional system metrics
+  const { data: systemStats } = useQuery({
+    queryKey: ['system-stats'],
+    queryFn: async () => {
+      const [accessLogs, failedLogins, captchaVerifications] = await Promise.all([
+        supabase.from('access_logs').select('*', { count: 'exact', head: true }),
+        supabase.from('failed_login_attempts').select('*', { count: 'exact', head: true }),
+        supabase.from('captcha_verifications').select('*', { count: 'exact', head: true })
+      ]);
+      
+      return {
+        totalAccessLogs: accessLogs.count || 0,
+        totalFailedLogins: failedLogins.count || 0,
+        totalCaptchaVerifications: captchaVerifications.count || 0
+      };
+    }
+  });
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'high':
@@ -93,6 +111,48 @@ export function SecurityMonitoringDashboard() {
           </AlertDescription>
         </Alert>
       )}
+
+      {/* System Statistics Overview */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded">
+              <Activity className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">Total Security Events</p>
+              <p className="text-2xl font-bold">{recentEvents.length}</p>
+              <p className="text-xs text-muted-foreground">Last 50 events</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-red-100 dark:bg-red-900 rounded">
+              <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">Failed Login Attempts</p>
+              <p className="text-2xl font-bold">{systemStats?.totalFailedLogins || 0}</p>
+              <p className="text-xs text-muted-foreground">Total recorded</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 dark:bg-green-900 rounded">
+              <Shield className="h-4 w-4 text-green-600 dark:text-green-400" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">CAPTCHA Verifications</p>
+              <p className="text-2xl font-bold">{systemStats?.totalCaptchaVerifications || 0}</p>
+              <p className="text-xs text-muted-foreground">Total completed</p>
+            </div>
+          </div>
+        </Card>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
