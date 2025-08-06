@@ -28,7 +28,7 @@ export function SecurityMonitoringDashboard() {
       if (error) throw error;
       return data as SecurityEvent[];
     },
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 30000
   });
 
   const { data: auditLogs = [] } = useQuery({
@@ -45,21 +45,34 @@ export function SecurityMonitoringDashboard() {
     }
   });
 
-  // Get additional system metrics
   const { data: systemStats } = useQuery({
     queryKey: ['system-stats'],
     queryFn: async () => {
-      const [accessLogs, failedLogins, captchaVerifications] = await Promise.all([
-        supabase.from('access_logs').select('*', { count: 'exact', head: true }),
+      const [failedLogins, captchaVerifications, accessLogs] = await Promise.all([
         supabase.from('failed_login_attempts').select('*', { count: 'exact', head: true }),
-        supabase.from('captcha_verifications').select('*', { count: 'exact', head: true })
+        supabase.from('captcha_verifications').select('*', { count: 'exact', head: true }),
+        supabase.from('access_logs').select('*', { count: 'exact', head: true })
       ]);
       
       return {
-        totalAccessLogs: accessLogs.count || 0,
         totalFailedLogins: failedLogins.count || 0,
-        totalCaptchaVerifications: captchaVerifications.count || 0
+        totalCaptchaVerifications: captchaVerifications.count || 0,
+        totalAccessLogs: accessLogs.count || 0
       };
+    }
+  });
+
+  const { data: recentFailedLogins = [] } = useQuery({
+    queryKey: ['recent-failed-logins'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('failed_login_attempts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      return data;
     }
   });
 
@@ -154,7 +167,7 @@ export function SecurityMonitoringDashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Recent Security Events</CardTitle>
@@ -164,7 +177,7 @@ export function SecurityMonitoringDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {recentEvents.slice(0, 20).map((event) => (
+              {recentEvents.slice(0, 10).map((event) => (
                 <div key={event.id} className="flex items-start gap-3 p-3 border rounded-lg">
                   <div className="mt-1">
                     {getEventIcon(event.event_type)}
@@ -236,6 +249,45 @@ export function SecurityMonitoringDashboard() {
               {auditLogs.length === 0 && (
                 <p className="text-muted-foreground text-center py-4">
                   No recent role changes
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Failed Login Attempts</CardTitle>
+            <CardDescription>
+              Recent failed authentication attempts
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {recentFailedLogins.map((attempt: any) => (
+                <div key={attempt.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                  <AlertTriangle className="h-4 w-4 mt-1 text-red-500" />
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">
+                        {attempt.attempt_type.toUpperCase()} Failed
+                      </span>
+                      <Badge variant="destructive">
+                        Failed
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      IP: {attempt.ip_address}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(attempt.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {recentFailedLogins.length === 0 && (
+                <p className="text-muted-foreground text-center py-4">
+                  No recent failed login attempts
                 </p>
               )}
             </div>
