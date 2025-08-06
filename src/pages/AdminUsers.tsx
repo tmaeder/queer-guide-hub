@@ -23,7 +23,10 @@ export default function AdminUsers() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const { data: profiles } = await supabase
+        setLoading(true);
+        
+        // Fetch profiles with user roles
+        const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select(`
             *,
@@ -31,15 +34,44 @@ export default function AdminUsers() {
           `)
           .order('created_at', { ascending: false });
 
-        const userList = profiles?.map(profile => ({
-          id: profile.user_id,
-          email: profile.display_name || 'Anonymous User',
-          displayName: profile.display_name || 'Anonymous',
-          role: 'user', // Default role - user_roles join might have issues
-          status: 'active', // Could be enhanced with actual status from auth
-          joinDate: new Date(profile.created_at).toISOString().split('T')[0],
-          lastActive: new Date(profile.updated_at).toISOString().split('T')[0]
-        })) || [];
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+          setUsers([]);
+          return;
+        }
+
+        // Fetch actual user emails from auth.users if we're admin
+        let authUsers: any[] = [];
+        if (isAdmin) {
+          try {
+            // This might not work due to RLS, but we'll try
+            const { data } = await supabase.auth.admin.listUsers();
+            authUsers = data.users || [];
+          } catch (error) {
+            console.log('Could not fetch auth users:', error);
+          }
+        }
+
+        const userList = profiles?.map(profile => {
+          // Find matching auth user for email
+          const authUser = authUsers.find(u => u.id === profile.user_id);
+          const userRole = Array.isArray(profile.user_roles) && profile.user_roles.length > 0 
+            ? profile.user_roles[0].role 
+            : 'user';
+          
+          return {
+            id: profile.user_id,
+            email: authUser?.email || profile.display_name || `user-${profile.user_id.slice(0, 8)}`,
+            displayName: profile.display_name || profile.first_name || profile.last_name || 'Anonymous User',
+            role: userRole,
+            status: profile.is_online ? 'active' : 'inactive',
+            joinDate: new Date(profile.created_at).toLocaleDateString(),
+            lastActive: profile.last_seen_at ? new Date(profile.last_seen_at).toLocaleDateString() : 'Never',
+            profileCompletion: profile.profile_completion_percentage || 0,
+            location: profile.location || 'Not specified',
+            userMode: profile.user_mode || 'Not set'
+          };
+        }) || [];
 
         setUsers(userList);
       } catch (error) {
@@ -50,8 +82,10 @@ export default function AdminUsers() {
       }
     };
 
-    fetchUsers();
-  }, []);
+    if (isAdmin !== undefined) {
+      fetchUsers();
+    }
+  }, [isAdmin]);
 
   if (loading) {
     return <div className="p-6">Loading users...</div>;
@@ -60,7 +94,8 @@ export default function AdminUsers() {
   // No fallback data - only show real users
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.displayName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = user.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -176,6 +211,7 @@ export default function AdminUsers() {
                   <TableHead>User</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Location</TableHead>
                   <TableHead>Join Date</TableHead>
                   <TableHead>Last Active</TableHead>
                   {isAdmin && <TableHead>Actions</TableHead>}
@@ -187,7 +223,8 @@ export default function AdminUsers() {
                     <TableCell>
                       <div>
                         <div className="font-medium">{user.displayName}</div>
-                        <div className="text-sm text-muted-foreground">User ID: {user.id}</div>
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
+                        <div className="text-xs text-muted-foreground">Mode: {user.userMode}</div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -199,6 +236,9 @@ export default function AdminUsers() {
                       <Badge variant={getStatusBadgeVariant(user.status)}>
                         {user.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{user.location}</span>
                     </TableCell>
                     <TableCell>{user.joinDate}</TableCell>
                     <TableCell>{user.lastActive}</TableCell>
