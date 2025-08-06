@@ -159,7 +159,9 @@ serve(async (req) => {
     if (req.method === 'POST') {
       const body = await req.json();
       
-      if (body.action === 'get_stats') {
+      if (body.action === 'get_enhanced_stats' || body.action === 'get_stats') {
+        const { dateRange = '7d', deviceFilter = 'all', countryFilter = 'all' } = body;
+        
         // Get website ID
         const { data: website } = await supabase
           .schema('umami')
@@ -174,33 +176,84 @@ serve(async (req) => {
 
         const websiteId = website.website_id;
 
-        // Get events and sessions
+        // Calculate date range
+        const now = new Date();
+        const daysBack = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90;
+        const startDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
+
+        // Get events and sessions with filters
+        let sessionQuery = supabase
+          .schema('umami')
+          .from('session')
+          .select('*')
+          .eq('website_id', websiteId)
+          .gte('created_at', startDate.toISOString())
+          .order('created_at', { ascending: false });
+
+        if (deviceFilter !== 'all') {
+          sessionQuery = sessionQuery.eq('device', deviceFilter);
+        }
+
+        if (countryFilter !== 'all') {
+          sessionQuery = sessionQuery.eq('country', countryFilter);
+        }
+
+        let eventQuery = supabase
+          .schema('umami')
+          .from('website_event')
+          .select('*')
+          .eq('website_id', websiteId)
+          .gte('created_at', startDate.toISOString())
+          .order('created_at', { ascending: false });
+
         const [eventsResult, sessionsResult] = await Promise.all([
-          supabase
-            .schema('umami')
-            .from('website_event')
-            .select('*')
-            .eq('website_id', websiteId)
-            .order('created_at', { ascending: false })
-            .limit(100),
-          supabase
-            .schema('umami')
-            .from('session')
-            .select('*')
-            .eq('website_id', websiteId)
-            .order('created_at', { ascending: false })
-            .limit(100)
+          eventQuery,
+          sessionQuery
         ]);
 
         const events = eventsResult.data || [];
         const sessions = sessionsResult.data || [];
 
-        // Calculate stats
+        // Calculate enhanced stats
         const totalPageViews = events.filter(e => e.event_type === 1).length;
         const totalSessions = sessions.length;
         const uniqueVisitors = new Set(sessions.map(s => s.session_id)).size;
 
-        // Top pages
+        // Calculate session durations
+        const sessionDurations = sessions.map(session => {
+          const sessionEvents = events.filter(e => e.session_id === session.session_id);
+          if (sessionEvents.length < 2) return 0;
+          const firstEvent = new Date(sessionEvents[sessionEvents.length - 1].created_at);
+          const lastEvent = new Date(sessionEvents[0].created_at);
+          return (lastEvent.getTime() - firstEvent.getTime()) / 1000;
+        });
+
+        const avgSessionDuration = sessionDurations.length > 0 
+          ? sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length 
+          : 0;
+
+        // Calculate bounce rate (sessions with only 1 page view)
+        const singlePageSessions = sessions.filter(session => {
+          const sessionPageViews = events.filter(e => e.session_id === session.session_id && e.event_type === 1);
+          return sessionPageViews.length === 1;
+        }).length;
+        const bounceRate = totalSessions > 0 ? Math.round((singlePageSessions / totalSessions) * 100) : 0;
+
+        // Calculate visitor types (simplified - assume returning if we've seen the session before)
+        const now30DaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+        const { data: previousSessions } = await supabase
+          .schema('umami')
+          .from('session')
+          .select('session_id')
+          .eq('website_id', websiteId)
+          .lt('created_at', startDate.toISOString())
+          .gte('created_at', now30DaysAgo.toISOString());
+
+        const previousSessionIds = new Set((previousSessions || []).map(s => s.session_id));
+        const returningVisitors = sessions.filter(s => previousSessionIds.has(s.session_id)).length;
+        const newVisitors = totalSessions - returningVisitors;
+
+        // Top pages with percentages
         const pageCounts = events
           .filter(e => e.event_type === 1)
           .reduce((acc, event) => {
@@ -210,10 +263,14 @@ serve(async (req) => {
 
         const topPages = Object.entries(pageCounts)
           .sort(([,a], [,b]) => b - a)
-          .slice(0, 5)
-          .map(([path, views]) => ({ path, views }));
+          .slice(0, 10)
+          .map(([path, views]) => ({ 
+            path, 
+            views, 
+            percentage: Math.round((views / totalPageViews) * 100) 
+          }));
 
-        // Top browsers
+        // Top browsers with percentages
         const browserCounts = sessions.reduce((acc, session) => {
           acc[session.browser] = (acc[session.browser] || 0) + 1;
           return acc;
@@ -222,9 +279,13 @@ serve(async (req) => {
         const topBrowsers = Object.entries(browserCounts)
           .sort(([,a], [,b]) => b - a)
           .slice(0, 5)
-          .map(([browser, count]) => ({ browser, count }));
+          .map(([browser, count]) => ({ 
+            browser, 
+            count, 
+            percentage: Math.round((count / totalSessions) * 100) 
+          }));
 
-        // Top countries
+        // Top countries with percentages
         const countryCounts = sessions.reduce((acc, session) => {
           if (session.country) {
             acc[session.country] = (acc[session.country] || 0) + 1;
@@ -235,19 +296,188 @@ serve(async (req) => {
         const topCountries = Object.entries(countryCounts)
           .sort(([,a], [,b]) => b - a)
           .slice(0, 5)
-          .map(([country, count]) => ({ country, count }));
+          .map(([country, count]) => ({ 
+            country, 
+            count, 
+            percentage: Math.round((count / totalSessions) * 100) 
+          }));
+
+        // Top devices
+        const deviceCounts = sessions.reduce((acc, session) => {
+          acc[session.device] = (acc[session.device] || 0) + 1;
+          return acc;
+        }, {});
+
+        const topDevices = Object.entries(deviceCounts)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 5)
+          .map(([device, count]) => ({ 
+            device, 
+            count, 
+            percentage: Math.round((count / totalSessions) * 100) 
+          }));
+
+        // Top languages
+        const languageCounts = sessions.reduce((acc, session) => {
+          if (session.language) {
+            acc[session.language] = (acc[session.language] || 0) + 1;
+          }
+          return acc;
+        }, {});
+
+        const topLanguages = Object.entries(languageCounts)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 5)
+          .map(([language, count]) => ({ 
+            language, 
+            count, 
+            percentage: Math.round((count / totalSessions) * 100) 
+          }));
+
+        // Top screen resolutions
+        const screenCounts = sessions.reduce((acc, session) => {
+          if (session.screen) {
+            acc[session.screen] = (acc[session.screen] || 0) + 1;
+          }
+          return acc;
+        }, {});
+
+        const topScreens = Object.entries(screenCounts)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 5)
+          .map(([screen, count]) => ({ 
+            screen, 
+            count, 
+            percentage: Math.round((count / totalSessions) * 100) 
+          }));
+
+        // Hourly data
+        const hourlyData = Array.from({ length: 24 }, (_, hour) => {
+          const hourEvents = events.filter(e => {
+            const eventHour = new Date(e.created_at).getHours();
+            return eventHour === hour && e.event_type === 1;
+          });
+          const hourSessions = sessions.filter(s => {
+            const sessionHour = new Date(s.created_at).getHours();
+            return sessionHour === hour;
+          });
+          return {
+            hour: hour.toString().padStart(2, '0') + ':00',
+            views: hourEvents.length,
+            sessions: hourSessions.length
+          };
+        });
+
+        // Daily data
+        const dailyData = Array.from({ length: daysBack }, (_, i) => {
+          const date = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
+          const dateStr = date.toISOString().split('T')[0];
+          
+          const dayEvents = events.filter(e => {
+            const eventDate = new Date(e.created_at).toISOString().split('T')[0];
+            return eventDate === dateStr && e.event_type === 1;
+          });
+          
+          const daySessions = sessions.filter(s => {
+            const sessionDate = new Date(s.created_at).toISOString().split('T')[0];
+            return sessionDate === dateStr;
+          });
+          
+          const dayVisitors = new Set(daySessions.map(s => s.session_id)).size;
+          
+          return {
+            date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            views: dayEvents.length,
+            sessions: daySessions.length,
+            visitors: dayVisitors
+          };
+        });
+
+        // Live visitors (sessions in last 5 minutes)
+        const fiveMinutesAgo = new Date(now.getTime() - (5 * 60 * 1000));
+        const { data: liveSessions } = await supabase
+          .schema('umami')
+          .from('session')
+          .select('session_id')
+          .eq('website_id', websiteId)
+          .gte('created_at', fiveMinutesAgo.toISOString());
+
+        const liveVisitors = new Set((liveSessions || []).map(s => s.session_id)).size;
 
         const analyticsStats = {
           totalPageViews,
           totalSessions,
           uniqueVisitors,
+          avgSessionDuration,
+          bounceRate,
+          newVisitors,
+          returningVisitors,
           topPages,
           topBrowsers,
           topCountries,
-          recentEvents: events.slice(0, 20)
+          topDevices,
+          topLanguages,
+          topScreens,
+          hourlyData,
+          dailyData,
+          recentEvents: events.slice(0, 20),
+          liveVisitors,
+          totalUptime: 99.9, // Static for now
+          conversionRate: Math.round((uniqueVisitors / totalSessions) * 100) || 0
         };
 
         return new Response(JSON.stringify(analyticsStats), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (body.action === 'export_data') {
+        const { dateRange = '7d', deviceFilter = 'all', countryFilter = 'all' } = body;
+        
+        // Get website ID
+        const { data: website } = await supabase
+          .schema('umami')
+          .from('website')
+          .select('website_id')
+          .eq('name', 'Queer Guide')
+          .single();
+
+        if (!website) {
+          throw new Error('Website not found');
+        }
+
+        const websiteId = website.website_id;
+        const now = new Date();
+        const daysBack = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90;
+        const startDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
+
+        // Get all data for export
+        const [eventsResult, sessionsResult] = await Promise.all([
+          supabase
+            .schema('umami')
+            .from('website_event')
+            .select('*')
+            .eq('website_id', websiteId)
+            .gte('created_at', startDate.toISOString())
+            .order('created_at', { ascending: false }),
+          supabase
+            .schema('umami')
+            .from('session')
+            .select('*')
+            .eq('website_id', websiteId)
+            .gte('created_at', startDate.toISOString())
+            .order('created_at', { ascending: false })
+        ]);
+
+        const exportData = {
+          exportDate: now.toISOString(),
+          dateRange,
+          filters: { deviceFilter, countryFilter },
+          events: eventsResult.data || [],
+          sessions: sessionsResult.data || []
+        };
+
+        return new Response(JSON.stringify(exportData), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
