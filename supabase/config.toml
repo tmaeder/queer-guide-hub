@@ -122,3 +122,6 @@ verify_jwt = false
 
 [functions.umami-analytics]
 verify_jwt = false
+
+[functions.umami-dashboard]
+verify_jwt = false

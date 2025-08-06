@@ -8,25 +8,51 @@ interface UmamiEventData {
   title?: string;
 }
 
+// Browser detection utility
+const getBrowserInfo = () => {
+  const userAgent = navigator.userAgent;
+  let browser = 'Unknown';
+  let os = 'Unknown';
+  let device = 'desktop';
+
+  // Browser detection
+  if (userAgent.includes('Chrome')) browser = 'Chrome';
+  else if (userAgent.includes('Firefox')) browser = 'Firefox';
+  else if (userAgent.includes('Safari')) browser = 'Safari';
+  else if (userAgent.includes('Edge')) browser = 'Edge';
+
+  // OS detection
+  if (userAgent.includes('Windows')) os = 'Windows';
+  else if (userAgent.includes('Mac')) os = 'macOS';
+  else if (userAgent.includes('Linux')) os = 'Linux';
+  else if (userAgent.includes('Android')) os = 'Android';
+  else if (userAgent.includes('iOS')) os = 'iOS';
+
+  // Device detection
+  if (/Mobi|Android/i.test(userAgent)) device = 'mobile';
+  else if (/Tablet|iPad/i.test(userAgent)) device = 'tablet';
+
+  return { browser, os, device };
+};
+
 export const useUmamiAnalytics = () => {
   const trackEvent = useCallback(async (eventData: UmamiEventData) => {
     try {
-      // Track via client-side umami if available
-      if (typeof window !== 'undefined' && (window as any).umami) {
-        (window as any).umami.track(eventData.name, eventData.data);
-      }
-
-      // Also track via our edge function for server-side analytics
+      const { browser, os, device } = getBrowserInfo();
+      
       const { error } = await supabase.functions.invoke('umami-analytics', {
         body: {
           name: eventData.name,
           data: eventData.data,
-          url: eventData.url || window.location.pathname,
+          url: eventData.url || window.location.pathname + window.location.search,
           title: eventData.title || document.title,
           hostname: window.location.hostname,
           language: navigator.language,
           referrer: document.referrer,
           screen: `${window.screen.width}x${window.screen.height}`,
+          browser,
+          os,
+          device,
         },
       });
 
@@ -40,20 +66,19 @@ export const useUmamiAnalytics = () => {
 
   const trackPageView = useCallback(async (url?: string, title?: string) => {
     try {
-      // Track via client-side umami if available
-      if (typeof window !== 'undefined' && (window as any).umami) {
-        (window as any).umami.track();
-      }
-
-      // Also track via our edge function
+      const { browser, os, device } = getBrowserInfo();
+      
       const { error } = await supabase.functions.invoke('umami-analytics', {
         body: {
-          url: url || window.location.pathname,
+          url: url || window.location.pathname + window.location.search,
           title: title || document.title,
           hostname: window.location.hostname,
           language: navigator.language,
           referrer: document.referrer,
           screen: `${window.screen.width}x${window.screen.height}`,
+          browser,
+          os,
+          device,
         },
       });
 
