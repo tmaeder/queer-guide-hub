@@ -1,3 +1,5 @@
+import { CookieSettingsButton } from '@/components/privacy/CookieSettingsButton';
+
 export default function PrivacyPolicy() {
   return (
     <div className="w-full p-6">
@@ -120,7 +122,15 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-semibold mb-4">13. Contact Us</h2>
+          <h2 className="text-2xl font-semibold mb-4">13. Cookie Management</h2>
+          <p>You can manage your cookie preferences at any time using the button below:</p>
+          <div className="mt-4">
+            <CookieSettingsButton />
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">14. Contact Us</h2>
           <p>If you have any questions about this Privacy Policy, please contact us at privacy@thequeerguide.com or through our Contact page.</p>
         </section>
       </div>

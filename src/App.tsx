@@ -7,8 +7,10 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import "./i18n";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AccessibilityProvider } from "@/hooks/useAccessibility";
+import { CookieConsentProvider } from "@/hooks/useCookieConsent";
 import { useUmamiAnalytics } from "@/hooks/useUmamiAnalytics";
 import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker";
+import { CookieConsentBanner } from "@/components/privacy/CookieConsentBanner";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import Index from "./pages/Index";
@@ -110,8 +112,9 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AccessibilityProvider>
-        <AuthProvider>
-        <TooltipProvider>
+        <CookieConsentProvider>
+          <AuthProvider>
+            <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -317,10 +320,12 @@ const App = () => {
                 </div>
               </main>
               <Footer />
+              <CookieConsentBanner />
             </div>
           </BrowserRouter>
-        </TooltipProvider>
-        </AuthProvider>
+            </TooltipProvider>
+          </AuthProvider>
+        </CookieConsentProvider>
       </AccessibilityProvider>
     </QueryClientProvider>
   );
