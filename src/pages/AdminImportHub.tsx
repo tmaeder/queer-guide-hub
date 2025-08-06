@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Upload, Download, Rss, Globe, MapPin, Calendar, Building2, Newspaper } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RestCountriesImport } from "@/components/admin/RestCountriesImport";
+import { NewsSourcesManager } from "@/components/admin/NewsSourcesManager";
 
 export default function AdminImportHub() {
   const { toast } = useToast();
@@ -208,23 +209,26 @@ export default function AdminImportHub() {
         </TabsContent>
 
         <TabsContent value="news" className="space-y-6">
+          <NewsSourcesManager />
+          
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Rss className="h-5 w-5" />
-                News Import
+                Manual News Import
               </CardTitle>
-              <CardDescription>Fetch news from RSS feeds and news APIs</CardDescription>
+              <CardDescription>Trigger immediate news import from all active sources</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button
-                disabled={true}
-                className="w-full opacity-50 cursor-not-allowed"
+                onClick={() => handleApiImport('fetch-news')}
+                disabled={loading === 'fetch-news'}
+                className="w-full"
               >
-                News Auto-Import Active (Every 2 Hours)
+                {loading === 'fetch-news' ? 'Importing...' : 'Import News Now'}
               </Button>
               <p className="text-sm text-muted-foreground">
-                News is automatically imported every 2 hours via cron job. Manual import has been disabled for security.
+                This will fetch news from all active RSS feeds and API sources. Automatic import runs every 2 hours.
               </p>
             </CardContent>
           </Card>
