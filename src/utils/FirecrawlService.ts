@@ -1,5 +1,3 @@
-import FirecrawlApp from '@mendable/firecrawl-js';
-
 interface ErrorResponse {
   success: false;
   error: string;
@@ -18,52 +16,70 @@ interface CrawlStatusResponse {
 type CrawlResponse = CrawlStatusResponse | ErrorResponse;
 
 export class FirecrawlService {
-  private static API_KEY_STORAGE_KEY = 'firecrawl_api_key';
-  private static firecrawlApp: FirecrawlApp | null = null;
-
-  static saveApiKey(apiKey: string): void {
-    localStorage.setItem(this.API_KEY_STORAGE_KEY, apiKey);
-    this.firecrawlApp = new FirecrawlApp({ apiKey });
-    console.log('API key saved successfully');
+  // Default local Firecrawl endpoint
+  private static LOCAL_ENDPOINT = 'http://localhost:3002';
+  
+  static getLocalEndpoint(): string {
+    return this.LOCAL_ENDPOINT;
   }
 
-  static getApiKey(): string | null {
-    return localStorage.getItem(this.API_KEY_STORAGE_KEY);
+  static setLocalEndpoint(endpoint: string): void {
+    this.LOCAL_ENDPOINT = endpoint;
   }
 
-  static async testApiKey(apiKey: string): Promise<boolean> {
+  static async testConnection(endpoint?: string): Promise<boolean> {
     try {
-      console.log('Testing API key with Firecrawl API');
-      this.firecrawlApp = new FirecrawlApp({ apiKey });
-      // A simple test crawl to verify the API key
-      const testResponse = await this.firecrawlApp.crawlUrl('https://example.com', {
-        limit: 1
+      const testEndpoint = endpoint || this.LOCAL_ENDPOINT;
+      console.log('Testing connection to local Firecrawl at:', testEndpoint);
+      
+      const response = await fetch(`${testEndpoint}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-      return testResponse.success;
+      
+      return response.ok;
     } catch (error) {
-      console.error('Error testing API key:', error);
+      console.error('Error testing local Firecrawl connection:', error);
       return false;
     }
   }
 
-  static async crawlWebsite(url: string): Promise<{ success: boolean; error?: string; data?: any }> {
-    const apiKey = this.getApiKey();
-    if (!apiKey) {
-      return { success: false, error: 'API key not found' };
-    }
-
+  static async crawlWebsite(url: string, options?: {
+    limit?: number;
+    endpoint?: string;
+  }): Promise<{ success: boolean; error?: string; data?: any }> {
     try {
-      console.log('Making crawl request to Firecrawl API');
-      if (!this.firecrawlApp) {
-        this.firecrawlApp = new FirecrawlApp({ apiKey });
+      const crawlEndpoint = options?.endpoint || this.LOCAL_ENDPOINT;
+      const limit = options?.limit || 100;
+      
+      console.log('Making crawl request to local Firecrawl at:', crawlEndpoint);
+      
+      const response = await fetch(`${crawlEndpoint}/v0/crawl`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url,
+          limit,
+          scrapeOptions: {
+            formats: ['markdown', 'html'],
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Crawl request failed:', response.status, errorText);
+        return { 
+          success: false, 
+          error: `Failed to crawl website: ${response.status} ${errorText}` 
+        };
       }
 
-      const crawlResponse = await this.firecrawlApp.crawlUrl(url, {
-        limit: 100,
-        scrapeOptions: {
-          formats: ['markdown', 'html'],
-        }
-      }) as CrawlResponse;
+      const crawlResponse = await response.json() as CrawlResponse;
 
       if (!crawlResponse.success) {
         console.error('Crawl failed:', (crawlResponse as ErrorResponse).error);
@@ -82,7 +98,7 @@ export class FirecrawlService {
       console.error('Error during crawl:', error);
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Failed to connect to Firecrawl API' 
+        error: error instanceof Error ? error.message : 'Failed to connect to local Firecrawl instance' 
       };
     }
   }

@@ -7,7 +7,7 @@ import { FirecrawlService } from '@/utils/FirecrawlService';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Settings, ExternalLink, Key } from 'lucide-react';
+import { Settings, ExternalLink, Server, Wifi } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 
 interface CrawlResult {
@@ -23,18 +23,18 @@ interface CrawlResult {
 export const CrawlForm = () => {
   const { toast } = useToast();
   const [url, setUrl] = useState('');
-  const [apiKey, setApiKey] = useState(FirecrawlService.getApiKey() || '');
+  const [localEndpoint, setLocalEndpoint] = useState(FirecrawlService.getLocalEndpoint());
   const [isLoading, setIsLoading] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [crawlResult, setCrawlResult] = useState<CrawlResult | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const handleApiKeyTest = async () => {
-    if (!apiKey) {
+  const handleConnectionTest = async () => {
+    if (!localEndpoint) {
       toast({
         title: "Error",
-        description: "Please enter an API key",
+        description: "Please enter a local endpoint",
         variant: "destructive",
       });
       return;
@@ -42,25 +42,25 @@ export const CrawlForm = () => {
 
     setIsTesting(true);
     try {
-      const isValid = await FirecrawlService.testApiKey(apiKey);
-      if (isValid) {
-        FirecrawlService.saveApiKey(apiKey);
+      const isConnected = await FirecrawlService.testConnection(localEndpoint);
+      if (isConnected) {
+        FirecrawlService.setLocalEndpoint(localEndpoint);
         toast({
           title: "Success",
-          description: "API key is valid and saved",
+          description: "Connected to local Firecrawl instance",
         });
         setIsSettingsOpen(false);
       } else {
         toast({
           title: "Error",
-          description: "Invalid API key",
+          description: "Cannot connect to local Firecrawl instance",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to test API key",
+        description: "Failed to test connection",
         variant: "destructive",
       });
     } finally {
@@ -75,11 +75,12 @@ export const CrawlForm = () => {
     setCrawlResult(null);
     
     try {
-      const currentApiKey = FirecrawlService.getApiKey();
-      if (!currentApiKey) {
+      // Test connection to local instance first
+      const isConnected = await FirecrawlService.testConnection(localEndpoint);
+      if (!isConnected) {
         toast({
           title: "Error",
-          description: "Please set your API key first",
+          description: "Cannot connect to local Firecrawl instance. Please check if it's running.",
           variant: "destructive",
         });
         setIsSettingsOpen(true);
@@ -89,7 +90,7 @@ export const CrawlForm = () => {
       console.log('Starting crawl for URL:', url);
       setProgress(25);
       
-      const result = await FirecrawlService.crawlWebsite(url);
+      const result = await FirecrawlService.crawlWebsite(url, { endpoint: localEndpoint });
       setProgress(75);
       
       if (result.success) {
@@ -141,56 +142,57 @@ export const CrawlForm = () => {
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle className="flex items-center gap-2">
-            Website Crawler
-            <ExternalLink className="h-4 w-4" />
+            Local Website Crawler
+            <Server className="h-4 w-4" />
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Crawl websites to extract content and data using Firecrawl
+            Crawl websites using your local Firecrawl instance
           </p>
         </div>
         <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4 mr-2" />
-              API Settings
+              Connection Settings
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5" />
-                Firecrawl API Configuration
+                <Server className="h-5 w-5" />
+                Local Firecrawl Configuration
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="apiKey">API Key</Label>
+                <Label htmlFor="localEndpoint">Local Endpoint</Label>
                 <Input
-                  id="apiKey"
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Enter your Firecrawl API key"
+                  id="localEndpoint"
+                  type="url"
+                  value={localEndpoint}
+                  onChange={(e) => setLocalEndpoint(e.target.value)}
+                  placeholder="http://localhost:3002"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Get your API key from{' '}
+                  Make sure your local Firecrawl instance is running. Default port is 3002.{' '}
                   <a 
-                    href="https://firecrawl.dev" 
+                    href="https://github.com/mendableai/firecrawl#-installation" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
-                    firecrawl.dev
+                    Setup instructions
                   </a>
                 </p>
               </div>
               <div className="flex gap-2">
                 <Button 
-                  onClick={handleApiKeyTest} 
-                  disabled={isTesting || !apiKey}
+                  onClick={handleConnectionTest} 
+                  disabled={isTesting || !localEndpoint}
                   className="flex-1"
                 >
-                  {isTesting ? "Testing..." : "Test & Save"}
+                  <Wifi className="h-4 w-4 mr-2" />
+                  {isTesting ? "Testing..." : "Test Connection"}
                 </Button>
                 <Button 
                   variant="outline" 
