@@ -27,13 +27,17 @@ export function RestCountriesImport() {
         setProgress(prev => Math.min(prev + 10, 90));
       }, 500);
 
+      console.log('Invoking import-rest-countries function...');
       const { data, error } = await supabase.functions.invoke('import-rest-countries');
 
       clearInterval(progressInterval);
       setProgress(100);
 
+      console.log('Function response:', { data, error });
+
       if (error) {
-        throw error;
+        console.error('Function invocation error:', error);
+        throw new Error(`Function error: ${error.message}`);
       }
 
       if (data?.success) {
@@ -47,14 +51,24 @@ export function RestCountriesImport() {
           description: `Imported ${data.countriesCount} countries and ${data.citiesCount} capital cities`,
         });
       } else {
-        throw new Error(data?.details || 'Import failed');
+        console.error('Function returned error:', data);
+        throw new Error(data?.details || data?.error || 'Import failed - no success flag');
       }
 
     } catch (error) {
       console.error('Import error:', error);
+      
+      // Extract meaningful error message
+      let errorMessage = "An unexpected error occurred";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      }
+      
       toast({
         title: "Import Failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

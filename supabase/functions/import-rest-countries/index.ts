@@ -75,21 +75,32 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    console.log('Starting REST Countries import function...');
+    
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase environment variables');
+      throw new Error('Missing Supabase environment variables');
+    }
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    console.log('Supabase client initialized');
 
     console.log('Starting REST Countries import...');
 
     // Fetch countries from REST Countries API with better error handling
     console.log('Fetching data from REST Countries API...');
+    
     const restCountriesResponse = await fetch('https://restcountries.com/v3.1/all', {
       headers: {
         'User-Agent': 'Queer-Guide-App/1.0',
         'Accept': 'application/json'
       }
     });
+    
+    console.log('REST Countries API response status:', restCountriesResponse.status);
     
     if (!restCountriesResponse.ok) {
       const errorText = await restCountriesResponse.text();
@@ -98,7 +109,7 @@ Deno.serve(async (req) => {
     }
 
     const restCountries: RestCountry[] = await restCountriesResponse.json();
-    console.log(`Fetched ${restCountries.length} countries from REST Countries API`);
+    console.log(`Successfully fetched ${restCountries.length} countries from REST Countries API`);
 
     // Get or create continent mappings
     const continentMap = new Map<string, string>();
@@ -288,10 +299,15 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error importing REST Countries data:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    
+    // Return detailed error information
     return new Response(
       JSON.stringify({ 
+        success: false,
         error: 'Failed to import REST Countries data',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
