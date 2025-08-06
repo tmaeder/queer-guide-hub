@@ -957,6 +957,45 @@ export type Database = {
         }
         Relationships: []
       }
+      crawl_jobs: {
+        Row: {
+          created_at: string
+          credits_used: number | null
+          expires_at: string | null
+          id: string
+          pages_crawled: number | null
+          result_data: Json | null
+          status: string
+          total_pages: number | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          credits_used?: number | null
+          expires_at?: string | null
+          id?: string
+          pages_crawled?: number | null
+          result_data?: Json | null
+          status?: string
+          total_pages?: number | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          credits_used?: number | null
+          expires_at?: string | null
+          id?: string
+          pages_crawled?: number | null
+          result_data?: Json | null
+          status?: string
+          total_pages?: number | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       currencies: {
         Row: {
           code: string
