@@ -165,6 +165,21 @@ export default function Sustainability() {
               <div className="text-muted-foreground">Green Partner Venues</div>
             </div>
           </div>
+
+          {/* Website Carbon Badge */}
+          <div className="mt-12 text-center">
+            <h3 className="text-xl font-semibold text-foreground mb-4">Our Website's Carbon Footprint</h3>
+            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+              We monitor and work to minimize our digital carbon footprint. See how this website performs below:
+            </p>
+            <div className="flex justify-center">
+              <div id="wcb" className="carbonbadge"></div>
+              <script 
+                src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" 
+                defer
+              ></script>
+            </div>
+          </div>
         </div>
       </section>
     </div>
