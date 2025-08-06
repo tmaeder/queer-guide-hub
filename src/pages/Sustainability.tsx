@@ -1,8 +1,25 @@
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Leaf, Recycle, Heart, TreePine, Sun, Droplets } from 'lucide-react';
 
 export default function Sustainability() {
+  useEffect(() => {
+    // Load Website Carbon badge script
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/website-carbon-badges@1.1.3/b.min.js';
+    script.defer = true;
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup script when component unmounts
+      const existingScript = document.querySelector('script[src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js"]');
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -174,10 +191,6 @@ export default function Sustainability() {
             </p>
             <div className="flex justify-center">
               <div id="wcb" className="carbonbadge"></div>
-              <script 
-                src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" 
-                defer
-              ></script>
             </div>
           </div>
         </div>
