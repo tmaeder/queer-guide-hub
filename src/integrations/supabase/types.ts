@@ -3870,7 +3870,9 @@ export type Database = {
           amenities: string[] | null
           category: string
           city: string
+          city_id: string | null
           country: string
+          country_id: string | null
           created_at: string
           created_by: string | null
           data_source: string | null
@@ -3914,7 +3916,9 @@ export type Database = {
           amenities?: string[] | null
           category: string
           city: string
+          city_id?: string | null
           country?: string
+          country_id?: string | null
           created_at?: string
           created_by?: string | null
           data_source?: string | null
@@ -3958,7 +3962,9 @@ export type Database = {
           amenities?: string[] | null
           category?: string
           city?: string
+          city_id?: string | null
           country?: string
+          country_id?: string | null
           created_at?: string
           created_by?: string | null
           data_source?: string | null
@@ -3996,6 +4002,20 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "venues_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venues_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "venues_created_by_fkey"
             columns: ["created_by"]
