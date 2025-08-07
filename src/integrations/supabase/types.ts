@@ -4130,6 +4130,7 @@ export type Database = {
       }
       consolidate_policies: {
         Args:
+          | Record<PropertyKey, never>
           | { p_schema_name: string; p_table_name: string }
           | { p_table_name: string; p_role_name: string; p_action: string }
         Returns: undefined
