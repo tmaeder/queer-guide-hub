@@ -128,3 +128,6 @@ verify_jwt = false
 
 [functions.link-locations]
 verify_jwt = false
+
+[functions.enrich-venue]
+verify_jwt = true

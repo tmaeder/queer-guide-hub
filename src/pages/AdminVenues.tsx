@@ -44,6 +44,7 @@ export default function AdminVenues() {
   const [isImportingTripAdvisor, setIsImportingTripAdvisor] = useState(false);
   const [isImportingTomTom, setIsImportingTomTom] = useState(false);
   const [isImportingGooglePlaces, setIsImportingGooglePlaces] = useState(false);
+  const [isEnrichingVenue, setIsEnrichingVenue] = useState(false);
   const [isAddressValidated, setIsAddressValidated] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -402,6 +403,81 @@ export default function AdminVenues() {
     }
   };
 
+  const handleEnrichVenue = async () => {
+    if (!formData.name.trim()) {
+      toast({
+        title: "Venue Name Required",
+        description: "Please enter a venue name before enriching.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsEnrichingVenue(true);
+    
+    try {
+      toast({
+        title: "Enriching Venue",
+        description: "Searching multiple APIs for venue information...",
+      });
+
+      const { data, error } = await supabase.functions.invoke('enrich-venue', {
+        body: { 
+          venueName: formData.name,
+          currentData: formData 
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success && data.enrichedData) {
+        // Update form with enriched data
+        setFormData(prev => ({
+          ...prev,
+          ...data.enrichedData,
+          // Don't overwrite existing non-empty fields
+          name: prev.name || data.enrichedData.name || prev.name,
+          description: prev.description || data.enrichedData.description || prev.description,
+          address: prev.address || data.enrichedData.address || prev.address,
+          city: prev.city || data.enrichedData.city || prev.city,
+          state: prev.state || data.enrichedData.state || prev.state,
+          country: prev.country || data.enrichedData.country || prev.country,
+          postal_code: prev.postal_code || data.enrichedData.postal_code || prev.postal_code,
+          phone: prev.phone || data.enrichedData.phone || prev.phone,
+          email: prev.email || data.enrichedData.email || prev.email,
+          website: prev.website || data.enrichedData.website || prev.website,
+          category: prev.category || data.enrichedData.category || prev.category,
+          price_range: prev.price_range || (data.enrichedData.price_range ? data.enrichedData.price_range.toString() : prev.price_range),
+          latitude: prev.latitude || (data.enrichedData.latitude ? data.enrichedData.latitude.toString() : prev.latitude),
+          longitude: prev.longitude || (data.enrichedData.longitude ? data.enrichedData.longitude.toString() : prev.longitude),
+          images: prev.images.length > 0 ? prev.images : (data.enrichedData.images || prev.images)
+        }));
+
+        const successfulSources = data.sources?.filter((s: any) => s.hasData).map((s: any) => s.source) || [];
+        
+        toast({
+          title: "Venue Enriched Successfully",
+          description: `Found data from ${successfulSources.length} source(s): ${successfulSources.join(', ')}`,
+        });
+      } else {
+        toast({
+          title: "No Additional Data Found",
+          description: "Could not find additional information for this venue from external sources.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Venue enrichment error:', error);
+      toast({
+        title: "Enrichment Failed",
+        description: "Failed to enrich venue data. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsEnrichingVenue(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -492,7 +568,18 @@ export default function AdminVenues() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Info */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Basic Information</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Basic Information</h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleEnrichVenue}
+                  disabled={isEnrichingVenue || !formData.name.trim()}
+                  className="text-sm"
+                >
+                  {isEnrichingVenue ? "Enriching..." : "🔍 Enrich Venue"}
+                </Button>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Venue Name</Label>
