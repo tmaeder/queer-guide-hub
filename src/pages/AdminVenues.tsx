@@ -138,23 +138,50 @@ export default function AdminVenues() {
     e.preventDefault();
 
     try {
+      // Validate required fields
+      if (!formData.name.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Venue name is required",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const venueData = {
-        ...formData,
-        price_range: parseInt(formData.price_range),
-        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-        images: formData.images.length > 0 ? formData.images : null,
+        name: formData.name.trim(),
+        description: formData.description.trim() || null,
+        address: formData.address.trim() || null,
+        city: formData.city.trim() || null,
+        state: formData.state.trim() || null,
+        country: formData.country.trim() || null,
+        postal_code: formData.postal_code.trim() || null,
+        phone: formData.phone.trim() || null,
+        email: formData.email.trim() || null,
+        website: formData.website.trim() || null,
+        instagram: formData.instagram.trim() || null,
+        category: formData.category || null,
+        tags: formData.tags.length > 0 ? formData.tags : [],
+        amenities: formData.amenities.length > 0 ? formData.amenities : [],
+        price_range: formData.price_range ? parseInt(formData.price_range) : null,
+        latitude: formData.latitude && formData.latitude.trim() ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude && formData.longitude.trim() ? parseFloat(formData.longitude) : null,
+        images: formData.images.length > 0 ? formData.images : [],
+        featured: formData.featured,
+        verified: formData.verified,
         created_by: user?.id
       };
 
-      let error;
+      let result;
       if (editingVenue) {
-        ({ error } = await updateVenue(editingVenue.id, venueData));
+        result = await updateVenue(editingVenue.id, venueData);
       } else {
-        ({ error } = await createVenue(venueData));
+        result = await createVenue(venueData);
       }
       
-      if (error) throw new Error(error);
+      if (result.error) {
+        throw new Error(result.error);
+      }
 
       toast({
         title: "Success",
@@ -165,9 +192,10 @@ export default function AdminVenues() {
       setIsCreateDialogOpen(false);
       refetch();
     } catch (error) {
+      console.error('Venue submission error:', error);
       toast({
         title: "Error",
-        description: editingVenue ? "Failed to update venue" : "Failed to create venue",
+        description: error instanceof Error ? error.message : (editingVenue ? "Failed to update venue" : "Failed to create venue"),
         variant: "destructive"
       });
     }
