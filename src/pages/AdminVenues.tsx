@@ -581,7 +581,7 @@ export default function AdminVenues() {
 
       {/* Add/Edit Venue Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingVenue ? 'Edit Venue' : 'Add New Venue'}</DialogTitle>
           </DialogHeader>
@@ -820,14 +820,119 @@ export default function AdminVenues() {
                    <Label htmlFor="verified">Verified</Label>
                  </div>
                </div>
-             </div>
+              </div>
 
-             {/* Venue Images */}
-             <VenueImageUpload
-               images={formData.images}
-               onChange={(images) => setFormData(prev => ({ ...prev, images }))}
-               maxImages={8}
-             />
+              {/* Venue Attributes */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Venue Attributes</h3>
+                
+                {/* Tags */}
+                <div>
+                  <Label>Tags</Label>
+                  <div className="mt-2">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {formData.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm flex items-center gap-1"
+                        >
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newTags = formData.tags.filter((_, i) => i !== index);
+                              setFormData(prev => ({ ...prev, tags: newTags }));
+                            }}
+                            className="text-primary hover:text-primary/70"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <Input
+                      placeholder="Add tags (press Enter)"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const value = e.currentTarget.value.trim();
+                          if (value && !formData.tags.includes(value)) {
+                            setFormData(prev => ({ ...prev, tags: [...prev.tags, value] }));
+                            e.currentTarget.value = '';
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Amenities */}
+                <div>
+                  <Label>Amenities</Label>
+                  <div className="mt-2">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {formData.amenities.map((amenity, index) => (
+                        <span
+                          key={index}
+                          className="bg-secondary/10 text-secondary px-2 py-1 rounded-md text-sm flex items-center gap-1"
+                        >
+                          {amenity}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newAmenities = formData.amenities.filter((_, i) => i !== index);
+                              setFormData(prev => ({ ...prev, amenities: newAmenities }));
+                            }}
+                            className="text-secondary hover:text-secondary/70"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <Input
+                      placeholder="Add amenities (press Enter)"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const value = e.currentTarget.value.trim();
+                          if (value && !formData.amenities.includes(value)) {
+                            setFormData(prev => ({ ...prev, amenities: [...prev.amenities, value] }));
+                            e.currentTarget.value = '';
+                          }
+                        }
+                      }}
+                    />
+                    <div className="mt-2">
+                      <Label className="text-sm text-muted-foreground">Common amenities:</Label>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {commonAmenities.map(amenity => (
+                          <button
+                            key={amenity}
+                            type="button"
+                            onClick={() => {
+                              if (!formData.amenities.includes(amenity)) {
+                                setFormData(prev => ({ ...prev, amenities: [...prev.amenities, amenity] }));
+                              }
+                            }}
+                            className="text-xs px-2 py-1 rounded bg-muted hover:bg-muted/80 disabled:opacity-50"
+                            disabled={formData.amenities.includes(amenity)}
+                          >
+                            {amenity}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Venue Images */}
+              <VenueImageUpload
+                images={formData.images}
+                onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+                maxImages={8}
+              />
 
              <Button type="submit" className="w-full">
                {editingVenue ? 'Update Venue' : 'Add Venue'}
