@@ -4096,11 +4096,16 @@ export type Database = {
         Returns: boolean
       }
       assign_user_role: {
-        Args: {
-          target_user_id: string
-          new_role: Database["public"]["Enums"]["app_role"]
-          action_type?: string
-        }
+        Args:
+          | {
+              p_target_user_id: string
+              p_role: Database["public"]["Enums"]["app_role"]
+            }
+          | {
+              target_user_id: string
+              new_role: Database["public"]["Enums"]["app_role"]
+              action_type?: string
+            }
         Returns: boolean
       }
       can_view_sensitive_profile_data: {
@@ -4349,10 +4354,10 @@ export type Database = {
       }
       log_enhanced_security_event: {
         Args: {
-          event_type: string
-          user_id_param?: string
-          details?: Json
-          severity?: string
+          p_event_type: string
+          p_user_id: string
+          p_metadata?: Json
+          p_severity?: string
         }
         Returns: undefined
       }
