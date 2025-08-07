@@ -34,6 +34,8 @@ import {
 } from "lucide-react";
 import { EventsCsvImport } from "@/components/events/EventsCsvImport";
 import { EventImageUpload } from "@/components/events/EventImageUpload";
+import { EventbriteImport } from "@/components/events/EventbriteImport";
+import { TicketmasterImport } from "@/components/events/TicketmasterImport";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { VenueCombobox } from "@/components/ui/venue-combobox";
 import { useToast } from "@/hooks/use-toast";
@@ -339,6 +341,8 @@ export default function AdminEvents() {
         </div>
         <div className="flex gap-2">
           <EventsCsvImport onImportComplete={refetch} />
+          <EventbriteImport onImportComplete={refetch} />
+          <TicketmasterImport onImportComplete={refetch} />
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={resetForm}>
