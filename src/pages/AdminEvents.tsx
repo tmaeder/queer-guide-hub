@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { EventsCsvImport } from "@/components/events/EventsCsvImport";
 import { EventImageUpload } from "@/components/events/EventImageUpload";
+import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -60,6 +61,8 @@ export default function AdminEvents() {
     venue_id: "",
     venue_name: "",
     address: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
     city: "",
     state: "",
     country: "US",
@@ -134,6 +137,8 @@ export default function AdminEvents() {
       const eventData = {
         ...formData,
         venue_id: (formData.venue_id === 'custom' || !formData.venue_id) ? null : formData.venue_id,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
         age_restriction: formData.age_restriction === 'none' ? null : formData.age_restriction,
         start_date: startDate.toISOString(),
         end_date: endDate?.toISOString() || null,
@@ -182,6 +187,8 @@ export default function AdminEvents() {
       venue_id: "",
       venue_name: "",
       address: "",
+      latitude: null,
+      longitude: null,
       city: "",
       state: "",
       country: "US",
@@ -212,6 +219,8 @@ export default function AdminEvents() {
         venue_id: "",
         venue_name: "",
         address: "",
+        latitude: null,
+        longitude: null,
         city: "",
         state: "",
         country: "US"
@@ -226,6 +235,8 @@ export default function AdminEvents() {
             ...prev,
             venue_name: selectedVenue.name,
             address: selectedVenue.address,
+            latitude: selectedVenue.latitude || null,
+            longitude: selectedVenue.longitude || null,
             city: selectedVenue.city,
             state: selectedVenue.state || "",
             country: selectedVenue.country
@@ -233,6 +244,15 @@ export default function AdminEvents() {
         }
       }
     }
+  };
+
+  const handleAddressChange = (address: string, coordinates?: { lat: number; lng: number }) => {
+    setFormData(prev => ({
+      ...prev,
+      address,
+      latitude: coordinates?.lat || null,
+      longitude: coordinates?.lng || null
+    }));
   };
 
   const handleEditEvent = (event: any) => {
@@ -243,6 +263,8 @@ export default function AdminEvents() {
       venue_id: event.venue_id || "",
       venue_name: event.venue_name || "",
       address: event.address || "",
+      latitude: event.latitude || null,
+      longitude: event.longitude || null,
       city: event.city,
       state: event.state || "",
       country: event.country,
@@ -463,12 +485,13 @@ export default function AdminEvents() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="address">Address</Label>
-                      <Input
-                        id="address"
+                      <LocationAutocomplete
                         value={formData.address}
-                        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                        onChange={handleAddressChange}
+                        placeholder={formData.venue_id ? "Address populated from venue" : "Search for an address..."}
                         disabled={!!formData.venue_id}
+                        label="Address"
+                        className={formData.venue_id ? "opacity-50" : ""}
                       />
                     </div>
                   </div>

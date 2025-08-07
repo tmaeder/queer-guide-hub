@@ -19,6 +19,7 @@ interface LocationAutocompleteProps {
   onValidation?: (isValid: boolean) => void;
   placeholder?: string;
   required?: boolean;
+  disabled?: boolean;
   className?: string;
   label?: string;
 }
@@ -29,6 +30,7 @@ export function LocationAutocomplete({
   onValidation, 
   placeholder = "Search for an address...",
   required = false,
+  disabled = false,
   className,
   label = "Address"
 }: LocationAutocompleteProps) {
@@ -93,6 +95,8 @@ export function LocationAutocomplete({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
+    
     const newValue = e.target.value;
     setInputValue(newValue);
     setIsValidated(false);
@@ -310,6 +314,7 @@ export function LocationAutocomplete({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             required={required}
+            disabled={disabled}
             className={`pr-20 ${isValidated ? 'border-green-500' : ''} ${className}`}
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
@@ -324,7 +329,7 @@ export function LocationAutocomplete({
               variant="ghost"
               size="sm"
               onClick={validateCurrentAddress}
-              disabled={isLoading || !inputValue.trim()}
+              disabled={disabled || isLoading || !inputValue.trim()}
               className="h-6 px-2"
               title="Validate address"
             >
@@ -338,7 +343,7 @@ export function LocationAutocomplete({
           variant="outline"
           size="icon"
           onClick={detectLocation}
-          disabled={isDetectingLocation}
+          disabled={disabled || isDetectingLocation}
           title="Detect my location"
         >
           {isDetectingLocation ? (
@@ -349,7 +354,7 @@ export function LocationAutocomplete({
         </Button>
       </div>
 
-      {showSuggestions && suggestions.length > 0 && (
+      {!disabled && showSuggestions && suggestions.length > 0 && (
         <div
           ref={suggestionsRef}
           className="absolute z-50 w-full bg-background border border-border rounded-md shadow-lg max-h-60 overflow-y-auto mt-1"
