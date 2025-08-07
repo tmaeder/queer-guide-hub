@@ -13,7 +13,7 @@ interface UserLocation {
   longitude: number;
   city?: string;
 }
-export const WeeklyEventsSlider = React.memo(() => {
+const WeeklyEventsSlider = React.memo(() => {
   const {
     events,
     loading,
@@ -178,3 +178,5 @@ export const WeeklyEventsSlider = React.memo(() => {
     </section>;
 });
 WeeklyEventsSlider.displayName = 'WeeklyEventsSlider';
+
+export default WeeklyEventsSlider;

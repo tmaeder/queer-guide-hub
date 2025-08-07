@@ -9,7 +9,7 @@ import { ArrowRight, Calendar, Clock, ExternalLink } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 
-export const LatestNewsSlider = React.memo(() => {
+const LatestNewsSlider = React.memo(() => {
   const { articles, loading, error, fetchArticles } = useNews();
   const isMobile = useIsMobile();
 
@@ -226,3 +226,5 @@ export const LatestNewsSlider = React.memo(() => {
 });
 
 LatestNewsSlider.displayName = 'LatestNewsSlider';
+
+export default LatestNewsSlider;

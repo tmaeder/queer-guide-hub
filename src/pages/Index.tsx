@@ -9,8 +9,8 @@ import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 // Lazy load slider components for better performance
-const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider').then(module => ({ default: module.LatestNewsSlider })));
-const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider').then(module => ({ default: module.WeeklyEventsSlider })));
+const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
+const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider'));
 const Index = React.memo(() => {
   const { user } = useAuth();
   const { stats: realStats, loading } = useStats();
