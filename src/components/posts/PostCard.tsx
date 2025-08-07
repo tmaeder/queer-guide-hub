@@ -24,6 +24,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { CommunityPost } from '@/hooks/useCommunityPosts';
 import { CommentsSection } from './CommentsSection';
 import { useAuth } from '@/hooks/useAuth';
+import { ContentSanitizer } from '@/components/security/ContentSanitizer';
 
 interface PostCardProps {
   post: CommunityPost;
@@ -119,7 +120,11 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
 
     const contentElement = (
       <div className="space-y-4">
-        <div dangerouslySetInnerHTML={{ __html: content }} className="whitespace-pre-wrap" />
+        <ContentSanitizer 
+          content={content} 
+          className="whitespace-pre-wrap"
+          allowedTags={['span', 'br', 'strong', 'em', 'u', 'a', 'p']}
+        />
         
         {/* Display tags as badges */}
         {post.tags && post.tags.length > 0 && (

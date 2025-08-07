@@ -21,6 +21,7 @@ import { useComments, PostComment, CreateCommentData } from '@/hooks/useComments
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { ContentSanitizer } from '@/components/security/ContentSanitizer';
 
 interface CommentsSectionProps {
   postId: string;
@@ -69,7 +70,7 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
       '<span class="text-primary font-medium">#$1</span>'
     );
 
-    return <div dangerouslySetInnerHTML={{ __html: content }} />;
+    return <ContentSanitizer content={content} allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']} />;
   };
 
   return (

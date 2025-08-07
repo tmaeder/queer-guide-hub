@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import DOMPurify from 'dompurify';
+import { ContentSanitizer } from '@/components/security/ContentSanitizer';
 import { 
   Heart, 
   MessageCircle, 
@@ -51,13 +51,16 @@ export const GroupPostCard = ({
 
   const renderMentions = (content: string) => {
     if (!post.mentions || post.mentions.length === 0) {
-      return content;
+      return <ContentSanitizer 
+        content={content} 
+        allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']}
+      />;
     }
 
     let processedContent = content;
     post.mentions.forEach(mention => {
-      // Sanitize username to prevent XSS
-      const sanitizedUsername = DOMPurify.sanitize(mention.username, { ALLOWED_TAGS: [] });
+      // Basic sanitization of username
+      const sanitizedUsername = mention.username.replace(/[<>]/g, '');
       const mentionPattern = new RegExp(`@${sanitizedUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
       processedContent = processedContent.replace(
         mentionPattern,
@@ -65,13 +68,10 @@ export const GroupPostCard = ({
       );
     });
 
-    // Sanitize the entire content before rendering
-    const sanitizedContent = DOMPurify.sanitize(processedContent, {
-      ALLOWED_TAGS: ['span'],
-      ALLOWED_ATTR: ['class']
-    });
-
-    return <span dangerouslySetInnerHTML={{ __html: sanitizedContent }} />;
+    return <ContentSanitizer 
+      content={processedContent} 
+      allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']}
+    />;
   };
 
   const renderPoll = () => {

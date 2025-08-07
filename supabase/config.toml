@@ -96,6 +96,9 @@ verify_jwt = false
 [functions.store-tag-images]
 verify_jwt = false
 
+[functions.secure-mapbox-token]
+verify_jwt = true
+
 [functions.calendar-feed]
 verify_jwt = false
 
