@@ -22,6 +22,7 @@ import { VenuesHeader } from "@/components/admin/venues/VenuesHeader";
 import { VenuesFilters } from "@/components/admin/venues/VenuesFilters";
 import { VenuesStats } from "@/components/admin/venues/VenuesStats";
 import { VenuesList } from "@/components/admin/venues/VenuesList";
+import { VenueEnrichmentPreview } from "@/components/admin/venues/VenueEnrichmentPreview";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -45,6 +46,9 @@ export default function AdminVenues() {
   const [isImportingTomTom, setIsImportingTomTom] = useState(false);
   const [isImportingGooglePlaces, setIsImportingGooglePlaces] = useState(false);
   const [isEnrichingVenue, setIsEnrichingVenue] = useState(false);
+  const [enrichmentResults, setEnrichmentResults] = useState<any[]>([]);
+  const [showEnrichmentPreview, setShowEnrichmentPreview] = useState(false);
+  const [enrichmentVenueName, setEnrichmentVenueName] = useState("");
   const [isAddressValidated, setIsAddressValidated] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -406,21 +410,15 @@ export default function AdminVenues() {
   const handleEnrichVenue = async () => {
     if (!formData.name.trim()) {
       toast({
-        title: "Venue Name Required",
-        description: "Please enter a venue name before enriching.",
-        variant: "destructive"
+        title: "Error",
+        description: "Please enter a venue name first",
+        variant: "destructive",
       });
       return;
     }
 
     setIsEnrichingVenue(true);
-    
     try {
-      toast({
-        title: "Enriching Venue",
-        description: "Searching multiple APIs for venue information...",
-      });
-
       const { data, error } = await supabase.functions.invoke('enrich-venue', {
         body: { 
           venueName: formData.name,
@@ -430,52 +428,46 @@ export default function AdminVenues() {
 
       if (error) throw error;
 
-      if (data.success && data.enrichedData) {
-        // Update form with enriched data
-        setFormData(prev => ({
-          ...prev,
-          ...data.enrichedData,
-          // Don't overwrite existing non-empty fields
-          name: prev.name || data.enrichedData.name || prev.name,
-          description: prev.description || data.enrichedData.description || prev.description,
-          address: prev.address || data.enrichedData.address || prev.address,
-          city: prev.city || data.enrichedData.city || prev.city,
-          state: prev.state || data.enrichedData.state || prev.state,
-          country: prev.country || data.enrichedData.country || prev.country,
-          postal_code: prev.postal_code || data.enrichedData.postal_code || prev.postal_code,
-          phone: prev.phone || data.enrichedData.phone || prev.phone,
-          email: prev.email || data.enrichedData.email || prev.email,
-          website: prev.website || data.enrichedData.website || prev.website,
-          category: prev.category || data.enrichedData.category || prev.category,
-          price_range: prev.price_range || (data.enrichedData.price_range ? data.enrichedData.price_range.toString() : prev.price_range),
-          latitude: prev.latitude || (data.enrichedData.latitude ? data.enrichedData.latitude.toString() : prev.latitude),
-          longitude: prev.longitude || (data.enrichedData.longitude ? data.enrichedData.longitude.toString() : prev.longitude),
-          images: prev.images.length > 0 ? prev.images : (data.enrichedData.images || prev.images)
-        }));
-
-        const successfulSources = data.sources?.filter((s: any) => s.hasData).map((s: any) => s.source) || [];
-        
-        toast({
-          title: "Venue Enriched Successfully",
-          description: `Found data from ${successfulSources.length} source(s): ${successfulSources.join(', ')}`,
-        });
+      if (data?.individualResults && data.individualResults.length > 0) {
+        setEnrichmentResults(data.individualResults);
+        setEnrichmentVenueName(formData.name);
+        setShowEnrichmentPreview(true);
       } else {
         toast({
-          title: "No Additional Data Found",
-          description: "Could not find additional information for this venue from external sources.",
-          variant: "destructive"
+          title: "No Results",
+          description: "No venue data found from external sources",
+          variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Venue enrichment error:', error);
       toast({
-        title: "Enrichment Failed",
-        description: "Failed to enrich venue data. Please try again.",
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to enrich venue data",
+        variant: "destructive",
       });
     } finally {
       setIsEnrichingVenue(false);
     }
+  };
+
+  const handleSelectEnrichmentResult = (selectedData: any) => {
+    // Merge selected data with current venue data, only filling empty fields
+    const updatedVenue = { ...formData };
+    
+    Object.entries(selectedData).forEach(([key, value]) => {
+      if (value && (!updatedVenue[key as keyof typeof updatedVenue] || updatedVenue[key as keyof typeof updatedVenue] === '')) {
+        (updatedVenue as any)[key] = value;
+      }
+    });
+
+    setFormData(updatedVenue);
+    setShowEnrichmentPreview(false);
+    
+    toast({
+      title: "Success",
+      description: "Venue data has been enriched with selected information",
+    });
   };
 
   const resetForm = () => {
@@ -657,164 +649,172 @@ export default function AdminVenues() {
                       onChange={(e) => setFormData(prev => ({ ...prev, latitude: e.target.value }))}
                       readOnly
                       className="bg-muted"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="longitude">Longitude</Label>
-                    <Input
-                      id="longitude"
-                      type="number"
-                      step="any"
-                      value={formData.longitude}
-                      onChange={(e) => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
-                      readOnly
-                      className="bg-muted"
-                    />
-                  </div>
-                </div>
-              )}
-              
-              {/* Optional manual city/state/country override */}
-              <details className="space-y-4">
-                <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
-                  Manual location override (optional)
-                </summary>
-                <div className="grid grid-cols-3 gap-4 pt-2">
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                      placeholder="Auto-filled from address"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">State/Province</Label>
-                    <Input
-                      id="state"
-                      value={formData.state}
-                      onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                      placeholder="Auto-filled from address"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="country">Country</Label>
-                    <Input
-                      id="country"
-                      value={formData.country}
-                      onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
-                      placeholder="Auto-filled from address"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="postal_code">Postal Code</Label>
-                  <Input
-                    id="postal_code"
-                    value={formData.postal_code}
-                    onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
-                    placeholder="Auto-filled from address"
-                  />
-                </div>
-              </details>
-            </div>
+                     />
+                   </div>
+                   <div>
+                     <Label htmlFor="longitude">Longitude</Label>
+                     <Input
+                       id="longitude"
+                       type="number"
+                       step="any"
+                       value={formData.longitude}
+                       onChange={(e) => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
+                       readOnly
+                       className="bg-muted"
+                     />
+                   </div>
+                 </div>
+               )}
+               
+               {/* Optional manual city/state/country override */}
+               <details className="space-y-4">
+                 <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+                   Manual location override (optional)
+                 </summary>
+                 <div className="grid grid-cols-3 gap-4 pt-2">
+                   <div>
+                     <Label htmlFor="city">City</Label>
+                     <Input
+                       id="city"
+                       value={formData.city}
+                       onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                       placeholder="Auto-filled from address"
+                     />
+                   </div>
+                   <div>
+                     <Label htmlFor="state">State/Province</Label>
+                     <Input
+                       id="state"
+                       value={formData.state}
+                       onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                       placeholder="Auto-filled from address"
+                     />
+                   </div>
+                   <div>
+                     <Label htmlFor="country">Country</Label>
+                     <Input
+                       id="country"
+                       value={formData.country}
+                       onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                       placeholder="Auto-filled from address"
+                     />
+                   </div>
+                 </div>
+                 <div>
+                   <Label htmlFor="postal_code">Postal Code</Label>
+                   <Input
+                     id="postal_code"
+                     value={formData.postal_code}
+                     onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
+                     placeholder="Auto-filled from address"
+                   />
+                 </div>
+               </details>
+             </div>
 
-            {/* Contact */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Contact Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="instagram">Instagram</Label>
-                  <Input
-                    id="instagram"
-                    value={formData.instagram}
-                    onChange={(e) => setFormData(prev => ({ ...prev, instagram: e.target.value }))}
-                  />
-                </div>
-              </div>
-            </div>
+             {/* Contact */}
+             <div className="space-y-4">
+               <h3 className="text-lg font-semibold">Contact Information</h3>
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <Label htmlFor="phone">Phone</Label>
+                   <Input
+                     id="phone"
+                     value={formData.phone}
+                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                   />
+                 </div>
+                 <div>
+                   <Label htmlFor="email">Email</Label>
+                   <Input
+                     id="email"
+                     type="email"
+                     value={formData.email}
+                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                   />
+                 </div>
+               </div>
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <Label htmlFor="website">Website</Label>
+                   <Input
+                     id="website"
+                     value={formData.website}
+                     onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                   />
+                 </div>
+                 <div>
+                   <Label htmlFor="instagram">Instagram</Label>
+                   <Input
+                     id="instagram"
+                     value={formData.instagram}
+                     onChange={(e) => setFormData(prev => ({ ...prev, instagram: e.target.value }))}
+                   />
+                 </div>
+               </div>
+             </div>
 
-            {/* Settings */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Settings</h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="price_range">Price Range (1-4)</Label>
-                  <Select
-                    value={formData.price_range}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, price_range: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">$ - Budget</SelectItem>
-                      <SelectItem value="2">$$ - Moderate</SelectItem>
-                      <SelectItem value="3">$$$ - Expensive</SelectItem>
-                      <SelectItem value="4">$$$$ - Very Expensive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="featured"
-                    checked={formData.featured}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked as boolean }))}
-                  />
-                  <Label htmlFor="featured">Featured Venue</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="verified"
-                    checked={formData.verified}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, verified: checked as boolean }))}
-                  />
-                  <Label htmlFor="verified">Verified</Label>
-                </div>
-              </div>
-            </div>
+             {/* Settings */}
+             <div className="space-y-4">
+               <h3 className="text-lg font-semibold">Settings</h3>
+               <div className="grid grid-cols-3 gap-4">
+                 <div>
+                   <Label htmlFor="price_range">Price Range (1-4)</Label>
+                   <Select
+                     value={formData.price_range}
+                     onValueChange={(value) => setFormData(prev => ({ ...prev, price_range: value }))}
+                   >
+                     <SelectTrigger>
+                       <SelectValue />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="1">$ - Budget</SelectItem>
+                       <SelectItem value="2">$$ - Moderate</SelectItem>
+                       <SelectItem value="3">$$$ - Expensive</SelectItem>
+                       <SelectItem value="4">$$$$ - Very Expensive</SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
+                 <div className="flex items-center space-x-2">
+                   <Checkbox
+                     id="featured"
+                     checked={formData.featured}
+                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked as boolean }))}
+                   />
+                   <Label htmlFor="featured">Featured Venue</Label>
+                 </div>
+                 <div className="flex items-center space-x-2">
+                   <Checkbox
+                     id="verified"
+                     checked={formData.verified}
+                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, verified: checked as boolean }))}
+                   />
+                   <Label htmlFor="verified">Verified</Label>
+                 </div>
+               </div>
+             </div>
 
-            {/* Venue Images */}
-            <VenueImageUpload
-              images={formData.images}
-              onChange={(images) => setFormData(prev => ({ ...prev, images }))}
-              maxImages={8}
-            />
+             {/* Venue Images */}
+             <VenueImageUpload
+               images={formData.images}
+               onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+               maxImages={8}
+             />
 
-            <Button type="submit" className="w-full">
-              {editingVenue ? 'Update Venue' : 'Add Venue'}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
+             <Button type="submit" className="w-full">
+               {editingVenue ? 'Update Venue' : 'Add Venue'}
+             </Button>
+           </form>
+         </DialogContent>
+       </Dialog>
+       
+       <VenueEnrichmentPreview
+         isOpen={showEnrichmentPreview}
+         onClose={() => setShowEnrichmentPreview(false)}
+         results={enrichmentResults}
+         onSelectResult={handleSelectEnrichmentResult}
+         venueName={enrichmentVenueName}
+       />
+     </div>
   );
 }

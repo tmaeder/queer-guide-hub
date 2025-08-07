@@ -77,18 +77,22 @@ serve(async (req) => {
     const results = await Promise.allSettled(enrichmentPromises)
     console.log(`Completed ${results.length} API searches`)
 
-    // Merge results
+    // Return individual results for preview
+    const individualResults = results.map((r, i) => ({
+      source: ['foursquare', 'google', 'tomtom', 'tripadvisor'][i],
+      status: r.status,
+      data: r.status === 'fulfilled' ? r.value : null
+    })).filter(r => r.data !== null)
+
+    // Also provide merged data for convenience
     const enrichedData = mergeVenueData(currentData, results)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        enrichedData,
-        sources: results.map((r, i) => ({
-          source: ['foursquare', 'google', 'tomtom', 'tripadvisor'][i],
-          status: r.status,
-          hasData: r.status === 'fulfilled' && r.value !== null
-        }))
+        individualResults,
+        mergedData: enrichedData,
+        totalSources: results.length
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
