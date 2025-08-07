@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo, Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
-import { useDirectory } from "@/hooks/useDirectory";
+import { useOptimizedDirectory } from "@/hooks/useOptimizedDirectory";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import { DirectorySearch, type DirectoryFilters } from "@/components/directory/DirectorySearch";
 import { WeatherForecast } from "@/components/weather/WeatherForecast";
@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Globe, MapPin, Building2, Users, Map } from "lucide-react";
-import { DirectoryMapView } from "@/components/directory/DirectoryMapView";
+
+// Lazy load the map component
+const DirectoryMapView = lazy(() => import("@/components/directory/DirectoryMapView").then(m => ({ default: m.DirectoryMapView })));
 
 type ViewMode = "overview" | "country" | "city" | "search";
 
@@ -24,8 +26,10 @@ export default function Directory() {
     fetchCountriesByContinent,
     fetchCitiesByCountry,
     searchLocations,
-    findNearbyCities
-  } = useDirectory();
+    findNearbyCities,
+    countriesByContinent,
+    citiesByCountry
+  } = useOptimizedDirectory();
 
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
@@ -56,11 +60,11 @@ export default function Directory() {
   const handleSearch = async (query: string) => {
     if (query.trim()) {
       const results = await searchLocations(query);
-      setSearchResults({ countries: results.countries, cities: results.cities });
+      setSearchResults(results);
       setViewMode("search");
     } else {
       setViewMode("overview");
-      setSearchResults({ countries: [], cities: [] });
+      setSearchResults({ continents: [], countries: [], cities: [] });
     }
   };
 
@@ -74,6 +78,59 @@ export default function Directory() {
     setSearchResults({ countries: [], cities: nearbyCities });
     setViewMode("search");
   };
+
+  // Memoized filter logic for performance
+  const filteredCountries = useMemo(() => {
+    let result = countries;
+    
+    if (filters.continent !== "all") {
+      result = result.filter(country => country.continent_id === filters.continent);
+    }
+    
+    if (filters.populationRange !== "all") {
+      const [min, max] = filters.populationRange.split('-').map(Number);
+      result = result.filter(country => {
+        const pop = country.population || 0;
+        return pop >= min && (max ? pop <= max : true);
+      });
+    }
+    
+    return result.sort((a, b) => {
+      const field = filters.sortBy === 'name' ? 'name' : 'population';
+      const aVal = a[field] || (field === 'name' ? '' : 0);
+      const bVal = b[field] || (field === 'name' ? '' : 0);
+      
+      return filters.sortOrder === 'asc' 
+        ? aVal > bVal ? 1 : -1
+        : aVal < bVal ? 1 : -1;
+    });
+  }, [countries, filters]);
+
+  const filteredCities = useMemo(() => {
+    let result = cities;
+    
+    if (filters.isMajorCity !== "all") {
+      result = result.filter(city => 
+        filters.isMajorCity === "true" ? city.is_major_city : !city.is_major_city
+      );
+    }
+    
+    if (filters.isCapital !== "all") {
+      result = result.filter(city => 
+        filters.isCapital === "true" ? city.is_capital : !city.is_capital
+      );
+    }
+    
+    return result.sort((a, b) => {
+      const field = filters.sortBy === 'name' ? 'name' : 'population';
+      const aVal = a[field] || (field === 'name' ? '' : 0);
+      const bVal = b[field] || (field === 'name' ? '' : 0);
+      
+      return filters.sortOrder === 'asc' 
+        ? aVal > bVal ? 1 : -1
+        : aVal < bVal ? 1 : -1;
+    });
+  }, [cities, filters]);
 
   const handleBack = () => {
     if (viewMode === "city") {
@@ -176,11 +233,11 @@ export default function Directory() {
           <TabsContent value="countries" className="space-y-4">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-semibold">{t('directory.countriesByContinent')}</h2>
-              <Badge variant="secondary">{countries.length}</Badge>
+              <Badge variant="secondary">{filteredCountries.length}</Badge>
             </div>
             <div className="space-y-8">
               {continents.map((continent) => {
-                const continentCountries = countries.filter(country => 
+                const continentCountries = filteredCountries.filter(country => 
                   country.continent_id === continent.id
                 );
                 
@@ -213,7 +270,7 @@ export default function Directory() {
           <TabsContent value="cities" className="space-y-4">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-semibold">{t('directory.citiesByContinent')}</h2>
-              <Badge variant="secondary">{cities.length}</Badge>
+              <Badge variant="secondary">{filteredCities.length}</Badge>
             </div>
             <div className="space-y-8">
               {continents.map((continent) => {
@@ -222,7 +279,7 @@ export default function Directory() {
                 );
                 
                 // Filter cities for this continent
-                const continentCities = cities.filter(city => 
+                const continentCities = filteredCities.filter(city => 
                   continentCountries.some(country => country.id === city.country_id)
                 );
                 
@@ -237,7 +294,7 @@ export default function Directory() {
                     </div>
                     <div className="space-y-6 pl-8">
                       {continentCountries.map((country) => {
-                        const countryCities = cities.filter(city => 
+                        const countryCities = filteredCities.filter(city => 
                           city.country_id === country.id
                         );
                         
@@ -276,13 +333,15 @@ export default function Directory() {
               <h2 className="text-xl font-semibold">Interactive World Map</h2>
               <Badge variant="secondary">{countries.length} countries, {cities.length} cities</Badge>
             </div>
-            <DirectoryMapView
-              countries={countries}
-              cities={cities}
-              loading={loading}
-              onCountryClick={handleCountryClick}
-              onCityClick={handleCityClick}
-            />
+            <Suspense fallback={<div className="flex items-center justify-center h-96">Loading map...</div>}>
+              <DirectoryMapView
+                countries={countries}
+                cities={cities}
+                loading={loading}
+                onCountryClick={handleCountryClick}
+                onCityClick={handleCityClick}
+              />
+            </Suspense>
           </TabsContent>
         </Tabs>
       )}
