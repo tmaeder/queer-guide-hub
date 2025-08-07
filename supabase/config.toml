@@ -130,4 +130,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.enrich-venue]
-verify_jwt = true
+verify_jwt = false
