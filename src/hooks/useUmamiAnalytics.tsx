@@ -40,6 +40,10 @@ export const useUmamiAnalytics = () => {
     try {
       const { browser, os, device } = getBrowserInfo();
       
+      // Add timeout and better error handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
       const { error } = await supabase.functions.invoke('umami-analytics', {
         body: {
           name: eventData.name,
@@ -56,17 +60,25 @@ export const useUmamiAnalytics = () => {
         },
       });
 
+      clearTimeout(timeoutId);
+
       if (error) {
-        console.error('Error tracking event via edge function:', error);
+        // Silently log error to prevent console spam
+        console.debug('Analytics tracking failed:', error.message);
       }
     } catch (error) {
-      console.error('Error tracking umami event:', error);
+      // Silently handle analytics errors to not impact user experience
+      console.debug('Analytics error:', error instanceof Error ? error.message : 'Unknown error');
     }
   }, []);
 
   const trackPageView = useCallback(async (url?: string, title?: string) => {
     try {
       const { browser, os, device } = getBrowserInfo();
+      
+      // Add timeout and better error handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
       
       const { error } = await supabase.functions.invoke('umami-analytics', {
         body: {
@@ -82,11 +94,15 @@ export const useUmamiAnalytics = () => {
         },
       });
 
+      clearTimeout(timeoutId);
+
       if (error) {
-        console.error('Error tracking page view via edge function:', error);
+        // Silently log error to prevent console spam
+        console.debug('Analytics tracking failed:', error.message);
       }
     } catch (error) {
-      console.error('Error tracking umami page view:', error);
+      // Silently handle analytics errors to not impact user experience
+      console.debug('Analytics error:', error instanceof Error ? error.message : 'Unknown error');
     }
   }, []);
 

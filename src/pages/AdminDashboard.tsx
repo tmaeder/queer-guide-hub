@@ -105,7 +105,8 @@ export default function AdminDashboard() {
       const daysAgo = filterPeriod === '7d' ? 7 : filterPeriod === '30d' ? 30 : 90;
       const dateFilter = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
       
-      const [venues, events, listings, articles, users, groups, posts, activeGroups, recentUsers, weekOldUsers] = await Promise.all([
+      // Use Promise.allSettled to prevent one failed query from breaking everything
+      const results = await Promise.allSettled([
         supabase.from('venues').select('id', { count: 'exact', head: true }),
         supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'active'),
         supabase.from('marketplace_listings').select('id', { count: 'exact', head: true }).eq('status', 'active'),
@@ -117,6 +118,11 @@ export default function AdminDashboard() {
         supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', dateFilter),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
       ]);
+      
+      // Extract successful results or default to 0
+      const [venues, events, listings, articles, users, groups, posts, activeGroups, recentUsers, weekOldUsers] = results.map(
+        result => result.status === 'fulfilled' ? result.value : { count: 0 }
+      );
 
       const totalContentCount = (articles.count || 0) + (events.count || 0) + (listings.count || 0) + (posts.count || 0);
       const weeklyGrowth = ((recentUsers.count || 0) / Math.max(weekOldUsers.count || 1, 1)) * 100;
@@ -148,92 +154,66 @@ export default function AdminDashboard() {
       const now = new Date();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
       
-      // Fetch recent posts from groups
-      const { data: recentPosts } = await supabase
-        .from('group_posts')
-        .select(`
-          id,
-          content,
-          created_at,
-          group_id,
-          community_groups!inner(name)
-        `)
-        .gte('created_at', sevenDaysAgo)
-        .order('created_at', { ascending: false })
-        .limit(5);
+      // Use Promise.allSettled for parallel execution and error resilience
+      const results = await Promise.allSettled([
+        supabase
+          .from('group_posts')
+          .select(`id, content, created_at, group_id, community_groups!inner(name)`)
+          .gte('created_at', sevenDaysAgo)
+          .order('created_at', { ascending: false })
+          .limit(3),
+        
+        supabase
+          .from('events')
+          .select('id, title, created_at, event_type, city, country')
+          .gte('created_at', sevenDaysAgo)
+          .order('created_at', { ascending: false })
+          .limit(3),
+        
+        supabase
+          .from('marketplace_listings')
+          .select('id, title, created_at, status')
+          .eq('status', 'active')
+          .gte('created_at', sevenDaysAgo)
+          .order('created_at', { ascending: false })
+          .limit(3),
+
+        supabase
+          .from('profiles')
+          .select('id, display_name, created_at')
+          .gte('created_at', sevenDaysAgo)
+          .order('created_at', { ascending: false })
+          .limit(3),
+
+        supabase
+          .from('venues')
+          .select('id, name, created_at, city, country')
+          .gte('created_at', sevenDaysAgo)
+          .order('created_at', { ascending: false })
+          .limit(3)
+      ]);
       
-      // Fetch recent events
-      const { data: recentEvents } = await supabase
-        .from('events')
-        .select('id, title, created_at, event_type, city, country')
-        .gte('created_at', sevenDaysAgo)
-        .order('created_at', { ascending: false })
-        .limit(5);
+      // Extract successful results
+      const [
+        recentPostsResult,
+        recentEventsResult,
+        recentListingsResult,
+        recentUsersResult,
+        recentVenuesResult
+      ] = results;
       
-      // Fetch recent email template updates
-      const { data: recentTemplates } = await supabase
-        .from('email_templates')
-        .select('id, name, created_at, template_key, updated_at')
-        .gte('updated_at', sevenDaysAgo)
-        .order('updated_at', { ascending: false })
-        .limit(3);
-      
-      // Fetch recent marketplace listings
-      const { data: recentListings } = await supabase
-        .from('marketplace_listings')
-        .select('id, title, created_at, status')
-        .eq('status', 'active')
-        .gte('created_at', sevenDaysAgo)
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      // Fetch recent user registrations
-      const { data: recentUsers } = await supabase
-        .from('profiles')
-        .select('id, display_name, created_at')
-        .gte('created_at', sevenDaysAgo)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      // Fetch recent venues
-      const { data: recentVenues } = await supabase
-        .from('venues')
-        .select('id, name, created_at, city, country')
-        .gte('created_at', sevenDaysAgo)
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      // Fetch recent groups
-      const { data: recentGroups } = await supabase
-        .from('community_groups')
-        .select('id, name, created_at, member_count')
-        .gte('created_at', sevenDaysAgo)
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      // Fetch recent donations
-      const { data: recentDonations } = await supabase
-        .from('donations')
-        .select('id, amount, created_at, status, donor_name, is_anonymous')
-        .eq('status', 'completed')
-        .gte('created_at', sevenDaysAgo)
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      // Fetch recent bookings
-      const { data: recentBookings } = await supabase
-        .from('bookings')
-        .select('id, booking_type, created_at, status, total_price, currency')
-        .gte('created_at', sevenDaysAgo)
-        .order('created_at', { ascending: false })
-        .limit(3);
+      const recentPosts = recentPostsResult.status === 'fulfilled' ? recentPostsResult.value.data : [];
+      const recentEvents = recentEventsResult.status === 'fulfilled' ? recentEventsResult.value.data : [];
+      const recentListings = recentListingsResult.status === 'fulfilled' ? recentListingsResult.value.data : [];
+      const recentUsers = recentUsersResult.status === 'fulfilled' ? recentUsersResult.value.data : [];
+      const recentVenues = recentVenuesResult.status === 'fulfilled' ? recentVenuesResult.value.data : [];
       
       const activities = [
         ...(recentPosts?.map(post => ({
           id: post.id,
           type: 'post',
-          title: `New post in ${post.community_groups.name}`,
-          description: post.content.substring(0, 80) + '...',
+          title: `New post in ${post.community_groups?.name || 'Unknown Group'}`,
+          description: post.content?.substring(0, 60) + '...' || 'No content',
           timestamp: post.created_at,
           icon: MessageSquare,
           badge: 'Community'
@@ -241,26 +221,17 @@ export default function AdminDashboard() {
         ...(recentEvents?.map(event => ({
           id: event.id,
           type: 'event',
-          title: `New ${event.event_type} event`,
-          description: `${event.title} in ${event.city}, ${event.country}`,
+          title: `New ${event.event_type || 'event'}`,
+          description: `${event.title} in ${event.city || 'Unknown'}, ${event.country || 'Unknown'}`,
           timestamp: event.created_at,
           icon: Calendar,
           badge: 'Events'
-        })) || []),
-        ...(recentTemplates?.map(template => ({
-          id: template.id,
-          type: 'email_template',
-          title: `Email template updated`,
-          description: `${template.name} (${template.template_key})`,
-          timestamp: template.updated_at || template.created_at,
-          icon: FileText,
-          badge: 'Templates'
         })) || []),
         ...(recentListings?.map(listing => ({
           id: listing.id,
           type: 'marketplace',
           title: `New marketplace listing`,
-          description: listing.title,
+          description: listing.title || 'Untitled listing',
           timestamp: listing.created_at,
           icon: ShoppingBag,
           badge: 'Marketplace'
@@ -278,39 +249,12 @@ export default function AdminDashboard() {
           id: venue.id,
           type: 'venue',
           title: 'New venue added',
-          description: `${venue.name} in ${venue.city}, ${venue.country}`,
+          description: `${venue.name} in ${venue.city || 'Unknown'}, ${venue.country || 'Unknown'}`,
           timestamp: venue.created_at,
           icon: Building,
           badge: 'Venues'
-        })) || []),
-        ...(recentGroups?.map(group => ({
-          id: group.id,
-          type: 'group',
-          title: 'New community group',
-          description: `${group.name} (${group.member_count} members)`,
-          timestamp: group.created_at,
-          icon: Users,
-          badge: 'Groups'
-        })) || []),
-        ...(recentDonations?.map(donation => ({
-          id: donation.id,
-          type: 'donation',
-          title: 'New donation received',
-          description: `$${(donation.amount / 100).toFixed(2)} from ${donation.is_anonymous ? 'Anonymous' : (donation.donor_name || 'Anonymous')}`,
-          timestamp: donation.created_at,
-          icon: Heart,
-          badge: 'Donations'
-        })) || []),
-        ...(recentBookings?.map(booking => ({
-          id: booking.id,
-          type: 'booking',
-          title: `New ${booking.booking_type} booking`,
-          description: `${booking.status} - ${booking.total_price ? `${booking.currency?.toUpperCase()} ${booking.total_price}` : 'Free'}`,
-          timestamp: booking.created_at,
-          icon: Calendar,
-          badge: 'Bookings'
         })) || [])
-      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 15);
+      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10);
       
       setRecentActivity(activities);
     } catch (error) {
