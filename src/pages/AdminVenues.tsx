@@ -22,6 +22,7 @@ import { VenuesHeader } from "@/components/admin/venues/VenuesHeader";
 import { VenuesFilters } from "@/components/admin/venues/VenuesFilters";
 import { VenuesStats } from "@/components/admin/venues/VenuesStats";
 import { VenuesList } from "@/components/admin/venues/VenuesList";
+import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminVenues() {
@@ -43,6 +44,7 @@ export default function AdminVenues() {
   const [isImportingTripAdvisor, setIsImportingTripAdvisor] = useState(false);
   const [isImportingTomTom, setIsImportingTomTom] = useState(false);
   const [isImportingGooglePlaces, setIsImportingGooglePlaces] = useState(false);
+  const [isAddressValidated, setIsAddressValidated] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -374,6 +376,32 @@ export default function AdminVenues() {
     }
   };
 
+  const parseAddressComponents = (address: string) => {
+    // Simple address parsing - can be enhanced based on Mapbox response format
+    const parts = address.split(', ');
+    if (parts.length >= 3) {
+      const city = parts[parts.length - 3] || '';
+      const stateCountry = parts[parts.length - 2] || '';
+      const country = parts[parts.length - 1] || '';
+      
+      // Extract state from "State ZIP" format
+      const stateMatch = stateCountry.match(/^([A-Z]{2})\s+\d+/);
+      const state = stateMatch ? stateMatch[1] : stateCountry;
+      
+      // Extract postal code
+      const postalMatch = stateCountry.match(/\d{5}(-\d{4})?$/);
+      const postal_code = postalMatch ? postalMatch[0] : '';
+      
+      setFormData(prev => ({
+        ...prev,
+        city: city || prev.city,
+        state: state || prev.state,
+        country: country || prev.country,
+        postal_code: postal_code || prev.postal_code
+      }));
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -398,6 +426,7 @@ export default function AdminVenues() {
       images: []
     });
     setEditingVenue(null);
+    setIsAddressValidated(false);
   };
 
   if (rolesLoading || loading) {
@@ -508,32 +537,89 @@ export default function AdminVenues() {
             {/* Location */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Location</h3>
-              <div>
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                    required
-                  />
+              <LocationAutocomplete
+                value={formData.address}
+                onChange={(address, coordinates) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    address,
+                    latitude: coordinates ? coordinates.lat.toString() : "",
+                    longitude: coordinates ? coordinates.lng.toString() : ""
+                  }));
+                  
+                  // Auto-extract city, state, country from address if coordinates are provided
+                  if (coordinates) {
+                    parseAddressComponents(address);
+                  }
+                }}
+                onValidation={setIsAddressValidated}
+                required
+                placeholder="Enter full address (e.g., 123 Main St, New York, NY, USA)"
+              />
+              
+              {/* Display coordinates if available */}
+              {formData.latitude && formData.longitude && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="latitude">Latitude</Label>
+                    <Input
+                      id="latitude"
+                      type="number"
+                      step="any"
+                      value={formData.latitude}
+                      onChange={(e) => setFormData(prev => ({ ...prev, latitude: e.target.value }))}
+                      readOnly
+                      className="bg-muted"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="longitude">Longitude</Label>
+                    <Input
+                      id="longitude"
+                      type="number"
+                      step="any"
+                      value={formData.longitude}
+                      onChange={(e) => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
+                      readOnly
+                      className="bg-muted"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    id="state"
-                    value={formData.state}
-                    onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                  />
+              )}
+              
+              {/* Optional manual city/state/country override */}
+              <details className="space-y-4">
+                <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+                  Manual location override (optional)
+                </summary>
+                <div className="grid grid-cols-3 gap-4 pt-2">
+                  <div>
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      value={formData.city}
+                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                      placeholder="Auto-filled from address"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="state">State/Province</Label>
+                    <Input
+                      id="state"
+                      value={formData.state}
+                      onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                      placeholder="Auto-filled from address"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="country">Country</Label>
+                    <Input
+                      id="country"
+                      value={formData.country}
+                      onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                      placeholder="Auto-filled from address"
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="postal_code">Postal Code</Label>
@@ -541,31 +627,10 @@ export default function AdminVenues() {
                     id="postal_code"
                     value={formData.postal_code}
                     onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
+                    placeholder="Auto-filled from address"
                   />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="latitude">Latitude</Label>
-                  <Input
-                    id="latitude"
-                    type="number"
-                    step="any"
-                    value={formData.latitude}
-                    onChange={(e) => setFormData(prev => ({ ...prev, latitude: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="longitude">Longitude</Label>
-                  <Input
-                    id="longitude"
-                    type="number"
-                    step="any"
-                    value={formData.longitude}
-                    onChange={(e) => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
-                  />
-                </div>
-              </div>
+              </details>
             </div>
 
             {/* Contact */}
