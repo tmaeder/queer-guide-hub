@@ -203,7 +203,6 @@ export function Header() {
                   </div>)}
 
                 {/* User actions for logged in users */}
-                {user}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
