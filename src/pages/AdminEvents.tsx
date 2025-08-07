@@ -35,6 +35,7 @@ import {
 import { EventsCsvImport } from "@/components/events/EventsCsvImport";
 import { EventImageUpload } from "@/components/events/EventImageUpload";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
+import { VenueCombobox } from "@/components/ui/venue-combobox";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -459,19 +460,13 @@ export default function AdminEvents() {
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="venue_id">Select Venue (Optional)</Label>
-                    <Select value={formData.venue_id} onValueChange={handleVenueSelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose existing venue or enter custom location" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="custom">Custom Location</SelectItem>
-                        {venues.map((venue) => (
-                          <SelectItem key={venue.id} value={venue.id}>
-                            {venue.name} - {venue.city}, {venue.state}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <VenueCombobox
+                      venues={venues}
+                      value={formData.venue_id}
+                      onValueChange={handleVenueSelect}
+                      placeholder="Search and select venue or choose custom location"
+                      className="w-full"
+                    />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
