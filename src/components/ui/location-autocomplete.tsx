@@ -69,11 +69,24 @@ export function LocationAutocomplete({
       setShowSuggestions(true);
     } catch (error) {
       console.error('Geocoding error:', error);
-      toast({
-        title: "Search Error",
-        description: "Failed to search addresses. Please try again.",
-        variant: "destructive"
-      });
+      
+      // Check if it's a configuration error
+      if (error.message?.includes('non-2xx status code')) {
+        toast({
+          title: "Configuration Required",
+          description: "Mapbox API key needs to be configured. Using basic address input for now.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Search Error",
+          description: "Failed to search addresses. Please try again.",
+          variant: "destructive"
+        });
+      }
+      
+      setSuggestions([]);
+      setShowSuggestions(false);
     } finally {
       setIsLoading(false);
     }
