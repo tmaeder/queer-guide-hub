@@ -4124,7 +4124,9 @@ export type Database = {
         Returns: undefined
       }
       consolidate_policies: {
-        Args: { p_table_name: string; p_role_name: string; p_action: string }
+        Args:
+          | { p_schema_name: string; p_table_name: string }
+          | { p_table_name: string; p_role_name: string; p_action: string }
         Returns: undefined
       }
       consolidate_rls_policies: {
@@ -4147,6 +4149,7 @@ export type Database = {
       }
       consolidate_table_policies: {
         Args:
+          | { p_schema_name: string; p_table_name: string }
           | { p_table_name: string; p_role_name: string; p_action: string }
           | { table_name_param: string }
         Returns: undefined
@@ -4176,7 +4179,9 @@ export type Database = {
         Returns: undefined
       }
       examine_table_policies: {
-        Args: { table_name_param: string }
+        Args:
+          | { p_schema_name: string; p_table_name: string }
+          | { table_name_param: string }
         Returns: {
           policy_name: string
           role_names: string[]
@@ -4268,13 +4273,15 @@ export type Database = {
         Returns: string
       }
       get_table_policies: {
-        Args: { table_name_param: string }
+        Args:
+          | { p_schema_name: string; p_table_name: string }
+          | { table_name_param: string }
         Returns: {
           policy_name: string
-          role_name: string
-          command: string
-          using_expr: string
-          with_check_expr: string
+          policy_roles: string[]
+          policy_cmd: string
+          policy_qual: string
+          policy_with_check: string
         }[]
       }
       get_user_conversation_ids: {
