@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
+type AuditLog = Database['public']['Tables']['user_role_audit_log']['Row'];
 
 export function useSecureRoleManagement() {
   const [loading, setLoading] = useState(false);
@@ -13,11 +14,10 @@ export function useSecureRoleManagement() {
     try {
       setLoading(true);
       
-      // Use the existing secure function with enhanced logging
-      const { data, error } = await supabase.rpc('assign_user_role', {
-        target_user_id: userId,
-        new_role: role,
-        action_type: 'assign'
+      // Use the new secure function
+      const { error } = await supabase.rpc('assign_user_role', {
+        p_target_user_id: userId,
+        p_role: role
       });
 
       if (error) throw error;
@@ -25,14 +25,14 @@ export function useSecureRoleManagement() {
       // Log successful role assignment
       try {
         await supabase.rpc('log_enhanced_security_event', {
-          event_type: 'ROLE_ASSIGNMENT_SUCCESS',
-          user_id_param: null,
-          details: {
+          p_event_type: 'ROLE_ASSIGNMENT_SUCCESS',
+          p_user_id: null,
+          p_metadata: {
             target_user_id: userId,
             assigned_role: role,
             timestamp: new Date().toISOString()
           },
-          severity: 'info'
+          p_severity: 'info'
         });
       } catch (logError) {
         console.error('Failed to log security event:', logError);
@@ -50,15 +50,15 @@ export function useSecureRoleManagement() {
       // Log failed role assignment attempt
       try {
         await supabase.rpc('log_enhanced_security_event', {
-          event_type: 'ROLE_ASSIGNMENT_FAILED',
-          user_id_param: null,
-          details: {
+          p_event_type: 'ROLE_ASSIGNMENT_FAILED',
+          p_user_id: null,
+          p_metadata: {
             target_user_id: userId,
             attempted_role: role,
             error_message: error.message,
             timestamp: new Date().toISOString()
           },
-          severity: 'high'
+          p_severity: 'high'
         });
       } catch (logError) {
         console.error('Failed to log security event:', logError);
@@ -79,11 +79,12 @@ export function useSecureRoleManagement() {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase.rpc('assign_user_role', {
-        target_user_id: userId,
-        new_role: role,
-        action_type: 'remove'
-      });
+      // Remove role by deleting from user_roles table
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId)
+        .eq('role', role);
 
       if (error) throw error;
 

@@ -30,10 +30,10 @@ export const PasskeyButton = ({
           // Log security event for failed passkey enrollment
           if (user) {
             await supabase.rpc('log_enhanced_security_event', {
-              event_type: 'PASSKEY_ENROLLMENT_FAILED',
-              user_id_param: user.id,
-              details: { error: error.message },
-              severity: 'medium'
+              p_event_type: 'PASSKEY_ENROLLMENT_FAILED',
+              p_user_id: user.id,
+              p_metadata: { error: error.message },
+              p_severity: 'medium'
             });
           }
           toast({
@@ -45,10 +45,10 @@ export const PasskeyButton = ({
           // Log successful passkey enrollment
           if (user) {
             await supabase.rpc('log_enhanced_security_event', {
-              event_type: 'PASSKEY_ENROLLMENT_SUCCESS',
-              user_id_param: user.id,
-              details: { timestamp: new Date().toISOString() },
-              severity: 'info'
+              p_event_type: 'PASSKEY_ENROLLMENT_SUCCESS',
+              p_user_id: user.id,
+              p_metadata: { timestamp: new Date().toISOString() },
+              p_severity: 'info'
             });
           }
           toast({
@@ -61,10 +61,10 @@ export const PasskeyButton = ({
         if (error) {
           // Log security event for failed passkey sign-in
           await supabase.rpc('log_enhanced_security_event', {
-            event_type: 'PASSKEY_SIGNIN_FAILED',
-            user_id_param: null,
-            details: { error: error.message },
-            severity: 'medium'
+            p_event_type: 'PASSKEY_SIGNIN_FAILED',
+            p_user_id: null,
+            p_metadata: { error: error.message },
+            p_severity: 'medium'
           });
           toast({
             title: "Passkey Sign-in Failed",

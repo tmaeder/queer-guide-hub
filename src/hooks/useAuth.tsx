@@ -110,14 +110,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Log failed sign-in attempt
         try {
           await supabase.rpc('log_enhanced_security_event', {
-            event_type: 'FAILED_SIGNIN_ATTEMPT',
-            user_id_param: null,
-            details: {
+            p_event_type: 'FAILED_SIGNIN_ATTEMPT',
+            p_user_id: null,
+            p_metadata: {
               email: email,
               error_message: error.message,
               timestamp: new Date().toISOString()
             },
-            severity: 'medium'
+            p_severity: 'medium'
           });
         } catch (logError) {
           console.error('Failed to log security event:', logError);
@@ -130,13 +130,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.user) {
         try {
           await supabase.rpc('log_enhanced_security_event', {
-            event_type: 'SUCCESSFUL_SIGNIN',
-            user_id_param: data.user.id,
-            details: {
+            p_event_type: 'SUCCESSFUL_SIGNIN',
+            p_user_id: data.user.id,
+            p_metadata: {
               email: email,
               timestamp: new Date().toISOString()
             },
-            severity: 'info'
+            p_severity: 'info'
           });
         } catch (logError) {
           console.error('Failed to log security event:', logError);
