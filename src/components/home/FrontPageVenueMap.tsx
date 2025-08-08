@@ -1,0 +1,190 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useSecureMapbox } from '@/hooks/useSecureMapbox';
+import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
+
+interface FrontPageVenueMapProps {
+  className?: string;
+}
+
+const DEFAULT_CENTER: [number, number] = [0, 20];
+
+export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className }) => {
+  const mapContainer = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
+
+  const { token: secureToken, loading: tokenLoading } = useSecureMapbox();
+  const [token, setToken] = useState<string | null>(null);
+  const [manualToken, setManualToken] = useState('');
+
+  const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
+  const [zoom, setZoom] = useState(2.2);
+  const [ipLocated, setIpLocated] = useState(false);
+
+  // Try secure token, then local storage fallback
+  useEffect(() => {
+    if (secureToken) {
+      setToken(secureToken);
+    } else {
+      const stored = localStorage.getItem('MAPBOX_PUBLIC_TOKEN');
+      if (stored) setToken(stored);
+    }
+  }, [secureToken]);
+
+  // Fetch approximate user location via IP
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+          if (!cancelled) {
+            setCenter([data.longitude, data.latitude]);
+            setZoom(9);
+            setIpLocated(true);
+          }
+        }
+      } catch (_) {
+        // silent fallback
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Fetch venues; we keep it simple and render all for now
+  const { venues = [], isFetching } = (useOptimizedVenues as any)();
+
+  // Initialize map when token ready
+  useEffect(() => {
+    if (!token || !mapContainer.current || mapRef.current) return;
+
+    mapboxgl.accessToken = token;
+    mapRef.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/light-v11',
+      projection: 'globe',
+      center,
+      zoom,
+      pitch: 45
+    });
+
+    mapRef.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+
+    mapRef.current.on('style.load', () => {
+      mapRef.current?.setFog({
+        color: 'rgb(255,255,255)',
+        'high-color': 'rgb(200,200,225)',
+        'horizon-blend': 0.2,
+      } as any);
+    });
+
+    return () => {
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, [token]);
+
+  // Update view when IP location arrives
+  useEffect(() => {
+    if (mapRef.current && ipLocated) {
+      mapRef.current.easeTo({ center, zoom, duration: 1200 });
+    }
+  }, [center, zoom, ipLocated]);
+
+  // Add markers for venues
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // Clear existing markers
+    markersRef.current.forEach(m => m.remove());
+    markersRef.current = [];
+
+    const bounds = new mapboxgl.LngLatBounds();
+
+    (venues as any[])
+      .filter(v => typeof v?.longitude === 'number' && typeof v?.latitude === 'number')
+      .forEach((venue) => {
+        const el = document.createElement('span');
+        el.className = 'w-3.5 h-3.5 rounded-full border-2 border-background bg-primary shadow';
+
+        const marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([venue.longitude, venue.latitude])
+          .setPopup(new mapboxgl.Popup({ offset: 12 }).setHTML(`
+            <div style="min-width:180px">
+              <strong>${venue.name ?? 'Venue'}</strong><br/>
+              ${venue.city ?? ''}
+            </div>
+          `))
+          .addTo(map);
+
+        markersRef.current.push(marker);
+        bounds.extend([venue.longitude, venue.latitude]);
+      });
+
+    if (markersRef.current.length > 0) {
+      try {
+        map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 800 });
+      } catch (_) { }
+    }
+  }, [venues]);
+
+  const handleSaveToken = () => {
+    if (!manualToken) return;
+    localStorage.setItem('MAPBOX_PUBLIC_TOKEN', manualToken);
+    setToken(manualToken);
+  };
+
+  const showTokenPrompt = !token && !tokenLoading;
+
+  return (
+    <section className={className}>
+      <div className="container mx-auto px-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Explore Venues Near You</span>
+              {isFetching && <span className="text-sm text-muted-foreground">Loading venues…</span>}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {showTokenPrompt ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Enter your Mapbox public token to enable the map (temporary fallback for unauthenticated users).
+                </p>
+                <div className="flex gap-2 max-w-xl">
+                  <Input
+                    placeholder="pk.eyJ..."
+                    value={manualToken}
+                    onChange={(e) => setManualToken(e.target.value)}
+                    aria-label="Mapbox public token"
+                  />
+                  <Button onClick={handleSaveToken}>Save</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <div ref={mapContainer} className="h-[480px] w-full rounded-lg" />
+                <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
+                  Centered {ipLocated ? 'via IP location' : 'globally'}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+};
+
+export default FrontPageVenueMap;

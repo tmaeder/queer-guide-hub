@@ -201,7 +201,18 @@ const Index = React.memo(() => {
       </React.Suspense>
 
       {/* Testimonials Section */}
-      
+
+      {/* Map Near You */}
+      <section className="py-8">
+        <React.Suspense fallback={null}>
+          {/* Lightweight map focused on venues/orgs near the user */}
+          {/** Using dynamic import to keep initial bundle small */}
+          {(() => {
+            const Map = React.lazy(() => import('@/components/home/FrontPageVenueMap'));
+            return <Map />;
+          })()}
+        </React.Suspense>
+      </section>
 
       {/* Final CTA Section */}
       
