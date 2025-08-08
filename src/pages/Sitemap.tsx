@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, Link2, Hash } from "lucide-react";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const routes: { title: string; links: { label: string; to: string }[] }[] = [
   {
@@ -220,18 +220,64 @@ export default function Sitemap() {
                     <p className="text-xs text-muted-foreground mb-2" role="status">Copied section link</p>
                   )}
 
+                  {/* Hierarchical list rendering: indent items under their hubs */}
                   <ul className="space-y-2 list-disc pl-5">
-                    {section.links.map((link) => (
-                      <li key={link.to}>
-                        <Link
-                          to={link.to}
-                          className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
-                        >
-                          {link.label}
-                        </Link>
-                        <span className="ml-2 text-xs text-muted-foreground">{link.to}</span>
-                      </li>
-                    ))}
+                    {(() => {
+                      // Define hub groupings by label
+                      const aboutChildren = new Set(["About", "Contact", "Press", "Blog", "Sustainability"]);
+                      const legalChildren = new Set(["Terms of Service", "Privacy Policy", "Cookie Policy", "DMCA"]);
+
+                      const links = section.links;
+                      const childrenByHub: Record<string, { label: string; to: string }[]> = {
+                        "About Hub": links.filter((l) => aboutChildren.has(l.label)),
+                        "Legal Hub": links.filter((l) => legalChildren.has(l.label)),
+                      };
+
+                      // Exclude children from root-level rendering; keep hub entries
+                      const rootLinks = links.filter(
+                        (l) => !(aboutChildren.has(l.label) || legalChildren.has(l.label))
+                      );
+
+                      return rootLinks.map((link) => {
+                        const children = childrenByHub[link.label as keyof typeof childrenByHub] || [];
+                        if (children.length === 0) {
+                          return (
+                            <li key={link.to}>
+                              <Link
+                                to={link.to}
+                                className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                              >
+                                {link.label}
+                              </Link>
+                              <span className="ml-2 text-xs text-muted-foreground">{link.to}</span>
+                            </li>
+                          );
+                        }
+                        return (
+                          <li key={link.to}>
+                            <Link
+                              to={link.to}
+                              className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                            >
+                              {link.label}
+                            </Link>
+                            <ul className="mt-2 list-disc pl-5 space-y-1">
+                              {children.map((cl) => (
+                                <li key={cl.to}>
+                                  <Link
+                                    to={cl.to}
+                                    className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                                  >
+                                    {cl.label}
+                                  </Link>
+                                  <span className="ml-2 text-xs text-muted-foreground">{cl.to}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </li>
+                        );
+                      });
+                    })()}
                   </ul>
                 </article>
               );
@@ -246,4 +292,3 @@ export default function Sitemap() {
     </>
   );
 }
-
