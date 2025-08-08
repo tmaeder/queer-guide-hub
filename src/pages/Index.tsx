@@ -7,7 +7,6 @@ import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, Check
 import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
-import FrontPageVenueMap from '@/components/home/FrontPageVenueMap';
 
 // Lazy load slider components for better performance
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -105,54 +104,8 @@ const Index = React.memo(() => {
   return <div className="min-h-screen">
       {/* Hero Section */}
       <section className="py-24 lg:py-32">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-4xl mx-auto">
-            {/* Main Headline */}
-            <div className="flex items-center justify-center gap-6 mb-8">
-              <Heart className="h-16 w-16 lg:h-20 lg:w-20 text-primary fill-current" />
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold">
-                Queer Guide
-              </h1>
-            </div>
-
-            {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto">
-              Your go-to spot for finding safe spaces, connecting with chosen family, 
-              and living your most authentic life. Welcome home, bestie!
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex gap-4 justify-center mb-16 flex-col sm:flex-row">
-              <Button size="lg" className="text-lg px-8 py-6" asChild>
-                <Link to="/venues">
-                  Find Safe Spaces
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
-                <Link to={user ? "/events" : "/auth"}>
-                  {user ? "Hit the Scene" : "Join the Family"}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
-              {stats.map((stat, index) => <div key={index} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
-                    {stat.number}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {stat.label}
-                  </div>
-                </div>)}
-            </div>
-          </div>
-        </div>
+        
       </section>
-
-      <FrontPageVenueMap className="py-12" />
 
       {/* Features Grid */}
       <section className="py-20 bg-muted/30">
@@ -166,20 +119,8 @@ const Index = React.memo(() => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {features.map((feature, index) => (
-              <Link to={feature.link} key={index} className="group">
-                <Card className="h-full">
-                  <CardContent className="p-4 sm:p-5">
-                    <div className="flex flex-col items-start gap-3">
-                      <feature.icon className={`h-5 w-5 ${feature.color}`} aria-hidden="true" />
-                      <h3 className="font-semibold">{feature.title}</h3>
-                      <p className="text-sm text-muted-foreground">{feature.description}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => {})}
           </div>
         </div>
       </section>
