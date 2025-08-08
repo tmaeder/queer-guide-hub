@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { medusa } from "@/integrations/medusa/client";
+import { medusa, getMedusaBaseUrl } from "@/integrations/medusa/client";
 
 // Minimal listing shape expected by our UI
 export interface MedusaListing {

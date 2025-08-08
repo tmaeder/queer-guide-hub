@@ -12,3 +12,10 @@ if (typeof window !== "undefined") {
 export const medusa = new Medusa({ baseUrl: BASE_URL, maxRetries: 3 });
 
 export const getMedusaBaseUrl = () => BASE_URL;
+export const setMedusaBaseUrl = (url: string) => {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("MEDUSA_URL", url);
+    // soft reload to re-create client
+    window.location.reload();
+  }
+};

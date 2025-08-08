@@ -88,7 +88,17 @@ const Marketplace = () => {
           <Card className="p-8 text-center">
             <CardContent>
               <p className="text-destructive mb-4">Error loading marketplace: {error}</p>
-              <Button onClick={() => fetchListings()}>Try Again</Button>
+              <p className="text-sm text-muted-foreground mb-4">Configure your Medusa Store API URL and try again.</p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <Button onClick={() => fetchListings()}>Try Again</Button>
+                <Button variant="outline" onClick={() => {
+                  const url = prompt('Enter Medusa Store API URL (e.g. https://shop.example.com)') || '';
+                  if (url) {
+                    window.localStorage.setItem('MEDUSA_URL', url);
+                    window.location.reload();
+                  }
+                }}>Set Medusa URL</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
