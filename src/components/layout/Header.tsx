@@ -27,99 +27,99 @@ export function Header() {
   const userModes = [{
     value: 'dating',
     icon: Heart,
-    label: 'Dating'
+    label: 'Looking for Love 💕'
   }, {
     value: 'friends',
     icon: Users,
-    label: 'Friends'
+    label: 'Making Friends 👯'
   }, {
     value: 'exploration',
     icon: Map,
-    label: 'Exploration'
+    label: 'Exploring the Scene 🗺️'
   }, {
     value: 'fun',
     icon: Smile,
-    label: 'Fun'
+    label: 'Just Here for Fun 🎉'
   }, {
     value: 'networking',
     icon: Handshake,
-    label: 'Networking'
+    label: 'Professional Networking 💼'
   }, {
     value: 'community',
     icon: Home,
-    label: 'Community'
+    label: 'Building Community 🏳️‍🌈'
   }];
   const navigationSections = [{
-    title: "Explore",
+    title: "Explore the Scene ✨",
     items: [{
       to: "/events",
       icon: Calendar,
-      label: "Events"
+      label: "Events & Happenings"
     }, {
       to: "/directory",
       icon: Globe,
-      label: "Locations"
+      label: "Gayborhoods & Cities"
     }, {
       to: "/travel",
       icon: Plane,
-      label: "Travel"
+      label: "Queer Travel"
     }, {
       to: "/venues",
       icon: MapPin,
-      label: "Venues/Organisations"
+      label: "Safe Spaces & Orgs"
     }, {
       to: "/marketplace",
       icon: Store,
-      label: "Market"
+      label: "Queer Market"
     }, {
       to: "/tags",
       icon: Tags,
-      label: "Wiki"
+      label: "The Wiki Tea"
     }, {
       to: "/news",
       icon: Newspaper,
-      label: "News"
+      label: "Latest News"
     }, {
       to: "/donate",
       icon: Heart,
-      label: "Donate"
+      label: "Support Us"
     }]
   }, {
-    title: "Community",
+    title: "Find Your People 👑",
     items: [{
       to: "/feed",
       icon: Rss,
-      label: "Feed"
+      label: "Community Feed"
     }, {
       to: "/users",
       icon: UserCheck,
-      label: "Users"
+      label: "User Directory"
     }, {
       to: "/groups",
       icon: UsersRound,
-      label: "Groups"
+      label: "Groups & Crews"
     }]
   }];
   const userMenuItems = [{
     to: "/favorites",
     icon: Heart,
-    label: "Favorites"
+    label: "Faves"
   }, {
     to: "/profile/settings",
     icon: Settings,
-    label: "My Profile"
+    label: "My Vibe"
   }, {
     to: "/messages",
     icon: MessageSquare,
-    label: "Messages"
+    label: "DMs"
   }, {
     to: "/friends",
     icon: Users,
-    label: "Friends"
+    label: "Squad"
   }, {
     to: "/my-groups",
     icon: UsersRound,
-    label: "My Groups"
+    label: "My Crews"
   }, {
     to: "/accessibility",
     icon: Accessibility,
@@ -155,7 +155,7 @@ export function Header() {
             {user && <NotificationBell />}
             
             {/* User menu - Always visible when logged in */}
-            {user ? <DropdownMenu>
+              {user ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
                     <User className="h-5 w-5" />
@@ -175,12 +175,12 @@ export function Header() {
                   
                   <Button variant="ghost" size="sm" className="w-full justify-start text-destructive hover:text-destructive" onClick={signOut}>
                     <LogOut className="h-4 w-4 mr-2" />
-                    Logout
+                    Peace Out ✌️
                   </Button>
                 </DropdownMenuContent>
               </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} size="sm">
                 <User className="h-4 w-4 mr-2" />
-                Sign In
+                Join the Fam
               </Button>}
 
             {/* Main menu */}

@@ -64,7 +64,7 @@ export const StartConversationButton = ({
       className={className}
     >
       <MessageCircle className="h-4 w-4 mr-2" />
-      {loading ? "Starting..." : "Message"}
+      {loading ? "Sliding into DMs..." : "Send DM"}
     </Button>
   );
 };

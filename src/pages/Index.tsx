@@ -17,51 +17,51 @@ const Index = React.memo(() => {
   const isMobile = useIsMobile();
   const features = [{
     icon: MapPin,
-    title: 'Safe Venues',
-    description: 'Discover verified queer-friendly venues worldwide',
+    title: 'Safe Spaces That Slap ✨',
+    description: 'Find verified queer havens where you can be your authentic self',
     color: 'text-primary',
     link: '/venues'
   }, {
     icon: Calendar,
-    title: 'Community Events',
-    description: 'Connect through local and virtual events',
+    title: 'Events That Serve 🎉',
+    description: 'Connect with your people through fab local & virtual gatherings',
     color: 'text-foreground',
     link: '/events'
   }, {
     icon: Store,
-    title: 'Queer Marketplace',
-    description: 'Support LGBTQ+ owned businesses and creators',
+    title: 'Queer Marketplace 🛍️',
+    description: 'Support our community - shop queer-owned businesses & creators',
     color: 'text-accent',
     link: '/marketplace'
   }, {
     icon: Plane,
-    title: 'Travel Planning',
-    description: 'Plan inclusive trips with confidence',
+    title: 'Travel Like a Queen ✈️',
+    description: 'Plan trips to places that celebrate you - no compromises',
     color: 'text-primary',
     link: '/travel'
   }, {
     icon: Users,
-    title: 'Community Hub',
-    description: 'Build lasting connections and friendships',
+    title: 'Find Your Chosen Family 👑',
+    description: 'Build real connections with people who get you',
     color: 'text-foreground',
     link: '/groups'
   }, {
     icon: BookOpen,
-    title: 'Knowledge Base',
-    description: 'Learn about LGBTQ+ rights and resources',
+    title: 'The Tea & Resources 📚',
+    description: 'Stay informed about rights, culture, and community wisdom',
     color: 'text-accent',
     link: '/directory'
   }];
   const testimonials = [{
-    quote: "Queer Guide helped me find safe spaces when I moved to a new city. The community here is amazing!",
+    quote: "Queer Guide helped me find my people when I moved cities. This app is literally life-changing! 🌈",
     author: "Alex",
     location: "Berlin, Germany"
   }, {
-    quote: "As a business owner, being featured on Queer Guide has connected me with my community.",
+    quote: "Being featured on Queer Guide brought so much love to my queer-owned business. The community support hits different! 💅",
     author: "Sam",
     location: "San Francisco, USA"
   }, {
-    quote: "The events section keeps me connected with local LGBTQ+ happenings. It's become essential.",
+    quote: "The events section keeps me plugged into the scene. It's giving main character energy and I'm here for it! ✨",
     author: "Jordan",
     location: "Toronto, Canada"
   }];
@@ -112,21 +112,21 @@ const Index = React.memo(() => {
 
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto">
-              Your platform for discovering safe spaces, connecting with community, 
-              and building an inclusive world together.
+              Your go-to spot for finding safe spaces, connecting with chosen family, 
+              and living your most authentic life. Welcome home, bestie! 🏳️‍🌈
             </p>
 
             {/* CTA Buttons */}
             <div className="flex gap-4 justify-center mb-16 flex-col sm:flex-row">
               <Button size="lg" className="text-lg px-8 py-6" asChild>
                 <Link to="/venues">
-                  Explore Venues
+                  Find Safe Spaces ✨
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
                 <Link to={user ? "/events" : "/auth"}>
-                  {user ? "Browse Events" : "Join Community"}
+                  {user ? "Hit the Scene 🎉" : "Join the Family 👑"}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -154,10 +154,10 @@ const Index = React.memo(() => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Everything You Need
+              Everything That Serves 💅
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Comprehensive tools and resources for the LGBTQ+ community
+              All the tools and resources your queer heart desires
             </p>
           </div>
 
@@ -179,7 +179,7 @@ const Index = React.memo(() => {
                   
                   <Button variant="ghost" asChild>
                     <Link to={feature.link}>
-                      Learn More
+                      Let's Go
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -205,10 +205,10 @@ const Index = React.memo(() => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              What Our Community Says
+              The Reviews Are In 🌟
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Real stories from LGBTQ+ individuals
+              Real tea from our fabulous community
             </p>
           </div>
 
@@ -247,21 +247,21 @@ const Index = React.memo(() => {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Join Our Community?
+              Ready to Join the Family? 👑
             </h2>
             <p className="text-xl mb-8 opacity-90">
-              Connect with like-minded individuals and discover safe spaces.
+              Connect with your people and find spaces where you belong.
             </p>
             <div className="flex gap-4 justify-center flex-col sm:flex-row">
               <Button size="lg" variant="secondary" className="text-lg px-8 py-6" asChild>
                 <Link to="/auth">
-                  Get Started Today
+                  Join the Fam ✨
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10" asChild>
                 <Link to="/venues">
-                  Explore Venues
+                  Find Safe Spaces
                   <Search className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
