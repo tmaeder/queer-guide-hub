@@ -8,6 +8,8 @@ import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getGravatarUrl } from '@/lib/gravatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -25,9 +27,8 @@ export function Header() {
     profile,
     updateProfile
   } = useProfile();
-  const {
-    unreadCount
-  } = useNotifications();
+  const { unreadCount } = useNotifications();
+  const avatarSrc = profile?.avatar_url || (user?.email ? getGravatarUrl(user.email, 96, 'mp') || undefined : undefined);
   const userModes = [{
     value: 'dating',
     icon: Heart,
@@ -155,41 +156,55 @@ export function Header() {
               {user ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0" aria-label="Open user menu">
-                    <User className="h-5 w-5" />
-                    {unreadCount > 0 && <span className="absolute -top-1 -right-1 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] px-1">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={avatarSrc} alt={(profile?.display_name || user?.email || 'User avatar') as string} />
+                      <AvatarFallback>
+                        {(profile?.display_name || user?.email || 'U')?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] px-1">
                         {unreadCount}
-                      </span>}
+                      </span>
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80 p-4 bg-background border border-border z-50">
-                  {/* Notifications */}
-                  <div className="mb-4">
-                    <NotificationList />
-                  </div>
-
                   {/* User mode */}
                   <div className="mb-4">
                     <h4 className="text-sm font-medium mb-2">Your mode</h4>
                     <Select value={profile?.user_mode || 'community'} onValueChange={handleModeChange}>
                       <SelectTrigger className="w-full">
-                        
+                        <SelectValue placeholder="Select mode" />
                       </SelectTrigger>
                       <SelectContent>
-                        {userModes.map(mode => <SelectItem key={mode.value} value={mode.value}>
-                            
-                          </SelectItem>)}
+                        {userModes.map((mode) => (
+                          <SelectItem key={mode.value} value={mode.value}>
+                            <div className="flex items-center gap-2">
+                              <mode.icon className="h-4 w-4" />
+                              <span>{mode.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Notifications */}
+                  <div className="mb-4">
+                    <NotificationList />
                   </div>
 
                   <DropdownMenuSeparator />
 
                   {/* Quick actions grid */}
                   <div className="grid grid-cols-3 gap-2 p-2">
-                    {userMenuItems.map(item => <Button key={item.to} variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate(item.to)}>
+                    {userMenuItems.map(item => (
+                      <Button key={item.to} variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate(item.to)}>
                         <item.icon className="h-4 w-4" />
                         <span className="text-xs">{item.label}</span>
-                      </Button>)}
+                      </Button>
+                    ))}
                   </div>
 
                   <DropdownMenuSeparator />
