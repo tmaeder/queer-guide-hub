@@ -79,6 +79,10 @@ export function Header() {
       icon: Store,
       label: "Queer Market"
     }, {
+      to: "/donate",
+      icon: CreditCard,
+      label: "Donate"
+    }, {
       to: "/tags",
       icon: Tags,
       label: "The Wiki Tea"

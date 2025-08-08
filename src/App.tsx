@@ -20,6 +20,8 @@ import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import Marketplace from "./pages/Marketplace";
 import MarketplaceItemDetail from "./pages/MarketplaceItemDetail";
+import Donations from "./pages/Donations";
+import DonationSuccess from "./pages/DonationSuccess";
 
 import Directory from "./pages/Directory";
 import TagsDirectory from "./pages/TagsDirectory";
@@ -106,6 +108,8 @@ const App = () => {
                   <Route path="/events/:id" element={<EventDetail />} />
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/marketplace/:id" element={<MarketplaceItemDetail />} />
+                  <Route path="/donate" element={<Donations />} />
+                  <Route path="/donation-success" element={<DonationSuccess />} />
                   
                   <Route path="/directory" element={<Directory />} />
                   <Route path="/city/:id" element={<CityDetail />} />
