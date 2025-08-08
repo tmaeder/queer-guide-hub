@@ -57,7 +57,7 @@ const Marketplace = () => {
       fetchListings(); // Refresh to show updated favorites
     }
   };
-  const handleViewDetails = (listing: MarketplaceListing) => {
+  const handleViewDetails = (listing: MedusaListing) => {
     setSelectedListing(listing);
     incrementViews(listing.id);
     // In a real app, this would navigate to a detailed listing page
