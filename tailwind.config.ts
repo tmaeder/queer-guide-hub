@@ -69,9 +69,9 @@ export default {
 				}
 			},
 			borderRadius: {
-				lg: '0px',
-				md: '0px',
-				sm: '0px'
+				lg: '16px',
+				md: '12px',
+				sm: '10px'
 			},
 			keyframes: {
 				'accordion-down': {

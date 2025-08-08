@@ -4,89 +4,89 @@
 
 @layer base {
   :root {
-    /* Ultra-minimal Black and White Color Palette */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    /* Playful Fresh Color Palette */
+    --background: 0 0% 100%; /* White */
+    --foreground: 240 10% 10%; /* Near-black text */
+
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card-foreground: 240 10% 10%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-    
-    /* Primary: Black */
-    --primary: 0 0% 0%;
+    --popover-foreground: 240 10% 10%;
+
+    /* Brand */
+    --primary: 268 83% 58%; /* Electric Purple */
     --primary-foreground: 0 0% 100%;
-    
-    /* Secondary: Very Light Gray */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 0%;
-    
-    /* Muted: Light Gray */
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 40%;
-    
-    /* Accent: Medium Gray */
-    --accent: 0 0% 90%;
-    --accent-foreground: 0 0% 0%;
-    
-    /* Destructive: Black */
-    --destructive: 0 0% 0%;
+
+    --secondary: 174 72% 45%; /* Teal */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 20% 97%; /* Very light gray-blue */
+    --muted-foreground: 220 10% 40%;
+
+    --accent: 12 90% 55%; /* Coral */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%; /* Red */
     --destructive-foreground: 0 0% 100%;
-    
-    /* UI Elements - Very subtle */
-    --border: 0 0% 94%;
-    --input: 0 0% 96%;
-    --ring: 0 0% 85%;
-    --radius: 4px;
-    
+
+    /* UI Elements */
+    --border: 220 14% 90%;
+    --input: 220 14% 95%;
+    --ring: 268 83% 58%;
+    --radius: 16px;
+
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 0 0% 0%;
+    --sidebar-foreground: 240 10% 10%;
+    --sidebar-primary: 268 83% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 94%;
-    --sidebar-ring: 0 0% 85%;
-    
-    /* Minimal animations */
-    --transition-smooth: all 0.15s ease;
+    --sidebar-accent: 220 20% 97%;
+    --sidebar-accent-foreground: 240 10% 10%;
+    --sidebar-border: 220 14% 90%;
+    --sidebar-ring: 268 83% 58%;
+
+    /* Smooth micro-interactions */
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 0 0% 0%;
+    --background: 240 6% 10%;
     --foreground: 0 0% 100%;
-    --card: 0 0% 0%;
+
+    --card: 240 6% 12%;
     --card-foreground: 0 0% 100%;
-    --popover: 0 0% 0%;
+
+    --popover: 240 6% 12%;
     --popover-foreground: 0 0% 100%;
-    
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 0%;
-    
-    --secondary: 0 0% 4%;
+
+    --primary: 268 83% 68%;
+    --primary-foreground: 0 0% 10%;
+
+    --secondary: 174 72% 38%;
     --secondary-foreground: 0 0% 100%;
-    
-    --muted: 0 0% 4%;
-    --muted-foreground: 0 0% 60%;
-    
-    --accent: 0 0% 10%;
-    --accent-foreground: 0 0% 100%;
-    
-    --destructive: 0 0% 100%;
-    --destructive-foreground: 0 0% 0%;
-    
-    --border: 0 0% 6%;
-    --input: 0 0% 4%;
-    --ring: 0 0% 15%;
-    
-    --sidebar-background: 0 0% 0%;
+
+    --muted: 240 6% 16%;
+    --muted-foreground: 0 0% 80%;
+
+    --accent: 12 90% 60%;
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 0 0% 10%;
+
+    --border: 240 5% 20%;
+    --input: 240 5% 18%;
+    --ring: 268 83% 68%;
+
+    --sidebar-background: 240 6% 10%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 4%;
+    --sidebar-primary: 268 83% 68%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 240 6% 16%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 6%;
-    --sidebar-ring: 0 0% 15%;
+    --sidebar-border: 240 5% 20%;
+    --sidebar-ring: 268 83% 68%;
   }
 
   * {
@@ -124,15 +124,11 @@
   }
 }
 
-/* Minimal Animation Utilities */
-.hover-minimal {
-  @apply transition-colors duration-150;
-}
+/* Animation Utilities */
+.hover-minimal { @apply transition-colors duration-150; }
+.hover-scale { @apply transition-transform duration-200 hover:scale-105 active:scale-95; }
 
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out;
-}
-
+.animate-fade-in { animation: fade-in 0.2s ease-out; }
 @keyframes fade-in {
   from {
     opacity: 0;
