@@ -8,6 +8,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -153,7 +154,12 @@ export function Header() {
               {user ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0" aria-label="Open user menu">
-                    <User className="h-5 w-5" />
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={profile?.avatar_url || ''} alt={(profile?.display_name || user?.email || 'User avatar') as string} />
+                      <AvatarFallback>
+                        {(profile?.display_name || user?.email || 'U')?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     {unreadCount > 0 && (
                       <span className="absolute -top-1 -right-1 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] px-1">
                         {unreadCount}
