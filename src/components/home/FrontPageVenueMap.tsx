@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
-
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 interface FrontPageVenueMapProps {
   className?: string;
 }
@@ -25,6 +25,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
   const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [zoom, setZoom] = useState(2.2);
   const [ipLocated, setIpLocated] = useState(false);
+  const [mode, setMode] = useState<'all' | 'venues' | 'orgs'>('all');
 
   // Try secure token, then local storage fallback
   useEffect(() => {
@@ -110,33 +111,44 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
     markersRef.current = [];
 
     const bounds = new mapboxgl.LngLatBounds();
+    const allWithCoords = (venues as any[])
+      .filter(v => typeof v?.longitude === 'number' && typeof v?.latitude === 'number');
 
-    (venues as any[])
-      .filter(v => typeof v?.longitude === 'number' && typeof v?.latitude === 'number')
-      .forEach((venue) => {
-        const el = document.createElement('span');
-        el.className = 'w-3.5 h-3.5 rounded-full border-2 border-background bg-primary shadow';
+    const filtered = allWithCoords.filter((v) => {
+      const isOrg = String(v?.category ?? '').toLowerCase().includes('org');
+      if (mode === 'all') return true;
+      if (mode === 'orgs') return isOrg;
+      return !isOrg;
+    });
 
-        const marker = new mapboxgl.Marker({ element: el })
-          .setLngLat([venue.longitude, venue.latitude])
-          .setPopup(new mapboxgl.Popup({ offset: 12 }).setHTML(`
-            <div style="min-width:180px">
-              <strong>${venue.name ?? 'Venue'}</strong><br/>
-              ${venue.city ?? ''}
-            </div>
-          `))
-          .addTo(map);
+    filtered.forEach((venue) => {
+      const isOrg = String(venue?.category ?? '').toLowerCase().includes('org');
+      const el = document.createElement('span');
+      el.className = isOrg
+        ? 'w-3.5 h-3.5 rounded-full border-2 border-background bg-accent shadow'
+        : 'w-3.5 h-3.5 rounded-full border-2 border-background bg-primary shadow';
 
-        markersRef.current.push(marker);
-        bounds.extend([venue.longitude, venue.latitude]);
-      });
+      const marker = new mapboxgl.Marker({ element: el })
+        .setLngLat([venue.longitude, venue.latitude])
+        .setPopup(new mapboxgl.Popup({ offset: 12 }).setHTML(`
+          <div style="min-width:200px">
+            <strong>${venue.name ?? 'Venue'}</strong><br/>
+            <span>${isOrg ? 'Organization' : (venue.category ?? 'Venue')}</span><br/>
+            ${venue.city ?? ''}
+          </div>
+        `))
+        .addTo(map);
+
+      markersRef.current.push(marker);
+      bounds.extend([venue.longitude, venue.latitude]);
+    });
 
     if (markersRef.current.length > 0) {
       try {
         map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 800 });
       } catch (_) { }
     }
-  }, [venues]);
+  }, [venues, mode]);
 
   const handleSaveToken = () => {
     if (!manualToken) return;
@@ -151,9 +163,16 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
       <div className="container mx-auto px-4">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Explore Venues Near You</span>
-              {isFetching && <span className="text-sm text-muted-foreground">Loading venues…</span>}
+            <CardTitle className="flex items-center justify-between gap-4">
+              <span>Explore Venues & Organizations Near You</span>
+              <div className="flex items-center gap-3">
+                <ToggleGroup type="single" value={mode} onValueChange={(v) => v && setMode(v as any)}>
+                  <ToggleGroupItem value="all" aria-label="Show all">All</ToggleGroupItem>
+                  <ToggleGroupItem value="venues" aria-label="Show venues">Venues</ToggleGroupItem>
+                  <ToggleGroupItem value="orgs" aria-label="Show organizations">Orgs</ToggleGroupItem>
+                </ToggleGroup>
+                {isFetching && <span className="text-sm text-muted-foreground">Loading…</span>}
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
