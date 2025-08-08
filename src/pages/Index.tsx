@@ -204,32 +204,7 @@ const Index = React.memo(() => {
       
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Join the Family?
-            </h2>
-            <p className="text-xl mb-8 opacity-90">
-              Connect with your people and find spaces where you belong.
-            </p>
-            <div className="flex gap-4 justify-center flex-col sm:flex-row">
-              <Button size="lg" variant="secondary" className="text-lg px-8 py-6" asChild>
-                <Link to="/auth">
-                  Join the Fam
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10" asChild>
-                <Link to="/venues">
-                  Find Safe Spaces
-                  <Search className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      
     </div>;
 });
 
