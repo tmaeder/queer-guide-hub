@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Tables } from "@/integrations/supabase/types";
-import { useRedis } from "@/hooks/useRedis";
 
 type Notification = Tables<'notifications'>;
 
@@ -13,22 +12,12 @@ export const useNotifications = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
-  const { getCached, cache, del } = useRedis();
 
-  // Fetch notifications with Redis cache
+  // Fetch notifications
   const fetchNotifications = async () => {
     if (!user) return;
 
-    const cacheKey = `notifications:${user.id}`;
     try {
-      // Try cached first for instant UI
-      const cached = await getCached<{ items: Notification[]; unread: number }>(cacheKey);
-      if (cached) {
-        setNotifications(cached.items);
-        setUnreadCount(cached.unread);
-        setLoading(false);
-      }
-
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
@@ -38,13 +27,8 @@ export const useNotifications = () => {
 
       if (error) throw error;
 
-      const items = data || [];
-      const unread = items.filter(n => !n.read).length;
-      setNotifications(items);
-      setUnreadCount(unread);
-
-      // Cache for 60s
-      await cache(cacheKey, { items, unread }, 60);
+      setNotifications(data || []);
+      setUnreadCount(data?.filter(n => !n.read).length || 0);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -54,8 +38,6 @@ export const useNotifications = () => {
 
   // Mark notification as read
   const markAsRead = async (notificationId: string) => {
-    if (!user) return;
-    const cacheKey = `notifications:${user.id}`;
     try {
       const { error } = await supabase
         .from('notifications')
@@ -64,14 +46,10 @@ export const useNotifications = () => {
 
       if (error) throw error;
 
-      setNotifications(prev => {
-        const updated = prev.map(n => n.id === notificationId ? { ...n, read: true } : n);
-        const newUnread = updated.filter(n => !n.read).length;
-        setUnreadCount(newUnread);
-        // Update cache
-        cache(cacheKey, { items: updated, unread: newUnread }, 60);
-        return updated;
-      });
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -80,7 +58,7 @@ export const useNotifications = () => {
   // Mark all as read
   const markAllAsRead = async () => {
     if (!user) return;
-    const cacheKey = `notifications:${user.id}`;
+
     try {
       const { error } = await supabase
         .from('notifications')
@@ -90,12 +68,8 @@ export const useNotifications = () => {
 
       if (error) throw error;
 
-      setNotifications(prev => {
-        const updated = prev.map(n => ({ ...n, read: true }));
-        setUnreadCount(0);
-        cache(cacheKey, { items: updated, unread: 0 }, 60);
-        return updated;
-      });
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
@@ -149,16 +123,8 @@ export const useNotifications = () => {
         },
         (payload) => {
           const newNotification = payload.new as Notification;
-          setNotifications(prev => {
-            const updated = [newNotification, ...prev];
-            const newUnread = updated.filter(n => !n.read).length;
-            setUnreadCount(newUnread);
-            if (user) {
-              const cacheKey = `notifications:${user.id}`;
-              cache(cacheKey, { items: updated, unread: newUnread }, 60);
-            }
-            return updated;
-          });
+          setNotifications(prev => [newNotification, ...prev]);
+          setUnreadCount(prev => prev + 1);
           
           // Show toast for new notification
           toast({

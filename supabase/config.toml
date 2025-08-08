@@ -134,15 +134,3 @@ verify_jwt = false
 
 [functions.enrich-venue]
 verify_jwt = false
-
-[functions.redis-get]
-verify_jwt = false
-
-[functions.redis-set]
-verify_jwt = false
-
-[functions.redis-delete]
-verify_jwt = false
-
-[functions.redis-keys]
-verify_jwt = false

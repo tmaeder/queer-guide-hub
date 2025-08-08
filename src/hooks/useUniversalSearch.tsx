@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useRedis } from '@/hooks/useRedis';
 
 export interface SearchResult {
   id: string;
@@ -33,7 +32,6 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
-  const { getCached, cache } = useRedis();
 
   const searchVenues = async (searchQuery: string): Promise<SearchResult[]> => {
     const { data, error } = await supabase
@@ -269,18 +267,9 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
       return;
     }
 
-    const cacheKey = `search:${searchQuery}:${JSON.stringify(filters)}`;
+    setLoading(true);
 
     try {
-      // Serve cached results instantly if available
-      const cached = await getCached<{ results: SearchResult[]; suggestions: SearchResult[] }>(cacheKey);
-      if (cached) {
-        setResults(cached.results);
-        setSuggestions(cached.suggestions);
-      } else {
-        setLoading(true);
-      }
-
       const searchPromises: Promise<SearchResult[]>[] = [];
       const enabledTypes = filters.types.length > 0 ? filters.types : ['venue', 'event', 'marketplace', 'user', 'news', 'location', 'content', 'travel'];
 
@@ -333,12 +322,8 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
         return 0;
       });
 
-      const topSuggestions = filteredResults.slice(0, 5);
       setResults(filteredResults);
-      setSuggestions(topSuggestions);
-
-      // Cache results for 5 minutes
-      await cache(cacheKey, { results: filteredResults, suggestions: topSuggestions }, 300);
+      setSuggestions(filteredResults.slice(0, 5));
     } catch (error) {
       console.error('Search error:', error);
       setResults([]);
