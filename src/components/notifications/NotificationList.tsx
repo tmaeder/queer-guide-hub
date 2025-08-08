@@ -1,9 +1,16 @@
+import { useEffect, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, Calendar, Info, Check, CheckCheck } from "lucide-react";
+import { MessageCircle, Calendar, Info, CheckCheck, Users, Heart, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useMessaging } from "@/hooks/useMessaging";
+import { useGroupNotifications } from "@/hooks/useGroupNotifications";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
@@ -18,102 +25,358 @@ const getNotificationIcon = (type: string) => {
   }
 };
 
+interface LikeItem {
+  id: string;
+  post_id: string;
+  user_id: string;
+  created_at: string;
+  user_display_name: string;
+  user_avatar_url: string | null;
+}
+
+interface CommentItem {
+  id: string;
+  post_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  user_display_name: string;
+  user_avatar_url: string | null;
+}
+
 export const NotificationList = () => {
   const { notifications, loading, markAsRead, markAllAsRead } = useNotifications();
+  const { conversations, loading: messagingLoading } = useMessaging();
+  const { notifications: groupNotifs, isLoading: groupsLoading } = useGroupNotifications();
+  const { user } = useAuth();
   const navigate = useNavigate();
+
+  const [likes, setLikes] = useState<LikeItem[]>([]);
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [likesLoading, setLikesLoading] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLikesAndComments = async () => {
+      if (!user?.id) return;
+      try {
+        setLikesLoading(true);
+        setCommentsLoading(true);
+        // Fetch user's post IDs
+        const { data: posts, error: postsErr } = await supabase
+          .from('community_posts')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(200);
+        if (postsErr) throw postsErr;
+        const postIds = (posts || []).map(p => p.id);
+        if (postIds.length === 0) {
+          if (isMounted) {
+            setLikes([]);
+            setComments([]);
+          }
+          return;
+        }
+        // Fetch recent likes on user's posts
+        const { data: likesData } = await supabase
+          .from('post_likes')
+          .select('id, post_id, user_id, created_at')
+          .in('post_id', postIds)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        let likesEnriched: LikeItem[] = [];
+        if (likesData?.length) {
+          const likerIds = [...new Set(likesData.map(l => l.user_id))];
+          const { data: likerProfiles } = await supabase
+            .from('profiles')
+            .select('user_id, display_name, avatar_url')
+            .in('user_id', likerIds);
+          likesEnriched = (likesData || []).map(l => {
+            const p = likerProfiles?.find(x => x.user_id === l.user_id);
+            return {
+              id: l.id,
+              post_id: l.post_id,
+              user_id: l.user_id,
+              created_at: l.created_at as string,
+              user_display_name: p?.display_name || 'Someone',
+              user_avatar_url: p?.avatar_url || null
+            };
+          });
+        }
+        if (isMounted) setLikes(likesEnriched);
+
+        // Fetch recent comments on user's posts (with profile join)
+        const { data: commentsData, error: commentsErr } = await supabase
+          .from('post_comments')
+          .select(`id, post_id, user_id, content, created_at, profiles ( display_name, avatar_url, user_id )`)
+          .in('post_id', postIds)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        if (commentsErr) throw commentsErr;
+        const commentsEnriched: CommentItem[] = (commentsData || []).map((c: any) => ({
+          id: c.id,
+          post_id: c.post_id,
+          user_id: c.user_id,
+          content: c.content,
+          created_at: c.created_at,
+          user_display_name: c.profiles?.display_name || 'Someone',
+          user_avatar_url: c.profiles?.avatar_url || null,
+        }));
+        if (isMounted) setComments(commentsEnriched);
+      } catch (e) {
+        // Fail silently in dropdown context
+        console.error('Failed to fetch likes/comments', e);
+      } finally {
+        if (isMounted) {
+          setLikesLoading(false);
+          setCommentsLoading(false);
+        }
+      }
+    };
+
+    fetchLikesAndComments();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.read) {
       markAsRead(notification.id);
     }
-    
     if (notification.action_url) {
       navigate(notification.action_url);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        Loading notifications...
-      </div>
-    );
-  }
+  const directMessages = useMemo(() => {
+    return (conversations || []).slice(0, 10);
+  }, [conversations]);
 
-  if (notifications.length === 0) {
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        No notifications yet
-      </div>
-    );
-  }
+  const Empty = ({ label }: { label: string }) => (
+    <div className="p-4 text-center text-muted-foreground">{label}</div>
+  );
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between p-2">
-        <span className="text-sm font-medium">Recent</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={markAllAsRead}
-          className="text-xs"
-        >
-          <CheckCheck className="h-3 w-3 mr-1" />
-          Mark all read
-        </Button>
-      </div>
-      
-      <ScrollArea className="h-96">
-        <div className="divide-y">
-          {notifications.map((notification) => (
-            <div
-              key={notification.id}
-              className={cn(
-                "p-3 cursor-pointer hover:bg-muted/50 transition-colors",
-                !notification.read && "bg-primary/5"
-              )}
-              onClick={() => handleNotificationClick(notification)}
-            >
-              <div className="flex items-start gap-3">
-                <div className={cn(
-                  "p-1",
-                  notification.type === 'message' && "bg-primary/10 text-primary",
-                  notification.type === 'event' && "bg-accent/10 text-accent",
-                  notification.type === 'system' && "bg-secondary/10 text-secondary"
-                )}>
-                  {getNotificationIcon(notification.type)}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between">
-                    <h4 className={cn(
-                      "text-sm font-medium truncate",
-                      !notification.read && "font-semibold"
-                    )}>
-                      {notification.title}
-                    </h4>
-                    <div className="flex items-center gap-1 ml-2">
-                      {!notification.read && (
-                        <div className="w-2 h-2 bg-primary" />
-                      )}
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="grid grid-cols-5">
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="groups">Groups</TabsTrigger>
+          <TabsTrigger value="likes">Likes</TabsTrigger>
+          <TabsTrigger value="comments">Comments</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="mt-2">
+          <div className="flex items-center justify-between p-2">
+            <span className="text-sm font-medium">Recent</span>
+            <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-xs">
+              <CheckCheck className="h-3 w-3 mr-1" />
+              Mark all read
+            </Button>
+          </div>
+          {loading ? (
+            <Empty label="Loading notifications..." />
+          ) : notifications.length === 0 ? (
+            <Empty label="No notifications yet" />
+          ) : (
+            <ScrollArea className="h-96">
+              <div className="divide-y">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={cn(
+                      "p-3 cursor-pointer hover:bg-muted/50 transition-colors",
+                      !notification.read && "bg-primary/5"
+                    )}
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "p-1",
+                        notification.type === 'message' && "bg-primary/10 text-primary",
+                        notification.type === 'event' && "bg-accent/10 text-accent",
+                        notification.type === 'system' && "bg-secondary/10 text-secondary"
+                      )}>
+                        {getNotificationIcon(notification.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between">
+                          <h4 className={cn(
+                            "text-sm font-medium truncate",
+                            !notification.read && "font-semibold"
+                          )}>
+                            {notification.title}
+                          </h4>
+                          <div className="flex items-center gap-1 ml-2">
+                            {!notification.read && (<div className="w-2 h-2 bg-primary" />)}
+                          </div>
+                        </div>
+                        {notification.content && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {notification.content}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  
-                  {notification.content && (
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {notification.content}
-                    </p>
-                  )}
-                  
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                  </p>
-                </div>
+                ))}
               </div>
-            </div>
-          ))}
-        </div>
-      </ScrollArea>
+            </ScrollArea>
+          )}
+        </TabsContent>
+
+        <TabsContent value="messages" className="mt-2">
+          {messagingLoading ? (
+            <Empty label="Loading messages..." />)
+          : directMessages.length === 0 ? (
+            <Empty label="No conversations yet" />)
+          : (
+            <ScrollArea className="h-96">
+              <div className="divide-y">
+                {directMessages.map((c) => {
+                  // Derive a title from participants (excluding self)
+                  const others = (c.participants || []).filter(p => p.user_id !== user?.id);
+                  const title = c.title || others.map(o => o.profile?.display_name || 'User').join(', ');
+                  const avatar = others[0]?.profile?.avatar_url || null;
+                  return (
+                    <div key={c.id} className="p-3 hover:bg-muted/50 cursor-pointer" onClick={() => navigate('/messages')}>
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={avatar || ''} />
+                          <AvatarFallback>{(title || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-medium truncate flex items-center gap-2">
+                              <MessageCircle className="h-4 w-4" /> {title || 'Conversation'}
+                            </h4>
+                            {c.last_message_at && (
+                              <span className="text-xs text-muted-foreground ml-2">
+                                {formatDistanceToNow(new Date(c.last_message_at), { addSuffix: true })}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1 truncate">Tap to open chat</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          )}
+        </TabsContent>
+
+        <TabsContent value="groups" className="mt-2">
+          {groupsLoading ? (
+            <Empty label="Loading group updates..." />)
+          : groupNotifs.length === 0 ? (
+            <Empty label="No group notifications" />)
+          : (
+            <ScrollArea className="h-96">
+              <div className="divide-y">
+                {groupNotifs.map((n) => (
+                  <div key={n.id} className="p-3 hover:bg-muted/50 cursor-pointer" onClick={() => navigate('/groups')}>
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={n.triggered_by_profile?.avatar_url || ''} />
+                        <AvatarFallback>{(n.triggered_by_profile?.display_name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-medium truncate flex items-center gap-2">
+                            <Users className="h-4 w-4" /> {n.community_groups?.name || 'Group'}
+                          </h4>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">
+                          {n.notification_type.replace('_', ' ')} • by {n.triggered_by_profile?.display_name || 'Someone'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </TabsContent>
+
+        <TabsContent value="likes" className="mt-2">
+          {likesLoading ? (
+            <Empty label="Loading likes..." />)
+          : likes.length === 0 ? (
+            <Empty label="No recent likes on your posts" />)
+          : (
+            <ScrollArea className="h-96">
+              <div className="divide-y">
+                {likes.map((l) => (
+                  <div key={l.id} className="p-3 hover:bg-muted/50 cursor-pointer" onClick={() => navigate('/feed')}>
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={l.user_avatar_url || ''} />
+                        <AvatarFallback>{(l.user_display_name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-medium truncate flex items-center gap-2">
+                            <Heart className="h-4 w-4" /> {l.user_display_name} liked your post
+                          </h4>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            {formatDistanceToNow(new Date(l.created_at), { addSuffix: true })}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">Tap to view in feed</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </TabsContent>
+
+        <TabsContent value="comments" className="mt-2">
+          {commentsLoading ? (
+            <Empty label="Loading comments..." />)
+          : comments.length === 0 ? (
+            <Empty label="No recent comments on your posts" />)
+          : (
+            <ScrollArea className="h-96">
+              <div className="divide-y">
+                {comments.map((c) => (
+                  <div key={c.id} className="p-3 hover:bg-muted/50 cursor-pointer" onClick={() => navigate('/feed')}>
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={c.user_avatar_url || ''} />
+                        <AvatarFallback>{(c.user_display_name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-medium truncate flex items-center gap-2">
+                            <MessageSquare className="h-4 w-4" /> {c.user_display_name} commented
+                          </h4>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{c.content}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
