@@ -51,7 +51,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     )
-
+  } catch (error) {
     console.error('Redis KEYS error:', error)
     return new Response(
       JSON.stringify({ 
@@ -64,4 +64,5 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     )
+  }
 })
