@@ -170,11 +170,6 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80 p-4 bg-background border border-border z-50">
-                  {/* Notifications */}
-                  <div className="mb-4">
-                    <NotificationList />
-                  </div>
-
                   {/* User mode */}
                   <div className="mb-4">
                     <h4 className="text-sm font-medium mb-2">Your mode</h4>
@@ -193,6 +188,11 @@ export function Header() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Notifications */}
+                  <div className="mb-4">
+                    <NotificationList />
                   </div>
 
                   <DropdownMenuSeparator />
