@@ -167,6 +167,26 @@ export function Header() {
                     <NotificationList />
                   </div>
 
+                  {/* User mode */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">Your mode</h4>
+                    <Select value={profile?.user_mode || 'community'} onValueChange={handleModeChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select mode" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {userModes.map((mode) => (
+                          <SelectItem key={mode.value} value={mode.value}>
+                            <div className="flex items-center gap-2">
+                              <mode.icon className="h-4 w-4" />
+                              <span>{mode.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <DropdownMenuSeparator />
 
                   {/* Quick actions grid */}
