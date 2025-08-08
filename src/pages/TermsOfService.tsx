@@ -83,7 +83,7 @@ export default function TermsOfService() {
 
         <section>
           <h2 className="text-2xl font-semibold mb-4">12. Contact Information</h2>
-          <p>If you have any questions about these Terms of Service, please contact us through our Contact page or email us at legal@thequeerguide.com</p>
+          <p>If you have any questions about these Terms of Service, please contact us through our Contact page or email us at legal@queer.guide</p>
         </section>
       </div>
     </div>

@@ -131,7 +131,7 @@ export default function PrivacyPolicy() {
 
         <section>
           <h2 className="text-2xl font-semibold mb-4">14. Contact Us</h2>
-          <p>If you have any questions about this Privacy Policy, please contact us at privacy@thequeerguide.com or through our Contact page.</p>
+          <p>If you have any questions about this Privacy Policy, please contact us at privacy@queer.guide or through our Contact page.</p>
         </section>
       </div>
     </div>

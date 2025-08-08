@@ -129,7 +129,7 @@ export default function CookiePolicy() {
 
         <section>
           <h2 className="text-2xl font-semibold mb-4">11. Contact Us</h2>
-          <p>If you have questions about our use of cookies, please contact us at privacy@thequeerguide.com or through our Contact page.</p>
+          <p>If you have questions about our use of cookies, please contact us at privacy@queer.guide or through our Contact page.</p>
         </section>
       </div>
     </div>

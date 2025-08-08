@@ -274,7 +274,7 @@ export default function OurValues() {
           <CardContent className="p-6">
             <p className="text-muted-foreground">
               Have feedback about how we're living up to our values? We want to hear from you. 
-              Contact us at values@thequeerguide.com
+              Contact us at values@queer.guide
             </p>
           </CardContent>
         </Card>

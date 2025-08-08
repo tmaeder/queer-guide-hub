@@ -353,11 +353,11 @@ export default function AboutHub() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <h4 className="font-medium mb-2">General Inquiries</h4>
-              <p className="text-sm text-muted-foreground">hello@thequeerguide.com</p>
+              <p className="text-sm text-muted-foreground">hello@queer.guide</p>
             </div>
             <div>
               <h4 className="font-medium mb-2">Values & Feedback</h4>
-              <p className="text-sm text-muted-foreground">values@thequeerguide.com</p>
+              <p className="text-sm text-muted-foreground">values@queer.guide</p>
             </div>
           </div>
         </CardContent>

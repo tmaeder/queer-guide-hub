@@ -31,7 +31,7 @@ export default function DMCA() {
           <div className="bg-muted p-4 rounded-lg">
             <p><strong>DMCA Agent</strong><br />
             The Queer Guide<br />
-            Email: dmca@thequeerguide.com<br />
+            Email: dmca@queer.guide<br />
             Subject Line: DMCA Takedown Notice</p>
           </div>
 
@@ -102,7 +102,7 @@ export default function DMCA() {
 
         <section>
           <h2 className="text-2xl font-semibold mb-4">12. Contact for Questions</h2>
-          <p>If you have questions about this DMCA policy or need clarification about copyright issues on our platform, please contact us at legal@thequeerguide.com</p>
+          <p>If you have questions about this DMCA policy or need clarification about copyright issues on our platform, please contact us at legal@queer.guide</p>
         </section>
 
         <section>

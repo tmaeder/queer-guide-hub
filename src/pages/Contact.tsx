@@ -48,25 +48,25 @@ export default function Contact() {
     icon: Mail,
     title: "Email Support",
     description: "Get help with your account or technical issues",
-    contact: "support@thequeerguide.com",
+    contact: "support@queer.guide",
     responseTime: "24 hours"
   }, {
     icon: Shield,
     title: "Safety & Moderation",
     description: "Report safety concerns or content violations",
-    contact: "safety@thequeerguide.com",
+    contact: "safety@queer.guide",
     responseTime: "6 hours"
   }, {
     icon: MessageCircle,
     title: "Partnerships",
     description: "Business partnerships and collaboration inquiries",
-    contact: "partnerships@thequeerguide.com",
+    contact: "partnerships@queer.guide",
     responseTime: "48 hours"
   }, {
     icon: Bug,
     title: "Bug Reports",
     description: "Report technical issues or suggest improvements",
-    contact: "bugs@thequeerguide.com",
+    contact: "bugs@queer.guide",
     responseTime: "72 hours"
   }];
   const faqs = [{
@@ -80,7 +80,7 @@ export default function Contact() {
     answer: "Yes, absolutely. We have a zero-tolerance policy for harassment, discrimination, or inappropriate content. Use the report button on any post or contact our safety team directly."
   }, {
     question: "How can I become a local ambassador?",
-    answer: "Local ambassadors are community volunteers who help us maintain accurate information for their regions. Contact us through partnerships@thequeerguide.com if you're interested."
+    answer: "Local ambassadors are community volunteers who help us maintain accurate information for their regions. Contact us through partnerships@queer.guide if you're interested."
   }, {
     question: "Is my personal information secure?",
     answer: "Yes, we take privacy seriously. Please review our Privacy Policy for detailed information about how we collect, use, and protect your data."

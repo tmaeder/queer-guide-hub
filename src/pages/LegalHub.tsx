@@ -286,7 +286,7 @@ export default function LegalHub() {
                     <div className="bg-muted p-4 rounded-lg">
                       <p><strong>DMCA Agent</strong><br />
                       The Queer Guide<br />
-                      Email: dmca@thequeerguide.com<br />
+                      Email: dmca@queer.guide<br />
                       Subject: DMCA Takedown Notice</p>
                     </div>
                   </div>
@@ -316,20 +316,20 @@ export default function LegalHub() {
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <h4 className="font-medium mb-2">General Legal</h4>
-              <p className="text-sm text-muted-foreground">legal@thequeerguide.com</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <h4 className="font-medium mb-2">General Legal</h4>
+                <p className="text-sm text-muted-foreground">legal@queer.guide</p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Privacy Concerns</h4>
+                <p className="text-sm text-muted-foreground">privacy@queer.guide</p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">DMCA Reports</h4>
+                <p className="text-sm text-muted-foreground">dmca@queer.guide</p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-medium mb-2">Privacy Concerns</h4>
-              <p className="text-sm text-muted-foreground">privacy@thequeerguide.com</p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">DMCA Reports</h4>
-              <p className="text-sm text-muted-foreground">dmca@thequeerguide.com</p>
-            </div>
-          </div>
           <Button variant="outline" className="mt-4" onClick={() => navigate('/contact')}>
             Contact Support
           </Button>
