@@ -173,7 +173,7 @@ const Index = React.memo(() => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {features.map((feature, index) => <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
                 <CardContent className="p-8 text-center">
                   <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
