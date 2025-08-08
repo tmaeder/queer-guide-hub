@@ -9,6 +9,7 @@ import { AuthDialog } from '@/components/auth/AuthDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getGravatarUrl } from '@/lib/gravatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -27,6 +28,7 @@ export function Header() {
     updateProfile
   } = useProfile();
   const { unreadCount } = useNotifications();
+  const avatarSrc = profile?.avatar_url || (user?.email ? getGravatarUrl(user.email, 96, 'mp') || undefined : undefined);
   const userModes = [{
     value: 'dating',
     icon: Heart,
@@ -155,7 +157,7 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0" aria-label="Open user menu">
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={profile?.avatar_url || ''} alt={(profile?.display_name || user?.email || 'User avatar') as string} />
+                      <AvatarImage src={avatarSrc} alt={(profile?.display_name || user?.email || 'User avatar') as string} />
                       <AvatarFallback>
                         {(profile?.display_name || user?.email || 'U')?.charAt(0).toUpperCase()}
                       </AvatarFallback>
