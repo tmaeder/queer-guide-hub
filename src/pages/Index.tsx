@@ -102,16 +102,6 @@ const Index = React.memo(() => {
     label: 'Weekly Events'
   }], [loading, realStats, formatNumber]);
   return <div className="min-h-screen">
-      {/* Map Near You - Top */}
-      <section className="py-8">
-        <React.Suspense fallback={null}>
-          {/* Lightweight map focused on venues/orgs near the user */}
-          {(() => {
-            const Map = React.lazy(() => import('@/components/home/FrontPageVenueMap'));
-            return <Map />;
-          })()}
-        </React.Suspense>
-      </section>
       {/* Hero Section */}
       <section className="py-24 lg:py-32">
         <div className="container mx-auto px-4">
@@ -173,29 +163,8 @@ const Index = React.memo(() => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {features.map((feature, index) => <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
-                    <feature.icon className="h-8 w-8 text-primary" />
-                  </div>
-                  
-                  <h3 className="text-xl font-bold mb-4">
-                    {feature.title}
-                  </h3>
-                  
-                  <p className="text-muted-foreground mb-6">
-                    {feature.description}
-                  </p>
-                  
-                  <Button variant="ghost" asChild>
-                    <Link to={feature.link}>
-                      Let's Go
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>)}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => {})}
           </div>
         </div>
       </section>
@@ -211,6 +180,7 @@ const Index = React.memo(() => {
       </React.Suspense>
 
       {/* Testimonials Section */}
+      
 
       {/* Final CTA Section */}
       
