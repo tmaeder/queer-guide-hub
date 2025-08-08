@@ -1,16 +1,14 @@
 import React from 'react';
 import { useState } from 'react';
-import { useMarketplace } from '@/hooks/useMarketplace';
+import { useMedusaMarketplace, MedusaListing } from '@/hooks/useMedusaMarketplace';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Store, Plus, Loader, Heart, Grid, List } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import { Store, Plus, Loader, Grid, List } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 const Marketplace = () => {
   const {
     listings,
@@ -19,14 +17,14 @@ const Marketplace = () => {
     fetchListings,
     toggleFavorite,
     incrementViews
-  } = useMarketplace();
+  } = useMedusaMarketplace();
   const {
     user
   } = useAuth();
   const {
     toast
   } = useToast();
-  const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
+  const [selectedListing, setSelectedListing] = useState<MedusaListing | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState('all');
   const handleFiltersChange = (filters: any) => {

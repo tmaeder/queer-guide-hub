@@ -1,29 +1,20 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Star, MapPin, Phone, Globe, Mail, Heart, ExternalLink, Share2, Eye, Shield, Truck } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Phone, Globe, Mail, ExternalLink, Share2, Eye, Shield, Truck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { useMarketplace } from '@/hooks/useMarketplace';
-import { Database } from '@/integrations/supabase/types';
-import { supabase } from '@/integrations/supabase/client';
+import { useMedusaMarketplace, MedusaListing } from '@/hooks/useMedusaMarketplace';
 import { toast } from '@/hooks/use-toast';
-
-type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
-type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Row'] & {
-  profiles: { display_name: string; avatar_url: string | null } | null;
-};
 
 export default function MarketplaceItemDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { incrementViews } = useMarketplace();
-  const [listing, setListing] = useState<MarketplaceListing | null>(null);
-  const [reviews, setReviews] = useState<MarketplaceReview[]>([]);
-  const [isFavorited, setIsFavorited] = useState(false);
+  const { getProductById } = useMedusaMarketplace();
+  const [listing, setListing] = useState<MedusaListing | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,98 +23,20 @@ export default function MarketplaceItemDetail() {
     const fetchListing = async () => {
       try {
         setLoading(true);
-        
-        // Fetch listing details
-        const { data: listingData, error: listingError } = await supabase
-          .from('marketplace_listings')
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (listingError) throw listingError;
-        setListing(listingData);
-
-        // Increment view count
-        await incrementViews(id);
-
-        // Fetch reviews with user profiles
-        const { data: reviewsData, error: reviewsError } = await supabase
-          .from('marketplace_reviews')
-          .select(`
-            *,
-            profiles:user_id (
-              display_name,
-              avatar_url
-            )
-          `)
-          .eq('listing_id', id)
-          .order('created_at', { ascending: false });
-
-        if (reviewsError) throw reviewsError;
-        setReviews(reviewsData || []);
-
-        // Check if favorited by current user
-        if (user) {
-          const { data: favoriteData } = await supabase
-            .from('marketplace_favorites')
-            .select('id')
-            .eq('listing_id', id)
-            .eq('user_id', user.id)
-            .single();
-          
-          setIsFavorited(!!favoriteData);
-        }
-
+        const product = await getProductById(id);
+        setListing(product);
       } catch (error) {
-        console.error('Error fetching listing:', error);
+        console.error('Error fetching product:', error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchListing();
-  }, [id, user, incrementViews]);
+  }, [id, getProductById]);
 
   const handleToggleFavorite = async () => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to favorite items",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!listing) return;
-
-    try {
-      if (isFavorited) {
-        const { error } = await supabase
-          .from('marketplace_favorites')
-          .delete()
-          .eq('listing_id', listing.id)
-          .eq('user_id', user.id);
-        
-        if (error) throw error;
-        setIsFavorited(false);
-        toast({ title: "Removed from favorites" });
-      } else {
-        const { error } = await supabase
-          .from('marketplace_favorites')
-          .insert({ listing_id: listing.id, user_id: user.id });
-        
-        if (error) throw error;
-        setIsFavorited(true);
-        toast({ title: "Added to favorites" });
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update favorites",
-        variant: "destructive",
-      });
-    }
+    toast({ title: 'Favorites are not available in the new marketplace yet' });
   };
 
   if (loading) {
@@ -161,9 +74,7 @@ export default function MarketplaceItemDetail() {
     );
   }
 
-  const averageRating = reviews.length 
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-    : 0;
+  const averageRating = 0;
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
@@ -243,26 +154,13 @@ export default function MarketplaceItemDetail() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Badge className={getCategoryColor(listing.category)}>
-                {listing.category}
+              <Badge className={getCategoryColor(listing.category || 'products')}>
+                {listing.category || 'products'}
               </Badge>
               {listing.subcategory && (
                 <Badge variant="outline">
                   {listing.subcategory}
                 </Badge>
-              )}
-              {averageRating > 0 && (
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-current text-accent" />
-                  <span className="font-medium">{averageRating.toFixed(1)}</span>
-                  <span className="text-muted-foreground">({reviews.length} reviews)</span>
-                </div>
-              )}
-              {listing.views_count && listing.views_count > 0 && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Eye className="h-4 w-4" />
-                  <span>{listing.views_count} views</span>
-                </div>
               )}
             </div>
           </div>
@@ -278,9 +176,7 @@ export default function MarketplaceItemDetail() {
             </Button>
           </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Images */}
