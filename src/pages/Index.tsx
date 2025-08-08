@@ -17,51 +17,51 @@ const Index = React.memo(() => {
   const isMobile = useIsMobile();
   const features = [{
     icon: MapPin,
-    title: 'Safe Spaces That Slap ✨',
+    title: 'Safe Spaces That Slap',
     description: 'Find verified queer havens where you can be your authentic self',
     color: 'text-primary',
     link: '/venues'
   }, {
     icon: Calendar,
-    title: 'Events That Serve 🎉',
+    title: 'Events That Serve',
     description: 'Connect with your people through fab local & virtual gatherings',
     color: 'text-foreground',
     link: '/events'
   }, {
     icon: Store,
-    title: 'Queer Marketplace 🛍️',
+    title: 'Queer Marketplace',
     description: 'Support our community - shop queer-owned businesses & creators',
     color: 'text-accent',
     link: '/marketplace'
   }, {
     icon: Plane,
-    title: 'Travel Like a Queen ✈️',
+    title: 'Travel Like a Queen',
     description: 'Plan trips to places that celebrate you - no compromises',
     color: 'text-primary',
     link: '/travel'
   }, {
     icon: Users,
-    title: 'Find Your Chosen Family 👑',
+    title: 'Find Your Chosen Family',
     description: 'Build real connections with people who get you',
     color: 'text-foreground',
     link: '/groups'
   }, {
     icon: BookOpen,
-    title: 'The Tea & Resources 📚',
+    title: 'The Tea & Resources',
     description: 'Stay informed about rights, culture, and community wisdom',
     color: 'text-accent',
     link: '/directory'
   }];
   const testimonials = [{
-    quote: "Queer Guide helped me find my people when I moved cities. This app is literally life-changing! 🌈",
+    quote: "Queer Guide helped me find my people when I moved cities. This app is literally life-changing!",
     author: "Alex",
     location: "Berlin, Germany"
   }, {
-    quote: "Being featured on Queer Guide brought so much love to my queer-owned business. The community support hits different! 💅",
+    quote: "Being featured on Queer Guide brought so much love to my queer-owned business. The community support hits different!",
     author: "Sam",
     location: "San Francisco, USA"
   }, {
-    quote: "The events section keeps me plugged into the scene. It's giving main character energy and I'm here for it! ✨",
+    quote: "The events section keeps me plugged into the scene. It's giving main character energy and I'm here for it!",
     author: "Jordan",
     location: "Toronto, Canada"
   }];
@@ -113,20 +113,20 @@ const Index = React.memo(() => {
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto">
               Your go-to spot for finding safe spaces, connecting with chosen family, 
-              and living your most authentic life. Welcome home, bestie! 🏳️‍🌈
+              and living your most authentic life. Welcome home, bestie!
             </p>
 
             {/* CTA Buttons */}
             <div className="flex gap-4 justify-center mb-16 flex-col sm:flex-row">
               <Button size="lg" className="text-lg px-8 py-6" asChild>
                 <Link to="/venues">
-                  Find Safe Spaces ✨
+                  Find Safe Spaces
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
                 <Link to={user ? "/events" : "/auth"}>
-                  {user ? "Hit the Scene 🎉" : "Join the Family 👑"}
+                  {user ? "Hit the Scene" : "Join the Family"}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -154,7 +154,7 @@ const Index = React.memo(() => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Everything That Serves 💅
+              Everything That Serves
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               All the tools and resources your queer heart desires
@@ -205,7 +205,7 @@ const Index = React.memo(() => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              The Reviews Are In 🌟
+              The Reviews Are In
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Real tea from our fabulous community
@@ -247,7 +247,7 @@ const Index = React.memo(() => {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Join the Family? 👑
+              Ready to Join the Family?
             </h2>
             <p className="text-xl mb-8 opacity-90">
               Connect with your people and find spaces where you belong.
@@ -255,7 +255,7 @@ const Index = React.memo(() => {
             <div className="flex gap-4 justify-center flex-col sm:flex-row">
               <Button size="lg" variant="secondary" className="text-lg px-8 py-6" asChild>
                 <Link to="/auth">
-                  Join the Fam ✨
+                  Join the Fam
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>

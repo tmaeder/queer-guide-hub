@@ -7,12 +7,12 @@ interface UserModeBadgeProps {
 }
 
 const modeConfig = {
-  dating: { icon: Heart, label: 'Looking for Love 💕', color: 'bg-pink-500/10 text-pink-600 border-pink-200' },
-  friends: { icon: Users, label: 'Making Friends 👯', color: 'bg-blue-500/10 text-blue-600 border-blue-200' },
-  exploration: { icon: Map, label: 'Exploring 🗺️', color: 'bg-green-500/10 text-green-600 border-green-200' },
-  fun: { icon: Smile, label: 'Here for Fun 🎉', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-200' },
-  networking: { icon: Handshake, label: 'Networking 💼', color: 'bg-purple-500/10 text-purple-600 border-purple-200' },
-  community: { icon: Home, label: 'Building Community 🏳️‍🌈', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200' },
+  dating: { icon: Heart, label: 'Looking for Love', color: 'bg-pink-500/10 text-pink-600 border-pink-200' },
+  friends: { icon: Users, label: 'Making Friends', color: 'bg-blue-500/10 text-blue-600 border-blue-200' },
+  exploration: { icon: Map, label: 'Exploring', color: 'bg-green-500/10 text-green-600 border-green-200' },
+  fun: { icon: Smile, label: 'Here for Fun', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-200' },
+  networking: { icon: Handshake, label: 'Networking', color: 'bg-purple-500/10 text-purple-600 border-purple-200' },
+  community: { icon: Home, label: 'Building Community', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200' },
 };
 
 export function UserModeBadge({ mode, size = 'md' }: UserModeBadgeProps) {

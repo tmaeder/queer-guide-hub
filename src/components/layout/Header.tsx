@@ -27,30 +27,30 @@ export function Header() {
   const userModes = [{
     value: 'dating',
     icon: Heart,
-    label: 'Looking for Love 💕'
+    label: 'Looking for Love'
   }, {
     value: 'friends',
     icon: Users,
-    label: 'Making Friends 👯'
+    label: 'Making Friends'
   }, {
     value: 'exploration',
     icon: Map,
-    label: 'Exploring the Scene 🗺️'
+    label: 'Exploring the Scene'
   }, {
     value: 'fun',
     icon: Smile,
-    label: 'Just Here for Fun 🎉'
+    label: 'Just Here for Fun'
   }, {
     value: 'networking',
     icon: Handshake,
-    label: 'Professional Networking 💼'
+    label: 'Professional Networking'
   }, {
     value: 'community',
     icon: Home,
-    label: 'Building Community 🏳️‍🌈'
+    label: 'Building Community'
   }];
   const navigationSections = [{
-    title: "Explore the Scene ✨",
+    title: "Explore the Scene",
     items: [{
       to: "/events",
       icon: Calendar,
@@ -85,7 +85,7 @@ export function Header() {
       label: "Support Us"
     }]
   }, {
-    title: "Find Your People 👑",
+    title: "Find Your People",
     items: [{
       to: "/feed",
       icon: Rss,
@@ -175,7 +175,7 @@ export function Header() {
                   
                   <Button variant="ghost" size="sm" className="w-full justify-start text-destructive hover:text-destructive" onClick={signOut}>
                     <LogOut className="h-4 w-4 mr-2" />
-                    Peace Out ✌️
+                    Peace Out
                   </Button>
                 </DropdownMenuContent>
               </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} size="sm">

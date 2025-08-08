@@ -1,6 +1,6 @@
 {
   "directory": {
-    "title": "Queer Geography Hub ✨",
+    "title": "Queer Geography Hub",
     "loading": "Finding your fam worldwide...",
     "error": "Oops, something went sideways: {{message}}",
     "back": "Go Back",
@@ -67,10 +67,10 @@
     "community": "Community",
     "resources": "Resources",
     "legal": "Legal Stuff",
-    "copyright": "© {{year}} Made with 🏳️‍🌈 and love."
+    "copyright": "© {{year}} Made with love and pride."
   },
   "auth": {
-    "welcome": "Welcome to the Fam! 👑",
+    "welcome": "Welcome to the Fam!",
     "signUp": "Join the Family",
     "signIn": "Welcome Back, Bestie",
     "createAccount": "Start Your Glow Up",
@@ -86,12 +86,12 @@
     "privacyAccept": "Privacy policy looks good to me"
   },
   "events": {
-    "title": "Events That Serve 🎉",
+    "title": "Events That Serve",
     "upcoming": "What's Coming Up",
     "past": "Events We Lived Through",
     "create": "Host Your Own Moment",
     "rsvp": "Count Me In!",
-    "attending": "You're Going! ✨",
+    "attending": "You're Going!",
     "interested": "On My Radar",
     "share": "Spread the Word",
     "details": "All the Deets",
@@ -100,10 +100,10 @@
     "free": "It's Free, Babe!",
     "ticketsRequired": "Grab Your Tickets",
     "soldOut": "All Booked Up!",
-    "cancelled": "Plans Changed 😢"
+    "cancelled": "Plans Changed"
   },
   "venues": {
-    "title": "Safe Spaces That Slap ✨",
+    "title": "Safe Spaces That Slap",
     "safeSpace": "Certified Safe Space",
     "queerOwned": "Queer-Owned Business",
     "queerFriendly": "Rainbow Friendly",
@@ -119,14 +119,14 @@
     "services": "What They Do"
   },
   "marketplace": {
-    "title": "Queer Market 🛍️",
+    "title": "Queer Market",
     "queerOwned": "Queer-Owned",
     "supportLocal": "Support Local",
     "handmade": "Made with Love",
     "sustainable": "Eco-Friendly",
     "addToCart": "Yes Please!",
     "soldOut": "All Gone!",
-    "onSale": "Deals Alert! 💸",
+    "onSale": "Deals Alert!",
     "newArrival": "Fresh Drop",
     "featured": "Community Fave",
     "reviews": "What People Say"
@@ -147,7 +147,7 @@
     "sendMessage": "Slide into DMs"
   },
   "groups": {
-    "title": "Groups & Crews 👑",
+    "title": "Groups & Crews",
     "join": "Join the Crew",
     "leave": "Leave Group",
     "create": "Start Your Own Crew",
@@ -190,8 +190,8 @@
     "maybe": "Maybe?",
     "thanks": "Thank you, bestie!",
     "sorry": "My bad!",
-    "congrats": "Slay! 🎉",
-    "welcome": "Welcome home! 🏳️‍🌈",
+    "congrats": "Slay!",
+    "welcome": "Welcome home!",
     "goodbye": "See you later!",
     "loading": "Loading the magic...",
     "error": "Something went sideways",
