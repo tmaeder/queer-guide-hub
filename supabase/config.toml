@@ -134,3 +134,6 @@ verify_jwt = false
 
 [functions.enrich-venue]
 verify_jwt = false
+
+[functions.bulk-scrape-events]
+verify_jwt = true

@@ -14,6 +14,8 @@ import { NewsSourcesManager } from "@/components/admin/NewsSourcesManager";
 export default function AdminImportHub() {
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
+  const [eventSeeds, setEventSeeds] = useState<string>('');
+  const [eventLimit, setEventLimit] = useState<string>('100');
 
   const handleFileImport = async (type: string, file: File) => {
     if (!file) return;
