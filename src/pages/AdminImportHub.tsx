@@ -132,6 +132,58 @@ export default function AdminImportHub() {
               </div>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Bulk Web Scraper (Firecrawl)
+              </CardTitle>
+              <CardDescription>Scrape events from websites using Firecrawl and import them</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="event-seeds">Seed URLs (one per line)</Label>
+                <Textarea
+                  id="event-seeds"
+                  value={eventSeeds}
+                  onChange={(e) => setEventSeeds(e.target.value)}
+                  placeholder={"https://example.com/events\nhttps://another-site.com/whats-on"}
+                  className="min-h-[120px]"
+                />
+              </div>
+              <div className="space-y-2 w-56">
+                <Label htmlFor="event-limit">Max pages per seed</Label>
+                <Input
+                  id="event-limit"
+                  type="number"
+                  min={1}
+                  max={500}
+                  value={eventLimit}
+                  onChange={(e) => setEventLimit(e.target.value)}
+                />
+              </div>
+              <Button
+                onClick={() => {
+                  const seeds = eventSeeds
+                    .split(/\n|,/)
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+                  if (seeds.length === 0) {
+                    toast({ title: 'No seeds provided', description: 'Add at least one URL', variant: 'destructive' });
+                    return;
+                  }
+                  handleApiImport('bulk-scrape-events', { seeds, limit: Number(eventLimit) || 100 });
+                }}
+                disabled={loading === 'bulk-scrape-events'}
+                className="w-full"
+              >
+                {loading === 'bulk-scrape-events' ? 'Scraping…' : 'Scrape & Import from URLs'}
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Extracts schema.org Event data from crawled pages, normalizes and de-duplicates before inserting into the Events table.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="venues" className="space-y-6">
