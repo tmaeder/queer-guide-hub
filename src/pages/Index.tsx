@@ -12,8 +12,13 @@ import { useIsMobile } from '@/hooks/use-mobile';
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
 const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider'));
 const Index = React.memo(() => {
-  const { user } = useAuth();
-  const { stats: realStats, loading } = useStats();
+  const {
+    user
+  } = useAuth();
+  const {
+    stats: realStats,
+    loading
+  } = useStats();
   const isMobile = useIsMobile();
   const features = [{
     icon: MapPin,
@@ -71,7 +76,6 @@ const Index = React.memo(() => {
     }
     return num.toString();
   };
-
   const stats = useMemo(() => loading ? [{
     number: '---',
     label: 'Verified Venues'
@@ -134,16 +138,14 @@ const Index = React.memo(() => {
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
+              {stats.map((stat, index) => <div key={index} className="text-center">
                   <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
                     {stat.number}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {stat.label}
                   </div>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
         </div>
@@ -162,8 +164,7 @@ const Index = React.memo(() => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
+            {features.map((feature, index) => <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
                 <CardContent className="p-8 text-center">
                   <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
                     <feature.icon className="h-8 w-8 text-primary" />
@@ -184,8 +185,7 @@ const Index = React.memo(() => {
                     </Link>
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -202,81 +202,22 @@ const Index = React.memo(() => {
 
       {/* Testimonials Section */}
       <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              The Reviews Are In
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Real tea from our fabulous community
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
-                <CardContent className="p-8">
-                  <Quote className="h-8 w-8 text-primary mb-6" />
-                  
-                  <p className="text-foreground mb-6 leading-relaxed">
-                    "{testimonial.quote}"
-                  </p>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-                      <Users className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-bold">
-                        {testimonial.author}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {testimonial.location}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+        
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Join the Family?
-            </h2>
-            <p className="text-xl mb-8 opacity-90">
-              Connect with your people and find spaces where you belong.
-            </p>
-            <div className="flex gap-4 justify-center flex-col sm:flex-row">
-              <Button size="lg" variant="secondary" className="text-lg px-8 py-6" asChild>
-                <Link to="/auth">
-                  Join the Fam
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10" asChild>
-                <Link to="/venues">
-                  Find Safe Spaces
-                  <Search className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      
     </div>;
 });
 
 // Enhanced skeleton component for lazy-loaded sliders
-const SliderSkeleton = ({ title }: { title: string }) => {
+const SliderSkeleton = ({
+  title
+}: {
+  title: string;
+}) => {
   const isMobile = useIsMobile();
-  return (
-    <section className={`bg-gradient-to-b from-muted/5 to-background ${isMobile ? 'py-12' : 'py-20'} px-4`}>
+  return <section className={`bg-gradient-to-b from-muted/5 to-background ${isMobile ? 'py-12' : 'py-20'} px-4`}>
       <div className="container mx-auto">
         <div className={`${isMobile ? 'mb-8' : 'mb-12'}`}>
           <div className="flex items-center justify-between mb-6">
@@ -289,8 +230,9 @@ const SliderSkeleton = ({ title }: { title: string }) => {
         </div>
         
         <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-          {Array.from({ length: isMobile ? 2 : 3 }).map((_, i) => (
-            <Card key={i} className="h-80 bg-card/50 border-border/50 animate-pulse">
+          {Array.from({
+          length: isMobile ? 2 : 3
+        }).map((_, i) => <Card key={i} className="h-80 bg-card/50 border-border/50 animate-pulse">
               <CardContent className="p-8">
                 <div className="space-y-6">
                   <div className="flex items-start justify-between">
@@ -319,12 +261,9 @@ const SliderSkeleton = ({ title }: { title: string }) => {
                   <div className="h-10 bg-muted rounded-lg animate-pulse mt-auto"></div>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Index;
