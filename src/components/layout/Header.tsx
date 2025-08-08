@@ -79,10 +79,6 @@ export function Header() {
       to: "/news",
       icon: Newspaper,
       label: "Latest News"
-    }, {
-      to: "/donate",
-      icon: Heart,
-      label: "Support Us"
     }]
   }, {
     title: "Find Your People",

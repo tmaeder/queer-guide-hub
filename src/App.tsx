@@ -34,8 +34,6 @@ import Blog from "./pages/Blog";
 import Sustainability from "./pages/Sustainability";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Donate from "./pages/Donate";
-import DonationSuccess from "./pages/DonationSuccess";
 import CookiePolicy from "./pages/CookiePolicy";
 import DMCA from "./pages/DMCA";
 import LegalHub from "./pages/LegalHub";
@@ -250,8 +248,6 @@ const App = () => {
                      <Route path="/community" element={<Navigate to="/feed" replace />} />
                      <Route path="/profile/settings" element={<ProfileSettings />} />
                      <Route path="/user/:userId" element={<UserProfile />} />
-                     <Route path="/donate" element={<Donate />} />
-                     <Route path="/donation-success" element={<DonationSuccess />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
