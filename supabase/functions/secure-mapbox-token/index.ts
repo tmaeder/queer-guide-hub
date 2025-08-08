@@ -15,10 +15,10 @@ Deno.serve(async (req) => {
     // Get environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const mapboxToken = Deno.env.get('MAPBOX_ACCESS_TOKEN');
+    const mapboxToken = Deno.env.get('MAPBOX_ACCESS_TOKEN') || Deno.env.get('MAPBOX_PUBLIC_TOKEN');
 
     if (!mapboxToken) {
-      throw new Error('Mapbox access token not configured');
+      throw new Error('Mapbox access token not configured (set MAPBOX_ACCESS_TOKEN or MAPBOX_PUBLIC_TOKEN)');
     }
 
     // Create Supabase client
