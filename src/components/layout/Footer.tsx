@@ -75,6 +75,15 @@ export function Footer() {
               <ChevronUp className="h-4 w-4" />
             </Button>
             <Separator orientation="vertical" className="h-6" />
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Sitemap"
+              className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              onClick={() => navigate('/sitemap')}
+            >
+              <FileText className="h-4 w-4" />
+            </Button>
             <ThemeToggle />
           </div>
         </div>

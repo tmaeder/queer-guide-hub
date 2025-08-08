@@ -79,6 +79,7 @@ import SearchResults from "./pages/SearchResults";
 import Favorites from "./pages/Favorites";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import Sitemap from "./pages/Sitemap";
 
 const queryClient = new QueryClient();
 
@@ -245,9 +246,10 @@ const App = () => {
                     
                     <Route path="/favorites" element={<Favorites />} />
                      <Route path="/feed" element={<Feed />} />
-                     <Route path="/community" element={<Navigate to="/feed" replace />} />
+                      <Route path="/community" element={<Navigate to="/feed" replace />} />
                      <Route path="/profile/settings" element={<ProfileSettings />} />
                      <Route path="/user/:userId" element={<UserProfile />} />
+                     <Route path="/sitemap" element={<Sitemap />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
