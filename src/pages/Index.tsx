@@ -7,6 +7,7 @@ import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, Check
 import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
+import FrontPageVenueMap from '@/components/home/FrontPageVenueMap';
 
 // Lazy load slider components for better performance
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -151,6 +152,8 @@ const Index = React.memo(() => {
         </div>
       </section>
 
+      <FrontPageVenueMap className="py-12" />
+
       {/* Features Grid */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
@@ -163,8 +166,20 @@ const Index = React.memo(() => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => {})}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {features.map((feature, index) => (
+              <Link to={feature.link} key={index} className="group">
+                <Card className="h-full">
+                  <CardContent className="p-4 sm:p-5">
+                    <div className="flex flex-col items-start gap-3">
+                      <feature.icon className={`h-5 w-5 ${feature.color}`} aria-hidden="true" />
+                      <h3 className="font-semibold">{feature.title}</h3>
+                      <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
