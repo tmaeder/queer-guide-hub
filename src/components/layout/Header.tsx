@@ -10,7 +10,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { useNotifications } from '@/hooks/useNotifications';
+import { NotificationList } from '@/components/notifications/NotificationList';
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,6 +25,7 @@ export function Header() {
     profile,
     updateProfile
   } = useProfile();
+  const { unreadCount } = useNotifications();
   const userModes = [{
     value: 'dating',
     icon: Heart,
@@ -147,24 +149,34 @@ export function Header() {
 
           {/* Right side controls */}
           <div className="flex items-center gap-2">
-            {/* Notifications */}
-            {user && <NotificationBell />}
-            
-            {/* User menu - Always visible when logged in */}
+            {/* User menu - includes notifications when logged in */}
               {user ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
+                  <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0" aria-label="Open user menu">
                     <User className="h-5 w-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] px-1">
+                        {unreadCount}
+                      </span>
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80 p-4 bg-background border border-border z-50">
+                  {/* Notifications */}
+                  <div className="mb-4">
+                    <NotificationList />
+                  </div>
+
+                  <DropdownMenuSeparator />
 
                   {/* Quick actions grid */}
                   <div className="grid grid-cols-3 gap-2 p-2">
-                    {userMenuItems.map(item => <Button key={item.to} variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate(item.to)}>
+                    {userMenuItems.map(item => (
+                      <Button key={item.to} variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate(item.to)}>
                         <item.icon className="h-4 w-4" />
                         <span className="text-xs">{item.label}</span>
-                      </Button>)}
+                      </Button>
+                    ))}
                   </div>
 
                   <DropdownMenuSeparator />
