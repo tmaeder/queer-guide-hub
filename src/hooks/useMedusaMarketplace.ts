@@ -13,6 +13,7 @@ export interface MedusaListing {
   price_type?: "fixed" | "starting_at" | "negotiable" | "free";
   currency?: string | null;
   images?: string[];
+  variants?: any[];
   website?: string | null;
   contact_phone?: string | null;
   contact_email?: string | null;

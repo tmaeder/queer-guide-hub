@@ -20,6 +20,8 @@ import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import Marketplace from "./pages/Marketplace";
 import MarketplaceItemDetail from "./pages/MarketplaceItemDetail";
+const CartLazy = React.lazy(() => import('./pages/Cart'));
+const CheckoutLazy = React.lazy(() => import('./pages/Checkout'));
 
 import Directory from "./pages/Directory";
 import TagsDirectory from "./pages/TagsDirectory";
@@ -106,8 +108,8 @@ const App = () => {
                   <Route path="/events/:id" element={<EventDetail />} />
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/marketplace/:id" element={<MarketplaceItemDetail />} />
-                  
-                  <Route path="/directory" element={<Directory />} />
+                  <Route path="/cart" element={<React.Suspense fallback={null}><CartLazy /></React.Suspense>} />
+                  <Route path="/checkout" element={<React.Suspense fallback={null}><CheckoutLazy /></React.Suspense>} />
                   <Route path="/city/:id" element={<CityDetail />} />
                   <Route path="/country/:id" element={<CountryDetail />} />
                   <Route path="/users" element={<UserDirectory />} />
