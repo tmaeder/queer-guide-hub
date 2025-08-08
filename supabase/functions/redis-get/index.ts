@@ -17,9 +17,8 @@ serve(async (req) => {
 
     if (!key) {
       return new Response(
-        JSON.stringify({ error: 'Key is required' }),
+        JSON.stringify({ success: false, error: 'Key is required' }),
         { 
-          status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
@@ -31,9 +30,8 @@ serve(async (req) => {
 
     if (!redisUrl || !redisToken) {
       return new Response(
-        JSON.stringify({ error: 'Redis configuration not found' }),
+        JSON.stringify({ success: false, error: 'Redis configuration not found' }),
         { 
-          status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
@@ -68,11 +66,12 @@ serve(async (req) => {
     console.error('Redis GET error:', error)
     return new Response(
       JSON.stringify({ 
+        success: false,
         error: 'Internal server error',
-        message: error.message 
+        message: (error as any)?.message || 'Unknown error',
+        code: 'UPSTASH_ERROR'
       }),
       { 
-        status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     )
