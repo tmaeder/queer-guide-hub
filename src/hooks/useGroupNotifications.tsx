@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useRedis } from '@/hooks/useRedis';
 
 export interface GroupNotification {
   id: string;
@@ -26,12 +27,20 @@ export interface GroupNotification {
 export const useGroupNotifications = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { getCached, cache, del } = useRedis();
 
-  // Fetch user's group notifications
+  // Fetch user's group notifications with Redis caching
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['group-notifications', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
+
+      const cacheKey = `group-notifications:${user.id}`;
+      // Try cached first
+      const cached = await getCached<GroupNotification[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
 
       // Simple query without complex joins
       const { data, error } = await supabase
@@ -57,7 +66,7 @@ export const useGroupNotifications = () => {
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
 
-      return (data || []).map(notification => {
+      const processed = (data || []).map(notification => {
         const group = groups?.find(g => g.id === notification.group_id);
         const profile = profiles?.find(p => p.user_id === notification.triggered_by_user_id);
         
@@ -69,8 +78,12 @@ export const useGroupNotifications = () => {
             display_name: profile?.display_name || 'Unknown User',
             avatar_url: profile?.avatar_url || ''
           }
-        };
+        } as GroupNotification;
       });
+
+      // Cache for 60s
+      await cache(cacheKey, processed, 60);
+      return processed;
     },
     enabled: !!user?.id
   });
@@ -89,7 +102,10 @@ export const useGroupNotifications = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      if (user?.id) {
+        await del(`group-notifications:${user.id}`);
+      }
       queryClient.invalidateQueries({ queryKey: ['group-notifications', user?.id] });
     }
   });
@@ -105,7 +121,10 @@ export const useGroupNotifications = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      if (user?.id) {
+        await del(`group-notifications:${user.id}`);
+      }
       queryClient.invalidateQueries({ queryKey: ['group-notifications', user?.id] });
     }
   });
