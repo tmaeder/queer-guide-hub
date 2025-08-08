@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store, Info, Eye, Settings, Phone, Newspaper, Users, Globe, Tag, Shield, Lock, Cookie, Copyright, ChevronUp, FileText, Leaf } from "lucide-react";
+import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store, Info, Eye, Phone, Newspaper, Users, Globe, Tag, Shield, Lock, Cookie, Copyright, ChevronUp, FileText, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -68,9 +68,6 @@ export function Footer() {
           
           {/* Quick Actions */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => navigate('/admin')}>
-              <Settings className="h-4 w-4" />
-            </Button>
             <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => window.scrollTo({
             top: 0,
             behavior: 'smooth'
