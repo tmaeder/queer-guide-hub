@@ -19,7 +19,6 @@
     "@capacitor/push-notifications": "^7.0.1",
     "@hookform/resolvers": "^3.9.0",
     "@marsidev/react-turnstile": "^1.2.0",
-    "@medusajs/medusa-js": "^6.1.10",
     "@mendable/firecrawl-js": "^1.29.3",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",

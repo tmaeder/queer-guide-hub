@@ -1,14 +1,21 @@
 import React from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Globe, Phone, Mail, ExternalLink, Eye } from 'lucide-react';
+import { Star, Heart, MapPin, Globe, Phone, Mail, ExternalLink, Eye, Building } from 'lucide-react';
+import { Database } from '@/integrations/supabase/types';
 import { Link } from 'react-router-dom';
-import { MedusaListing } from '@/hooks/useMedusaMarketplace';
+import { FavoriteButton } from '@/components/ui/favorite-button';
+
+type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
 interface MarketplaceCardProps {
-  listing: MedusaListing;
-  onViewDetails?: (listing: MedusaListing) => void;
+  listing: MarketplaceListing & {
+    marketplace_reviews?: Array<{ rating: number }>;
+    marketplace_favorites?: Array<{ id: string }>;
+    venues?: { name: string; address: string; city: string } | null;
+  };
+  onViewDetails?: (listing: MarketplaceListing) => void;
   onToggleFavorite?: (listingId: string) => void;
   showFavoriteButton?: boolean;
 }
@@ -19,7 +26,11 @@ export function MarketplaceCard({
   onToggleFavorite, 
   showFavoriteButton = false 
 }: MarketplaceCardProps) {
-  const averageRating = 0;
+  const averageRating = listing.marketplace_reviews?.length 
+    ? listing.marketplace_reviews.reduce((sum, review) => sum + review.rating, 0) / listing.marketplace_reviews.length
+    : 0;
+
+  const isFavorited = listing.marketplace_favorites && listing.marketplace_favorites.length > 0;
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
@@ -71,42 +82,52 @@ export function MarketplaceCard({
     <Card className="group hover:shadow-lg transition-all duration-200 border-0 bg-card/50 backdrop-blur-sm relative overflow-hidden">
       {/* Subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+      
+      {showFavoriteButton && (
+        <div className="absolute top-3 right-3 z-10">
+          <FavoriteButton 
+            itemId={listing.id} 
+            type="marketplace" 
+            variant="ghost" 
+            size="sm"
+            className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+          />
+        </div>
+      )}
 
-        <div className="p-6 space-y-4 relative">
-          {/* Header */}
-          <div className="space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-base leading-tight line-clamp-1 group-hover:text-primary transition-colors">
-                  {listing.title}
-                </h3>
-                {listing.business_name && (
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {listing.business_name}
-                  </p>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-1 shrink-0">
-                <Badge variant="secondary" className="text-xs font-medium">
-                  {listing.category || 'products'}
-                </Badge>
-                {listing.featured && (
-                  <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                )}
-              </div>
+      <div className="p-6 space-y-4 relative">
+        {/* Header */}
+        <div className="space-y-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-base leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+                {listing.title}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {listing.business_name}
+              </p>
             </div>
-
-            {/* Location */}
-            {listing.venues?.name && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3 shrink-0" />
-                <span className="truncate">
-                  {`${listing.venues.name}, ${listing.venues.city}`}
-                </span>
-              </div>
-            )}
+            
+            <div className="flex items-center gap-1 shrink-0">
+              <Badge variant="secondary" className="text-xs font-medium">
+                {listing.category}
+              </Badge>
+              {listing.featured && (
+                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              )}
+            </div>
           </div>
+
+          {/* Location */}
+          {(listing.venues?.name || listing.location) && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="truncate">
+                {listing.venues ? `${listing.venues.name}, ${listing.venues.city}` : listing.location}
+              </span>
+            </div>
+          )}
+        </div>
 
         {/* Description */}
         {listing.description && (
@@ -145,6 +166,23 @@ export function MarketplaceCard({
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </Button>
+            )}
+            {listing.contact_phone && (
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 hover:bg-muted/50">
+                <Phone className="h-3 w-3" />
+              </Button>
+            )}
+            {listing.contact_email && (
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 hover:bg-muted/50">
+                <Mail className="h-3 w-3" />
+              </Button>
+            )}
+            
+            {listing.views_count && listing.views_count > 0 && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground ml-2">
+                <Eye className="h-3 w-3" />
+                <span>{listing.views_count}</span>
+              </div>
             )}
           </div>
           

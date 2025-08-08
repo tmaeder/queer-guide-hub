@@ -1,14 +1,16 @@
 import React from 'react';
 import { useState } from 'react';
-import { useMedusaMarketplace, MedusaListing } from '@/hooks/useMedusaMarketplace';
+import { useMarketplace } from '@/hooks/useMarketplace';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Store, Plus, Loader, Grid, List } from 'lucide-react';
+import { Store, Plus, Loader, Heart, Grid, List } from 'lucide-react';
+import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 const Marketplace = () => {
   const {
     listings,
@@ -17,14 +19,14 @@ const Marketplace = () => {
     fetchListings,
     toggleFavorite,
     incrementViews
-  } = useMedusaMarketplace();
+  } = useMarketplace();
   const {
     user
   } = useAuth();
   const {
     toast
   } = useToast();
-  const [selectedListing, setSelectedListing] = useState<MedusaListing | null>(null);
+  const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState('all');
   const handleFiltersChange = (filters: any) => {
@@ -57,7 +59,7 @@ const Marketplace = () => {
       fetchListings(); // Refresh to show updated favorites
     }
   };
-  const handleViewDetails = (listing: MedusaListing) => {
+  const handleViewDetails = (listing: MarketplaceListing) => {
     setSelectedListing(listing);
     incrementViews(listing.id);
     // In a real app, this would navigate to a detailed listing page
@@ -88,17 +90,7 @@ const Marketplace = () => {
           <Card className="p-8 text-center">
             <CardContent>
               <p className="text-destructive mb-4">Error loading marketplace: {error}</p>
-              <p className="text-sm text-muted-foreground mb-4">Configure your Medusa Store API URL and try again.</p>
-              <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Button onClick={() => fetchListings()}>Try Again</Button>
-                <Button variant="outline" onClick={() => {
-                  const url = prompt('Enter Medusa Store API URL (e.g. https://shop.example.com)') || '';
-                  if (url) {
-                    window.localStorage.setItem('MEDUSA_URL', url);
-                    window.location.reload();
-                  }
-                }}>Set Medusa URL</Button>
-              </div>
+              <Button onClick={() => fetchListings()}>Try Again</Button>
             </CardContent>
           </Card>
         </div>
