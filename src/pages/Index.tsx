@@ -102,6 +102,16 @@ const Index = React.memo(() => {
     label: 'Weekly Events'
   }], [loading, realStats, formatNumber]);
   return <div className="min-h-screen">
+      {/* Map Near You - Top */}
+      <section className="py-8">
+        <React.Suspense fallback={null}>
+          {/* Lightweight map focused on venues/orgs near the user */}
+          {(() => {
+            const Map = React.lazy(() => import('@/components/home/FrontPageVenueMap'));
+            return <Map />;
+          })()}
+        </React.Suspense>
+      </section>
       {/* Hero Section */}
       <section className="py-24 lg:py-32">
         <div className="container mx-auto px-4">
@@ -201,18 +211,6 @@ const Index = React.memo(() => {
       </React.Suspense>
 
       {/* Testimonials Section */}
-
-      {/* Map Near You */}
-      <section className="py-8">
-        <React.Suspense fallback={null}>
-          {/* Lightweight map focused on venues/orgs near the user */}
-          {/** Using dynamic import to keep initial bundle small */}
-          {(() => {
-            const Map = React.lazy(() => import('@/components/home/FrontPageVenueMap'));
-            return <Map />;
-          })()}
-        </React.Suspense>
-      </section>
 
       {/* Final CTA Section */}
       
