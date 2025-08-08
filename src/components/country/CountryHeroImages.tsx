@@ -61,7 +61,7 @@ export default function CountryHeroImages({ countryName, className = "" }: Count
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${images[0]?.url})` }}
       >
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-foreground/40" />
       </div>
       
       {/* Small thumbnail images overlay */}
@@ -70,7 +70,7 @@ export default function CountryHeroImages({ countryName, className = "" }: Count
           {images.slice(1).map((image) => (
             <div
               key={image.id}
-              className="w-12 h-12 rounded border-2 border-white/70 overflow-hidden bg-cover bg-center"
+              className="w-12 h-12 rounded border-2 border-foreground/70 overflow-hidden bg-cover bg-center"
               style={{ backgroundImage: `url(${image.thumbnail})` }}
             />
           ))}

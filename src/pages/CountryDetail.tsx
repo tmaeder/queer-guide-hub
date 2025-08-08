@@ -237,13 +237,13 @@ export default function CountryDetail() {
             {/* Country Images with overlay */}
             <div className="relative">
               <CountryHeroImages countryName={country.name} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-8 text-primary-foreground">
                 <div className="flex items-center gap-4 mb-4">
                   {country.flag_emoji && <span className="text-6xl drop-shadow-lg">{country.flag_emoji}</span>}
                   <div>
                     <h1 className="text-5xl font-bold mb-2 drop-shadow-lg">{country.name}</h1>
-                    <p className="text-xl text-white/90 flex items-center gap-2">
+                    <p className="text-xl text-primary-foreground/90 flex items-center gap-2">
                       {country.capital && <>
                           <Landmark className="h-5 w-5" />
                           <button onClick={async () => {
@@ -255,7 +255,7 @@ export default function CountryDetail() {
                         } else {
                           navigate(`/directory?search=${encodeURIComponent(country.capital)}&type=cities`);
                         }
-                      }} className="text-white hover:text-white/80 font-medium hover:underline">
+                        }} className="text-primary-foreground hover:text-primary-foreground/80 font-medium hover:underline">
                             {country.capital}
                           </button>
                         </>}

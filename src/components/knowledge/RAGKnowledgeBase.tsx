@@ -136,7 +136,7 @@ export function RAGKnowledgeBase({
               <CardContent className="p-3">
                 <div className="flex items-start gap-3">
                   <div className={`w-8 h-8 rounded-full ${colorClass} flex items-center justify-center flex-shrink-0`}>
-                    <Icon className="h-4 w-4 text-white" />
+                    <Icon className="h-4 w-4 text-primary-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">

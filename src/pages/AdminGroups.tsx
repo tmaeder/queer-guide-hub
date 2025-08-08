@@ -413,7 +413,7 @@ export default function AdminGroups() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center text-white font-medium">
+                          <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center text-primary-foreground font-medium">
                             {group.name.charAt(0).toUpperCase()}
                           </div>
                           <div>

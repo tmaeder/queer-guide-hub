@@ -174,7 +174,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                     className="w-full aspect-video object-cover transition-transform group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                  <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                     <div className="text-primary-foreground text-xs">
                       <p className="font-medium">Photo by</p>
                       <a

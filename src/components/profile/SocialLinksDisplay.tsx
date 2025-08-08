@@ -23,14 +23,14 @@ interface SocialLinksDisplayProps {
 }
 
 const PLATFORM_CONFIGS = {
-  twitter: { name: 'Twitter', icon: Twitter, color: 'text-blue-500' },
-  instagram: { name: 'Instagram', icon: Instagram, color: 'text-pink-500' },
-  linkedin: { name: 'LinkedIn', icon: Linkedin, color: 'text-blue-600' },
-  github: { name: 'GitHub', icon: Github, color: 'text-gray-700' },
-  facebook: { name: 'Facebook', icon: Facebook, color: 'text-blue-600' },
-  youtube: { name: 'YouTube', icon: Youtube, color: 'text-red-500' },
-  tiktok: { name: 'TikTok', icon: Music, color: 'text-black' },
-  website: { name: 'Website', icon: Globe, color: 'text-green-600' }
+  twitter: { name: 'Twitter', icon: Twitter, color: 'text-foreground' },
+  instagram: { name: 'Instagram', icon: Instagram, color: 'text-foreground' },
+  linkedin: { name: 'LinkedIn', icon: Linkedin, color: 'text-foreground' },
+  github: { name: 'GitHub', icon: Github, color: 'text-foreground' },
+  facebook: { name: 'Facebook', icon: Facebook, color: 'text-foreground' },
+  youtube: { name: 'YouTube', icon: Youtube, color: 'text-foreground' },
+  tiktok: { name: 'TikTok', icon: Music, color: 'text-foreground' },
+  website: { name: 'Website', icon: Globe, color: 'text-foreground' }
 };
 
 export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md' }: SocialLinksDisplayProps) {

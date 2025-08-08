@@ -588,7 +588,7 @@ export default function TagsDirectory() {
                           >
                             <div className="flex items-start gap-4 mb-4">
                               <div className={`p-3 bg-gradient-to-br ${group.color} rounded-lg shadow-sm group-hover:shadow-md transition-shadow`}>
-                                <IconComponent className="h-5 w-5 text-white" />
+                                <IconComponent className="h-5 w-5 text-primary-foreground" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-foreground capitalize group-hover:text-primary transition-colors line-clamp-1">

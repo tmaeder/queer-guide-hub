@@ -138,7 +138,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
           display: flex;
           align-items: center;
           justify-content: center;
-          color: white;
+          color: hsl(var(--primary-foreground));
           font-size: ${Math.max(8, size / 4)}px;
           font-weight: bold;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -164,7 +164,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
         }).setHTML(`
           <div style="padding: 8px; min-width: 120px;">
             <div style="font-weight: bold; margin-bottom: 4px;">${country.country}</div>
-            <div style="color: #666; font-size: 12px;">
+            <div style="color: hsl(var(--muted-foreground)); font-size: 12px;">
               ${country.count.toLocaleString()} visitors (${country.percentage}%)
             </div>
           </div>

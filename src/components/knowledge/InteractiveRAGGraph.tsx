@@ -70,18 +70,18 @@ function GraphNode({
           color={color} 
           transparent 
           opacity={isSelected ? 0.9 : 0.7}
-          emissive={hovered ? color : '#000000'}
+          emissive={color}
           emissiveIntensity={hovered ? 0.2 : 0}
         />
       </Sphere>
       
       {(hovered || isSelected) && (
         <Html distanceFactor={10}>
-          <div className="bg-black/80 text-white px-2 py-1 rounded text-xs whitespace-nowrap pointer-events-none">
+          <div className="bg-foreground/80 text-primary-foreground px-2 py-1 rounded text-xs whitespace-nowrap pointer-events-none">
             <div className="font-semibold">{label}</div>
-            <div className="text-gray-300">{contentType}</div>
+            <div className="text-muted-foreground">{contentType}</div>
             {similarity !== undefined && (
-              <div className="text-blue-300">Similarity: {Math.round(similarity * 100)}%</div>
+              <div className="text-muted-foreground">Similarity: {Math.round(similarity * 100)}%</div>
             )}
           </div>
         </Html>
@@ -232,7 +232,7 @@ function ControlPanel({
   };
 
   return (
-    <Card className="absolute top-4 left-4 w-80 bg-black/80 text-white border-gray-700">
+    <Card className="absolute top-4 left-4 w-80 bg-foreground/80 text-primary-foreground border-border">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Network className="h-5 w-5" />
@@ -315,7 +315,7 @@ function NodeDetailsPanel({
   if (!selectedNode) return null;
 
   return (
-    <Card className="absolute top-4 right-4 w-80 bg-black/80 text-white border-gray-700">
+    <Card className="absolute top-4 right-4 w-80 bg-foreground/80 text-primary-foreground border-border">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center gap-2">
@@ -327,19 +327,19 @@ function NodeDetailsPanel({
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <Label className="text-sm text-gray-300">Type</Label>
+          <Label className="text-sm text-muted-foreground">Type</Label>
           <Badge variant="outline" className="ml-2">{selectedNode.contentType}</Badge>
         </div>
         
         <div>
-          <Label className="text-sm text-gray-300">Label</Label>
+          <Label className="text-sm text-muted-foreground">Label</Label>
           <p className="text-sm mt-1">{selectedNode.label}</p>
         </div>
         
         {selectedNode.content && (
           <div>
-            <Label className="text-sm text-gray-300">Content</Label>
-            <p className="text-xs mt-1 text-gray-400 line-clamp-3">{selectedNode.content}</p>
+            <Label className="text-sm text-muted-foreground">Content</Label>
+            <p className="text-xs mt-1 text-muted-foreground line-clamp-3">{selectedNode.content}</p>
           </div>
         )}
         
@@ -351,7 +351,7 @@ function NodeDetailsPanel({
         )}
         
         <div>
-          <Label className="text-sm text-gray-300">Connections</Label>
+          <Label className="text-sm text-muted-foreground">Connections</Label>
           <p className="text-sm mt-1">{selectedNode.connections || 0} related items</p>
         </div>
       </CardContent>
@@ -396,7 +396,7 @@ export function InteractiveRAGGraph({
   };
 
   return (
-    <div className="w-full h-[800px] relative bg-gray-900 rounded-lg overflow-hidden">
+    <div className="w-full h-[800px] relative bg-background rounded-lg overflow-hidden">
       <Canvas camera={{ position: [0, 0, 15], fov: 75 }}>
         <Scene
           nodes={graphData.nodes}
@@ -436,7 +436,7 @@ export function InteractiveRAGGraph({
       />
       
       {/* Legend */}
-      <Card className="absolute bottom-4 left-4 bg-black/80 text-white border-gray-700">
+      <Card className="absolute bottom-4 left-4 bg-foreground/80 text-primary-foreground border-border">
         <CardContent className="p-3">
           <div className="text-xs space-y-1">
             <div className="font-semibold mb-2">Connection Types</div>

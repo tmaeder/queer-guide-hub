@@ -573,7 +573,7 @@ export default function EmailTemplates() {
                       </TabsList>
                       
                       <TabsContent value="html-preview">
-                        <div className="border rounded-lg p-4 bg-white">
+                        <div className="border rounded-lg p-4 bg-background">
                           <div className="border-b pb-2 mb-4">
                             <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
                           </div>
