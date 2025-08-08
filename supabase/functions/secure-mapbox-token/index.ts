@@ -12,23 +12,25 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Get environment variables
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const mapboxToken = Deno.env.get('MAPBOX_ACCESS_TOKEN') || Deno.env.get('MAPBOX_PUBLIC_TOKEN');
 
     if (!mapboxToken) {
       throw new Error('Mapbox access token not configured (set MAPBOX_ACCESS_TOKEN or MAPBOX_PUBLIC_TOKEN)');
     }
 
-    // Create Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Create Supabase client only if service key is available
+    let supabase: ReturnType<typeof createClient> | null = null;
+    if (supabaseUrl && supabaseServiceKey) {
+      supabase = createClient(supabaseUrl, supabaseServiceKey);
+    }
 
     // For public access, JWT is optional; proceed without user verification
     const authHeader = req.headers.get('Authorization');
     let userId: string | null = null;
     try {
-      if (authHeader) {
+      if (authHeader && supabase) {
         const { data: { user }, error: authError } = await supabase.auth.getUser(
           authHeader.replace('Bearer ', '')
         );
@@ -44,26 +46,30 @@ Deno.serve(async (req) => {
                         req.headers.get('cf-connecting-ip') ||
                         '0.0.0.0';
 
-    const { error: rateLimitError } = await supabase.rpc('check_rate_limit', {
-      identifier: requesterIp,
-      max_attempts: 200,
-      time_window_minutes: 60
-    });
+    if (supabase) {
+      const { error: rateLimitError } = await supabase.rpc('check_rate_limit', {
+        identifier: requesterIp,
+        max_attempts: 200,
+        time_window_minutes: 60
+      });
 
-    if (rateLimitError) {
-      throw new Error('Rate limit exceeded');
+      if (rateLimitError) {
+        throw new Error('Rate limit exceeded');
+      }
     }
 
     // Log security event (best-effort)
-    await supabase.rpc('log_enhanced_security_event', {
-      p_event_type: 'MAPBOX_TOKEN_ACCESS',
-      p_user_id: userId,
-      p_metadata: {
-        timestamp: new Date().toISOString(),
-        user_agent: req.headers.get('User-Agent')
-      },
-      p_severity: 'low'
-    });
+    if (supabase) {
+      await supabase.rpc('log_enhanced_security_event', {
+        p_event_type: 'MAPBOX_TOKEN_ACCESS',
+        p_user_id: userId,
+        p_metadata: {
+          timestamp: new Date().toISOString(),
+          user_agent: req.headers.get('User-Agent')
+        },
+        p_severity: 'low'
+      });
+    }
 
     return new Response(
       JSON.stringify({ token: mapboxToken }),
