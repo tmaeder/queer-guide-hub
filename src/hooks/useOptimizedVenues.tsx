@@ -1,160 +1,139 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type VenueInsert = Database['public']['Tables']['venues']['Insert'];
 
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-  expiry: number;
+interface VenueFilters {
+  city?: string;
+  category?: string;
+  tags?: string[];
+  amenities?: string[];
+  services?: string[];
+  accessibilityAttributes?: string[];
+  targetGroups?: string[];
+  search?: string;
+  userLocation?: { latitude: number; longitude: number };
+  nearMe?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
-class VenueCache {
-  private cache = new Map<string, CacheEntry<any>>();
-  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+const VENUES_QUERY_KEY = 'venues';
+const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
+const STALE_TIME = 2 * 60 * 1000; // 2 minutes
 
-  set<T>(key: string, data: T, ttl = this.DEFAULT_TTL) {
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-      expiry: ttl
-    });
-  }
+export function useOptimizedVenues(filters?: VenueFilters) {
+  const queryClient = useQueryClient();
 
-  get<T>(key: string): T | null {
-    const entry = this.cache.get(key);
-    if (!entry) return null;
-    
-    if (Date.now() - entry.timestamp > entry.expiry) {
-      this.cache.delete(key);
-      return null;
+  const buildQuery = (filters?: VenueFilters) => {
+    let query = supabase
+      .from('venues')
+      .select('*')
+      .order('featured', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (filters?.city) {
+      query = query.ilike('city', `%${filters.city}%`);
     }
-    
-    return entry.data;
-  }
 
-  clear() {
-    this.cache.clear();
-  }
-
-  invalidatePattern(pattern: string) {
-    for (const key of this.cache.keys()) {
-      if (key.includes(pattern)) {
-        this.cache.delete(key);
-      }
+    if (filters?.category) {
+      query = query.eq('category', filters.category);
     }
-  }
-}
 
-const venueCache = new VenueCache();
+    if (filters?.tags && filters.tags.length > 0) {
+      query = query.overlaps('tags', filters.tags);
+    }
 
-export function useOptimizedVenues() {
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+    if (filters?.amenities && filters.amenities.length > 0) {
+      query = query.overlaps('amenities', filters.amenities);
+    }
 
-  const debouncedFetch = useCallback(
-    debounce(async (filters?: {
-      city?: string;
-      category?: string;
-      tags?: string[];
-      amenities?: string[];
-      services?: string[];
-      accessibilityAttributes?: string[];
-      targetGroups?: string[];
-      search?: string;
-      userLocation?: { latitude: number; longitude: number };
-      nearMe?: boolean;
-    }) => {
-      const cacheKey = `venues_${JSON.stringify(filters || {})}`;
-      const cached = venueCache.get<Venue[]>(cacheKey);
-      
-      if (cached) {
-        setVenues(cached);
-        setLoading(false);
-        return;
-      }
+    if (filters?.services && filters.services.length > 0) {
+      query = query.overlaps('services', filters.services);
+    }
 
-      try {
-        setLoading(true);
-        
-        // Optimize query by selecting only needed fields
-        let query = supabase
-          .from('venues')
-          .select('*')
-          .order('featured', { ascending: false })
-          .order('created_at', { ascending: false })
-          .limit(100); // Limit initial results
+    if (filters?.accessibilityAttributes?.length) {
+      query = query.overlaps('accessibility_attributes', filters.accessibilityAttributes);
+    }
 
-        // Apply filters efficiently
-        if (filters?.city) {
-          query = query.ilike('city', `%${filters.city}%`);
-        }
-        if (filters?.category) {
-          query = query.eq('category', filters.category);
-        }
-        if (filters?.tags?.length) {
-          query = query.overlaps('tags', filters.tags);
-        }
-        if (filters?.amenities?.length) {
-          query = query.overlaps('amenities', filters.amenities);
-        }
-        if (filters?.services?.length) {
-          query = query.overlaps('services', filters.services);
-        }
-        if (filters?.accessibilityAttributes?.length) {
-          query = query.overlaps('accessibility_attributes', filters.accessibilityAttributes);
-        }
-        if (filters?.targetGroups?.length) {
-          query = query.overlaps('target_groups', filters.targetGroups);
-        }
-        if (filters?.search) {
-          query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,address.ilike.%${filters.search}%`);
-        }
+    if (filters?.targetGroups?.length) {
+      query = query.overlaps('target_groups', filters.targetGroups);
+    }
 
-        const { data, error } = await query;
+    if (filters?.search) {
+      query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,address.ilike.%${filters.search}%`);
+    }
 
-        if (error) throw error;
-        
-        let processedVenues = data || [];
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
 
-        // Client-side distance filtering (only if needed)
-        if (filters?.nearMe && filters?.userLocation) {
-          processedVenues = processedVenues
-            .filter(venue => venue.latitude && venue.longitude)
-            .map(venue => ({
-              ...venue,
-              distance: calculateDistance(
-                filters.userLocation!.latitude,
-                filters.userLocation!.longitude,
-                Number(venue.latitude),
-                Number(venue.longitude)
-              )
-            }))
-            .filter((venue: any) => venue.distance <= 50)
-            .sort((a: any, b: any) => a.distance - b.distance);
-        }
+    if (filters?.offset) {
+      query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1);
+    }
 
-        // Cache the results
-        venueCache.set(cacheKey, processedVenues);
-        setVenues(processedVenues);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch venues');
-      } finally {
-        setLoading(false);
-      }
-    }, 300),
-    []
-  );
+    return query;
+  };
 
-  const fetchVenues = useCallback((filters?: any) => {
-    debouncedFetch(filters);
-  }, [debouncedFetch]);
+  const fetchVenues = async (): Promise<Venue[]> => {
+    const { data, error } = await buildQuery(filters);
 
-  const createVenue = useCallback(async (venue: VenueInsert) => {
-    try {
+    if (error) throw error;
+    
+    let processedVenues = data || [];
+
+    // Client-side distance filtering for nearMe
+    if (filters?.nearMe && filters?.userLocation) {
+      const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+        const R = 6371; // Radius of Earth in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+          Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+      };
+
+      processedVenues = processedVenues
+        .filter(venue => venue.latitude && venue.longitude)
+        .map(venue => ({
+          ...venue,
+          distance: calculateDistance(
+            filters.userLocation!.latitude,
+            filters.userLocation!.longitude,
+            Number(venue.latitude),
+            Number(venue.longitude)
+          )
+        }))
+        .filter((venue: any) => venue.distance <= 50)
+        .sort((a: any, b: any) => a.distance - b.distance);
+    }
+
+    return processedVenues;
+  };
+
+  const {
+    data: venues = [],
+    isLoading,
+    error,
+    refetch,
+    isFetching
+  } = useQuery({
+    queryKey: [VENUES_QUERY_KEY, filters],
+    queryFn: fetchVenues,
+    gcTime: CACHE_TIME,
+    staleTime: STALE_TIME,
+    refetchOnWindowFocus: false,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+
+  const createVenueMutation = useMutation({
+    mutationFn: async (venue: VenueInsert): Promise<Venue> => {
       const { data, error } = await supabase
         .from('venues')
         .insert([venue])
@@ -162,21 +141,15 @@ export function useOptimizedVenues() {
         .single();
 
       if (error) throw error;
-      
-      // Invalidate cache
-      venueCache.invalidatePattern('venues_');
-      
-      return { data, error: null };
-    } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Failed to create venue' 
-      };
-    }
-  }, []);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [VENUES_QUERY_KEY] });
+    },
+  });
 
-  const updateVenue = useCallback(async (id: string, venue: Partial<VenueInsert>) => {
-    try {
+  const updateVenueMutation = useMutation({
+    mutationFn: async ({ id, venue }: { id: string; venue: Partial<VenueInsert> }): Promise<Venue> => {
       const { data, error } = await supabase
         .from('venues')
         .update(venue)
@@ -185,111 +158,38 @@ export function useOptimizedVenues() {
         .single();
 
       if (error) throw error;
-      
-      // Invalidate cache
-      venueCache.invalidatePattern('venues_');
-      
-      return { data, error: null };
-    } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Failed to update venue' 
-      };
-    }
-  }, []);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [VENUES_QUERY_KEY] });
+    },
+  });
 
-  const deleteVenue = useCallback(async (id: string) => {
-    try {
+  const deleteVenueMutation = useMutation({
+    mutationFn: async (id: string): Promise<void> => {
       const { error } = await supabase
         .from('venues')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      
-      // Invalidate cache
-      venueCache.invalidatePattern('venues_');
-      
-      return { error: null };
-    } catch (err) {
-      return { 
-        error: err instanceof Error ? err.message : 'Failed to delete venue' 
-      };
-    }
-  }, []);
-
-  // Memoized derived data
-  const venuesByCategory = useMemo(() => {
-    return venues.reduce((acc, venue) => {
-      if (!acc[venue.category || 'uncategorized']) {
-        acc[venue.category || 'uncategorized'] = [];
-      }
-      acc[venue.category || 'uncategorized'].push(venue);
-      return acc;
-    }, {} as Record<string, Venue[]>);
-  }, [venues]);
-
-  const venuesByCity = useMemo(() => {
-    return venues.reduce((acc, venue) => {
-      if (!acc[venue.city]) acc[venue.city] = [];
-      acc[venue.city].push(venue);
-      return acc;
-    }, {} as Record<string, Venue[]>);
-  }, [venues]);
-
-  const featuredVenues = useMemo(() => {
-    return venues.filter(venue => venue.featured).slice(0, 20);
-  }, [venues]);
-
-  const topRatedVenues = useMemo(() => {
-    return venues
-      .filter(venue => venue.featured) // Use featured instead of rating
-      .slice(0, 20);
-  }, [venues]);
-
-  useEffect(() => {
-    fetchVenues();
-  }, [fetchVenues]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [VENUES_QUERY_KEY] });
+    },
+  });
 
   return {
     venues,
-    loading,
-    error,
-    fetchVenues,
-    createVenue,
-    updateVenue,
-    deleteVenue,
-    refetch: () => fetchVenues(),
-    // Derived data
-    venuesByCategory,
-    venuesByCity,
-    featuredVenues,
-    topRatedVenues,
-    // Cache management
-    clearCache: () => venueCache.clear()
+    loading: isLoading,
+    error: error?.message || null,
+    isFetching,
+    refetch,
+    createVenue: createVenueMutation.mutate,
+    updateVenue: updateVenueMutation.mutate,
+    deleteVenue: deleteVenueMutation.mutate,
+    isCreating: createVenueMutation.isPending,
+    isUpdating: updateVenueMutation.isPending,
+    isDeleting: deleteVenueMutation.isPending,
   };
-}
-
-// Utility functions
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(null, args), wait);
-  };
-}
-
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Radius of the Earth in kilometers
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
 }

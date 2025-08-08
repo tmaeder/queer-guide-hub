@@ -4066,7 +4066,16 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      dashboard_stats: {
+        Row: {
+          cities_count: number | null
+          last_updated: string | null
+          members_count: number | null
+          venues_count: number | null
+          weekly_events_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_rls_policy_indexes: {
@@ -4404,6 +4413,10 @@ export type Database = {
           p_policy_name: string
         }
         Returns: string
+      }
+      refresh_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {

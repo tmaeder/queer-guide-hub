@@ -1,6 +1,6 @@
 import { useState, useMemo, Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
-import { useOptimizedDirectory } from "@/hooks/useOptimizedDirectory";
+import { useOptimizedCountries, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import { DirectorySearch, type DirectoryFilters } from "@/components/directory/DirectorySearch";
 import { WeatherForecast } from "@/components/weather/WeatherForecast";
@@ -17,19 +17,12 @@ type ViewMode = "overview" | "country" | "city" | "search";
 
 export default function Directory() {
   const { t } = useTranslation();
-  const { 
-    continents, 
-    countries, 
-    cities, 
-    loading, 
-    error,
-    fetchCountriesByContinent,
-    fetchCitiesByCountry,
-    searchLocations,
-    findNearbyCities,
-    countriesByContinent,
-    citiesByCountry
-  } = useOptimizedDirectory();
+  const { countries, loading: countriesLoading } = useOptimizedCountries();
+  const { cities, loading: citiesLoading } = useOptimizedCities();
+  
+  const loading = countriesLoading || citiesLoading;
+  const error = null;
+  const continents = []; // Mock for now
 
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
