@@ -97,7 +97,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.secure-mapbox-token]
-verify_jwt = true
+verify_jwt = false
 
 [functions.calendar-feed]
 verify_jwt = false

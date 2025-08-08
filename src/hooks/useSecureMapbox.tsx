@@ -14,19 +14,8 @@ export function useSecureMapbox() {
         setLoading(true);
         setError(null);
 
-        // Get current session to ensure we have auth token
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          throw new Error('Authentication required');
-        }
-
-        // Call secure edge function to get Mapbox token
-        const { data, error } = await supabase.functions.invoke('secure-mapbox-token', {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`
-          }
-        });
+        // Call secure edge function to get Mapbox token (public)
+        const { data, error } = await supabase.functions.invoke('secure-mapbox-token');
 
         if (error) {
           throw error;
@@ -41,14 +30,11 @@ export function useSecureMapbox() {
         console.error('Failed to fetch Mapbox token:', err);
         setError(err.message || 'Failed to fetch map token');
         
-        // Only show toast for non-auth errors to avoid spam
-        if (!err.message?.includes('Authentication')) {
           toast({
             title: "Map Loading Error",
-            description: "Unable to load map functionality. Please try again.",
+            description: "Unable to load map functionality. Please try again soon.",
             variant: "destructive"
           });
-        }
       } finally {
         setLoading(false);
       }

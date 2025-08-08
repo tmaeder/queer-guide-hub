@@ -24,24 +24,29 @@ Deno.serve(async (req) => {
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify user authentication
+    // For public access, JWT is optional; proceed without user verification
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Authentication required');
+    let userId: string | null = null;
+    try {
+      if (authHeader) {
+        const { data: { user }, error: authError } = await supabase.auth.getUser(
+          authHeader.replace('Bearer ', '')
+        );
+        if (!authError && user) userId = user.id;
+      }
+    } catch (_) {
+      // ignore auth errors for public endpoint
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
+    // Check rate limiting using requester IP when available
+    const requesterIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                        req.headers.get('x-real-ip') ||
+                        req.headers.get('cf-connecting-ip') ||
+                        '0.0.0.0';
 
-    if (authError || !user) {
-      throw new Error('Invalid authentication');
-    }
-
-    // Check rate limiting
     const { error: rateLimitError } = await supabase.rpc('check_rate_limit', {
-      identifier: user.id,
-      max_attempts: 100,
+      identifier: requesterIp,
+      max_attempts: 200,
       time_window_minutes: 60
     });
 
@@ -49,10 +54,10 @@ Deno.serve(async (req) => {
       throw new Error('Rate limit exceeded');
     }
 
-    // Log security event
+    // Log security event (best-effort)
     await supabase.rpc('log_enhanced_security_event', {
       p_event_type: 'MAPBOX_TOKEN_ACCESS',
-      p_user_id: user.id,
+      p_user_id: userId,
       p_metadata: {
         timestamp: new Date().toISOString(),
         user_agent: req.headers.get('User-Agent')

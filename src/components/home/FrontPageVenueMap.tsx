@@ -2,8 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -18,9 +16,8 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
 
-  const { token: secureToken, loading: tokenLoading } = useSecureMapbox();
+  const { token: secureToken, loading: tokenLoading, error: tokenError } = useSecureMapbox();
   const [token, setToken] = useState<string | null>(null);
-  const [manualToken, setManualToken] = useState('');
 
   const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [zoom, setZoom] = useState(2.2);
@@ -31,9 +28,6 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
   useEffect(() => {
     if (secureToken) {
       setToken(secureToken);
-    } else {
-      const stored = localStorage.getItem('MAPBOX_PUBLIC_TOKEN');
-      if (stored) setToken(stored);
     }
   }, [secureToken]);
 
@@ -150,13 +144,6 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
     }
   }, [venues, mode]);
 
-  const handleSaveToken = () => {
-    if (!manualToken) return;
-    localStorage.setItem('MAPBOX_PUBLIC_TOKEN', manualToken);
-    setToken(manualToken);
-  };
-
-  const showTokenPrompt = !token && !tokenLoading;
 
   return (
     <section className={className}>
@@ -176,20 +163,11 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {showTokenPrompt ? (
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Enter your Mapbox public token to enable the map (temporary fallback for unauthenticated users).
-                </p>
-                <div className="flex gap-2 max-w-xl">
-                  <Input
-                    placeholder="pk.eyJ..."
-                    value={manualToken}
-                    onChange={(e) => setManualToken(e.target.value)}
-                    aria-label="Mapbox public token"
-                  />
-                  <Button onClick={handleSaveToken}>Save</Button>
-                </div>
+            {(!token || tokenLoading) ? (
+              <div className="h-[480px] w-full rounded-lg bg-muted animate-pulse" aria-label="Loading map" />
+            ) : tokenError ? (
+              <div className="h-[200px] w-full rounded-lg bg-muted/40 flex items-center justify-center text-sm text-muted-foreground">
+                Map unavailable right now. Please try again later.
               </div>
             ) : (
               <div className="relative">
