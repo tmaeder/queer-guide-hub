@@ -8,3 +8,12 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </ThemeProvider>
 );
+
+// Register Service Worker to cache key routes for faster reloads
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      console.debug('[SW] Registration failed:', err);
+    });
+  });
+}
