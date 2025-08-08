@@ -130,11 +130,23 @@ export default function Sitemap() {
     <>
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
       <header className="py-8">
+        <div className="container">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="group -ml-2 font-bold">
+              Queer Guide <span className="text-muted-foreground group-hover:underline">v3 Alpha</span>
+            </Link>
+            <a
+              href="https://github.com/jakejarvis/queer.guide"
+              className="text-sm underline-offset-4 hover:underline"
+            >
+              GitHub
+            </a>
+          </div>
+        </div>
         <h1 className="text-3xl font-bold tracking-tight">Queer Guide Sitemap</h1>
         <p className="text-muted-foreground mt-2">
           Quickly jump to any main section. {" "}
@@ -223,17 +235,13 @@ export default function Sitemap() {
                   {/* Hierarchical list rendering: indent items under their hubs */}
                   <ul className="space-y-2 list-disc pl-5">
                     {(() => {
-                      // Define hub groupings by label
                       const aboutChildren = new Set(["About", "Contact", "Press", "Blog", "Sustainability"]);
                       const legalChildren = new Set(["Terms of Service", "Privacy Policy", "Cookie Policy", "DMCA"]);
-
                       const links = section.links;
                       const childrenByHub: Record<string, { label: string; to: string }[]> = {
                         "About Hub": links.filter((l) => aboutChildren.has(l.label)),
                         "Legal Hub": links.filter((l) => legalChildren.has(l.label)),
                       };
-
-                      // Exclude children from root-level rendering; keep hub entries
                       const rootLinks = links.filter(
                         (l) => !(aboutChildren.has(l.label) || legalChildren.has(l.label))
                       );
@@ -245,11 +253,14 @@ export default function Sitemap() {
                             <li key={link.to}>
                               <Link
                                 to={link.to}
-                                className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                                className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded block"
+                                aria-label={`${link.label} page in ${section.title}`}
+                                aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                               >
-                                {link.label}
+                                <span className="font-medium">{link.label}</span>
+                                <span id={`${id}-${slugify(link.label)}-subtitle`} className="block text-xs text-muted-foreground">Page • {link.to}</span>
+                                <span className="sr-only">In section {section.title}</span>
                               </Link>
-                              <span className="ml-2 text-xs text-muted-foreground">{link.to}</span>
                             </li>
                           );
                         }
@@ -257,20 +268,27 @@ export default function Sitemap() {
                           <li key={link.to}>
                             <Link
                               to={link.to}
-                              className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                              className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded block"
+                              aria-label={`${link.label} hub in ${section.title}`}
+                              aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                             >
-                              {link.label}
+                              <span className="font-medium">{link.label}</span>
+                              <span id={`${id}-${slugify(link.label)}-subtitle`} className="block text-xs text-muted-foreground">Hub • {link.to}</span>
+                              <span className="sr-only">In section {section.title}</span>
                             </Link>
                             <ul className="mt-2 list-disc pl-5 space-y-1">
                               {children.map((cl) => (
                                 <li key={cl.to}>
                                   <Link
                                     to={cl.to}
-                                    className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                                    className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded block"
+                                    aria-label={`${cl.label} page under ${link.label} in ${section.title}`}
+                                    aria-describedby={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`}
                                   >
-                                    {cl.label}
+                                    <span className="font-medium">{cl.label}</span>
+                                    <span id={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`} className="block text-xs text-muted-foreground">Under {link.label} • {cl.to}</span>
+                                    <span className="sr-only">In section {section.title}</span>
                                   </Link>
-                                  <span className="ml-2 text-xs text-muted-foreground">{cl.to}</span>
                                 </li>
                               ))}
                             </ul>
