@@ -148,9 +148,7 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
             <Heart className="h-8 w-8 text-primary fill-current" />
-            <span className="text-xl font-bold text-primary">
-              Queer Guide
-            </span>
+            <span className="sr-only">Queer Guide</span>
           </Link>
 
           {/* Search */}
