@@ -14,6 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationList } from '@/components/notifications/NotificationList';
+import { useAdminRoles } from '@/hooks/useAdminRoles';
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -28,6 +29,7 @@ export function Header() {
     updateProfile
   } = useProfile();
   const { unreadCount } = useNotifications();
+  const { isAdmin } = useAdminRoles();
   const avatarSrc = profile?.avatar_url || (user?.email ? getGravatarUrl(user.email, 96, 'mp') || undefined : undefined);
   const userModes = [{
     value: 'dating',
@@ -205,6 +207,12 @@ export function Header() {
                         <span className="text-xs">{item.label}</span>
                       </Button>
                     ))}
+                    {isAdmin && (
+                      <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin')}>
+                        <Settings className="h-4 w-4" />
+                        <span className="text-xs">Admin</span>
+                      </Button>
+                    )}
                   </div>
 
                   <DropdownMenuSeparator />
