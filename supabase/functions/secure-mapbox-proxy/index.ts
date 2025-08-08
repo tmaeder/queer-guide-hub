@@ -22,26 +22,23 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify user authentication
+    // Optional auth; fall back to IP-based access for public visitors
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    let identifier = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || req.headers.get('cf-connecting-ip')
+      || 'anonymous';
+
+    if (authHeader) {
+      const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+      if (user?.id) {
+        identifier = user.id;
+      }
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
-    // Rate limiting
+    // Rate limiting (per user if logged in, otherwise per IP)
     const { data: rateLimitCheck } = await supabase.rpc('check_rate_limit', {
-      identifier: user.id,
+      identifier,
       max_attempts: 100,
       time_window_minutes: 60
     });

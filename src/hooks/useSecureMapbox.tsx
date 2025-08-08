@@ -15,7 +15,7 @@ export function useSecureMapbox() {
         setError(null);
 
         // Call secure edge function to get Mapbox token (public)
-        const { data, error } = await supabase.functions.invoke('secure-mapbox-token');
+        const { data, error } = await supabase.functions.invoke('secure-mapbox-proxy');
 
         if (error) {
           throw error;
@@ -30,6 +30,14 @@ export function useSecureMapbox() {
         console.error('Failed to fetch Mapbox token:', err);
         setError(err.message || 'Failed to fetch map token');
         
+          // Fallback: use a locally stored public token if available
+          const localToken = typeof window !== 'undefined' ? localStorage.getItem('mapbox_public_token') : null;
+          if (localToken) {
+            setToken(localToken);
+            console.warn('Using local Mapbox public token fallback');
+            return;
+          }
+
           toast({
             title: "Map Loading Error",
             description: "Unable to load map functionality. Please try again soon.",
