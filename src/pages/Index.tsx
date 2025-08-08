@@ -119,8 +119,25 @@ const Index = React.memo(() => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => {})}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {features.map((feature, index) => {
+              const Icon = feature.icon as any;
+              return (
+                <Link to={feature.link} key={index} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded-lg">
+                  <Card className="h-full transition-colors hover:bg-accent/10">
+                    <CardContent className="p-5">
+                      <div className="flex items-start gap-3">
+                        <Icon className={`h-5 w-5 ${feature.color}`} aria-hidden="true" />
+                        <div>
+                          <h3 className="text-sm font-semibold">{feature.title}</h3>
+                          <p className="text-xs text-muted-foreground">{feature.description}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

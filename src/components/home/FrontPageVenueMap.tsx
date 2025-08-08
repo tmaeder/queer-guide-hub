@@ -150,17 +150,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
       <div className="container mx-auto px-4">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between gap-4">
-              <span>Explore Venues & Organizations Near You</span>
-              <div className="flex items-center gap-3">
-                <ToggleGroup type="single" value={mode} onValueChange={(v) => v && setMode(v as any)}>
-                  <ToggleGroupItem value="all" aria-label="Show all">All</ToggleGroupItem>
-                  <ToggleGroupItem value="venues" aria-label="Show venues">Venues</ToggleGroupItem>
-                  <ToggleGroupItem value="orgs" aria-label="Show organizations">Orgs</ToggleGroupItem>
-                </ToggleGroup>
-                {isFetching && <span className="text-sm text-muted-foreground">Loading…</span>}
-              </div>
-            </CardTitle>
+            <CardTitle>Explore Venues & Organizations Near You</CardTitle>
           </CardHeader>
           <CardContent>
             {(!token || tokenLoading) ? (
@@ -177,6 +167,14 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
                 </div>
               </div>
             )}
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <ToggleGroup type="single" value={mode} onValueChange={(v) => v && setMode(v as any)}>
+                <ToggleGroupItem value="all" aria-label="Show all">All</ToggleGroupItem>
+                <ToggleGroupItem value="venues" aria-label="Show venues">Venues</ToggleGroupItem>
+                <ToggleGroupItem value="orgs" aria-label="Show organizations">Orgs</ToggleGroupItem>
+              </ToggleGroup>
+              {isFetching && <span className="text-sm text-muted-foreground">Loading…</span>}
+            </div>
           </CardContent>
         </Card>
       </div>
