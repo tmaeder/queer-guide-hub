@@ -137,3 +137,9 @@ verify_jwt = false
 
 [functions.bulk-scrape-events]
 verify_jwt = true
+
+[functions.secure-google-maps-key]
+verify_jwt = false
+
+[functions.manage-placeholder-images]
+verify_jwt = false
