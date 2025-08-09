@@ -118,7 +118,7 @@ const Index = React.memo(() => {
                 <Link to={feature.link} key={index} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded-lg">
                   <Card className="h-full transition-colors hover:bg-accent/10">
                     <CardContent className="p-5">
-                      <div className="flex flex-col items-start gap-2">
+                      <div className="flex flex-col items-center gap-2 text-center">
                         <Icon className={`h-6 w-6 ${feature.color}`} aria-hidden="true" />
                         <h3 className="text-sm font-semibold">{feature.title}</h3>
                         
