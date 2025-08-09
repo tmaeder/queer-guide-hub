@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// In-memory deduplication and cache (prevents rate-limit spikes)
+let mapboxTokenCache: { token: string; expiresAt: number } | null = null;
+let mapboxTokenInflight: Promise<string> | null = null;
+
+// Cache for 12 hours (public tokens rarely change)
+const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+
 export function useSecureMapbox() {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -14,35 +21,80 @@ export function useSecureMapbox() {
         setLoading(true);
         setError(null);
 
-        // Call secure edge function to get Mapbox token (public)
-        const { data, error } = await supabase.functions.invoke('secure-mapbox-token');
+        const now = Date.now();
 
-        if (error) {
-          throw error;
+        // 1) Memory cache
+        if (mapboxTokenCache && mapboxTokenCache.expiresAt > now) {
+          setToken(mapboxTokenCache.token);
+          return;
         }
 
-        if (!data?.token) {
-          throw new Error('No token received');
+        // 2) LocalStorage cache
+        const lsItem = typeof window !== 'undefined' ? localStorage.getItem('mapbox_cached_token') : null;
+        if (lsItem) {
+          try {
+            const parsed = JSON.parse(lsItem) as { token: string; expiresAt: number };
+            if (parsed?.token && parsed.expiresAt > now) {
+              mapboxTokenCache = parsed;
+              setToken(parsed.token);
+              return;
+            }
+          } catch {}
         }
 
-        setToken(data.token);
+        // 3) De-duplicated network call
+        if (!mapboxTokenInflight) {
+          mapboxTokenInflight = (async () => {
+            const { data, error } = await supabase.functions.invoke('secure-mapbox-token');
+            if (error) throw error;
+            if (!data?.token) throw new Error('No token received');
+            return data.token as string;
+          })().finally(() => {
+            mapboxTokenInflight = null;
+          });
+        }
+
+        const freshToken = await mapboxTokenInflight;
+
+        // Save to memory and localStorage
+        mapboxTokenCache = { token: freshToken, expiresAt: now + CACHE_TTL_MS };
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('mapbox_cached_token', JSON.stringify(mapboxTokenCache));
+          // Keep legacy fallback aligned
+          localStorage.setItem('mapbox_public_token', freshToken);
+        }
+
+        setToken(freshToken);
       } catch (err: any) {
         console.error('Failed to fetch Mapbox token:', err);
-        setError(err.message || 'Failed to fetch map token');
-        
-          // Fallback: use a locally stored public token if available
-          const localToken = typeof window !== 'undefined' ? localStorage.getItem('mapbox_public_token') : null;
-          if (localToken) {
-            setToken(localToken);
-            console.warn('Using local Mapbox public token fallback');
-            return;
-          }
+        setError(err?.message || 'Failed to fetch map token');
 
-          toast({
-            title: "Map Loading Error",
-            description: "Unable to load map functionality. Please try again soon.",
-            variant: "destructive"
-          });
+        // Try stale cached token (even if expired)
+        try {
+          const lsItem = typeof window !== 'undefined' ? localStorage.getItem('mapbox_cached_token') : null;
+          if (lsItem) {
+            const parsed = JSON.parse(lsItem) as { token: string; expiresAt: number };
+            if (parsed?.token) {
+              setToken(parsed.token);
+              console.warn('Using stale cached Mapbox token fallback');
+              return;
+            }
+          }
+        } catch {}
+
+        // Fallback: user-provided public token
+        const localToken = typeof window !== 'undefined' ? localStorage.getItem('mapbox_public_token') : null;
+        if (localToken) {
+          setToken(localToken);
+          console.warn('Using local Mapbox public token fallback');
+          return;
+        }
+
+        toast({
+          title: 'Map Loading Error',
+          description: 'Unable to load map functionality. Please try again soon.',
+          variant: 'destructive',
+        });
       } finally {
         setLoading(false);
       }
