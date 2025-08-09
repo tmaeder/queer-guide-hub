@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { VenueFilters } from '@/components/venues/VenueFilters';
 interface FrontPageVenueMapProps {
   className?: string;
   fullWidth?: boolean;
@@ -37,6 +38,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
   const [zoom, setZoom] = useState(2.2);
   const [ipLocated, setIpLocated] = useState(false);
   const [mode, setMode] = useState<'all' | 'venues' | 'orgs'>('all');
+  const [filters, setFilters] = useState<any>({ limit: 200 });
 
   // Try secure token, then local storage fallback
   useEffect(() => {
@@ -69,8 +71,8 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
     };
   }, []);
 
-  // Fetch venues; we keep it simple and render all for now
-  const { venues = [], isFetching } = (useOptimizedVenues as any)();
+  // Fetch venues with current filters
+  const { venues = [], isFetching } = (useOptimizedVenues as any)(filters);
 
   // Initialize map when token ready
   useEffect(() => {
@@ -108,6 +110,27 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
       mapRef.current.easeTo({ center, zoom, duration: 1200 });
     }
   }, [center, zoom, ipLocated]);
+
+  // Apply "near me" filtering once IP location is known
+  useEffect(() => {
+    if (ipLocated) {
+      setFilters((prev: any) => ({
+        ...prev,
+        nearMe: true,
+        userLocation: { latitude: center[1], longitude: center[0] },
+      }));
+    }
+  }, [ipLocated, center]);
+
+  // Recenter map when userLocation filter is applied
+  useEffect(() => {
+    const map = mapRef.current;
+    const ul = (filters as any)?.userLocation;
+    if (!map || !ul) return;
+    if ((filters as any)?.nearMe) {
+      map.easeTo({ center: [ul.longitude, ul.latitude], zoom: 12, duration: 800 });
+    }
+  }, [filters?.userLocation, filters?.nearMe]);
 
   // Add markers for venues
   useEffect(() => {
@@ -201,6 +224,17 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
                 <ToggleGroupItem value="orgs" aria-label="Show organizations">Orgs</ToggleGroupItem>
               </ToggleGroup>
               {isFetching && <span className="text-sm text-muted-foreground">Loading…</span>}
+            </div>
+            <div className="container mx-auto px-4 mt-6">
+              <VenueFilters
+                onFiltersChange={(f) => {
+                  setFilters(f as any);
+                  const ul = (f as any)?.userLocation;
+                  if ((f as any)?.nearMe && ul && mapRef.current) {
+                    mapRef.current.easeTo({ center: [ul.longitude, ul.latitude], zoom: 12, duration: 800 });
+                  }
+                }}
+              />
             </div>
           </div>
         </div>
