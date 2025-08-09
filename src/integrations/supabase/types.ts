@@ -4164,6 +4164,7 @@ export type Database = {
       }
       consolidate_table_policies: {
         Args:
+          | Record<PropertyKey, never>
           | { p_schema_name: string; p_table_name: string }
           | { p_table_name: string; p_role_name: string; p_action: string }
           | { table_name_param: string }
