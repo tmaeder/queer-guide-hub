@@ -12,12 +12,37 @@ interface FrontPageVenueMapProps {
   heightClass?: string;
 }
 
+const CARTO_POSITRON_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+const OSM_RASTER_STYLE: any = {
+  version: 8,
+  sources: {
+    'osm-tiles': {
+      type: 'raster',
+      tiles: [
+        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+    },
+  },
+  layers: [
+    {
+      id: 'osm-tiles',
+      type: 'raster',
+      source: 'osm-tiles',
+    },
+  ],
+};
+
 const DEFAULT_CENTER: [number, number] = [0, 20];
 
 export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className, fullWidth, heightClass }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
+  const fallbackAppliedRef = useRef(false);
 
   const [mapLoading, setMapLoading] = useState(true);
 
@@ -62,7 +87,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
 
     mapRef.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://demotiles.maplibre.org/style.json',
+      style: CARTO_POSITRON_STYLE,
       center,
       zoom,
       pitch: 45,
@@ -70,6 +95,12 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
 
     mapRef.current.addControl(new maplibregl.NavigationControl(), 'top-right');
     mapRef.current.on('load', () => setMapLoading(false));
+    mapRef.current.on('error', () => {
+      if (!fallbackAppliedRef.current) {
+        fallbackAppliedRef.current = true;
+        mapRef.current?.setStyle(OSM_RASTER_STYLE);
+      }
+    });
 
     return () => {
       mapRef.current?.remove();
