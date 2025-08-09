@@ -165,7 +165,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
               </div>
             </div>
           )}
-          <div className="container mx-auto px-4">
+          <div className="w-full">
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <ToggleGroup type="single" value={mode} onValueChange={(v) => v && setMode(v as any)}>
                 <ToggleGroupItem value="all" aria-label="Show all">All</ToggleGroupItem>
