@@ -119,7 +119,7 @@ const Index = React.memo(() => {
                   <Card className="h-full transition-colors hover:bg-accent/10">
                     <CardContent className="p-5">
                       <div className="flex flex-col items-center gap-2 text-center">
-                        <Icon className={`h-6 w-6 ${feature.color}`} aria-hidden="true" />
+                        <Icon className={`h-8 w-8 md:h-10 md:w-10 ${feature.color}`} aria-hidden="true" />
                         <h3 className="text-base md:text-lg font-semibold">{feature.title}</h3>
                         
                       </div>
