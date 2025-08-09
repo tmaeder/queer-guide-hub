@@ -15,7 +15,7 @@ export function useSecureMapbox() {
         setError(null);
 
         // Call secure edge function to get Mapbox token (public)
-        const { data, error } = await supabase.functions.invoke('secure-mapbox-proxy');
+        const { data, error } = await supabase.functions.invoke('secure-mapbox-token');
 
         if (error) {
           throw error;
