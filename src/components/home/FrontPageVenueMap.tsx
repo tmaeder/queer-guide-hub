@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSecureMapbox } from '@/hooks/useSecureMapbox';
+
 import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { VenueFilters } from '@/components/venues/VenueFilters';
@@ -16,11 +16,10 @@ const DEFAULT_CENTER: [number, number] = [0, 20];
 
 export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className, fullWidth, heightClass }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markersRef = useRef<maplibregl.Marker[]>([]);
 
-  const { token: secureToken, loading: tokenLoading, error: tokenError } = useSecureMapbox();
-  const [token, setToken] = useState<string | null>(null);
+  const [mapLoading, setMapLoading] = useState(true);
 
   const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [zoom, setZoom] = useState(2.2);
@@ -28,12 +27,6 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
   const [mode, setMode] = useState<'all' | 'venues' | 'orgs'>('all');
   const [filters, setFilters] = useState<any>({ limit: 200 });
 
-  // Try secure token, then local storage fallback
-  useEffect(() => {
-    if (secureToken) {
-      setToken(secureToken);
-    }
-  }, [secureToken]);
 
   // Fetch approximate user location via IP
   useEffect(() => {
@@ -62,35 +55,27 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
   // Fetch venues with current filters
   const { venues = [], isFetching } = (useOptimizedVenues as any)(filters);
 
-  // Initialize map when token ready
+  // Initialize map (MapLibre - no token needed)
   useEffect(() => {
-    if (!token || !mapContainer.current || mapRef.current) return;
+    if (!mapContainer.current || mapRef.current) return;
+    setMapLoading(true);
 
-    mapboxgl.accessToken = token;
-    mapRef.current = new mapboxgl.Map({
+    mapRef.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      projection: 'globe',
+      style: 'https://demotiles.maplibre.org/style.json',
       center,
       zoom,
-      pitch: 45
+      pitch: 45,
     });
 
-    mapRef.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
-
-    mapRef.current.on('style.load', () => {
-      mapRef.current?.setFog({
-        color: 'rgb(255,255,255)',
-        'high-color': 'rgb(200,200,225)',
-        'horizon-blend': 0.2,
-      } as any);
-    });
+    mapRef.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+    mapRef.current.on('load', () => setMapLoading(false));
 
     return () => {
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, [token]);
+  }, []);
 
   // Update view when IP location arrives
   useEffect(() => {
@@ -129,7 +114,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
     markersRef.current.forEach(m => m.remove());
     markersRef.current = [];
 
-    const bounds = new mapboxgl.LngLatBounds();
+    const bounds = new maplibregl.LngLatBounds();
     const allWithCoords = (venues as any[])
       .filter(v => typeof v?.longitude === 'number' && typeof v?.latitude === 'number');
 
@@ -147,16 +132,16 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
         ? 'w-3.5 h-3.5 rounded-full border-2 border-background bg-accent shadow'
         : 'w-3.5 h-3.5 rounded-full border-2 border-background bg-primary shadow';
 
-      const marker = new mapboxgl.Marker({ element: el })
+      const marker = new maplibregl.Marker({ element: el })
         .setLngLat([venue.longitude, venue.latitude])
-        .setPopup(new mapboxgl.Popup({ offset: 12 }).setHTML(`
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setHTML(`
           <div style="min-width:200px">
             <strong>${venue.name ?? 'Venue'}</strong><br/>
             <span>${isOrg ? 'Organization' : (venue.category ?? 'Venue')}</span><br/>
             ${venue.city ?? ''}
           </div>
         `))
-        .addTo(map);
+        .addTo(map as maplibregl.Map);
 
       markersRef.current.push(marker);
       bounds.extend([venue.longitude, venue.latitude]);
@@ -174,7 +159,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
     <section className={className}>
       {fullWidth ? (<>
           <div className="w-full">
-          {(!token || tokenLoading || tokenError) ? (
+          {mapLoading ? (
             <div className={`${heightClass ?? 'h-[480px]'} w-full bg-muted animate-pulse`} aria-label="Loading map" />
           ) : (
             <div className="relative">
@@ -214,7 +199,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
               <CardTitle>Explore Venues & Organizations Near You</CardTitle>
             </CardHeader>
             <CardContent>
-              {(!token || tokenLoading || tokenError) ? (
+              {mapLoading ? (
                 <div className="h-[480px] w-full rounded-lg bg-muted animate-pulse" aria-label="Loading map" />
               ) : (
                 <div className="relative">
