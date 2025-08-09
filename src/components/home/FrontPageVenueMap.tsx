@@ -1,11 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-// Switched to Google Maps - no maplibre import
+import React, { useEffect, useRef, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { VenueFilters } from '@/components/venues/VenueFilters';
-import { useSecureGoogleMaps } from '@/hooks/useSecureGoogleMaps';
+import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 interface FrontPageVenueMapProps {
   className?: string;
   fullWidth?: boolean;
@@ -17,11 +18,11 @@ const DEFAULT_CENTER: [number, number] = [0, 20];
 
 export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className, fullWidth, heightClass }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<any | null>(null);
-  const markersRef = useRef<any[]>([]);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [mapLoading, setMapLoading] = useState(true);
 
-  const { loaded: mapsLoaded, loading: mapsLoading, error: mapsError } = useSecureGoogleMaps();
+  const { token, loading: tokenLoading, error: tokenError } = useSecureMapbox();
 
   const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [zoom, setZoom] = useState(2.2);
@@ -57,33 +58,38 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
   // Fetch venues with current filters
   const { venues = [], isFetching } = (useOptimizedVenues as any)(filters);
 
-  // Initialize Google map
+  // Initialize Mapbox map
   useEffect(() => {
-    if (!mapContainer.current || mapRef.current || !mapsLoaded) return;
+    if (!mapContainer.current || mapRef.current || !token) return;
     setMapLoading(true);
 
-    mapRef.current = new google.maps.Map(mapContainer.current, {
-      center: { lng: center[0], lat: center[1] },
+    mapboxgl.accessToken = token;
+    const map = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: [center[0], center[1]],
       zoom: zoom,
-      mapTypeId: 'roadmap',
-      gestureHandling: 'greedy',
-      fullscreenControl: false,
-      streetViewControl: false,
-      mapTypeControl: false,
+      projection: 'globe',
     });
 
-    setMapLoading(false);
+    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+    map.scrollZoom.disable();
+
+    map.on('load', () => {
+      setMapLoading(false);
+      mapRef.current = map;
+    });
 
     return () => {
       mapRef.current = null;
+      map.remove();
     };
-  }, [mapsLoaded]);
+  }, [token]);
 
   // Update view when IP location arrives
   useEffect(() => {
     if (mapRef.current && ipLocated) {
-      mapRef.current.setZoom(zoom);
-      mapRef.current.panTo({ lng: center[0], lat: center[1] });
+      (mapRef.current as mapboxgl.Map).easeTo({ center: [center[0], center[1]], zoom });
     }
   }, [center, zoom, ipLocated]);
 
@@ -100,25 +106,23 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
 
   // Recenter map when userLocation filter is applied
   useEffect(() => {
-    const map = mapRef.current as any;
+    const map = mapRef.current as mapboxgl.Map | null;
     const ul = (filters as any)?.userLocation;
     if (!map || !ul) return;
     if ((filters as any)?.nearMe) {
-      map.setZoom(12);
-      map.panTo({ lng: ul.longitude, lat: ul.latitude });
+      map.easeTo({ center: [ul.longitude, ul.latitude], zoom: 12 });
     }
   }, [filters?.userLocation, filters?.nearMe]);
 
   // Add markers for venues
   useEffect(() => {
-    const map = mapRef.current as google.maps.Map | null;
-    if (!map || !mapsLoaded) return;
+    const map = mapRef.current as mapboxgl.Map | null;
+    if (!map || !token) return;
 
     // Clear existing markers
-    markersRef.current.forEach((m: any) => m.setMap(null));
+    markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
-    const bounds = new google.maps.LatLngBounds();
     const allWithCoords = (venues as any[])
       .filter(v => typeof v?.longitude === 'number' && typeof v?.latitude === 'number');
 
@@ -129,63 +133,48 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
       return !isOrg;
     });
 
-    const infoWindow = new google.maps.InfoWindow();
+    const bounds = new mapboxgl.LngLatBounds();
 
     filtered.forEach((venue) => {
       const isOrg = String(venue?.category ?? '').toLowerCase().includes('org');
 
-      const color = getComputedStyle(document.documentElement)
-        .getPropertyValue(isOrg ? '--accent' : '--primary').trim();
-      const icon: google.maps.Symbol = {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 6,
-        fillColor: color || '#111',
-        fillOpacity: 1,
-        strokeWeight: 2,
-        strokeColor: getComputedStyle(document.documentElement)
-          .getPropertyValue('--background').trim() || '#fff',
-      };
-
-      const marker = new google.maps.Marker({
-        position: { lng: venue.longitude, lat: venue.latitude },
-        map,
-        icon,
-        title: venue.name ?? 'Venue',
-      });
-
-      marker.addListener('click', () => {
-        infoWindow.setContent(`
-          <div style="min-width:200px">
-            <strong>${venue.name ?? 'Venue'}</strong><br/>
-            <span>${isOrg ? 'Organization' : (venue.category ?? 'Venue')}</span><br/>
-            ${venue.city ?? ''}
-          </div>
-        `);
-        infoWindow.open({ anchor: marker, map });
-      });
+      const marker = new mapboxgl.Marker({
+        color: isOrg ? '#0ea5e9' : '#6366f1'
+      })
+        .setLngLat([venue.longitude, venue.latitude])
+        .setPopup(
+          new mapboxgl.Popup({ offset: 25 }).setHTML(`
+            <div class="p-2 min-w-[200px]">
+              <strong>${venue.name ?? 'Venue'}</strong><br/>
+              <span class="text-xs text-muted-foreground">${isOrg ? 'Organization' : (venue.category ?? 'Venue')}</span><br/>
+              <span class="text-xs">${venue.city ?? ''}</span>
+            </div>
+          `)
+        )
+        .addTo(map);
 
       markersRef.current.push(marker);
-      bounds.extend(new google.maps.LatLng(venue.latitude, venue.longitude));
+      bounds.extend([venue.longitude, venue.latitude]);
     });
 
     if (markersRef.current.length > 0) {
-      map.fitBounds(bounds, { padding: 60 } as any);
+      map.fitBounds(bounds, { padding: 60 });
     }
-  }, [venues, mode, mapsLoaded]);
+  }, [venues, mode, token]);
 
 
   return (
     <section className={className}>
       {fullWidth ? (<>
           <div className="w-full">
-          {mapLoading ? (
+          {(mapLoading || tokenLoading) ? (
             <div className={`${heightClass ?? 'h-[480px]'} w-full bg-muted animate-pulse`} aria-label="Loading map" />
           ) : (
             <div className="relative">
               <div ref={mapContainer} className={`${heightClass ?? 'h-[480px]'} w-full`} />
                 <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
                   Centered {ipLocated ? 'via IP location' : 'globally'}
-                  {mapsError && <span className="ml-2 text-destructive">Error loading map</span>}
+                  {tokenError && <span className="ml-2 text-destructive">Error loading map</span>}
                 </div>
             </div>
           )}
@@ -204,8 +193,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
                   setFilters(f as any);
                   const ul = (f as any)?.userLocation;
                   if ((f as any)?.nearMe && ul && mapRef.current) {
-                    (mapRef.current as google.maps.Map).setZoom(12);
-                    (mapRef.current as google.maps.Map).panTo({ lng: ul.longitude, lat: ul.latitude });
+                    (mapRef.current as mapboxgl.Map).easeTo({ center: [ul.longitude, ul.latitude], zoom: 12 });
                   }
                 }}
               />
@@ -220,14 +208,14 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
               <CardTitle>Explore Venues & Organizations Near You</CardTitle>
             </CardHeader>
             <CardContent>
-              {mapLoading ? (
+              {(mapLoading || tokenLoading) ? (
                 <div className="h-[480px] w-full rounded-lg bg-muted animate-pulse" aria-label="Loading map" />
               ) : (
                 <div className="relative">
                   <div ref={mapContainer} className="h-[480px] w-full rounded-lg" />
                     <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
                       Centered {ipLocated ? 'via IP location' : 'globally'}
-                      {mapsError && <span className="ml-2 text-destructive">Error loading map</span>}
+                      {tokenError && <span className="ml-2 text-destructive">Error loading map</span>}
                     </div>
                 </div>
               )}
