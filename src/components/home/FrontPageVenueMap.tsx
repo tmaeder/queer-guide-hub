@@ -7,11 +7,13 @@ import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 interface FrontPageVenueMapProps {
   className?: string;
+  fullWidth?: boolean;
+  heightClass?: string;
 }
 
 const DEFAULT_CENTER: [number, number] = [0, 20];
 
-export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className }) => {
+export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className, fullWidth, heightClass }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -147,26 +149,23 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
 
   return (
     <section className={className}>
-      <div className="container mx-auto px-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Explore Venues & Organizations Near You</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {(!token || tokenLoading) ? (
-              <div className="h-[480px] w-full rounded-lg bg-muted animate-pulse" aria-label="Loading map" />
-            ) : tokenError ? (
-              <div className="h-[200px] w-full rounded-lg bg-muted/40 flex items-center justify-center text-sm text-muted-foreground">
-                Map unavailable right now. Please try again later.
+      {fullWidth ? (
+        <div className="w-full">
+          {(!token || tokenLoading) ? (
+            <div className={`${heightClass ?? 'h-[480px]'} w-full bg-muted animate-pulse`} aria-label="Loading map" />
+          ) : tokenError ? (
+            <div className="h-[200px] w-full bg-muted/40 flex items-center justify-center text-sm text-muted-foreground">
+              Map unavailable right now. Please try again later.
+            </div>
+          ) : (
+            <div className="relative">
+              <div ref={mapContainer} className={`${heightClass ?? 'h-[480px]'} w-full`} />
+              <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
+                Centered {ipLocated ? 'via IP location' : 'globally'}
               </div>
-            ) : (
-              <div className="relative">
-                <div ref={mapContainer} className="h-[480px] w-full rounded-lg" />
-                <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
-                  Centered {ipLocated ? 'via IP location' : 'globally'}
-                </div>
-              </div>
-            )}
+            </div>
+          )}
+          <div className="container mx-auto px-4">
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <ToggleGroup type="single" value={mode} onValueChange={(v) => v && setMode(v as any)}>
                 <ToggleGroupItem value="all" aria-label="Show all">All</ToggleGroupItem>
@@ -175,9 +174,41 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className 
               </ToggleGroup>
               {isFetching && <span className="text-sm text-muted-foreground">Loading…</span>}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      ) : (
+        <div className="container mx-auto px-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Explore Venues & Organizations Near You</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(!token || tokenLoading) ? (
+                <div className="h-[480px] w-full rounded-lg bg-muted animate-pulse" aria-label="Loading map" />
+              ) : tokenError ? (
+                <div className="h-[200px] w-full rounded-lg bg-muted/40 flex items-center justify-center text-sm text-muted-foreground">
+                  Map unavailable right now. Please try again later.
+                </div>
+              ) : (
+                <div className="relative">
+                  <div ref={mapContainer} className="h-[480px] w-full rounded-lg" />
+                  <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
+                    Centered {ipLocated ? 'via IP location' : 'globally'}
+                  </div>
+                </div>
+              )}
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <ToggleGroup type="single" value={mode} onValueChange={(v) => v && setMode(v as any)}>
+                  <ToggleGroupItem value="all" aria-label="Show all">All</ToggleGroupItem>
+                  <ToggleGroupItem value="venues" aria-label="Show venues">Venues</ToggleGroupItem>
+                  <ToggleGroupItem value="orgs" aria-label="Show organizations">Orgs</ToggleGroupItem>
+                </ToggleGroup>
+                {isFetching && <span className="text-sm text-muted-foreground">Loading…</span>}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </section>
   );
 };

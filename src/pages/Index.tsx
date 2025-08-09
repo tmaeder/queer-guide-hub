@@ -7,6 +7,7 @@ import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, Check
 import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
+import FrontPageVenueMap from '@/components/home/FrontPageVenueMap';
 
 // Lazy load slider components for better performance
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -103,8 +104,8 @@ const Index = React.memo(() => {
   }], [loading, realStats, formatNumber]);
   return <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="py-24 lg:py-32">
-        
+      <section className="p-0">
+        <FrontPageVenueMap fullWidth heightClass="h-[60vh]" />
       </section>
 
       {/* Features Grid */}
