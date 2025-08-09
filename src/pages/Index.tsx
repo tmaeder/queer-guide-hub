@@ -129,7 +129,7 @@ const Index = React.memo(() => {
                       <div className="flex flex-col items-start gap-2">
                         <Icon className={`h-6 w-6 ${feature.color}`} aria-hidden="true" />
                         <h3 className="text-sm font-semibold">{feature.title}</h3>
-                        <p className="text-xs text-muted-foreground">{feature.description}</p>
+                        
                       </div>
                     </CardContent>
                   </Card>
