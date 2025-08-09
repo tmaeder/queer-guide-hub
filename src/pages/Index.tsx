@@ -22,37 +22,37 @@ const Index = React.memo(() => {
   const isMobile = useIsMobile();
   const features = [{
     icon: MapPin,
-    title: 'Safe Spaces That Slap',
+    title: 'Spaces',
     description: 'Find verified queer havens where you can be your authentic self',
     color: 'text-primary',
     link: '/venues'
   }, {
     icon: Calendar,
-    title: 'Events That Serve',
+    title: 'Events',
     description: 'Connect with your people through fab local & virtual gatherings',
     color: 'text-foreground',
     link: '/events'
   }, {
     icon: Store,
-    title: 'Queer Marketplace',
+    title: 'Market',
     description: 'Support our community - shop queer-owned businesses & creators',
     color: 'text-accent',
     link: '/marketplace'
   }, {
     icon: Plane,
-    title: 'Travel Like a Queen',
+    title: 'Travel',
     description: 'Plan trips to places that celebrate you - no compromises',
     color: 'text-primary',
     link: '/travel'
   }, {
     icon: Users,
-    title: 'Find Your Chosen Family',
+    title: 'Community',
     description: 'Build real connections with people who get you',
     color: 'text-foreground',
     link: '/groups'
   }, {
     icon: BookOpen,
-    title: 'The Tea & Resources',
+    title: 'Ressources',
     description: 'Stay informed about rights, culture, and community wisdom',
     color: 'text-accent',
     link: '/directory'
