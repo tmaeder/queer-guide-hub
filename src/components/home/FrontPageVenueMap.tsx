@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -20,6 +22,16 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
 
   const { token: secureToken, loading: tokenLoading, error: tokenError } = useSecureMapbox();
   const [token, setToken] = useState<string | null>(null);
+  const [manualToken, setManualToken] = useState('');
+  const applyManualToken = () => {
+    if (!manualToken) return;
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('mapbox_public_token', manualToken);
+      }
+    } catch (_) {}
+    setToken(manualToken);
+  };
 
   const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [zoom, setZoom] = useState(2.2);
@@ -149,8 +161,24 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
 
   return (
     <section className={className}>
-      {fullWidth ? (
-        <div className="w-full">
+      {fullWidth ? (<>
+          {((!token && !tokenLoading) || tokenError) && (
+            <div className="w-full flex justify-center py-4">
+              <div className="w-full max-w-xl px-4">
+                <div className="text-center mb-3 text-sm text-muted-foreground">
+                  Enter your Mapbox public token to load the map.
+                </div>
+                <div className="flex gap-2">
+                  <Input placeholder="pk.eyJ..." value={manualToken} onChange={(e) => setManualToken(e.target.value)} aria-label="Mapbox public token" />
+                  <Button onClick={applyManualToken}>Use token</Button>
+                </div>
+                <div className="mt-2 text-xs text-muted-foreground text-center">
+                  Tip: Add MAPBOX_ACCESS_TOKEN to Supabase Edge Function Secrets for production.
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="w-full">
           {(!token || tokenLoading) ? (
             <div className={`${heightClass ?? 'h-[480px]'} w-full bg-muted animate-pulse`} aria-label="Loading map" />
           ) : tokenError ? (
@@ -176,6 +204,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
             </div>
           </div>
         </div>
+        </>
       ) : (
         <div className="container mx-auto px-4">
           <Card>
