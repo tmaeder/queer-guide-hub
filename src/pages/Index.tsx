@@ -7,7 +7,7 @@ import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, Check
 import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
-import FrontPageVenueMap from '@/components/home/FrontPageVenueMap';
+
 
 // Lazy load slider components for better performance
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -103,9 +103,27 @@ const Index = React.memo(() => {
     label: 'Weekly Events'
   }], [loading, realStats, formatNumber]);
   return <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="p-0">
-        <FrontPageVenueMap fullWidth heightClass="h-[60vh]" />
+      {/* Hero Section (Mapbox removed) */}
+      <section className="bg-gradient-to-b from-muted/10 to-background">
+        <div className="container mx-auto px-4 py-16 md:py-24">
+          <div className="max-w-3xl">
+            <Badge className="mb-4" variant="secondary">Queer Guide</Badge>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
+              Discover queer-friendly spaces, events, and community
+            </h1>
+            <p className="mt-4 text-muted-foreground">
+              Explore verified venues, upcoming events, and resources around the world.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button asChild>
+                <Link to="/venues">Browse Venues</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/events">This Week Near You</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Features Grid */}
