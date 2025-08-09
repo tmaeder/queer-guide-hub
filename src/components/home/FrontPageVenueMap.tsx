@@ -1,50 +1,27 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+// Switched to Google Maps - no maplibre import
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { VenueFilters } from '@/components/venues/VenueFilters';
+import { useSecureGoogleMaps } from '@/hooks/useSecureGoogleMaps';
 interface FrontPageVenueMapProps {
   className?: string;
   fullWidth?: boolean;
   heightClass?: string;
 }
 
-const CARTO_POSITRON_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
-const OSM_RASTER_STYLE: any = {
-  version: 8,
-  sources: {
-    'osm-tiles': {
-      type: 'raster',
-      tiles: [
-        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      ],
-      tileSize: 256,
-      attribution: '© OpenStreetMap contributors',
-    },
-  },
-  layers: [
-    {
-      id: 'osm-tiles',
-      type: 'raster',
-      source: 'osm-tiles',
-    },
-  ],
-};
-
+// Google Maps configuration
 const DEFAULT_CENTER: [number, number] = [0, 20];
 
 export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className, fullWidth, heightClass }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<maplibregl.Marker[]>([]);
-  const fallbackAppliedRef = useRef(false);
-
+  const mapRef = useRef<any | null>(null);
+  const markersRef = useRef<any[]>([]);
   const [mapLoading, setMapLoading] = useState(true);
+
+  const { loaded: mapsLoaded, loading: mapsLoading, error: mapsError } = useSecureGoogleMaps();
 
   const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [zoom, setZoom] = useState(2.2);
@@ -80,38 +57,33 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
   // Fetch venues with current filters
   const { venues = [], isFetching } = (useOptimizedVenues as any)(filters);
 
-  // Initialize map (MapLibre - no token needed)
+  // Initialize Google map
   useEffect(() => {
-    if (!mapContainer.current || mapRef.current) return;
+    if (!mapContainer.current || mapRef.current || !mapsLoaded) return;
     setMapLoading(true);
 
-    mapRef.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: CARTO_POSITRON_STYLE,
-      center,
-      zoom,
-      pitch: 45,
+    mapRef.current = new google.maps.Map(mapContainer.current, {
+      center: { lng: center[0], lat: center[1] },
+      zoom: zoom,
+      mapTypeId: 'roadmap',
+      gestureHandling: 'greedy',
+      fullscreenControl: false,
+      streetViewControl: false,
+      mapTypeControl: false,
     });
 
-    mapRef.current.addControl(new maplibregl.NavigationControl(), 'top-right');
-    mapRef.current.on('load', () => setMapLoading(false));
-    mapRef.current.on('error', () => {
-      if (!fallbackAppliedRef.current) {
-        fallbackAppliedRef.current = true;
-        mapRef.current?.setStyle(OSM_RASTER_STYLE);
-      }
-    });
+    setMapLoading(false);
 
     return () => {
-      mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [mapsLoaded]);
 
   // Update view when IP location arrives
   useEffect(() => {
     if (mapRef.current && ipLocated) {
-      mapRef.current.easeTo({ center, zoom, duration: 1200 });
+      mapRef.current.setZoom(zoom);
+      mapRef.current.panTo({ lng: center[0], lat: center[1] });
     }
   }, [center, zoom, ipLocated]);
 
@@ -128,24 +100,25 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
 
   // Recenter map when userLocation filter is applied
   useEffect(() => {
-    const map = mapRef.current;
+    const map = mapRef.current as any;
     const ul = (filters as any)?.userLocation;
     if (!map || !ul) return;
     if ((filters as any)?.nearMe) {
-      map.easeTo({ center: [ul.longitude, ul.latitude], zoom: 12, duration: 800 });
+      map.setZoom(12);
+      map.panTo({ lng: ul.longitude, lat: ul.latitude });
     }
   }, [filters?.userLocation, filters?.nearMe]);
 
   // Add markers for venues
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
+    const map = mapRef.current as google.maps.Map | null;
+    if (!map || !mapsLoaded) return;
 
     // Clear existing markers
-    markersRef.current.forEach(m => m.remove());
+    markersRef.current.forEach((m: any) => m.setMap(null));
     markersRef.current = [];
 
-    const bounds = new maplibregl.LngLatBounds();
+    const bounds = new google.maps.LatLngBounds();
     const allWithCoords = (venues as any[])
       .filter(v => typeof v?.longitude === 'number' && typeof v?.latitude === 'number');
 
@@ -156,34 +129,49 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
       return !isOrg;
     });
 
+    const infoWindow = new google.maps.InfoWindow();
+
     filtered.forEach((venue) => {
       const isOrg = String(venue?.category ?? '').toLowerCase().includes('org');
-      const el = document.createElement('span');
-      el.className = isOrg
-        ? 'w-3.5 h-3.5 rounded-full border-2 border-background bg-accent shadow'
-        : 'w-3.5 h-3.5 rounded-full border-2 border-background bg-primary shadow';
 
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([venue.longitude, venue.latitude])
-        .setPopup(new maplibregl.Popup({ offset: 12 }).setHTML(`
+      const color = getComputedStyle(document.documentElement)
+        .getPropertyValue(isOrg ? '--accent' : '--primary').trim();
+      const icon: google.maps.Symbol = {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 6,
+        fillColor: color || '#111',
+        fillOpacity: 1,
+        strokeWeight: 2,
+        strokeColor: getComputedStyle(document.documentElement)
+          .getPropertyValue('--background').trim() || '#fff',
+      };
+
+      const marker = new google.maps.Marker({
+        position: { lng: venue.longitude, lat: venue.latitude },
+        map,
+        icon,
+        title: venue.name ?? 'Venue',
+      });
+
+      marker.addListener('click', () => {
+        infoWindow.setContent(`
           <div style="min-width:200px">
             <strong>${venue.name ?? 'Venue'}</strong><br/>
             <span>${isOrg ? 'Organization' : (venue.category ?? 'Venue')}</span><br/>
             ${venue.city ?? ''}
           </div>
-        `))
-        .addTo(map as maplibregl.Map);
+        `);
+        infoWindow.open({ anchor: marker, map });
+      });
 
       markersRef.current.push(marker);
-      bounds.extend([venue.longitude, venue.latitude]);
+      bounds.extend(new google.maps.LatLng(venue.latitude, venue.longitude));
     });
 
     if (markersRef.current.length > 0) {
-      try {
-        map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 800 });
-      } catch (_) { }
+      map.fitBounds(bounds, { padding: 60 } as any);
     }
-  }, [venues, mode]);
+  }, [venues, mode, mapsLoaded]);
 
 
   return (
@@ -195,9 +183,10 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
           ) : (
             <div className="relative">
               <div ref={mapContainer} className={`${heightClass ?? 'h-[480px]'} w-full`} />
-              <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
-                Centered {ipLocated ? 'via IP location' : 'globally'}
-              </div>
+                <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
+                  Centered {ipLocated ? 'via IP location' : 'globally'}
+                  {mapsError && <span className="ml-2 text-destructive">Error loading map</span>}
+                </div>
             </div>
           )}
           <div className="w-full">
@@ -215,7 +204,8 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
                   setFilters(f as any);
                   const ul = (f as any)?.userLocation;
                   if ((f as any)?.nearMe && ul && mapRef.current) {
-                    mapRef.current.easeTo({ center: [ul.longitude, ul.latitude], zoom: 12, duration: 800 });
+                    (mapRef.current as google.maps.Map).setZoom(12);
+                    (mapRef.current as google.maps.Map).panTo({ lng: ul.longitude, lat: ul.latitude });
                   }
                 }}
               />
@@ -235,9 +225,10 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
               ) : (
                 <div className="relative">
                   <div ref={mapContainer} className="h-[480px] w-full rounded-lg" />
-                  <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
-                    Centered {ipLocated ? 'via IP location' : 'globally'}
-                  </div>
+                    <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
+                      Centered {ipLocated ? 'via IP location' : 'globally'}
+                      {mapsError && <span className="ml-2 text-destructive">Error loading map</span>}
+                    </div>
                 </div>
               )}
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
