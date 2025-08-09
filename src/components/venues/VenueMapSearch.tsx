@@ -9,8 +9,7 @@ import { useVenues } from '@/hooks/useVenues';
 import { useRestrooms } from '@/hooks/useRestrooms';
 import { VenueCard } from './VenueCard';
 import { Database } from '@/integrations/supabase/types';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type SelectedItem = Venue | { type: 'restroom'; id: number; name: string; city: string; state: string; accessible: boolean; unisex: boolean; };
@@ -35,24 +34,12 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
   const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
   const [showRestrooms, setShowRestrooms] = useState(true);
-  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { token: mapboxToken, loading: mapTokenLoading } = useSecureMapbox();
   
   const { venues, loading: venuesLoading, fetchVenues } = useVenues();
   const { restrooms, loading: restroomsLoading, fetchRestrooms } = useRestrooms();
 
-  // Fetch secure Mapbox token from edge function
-  const fetchMapboxToken = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('secure-mapbox-proxy');
-      if (error) throw error;
-      setMapboxToken(data.token);
-    } catch (error) {
-      console.error('Failed to fetch Mapbox token:', error);
-    }
-  };
+  // Mapbox token is provided by useSecureMapbox hook
 
   const initializeMap = () => {
     if (!mapContainer.current || !mapboxToken) {
@@ -102,11 +89,6 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
 
   const loading = venuesLoading || restroomsLoading;
 
-  useEffect(() => {
-    if (user) {
-      fetchMapboxToken();
-    }
-  }, [user]);
 
   useEffect(() => {
     if (mapboxToken) {

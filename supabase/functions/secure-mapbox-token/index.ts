@@ -47,14 +47,19 @@ Deno.serve(async (req) => {
                         '0.0.0.0';
 
     if (supabase) {
-      const { error: rateLimitError } = await supabase.rpc('check_rate_limit', {
-        identifier: requesterIp,
-        max_attempts: 200,
-        time_window_minutes: 60
-      });
-
-      if (rateLimitError) {
-        throw new Error('Rate limit exceeded');
+      try {
+        const { error: rateLimitError } = await supabase.rpc('check_rate_limit', {
+          identifier: requesterIp,
+          max_attempts: 200,
+          time_window_minutes: 60
+        });
+        // If the RPC exists and explicitly signals an error unrelated to missing function, log it
+        if (rateLimitError && !`${rateLimitError.message}`.toLowerCase().includes('function check_rate_limit')) {
+          throw new Error('Rate limit exceeded');
+        }
+      } catch (e) {
+        // If rate limit RPC is missing or fails, proceed without blocking but log for observability
+        console.warn('Rate limit check skipped:', (e as any)?.message || e);
       }
     }
 

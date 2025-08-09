@@ -3,6 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
+import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 
 interface CountryData {
   country: string;
@@ -77,15 +78,14 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
+  const { token: mapboxToken } = useSecureMapbox();
 
   useEffect(() => {
-    if (!mapContainer.current || loading) return;
+    if (!mapContainer.current || loading || !mapboxToken) return;
 
     // Initialize map only once
     if (!map.current) {
-      // Use a placeholder token - in production this should come from Supabase secrets
-      mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
-      
+      mapboxgl.accessToken = mapboxToken;
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
@@ -193,7 +193,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
       markers.current.forEach(marker => marker.remove());
       markers.current = [];
     };
-  }, [countryData, loading]);
+  }, [countryData, loading, mapboxToken]);
 
   useEffect(() => {
     // Cleanup map on unmount

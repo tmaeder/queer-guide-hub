@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { MapPin, Loader2, Globe, Building2 } from 'lucide-react';
 import { DirectoryCard } from './DirectoryCard';
+import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 
 interface Country {
   id: string;
@@ -53,8 +54,9 @@ export function DirectoryMapView({
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(true);
   
-  // Use the provided token
-  const activeToken = mapboxToken;
+  const { token: secureToken } = useSecureMapbox();
+  // Use hook token by default, allow manual override
+  const activeToken = mapboxToken || secureToken || '';
 
   const initializeMap = () => {
     if (!mapContainer.current || !activeToken) {
