@@ -8,40 +8,40 @@ import { useNews } from '@/hooks/useNews';
 import { ArrowRight, Calendar, Clock, ExternalLink } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
-
 const LatestNewsSlider = React.memo(() => {
-  const { articles, loading, error, fetchArticles } = useNews();
+  const {
+    articles,
+    loading,
+    error,
+    fetchArticles
+  } = useNews();
   const isMobile = useIsMobile();
-
   useEffect(() => {
     const loadNews = async () => {
       try {
-        await fetchArticles({ featured: true });
+        await fetchArticles({
+          featured: true
+        });
       } catch (error) {
         console.warn('Failed to load news articles:', error);
       }
     };
-
     if (articles.length === 0) {
       loadNews();
     }
   }, [fetchArticles, articles.length]);
-
-  const latestArticles = useMemo(() => 
-    articles.slice(0, 6)
-  , [articles]);
-
+  const latestArticles = useMemo(() => articles.slice(0, 6), [articles]);
   if (loading) {
-    return (
-      <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
+    return <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
         <div className="container mx-auto">
           <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
             <div className={`h-8 bg-muted rounded animate-pulse ${isMobile ? 'w-48' : 'w-64'} mb-4`}></div>
             <div className={`h-4 bg-muted rounded animate-pulse ${isMobile ? 'w-72' : 'w-96'}`}></div>
           </div>
           <div className="flex gap-4">
-            {Array.from({ length: isMobile ? 1 : 3 }).map((_, i) => (
-              <div key={i} className={`${isMobile ? 'w-full' : 'w-80'}`}>
+            {Array.from({
+            length: isMobile ? 1 : 3
+          }).map((_, i) => <div key={i} className={`${isMobile ? 'w-full' : 'w-80'}`}>
                 <Card className="h-64">
                   <CardContent className="p-6">
                     <div className="space-y-4">
@@ -52,17 +52,13 @@ const LatestNewsSlider = React.memo(() => {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
-      </section>
-    );
+      </section>;
   }
-
   if (error) {
-    return (
-      <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
+    return <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
         <div className="container mx-auto">
           <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
             <h2 className={`font-bold mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
@@ -76,13 +72,10 @@ const LatestNewsSlider = React.memo(() => {
             </Button>
           </div>
         </div>
-      </section>
-    );
+      </section>;
   }
-
   if (latestArticles.length === 0) {
-    return (
-      <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
+    return <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
         <div className="container mx-auto">
           <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
             <h2 className={`font-bold mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
@@ -96,12 +89,9 @@ const LatestNewsSlider = React.memo(() => {
             </Button>
           </div>
         </div>
-      </section>
-    );
+      </section>;
   }
-
-  return (
-    <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
+  return <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
       <div className="container mx-auto">
         <div className={`flex items-center justify-between ${isMobile ? 'mb-6' : 'mb-8'}`}>
           <div>
@@ -123,39 +113,22 @@ const LatestNewsSlider = React.memo(() => {
           </Button>
         </div>
 
-        <Carousel
-          opts={{
-            align: "start",
-            loop: false,
-          }}
-          className="w-full"
-        >
+        <Carousel opts={{
+        align: "start",
+        loop: false
+      }} className="w-full">
           <CarouselContent className="-ml-2 md:-ml-4">
-            {latestArticles.map((article) => (
-              <CarouselItem 
-                key={article.id} 
-                className={`pl-2 md:pl-4 ${
-                  isMobile ? 'basis-full' : 'basis-full md:basis-1/2 lg:basis-1/3'
-                }`}
-              >
+            {latestArticles.map(article => <CarouselItem key={article.id} className={`pl-2 md:pl-4 ${isMobile ? 'basis-full' : 'basis-full md:basis-1/2 lg:basis-1/3'}`}>
                 <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
                   <CardContent className="p-6 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4">
-                      {article.category && (
-                        <Badge variant="secondary" className="text-xs">
-                          {article.category}
-                        </Badge>
-                      )}
-                      {article.featured && (
-                        <Badge variant="outline" className="text-xs">
+                      {article.category}
+                      {article.featured && <Badge variant="outline" className="text-xs">
                           Featured
-                        </Badge>
-                      )}
+                        </Badge>}
                     </div>
                     
-                    <h3 className={`font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors ${
-                      isMobile ? 'text-base' : 'text-lg'
-                    }`}>
+                    <h3 className={`font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors ${isMobile ? 'text-base' : 'text-lg'}`}>
                       {article.title}
                     </h3>
                     
@@ -167,28 +140,19 @@ const LatestNewsSlider = React.memo(() => {
                         </span>
                       </div>
                       
-                      {article.source && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
+                      {article.source && <div className="flex items-center gap-2 text-muted-foreground">
                           <ExternalLink className="h-4 w-4 flex-shrink-0" />
                           <span className="text-sm truncate">
                             {article.source}
                           </span>
-                        </div>
-                      )}
+                        </div>}
                     </div>
 
-                    {article.summary && (
-                      <p className="text-sm text-muted-foreground line-clamp-3 mb-4 flex-grow">
+                    {article.summary && <p className="text-sm text-muted-foreground line-clamp-3 mb-4 flex-grow">
                         {article.summary}
-                      </p>
-                    )}
+                      </p>}
 
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="mt-auto self-start group-hover:bg-muted/50" 
-                      asChild
-                    >
+                    <Button variant="ghost" size="sm" className="mt-auto self-start group-hover:bg-muted/50" asChild>
                       <Link to={`/news/${article.id}`}>
                         Read More
                         <ArrowRight className="ml-2 h-3 w-3" />
@@ -196,35 +160,22 @@ const LatestNewsSlider = React.memo(() => {
                     </Button>
                   </CardContent>
                 </Card>
-              </CarouselItem>
-            ))}
+              </CarouselItem>)}
           </CarouselContent>
           
-          {!isMobile && latestArticles.length > 3 && (
-            <>
+          {!isMobile && latestArticles.length > 3 && <>
               <CarouselPrevious className="hidden md:flex" />
               <CarouselNext className="hidden md:flex" />
-            </>
-          )}
+            </>}
         </Carousel>
 
-        {isMobile && latestArticles.length > 1 && (
-          <div className="flex justify-center mt-4">
+        {isMobile && latestArticles.length > 1 && <div className="flex justify-center mt-4">
             <div className="flex space-x-2">
-              {latestArticles.slice(0, 5).map((_, index) => (
-                <div
-                  key={index}
-                  className="w-2 h-2 rounded-full bg-muted"
-                />
-              ))}
+              {latestArticles.slice(0, 5).map((_, index) => <div key={index} className="w-2 h-2 rounded-full bg-muted" />)}
             </div>
-          </div>
-        )}
+          </div>}
       </div>
-    </section>
-  );
+    </section>;
 });
-
 LatestNewsSlider.displayName = 'LatestNewsSlider';
-
 export default LatestNewsSlider;
