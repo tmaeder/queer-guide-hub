@@ -75,6 +75,15 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({ className,
     map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
     map.scrollZoom.disable();
 
+    // Match /directory: add atmosphere and fog effects
+    map.on('style.load', () => {
+      map.setFog({
+        color: 'rgb(255, 255, 255)',
+        'high-color': 'rgb(200, 200, 225)',
+        'horizon-blend': 0.02,
+      } as any);
+    });
+
     map.on('load', () => {
       setMapLoading(false);
       mapRef.current = map;
