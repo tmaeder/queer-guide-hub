@@ -106,7 +106,7 @@ const Index = React.memo(() => {
   }], [loading, realStats, formatNumber]);
   return <div className="min-h-screen">
       {/* Find Venues & Restrooms Near You */}
-      <section className="py-20">
+      <section className="py-8 md:py-12">
         <div className="container mx-auto px-4">
           <VenueMapSearch />
         </div>
