@@ -39,6 +39,54 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Authenticate request: require valid JWT and admin role
+    const authHeader = req.headers.get("Authorization") || "";
+    const supabaseWithAuth = createClient(supabaseUrl, supabaseServiceKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: authData, error: authError } = await supabaseWithAuth.auth.getUser();
+    if (authError || !authData?.user) {
+      console.error("Unauthorized email send attempt", authError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Check admin role
+    const { data: roles, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', authData.user.id);
+    const isAdmin = roles?.some((r: any) => r.role === 'admin');
+    if (rolesError || !isAdmin) {
+      console.warn("Forbidden: non-admin attempted to send templated email", { rolesError });
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Basic rate limiting (per user id)
+    const ip = (req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+               req.headers.get('cf-connecting-ip') ||
+               req.headers.get('x-real-ip') ||
+               "0.0.0.0");
+    const identifier = authData.user.id || ip;
+    const { data: allowed, error: rlError } = await supabase.rpc('check_rate_limit', {
+      identifier,
+      max_attempts: 100, // 100 emails/hour per admin user
+      time_window_minutes: 60
+    });
+    if (rlError || allowed === false) {
+      console.warn("Rate limit exceeded for send-templated-email", { identifier, rlError });
+      return new Response(
+        JSON.stringify({ error: "Rate limit exceeded" }),
+        { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     const requestData: SendEmailRequest = await req.json();
     const { template_key, to_email, variables, is_test = false } = requestData;
 

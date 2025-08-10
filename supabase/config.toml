@@ -115,7 +115,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.send-templated-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.import-foursquare-venues]
 verify_jwt = false
