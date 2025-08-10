@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,75 +13,77 @@ import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker";
 import { CookieConsentBanner } from "@/components/privacy/CookieConsentBanner";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import Index from "./pages/Index";
-import Venues from "./pages/Venues";
-import VenueDetail from "./pages/VenueDetail";
-import Events from "./pages/Events";
-import EventDetail from "./pages/EventDetail";
-import Marketplace from "./pages/Marketplace";
-import MarketplaceItemDetail from "./pages/MarketplaceItemDetail";
-import Donations from "./pages/Donations";
-import DonationSuccess from "./pages/DonationSuccess";
-
-import Directory from "./pages/Directory";
-import TagsDirectory from "./pages/TagsDirectory";
-import UserDirectory from "./pages/UserDirectory";
-import About from "./pages/About";
-import AboutHub from "./pages/AboutHub";
-import Contact from "./pages/Contact";
-import OurVision from "./pages/OurVision";
-import OurValues from "./pages/OurValues";
-import Press from "./pages/Press";
-import Blog from "./pages/Blog";
-import Sustainability from "./pages/Sustainability";
-import TermsOfService from "./pages/TermsOfService";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import CookiePolicy from "./pages/CookiePolicy";
-import DMCA from "./pages/DMCA";
-import LegalHub from "./pages/LegalHub";
-import Auth from "./pages/Auth";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminAnalytics from "./pages/AdminAnalytics";
-import AdminUsers from "./pages/AdminUsers";
-import AdminCountries from "./pages/AdminCountries";
-import AdminTags from "./pages/AdminTags";
-import AdminCities from "./pages/AdminCities";
-import AdminGroups from "./pages/AdminGroups";
-import CityDetail from "./pages/CityDetail";
-import CountryDetail from "./pages/CountryDetail";
-import AdminVenues from "./pages/AdminVenues";
-import AdminVenueCategories from "./pages/AdminVenueCategories";
-import AdminVenueAmenities from "./pages/AdminVenueAmenities";
-import AdminVenueServices from "./pages/AdminVenueServices";
-import AdminEventTypes from "./pages/AdminEventTypes";
-import AdminEventAmenities from "./pages/AdminEventAmenities";
-import AdminEventServices from "./pages/AdminEventServices";
-import AdminAccessibilityAttributes from "./pages/AdminAccessibilityAttributes";
-import AdminTargetGroups from "./pages/AdminTargetGroups";
-import AdminEvents from "./pages/AdminEvents";
-import AdminMarketplace from "./pages/AdminMarketplace";
-import AdminNewsSources from "./pages/AdminNewsSources";
-import EmailTemplates from "./pages/admin/EmailTemplates";
-import AdminImportHub from "./pages/AdminImportHub";
-import News from "./pages/News";
-import Travel from "./pages/Travel";
-
-import ProfileSettings from "./pages/ProfileSettings";
-import UserProfile from "./pages/UserProfile";
-import Feed from "./pages/Feed";
-
-import Messages from "./pages/Messages";
-import Friends from "./pages/Friends";
-import Groups from "./pages/Groups";
-import GroupDetail from "./pages/GroupDetail";
-import MyGroups from "./pages/MyGroups";
-import AccessibilityHub from "./pages/AccessibilityHub";
-import NotFound from "./pages/NotFound";
-import SearchResults from "./pages/SearchResults";
-import Favorites from "./pages/Favorites";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
-import KnowledgeBase from "./pages/KnowledgeBase";
-import Sitemap from "./pages/Sitemap";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const Index = lazy(() => import("./pages/Index"));
+const Venues = lazy(() => import("./pages/Venues"));
+const VenueDetail = lazy(() => import("./pages/VenueDetail"));
+const Events = lazy(() => import("./pages/Events"));
+const EventDetail = lazy(() => import("./pages/EventDetail"));
+const Marketplace = lazy(() => import("./pages/Marketplace"));
+const MarketplaceItemDetail = lazy(() => import("./pages/MarketplaceItemDetail"));
+const Donations = lazy(() => import("./pages/Donations"));
+const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
+
+const Directory = lazy(() => import("./pages/Directory"));
+const TagsDirectory = lazy(() => import("./pages/TagsDirectory"));
+const UserDirectory = lazy(() => import("./pages/UserDirectory"));
+const About = lazy(() => import("./pages/About"));
+const AboutHub = lazy(() => import("./pages/AboutHub"));
+const Contact = lazy(() => import("./pages/Contact"));
+const OurVision = lazy(() => import("./pages/OurVision"));
+const OurValues = lazy(() => import("./pages/OurValues"));
+const Press = lazy(() => import("./pages/Press"));
+const Blog = lazy(() => import("./pages/Blog"));
+const Sustainability = lazy(() => import("./pages/Sustainability"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
+const DMCA = lazy(() => import("./pages/DMCA"));
+const LegalHub = lazy(() => import("./pages/LegalHub"));
+const Auth = lazy(() => import("./pages/Auth"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
+const AdminUsers = lazy(() => import("./pages/AdminUsers"));
+const AdminCountries = lazy(() => import("./pages/AdminCountries"));
+const AdminTags = lazy(() => import("./pages/AdminTags"));
+const AdminCities = lazy(() => import("./pages/AdminCities"));
+const AdminGroups = lazy(() => import("./pages/AdminGroups"));
+const CityDetail = lazy(() => import("./pages/CityDetail"));
+const CountryDetail = lazy(() => import("./pages/CountryDetail"));
+const AdminVenues = lazy(() => import("./pages/AdminVenues"));
+const AdminVenueCategories = lazy(() => import("./pages/AdminVenueCategories"));
+const AdminVenueAmenities = lazy(() => import("./pages/AdminVenueAmenities"));
+const AdminVenueServices = lazy(() => import("./pages/AdminVenueServices"));
+const AdminEventTypes = lazy(() => import("./pages/AdminEventTypes"));
+const AdminEventAmenities = lazy(() => import("./pages/AdminEventAmenities"));
+const AdminEventServices = lazy(() => import("./pages/AdminEventServices"));
+const AdminAccessibilityAttributes = lazy(() => import("./pages/AdminAccessibilityAttributes"));
+const AdminTargetGroups = lazy(() => import("./pages/AdminTargetGroups"));
+const AdminEvents = lazy(() => import("./pages/AdminEvents"));
+const AdminMarketplace = lazy(() => import("./pages/AdminMarketplace"));
+const AdminNewsSources = lazy(() => import("./pages/AdminNewsSources"));
+const EmailTemplates = lazy(() => import("./pages/admin/EmailTemplates"));
+const AdminImportHub = lazy(() => import("./pages/AdminImportHub"));
+const News = lazy(() => import("./pages/News"));
+const Travel = lazy(() => import("./pages/Travel"));
+
+const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
+const Feed = lazy(() => import("./pages/Feed"));
+
+const Messages = lazy(() => import("./pages/Messages"));
+const Friends = lazy(() => import("./pages/Friends"));
+const Groups = lazy(() => import("./pages/Groups"));
+const GroupDetail = lazy(() => import("./pages/GroupDetail"));
+const MyGroups = lazy(() => import("./pages/MyGroups"));
+const AccessibilityHub = lazy(() => import("./pages/AccessibilityHub"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const SearchResults = lazy(() => import("./pages/SearchResults"));
+const Favorites = lazy(() => import("./pages/Favorites"));
+const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
+const Sitemap = lazy(() => import("./pages/Sitemap"));
 
 const queryClient = new QueryClient();
 
@@ -100,6 +102,14 @@ const App = () => {
               <Header />
               <main className="flex-1">
                 <div className="container mx-auto px-2 sm:px-4">
+                  <Suspense fallback={
+                    <div className="py-10">
+                      <div className="grid gap-6 sm:grid-cols-2">
+                        <Skeleton className="h-48" />
+                        <Skeleton className="h-48" />
+                      </div>
+                    </div>
+                  }>
                   <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/venues" element={<Venues />} />
@@ -257,6 +267,7 @@ const App = () => {
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </Suspense>
                 </div>
               </main>
               <Footer />
