@@ -246,7 +246,12 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
               </Button>
             </div>
 
-            <div className="flex items-center gap-4 mb-4">
+
+            <div className="h-[500px] w-full rounded-lg overflow-hidden border">
+              <div ref={mapContainer} className="w-full h-full" />
+            </div>
+
+            <div className="flex items-center gap-4 mt-4">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-primary"></div>
                 <span className="text-sm">Venues</span>
@@ -262,10 +267,6 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
               >
                 {showRestrooms ? 'Hide' : 'Show'} Restrooms
               </Button>
-            </div>
-
-            <div className="h-[500px] w-full rounded-lg overflow-hidden border">
-              <div ref={mapContainer} className="w-full h-full" />
             </div>
 
             {selectedItem && (
