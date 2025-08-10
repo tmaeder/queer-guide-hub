@@ -251,7 +251,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0 || selectedAmenities.length > 0 || selectedServices.length > 0 || selectedAccessibilityAttributes.length > 0 || selectedTargetGroups.length > 0 || nearMe;
 
   return (
-    <div className="space-y-6 p-6 bg-card rounded-xl border shadow-sm">
+    <div className="space-y-6 p-6 bg-card rounded-xl shadow-sm w-full">
       {/* Search Bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
