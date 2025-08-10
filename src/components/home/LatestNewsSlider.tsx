@@ -121,12 +121,7 @@ const LatestNewsSlider = React.memo(() => {
             {latestArticles.map(article => <CarouselItem key={article.id} className={`pl-2 md:pl-4 ${isMobile ? 'basis-full' : 'basis-full md:basis-1/2 lg:basis-1/3'}`}>
                 <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
                   <CardContent className="p-6 h-full flex flex-col">
-                    <div className="flex items-start justify-between mb-4">
-                      {article.category}
-                      {article.featured && <Badge variant="outline" className="text-xs">
-                          Featured
-                        </Badge>}
-                    </div>
+                    
                     
                     <h3 className={`font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors ${isMobile ? 'text-base' : 'text-lg'}`}>
                       {article.title}
