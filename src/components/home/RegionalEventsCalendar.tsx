@@ -43,20 +43,20 @@ const RegionalEventsCalendar: React.FC = () => {
     getUserLocation();
   }, []);
 
-  // Fetch nearby upcoming events when location is available
+  // Fetch upcoming events for the user's city when location is available
   useEffect(() => {
-    if (userLocation) {
+    if (userLocation?.city) {
+      const now = new Date();
+      const end = new Date();
+      end.setDate(now.getDate() + 30);
       fetchEvents({
-        nearMe: { lat: userLocation.latitude, lng: userLocation.longitude }
+        city: userLocation.city,
+        dateRange: { start: now.toISOString(), end: end.toISOString() },
       });
     }
-  }, [userLocation, fetchEvents]);
+  }, [userLocation?.city, fetchEvents]);
 
-  if (locationLoading || loading) {
-    return null;
-  }
-
-  if (!userLocation || events.length === 0) {
+  if (locationLoading && loading) {
     return null;
   }
 
@@ -72,7 +72,7 @@ const RegionalEventsCalendar: React.FC = () => {
               </h2>
             </div>
             <p className={`text-muted-foreground ${isMobile ? 'text-sm' : 'text-lg'}`}>
-              Calendar for {userLocation.city || userLocation.region || 'your region'}
+              Calendar for {userLocation?.city || userLocation?.region || 'your region'}
             </p>
           </div>
           <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/events')}>
