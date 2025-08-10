@@ -19,7 +19,7 @@ import { Tables } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
-type Profile = Tables<"profiles">;
+type Profile = { id: string; user_id: string; display_name?: string | null; avatar_url?: string | null; pronouns?: string | null; age_range?: string | null; verified_identity?: boolean | null; user_mode?: string | null; is_business?: boolean | null; bio?: string | null; location?: string | null; occupation?: string | null; education?: string | null; created_at: string; relationship_status?: string | null; has_children?: boolean | null; has_pets?: boolean | null; gender_identity?: string | null; website?: string | null; interests?: string[] | null; };
 
 // Filter interface
 interface UserFilters {
@@ -128,7 +128,7 @@ const UserDirectory = () => {
     queryKey: ["user-directory", filters, nearMe, userLocation],
     queryFn: async () => {
       let query = supabase
-        .from("profiles")
+        .from("profiles_public")
         .select("*");
 
       // Search query

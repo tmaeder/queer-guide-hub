@@ -48,14 +48,24 @@ export default function UserProfile() {
     queryFn: async () => {
       if (!userId) throw new Error('User ID is required');
       
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) throw error;
-      return data as Profile;
+      let dataRes: any = null; let errorRes: any = null;
+      if (currentUser?.id === userId) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
+        dataRes = data; errorRes = error;
+      } else {
+        const { data, error } = await supabase
+          .from('profiles_public')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
+        dataRes = data; errorRes = error;
+      }
+      if (errorRes) throw errorRes;
+      return dataRes as Profile;
     },
     enabled: !!userId,
   });

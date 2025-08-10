@@ -458,6 +458,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       community_groups: {
@@ -577,6 +584,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       content_embeddings: {
@@ -680,10 +694,24 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "conversation_participants_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "fk_conversation_participants_user_id"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_conversation_participants_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
         ]
@@ -1215,6 +1243,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "event_attendees_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       event_categories: {
@@ -1443,6 +1478,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
           {
@@ -1937,6 +1979,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "marketplace_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       marketplace_listings: {
@@ -2040,6 +2089,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "marketplace_listings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "marketplace_listings_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
@@ -2100,6 +2156,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "marketplace_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       message_reactions: {
@@ -2137,6 +2200,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
         ]
@@ -2201,6 +2271,13 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_profiles_user_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
         ]
@@ -2568,6 +2645,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       post_likes: {
@@ -2602,6 +2686,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
         ]
@@ -3448,10 +3539,24 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "user_follows_following_id_fkey"
             columns: ["following_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
         ]
@@ -3825,6 +3930,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "venue_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "venue_reviews_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
@@ -4062,6 +4174,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
     }
@@ -4073,6 +4192,78 @@ export type Database = {
           members_count: number | null
           venues_count: number | null
           weekly_events_count: number | null
+        }
+        Relationships: []
+      }
+      profiles_public: {
+        Row: {
+          age_range: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          education: string | null
+          gender_identity: string | null
+          has_children: boolean | null
+          has_pets: boolean | null
+          id: string | null
+          interests: Json | null
+          is_business: boolean | null
+          location: string | null
+          occupation: string | null
+          pronouns: string | null
+          relationship_status: string | null
+          sexual_orientation: string | null
+          updated_at: string | null
+          user_id: string | null
+          verified_identity: boolean | null
+          website: string | null
+        }
+        Insert: {
+          age_range?: string | null
+          avatar_url?: string | null
+          bio?: never
+          created_at?: string | null
+          display_name?: string | null
+          education?: string | null
+          gender_identity?: never
+          has_children?: boolean | null
+          has_pets?: boolean | null
+          id?: string | null
+          interests?: Json | null
+          is_business?: boolean | null
+          location?: never
+          occupation?: string | null
+          pronouns?: never
+          relationship_status?: string | null
+          sexual_orientation?: never
+          updated_at?: string | null
+          user_id?: string | null
+          verified_identity?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          age_range?: string | null
+          avatar_url?: string | null
+          bio?: never
+          created_at?: string | null
+          display_name?: string | null
+          education?: string | null
+          gender_identity?: never
+          has_children?: boolean | null
+          has_pets?: boolean | null
+          id?: string | null
+          interests?: Json | null
+          is_business?: boolean | null
+          location?: never
+          occupation?: string | null
+          pronouns?: never
+          relationship_status?: string | null
+          sexual_orientation?: never
+          updated_at?: string | null
+          user_id?: string | null
+          verified_identity?: boolean | null
+          website?: string | null
         }
         Relationships: []
       }
