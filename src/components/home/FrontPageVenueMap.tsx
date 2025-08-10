@@ -169,26 +169,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
   }, [venues, mode, token]);
   return <section className={className}>
       {fullWidth ? <>
-          <div className="w-full">
-          {mapLoading || tokenLoading ? <div className={`${heightClass ?? 'h-[480px]'} w-full bg-muted animate-pulse`} aria-label="Loading map" /> : <div className="relative">
-              <div ref={mapContainer} className={`${heightClass ?? 'h-[480px]'} w-full`} />
-                <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
-                  Centered {ipLocated ? 'via IP location' : 'globally'}
-                  {tokenError && <span className="ml-2 text-destructive">Error loading map</span>}
-                </div>
-            </div>}
-          <div className="w-full">
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <ToggleGroup type="single" value={mode} onValueChange={v => v && setMode(v as any)}>
-                <ToggleGroupItem value="all" aria-label="Show all">All</ToggleGroupItem>
-                <ToggleGroupItem value="venues" aria-label="Show venues">Venues</ToggleGroupItem>
-                <ToggleGroupItem value="orgs" aria-label="Show organizations">Orgs</ToggleGroupItem>
-              </ToggleGroup>
-              {isFetching && <span className="text-sm text-muted-foreground">Loading…</span>}
-            </div>
-            
-          </div>
-        </div>
+          
         </> : <div className="container mx-auto px-4">
           <Card>
             <CardHeader>
