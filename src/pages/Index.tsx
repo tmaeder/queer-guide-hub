@@ -105,6 +105,13 @@ const Index = React.memo(() => {
     label: 'Weekly Events'
   }], [loading, realStats, formatNumber]);
   return <div className="min-h-screen">
+      {/* Find Venues & Restrooms Near You */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <VenueMapSearch />
+        </div>
+      </section>
+
       {/* Hero Section */}
       <section className="p-0">
         <FrontPageVenueMap fullWidth heightClass="h-[60vh]" />
@@ -132,13 +139,6 @@ const Index = React.memo(() => {
               );
             })}
           </div>
-        </div>
-      </section>
-
-      {/* Find Venues & Restrooms Near You */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <VenueMapSearch />
         </div>
       </section>
 
