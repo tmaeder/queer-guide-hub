@@ -56,7 +56,15 @@ const RegionalEventsCalendar: React.FC = () => {
     }
   }, [userLocation?.city, fetchEvents]);
 
-  if (locationLoading && loading) {
+  if (locationLoading || loading) {
+    return null;
+  }
+
+  // Only render if we have a city and at least one upcoming event in that region
+  if (!userLocation?.city) {
+    return null;
+  }
+  if (events.length === 0) {
     return null;
   }
 
