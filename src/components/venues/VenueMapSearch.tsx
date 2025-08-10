@@ -238,35 +238,26 @@ const [filtersOpen, setFiltersOpen] = useState(false);
             <div className="mt-2">
               <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
                 <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-primary"></div>
-                      <span className="text-sm">Venues</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-muted-foreground"></div>
-                      <span className="text-sm">Restrooms</span>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => setShowRestrooms(!showRestrooms)}>
-                      {showRestrooms ? 'Hide' : 'Show'} Restrooms
-                    </Button>
-                  </div>
+    <div className="flex items-center gap-3">
+      <Button variant="outline" size="sm" onClick={() => setShowRestrooms(!showRestrooms)}>
+        {showRestrooms ? 'Hide' : 'Show'} Restrooms
+      </Button>
+    </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium">Search type:</span>
-                    <ToggleGroup
-                      type="single"
-                      value={mode}
-                      onValueChange={(v) => v && setMode(v as 'venues' | 'organizations')}
-                    >
-                      <ToggleGroupItem value="venues" aria-label="Venues">
-                        Venues
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="organizations" aria-label="Organizations">
-                        Organizations
-                      </ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
+    <div className="flex items-center gap-2">
+      <ToggleGroup
+        type="single"
+        value={mode}
+        onValueChange={(v) => v && setMode(v as 'venues' | 'organizations')}
+      >
+        <ToggleGroupItem value="venues" aria-label="Venues">
+          Venues
+        </ToggleGroupItem>
+        <ToggleGroupItem value="organizations" aria-label="Organizations">
+          Organizations
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </div>
 
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => setFiltersOpen(!filtersOpen)}>
                     <Filter className="h-4 w-4" />
