@@ -46,7 +46,7 @@ export function VenueMapSearch({
   const map = useRef<mapboxgl.Map | null>(null);
 const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
 const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
-const [showRestrooms, setShowRestrooms] = useState(true);
+const [showRestrooms, setShowRestrooms] = useState(false);
 const [mode, setMode] = useState<'venues' | 'organizations'>('venues');
 const [filtersOpen, setFiltersOpen] = useState(false);
   const {
@@ -238,11 +238,6 @@ const [filtersOpen, setFiltersOpen] = useState(false);
             <div className="mt-2">
               <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
                 <div className="flex items-center justify-between gap-3 flex-wrap">
-    <div className="flex items-center gap-3">
-      <Button variant="outline" size="sm" onClick={() => setShowRestrooms(!showRestrooms)}>
-        {showRestrooms ? 'Hide' : 'Show'} Restrooms
-      </Button>
-    </div>
 
     <div className="flex items-center gap-2">
       <ToggleGroup
@@ -266,7 +261,12 @@ const [filtersOpen, setFiltersOpen] = useState(false);
                   </Button>
                 </div>
 
-                <CollapsibleContent className="mt-2">
+                <CollapsibleContent className="mt-2 space-y-3">
+                  <div className="flex items-center">
+                    <Button variant="outline" size="sm" onClick={() => setShowRestrooms(!showRestrooms)}>
+                      {showRestrooms ? 'Hide' : 'Show'} Restrooms
+                    </Button>
+                  </div>
                   <VenueFilters onFiltersChange={handleAdvancedFilters} />
                 </CollapsibleContent>
               </Collapsible>
