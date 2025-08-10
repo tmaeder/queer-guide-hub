@@ -5,23 +5,30 @@ import { Database } from '@/integrations/supabase/types';
 type Event = Database['public']['Tables']['events']['Row'];
 type EventInsert = Database['public']['Tables']['events']['Insert'];
 
-export function useEvents() {
+export function useEvents(autoFetch: boolean = true) {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
 
-  const fetchEvents = async (filters?: {
-    city?: string;
-    eventType?: string;
-    dateRange?: { start: string; end: string };
-    tags?: string[];
-    accessibilityAttributes?: string[];
-    targetGroups?: string[];
-    search?: string;
-    nearMe?: { lat: number; lng: number };
-  }) => {
+  const fetchEvents = async (
+    filters?: {
+      city?: string;
+      eventType?: string;
+      dateRange?: { start: string; end: string };
+      tags?: string[];
+      accessibilityAttributes?: string[];
+      targetGroups?: string[];
+      search?: string;
+      nearMe?: { lat: number; lng: number };
+    },
+    options?: { page?: number; pageSize?: number; append?: boolean }
+  ) => {
     try {
       setLoading(true);
+      const page = options?.page;
+      const pageSize = options?.pageSize ?? 24;
+
       let query = supabase
         .from('events')
         .select(`
@@ -38,7 +45,7 @@ export function useEvents() {
             website,
             email
           )
-        `)
+        `, { count: 'exact' })
         .eq('status', 'active')
         .gte('start_date', new Date().toISOString())
         .order('featured', { ascending: false })
@@ -74,11 +81,17 @@ export function useEvents() {
         query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
       }
 
-      const { data, error } = await query;
+      if (typeof page === 'number') {
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data, error, count } = await query as any;
 
       if (error) throw error;
       
-      let eventsData = data || [];
+      let eventsData = (data as Event[]) || [];
       
       // Filter by distance if nearMe is provided
       if (filters?.nearMe) {
@@ -106,16 +119,32 @@ export function useEvents() {
               event.longitude!
             )
           }))
-          .filter(event => event.distance <= 50)
-          .sort((a, b) => a.distance - b.distance);
+          .filter((event: any) => event.distance <= 50)
+          .sort((a: any, b: any) => a.distance - b.distance);
       }
       
-      setEvents(eventsData);
+      if (options?.append) {
+        setEvents(prev => [...prev, ...eventsData]);
+      } else {
+        setEvents(eventsData);
+      }
+
+      if (typeof count === 'number') {
+        if (typeof page === 'number') {
+          const from = (page - 1) * pageSize;
+          setHasMore(from + eventsData.length < count);
+        } else {
+          setHasMore(false);
+        }
+      } else {
+        setHasMore(false);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch events');
     } finally {
       setLoading(false);
     }
+    return { fetched: eventsData.length, total: undefined } as any;
   };
 
   const createEvent = async (event: EventInsert) => {
@@ -202,13 +231,16 @@ export function useEvents() {
   };
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    if (autoFetch) {
+      fetchEvents();
+    }
+  }, [autoFetch]);
 
   return {
     events,
     loading,
     error,
+    hasMore,
     fetchEvents,
     createEvent,
     updateEvent,

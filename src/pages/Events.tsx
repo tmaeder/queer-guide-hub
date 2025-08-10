@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEvents } from '@/hooks/useEvents';
 import { EventCard } from '@/components/events/EventCard';
@@ -38,7 +38,7 @@ const eventTypes = [
 
 const Events = () => {
   const navigate = useNavigate();
-  const { events, loading, error, fetchEvents, updateAttendance } = useEvents();
+  const { events, loading, error, hasMore, fetchEvents, updateAttendance } = useEvents(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -56,24 +56,31 @@ const Events = () => {
   const [nearMe, setNearMe] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 24;
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
   // Get unique cities from events for auto-suggest
   const availableCities = Array.from(new Set(events.map(event => event.city).filter(Boolean))).sort();
 
-  const handleFiltersChange = () => {
+  const handleFiltersChange = async () => {
     const dateRange = startDate && endDate ? {
       start: startDate.toISOString(),
       end: endDate.toISOString()
     } : undefined;
 
-    fetchEvents({
+    const filters = {
       search: search || undefined,
       city: city || undefined,
       eventType: (eventType && eventType !== 'all') ? eventType : undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       dateRange,
       nearMe: nearMe ? userLocation : undefined,
-    });
+    };
+    setPage(1);
+    setAutoLoadedCount(0);
+    await fetchEvents(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
   const handleNearMe = async () => {
@@ -124,7 +131,7 @@ const Events = () => {
   };
 
 
-  const clearFilters = () => {
+  const clearFilters = async () => {
     setSearch('');
     setCity('');
     setEventType('all');
@@ -133,7 +140,9 @@ const Events = () => {
     setEndDate(undefined);
     setNearMe(false);
     setUserLocation(null);
-    fetchEvents();
+    setPage(1);
+    setAutoLoadedCount(0);
+    await fetchEvents({}, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
   const handleAttendanceUpdate = async (eventId: string, status: 'going' | 'interested' | 'not_going') => {
@@ -158,7 +167,7 @@ const Events = () => {
         title: "RSVP Updated",
         description: `You're now marked as ${status} for this event.`,
       });
-      fetchEvents(); // Refresh to show updated attendance
+      fetchEvents({}, { page: 1, pageSize: PAGE_SIZE, append: false }); // Refresh to show updated attendance
     }
   };
 
@@ -184,6 +193,14 @@ const Events = () => {
       </div>
     );
   }
+
+  useEffect(() => {
+    (async () => {
+      setPage(1);
+      setAutoLoadedCount(0);
+      await fetchEvents({}, { page: 1, pageSize: PAGE_SIZE, append: false });
+    })();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -537,9 +554,16 @@ const Events = () => {
         {/* Load More */}
         {!loading && events.length > 0 && (
           <div className="text-center mt-12">
-            <Button variant="outline" size="lg">
-              Load More Events
-            </Button>
+            {hasMore && autoLoadedCount >= 50 && (
+              <Button variant="outline" size="lg" onClick={async () => {
+                setAutoLoadedCount(0);
+                const nextPage = page + 1;
+                setPage(nextPage);
+                await fetchEvents({}, { page: nextPage, pageSize: PAGE_SIZE, append: true });
+              }}>
+                Load More Events
+              </Button>
+            )}
           </div>
         )}
       </div>

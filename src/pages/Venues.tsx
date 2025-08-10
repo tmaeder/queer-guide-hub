@@ -24,36 +24,44 @@ const Venues = () => {
   const [currentFilters, setCurrentFilters] = useState<any>({});
   const [sortBy, setSortBy] = useState<string>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 24;
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [autoLoadedCount, setAutoLoadedCount] = useState(0);
+
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const handleFiltersChange = (filters: any) => {
+  const handleFiltersChange = async (filters: any) => {
     setCurrentFilters(filters);
     setPage(1);
-    fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
+    setAutoLoadedCount(0);
+    await fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
-  const handleAmenityClick = (amenity: string) => {
+  const handleAmenityClick = async (amenity: string) => {
     const filters = { amenities: [amenity] };
     setCurrentFilters(filters);
     setPage(1);
-    fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
+    setAutoLoadedCount(0);
+    await fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
-  const handleServiceClick = (service: string) => {
+  const handleServiceClick = async (service: string) => {
     const filters = { services: [service] };
     setCurrentFilters(filters);
     setPage(1);
-    fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
+    setAutoLoadedCount(0);
+    await fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
-  const handleTagClick = (tag: string) => {
+  const handleTagClick = async (tag: string) => {
     const filters = { tags: [tag] };
     setCurrentFilters(filters);
     setPage(1);
-    fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
+    setAutoLoadedCount(0);
+    await fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
   const handleViewDetails = (venue: Venue) => {
@@ -96,6 +104,34 @@ const Venues = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
+  // Initial fetch
+  useEffect(() => {
+    (async () => {
+      setPage(1);
+      setAutoLoadedCount(0);
+      await fetchVenues(currentFilters, { page: 1, pageSize: PAGE_SIZE, append: false });
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // IntersectionObserver for infinite scroll with 50 autoload cap
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const el = sentinelRef.current;
+    const observer = new IntersectionObserver(async (entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && !loading && hasMore && autoLoadedCount < 50) {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        const result: any = await fetchVenues(currentFilters, { page: nextPage, pageSize: PAGE_SIZE, append: true });
+        const fetched = result?.fetched ?? PAGE_SIZE;
+        setAutoLoadedCount((c) => Math.min(50, c + fetched));
+      }
+    }, { rootMargin: '200px' });
+
+    observer.observe(el);
+    return () => observer.unobserve(el);
+  }, [page, loading, hasMore, currentFilters, autoLoadedCount]);
   if (error) {
     return (
       <div className="min-h-screen bg-background">
@@ -243,14 +279,29 @@ const Venues = () => {
               </div>
             )}
 
-            {/* Load More */}
+            {/* Infinite scroll sentinel and manual load control */}
             {!loading && venues.length > 0 && (
               <div className="text-center mt-16">
-                <Button variant="outline" size="lg" className="px-8 py-3 hover-scale">
-                  Load More Results
-                </Button>
+                {hasMore && autoLoadedCount >= 50 && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="px-8 py-3 hover-scale"
+                    onClick={async () => {
+                      setAutoLoadedCount(0);
+                      const nextPage = page + 1;
+                      setPage(nextPage);
+                      await fetchVenues(currentFilters, { page: nextPage, pageSize: PAGE_SIZE, append: true });
+                    }}
+                  >
+                    Load More Results
+                  </Button>
+                )}
+                {/* Sentinel always rendered to continue observing */}
+                <div ref={sentinelRef} className="h-1" />
               </div>
             )}
+
           </TabsContent>
 
           <TabsContent value="map" className="space-y-6">
