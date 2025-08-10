@@ -19,7 +19,7 @@ import { Tables } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
-type Profile = { id: string; user_id: string; display_name?: string | null; avatar_url?: string | null; pronouns?: string | null; age_range?: string | null; verified_identity?: boolean | null; user_mode?: string | null; is_business?: boolean | null; bio?: string | null; location?: string | null; occupation?: string | null; education?: string | null; created_at: string; relationship_status?: string | null; has_children?: boolean | null; has_pets?: boolean | null; gender_identity?: string | null; website?: string | null; interests?: string[] | null; };
+type Profile = { user_id: string; display_name?: string | null; avatar_url?: string | null; pronouns?: string | null; age_range?: string | null; verified_identity?: boolean | null; user_mode?: string | null; is_business?: boolean | null; bio?: string | null; location?: string | null; occupation?: string | null; education?: string | null; created_at?: string | null; last_active_at?: string | null; relationship_status?: string | null; has_children?: boolean | null; has_pets?: boolean | null; gender_identity?: string | null; website?: string | null; interests?: string[] | null; };
 
 // Filter interface
 interface UserFilters {
@@ -127,7 +127,7 @@ const UserDirectory = () => {
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["user-directory", filters, nearMe, userLocation],
     queryFn: async () => {
-      let query = supabase
+      let query: any = supabase
         .from("profiles_public")
         .select("*");
 
@@ -719,7 +719,7 @@ const UserDirectory = () => {
             {/* User Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {profiles?.map((profile) => (
-                <Link key={profile.id} to={`/user/${profile.user_id}`} className="block group">
+                <Link key={profile.user_id} to={`/user/${profile.user_id}`} className="block group">
                   <Card className="p-6 h-full hover:shadow-elegant transition-all duration-300 hover-scale border-2 hover:border-primary/20 animate-fade-in group-hover:bg-accent/30">
                     <div className="flex items-start space-x-4 mb-4">
                       <div className="relative group/avatar">

@@ -4224,34 +4224,70 @@ export type Database = {
       }
       profiles_public: {
         Row: {
+          age_range: string | null
           avatar_url: string | null
           bio: string | null
+          created_at: string | null
           display_name: string | null
+          education: string | null
           gender_identity: string | null
+          has_children: boolean | null
+          has_pets: boolean | null
+          interests: Json | null
+          is_business: boolean | null
+          last_active_at: string | null
           location: string | null
+          occupation: string | null
           pronouns: string | null
+          relationship_status: string | null
           sexual_orientation: string | null
           user_id: string | null
+          user_mode: Database["public"]["Enums"]["user_mode"] | null
+          verified_identity: boolean | null
         }
         Insert: {
+          age_range?: string | null
           avatar_url?: string | null
           bio?: never
+          created_at?: string | null
           display_name?: string | null
+          education?: string | null
           gender_identity?: never
+          has_children?: boolean | null
+          has_pets?: boolean | null
+          interests?: Json | null
+          is_business?: boolean | null
+          last_active_at?: string | null
           location?: never
+          occupation?: string | null
           pronouns?: never
+          relationship_status?: string | null
           sexual_orientation?: never
           user_id?: string | null
+          user_mode?: Database["public"]["Enums"]["user_mode"] | null
+          verified_identity?: boolean | null
         }
         Update: {
+          age_range?: string | null
           avatar_url?: string | null
           bio?: never
+          created_at?: string | null
           display_name?: string | null
+          education?: string | null
           gender_identity?: never
+          has_children?: boolean | null
+          has_pets?: boolean | null
+          interests?: Json | null
+          is_business?: boolean | null
+          last_active_at?: string | null
           location?: never
+          occupation?: string | null
           pronouns?: never
+          relationship_status?: string | null
           sexual_orientation?: never
           user_id?: string | null
+          user_mode?: Database["public"]["Enums"]["user_mode"] | null
+          verified_identity?: boolean | null
         }
         Relationships: []
       }
