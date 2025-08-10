@@ -4,10 +4,12 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Search, MapPin, Loader2 } from 'lucide-react';
 import { useVenues } from '@/hooks/useVenues';
 import { useRestrooms } from '@/hooks/useRestrooms';
 import { VenueCard } from './VenueCard';
+import { VenueFilters } from '@/components/venues/VenueFilters';
 import { Database } from '@/integrations/supabase/types';
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -41,9 +43,10 @@ export function VenueMapSearch({
 }: VenueMapSearchProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
-  const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
-  const [showRestrooms, setShowRestrooms] = useState(true);
+const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
+const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
+const [showRestrooms, setShowRestrooms] = useState(true);
+const [mode, setMode] = useState<'venues' | 'organizations'>('venues');
   const {
     token: mapboxToken,
     loading: mapTokenLoading
@@ -93,6 +96,13 @@ export function VenueMapSearch({
         per_page: 50
       });
     }
+  };
+  const handleAdvancedFilters = (adv: Record<string, any>) => {
+    const combined: Record<string, any> = { ...(filters || {}), ...adv };
+    if (mode === 'organizations') {
+      combined.category = 'organization';
+    }
+    fetchVenues(combined);
   };
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -218,24 +228,44 @@ export function VenueMapSearch({
             
             
 
-            <div className="flex items-center gap-4 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-primary"></div>
-                <span className="text-sm">Venues</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-muted-foreground"></div>
-                <span className="text-sm">Restrooms</span>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => setShowRestrooms(!showRestrooms)}>
-                {showRestrooms ? 'Hide' : 'Show'} Restrooms
-              </Button>
-            </div>
+{/* Controls moved below map */}
 
             <div className="h-[500px] w-full rounded-lg overflow-hidden border">
               <div ref={mapContainer} className="w-full h-full" />
             </div>
+            <div className="mt-4 space-y-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-primary"></div>
+                  <span className="text-sm">Venues</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-muted-foreground"></div>
+                  <span className="text-sm">Restrooms</span>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setShowRestrooms(!showRestrooms)}>
+                  {showRestrooms ? 'Hide' : 'Show'} Restrooms
+                </Button>
+              </div>
 
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">Search type:</span>
+                <ToggleGroup
+                  type="single"
+                  value={mode}
+                  onValueChange={(v) => v && setMode(v as 'venues' | 'organizations')}
+                >
+                  <ToggleGroupItem value="venues" aria-label="Venues">
+                    Venues
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="organizations" aria-label="Organizations">
+                    Organizations
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+
+              <VenueFilters onFiltersChange={handleAdvancedFilters} />
+            </div>
             {selectedItem && <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold">
