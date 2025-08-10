@@ -10,6 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, BookOpen, Plane } from 'lucide-react';
 import { SearchFilters } from '@/hooks/useUniversalSearch';
 import { format } from 'date-fns';
+import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { DateRange } from 'react-day-picker';
 
 interface SearchFiltersPanelProps {
   filters: SearchFilters;
@@ -36,6 +38,10 @@ const popularCategories = {
 
 export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPanelProps) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const selectedRange: DateRange | undefined = filters.dateRange
+    ? { from: new Date(filters.dateRange.start), to: new Date(filters.dateRange.end) }
+    : undefined;
 
   const toggleContentType = (type: string) => {
     const newTypes = filters.types.includes(type)
@@ -201,6 +207,27 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
       {/* Advanced Filters */}
       {showAdvanced && (
         <div className="space-y-4 pt-2 border-t">
+          {/* Date Range */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium flex items-center gap-1">
+              <CalendarIcon className="h-3 w-3" />
+              Date Range
+            </Label>
+            <DatePickerWithRange
+              date={selectedRange}
+              onSelect={(range) => {
+                if (range?.from && range.to) {
+                  onFiltersChange({
+                    ...filters,
+                    dateRange: { start: range.from, end: range.to }
+                  });
+                } else {
+                  onFiltersChange({ ...filters, dateRange: undefined });
+                }
+              }}
+            />
+          </div>
+
           {/* Price Range */}
           <div className="space-y-2">
             <Label className="text-sm font-medium flex items-center gap-1">

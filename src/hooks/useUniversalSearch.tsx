@@ -83,7 +83,8 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
         organizer: event.organizer_name,
         endDate: event.end_date,
         isFree: event.is_free,
-        maxAttendees: event.max_attendees
+        maxAttendees: event.max_attendees,
+        featured: event.featured
       }
     }));
   };
@@ -311,6 +312,24 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
         filteredResults = filteredResults.filter(result =>
           result.rating && result.rating >= filters.rating!
         );
+      }
+
+      if (filters.dateRange?.start && filters.dateRange?.end) {
+        const start = new Date(filters.dateRange.start).getTime();
+        const end = new Date(filters.dateRange.end).getTime();
+        filteredResults = filteredResults.filter(result => {
+          if (!result.date) return true;
+          const d = new Date(result.date).getTime();
+          return d >= start && d <= end;
+        });
+      }
+
+      if (filters.featured) {
+        filteredResults = filteredResults.filter(r => r.metadata?.featured === true || r.metadata?.isFeatured === true);
+      }
+
+      if (filters.verified) {
+        filteredResults = filteredResults.filter(r => r.metadata?.verified === true);
       }
 
       // Sort by relevance (title matches first, then description)

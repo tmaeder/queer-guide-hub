@@ -26,7 +26,8 @@ export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTab, setSelectedTab] = useState('all');
-  const [sortBy, setSortBy] = useState('relevance');
+  const initialSort = searchParams.get('sort') || 'relevance';
+  const [sortBy, setSortBy] = useState(initialSort);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -74,6 +75,16 @@ export default function SearchResults() {
     setSearchParams(params);
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (sortBy && sortBy !== 'relevance') {
+      params.set('sort', sortBy);
+    } else {
+      params.delete('sort');
+    }
+    setSearchParams(params);
+  }, [sortBy]);
+
   const getResultsByType = () => {
     return results.reduce((acc, result) => {
       if (!acc[result.type]) acc[result.type] = [];
@@ -102,6 +113,10 @@ export default function SearchResults() {
         return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
       case 'popular':
         return sorted.sort((a, b) => (b.metadata?.viewsCount || 0) - (a.metadata?.viewsCount || 0));
+      case 'alpha-asc':
+        return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+      case 'alpha-desc':
+        return sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
       default:
         return sorted;
     }
@@ -370,7 +385,7 @@ export default function SearchResults() {
                   <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-50 bg-background">
                     <SelectItem value="relevance">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="h-3 w-3" />
@@ -381,6 +396,12 @@ export default function SearchResults() {
                       <div className="flex items-center gap-2">
                         <Clock className="h-3 w-3" />
                         Newest
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="oldest">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-3 w-3 rotate-180" />
+                        Oldest
                       </div>
                     </SelectItem>
                     <SelectItem value="rating">
@@ -397,6 +418,18 @@ export default function SearchResults() {
                     </SelectItem>
                     <SelectItem value="price-low">Price: Low to High</SelectItem>
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
+                    <SelectItem value="alpha-asc">
+                      <div className="flex items-center gap-2">
+                        <ArrowUpDown className="h-3 w-3" />
+                        A - Z
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="alpha-desc">
+                      <div className="flex items-center gap-2">
+                        <ArrowUpDown className="h-3 w-3 rotate-180" />
+                        Z - A
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
