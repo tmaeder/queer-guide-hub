@@ -10,6 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 
 import FrontPageVenueMap from '@/components/home/FrontPageVenueMap';
+import { VenueMapSearch } from '@/components/venues/VenueMapSearch';
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
 const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider'));
 const RegionalEventsCalendar = React.lazy(() => import('@/components/home/RegionalEventsCalendar'));
@@ -131,6 +132,13 @@ const Index = React.memo(() => {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* Find Venues & Restrooms Near You */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <VenueMapSearch />
         </div>
       </section>
 
