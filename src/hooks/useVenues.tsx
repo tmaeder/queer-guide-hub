@@ -27,7 +27,9 @@ export function useVenues(autoFetch: boolean = true) {
       nearMe?: boolean;
     },
     options?: { page?: number; pageSize?: number; append?: boolean }
-  ) => {
+) => {
+    let fetchedCount = 0;
+    let totalCount: number | null = null;
     try {
       setLoading(true);
       const page = options?.page;
@@ -121,8 +123,8 @@ export function useVenues(autoFetch: boolean = true) {
       }
 
       // Track fetched and total counts for callers
-      _fetchedCount = processedVenues.length;
-      _totalCount = typeof count === 'number' ? count : null;
+      fetchedCount = processedVenues.length;
+      totalCount = typeof count === 'number' ? count : null;
 
       if (typeof count === 'number') {
         if (typeof page === 'number') {
@@ -139,7 +141,7 @@ export function useVenues(autoFetch: boolean = true) {
     } finally {
       setLoading(false);
     }
-    return { fetched: processedVenues.length, total: typeof count === 'number' ? count : null };
+    return { fetched: fetchedCount, total: totalCount };
   };
 
   const createVenue = async (venue: VenueInsert) => {

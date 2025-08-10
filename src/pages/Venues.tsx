@@ -24,15 +24,13 @@ const Venues = () => {
   const [currentFilters, setCurrentFilters] = useState<any>({});
   const [sortBy, setSortBy] = useState<string>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
-  const [page, setPage] = useState(1);
-  const PAGE_SIZE = 24;
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-
+// removed duplicate pagination state
   const handleFiltersChange = async (filters: any) => {
     setCurrentFilters(filters);
     setPage(1);

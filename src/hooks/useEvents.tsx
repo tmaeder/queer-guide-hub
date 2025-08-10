@@ -24,6 +24,8 @@ export function useEvents(autoFetch: boolean = true) {
     },
     options?: { page?: number; pageSize?: number; append?: boolean }
   ) => {
+    let fetchedCount = 0;
+    let totalCount: number | null = null;
     try {
       setLoading(true);
       const page = options?.page;
@@ -129,6 +131,9 @@ export function useEvents(autoFetch: boolean = true) {
         setEvents(eventsData);
       }
 
+      fetchedCount = eventsData.length;
+      totalCount = typeof count === 'number' ? count : null;
+
       if (typeof count === 'number') {
         if (typeof page === 'number') {
           const from = (page - 1) * pageSize;
@@ -144,7 +149,7 @@ export function useEvents(autoFetch: boolean = true) {
     } finally {
       setLoading(false);
     }
-    return { fetched: eventsData.length, total: undefined } as any;
+    return { fetched: fetchedCount, total: totalCount } as any;
   };
 
   const createEvent = async (event: EventInsert) => {
