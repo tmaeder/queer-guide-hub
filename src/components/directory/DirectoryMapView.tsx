@@ -51,8 +51,8 @@ export function DirectoryMapView({
   const map = useRef<mapboxgl.Map | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
   const [showCities, setShowCities] = useState(true);
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [showTokenInput, setShowTokenInput] = useState(true);
+  const [mapboxToken] = useState('');
+  
   
   const { token: secureToken } = useSecureMapbox();
   // Use hook token by default, allow manual override
@@ -205,11 +205,6 @@ export function DirectoryMapView({
     }
   }, [countries, cities, showCities, activeToken]);
 
-  const handleTokenSubmit = () => {
-    if (mapboxToken.trim()) {
-      setShowTokenInput(false);
-    }
-  };
 
   return (
     <div className={className}>
@@ -221,26 +216,6 @@ export function DirectoryMapView({
               <h3 className="text-lg font-semibold">Geographic Map View</h3>
             </div>
             
-            {showTokenInput && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h4 className="font-medium text-yellow-800 mb-2">Mapbox Token Required</h4>
-                <p className="text-sm text-yellow-700 mb-3">
-                  Please enter your Mapbox public token. Get one free at <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="underline">mapbox.com</a>
-                </p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwiYSI6IlYourTokenHere"
-                    value={mapboxToken}
-                    onChange={(e) => setMapboxToken(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                  />
-                  <Button onClick={handleTokenSubmit} disabled={!mapboxToken.trim()}>
-                    Load Map
-                  </Button>
-                </div>
-              </div>
-            )}
             
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-2">
@@ -281,7 +256,7 @@ export function DirectoryMapView({
               <div className="h-[600px] w-full rounded-lg border bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                   <Globe className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Please enter your Mapbox token above to load the map</p>
+                  <p className="text-muted-foreground">Map is unavailable right now.</p>
                 </div>
               </div>
             ) : (
