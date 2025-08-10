@@ -68,7 +68,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
       {/* Month Statistics */}
       
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
         {/* Calendar */}
         <div className="xl:col-span-3">
           <Card className="overflow-hidden">
