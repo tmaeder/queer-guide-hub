@@ -12,6 +12,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import FrontPageVenueMap from '@/components/home/FrontPageVenueMap';
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
 const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider'));
+const RegionalEventsCalendar = React.lazy(() => import('@/components/home/RegionalEventsCalendar'));
 const Index = React.memo(() => {
   const {
     user
@@ -136,6 +137,11 @@ const Index = React.memo(() => {
       {/* Weekly Events Near You */}
       <React.Suspense fallback={<SliderSkeleton title="This Week Near You" />}>
         <WeeklyEventsSlider />
+      </React.Suspense>
+
+      {/* Regional Events Calendar */}
+      <React.Suspense fallback={<SliderSkeleton title="Events Calendar Near You" />}>
+        <RegionalEventsCalendar />
       </React.Suspense>
 
       {/* Latest News Section */}
