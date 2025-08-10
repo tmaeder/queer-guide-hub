@@ -5,28 +5,35 @@ import { Database } from '@/integrations/supabase/types';
 type Venue = Database['public']['Tables']['venues']['Row'];
 type VenueInsert = Database['public']['Tables']['venues']['Insert'];
 
-export function useVenues() {
+export function useVenues(autoFetch: boolean = true) {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
 
-  const fetchVenues = async (filters?: {
-    city?: string;
-    category?: string;
-    tags?: string[];
-    amenities?: string[];
-    services?: string[];
-    accessibilityAttributes?: string[];
-    targetGroups?: string[];
-    search?: string;
-    userLocation?: { latitude: number; longitude: number };
-    nearMe?: boolean;
-  }) => {
+  const fetchVenues = async (
+    filters?: {
+      city?: string;
+      category?: string;
+      tags?: string[];
+      amenities?: string[];
+      services?: string[];
+      accessibilityAttributes?: string[];
+      targetGroups?: string[];
+      search?: string;
+      userLocation?: { latitude: number; longitude: number };
+      nearMe?: boolean;
+    },
+    options?: { page?: number; pageSize?: number; append?: boolean }
+  ) => {
     try {
       setLoading(true);
+      const page = options?.page;
+      const pageSize = options?.pageSize ?? 24;
+
       let query = supabase
         .from('venues')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -62,7 +69,13 @@ export function useVenues() {
         query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,address.ilike.%${filters.search}%`);
       }
 
-      const { data, error } = await query;
+      if (typeof page === 'number') {
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
       
@@ -99,7 +112,22 @@ export function useVenues() {
           .sort((a: any, b: any) => a.distance - b.distance); // Sort by distance
       }
 
-      setVenues(processedVenues);
+      if (options?.append) {
+        setVenues(prev => [...prev, ...processedVenues]);
+      } else {
+        setVenues(processedVenues);
+      }
+
+      if (typeof count === 'number') {
+        if (typeof page === 'number') {
+          const from = (page - 1) * pageSize;
+          setHasMore(from + processedVenues.length < count);
+        } else {
+          setHasMore(false);
+        }
+      } else {
+        setHasMore(false);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch venues');
     } finally {
@@ -161,13 +189,16 @@ export function useVenues() {
   };
 
   useEffect(() => {
-    fetchVenues();
-  }, []);
+    if (autoFetch) {
+      fetchVenues();
+    }
+  }, [autoFetch]);
 
   return {
     venues,
     loading,
     error,
+    hasMore,
     fetchVenues,
     createVenue,
     updateVenue,

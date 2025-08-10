@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
@@ -18,29 +18,42 @@ type Venue = Database['public']['Tables']['venues']['Row'];
 const Venues = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { venues, loading, error, fetchVenues } = useVenues();
+  const { venues, loading, error, hasMore, fetchVenues } = useVenues(false);
   const { events } = useEvents();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [currentFilters, setCurrentFilters] = useState<any>({});
   const [sortBy, setSortBy] = useState<string>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 24;
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const handleFiltersChange = (filters: any) => {
     setCurrentFilters(filters);
-    fetchVenues(filters);
+    setPage(1);
+    fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
   const handleAmenityClick = (amenity: string) => {
-    fetchVenues({ amenities: [amenity] });
+    const filters = { amenities: [amenity] };
+    setCurrentFilters(filters);
+    setPage(1);
+    fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
   const handleServiceClick = (service: string) => {
-    fetchVenues({ services: [service] });
+    const filters = { services: [service] };
+    setCurrentFilters(filters);
+    setPage(1);
+    fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
   const handleTagClick = (tag: string) => {
-    fetchVenues({ tags: [tag] });
+    const filters = { tags: [tag] };
+    setCurrentFilters(filters);
+    setPage(1);
+    fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
   const handleViewDetails = (venue: Venue) => {
