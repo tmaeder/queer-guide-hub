@@ -4,8 +4,9 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Search, MapPin, Loader2 } from 'lucide-react';
+import { Filter, ChevronDown } from 'lucide-react';
 import { useVenues } from '@/hooks/useVenues';
 import { useRestrooms } from '@/hooks/useRestrooms';
 import { VenueCard } from './VenueCard';
@@ -47,6 +48,7 @@ const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
 const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 const [showRestrooms, setShowRestrooms] = useState(true);
 const [mode, setMode] = useState<'venues' | 'organizations'>('venues');
+const [filtersOpen, setFiltersOpen] = useState(false);
   const {
     token: mapboxToken,
     loading: mapTokenLoading
@@ -233,7 +235,7 @@ const [mode, setMode] = useState<'venues' | 'organizations'>('venues');
             <div className="h-[500px] w-full rounded-lg overflow-hidden border">
               <div ref={mapContainer} className="w-full h-full" />
             </div>
-            <div className="mt-4 space-y-4">
+            <div className="mt-2 space-y-2">
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-primary"></div>
@@ -264,7 +266,20 @@ const [mode, setMode] = useState<'venues' | 'organizations'>('venues');
                 </ToggleGroup>
               </div>
 
-              <VenueFilters onFiltersChange={handleAdvancedFilters} />
+              <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+                <div className="flex items-center">
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Filter className="h-4 w-4" />
+                      Advanced filters
+                      <ChevronDown className={`h-4 w-4 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <CollapsibleContent className="mt-2">
+                  <VenueFilters onFiltersChange={handleAdvancedFilters} />
+                </CollapsibleContent>
+              </Collapsible>
             </div>
             {selectedItem && <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
