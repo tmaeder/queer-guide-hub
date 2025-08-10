@@ -251,6 +251,33 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_feed_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          last_used_at: string | null
+          revoked: boolean
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          revoked?: boolean
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          revoked?: boolean
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       captcha_verifications: {
         Row: {
           created_at: string | null
@@ -4197,73 +4224,34 @@ export type Database = {
       }
       profiles_public: {
         Row: {
-          age_range: string | null
           avatar_url: string | null
           bio: string | null
-          created_at: string | null
           display_name: string | null
-          education: string | null
           gender_identity: string | null
-          has_children: boolean | null
-          has_pets: boolean | null
-          id: string | null
-          interests: Json | null
-          is_business: boolean | null
           location: string | null
-          occupation: string | null
           pronouns: string | null
-          relationship_status: string | null
           sexual_orientation: string | null
-          updated_at: string | null
           user_id: string | null
-          verified_identity: boolean | null
-          website: string | null
         }
         Insert: {
-          age_range?: string | null
           avatar_url?: string | null
           bio?: never
-          created_at?: string | null
           display_name?: string | null
-          education?: string | null
           gender_identity?: never
-          has_children?: boolean | null
-          has_pets?: boolean | null
-          id?: string | null
-          interests?: Json | null
-          is_business?: boolean | null
           location?: never
-          occupation?: string | null
           pronouns?: never
-          relationship_status?: string | null
           sexual_orientation?: never
-          updated_at?: string | null
           user_id?: string | null
-          verified_identity?: boolean | null
-          website?: string | null
         }
         Update: {
-          age_range?: string | null
           avatar_url?: string | null
           bio?: never
-          created_at?: string | null
           display_name?: string | null
-          education?: string | null
           gender_identity?: never
-          has_children?: boolean | null
-          has_pets?: boolean | null
-          id?: string | null
-          interests?: Json | null
-          is_business?: boolean | null
           location?: never
-          occupation?: string | null
           pronouns?: never
-          relationship_status?: string | null
           sexual_orientation?: never
-          updated_at?: string | null
           user_id?: string | null
-          verified_identity?: boolean | null
-          website?: string | null
         }
         Relationships: []
       }

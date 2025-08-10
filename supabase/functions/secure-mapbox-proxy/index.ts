@@ -6,6 +6,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const ALLOWED_ORIGINS = new Set<string>([
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://queer.guide',
+  'https://www.queer.guide'
+]);
+
+const getOrigin = (req: Request): string | null => {
+  const origin = req.headers.get('Origin');
+  if (origin) return origin;
+  const referer = req.headers.get('Referer');
+  if (!referer) return null;
+  try { return new URL(referer).origin; } catch { return null; }
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -21,6 +36,21 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Origin allowlist enforcement
+    const origin = req.headers.get('Origin') || (() => { try { return new URL(req.headers.get('Referer')||'').origin } catch { return null } })();
+    if (origin && !ALLOWED_ORIGINS.has(origin)) {
+      await supabase.rpc('log_enhanced_security_event', {
+        p_event_type: 'DISALLOWED_ORIGIN_MAPBOX_PROXY',
+        p_user_id: null,
+        p_metadata: { origin },
+        p_severity: 'medium'
+      });
+      return new Response(JSON.stringify({ error: 'Forbidden origin' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Optional auth; fall back to IP-based access for public visitors
     const authHeader = req.headers.get('Authorization');
@@ -39,8 +69,8 @@ serve(async (req) => {
     // Rate limiting (per user if logged in, otherwise per IP)
     const { data: rateLimitCheck } = await supabase.rpc('check_rate_limit', {
       identifier,
-      max_attempts: 100,
-      time_window_minutes: 60
+      max_attempts: 60,
+      time_window_minutes: 15
     });
 
     if (!rateLimitCheck) {

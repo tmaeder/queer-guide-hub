@@ -5,6 +5,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const ALLOWED_ORIGINS = new Set<string>([
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://queer.guide',
+  'https://www.queer.guide'
+]);
+
+const getOrigin = (req: Request): string | null => {
+  const origin = req.headers.get('Origin');
+  if (origin) return origin;
+  const referer = req.headers.get('Referer');
+  if (!referer) return null;
+  try { return new URL(referer).origin; } catch { return null; }
+};
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -24,6 +39,23 @@ Deno.serve(async (req) => {
     let supabase: ReturnType<typeof createClient> | null = null;
     if (supabaseUrl && supabaseServiceKey) {
       supabase = createClient(supabaseUrl, supabaseServiceKey);
+    }
+
+    // Enforce origin allowlist
+    const origin = getOrigin(req);
+    if (origin && !ALLOWED_ORIGINS.has(origin)) {
+      if (supabase) {
+        await supabase.rpc('log_enhanced_security_event', {
+          p_event_type: 'DISALLOWED_ORIGIN_MAPBOX_TOKEN',
+          p_user_id: null,
+          p_metadata: { origin },
+          p_severity: 'medium'
+        });
+      }
+      return new Response(JSON.stringify({ error: 'Forbidden origin' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // For public access, JWT is optional; proceed without user verification
@@ -50,8 +82,8 @@ Deno.serve(async (req) => {
       try {
         const { error: rateLimitError } = await supabase.rpc('check_rate_limit', {
           identifier: requesterIp,
-          max_attempts: 200,
-          time_window_minutes: 60
+          max_attempts: 60,
+          time_window_minutes: 15
         });
         // If the RPC exists and explicitly signals an error unrelated to missing function, log it
         if (rateLimitError && !`${rateLimitError.message}`.toLowerCase().includes('function check_rate_limit')) {

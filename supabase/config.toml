@@ -143,3 +143,6 @@ verify_jwt = false
 
 [functions.manage-placeholder-images]
 verify_jwt = false
+
+[functions.calendar-token]
+verify_jwt = true

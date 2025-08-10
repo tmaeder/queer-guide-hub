@@ -101,11 +101,10 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Calendar feed request received');
     
     const url = new URL(req.url);
-    const userId = url.searchParams.get('userId');
     const token = url.searchParams.get('token');
 
-    if (!userId || !token) {
-      console.error('Missing userId or token parameter');
+    if (!token) {
+      console.error('Missing token parameter');
       return new Response('Missing required parameters', { 
         status: 400,
         headers: corsHeaders 
@@ -118,25 +117,30 @@ const handler = async (req: Request): Promise<Response> => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log(`Fetching calendar for user: ${userId}`);
+    // Validate token and resolve user_id
+    const { data: tokenRow, error: tokenErr } = await supabase
+      .from('calendar_feed_tokens')
+      .select('user_id, revoked')
+      .eq('token', token)
+      .maybeSingle();
 
-    // Verify the token (simple hash-based verification)
-    const expectedToken = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(`${userId}-calendar-feed`)
-    );
-    const expectedTokenHex = Array.from(new Uint8Array(expectedToken))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('')
-      .substring(0, 32); // Take first 32 characters
-
-    if (token !== expectedTokenHex) {
-      console.error('Invalid token provided');
+    if (tokenErr || !tokenRow || tokenRow.revoked) {
+      console.error('Invalid or revoked token');
       return new Response('Invalid token', { 
         status: 401,
         headers: corsHeaders 
       });
     }
+
+    const userId = tokenRow.user_id;
+
+    // Best-effort update of last_used_at
+    await supabase
+      .from('calendar_feed_tokens')
+      .update({ last_used_at: new Date().toISOString() })
+      .eq('token', token);
+
+    console.log(`Fetching calendar for user: ${userId}`);
 
     // Fetch user's favorite events
     const { data: favoriteEvents, error: favError } = await supabase

@@ -8,15 +8,7 @@ export const useCalendarFeed = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const generateCalendarToken = async (userId: string): Promise<string> => {
-    // Generate a simple hash-based token for calendar access
-    // Note: We're using a simpler approach since we can't access service key on client
-    const encoder = new TextEncoder();
-    const data = encoder.encode(`${userId}-calendar-feed`);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 32);
-  };
+  // Token generation moved server-side for security; using calendar-token edge function
 
   const getCalendarFeedUrl = async (): Promise<string | null> => {
     if (!user) {
@@ -30,14 +22,9 @@ export const useCalendarFeed = () => {
 
     try {
       setLoading(true);
-      const token = await generateCalendarToken(user.id);
-      // Use the Supabase URL from environment or construct it from the current origin
-      const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const supabaseUrl = isLocalDev 
-        ? 'http://localhost:54321' 
-        : 'https://xqeacpakadqfxjxjcewc.supabase.co';
-      const feedUrl = `${supabaseUrl}/functions/v1/calendar-feed?userId=${user.id}&token=${token}`;
-      return feedUrl;
+      const { data, error } = await supabase.functions.invoke('calendar-token', { body: {} });
+      if (error || !data?.url) throw error || new Error('Failed to get calendar URL');
+      return data.url as string;
     } catch (error) {
       console.error('Error generating calendar feed URL:', error);
       toast({
