@@ -10,10 +10,16 @@ import { useRestrooms } from '@/hooks/useRestrooms';
 import { VenueCard } from './VenueCard';
 import { Database } from '@/integrations/supabase/types';
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
-
 type Venue = Database['public']['Tables']['venues']['Row'];
-type SelectedItem = Venue | { type: 'restroom'; id: number; name: string; city: string; state: string; accessible: boolean; unisex: boolean; };
-
+type SelectedItem = Venue | {
+  type: 'restroom';
+  id: number;
+  name: string;
+  city: string;
+  state: string;
+  accessible: boolean;
+  unisex: boolean;
+};
 interface VenueMapSearchProps {
   className?: string;
   externalSearchTerm?: string;
@@ -27,17 +33,31 @@ interface VenueMapSearchProps {
     search?: string;
   };
 }
-
-export function VenueMapSearch({ className, externalSearchTerm = '', onSearchChange, filters }: VenueMapSearchProps) {
+export function VenueMapSearch({
+  className,
+  externalSearchTerm = '',
+  onSearchChange,
+  filters
+}: VenueMapSearchProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
   const [showRestrooms, setShowRestrooms] = useState(true);
-  const { token: mapboxToken, loading: mapTokenLoading } = useSecureMapbox();
-  
-  const { venues, loading: venuesLoading, fetchVenues } = useVenues();
-  const { restrooms, loading: restroomsLoading, fetchRestrooms } = useRestrooms();
+  const {
+    token: mapboxToken,
+    loading: mapTokenLoading
+  } = useSecureMapbox();
+  const {
+    venues,
+    loading: venuesLoading,
+    fetchVenues
+  } = useVenues();
+  const {
+    restrooms,
+    loading: restroomsLoading,
+    fetchRestrooms
+  } = useRestrooms();
 
   // Mapbox token is provided by useSecureMapbox hook
 
@@ -46,22 +66,16 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
       console.error('Mapbox token not available');
       return;
     }
-
     mapboxgl.accessToken = mapboxToken;
-    
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-74.006, 40.7128], // NYC default
-      zoom: 12,
+      center: [-74.006, 40.7128],
+      // NYC default
+      zoom: 12
     });
-
-    map.current.addControl(
-      new mapboxgl.NavigationControl(),
-      'top-right'
-    );
+    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
   };
-
   const handleSearch = () => {
     const searchFilters = {
       ...filters,
@@ -69,7 +83,7 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
     };
     fetchVenues(searchFilters);
     onSearchChange?.(searchTerm);
-    
+
     // Also fetch restrooms for the current map bounds
     if (map.current && showRestrooms) {
       const center = map.current.getCenter();
@@ -80,16 +94,12 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
       });
     }
   };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
   };
-
   const loading = venuesLoading || restroomsLoading;
-
-
   useEffect(() => {
     if (mapboxToken) {
       initializeMap();
@@ -111,51 +121,44 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
       fetchVenues(filters);
     }
   }, [filters]);
-
   useEffect(() => {
     if (map.current && (venues.length > 0 || restrooms.length > 0)) {
       // Clear existing markers
       const markers = document.querySelectorAll('.mapboxgl-marker');
       markers.forEach(marker => marker.remove());
-      
+
       // Add venue markers
-      venues.forEach((venue) => {
+      venues.forEach(venue => {
         if (venue.latitude && venue.longitude) {
           const marker = new mapboxgl.Marker({
             color: '#6366f1'
-          })
-            .setLngLat([venue.longitude, venue.latitude])
-            .addTo(map.current!);
-
-          const popup = new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`
+          }).setLngLat([venue.longitude, venue.latitude]).addTo(map.current!);
+          const popup = new mapboxgl.Popup({
+            offset: 25
+          }).setHTML(`
               <div class="p-2">
                 <h3 class="font-semibold">${venue.name}</h3>
                 <p class="text-sm text-muted-foreground">${venue.category}</p>
                 <p class="text-xs">${venue.city}, ${venue.state}</p>
               </div>
             `);
-          
           marker.getElement().addEventListener('click', () => {
             setSelectedItem(venue);
           });
-
           marker.setPopup(popup);
         }
       });
 
       // Add restroom markers
       if (showRestrooms) {
-        restrooms.forEach((restroom) => {
+        restrooms.forEach(restroom => {
           if (restroom.latitude && restroom.longitude) {
             const marker = new mapboxgl.Marker({
               color: '#10b981' // green for restrooms
-            })
-              .setLngLat([restroom.longitude, restroom.latitude])
-              .addTo(map.current!);
-
-            const popup = new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`
+            }).setLngLat([restroom.longitude, restroom.latitude]).addTo(map.current!);
+            const popup = new mapboxgl.Popup({
+              offset: 25
+            }).setHTML(`
                 <div class="p-2">
                   <h3 class="font-semibold">${restroom.name}</h3>
                   <p class="text-sm text-muted-foreground">Restroom</p>
@@ -166,7 +169,6 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
                   </div>
                 </div>
               `);
-            
             marker.getElement().addEventListener('click', () => {
               setSelectedItem({
                 type: 'restroom',
@@ -178,26 +180,19 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
                 unisex: restroom.unisex
               });
             });
-
             marker.setPopup(popup);
           }
         });
       }
 
       // Fit map to show all points
-      const allCoordinates = [
-        ...venues
-          .filter(v => v.latitude && v.longitude)
-          .map(v => [v.longitude!, v.latitude!] as [number, number]),
-        ...restrooms
-          .filter(r => r.latitude && r.longitude)
-          .map(r => [r.longitude, r.latitude] as [number, number])
-      ];
-      
+      const allCoordinates = [...venues.filter(v => v.latitude && v.longitude).map(v => [v.longitude!, v.latitude!] as [number, number]), ...restrooms.filter(r => r.latitude && r.longitude).map(r => [r.longitude, r.latitude] as [number, number])];
       if (allCoordinates.length > 0) {
         const bounds = new mapboxgl.LngLatBounds();
         allCoordinates.forEach(coord => bounds.extend(coord));
-        map.current.fitBounds(bounds, { padding: 50 });
+        map.current.fitBounds(bounds, {
+          padding: 50
+        });
       }
     }
   }, [venues, restrooms, showRestrooms]);
@@ -215,43 +210,15 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
       }
     }
   }, [externalSearchTerm, filters]);
-
-  return (
-    <div className={className}>
+  return <div className={className}>
       <Card>
         <CardContent className="p-6">
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Find Venues & Restrooms Near You</h3>
-            </div>
             
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search venues..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="pl-10"
-                />
-              </div>
-              <Button onClick={handleSearch} disabled={loading}>
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Search className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            
+            
 
-
-            <div className="h-[500px] w-full rounded-lg overflow-hidden border">
-              <div ref={mapContainer} className="w-full h-full" />
-            </div>
-
-            <div className="flex items-center gap-4 mt-4">
+            <div className="flex items-center gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-primary"></div>
                 <span className="text-sm">Venues</span>
@@ -260,60 +227,45 @@ export function VenueMapSearch({ className, externalSearchTerm = '', onSearchCha
                 <div className="w-3 h-3 rounded-full bg-muted-foreground"></div>
                 <span className="text-sm">Restrooms</span>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowRestrooms(!showRestrooms)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setShowRestrooms(!showRestrooms)}>
                 {showRestrooms ? 'Hide' : 'Show'} Restrooms
               </Button>
             </div>
 
-            {selectedItem && (
-              <div className="mt-4">
+            <div className="h-[500px] w-full rounded-lg overflow-hidden border">
+              <div ref={mapContainer} className="w-full h-full" />
+            </div>
+
+            {selectedItem && <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold">
                     Selected {selectedItem && 'type' in selectedItem ? 'Restroom' : 'Venue'}
                   </h4>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setSelectedItem(null)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedItem(null)}>
                     ✕
                   </Button>
                 </div>
                 <div className="max-w-md">
-                  {selectedItem && 'type' in selectedItem ? (
-                    <Card>
+                  {selectedItem && 'type' in selectedItem ? <Card>
                       <CardContent className="p-4">
                         <h5 className="font-medium">{selectedItem.name}</h5>
                         <p className="text-sm text-muted-foreground">
                           Restroom • {selectedItem.city}, {selectedItem.state}
                         </p>
                         <div className="flex gap-2 mt-2">
-                          {selectedItem.accessible && (
-                             <span className="text-xs bg-muted px-2 py-1 rounded">
+                          {selectedItem.accessible && <span className="text-xs bg-muted px-2 py-1 rounded">
                                Accessible
-                             </span>
-                           )}
-                           {selectedItem.unisex && (
-                             <span className="text-xs bg-muted px-2 py-1 rounded">
+                             </span>}
+                           {selectedItem.unisex && <span className="text-xs bg-muted px-2 py-1 rounded">
                                Unisex
-                             </span>
-                          )}
+                             </span>}
                         </div>
                       </CardContent>
-                    </Card>
-                  ) : (
-                    <VenueCard venue={selectedItem as Venue} />
-                  )}
+                    </Card> : <VenueCard venue={selectedItem as Venue} />}
                 </div>
-              </div>
-            )}
+              </div>}
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 }
