@@ -64,15 +64,15 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentMonth(prev => direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1));
   };
-  return <div className="space-y-6">
+  return <div className="space-y-4">
       {/* Month Statistics */}
       
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-3">
         {/* Calendar */}
         <div className="xl:col-span-3">
           <Card className="overflow-hidden">
-            <CardHeader className="bg-card">
+            <CardHeader className="bg-card py-3 px-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl gradient-text">
                   {format(currentMonth, 'MMMM yyyy')}
@@ -94,8 +94,8 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-6">
-              <Calendar mode="single" selected={selectedDate} onSelect={handleDateSelect} month={currentMonth} onMonthChange={setCurrentMonth} className="w-full pointer-events-auto" modifiers={{
+            <CardContent className="p-4">
+              <Calendar mode="single" selected={selectedDate} onSelect={handleDateSelect} month={currentMonth} onMonthChange={setCurrentMonth} className="w-full pointer-events-auto text-xs" modifiers={{
               hasEvents: datesWithEvents
             }} modifiersStyles={{
               hasEvents: {
@@ -113,8 +113,8 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                 const hasEvents = !!eventCount;
                 const isToday = isSameDay(date, new Date());
                 const isSelected = isSameDay(date, selectedDate);
-                return <div className="relative w-full h-full flex flex-col items-center justify-center p-1">
-                        <span className={`text-sm ${isSelected ? 'font-bold' : ''} ${isToday ? 'text-primary font-semibold' : ''}`}>
+                return <div className="relative w-full h-full flex flex-col items-center justify-center p-0.5">
+                        <span className={`text-xs ${isSelected ? 'font-bold' : ''} ${isToday ? 'text-primary font-semibold' : ''}`}>
                           {date.getDate()}
                         </span>
                         {hasEvents && <div className="flex items-center justify-center mt-0.5">
@@ -134,8 +134,8 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
 
         {/* Events for Selected Date */}
         <div className="space-y-4">
-          <Card className="sticky top-4">
-            <CardHeader className="pb-3">
+          <Card className="sticky top-2">
+            <CardHeader className="p-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5 text-primary" />
                 {format(selectedDate, 'MMM d, yyyy')}
@@ -146,7 +146,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
             </CardHeader>
             <Separator />
             <CardContent className="p-0">
-              <ScrollArea className="h-[600px]">
+              <ScrollArea className="h-[420px] md:h-[500px]">
                 {eventsForSelectedDate.length === 0 ? <div className="p-6 text-center">
                     <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                     <p className="text-muted-foreground text-sm">
@@ -157,17 +157,17 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                     </p>
                   </div> : <div className="space-y-3 p-4">
                     {eventsForSelectedDate.map((event, index) => <div key={event.id}>
-                        <div className="group p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 cursor-pointer transition-all duration-200 hover-scale" onClick={() => onEventSelect?.(event)}>
+                        <div className="group p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 cursor-pointer transition-all duration-200 hover-scale" onClick={() => onEventSelect?.(event)}>
                           <div className="space-y-3">
                             <div className="flex items-start justify-between gap-2">
-                              <h4 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors">
+                              <h4 className="font-semibold text-xs leading-tight group-hover:text-primary transition-colors">
                                 {event.title}
                               </h4>
                               <Eye className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                             
                             <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                               <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                                 <Clock className="h-3 w-3" />
                                 <span>
                                   {format(parseISO(event.start_date), 'h:mm a')}
@@ -175,14 +175,14 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                                 </span>
                               </div>
                               
-                              {event.venue_name && <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              {event.venue_name && <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                                   <MapPin className="h-3 w-3" />
                                   <span className="truncate">{event.venue_name}</span>
                                 </div>}
                             </div>
                             
                             <div className="flex items-center justify-between flex-wrap gap-2">
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-[11px]">
                                 {event.event_type.replace('-', ' ')}
                               </Badge>
                               
@@ -199,13 +199,13 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                               </p>}
 
                             {onAttendanceUpdate && <div className="flex gap-2 pt-2 border-t border-border/50">
-                                <Button size="sm" variant="outline" className="text-xs h-7 flex-1 hover:bg-green-50 hover:border-green-200 hover:text-green-700" onClick={e => {
+                                <Button size="sm" variant="outline" className="text-[11px] h-6 flex-1 hover:bg-green-50 hover:border-green-200 hover:text-green-700" onClick={e => {
                           e.stopPropagation();
                           onAttendanceUpdate(event.id, 'going');
                         }}>
                                   Going
                                 </Button>
-                                <Button size="sm" variant="outline" className="text-xs h-7 flex-1 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700" onClick={e => {
+                                <Button size="sm" variant="outline" className="text-[11px] h-6 flex-1 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700" onClick={e => {
                           e.stopPropagation();
                           onAttendanceUpdate(event.id, 'interested');
                         }}>

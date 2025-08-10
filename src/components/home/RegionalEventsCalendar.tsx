@@ -61,17 +61,17 @@ const RegionalEventsCalendar: React.FC = () => {
   }
 
   return (
-    <section className={`bg-muted/10 ${isMobile ? 'py-8' : 'py-16'} px-4`}>
+    <section className={`bg-muted/10 ${isMobile ? 'py-6' : 'py-12'} px-4`}>
       <div className="container mx-auto">
-        <div className={`flex items-center justify-between ${isMobile ? 'mb-6' : 'mb-8'}`}>
+        <div className={`flex items-center justify-between ${isMobile ? 'mb-4' : 'mb-6'}`}>
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Navigation className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-primary`} />
-              <h2 className={`font-bold ${isMobile ? 'text-xl' : 'text-3xl'}`}>
+              <h2 className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
                 Upcoming Events Near You
               </h2>
             </div>
-            <p className={`text-muted-foreground ${isMobile ? 'text-sm' : 'text-lg'}`}>
+            <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-base'}`}>
               Calendar for {userLocation?.city || userLocation?.region || 'your region'}
             </p>
           </div>
