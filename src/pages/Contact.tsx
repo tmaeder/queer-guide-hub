@@ -187,15 +187,8 @@ export default function Contact() {
 
       {/* FAQ Section */}
       <section>
-        <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {faqs.map((faq, index) => <Card key={index}>
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-3">{faq.question}</h3>
-                <p className="text-muted-foreground text-sm">{faq.answer}</p>
-              </CardContent>
-            </Card>)}
-        </div>
+        
+        
       </section>
     </div>;
 }
