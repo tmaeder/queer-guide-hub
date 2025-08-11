@@ -130,16 +130,8 @@ export default function Press() {
 
       {/* Quick Stats */}
       <section className="mb-16">
-        <h2 className="text-2xl font-bold text-center mb-8">At a Glance</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {keyStats.map((stat, index) => <Card key={index}>
-              <CardContent className="p-6 text-center">
-                <stat.icon className="h-8 w-8 text-primary mx-auto mb-3" />
-                <div className="text-3xl font-bold text-primary mb-1">{stat.value}</div>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-              </CardContent>
-            </Card>)}
-        </div>
+        
+        
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
