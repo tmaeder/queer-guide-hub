@@ -4,7 +4,6 @@ import { FileText, Shield, Cookie, Copyright, ChevronDown, ChevronRight } from "
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-
 export default function LegalHub() {
   const navigate = useNavigate();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -13,16 +12,13 @@ export default function LegalHub() {
     cookies: false,
     dmca: false
   });
-
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
   };
-
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+  return <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4 gradient-text">Legal Hub</h1>
         <p className="text-muted-foreground text-lg">
@@ -316,25 +312,11 @@ export default function LegalHub() {
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <h4 className="font-medium mb-2">General Legal</h4>
-                <p className="text-sm text-muted-foreground">legal@queer.guide</p>
-              </div>
-              <div>
-                <h4 className="font-medium mb-2">Privacy Concerns</h4>
-                <p className="text-sm text-muted-foreground">privacy@queer.guide</p>
-              </div>
-              <div>
-                <h4 className="font-medium mb-2">DMCA Reports</h4>
-                <p className="text-sm text-muted-foreground">dmca@queer.guide</p>
-              </div>
-            </div>
+            
           <Button variant="outline" className="mt-4" onClick={() => navigate('/contact')}>
             Contact Support
           </Button>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 }
