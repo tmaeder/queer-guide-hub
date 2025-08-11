@@ -1,0 +1,22 @@
+{
+  "name": "Queer Guide",
+  "short_name": "QueerGuide",
+  "description": "Connecting the LGBTQ+ community with safe spaces, events, businesses, and each other.",
+  "lang": "en",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "browser"],
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Venues", "url": "/venues" },
+    { "name": "Events", "url": "/events" }
+  ],
+  "categories": ["social", "travel", "lifestyle"],
+  "prefer_related_applications": false
+}
