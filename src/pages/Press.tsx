@@ -199,31 +199,8 @@ export default function Press() {
 
           {/* Key Facts */}
           <Card>
-            <CardHeader>
-              <CardTitle>Key Facts</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <h4 className="font-medium text-sm">Founded</h4>
-                <p className="text-sm text-muted-foreground">2024</p>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm">Mission</h4>
-                <p className="text-sm text-muted-foreground">
-                  Connecting LGBTQ+ individuals with safe spaces and community
-                </p>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm">Headquarters</h4>
-                <p className="text-sm text-muted-foreground">Global (Remote-First)</p>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm">Platform Type</h4>
-                <p className="text-sm text-muted-foreground">
-                  Web-based directory and community platform
-                </p>
-              </div>
-            </CardContent>
+            
+            
           </Card>
 
           {/* Press Contact */}
