@@ -6,6 +6,8 @@ import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { VenueFilters } from '@/components/venues/VenueFilters';
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 interface FrontPageVenueMapProps {
   className?: string;
   fullWidth?: boolean;
@@ -35,6 +37,14 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
   const [filters, setFilters] = useState<any>({
     limit: 200
   });
+  const [manualToken, setManualToken] = useState('');
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem('mapbox_public_token');
+      if (t) setManualToken(t);
+    } catch {}
+  }, []);
+  const mapToken = token || manualToken;
 
   // Fetch approximate user location via IP
   useEffect(() => {
@@ -68,9 +78,9 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
 
   // Initialize Mapbox map
   useEffect(() => {
-    if (!mapContainer.current || mapRef.current || !token) return;
+    if (!mapContainer.current || mapRef.current || !mapToken) return;
     setMapLoading(true);
-    mapboxgl.accessToken = token;
+    mapboxgl.accessToken = mapToken;
     const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/light-v11',
@@ -90,7 +100,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
       mapRef.current = null;
       map.remove();
     };
-  }, [token]);
+  }, [mapToken]);
 
   // Update view when IP location arrives
   useEffect(() => {
@@ -132,7 +142,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
   // Add markers for venues
   useEffect(() => {
     const map = mapRef.current as mapboxgl.Map | null;
-    if (!map || !token) return;
+    if (!map || !mapToken) return;
 
     // Clear existing markers
     markersRef.current.forEach(m => m.remove());
@@ -166,7 +176,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
         padding: 60
       });
     }
-  }, [venues, mode, token]);
+  }, [venues, mode, mapToken]);
   return <section className={className}>
       {fullWidth ? <>
           
@@ -176,13 +186,39 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
               <CardTitle>Explore Venues & Organizations Near You</CardTitle>
             </CardHeader>
             <CardContent>
-              {mapLoading || tokenLoading ? <div className="h-[480px] w-full rounded-lg bg-muted animate-pulse" aria-label="Loading map" /> : <div className="relative">
+              {(((mapLoading && Boolean(mapToken)) || tokenLoading)) ? (
+                <div className="h-[480px] w-full rounded-lg bg-muted animate-pulse" aria-label="Loading map" />
+              ) : (
+                <div className="relative">
                   <div ref={mapContainer} className="h-[480px] w-full rounded-lg" />
-                    <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
-                      Centered {ipLocated ? 'via IP location' : 'globally'}
-                      {tokenError && <span className="ml-2 text-destructive">Error loading map</span>}
-                    </div>
-                </div>}
+                  <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
+                    Centered {ipLocated ? 'via IP location' : 'globally'}
+                    {tokenError && <span className="ml-2 text-destructive">Error loading map</span>}
+                  </div>
+                </div>
+              )}
+              {!mapToken && !tokenLoading && (
+                <div className="mt-3 rounded-lg border p-3 text-sm">
+                  <p className="mb-2">Mapbox token required. Paste your public token to enable the map.</p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={manualToken}
+                      onChange={(e) => setManualToken(e.target.value)}
+                      placeholder="pk.eyJ..."
+                      aria-label="Mapbox public token"
+                    />
+                    <Button
+                      onClick={() => {
+                        try { localStorage.setItem('mapbox_public_token', manualToken); } catch {}
+                        setManualToken(manualToken);
+                      }}
+                    >
+                      Save token
+                    </Button>
+                  </div>
+                  {tokenError && <p className="mt-2 text-destructive">Secure token fetch failed; using local token.</p>}
+                </div>
+              )}
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <ToggleGroup type="single" value={mode} onValueChange={v => v && setMode(v as any)}>
                   <ToggleGroupItem value="all" aria-label="Show all">All</ToggleGroupItem>
