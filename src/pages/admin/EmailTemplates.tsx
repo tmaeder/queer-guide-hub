@@ -15,6 +15,7 @@ import { Eye, Edit, Save, X, Plus, Mail, Code, Loader2, FileText, TestTube } fro
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { ContentSanitizer } from '@/components/security/ContentSanitizer';
 
 interface EmailTemplate {
   id: string;
@@ -577,10 +578,12 @@ export default function EmailTemplates() {
                           <div className="border-b pb-2 mb-4">
                             <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
                           </div>
-                          <div
-                            dangerouslySetInnerHTML={{
-                              __html: generatePreview(selectedTemplate, previewData).htmlContent,
-                            }}
+                          <ContentSanitizer
+                            className="prose max-w-none"
+                            content={generatePreview(selectedTemplate, previewData).htmlContent}
+                            allowedTags={[
+                              'p','br','strong','em','u','a','ul','ol','li','blockquote','code','pre','h1','h2','h3','h4','h5','h6','img','table','thead','tbody','tr','th','td'
+                            ]}
                           />
                         </div>
                       </TabsContent>

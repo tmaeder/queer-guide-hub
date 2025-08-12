@@ -14,24 +14,7 @@ const STALE_TIME = 10 * 60 * 1000; // 10 minutes
 
 export const useOptimizedStats = () => {
   const fetchStats = async (): Promise<Stats> => {
-    // Try to fetch from materialized view first
-    const { data: materializedData, error: materializedError } = await supabase
-      .from('dashboard_stats')
-      .select('*')
-      .single();
-
-    if (!materializedError && materializedData) {
-      return {
-        venues: materializedData.venues_count || 0,
-        members: materializedData.members_count || 0,
-        cities: materializedData.cities_count || 0,
-        weeklyEvents: materializedData.weekly_events_count || 0,
-      };
-    }
-
-    // Fallback to individual queries if materialized view fails
-    console.warn('Materialized view unavailable, falling back to individual queries');
-    
+    // Compute stats via individual queries in parallel (typed-safe)
     const oneWeekFromNow = new Date();
     oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
     
