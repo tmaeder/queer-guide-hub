@@ -53,8 +53,8 @@ export function ContentSanitizer({
       ALLOW_ARIA_ATTR: false,
       FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'iframe'],
       FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur'],
-      // Allow only safe URL schemes and relative links
-      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|\/|#)/i,
+      // Allow only HTTPS URLs plus safe schemes and relative links
+      ALLOWED_URI_REGEXP: /^(?:(?:https|mailto|tel):|\/|#)/i,
     });
   };
 
