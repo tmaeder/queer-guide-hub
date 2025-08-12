@@ -34,19 +34,21 @@ interface ContentSanitizerProps {
   content: string;
   className?: string;
   allowedTags?: string[];
+  allowedAttrs?: string[];
 }
 
 export function ContentSanitizer({ 
   content, 
   className = '', 
-  allowedTags = ['p', 'br', 'strong', 'em', 'u', 'a'] 
+  allowedTags = ['p', 'br', 'strong', 'em', 'u', 'a'],
+  allowedAttrs = ['href', 'target', 'rel', 'src', 'alt', 'title', 'width', 'height'] 
 }: ContentSanitizerProps) {
   ensureSanitizerHooks();
 
   const sanitizeContent = (html: string) => {
     return DOMPurify.sanitize(html, {
       ALLOWED_TAGS: allowedTags,
-      ALLOWED_ATTR: ['href', 'target', 'rel'],
+      ALLOWED_ATTR: allowedAttrs,
       ALLOW_DATA_ATTR: false,
       ALLOW_ARIA_ATTR: false,
       FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'iframe'],

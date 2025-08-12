@@ -146,3 +146,18 @@ verify_jwt = false
 
 [functions.calendar-token]
 verify_jwt = true
+
+[functions.mapbox-geocoding]
+verify_jwt = false
+
+[functions.redis-get]
+verify_jwt = true
+
+[functions.redis-set]
+verify_jwt = true
+
+[functions.redis-delete]
+verify_jwt = true
+
+[functions.redis-keys]
+verify_jwt = true
