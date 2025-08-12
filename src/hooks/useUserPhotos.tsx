@@ -159,7 +159,6 @@ export function useUserPhotos(userId: string) {
     if (error) return null;
     return data?.signedUrl ?? null;
   };
-}
   return {
     photos,
     isLoading,
@@ -169,3 +168,4 @@ export function useUserPhotos(userId: string) {
     getPhotoUrl,
     getSignedPhotoUrl,
   };
+}
