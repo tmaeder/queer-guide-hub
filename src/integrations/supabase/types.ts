@@ -170,6 +170,33 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_rate_limit_keys: {
+        Row: {
+          attempt_count: number
+          blocked_until: string | null
+          created_at: string
+          id: string
+          key: string
+          last_attempt: string
+        }
+        Insert: {
+          attempt_count?: number
+          blocked_until?: string | null
+          created_at?: string
+          id?: string
+          key: string
+          last_attempt?: string
+        }
+        Update: {
+          attempt_count?: number
+          blocked_until?: string | null
+          created_at?: string
+          id?: string
+          key?: string
+          last_attempt?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           arrival_airport: string | null
@@ -3364,6 +3391,7 @@ export type Database = {
           event_type: string
           id: string
           ip_address: unknown | null
+          metadata: Json | null
           user_agent: string | null
           user_id: string | null
         }
@@ -3373,6 +3401,7 @@ export type Database = {
           event_type: string
           id?: string
           ip_address?: unknown | null
+          metadata?: Json | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -3382,6 +3411,7 @@ export type Database = {
           event_type?: string
           id?: string
           ip_address?: unknown | null
+          metadata?: Json | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -4519,6 +4549,14 @@ export type Database = {
         Returns: boolean
       }
       check_rate_limit: {
+        Args: {
+          identifier: string
+          max_attempts?: number
+          time_window_minutes?: number
+        }
+        Returns: boolean
+      }
+      check_rate_limit_key: {
         Args: {
           identifier: string
           max_attempts?: number
