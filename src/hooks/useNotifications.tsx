@@ -38,11 +38,14 @@ export const useNotifications = () => {
 
   // Mark notification as read
   const markAsRead = async (notificationId: string) => {
+    if (!user) return;
+
     try {
       const { error } = await supabase
         .from('notifications')
         .update({ read: true })
-        .eq('id', notificationId);
+        .eq('id', notificationId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
