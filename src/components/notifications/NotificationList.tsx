@@ -89,7 +89,7 @@ export const NotificationList = () => {
         if (likesData?.length) {
           const likerIds = [...new Set(likesData.map(l => l.user_id))];
           const { data: likerProfiles } = await supabase
-            .from('profiles')
+            .from('public_profiles')
             .select('user_id, display_name, avatar_url')
             .in('user_id', likerIds);
           likesEnriched = (likesData || []).map(l => {
