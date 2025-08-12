@@ -393,7 +393,7 @@ export const useMessaging = () => {
         if (newMessage.sender_id !== user.id) {
           // Fetch the sender profile for the new message
           const { data: senderData } = await supabase
-            .from('profiles')
+            .from('profiles_public')
             .select('display_name, avatar_url')
             .eq('user_id', newMessage.sender_id)
             .single();

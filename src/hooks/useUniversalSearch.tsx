@@ -120,25 +120,24 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
   const searchUsers = async (searchQuery: string): Promise<SearchResult[]> => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
+        .from('profiles_public')
+        .select('user_id, display_name, avatar_url, location, bio, pronouns, interests, last_active_at')
         .or(`display_name.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%,occupation.ilike.%${searchQuery}%`)
         .limit(10);
 
       if (error) return [];
 
       return data.map(profile => ({
-        id: profile.id,
+        id: profile.user_id,
         title: profile.display_name || 'Anonymous User',
         description: profile.bio,
         type: 'user' as const,
         imageUrl: profile.avatar_url,
         location: profile.location,
-        category: profile.occupation,
+        category: undefined,
         metadata: {
           pronouns: profile.pronouns,
           interests: profile.interests,
-          verified: profile.verified_identity,
           isActive: profile.last_active_at
         }
       }));
