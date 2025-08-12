@@ -34,7 +34,7 @@ export function Footer() {
     icon: Plane
   }, {
     href: "/venues",
-    label: "Venues",
+    label: "Places",
     icon: MapPin
   }, {
     href: "/events",
@@ -42,7 +42,7 @@ export function Footer() {
     icon: Calendar
   }, {
     href: "/marketplace",
-    label: "Marketplace",
+    label: "Market",
     icon: Store
   }];
   const socialLinks = [{

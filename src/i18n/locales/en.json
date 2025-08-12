@@ -47,10 +47,10 @@
   },
   "navigation": {
     "home": "Home",
-    "venues": "Safe Spaces",
-    "events": "The Scene",
-    "marketplace": "Queer Market",
-    "directory": "Directory",
+    "venues": "Places",
+    "events": "Events",
+    "marketplace": "Market",
+    "directory": "Ressources",
     "about": "Our Story",
     "contact": "Holla at Us",
     "login": "Join the Family",
@@ -65,7 +65,7 @@
     "subscribe": "Sign Me Up",
     "social": "Find Us Online",
     "community": "Community",
-    "resources": "Resources",
+    "resources": "Ressources",
     "legal": "Legal Stuff",
     "copyright": "© {{year}} Made with love and pride."
   },

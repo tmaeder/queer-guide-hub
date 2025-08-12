@@ -4,12 +4,12 @@ import { Search, MapPin, Calendar, Store, Newspaper, Users, Tag } from "lucide-r
 
 export const searchCategories = [
   { label: "All", value: "all", icon: Search },
-  { label: "Venues", value: "venues", icon: MapPin },
+  { label: "Places", value: "venues", icon: MapPin },
   { label: "Events", value: "events", icon: Calendar },
-  { label: "Marketplace", value: "marketplace", icon: Store },
-  { label: "News", value: "news", icon: Newspaper },
+  { label: "Market", value: "marketplace", icon: Store },
+  { label: "Latest News", value: "news", icon: Newspaper },
   { label: "Community", value: "community", icon: Users },
-  { label: "Tags", value: "tags", icon: Tag },
+  { label: "Ressources", value: "tags", icon: Tag },
 ];
 
 interface SearchCategoriesProps {

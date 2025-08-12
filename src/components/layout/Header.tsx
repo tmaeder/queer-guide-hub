@@ -61,23 +61,23 @@ export function Header() {
     items: [{
       to: "/events",
       icon: Calendar,
-      label: "Events & Happenings"
+      label: "Events"
     }, {
       to: "/directory",
       icon: Globe,
-      label: "Gayborhoods & Cities"
+      label: "Places"
     }, {
       to: "/travel",
       icon: Plane,
-      label: "Queer Travel"
+      label: "Travel"
     }, {
       to: "/venues",
       icon: MapPin,
-      label: "Safe Spaces & Orgs"
+      label: "Spaces"
     }, {
       to: "/marketplace",
       icon: Store,
-      label: "Queer Market"
+      label: "Market"
     }, {
       to: "/donate",
       icon: CreditCard,
@@ -85,18 +85,18 @@ export function Header() {
     }, {
       to: "/tags",
       icon: Tags,
-      label: "The Wiki Tea"
+      label: "Ressources"
     }, {
       to: "/news",
       icon: Newspaper,
       label: "Latest News"
     }]
   }, {
-    title: "Find Your People",
+    title: "Community",
     items: [{
       to: "/feed",
       icon: Rss,
-      label: "Community Feed"
+      label: "Community"
     }, {
       to: "/users",
       icon: UserCheck,
