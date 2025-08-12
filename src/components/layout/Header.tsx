@@ -89,22 +89,22 @@ export function Header() {
     }, {
       to: "/news",
       icon: Newspaper,
-      label: "Latest News"
+      label: "News"
     }]
   }, {
     title: "Community",
     items: [{
       to: "/feed",
       icon: Rss,
-      label: "Community"
+      label: "Feed"
     }, {
       to: "/users",
       icon: UserCheck,
-      label: "User Directory"
+      label: "Users"
     }, {
       to: "/groups",
       icon: UsersRound,
-      label: "Groups & Crews"
+      label: "Crews"
     }]
   }];
   const userMenuItems = [{

@@ -7,7 +7,7 @@ export const searchCategories = [
   { label: "Places", value: "venues", icon: MapPin },
   { label: "Events", value: "events", icon: Calendar },
   { label: "Market", value: "marketplace", icon: Store },
-  { label: "Latest News", value: "news", icon: Newspaper },
+  { label: "News", value: "news", icon: Newspaper },
   { label: "Community", value: "community", icon: Users },
   { label: "Ressources", value: "tags", icon: Tag },
 ];
