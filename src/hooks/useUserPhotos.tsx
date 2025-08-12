@@ -13,6 +13,7 @@ export interface UserPhoto {
   content_type?: string;
   is_profile_picture: boolean;
   display_order: number;
+  is_public?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -151,6 +152,14 @@ export function useUserPhotos(userId: string) {
     return data.publicUrl;
   };
 
+  const getSignedPhotoUrl = async (storagePath: string, expiresIn: number = 3600) => {
+    const { data, error } = await supabase.storage
+      .from('user-photos')
+      .createSignedUrl(storagePath, expiresIn);
+    if (error) return null;
+    return data?.signedUrl ?? null;
+  };
+}
   return {
     photos,
     isLoading,
@@ -158,5 +167,5 @@ export function useUserPhotos(userId: string) {
     deletePhoto,
     updateCaption,
     getPhotoUrl,
+    getSignedPhotoUrl,
   };
-}
