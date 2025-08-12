@@ -492,6 +492,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       community_groups: {
@@ -618,6 +625,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       content_embeddings: {
@@ -728,6 +742,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "conversation_participants_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "fk_conversation_participants_user_id"
             columns: ["user_id"]
             isOneToOne: false
@@ -739,6 +760,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_conversation_participants_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -1277,6 +1305,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "event_attendees_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       event_categories: {
@@ -1512,6 +1547,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -2013,6 +2055,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "marketplace_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       marketplace_listings: {
@@ -2123,6 +2172,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "marketplace_listings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "marketplace_listings_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
@@ -2190,6 +2246,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "marketplace_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       message_reactions: {
@@ -2234,6 +2297,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -2305,6 +2375,13 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_profiles_user_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -2679,6 +2756,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       post_likes: {
@@ -2720,6 +2804,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -3236,6 +3327,36 @@ export type Database = {
           },
         ]
       }
+      role_audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          performed_by: string
+          role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          performed_by: string
+          role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          performed_by?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          target_user_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       security_events: {
         Row: {
           created_at: string
@@ -3573,6 +3694,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "user_follows_following_id_fkey"
             columns: ["following_id"]
             isOneToOne: false
@@ -3584,6 +3712,13 @@ export type Database = {
             columns: ["following_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -3598,6 +3733,7 @@ export type Database = {
           filename: string
           id: string
           is_profile_picture: boolean | null
+          is_public: boolean
           storage_path: string
           updated_at: string
           user_id: string
@@ -3611,6 +3747,7 @@ export type Database = {
           filename: string
           id?: string
           is_profile_picture?: boolean | null
+          is_public?: boolean
           storage_path: string
           updated_at?: string
           user_id: string
@@ -3624,6 +3761,7 @@ export type Database = {
           filename?: string
           id?: string
           is_profile_picture?: boolean | null
+          is_public?: boolean
           storage_path?: string
           updated_at?: string
           user_id?: string
@@ -3964,6 +4102,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "venue_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "venue_reviews_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
@@ -4208,20 +4353,17 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
     }
     Views: {
-      dashboard_stats: {
-        Row: {
-          cities_count: number | null
-          last_updated: string | null
-          members_count: number | null
-          venues_count: number | null
-          weekly_events_count: number | null
-        }
-        Relationships: []
-      }
       profiles_public: {
         Row: {
           age_range: string | null
@@ -4238,7 +4380,6 @@ export type Database = {
           last_active_at: string | null
           location: string | null
           occupation: string | null
-          pronouns: string | null
           relationship_status: string | null
           sexual_orientation: string | null
           user_id: string | null
@@ -4246,48 +4387,82 @@ export type Database = {
           verified_identity: boolean | null
         }
         Insert: {
-          age_range?: string | null
+          age_range?: never
           avatar_url?: string | null
           bio?: never
           created_at?: string | null
           display_name?: string | null
-          education?: string | null
+          education?: never
           gender_identity?: never
-          has_children?: boolean | null
-          has_pets?: boolean | null
-          interests?: Json | null
+          has_children?: never
+          has_pets?: never
+          interests?: never
           is_business?: boolean | null
           last_active_at?: string | null
           location?: never
-          occupation?: string | null
-          pronouns?: never
-          relationship_status?: string | null
+          occupation?: never
+          relationship_status?: never
           sexual_orientation?: never
           user_id?: string | null
           user_mode?: Database["public"]["Enums"]["user_mode"] | null
           verified_identity?: boolean | null
         }
         Update: {
-          age_range?: string | null
+          age_range?: never
           avatar_url?: string | null
           bio?: never
           created_at?: string | null
           display_name?: string | null
-          education?: string | null
+          education?: never
           gender_identity?: never
-          has_children?: boolean | null
-          has_pets?: boolean | null
-          interests?: Json | null
+          has_children?: never
+          has_pets?: never
+          interests?: never
           is_business?: boolean | null
           last_active_at?: string | null
           location?: never
-          occupation?: string | null
-          pronouns?: never
-          relationship_status?: string | null
+          occupation?: never
+          relationship_status?: never
           sexual_orientation?: never
           user_id?: string | null
           user_mode?: Database["public"]["Enums"]["user_mode"] | null
           verified_identity?: boolean | null
+        }
+        Relationships: []
+      }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          display_name: string | null
+          gender_identity: string | null
+          location: string | null
+          pronouns: string | null
+          sexual_orientation: string | null
+          social_links: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: never
+          display_name?: string | null
+          gender_identity?: never
+          location?: never
+          pronouns?: never
+          sexual_orientation?: never
+          social_links?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: never
+          display_name?: string | null
+          gender_identity?: never
+          location?: never
+          pronouns?: never
+          sexual_orientation?: never
+          social_links?: Json | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -4318,6 +4493,13 @@ export type Database = {
       assign_first_admin: {
         Args: { user_email: string }
         Returns: boolean
+      }
+      assign_role: {
+        Args: {
+          target_user_id: string
+          role_to_assign: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: undefined
       }
       assign_user_role: {
         Args:
@@ -4411,6 +4593,7 @@ export type Database = {
       }
       examine_table_policies: {
         Args:
+          | Record<PropertyKey, never>
           | { p_schema_name: string; p_table_name: string }
           | { table_name_param: string }
         Returns: {
@@ -4513,6 +4696,17 @@ export type Database = {
           policy_cmd: string
           policy_qual: string
           policy_with_check: string
+        }[]
+      }
+      get_tables_with_multiple_permissive_policies: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          schema_name: string
+          table_name: string
+          role_name: string
+          operation: string
+          policy_count: number
+          policy_names: string[]
         }[]
       }
       get_user_conversation_ids: {
@@ -4632,6 +4826,13 @@ export type Database = {
       }
       refresh_dashboard_stats: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      revoke_role: {
+        Args: {
+          target_user_id: string
+          role_to_revoke: Database["public"]["Enums"]["app_role"]
+        }
         Returns: undefined
       }
     }
