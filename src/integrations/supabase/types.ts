@@ -2909,6 +2909,7 @@ export type Database = {
           education: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
+          emergency_contact_phone_encrypted: string | null
           emergency_contact_relationship: string | null
           ethnicity: string | null
           exercise_frequency: string | null
@@ -2921,6 +2922,7 @@ export type Database = {
           first_name: string | null
           food_preferences: string[] | null
           gender_identity: string | null
+          gender_identity_encrypted: string | null
           hair_color: string | null
           has_children: boolean | null
           has_pets: boolean | null
@@ -2930,6 +2932,7 @@ export type Database = {
           id: string
           immigration_status: string | null
           income_range: string | null
+          income_range_encrypted: string | null
           industry: string | null
           interests: Json | null
           intimacy_preferences: Json | null
@@ -2959,8 +2962,10 @@ export type Database = {
           personality_type: string | null
           pet_preferences: string | null
           phone: string | null
+          phone_encrypted: string | null
           physical_affection_preference: string | null
           political_views: string | null
+          political_views_encrypted: string | null
           preferences: Json | null
           privacy_settings: Json | null
           profile_completion_percentage: number | null
@@ -2969,9 +2974,11 @@ export type Database = {
           relationship_goals: string[] | null
           relationship_goals_detailed: string[] | null
           relationship_status: string | null
+          relationship_status_encrypted: string | null
           relationship_structure_preference: string[] | null
           relationship_style: string | null
           religious_beliefs: string | null
+          religious_beliefs_encrypted: string | null
           response_time_preference: string | null
           romance_style: string | null
           romantic_orientation: string | null
@@ -2981,6 +2988,7 @@ export type Database = {
           sexual_health_status: string | null
           sexual_orientation: string | null
           sexual_orientation_details: Json | null
+          sexual_orientation_encrypted: string | null
           sleep_schedule: string | null
           smoking_preference: string | null
           social_links: Json | null
@@ -3038,6 +3046,7 @@ export type Database = {
           education?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          emergency_contact_phone_encrypted?: string | null
           emergency_contact_relationship?: string | null
           ethnicity?: string | null
           exercise_frequency?: string | null
@@ -3050,6 +3059,7 @@ export type Database = {
           first_name?: string | null
           food_preferences?: string[] | null
           gender_identity?: string | null
+          gender_identity_encrypted?: string | null
           hair_color?: string | null
           has_children?: boolean | null
           has_pets?: boolean | null
@@ -3059,6 +3069,7 @@ export type Database = {
           id?: string
           immigration_status?: string | null
           income_range?: string | null
+          income_range_encrypted?: string | null
           industry?: string | null
           interests?: Json | null
           intimacy_preferences?: Json | null
@@ -3088,8 +3099,10 @@ export type Database = {
           personality_type?: string | null
           pet_preferences?: string | null
           phone?: string | null
+          phone_encrypted?: string | null
           physical_affection_preference?: string | null
           political_views?: string | null
+          political_views_encrypted?: string | null
           preferences?: Json | null
           privacy_settings?: Json | null
           profile_completion_percentage?: number | null
@@ -3098,9 +3111,11 @@ export type Database = {
           relationship_goals?: string[] | null
           relationship_goals_detailed?: string[] | null
           relationship_status?: string | null
+          relationship_status_encrypted?: string | null
           relationship_structure_preference?: string[] | null
           relationship_style?: string | null
           religious_beliefs?: string | null
+          religious_beliefs_encrypted?: string | null
           response_time_preference?: string | null
           romance_style?: string | null
           romantic_orientation?: string | null
@@ -3110,6 +3125,7 @@ export type Database = {
           sexual_health_status?: string | null
           sexual_orientation?: string | null
           sexual_orientation_details?: Json | null
+          sexual_orientation_encrypted?: string | null
           sleep_schedule?: string | null
           smoking_preference?: string | null
           social_links?: Json | null
@@ -3167,6 +3183,7 @@ export type Database = {
           education?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          emergency_contact_phone_encrypted?: string | null
           emergency_contact_relationship?: string | null
           ethnicity?: string | null
           exercise_frequency?: string | null
@@ -3179,6 +3196,7 @@ export type Database = {
           first_name?: string | null
           food_preferences?: string[] | null
           gender_identity?: string | null
+          gender_identity_encrypted?: string | null
           hair_color?: string | null
           has_children?: boolean | null
           has_pets?: boolean | null
@@ -3188,6 +3206,7 @@ export type Database = {
           id?: string
           immigration_status?: string | null
           income_range?: string | null
+          income_range_encrypted?: string | null
           industry?: string | null
           interests?: Json | null
           intimacy_preferences?: Json | null
@@ -3217,8 +3236,10 @@ export type Database = {
           personality_type?: string | null
           pet_preferences?: string | null
           phone?: string | null
+          phone_encrypted?: string | null
           physical_affection_preference?: string | null
           political_views?: string | null
+          political_views_encrypted?: string | null
           preferences?: Json | null
           privacy_settings?: Json | null
           profile_completion_percentage?: number | null
@@ -3227,9 +3248,11 @@ export type Database = {
           relationship_goals?: string[] | null
           relationship_goals_detailed?: string[] | null
           relationship_status?: string | null
+          relationship_status_encrypted?: string | null
           relationship_structure_preference?: string[] | null
           relationship_style?: string | null
           religious_beliefs?: string | null
+          religious_beliefs_encrypted?: string | null
           response_time_preference?: string | null
           romance_style?: string | null
           romantic_orientation?: string | null
@@ -3239,6 +3262,7 @@ export type Database = {
           sexual_health_status?: string | null
           sexual_orientation?: string | null
           sexual_orientation_details?: Json | null
+          sexual_orientation_encrypted?: string | null
           sleep_schedule?: string | null
           smoking_preference?: string | null
           social_links?: Json | null
@@ -4704,6 +4728,14 @@ export type Database = {
       decrement_post_likes: {
         Args: { post_id: string }
         Returns: undefined
+      }
+      decrypt_sensitive_data: {
+        Args: { encrypted_data: string; user_salt: string }
+        Returns: string
+      }
+      encrypt_sensitive_data: {
+        Args: { data_text: string; user_salt: string }
+        Returns: string
       }
       examine_table_policies: {
         Args:
