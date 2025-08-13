@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const enrollPasskey = async () => {
     try {
-      if (!user) {
+      if (!user || !session) {
         throw new Error('User must be signed in to enroll passkey');
       }
 
@@ -166,43 +166,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('WebAuthn is not supported on this device');
       }
 
-      const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
-        challenge: crypto.getRandomValues(new Uint8Array(32)),
-        rp: {
-          name: "The Queer Guide",
-          id: window.location.hostname,
-        },
-        user: {
-          id: new TextEncoder().encode(user.id),
-          name: user.email || '',
-          displayName: user.email || '',
-        },
-        pubKeyCredParams: [
-          {
-            alg: -7, // ES256
-            type: "public-key",
+      // Call secure edge function to get challenge and options
+      const { data: enrollData, error: enrollError } = await supabase.functions.invoke(
+        'secure-passkey-operations',
+        {
+          body: { action: 'enroll' },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
           },
-          {
-            alg: -257, // RS256
-            type: "public-key",
-          },
-        ],
-        authenticatorSelection: {
-          authenticatorAttachment: "platform",
-          userVerification: "required",
-        },
-        timeout: 60000,
-        attestation: "direct",
-      };
+        }
+      );
+
+      if (enrollError || !enrollData?.publicKeyCredentialCreationOptions) {
+        throw new Error(enrollError?.message || 'Failed to initiate passkey enrollment');
+      }
+
+      // Convert challenge back to Uint8Array
+      const options = enrollData.publicKeyCredentialCreationOptions;
+      options.challenge = new Uint8Array(options.challenge);
+      options.user.id = new Uint8Array(options.user.id);
 
       const credential = await navigator.credentials.create({
-        publicKey: publicKeyCredentialCreationOptions,
+        publicKey: options,
       }) as PublicKeyCredential;
 
       if (credential) {
-        // Store passkey enrollment status
-        localStorage.setItem(`passkey_enrolled_${user.id}`, 'true');
-        localStorage.setItem(`passkey_credential_${user.id}`, credential.id);
+        // Verify enrollment with server
+        const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+          'secure-passkey-operations',
+          {
+            body: { 
+              action: 'verify-enrollment',
+              credentialData: {
+                id: credential.id,
+                response: {
+                  publicKey: credential.response,
+                  counter: 0
+                },
+                type: credential.type
+              }
+            },
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+
+        if (verifyError || !verifyData?.success) {
+          throw new Error(verifyError?.message || 'Failed to verify passkey enrollment');
+        }
+
         setHasPasskey(true);
         return { error: null };
       }
@@ -221,21 +234,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('WebAuthn is not supported on this device');
       }
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
-        challenge: crypto.getRandomValues(new Uint8Array(32)),
-        allowCredentials: [],
-        timeout: 60000,
-        userVerification: "required",
-      };
+      // Note: For sign-in, we would need to identify the user first
+      // This is a simplified implementation for demonstration
+      if (!session) {
+        throw new Error('User session required for passkey authentication');
+      }
+
+      // Call secure edge function to get authentication challenge
+      const { data: authData, error: authError } = await supabase.functions.invoke(
+        'secure-passkey-operations',
+        {
+          body: { action: 'authenticate' },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      if (authError || !authData?.publicKeyCredentialRequestOptions) {
+        throw new Error(authError?.message || 'Failed to initiate passkey authentication');
+      }
+
+      // Convert challenge back to Uint8Array
+      const options = authData.publicKeyCredentialRequestOptions;
+      options.challenge = new Uint8Array(options.challenge);
+      
+      // Convert allowCredentials IDs if needed
+      if (options.allowCredentials) {
+        options.allowCredentials = options.allowCredentials.map((cred: any) => ({
+          ...cred,
+          id: typeof cred.id === 'string' ? new TextEncoder().encode(cred.id) : cred.id
+        }));
+      }
 
       const credential = await navigator.credentials.get({
-        publicKey: publicKeyCredentialRequestOptions,
+        publicKey: options,
       }) as PublicKeyCredential;
 
       if (credential) {
-        // For demonstration purposes, we'll show a success message
-        // In a real implementation, you'd verify the credential on the server
-        // and then sign the user in through Supabase
+        // In a full implementation, you would verify the assertion on the server
+        // and then complete the sign-in process
         return { error: null };
       }
       

@@ -2730,6 +2730,33 @@ export type Database = {
         }
         Relationships: []
       }
+      passkey_challenges: {
+        Row: {
+          action: string
+          challenge: number[]
+          created_at: string
+          expires_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          challenge: number[]
+          created_at?: string
+          expires_at: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          challenge?: number[]
+          created_at?: string
+          expires_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string
@@ -3787,6 +3814,39 @@ export type Database = {
           },
         ]
       }
+      user_passkeys: {
+        Row: {
+          counter: number
+          created_at: string
+          credential_id: string
+          id: string
+          is_revoked: boolean
+          last_used_at: string | null
+          public_key: string
+          user_id: string
+        }
+        Insert: {
+          counter?: number
+          created_at?: string
+          credential_id: string
+          id?: string
+          is_revoked?: boolean
+          last_used_at?: string | null
+          public_key: string
+          user_id: string
+        }
+        Update: {
+          counter?: number
+          created_at?: string
+          credential_id?: string
+          id?: string
+          is_revoked?: boolean
+          last_used_at?: string | null
+          public_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_photos: {
         Row: {
           caption: string | null
@@ -4687,6 +4747,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_expired_passkey_challenges: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_old_cancelled_bookings: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -5014,6 +5078,10 @@ export type Database = {
           target_user_id: string
           role_to_revoke: Database["public"]["Enums"]["app_role"]
         }
+        Returns: undefined
+      }
+      schedule_privacy_cleanup: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       secure_assign_user_role: {
