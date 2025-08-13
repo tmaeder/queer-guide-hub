@@ -4799,6 +4799,10 @@ export type Database = {
             }
         Returns: boolean
       }
+      calculate_profile_completion: {
+        Args: { user_id_param: string }
+        Returns: number
+      }
       can_view_sensitive_profile_data: {
         Args:
           | { profile_user_id: string; requesting_user_id: string }
@@ -4994,7 +4998,9 @@ export type Database = {
         Returns: Json
       }
       get_entity_attributes: {
-        Args: { entity_id_param: string; entity_type_param: string }
+        Args:
+          | { entity_id_param: string; entity_type_param: string }
+          | { entity_type_param: string; entity_id_param: string }
         Returns: {
           attribute_id: string
           attribute_name: string
@@ -5005,7 +5011,9 @@ export type Database = {
         }[]
       }
       get_entity_tags: {
-        Args: { entity_id_param: string; entity_type_param: string }
+        Args:
+          | { entity_id_param: string; entity_type_param: string }
+          | { entity_type_param: string; entity_id_param: string }
         Returns: {
           tag_id: string
           tag_name: string
