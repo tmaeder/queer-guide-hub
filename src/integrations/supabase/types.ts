@@ -4588,7 +4588,9 @@ export type Database = {
       }
       venue_checkin_stats: {
         Row: {
-          checkin_hour: string | null
+          activity_level: string | null
+          days_with_checkins: number | null
+          last_checkin: string | null
           total_checkins: number | null
           venue_id: string | null
         }
@@ -4665,6 +4667,15 @@ export type Database = {
           identifier: string
           max_attempts?: number
           time_window_minutes?: number
+        }
+        Returns: boolean
+      }
+      check_rate_limit_enhanced: {
+        Args: {
+          identifier: string
+          max_attempts?: number
+          time_window_minutes?: number
+          action_type?: string
         }
         Returns: boolean
       }
@@ -5004,6 +5015,17 @@ export type Database = {
           role_to_revoke: Database["public"]["Enums"]["app_role"]
         }
         Returns: undefined
+      }
+      secure_assign_user_role: {
+        Args: {
+          p_target_user_id: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: undefined
+      }
+      validate_content_security: {
+        Args: { content: string }
+        Returns: boolean
       }
     }
     Enums: {
