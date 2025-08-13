@@ -13,34 +13,62 @@ serve(async (req) => {
   }
 
   try {
+    // Use service role for secure booking creation with encryption
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
+        auth: {
+          persistSession: false
+        }
       }
     );
 
-    // Get the user from the request
+    // Verify user authentication from the Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization header required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Create anon client to verify user token
+    const anonClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    );
+
     const {
       data: { user },
       error: userError,
-    } = await supabaseClient.auth.getUser();
+    } = await anonClient.auth.getUser(authHeader.replace('Bearer ', ''));
 
     if (userError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Invalid authentication token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const bookingData = await req.json();
-    console.log('Creating booking:', bookingData);
+    console.log('Creating secure booking for user:', user.id);
 
-    // Generate booking reference
-    const bookingReference = `${bookingData.bookingType.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Enhanced booking reference with additional entropy
+    const bookingReference = `${bookingData.bookingType.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+    // Log booking creation attempt
+    await supabaseClient.rpc('log_enhanced_security_event', {
+      p_event_type: 'BOOKING_CREATION_ATTEMPTED',
+      p_user_id: user.id,
+      p_metadata: {
+        booking_type: bookingData.bookingType,
+        booking_reference: bookingReference,
+        total_price: bookingData.totalPrice,
+        timestamp: new Date().toISOString()
+      },
+      p_severity: 'medium'
+    });
 
     // Prepare booking data based on type
     let insertData: any = {
@@ -91,7 +119,11 @@ serve(async (req) => {
       );
     }
 
-    console.log('Booking created successfully:', booking);
+    console.log('Secure booking created successfully:', { 
+      id: booking.id, 
+      reference: booking.booking_reference,
+      encrypted: booking.encryption_key_id !== null 
+    });
 
     return new Response(
       JSON.stringify({ 

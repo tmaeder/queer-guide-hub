@@ -208,19 +208,26 @@ export type Database = {
           currency: string | null
           departure_airport: string | null
           departure_date: string | null
+          encryption_key_id: string | null
           flight_data: Json | null
+          flight_data_encrypted: string | null
           guests: number | null
           hotel_data: Json | null
+          hotel_data_encrypted: string | null
           hotel_location: string | null
           hotel_name: string | null
           id: string
           passengers: number | null
+          payment_method_last4: string | null
+          payment_method_type: string | null
           payment_status: string | null
+          payment_token: string | null
           return_date: string | null
           rooms: number | null
           status: string
           total_price: number | null
           traveler_details: Json | null
+          traveler_details_encrypted: string | null
           updated_at: string
           user_id: string
         }
@@ -234,19 +241,26 @@ export type Database = {
           currency?: string | null
           departure_airport?: string | null
           departure_date?: string | null
+          encryption_key_id?: string | null
           flight_data?: Json | null
+          flight_data_encrypted?: string | null
           guests?: number | null
           hotel_data?: Json | null
+          hotel_data_encrypted?: string | null
           hotel_location?: string | null
           hotel_name?: string | null
           id?: string
           passengers?: number | null
+          payment_method_last4?: string | null
+          payment_method_type?: string | null
           payment_status?: string | null
+          payment_token?: string | null
           return_date?: string | null
           rooms?: number | null
           status?: string
           total_price?: number | null
           traveler_details?: Json | null
+          traveler_details_encrypted?: string | null
           updated_at?: string
           user_id: string
         }
@@ -260,19 +274,26 @@ export type Database = {
           currency?: string | null
           departure_airport?: string | null
           departure_date?: string | null
+          encryption_key_id?: string | null
           flight_data?: Json | null
+          flight_data_encrypted?: string | null
           guests?: number | null
           hotel_data?: Json | null
+          hotel_data_encrypted?: string | null
           hotel_location?: string | null
           hotel_name?: string | null
           id?: string
           passengers?: number | null
+          payment_method_last4?: string | null
+          payment_method_type?: string | null
           payment_status?: string | null
+          payment_token?: string | null
           return_date?: string | null
           rooms?: number | null
           status?: string
           total_price?: number | null
           traveler_details?: Json | null
+          traveler_details_encrypted?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -4747,6 +4768,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_expired_bookings: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_expired_passkey_challenges: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -4820,8 +4845,16 @@ export type Database = {
         Args: { post_id: string }
         Returns: undefined
       }
+      decrypt_booking_data: {
+        Args: { encrypted_data: string; user_salt: string }
+        Returns: string
+      }
       decrypt_sensitive_data: {
         Args: { encrypted_data: string; user_salt: string }
+        Returns: string
+      }
+      encrypt_booking_data: {
+        Args: { data_text: string; user_salt: string }
         Returns: string
       }
       encrypt_sensitive_data: {
@@ -4888,6 +4921,10 @@ export type Database = {
           schedule: string
           active: boolean
         }[]
+      }
+      get_booking_details: {
+        Args: { booking_id: string }
+        Returns: Json
       }
       get_entity_attributes: {
         Args: { entity_id_param: string; entity_type_param: string }

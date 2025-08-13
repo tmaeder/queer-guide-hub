@@ -159,20 +159,43 @@ export function useBookings() {
     },
   });
 
-  // Get user bookings
+  // Get user bookings with secure decryption
   const { data: bookings, isLoading: isLoadingBookings } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get basic booking info (encrypted data will be null due to triggers)
+      const { data: basicBookings, error } = await supabase
         .from('bookings')
-        .select('*')
+        .select(`
+          id, 
+          booking_type, 
+          booking_reference, 
+          status, 
+          total_price, 
+          currency, 
+          departure_airport,
+          arrival_airport,
+          departure_date,
+          return_date,
+          passengers,
+          hotel_name,
+          hotel_location,
+          check_in_date,
+          check_out_date,
+          rooms,
+          guests,
+          payment_method_last4,
+          payment_method_type,
+          created_at,
+          updated_at
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {
         throw new Error(error.message);
       }
 
-      return data;
+      return basicBookings;
     },
   });
 
@@ -208,6 +231,19 @@ export function useBookings() {
     },
   });
 
+  // Function to get detailed booking data with decryption
+  const getBookingDetails = async (bookingId: string) => {
+    const { data, error } = await supabase.rpc('get_booking_details', {
+      booking_id: bookingId
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  };
+
   return {
     searchFlights,
     searchHotels,
@@ -217,5 +253,6 @@ export function useBookings() {
     isLoadingBookings,
     updateBooking: updateBookingMutation.mutate,
     isUpdatingBooking: updateBookingMutation.isPending,
+    getBookingDetails, // New function for secure data access
   };
 }
