@@ -40,8 +40,6 @@ import CityHeroImages from "@/components/city/CityHeroImages";
 import { NewsCard } from "@/components/news/NewsCard";
 import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
-import FlightWidget from "@/components/booking/FlightWidget";
-import HotelWidget from "@/components/booking/HotelWidget";
 
 type CityWithCountry = {
   id: string;
@@ -661,20 +659,6 @@ export default function CityDetail() {
 
           <TabsContent value="travel" className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
-              {/* Flight Widget */}
-              <FlightWidget
-                airportCode={city.major_airport_code}
-                currency={city.countries?.currency}
-                title={`Flights to ${city.name}`}
-              />
-              
-              {/* Hotel Widget */}
-              <HotelWidget
-                latitude={city.latitude}
-                longitude={city.longitude}
-                title={`Hotels in ${city.name}`}
-              />
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Transportation */}
                 <Card>

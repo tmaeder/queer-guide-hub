@@ -67,9 +67,6 @@ export function Header() {
       icon: Globe,
       label: "Places"
     }, {
-      to: "/travel",
-      icon: Plane,
-      label: "Travel"
     }, {
       to: "/venues",
       icon: MapPin,

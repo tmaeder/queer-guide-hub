@@ -67,7 +67,7 @@ const AdminNewsSources = lazy(() => import("./pages/AdminNewsSources"));
 const EmailTemplates = lazy(() => import("./pages/admin/EmailTemplates"));
 const AdminImportHub = lazy(() => import("./pages/AdminImportHub"));
 const News = lazy(() => import("./pages/News"));
-const Travel = lazy(() => import("./pages/Travel"));
+
 
 const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
@@ -250,7 +250,7 @@ const App = () => {
                    } />
                    <Route path="/news" element={<News />} />
                    <Route path="/search" element={<SearchResults />} />
-                   <Route path="/travel" element={<Travel />} />
+                   
                     <Route path="/groups" element={<Groups />} />
                     <Route path="/groups/:groupId" element={<GroupDetail />} />
                     <Route path="/my-groups" element={<MyGroups />} />

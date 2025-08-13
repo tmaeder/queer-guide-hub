@@ -29,8 +29,6 @@ export function Footer() {
     icon: FileText
   }];
   const communityLinks = [{
-    href: "/travel",
-    label: "Travel",
     icon: Plane
   }, {
     href: "/venues",
