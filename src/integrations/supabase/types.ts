@@ -4667,6 +4667,81 @@ export type Database = {
         }
         Relationships: []
       }
+      secure_booking_summary: {
+        Row: {
+          arrival_airport: string | null
+          booking_reference: string | null
+          booking_type: string | null
+          check_in_date: string | null
+          check_out_date: string | null
+          created_at: string | null
+          currency: string | null
+          departure_airport: string | null
+          departure_date: string | null
+          guests: number | null
+          hotel_location: string | null
+          hotel_name: string | null
+          id: string | null
+          passengers: number | null
+          payment_method_masked: string | null
+          payment_method_type: string | null
+          return_date: string | null
+          rooms: number | null
+          status: string | null
+          total_price: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          arrival_airport?: string | null
+          booking_reference?: string | null
+          booking_type?: string | null
+          check_in_date?: string | null
+          check_out_date?: string | null
+          created_at?: string | null
+          currency?: string | null
+          departure_airport?: string | null
+          departure_date?: string | null
+          guests?: number | null
+          hotel_location?: string | null
+          hotel_name?: string | null
+          id?: string | null
+          passengers?: number | null
+          payment_method_masked?: never
+          payment_method_type?: string | null
+          return_date?: string | null
+          rooms?: number | null
+          status?: string | null
+          total_price?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          arrival_airport?: string | null
+          booking_reference?: string | null
+          booking_type?: string | null
+          check_in_date?: string | null
+          check_out_date?: string | null
+          created_at?: string | null
+          currency?: string | null
+          departure_airport?: string | null
+          departure_date?: string | null
+          guests?: number | null
+          hotel_location?: string | null
+          hotel_name?: string | null
+          id?: string | null
+          passengers?: number | null
+          payment_method_masked?: never
+          payment_method_type?: string | null
+          return_date?: string | null
+          rooms?: number | null
+          status?: string | null
+          total_price?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       venue_checkin_stats: {
         Row: {
           activity_level: string | null
@@ -4910,6 +4985,10 @@ export type Database = {
         Args: { p_schema_name?: string }
         Returns: string
       }
+      generate_secure_payment_token: {
+        Args: { payment_data: Json; user_id: string }
+        Returns: string
+      }
       generate_table_optimization_script: {
         Args: { p_schema_name: string; p_table_name: string }
         Returns: string
@@ -5116,6 +5195,10 @@ export type Database = {
           role_to_revoke: Database["public"]["Enums"]["app_role"]
         }
         Returns: undefined
+      }
+      sanitize_payment_data: {
+        Args: { traveler_data: Json }
+        Returns: Json
       }
       schedule_privacy_cleanup: {
         Args: Record<PropertyKey, never>

@@ -159,43 +159,21 @@ export function useBookings() {
     },
   });
 
-  // Get user bookings with secure decryption
+  // Get user bookings using secure view (no sensitive data exposed)
   const { data: bookings, isLoading: isLoadingBookings } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
-      // First get basic booking info (encrypted data will be null due to triggers)
-      const { data: basicBookings, error } = await supabase
-        .from('bookings')
-        .select(`
-          id, 
-          booking_type, 
-          booking_reference, 
-          status, 
-          total_price, 
-          currency, 
-          departure_airport,
-          arrival_airport,
-          departure_date,
-          return_date,
-          passengers,
-          hotel_name,
-          hotel_location,
-          check_in_date,
-          check_out_date,
-          rooms,
-          guests,
-          payment_method_last4,
-          payment_method_type,
-          created_at,
-          updated_at
-        `)
+      // Use secure view that excludes sensitive encrypted data
+      const { data, error } = await supabase
+        .from('secure_booking_summary')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
         throw new Error(error.message);
       }
 
-      return basicBookings;
+      return data;
     },
   });
 
