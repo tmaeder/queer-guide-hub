@@ -30,9 +30,11 @@ export function PrivacyGuard({
     return <>{children}</>;
   }
 
-  // Check if the required privacy field is set to public
-  const isPublic = privacySettings[requiredPrivacyField] === true || 
-                   privacySettings[requiredPrivacyField] === 'true';
+  // Enhanced privacy check with secure defaults
+  // Default to private (false) if setting not found
+  const isPublic = privacySettings && 
+    typeof privacySettings === 'object' &&
+    privacySettings[requiredPrivacyField] === true;
 
   if (isPublic) {
     return <>{children}</>;
