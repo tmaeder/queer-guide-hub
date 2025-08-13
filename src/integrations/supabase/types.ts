@@ -4586,6 +4586,22 @@ export type Database = {
         }
         Relationships: []
       }
+      venue_checkin_stats: {
+        Row: {
+          checkin_hour: string | null
+          total_checkins: number | null
+          venue_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_checkins_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_rls_policy_indexes: {
