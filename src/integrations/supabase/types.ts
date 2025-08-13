@@ -4804,13 +4804,11 @@ export type Database = {
         Returns: number
       }
       can_view_sensitive_profile_data: {
-        Args:
-          | { profile_user_id: string; requesting_user_id: string }
-          | {
-              profile_user_id: string
-              requesting_user_id: string
-              privacy_field: string
-            }
+        Args: {
+          profile_user_id: string
+          requesting_user_id: string
+          privacy_field?: string
+        }
         Returns: boolean
       }
       check_rate_limit: {
@@ -5052,7 +5050,7 @@ export type Database = {
         }[]
       }
       get_user_conversation_ids: {
-        Args: Record<PropertyKey, never> | { user_id_param: string }
+        Args: { user_id_param?: string }
         Returns: {
           conversation_id: string
         }[]
