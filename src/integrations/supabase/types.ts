@@ -4714,6 +4714,10 @@ export type Database = {
           with_check_expression: string
         }[]
       }
+      expire_old_location_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       fix_rls_policies: {
         Args: Record<PropertyKey, never>
         Returns: undefined
