@@ -4762,17 +4762,8 @@ export type Database = {
       }
     }
     Functions: {
-      add_rls_policy_indexes: {
-        Args: { p_schema_name?: string }
-        Returns: {
-          table_name: string
-          column_name: string
-          index_name: string
-          index_sql: string
-        }[]
-      }
       analyze_rls_policy_performance: {
-        Args: Record<PropertyKey, never> | { p_schema_name?: string }
+        Args: Record<PropertyKey, never>
         Returns: {
           policy_name: string
           table_name: string
@@ -4867,7 +4858,6 @@ export type Database = {
         Args:
           | Record<PropertyKey, never>
           | { p_schema_name: string; p_table_name: string }
-          | { p_table_name: string; p_role_name: string; p_action: string }
         Returns: undefined
       }
       consolidate_rls_policies: {
@@ -4893,7 +4883,6 @@ export type Database = {
           | Record<PropertyKey, never>
           | { p_schema_name: string; p_table_name: string }
           | { p_table_name: string; p_role_name: string; p_action: string }
-          | { table_name_param: string }
         Returns: undefined
       }
       create_notification: {
@@ -4938,7 +4927,6 @@ export type Database = {
       }
       examine_table_policies: {
         Args:
-          | Record<PropertyKey, never>
           | { p_schema_name: string; p_table_name: string }
           | { table_name_param: string }
         Returns: {
@@ -5049,21 +5037,10 @@ export type Database = {
           | { table_name_param: string }
         Returns: {
           policy_name: string
-          policy_roles: string[]
-          policy_cmd: string
-          policy_qual: string
-          policy_with_check: string
-        }[]
-      }
-      get_tables_with_multiple_permissive_policies: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          schema_name: string
-          table_name: string
           role_name: string
-          operation: string
-          policy_count: number
-          policy_names: string[]
+          command: string
+          using_expr: string
+          with_check_expr: string
         }[]
       }
       get_user_conversation_ids: {
