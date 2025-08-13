@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,13 +27,33 @@ interface PhotoGalleryProps {
 
 export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
   const { user } = useAuth();
-  const { photos, isLoading, uploadPhoto, deletePhoto, updateCaption, getPhotoUrl } = useUserPhotos(userId);
+  const { photos, isLoading, uploadPhoto, deletePhoto, updateCaption, getSignedPhotoUrl } = useUserPhotos(userId);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [caption, setCaption] = useState('');
   const [uploadOpen, setUploadOpen] = useState(false);
   const [editingCaption, setEditingCaption] = useState<string | null>(null);
   const [editCaptionText, setEditCaptionText] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadUrls = async () => {
+      const entries = await Promise.all(
+        (photos || []).map(async (p) => {
+          const url = await getSignedPhotoUrl(p.storage_path, 3600);
+          return [p.storage_path, url || ''] as const;
+        })
+      );
+      if (isMounted) {
+        const map: Record<string, string> = {};
+        entries.forEach(([k, v]) => { if (v) map[k] = v; });
+        setSignedUrls(map);
+      }
+    };
+    loadUrls();
+    return () => { isMounted = false; };
+  }, [photos, getSignedPhotoUrl]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -186,10 +206,18 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
               <div key={photo.id} className="relative group">
                 <div 
                   className="aspect-square overflow-hidden rounded-lg bg-muted cursor-pointer"
-                  onClick={() => setSelectedImage(getPhotoUrl(photo.storage_path))}
+                  onClick={async () => {
+                    const existing = signedUrls[photo.storage_path];
+                    if (existing) {
+                      setSelectedImage(existing);
+                    } else {
+                      const url = await getSignedPhotoUrl(photo.storage_path, 3600);
+                      if (url) setSelectedImage(url);
+                    }
+                  }}
                 >
                   <img
-                    src={getPhotoUrl(photo.storage_path)}
+                    src={signedUrls[photo.storage_path] || ''}
                     alt={photo.caption || 'User photo'}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />

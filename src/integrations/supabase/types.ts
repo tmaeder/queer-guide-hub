@@ -1319,6 +1319,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_attendees_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -1467,6 +1474,7 @@ export type Database = {
           id: string
           images: string[] | null
           is_free: boolean | null
+          is_public: boolean
           is_recurring: boolean | null
           latitude: number | null
           longitude: number | null
@@ -1504,6 +1512,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_free?: boolean | null
+          is_public?: boolean
           is_recurring?: boolean | null
           latitude?: number | null
           longitude?: number | null
@@ -1541,6 +1550,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_free?: boolean | null
+          is_public?: boolean
           is_recurring?: boolean | null
           latitude?: number | null
           longitude?: number | null
@@ -4394,6 +4404,89 @@ export type Database = {
       }
     }
     Views: {
+      events_public: {
+        Row: {
+          address: string | null
+          age_restriction: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string | null
+          images: string[] | null
+          is_free: boolean | null
+          latitude: number | null
+          longitude: number | null
+          price_max: number | null
+          price_min: number | null
+          start_date: string | null
+          state: string | null
+          ticket_url: string | null
+          title: string | null
+          updated_at: string | null
+          venue_id: string | null
+          venue_name: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          age_restriction?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string | null
+          images?: string[] | null
+          is_free?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          price_max?: number | null
+          price_min?: number | null
+          start_date?: string | null
+          state?: string | null
+          ticket_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          venue_id?: string | null
+          venue_name?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          age_restriction?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string | null
+          images?: string[] | null
+          is_free?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          price_max?: number | null
+          price_min?: number | null
+          start_date?: string | null
+          state?: string | null
+          ticket_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          venue_id?: string | null
+          venue_name?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles_public: {
         Row: {
           avatar_url: string | null
