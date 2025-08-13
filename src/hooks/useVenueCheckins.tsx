@@ -126,21 +126,17 @@ export function useVenueCheckins() {
   };
 
   const getVenueCheckins = async (venueId: string) => {
+    // SECURITY: Only show anonymized venue statistics, no personal data
+    // Users cannot see other users' check-ins for privacy protection
     const { data, error } = await supabase
-      .from('venue_checkins')
-      .select(`
-        *,
-        profiles:user_id (
-          display_name,
-          avatar_url
-        )
-      `)
+      .from('venue_checkin_stats')
+      .select('*')
       .eq('venue_id', venueId)
-      .order('checked_in_at', { ascending: false })
+      .order('checkin_hour', { ascending: false })
       .limit(50);
 
     if (error) {
-      console.error('Error fetching venue check-ins:', error);
+      console.error('Error fetching venue statistics:', error);
       return [];
     }
 
