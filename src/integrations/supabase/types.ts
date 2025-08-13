@@ -4636,6 +4636,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_old_cancelled_bookings: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       consolidate_all_multiple_policies: {
         Args: Record<PropertyKey, never>
         Returns: undefined
