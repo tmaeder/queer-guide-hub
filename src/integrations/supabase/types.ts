@@ -4866,6 +4866,10 @@ export type Database = {
         Args: { group_id: string; check_admin?: boolean }
         Returns: boolean
       }
+      jwt_claim: {
+        Args: { claim: string }
+        Returns: string
+      }
       list_tables_with_multiple_policies: {
         Args: Record<PropertyKey, never>
         Returns: {
