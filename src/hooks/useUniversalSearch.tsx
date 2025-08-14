@@ -236,7 +236,6 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
     // Travel booking search removed as booking functionality has been removed
     return [];
   };
-  };
 
   const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
