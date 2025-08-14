@@ -4586,69 +4586,6 @@ export type Database = {
         }
         Relationships: []
       }
-      secure_passkey_summary: {
-        Row: {
-          counter: number | null
-          created_at: string | null
-          credential_status: string | null
-          id: string | null
-          is_revoked: boolean | null
-          last_used_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          counter?: number | null
-          created_at?: string | null
-          credential_status?: never
-          id?: string | null
-          is_revoked?: boolean | null
-          last_used_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          counter?: number | null
-          created_at?: string | null
-          credential_status?: never
-          id?: string | null
-          is_revoked?: boolean | null
-          last_used_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      secure_session_summary: {
-        Row: {
-          created_at: string | null
-          expires_at: string | null
-          id: string | null
-          ip_status: string | null
-          is_active: boolean | null
-          last_activity: string | null
-          session_token_status: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          expires_at?: string | null
-          id?: string | null
-          ip_status?: never
-          is_active?: boolean | null
-          last_activity?: string | null
-          session_token_status?: never
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          expires_at?: string | null
-          id?: string | null
-          ip_status?: never
-          is_active?: boolean | null
-          last_activity?: string | null
-          session_token_status?: never
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       venue_checkin_stats: {
         Row: {
           activity_level: string | null
