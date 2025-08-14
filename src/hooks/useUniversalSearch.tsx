@@ -233,31 +233,9 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
   };
 
   const searchTravel = async (searchQuery: string): Promise<SearchResult[]> => {
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .or(`hotel_name.ilike.%${searchQuery}%,departure_airport.ilike.%${searchQuery}%,arrival_airport.ilike.%${searchQuery}%`)
-      .eq('status', 'confirmed')
-      .limit(10);
-
-    if (error) return [];
-
-    return data.map(booking => ({
-      id: booking.id,
-      title: booking.hotel_name || `${booking.departure_airport} → ${booking.arrival_airport}`,
-      description: `${booking.booking_type} booking`,
-      type: 'travel' as const,
-      location: booking.hotel_location || booking.arrival_airport,
-      category: booking.booking_type,
-      price: booking.total_price,
-      date: booking.departure_date || booking.check_in_date,
-      metadata: {
-        bookingReference: booking.booking_reference,
-        passengers: booking.passengers,
-        guests: booking.guests,
-        currency: booking.currency
-      }
-    }));
+    // Travel booking search removed as booking functionality has been removed
+    return [];
+  };
   };
 
   const performSearch = async (searchQuery: string) => {

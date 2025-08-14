@@ -4893,9 +4893,10 @@ export type Database = {
       get_algolia_sync_status: {
         Args: Record<PropertyKey, never>
         Returns: {
-          active: boolean
-          jobname: string
-          schedule: string
+          last_sync_at: string
+          sync_status: string
+          table_name: string
+          total_records: number
         }[]
       }
       get_booking_details: {
@@ -4924,10 +4925,10 @@ export type Database = {
       get_news_cron_status: {
         Args: Record<PropertyKey, never>
         Returns: {
-          active: boolean
-          jobid: number
-          jobname: string
-          schedule: string
+          job_name: string
+          last_run: string
+          next_run: string
+          status: string
         }[]
       }
       get_or_create_direct_conversation: {
@@ -5053,7 +5054,7 @@ export type Database = {
         }[]
       }
       optimize_auth_uid_in_policies: {
-        Args: { p_schema_name?: string }
+        Args: Record<PropertyKey, never> | { p_schema_name?: string }
         Returns: {
           optimized_definition: string
           original_definition: string
