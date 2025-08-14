@@ -4903,25 +4903,19 @@ export type Database = {
         Returns: Json
       }
       get_entity_attributes: {
-        Args:
-          | { entity_id_param: string; entity_type_param: string }
-          | { entity_id_param: string; entity_type_param: string }
+        Args: { entity_id_param: string; entity_type_param: string }
         Returns: {
           attribute_category: string
           attribute_description: string
           attribute_icon: string
           attribute_id: string
           attribute_name: string
-          attribute_type: string
         }[]
       }
       get_entity_tags: {
-        Args:
-          | { entity_id_param: string; entity_type_param: string }
-          | { entity_id_param: string; entity_type_param: string }
+        Args: { entity_id_param: string; entity_type_param: string }
         Returns: {
-          category_name: string
-          tag_color: string
+          tag_category: string
           tag_description: string
           tag_id: string
           tag_name: string
