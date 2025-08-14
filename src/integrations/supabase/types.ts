@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -3738,30 +3738,39 @@ export type Database = {
           counter: number
           created_at: string
           credential_id: string
+          credential_id_encrypted: string | null
           id: string
           is_revoked: boolean
           last_used_at: string | null
+          passkey_encryption_key_id: string | null
           public_key: string
+          public_key_encrypted: string | null
           user_id: string
         }
         Insert: {
           counter?: number
           created_at?: string
           credential_id: string
+          credential_id_encrypted?: string | null
           id?: string
           is_revoked?: boolean
           last_used_at?: string | null
+          passkey_encryption_key_id?: string | null
           public_key: string
+          public_key_encrypted?: string | null
           user_id: string
         }
         Update: {
           counter?: number
           created_at?: string
           credential_id?: string
+          credential_id_encrypted?: string | null
           id?: string
           is_revoked?: boolean
           last_used_at?: string | null
+          passkey_encryption_key_id?: string | null
           public_key?: string
+          public_key_encrypted?: string | null
           user_id?: string
         }
         Relationships: []
@@ -3922,35 +3931,47 @@ export type Database = {
       user_sessions: {
         Row: {
           created_at: string
+          encryption_key_id: string | null
           expires_at: string
           id: string
           ip_address: unknown | null
+          ip_address_encrypted: string | null
           is_active: boolean
           last_activity: string
           session_token: string
+          session_token_encrypted: string | null
           user_agent: string | null
+          user_agent_encrypted: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          encryption_key_id?: string | null
           expires_at: string
           id?: string
           ip_address?: unknown | null
+          ip_address_encrypted?: string | null
           is_active?: boolean
           last_activity?: string
           session_token: string
+          session_token_encrypted?: string | null
           user_agent?: string | null
+          user_agent_encrypted?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          encryption_key_id?: string | null
           expires_at?: string
           id?: string
           ip_address?: unknown | null
+          ip_address_encrypted?: string | null
           is_active?: boolean
           last_activity?: string
           session_token?: string
+          session_token_encrypted?: string | null
           user_agent?: string | null
+          user_agent_encrypted?: string | null
           user_id?: string
         }
         Relationships: []
@@ -4565,6 +4586,69 @@ export type Database = {
         }
         Relationships: []
       }
+      secure_passkey_summary: {
+        Row: {
+          counter: number | null
+          created_at: string | null
+          credential_status: string | null
+          id: string | null
+          is_revoked: boolean | null
+          last_used_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          counter?: number | null
+          created_at?: string | null
+          credential_status?: never
+          id?: string | null
+          is_revoked?: boolean | null
+          last_used_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          counter?: number | null
+          created_at?: string | null
+          credential_status?: never
+          id?: string | null
+          is_revoked?: boolean | null
+          last_used_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      secure_session_summary: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string | null
+          ip_status: string | null
+          is_active: boolean | null
+          last_activity: string | null
+          session_token_status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          ip_status?: never
+          is_active?: boolean | null
+          last_activity?: string | null
+          session_token_status?: never
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          ip_status?: never
+          is_active?: boolean | null
+          last_activity?: string | null
+          session_token_status?: never
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       venue_checkin_stats: {
         Row: {
           activity_level: string | null
@@ -4588,10 +4672,10 @@ export type Database = {
       analyze_rls_policy_performance: {
         Args: Record<PropertyKey, never>
         Returns: {
+          optimization_suggestion: string
+          performance_score: number
           policy_name: string
           table_name: string
-          performance_score: number
-          optimization_suggestion: string
         }[]
       }
       assign_admin_by_id: {
@@ -4604,21 +4688,21 @@ export type Database = {
       }
       assign_role: {
         Args: {
-          target_user_id: string
           role_to_assign: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
         }
         Returns: undefined
       }
       assign_user_role: {
         Args:
           | {
-              p_target_user_id: string
-              p_role: Database["public"]["Enums"]["app_role"]
+              action_type?: string
+              new_role: Database["public"]["Enums"]["app_role"]
+              target_user_id: string
             }
           | {
-              target_user_id: string
-              new_role: Database["public"]["Enums"]["app_role"]
-              action_type?: string
+              p_role: Database["public"]["Enums"]["app_role"]
+              p_target_user_id: string
             }
         Returns: boolean
       }
@@ -4628,9 +4712,9 @@ export type Database = {
       }
       can_view_sensitive_profile_data: {
         Args: {
+          privacy_field?: string
           profile_user_id: string
           requesting_user_id: string
-          privacy_field?: string
         }
         Returns: boolean
       }
@@ -4644,10 +4728,10 @@ export type Database = {
       }
       check_rate_limit_enhanced: {
         Args: {
+          action_type?: string
           identifier: string
           max_attempts?: number
           time_window_minutes?: number
-          action_type?: string
         }
         Returns: boolean
       }
@@ -4687,38 +4771,38 @@ export type Database = {
       }
       consolidate_rls_policies: {
         Args: {
+          p_action: string
+          p_role_name: string
           p_schema_name: string
           p_table_name: string
-          p_role_name: string
-          p_action: string
         }
         Returns: undefined
       }
       consolidate_rls_policies_v2: {
         Args: {
+          p_action: string
+          p_role_name: string
           p_schema_name: string
           p_table_name: string
-          p_role_name: string
-          p_action: string
         }
         Returns: undefined
       }
       consolidate_table_policies: {
         Args:
           | Record<PropertyKey, never>
+          | { p_action: string; p_role_name: string; p_table_name: string }
           | { p_schema_name: string; p_table_name: string }
-          | { p_table_name: string; p_role_name: string; p_action: string }
         Returns: undefined
       }
       create_notification: {
         Args: {
-          target_user_id: string
-          notification_type: string
-          notification_title: string
-          notification_content?: string
           notification_action_url?: string
-          notification_related_id?: string
+          notification_content?: string
           notification_metadata?: Json
+          notification_related_id?: string
+          notification_title: string
+          notification_type: string
+          target_user_id: string
         }
         Returns: string
       }
@@ -4755,9 +4839,9 @@ export type Database = {
           | { p_schema_name: string; p_table_name: string }
           | { table_name_param: string }
         Returns: {
+          command: string
           policy_name: string
           role_names: string[]
-          command: string
           using_expression: string
           with_check_expression: string
         }[]
@@ -4778,19 +4862,19 @@ export type Database = {
         Args:
           | Record<PropertyKey, never>
           | {
+              p_action: string
+              p_role_name: string
               p_schema_name: string
               p_table_name: string
-              p_role_name: string
-              p_action: string
             }
         Returns: string
       }
       generate_optimized_rls_policy_v2: {
         Args: {
+          p_action: string
+          p_role_name: string
           p_schema_name: string
           p_table_name: string
-          p_role_name: string
-          p_action: string
         }
         Returns: string
       }
@@ -4809,9 +4893,9 @@ export type Database = {
       get_algolia_sync_status: {
         Args: Record<PropertyKey, never>
         Returns: {
+          active: boolean
           jobname: string
           schedule: string
-          active: boolean
         }[]
       }
       get_booking_details: {
@@ -4821,35 +4905,35 @@ export type Database = {
       get_entity_attributes: {
         Args:
           | { entity_id_param: string; entity_type_param: string }
-          | { entity_type_param: string; entity_id_param: string }
+          | { entity_id_param: string; entity_type_param: string }
         Returns: {
-          attribute_id: string
-          attribute_name: string
+          attribute_category: string
           attribute_description: string
           attribute_icon: string
+          attribute_id: string
+          attribute_name: string
           attribute_type: string
-          attribute_category: string
         }[]
       }
       get_entity_tags: {
         Args:
           | { entity_id_param: string; entity_type_param: string }
-          | { entity_type_param: string; entity_id_param: string }
+          | { entity_id_param: string; entity_type_param: string }
         Returns: {
+          category_name: string
+          tag_color: string
+          tag_description: string
           tag_id: string
           tag_name: string
-          tag_description: string
-          tag_color: string
-          category_name: string
         }[]
       }
       get_news_cron_status: {
         Args: Record<PropertyKey, never>
         Returns: {
-          jobname: string
-          schedule: string
           active: boolean
           jobid: number
+          jobname: string
+          schedule: string
         }[]
       }
       get_or_create_direct_conversation: {
@@ -4865,9 +4949,9 @@ export type Database = {
           | { p_schema_name: string; p_table_name: string }
           | { table_name_param: string }
         Returns: {
+          command: string
           policy_name: string
           role_name: string
-          command: string
           using_expr: string
           with_check_expr: string
         }[]
@@ -4880,18 +4964,18 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
       identify_missing_rls_indexes: {
         Args: Record<PropertyKey, never> | { p_schema_name?: string }
         Returns: {
-          schema_name: string
-          table_name: string
           column_name: string
+          schema_name: string
           suggested_index_sql: string
+          table_name: string
         }[]
       }
       increment_article_views: {
@@ -4922,7 +5006,7 @@ export type Database = {
         Returns: boolean
       }
       is_group_member_or_admin: {
-        Args: { group_id: string; check_admin?: boolean }
+        Args: { check_admin?: boolean; group_id: string }
         Returns: boolean
       }
       jwt_claim: {
@@ -4932,44 +5016,44 @@ export type Database = {
       list_tables_with_multiple_policies: {
         Args: Record<PropertyKey, never>
         Returns: {
-          table_schema: string
-          table_name: string
-          role_name: string
           action_name: string
           policy_count: number
+          role_name: string
+          table_name: string
+          table_schema: string
         }[]
       }
       log_enhanced_security_event: {
         Args: {
           p_event_type: string
-          p_user_id: string
           p_metadata?: Json
           p_severity?: string
+          p_user_id: string
         }
         Returns: undefined
       }
       log_security_event: {
         Args:
-          | { event_type: string; user_id_param: string; details?: Json }
           | {
+              details?: Json
               event_type: string
-              user_id_param: string
               ip_address_param?: unknown
               user_agent_param?: string
-              details?: Json
+              user_id_param: string
             }
+          | { details?: Json; event_type: string; user_id_param: string }
         Returns: undefined
       }
       match_content_embeddings: {
         Args: {
+          match_count?: number
           query_embedding: string
           similarity_threshold?: number
-          match_count?: number
         }
         Returns: {
           content_id: string
-          content_type: string
           content_text: string
+          content_type: string
           metadata: Json
           similarity: number
         }[]
@@ -4977,17 +5061,17 @@ export type Database = {
       optimize_auth_uid_in_policies: {
         Args: { p_schema_name?: string }
         Returns: {
-          table_name: string
-          policy_name: string
-          original_definition: string
           optimized_definition: string
+          original_definition: string
+          policy_name: string
+          table_name: string
         }[]
       }
       optimize_auth_uid_in_policy: {
         Args: {
+          p_policy_name: string
           p_schema_name: string
           p_table_name: string
-          p_policy_name: string
         }
         Returns: string
       }
@@ -4997,8 +5081,8 @@ export type Database = {
       }
       revoke_role: {
         Args: {
-          target_user_id: string
           role_to_revoke: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
         }
         Returns: undefined
       }
@@ -5012,8 +5096,8 @@ export type Database = {
       }
       secure_assign_user_role: {
         Args: {
-          p_target_user_id: string
           p_role: Database["public"]["Enums"]["app_role"]
+          p_target_user_id: string
         }
         Returns: undefined
       }
