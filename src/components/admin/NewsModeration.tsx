@@ -45,10 +45,10 @@ export function NewsModeration() {
     featured: 0
   });
   const [cronStatus, setCronStatus] = useState<{
-    jobname: string;
-    schedule: string;
-    active: boolean;
-    jobid: number;
+    job_name: string;
+    last_run: string;
+    next_run: string;
+    status: string;
   } | null>(null);
 
   useEffect(() => {
@@ -235,9 +235,9 @@ export function NewsModeration() {
           
           {cronStatus && (
             <div className="flex items-center gap-2 text-sm">
-              <div className={`w-2 h-2 rounded-full ${cronStatus.active ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <div className={`w-2 h-2 rounded-full ${cronStatus.status === 'active' ? 'bg-green-500' : 'bg-red-500'}`}></div>
               <span className="text-muted-foreground">
-                Auto-fetch: {cronStatus.active ? 'Active' : 'Inactive'} ({cronStatus.schedule})
+                Auto-fetch: {cronStatus.status} (Last: {new Date(cronStatus.last_run).toLocaleString()})
               </span>
             </div>
           )}
