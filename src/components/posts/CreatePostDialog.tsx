@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useFormValidation } from '@/components/security/EnhancedFormValidator';
+import { useToast } from '@/hooks/use-toast';
 import { 
   PenSquare, 
   Image as ImageIcon, 
@@ -33,6 +35,8 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { createPost, isCreatingPost } = useCommunityPosts();
+  const { validateFormData } = useFormValidation();
+  const { toast } = useToast();
   
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState('');
@@ -46,8 +50,34 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
   const [mentions, setMentions] = useState<Array<{ user_id: string; username: string }>>([]);
   const [tags, setTags] = useState<string[]>([]);
 
-  const handleSubmit = () => {
-    if (!content.trim()) return;
+  const handleSubmit = async () => {
+    if (!content.trim()) {
+      toast({
+        title: "Error",
+        description: "Post content cannot be empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Enhanced security validation
+    const validationData = {
+      content,
+      linkTitle,
+      linkDescription,
+      linkUrl,
+      pollOptions: pollOptions.join(' ')
+    };
+
+    const validation = await validateFormData(validationData, ['content', 'linkTitle', 'linkDescription', 'linkUrl', 'pollOptions']);
+    if (!validation.isValid) {
+      toast({
+        title: "Content Validation Failed",
+        description: validation.errors.join(', '),
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Parse mentions and tags from content
     const mentionMatches = content.match(/@(\w+)/g);
@@ -73,6 +103,26 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
     }
 
     if (postType === 'link' && linkUrl) {
+      // Additional URL validation
+      try {
+        const url = new URL(linkUrl);
+        if (!['http:', 'https:'].includes(url.protocol)) {
+          toast({
+            title: "Invalid URL",
+            description: "Only HTTP and HTTPS URLs are allowed",
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch {
+        toast({
+          title: "Invalid URL",
+          description: "Please enter a valid URL",
+          variant: "destructive",
+        });
+        return;
+      }
+
       postData.link_url = linkUrl;
       postData.link_title = linkTitle;
       postData.link_description = linkDescription;
@@ -86,8 +136,20 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
       };
     }
 
-    createPost(postData);
-    handleClose();
+    try {
+      await createPost(postData);
+      toast({
+        title: "Success",
+        description: "Post created successfully!",
+      });
+      handleClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create post. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClose = () => {
@@ -223,7 +285,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="min-h-[120px] resize-none"
-              maxLength={2000}
+              maxLength={5000}
             />
             
             {/* Mention and Tag Hints */}
@@ -353,7 +415,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
           {/* Character count */}
           <div className="text-right text-xs text-muted-foreground">
-            {content.length}/2000 characters
+            {content.length}/5000 characters
           </div>
 
           {/* Actions */}

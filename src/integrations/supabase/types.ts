@@ -5142,7 +5142,7 @@ export type Database = {
         Args:
           | Record<PropertyKey, never>
           | { p_action: string; p_role_name: string; p_table_name: string }
-          | { p_schema_name: string; p_table_name: string }
+          | { schema_name: string; table_name: string }
         Returns: undefined
       }
       create_notification: {
