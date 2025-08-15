@@ -4,22 +4,17 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Eye, Calendar, MapPin, Check, AlertCircle } from "lucide-react";
 import { Personality } from "@/hooks/usePersonalities";
-
 interface PersonalityCardProps {
   personality: Personality;
   onClick?: () => void;
 }
-
-export function PersonalityCard({ personality, onClick }: PersonalityCardProps) {
+export function PersonalityCard({
+  personality,
+  onClick
+}: PersonalityCardProps) {
   const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
   };
-
   const getVerificationIcon = () => {
     switch (personality.verification_status) {
       case 'verified':
@@ -30,24 +25,18 @@ export function PersonalityCard({ personality, onClick }: PersonalityCardProps) 
         return null;
     }
   };
-
   const calculateAge = () => {
     if (!personality.birth_date) return null;
-    
     const birthDate = new Date(personality.birth_date);
     const endDate = personality.death_date ? new Date(personality.death_date) : new Date();
     const age = endDate.getFullYear() - birthDate.getFullYear();
-    
     return personality.is_living ? `${age} years old` : `${age} years`;
   };
-
   const handleCardClick = () => {
     // Navigate to detail page
     window.location.href = `/personalities/${personality.id}`;
   };
-
-  return (
-    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer" onClick={handleCardClick}>
+  return <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer" onClick={handleCardClick}>
       <CardHeader className="pb-3">
         <div className="flex items-start gap-4">
           <Avatar className="h-16 w-16">
@@ -63,90 +52,61 @@ export function PersonalityCard({ personality, onClick }: PersonalityCardProps) 
                 {personality.name}
               </h3>
               {getVerificationIcon()}
-              {personality.is_featured && (
-                <Badge variant="secondary" className="text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+              {personality.is_featured && <Badge variant="secondary" className="text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
                   Featured
-                </Badge>
-              )}
+                </Badge>}
             </div>
             
-            {personality.pronouns && (
-              <p className="text-sm text-muted-foreground mb-1">
+            {personality.pronouns && <p className="text-sm text-muted-foreground mb-1">
                 {personality.pronouns}
-              </p>
-            )}
+              </p>}
             
-            {personality.profession && (
-              <p className="text-sm font-medium text-foreground mb-2">
+            {personality.profession && <p className="text-sm font-medium text-foreground mb-2">
                 {personality.profession}
-              </p>
-            )}
+              </p>}
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="pt-0">
-        {personality.description && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
+        {personality.description && <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
             {personality.description}
-          </p>
-        )}
+          </p>}
 
-        {personality.fields && personality.fields.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {personality.fields.slice(0, 3).map((field, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
+        {personality.fields && personality.fields.length > 0 && <div className="flex flex-wrap gap-1 mb-3">
+            {personality.fields.slice(0, 3).map((field, index) => <Badge key={index} variant="outline" className="text-xs">
                 {field}
-              </Badge>
-            ))}
-            {personality.fields.length > 3 && (
-              <Badge variant="outline" className="text-xs">
+              </Badge>)}
+            {personality.fields.length > 3 && <Badge variant="outline" className="text-xs">
                 +{personality.fields.length - 3} more
-              </Badge>
-            )}
-          </div>
-        )}
+              </Badge>}
+          </div>}
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
-            {personality.birth_date && (
-              <div className="flex items-center gap-1">
+            {personality.birth_date && <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 <span>{calculateAge()}</span>
-              </div>
-            )}
+              </div>}
             
-            {personality.nationality && (
-              <div className="flex items-center gap-1">
+            {personality.nationality && <div className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
                 <span>{personality.nationality}</span>
-              </div>
-            )}
+              </div>}
           </div>
 
-          <div className="flex items-center gap-1">
-            <Eye className="h-3 w-3" />
-            <span>{personality.view_count}</span>
-          </div>
+          
         </div>
 
-        {personality.website_url && (
-          <div className="mt-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={(e) => {
-                e.stopPropagation();
-                window.open(personality.website_url, '_blank');
-              }}
-            >
+        {personality.website_url && <div className="mt-3">
+            <Button variant="outline" size="sm" className="w-full" onClick={e => {
+          e.stopPropagation();
+          window.open(personality.website_url, '_blank');
+        }}>
               <ExternalLink className="h-4 w-4 mr-2" />
               Visit Website
             </Button>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
