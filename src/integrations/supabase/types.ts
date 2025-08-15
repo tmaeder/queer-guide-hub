@@ -2724,6 +2724,7 @@ export type Database = {
           pronouns: string | null
           social_links: Json | null
           tags: string[] | null
+          top_book: string | null
           updated_at: string
           verification_status: string | null
           view_count: number | null
@@ -2750,6 +2751,7 @@ export type Database = {
           pronouns?: string | null
           social_links?: Json | null
           tags?: string[] | null
+          top_book?: string | null
           updated_at?: string
           verification_status?: string | null
           view_count?: number | null
@@ -2776,6 +2778,7 @@ export type Database = {
           pronouns?: string | null
           social_links?: Json | null
           tags?: string[] | null
+          top_book?: string | null
           updated_at?: string
           verification_status?: string | null
           view_count?: number | null
