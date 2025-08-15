@@ -67,7 +67,6 @@ export function Header() {
       icon: Globe,
       label: "Places"
     }, {
-    }, {
       to: "/venues",
       icon: MapPin,
       label: "Spaces"
