@@ -1025,6 +1025,33 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_job_logs: {
+        Row: {
+          created_at: string | null
+          error_details: string | null
+          id: string
+          job_name: string
+          message: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_details?: string | null
+          id?: string
+          job_name: string
+          message?: string | null
+          status: string
+        }
+        Update: {
+          created_at?: string | null
+          error_details?: string | null
+          id?: string
+          job_name?: string
+          message?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       currencies: {
         Row: {
           code: string
@@ -5146,6 +5173,10 @@ export type Database = {
           role_to_revoke: Database["public"]["Enums"]["app_role"]
           target_user_id: string
         }
+        Returns: undefined
+      }
+      run_daily_ilga_import: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       sanitize_payment_data: {
