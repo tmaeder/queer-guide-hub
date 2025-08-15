@@ -133,8 +133,8 @@ export function SecurityMonitoringDashboard() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded">
-              <Activity className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <div className="p-2 bg-muted rounded-lg">
+              <Activity className="h-4 w-4 text-foreground" />
             </div>
             <div>
               <p className="text-sm font-medium">Total Security Events</p>
@@ -146,8 +146,8 @@ export function SecurityMonitoringDashboard() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-100 dark:bg-red-900 rounded">
-              <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+            <div className="p-2 bg-destructive/10 rounded-lg">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
             </div>
             <div>
               <p className="text-sm font-medium">Failed Login Attempts</p>
@@ -159,8 +159,8 @@ export function SecurityMonitoringDashboard() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 dark:bg-green-900 rounded">
-              <Shield className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <div className="p-2 bg-success/10 rounded-lg">
+              <Shield className="h-4 w-4 text-success" />
             </div>
             <div>
               <p className="text-sm font-medium">CAPTCHA Verifications</p>
@@ -270,7 +270,7 @@ export function SecurityMonitoringDashboard() {
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {recentFailedLogins.map((attempt: any) => (
                 <div key={attempt.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <AlertTriangle className="h-4 w-4 mt-1 text-red-500" />
+                  <AlertTriangle className="h-4 w-4 mt-1 text-destructive" />
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm">

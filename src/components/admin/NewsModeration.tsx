@@ -235,7 +235,7 @@ export function NewsModeration() {
           
           {cronStatus && (
             <div className="flex items-center gap-2 text-sm">
-              <div className={`w-2 h-2 rounded-full ${cronStatus.status === 'active' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <div className={`w-2 h-2 rounded-lg ${cronStatus.status === 'active' ? 'bg-success' : 'bg-destructive'}`}></div>
               <span className="text-muted-foreground">
                 Auto-fetch: {cronStatus.status} (Last: {new Date(cronStatus.last_run).toLocaleString()})
               </span>

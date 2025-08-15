@@ -63,12 +63,12 @@ export default function PreferencesStep({ data, updateData }: PreferencesStepPro
     updateData({ interests: updated });
   };
 
-  const removeLookingFor = (option: string) => {
+  const deleteLookingFor = (option: string) => {
     const updated = (data.lookingFor || []).filter(item => item !== option);
     updateData({ lookingFor: updated });
   };
 
-  const removeInterest = (option: string) => {
+  const deleteInterest = (option: string) => {
     const updated = (data.interests || []).filter(item => item !== option);
     updateData({ interests: updated });
   };
@@ -94,7 +94,7 @@ export default function PreferencesStep({ data, updateData }: PreferencesStepPro
                   {option}
                   <X 
                     className="ml-1 h-3 w-3" 
-                    onClick={() => removeLookingFor(option)}
+                    onClick={() => deleteLookingFor(option)}
                   />
                 </Badge>
               ))}
@@ -131,7 +131,7 @@ export default function PreferencesStep({ data, updateData }: PreferencesStepPro
                   {interest}
                   <X 
                     className="ml-1 h-3 w-3" 
-                    onClick={() => removeInterest(interest)}
+                    onClick={() => deleteInterest(interest)}
                   />
                 </Badge>
               ))}
@@ -176,7 +176,7 @@ export default function PreferencesStep({ data, updateData }: PreferencesStepPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="locationRadius">Location Preferences</Label>
+            <Label htmlFor="locationRadius">Location Settings</Label>
             <Select value={data.locationRadius} onValueChange={(value) => updateData({ locationRadius: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="How far are you willing to travel?" />

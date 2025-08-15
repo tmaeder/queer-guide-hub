@@ -301,7 +301,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                     {job.import_summary && Object.keys(job.import_summary).length > 0 && (
                       <div>
                         <h4 className="font-medium mb-2">Import Details</h4>
-                        <pre className="text-sm bg-muted p-3 rounded-md overflow-auto">
+                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
                           {JSON.stringify(job.import_summary, null, 2)}
                         </pre>
                       </div>
@@ -320,21 +320,21 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                 <CardContent>
                   {loading ? (
                     <div className="text-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+                      <div className="animate-spin rounded-lg h-8 w-8 bg-primary mx-auto mb-4" />
                       <p>Loading validation results...</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <div className="grid grid-cols-3 gap-4">
-                        <div className="text-center p-4 border rounded-lg bg-success/5">
+                        <div className="text-center p-4 rounded-lg bg-success/5">
                           <div className="text-xl font-bold text-success">{job.valid_records}</div>
                           <div className="text-sm text-muted-foreground">Valid Records</div>
                         </div>
-                        <div className="text-center p-4 border rounded-lg bg-destructive/5">
+                        <div className="text-center p-4 rounded-lg bg-destructive/5">
                           <div className="text-xl font-bold text-destructive">{job.invalid_records}</div>
                           <div className="text-sm text-muted-foreground">Invalid Records</div>
                         </div>
-                        <div className="text-center p-4 border rounded-lg">
+                        <div className="text-center p-4 rounded-lg">
                           <div className="text-xl font-bold">{validationResults.length}</div>
                           <div className="text-sm text-muted-foreground">Validation Details</div>
                         </div>
@@ -343,7 +343,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                       {job.validation_report && Object.keys(job.validation_report).length > 0 && (
                         <div>
                           <h4 className="font-medium mb-2">Validation Summary</h4>
-                          <pre className="text-sm bg-muted p-3 rounded-md overflow-auto max-h-40">
+                          <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto max-h-40">
                             {JSON.stringify(job.validation_report, null, 2)}
                           </pre>
                         </div>
@@ -384,7 +384,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                         .filter(r => !r.is_valid)
                         .slice(0, 20) // Show first 20 errors
                         .map((result, index) => (
-                          <div key={index} className="border rounded-lg p-3">
+                          <div key={index} className="rounded-lg p-3">
                             <div className="flex items-center justify-between mb-2">
                               <Badge variant="destructive">Record {result.record_index}</Badge>
                               <div className="text-sm text-muted-foreground">
@@ -415,22 +415,24 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                             )}
 
                             <details className="mt-2">
-                              <summary className="text-sm font-medium cursor-pointer">Record Data</summary>
-                              <pre className="text-xs bg-muted p-2 rounded mt-1 overflow-auto">
+                              <summary className="text-xs text-muted-foreground cursor-pointer">View record data</summary>
+                              <pre className="text-xs bg-muted p-2 mt-1 rounded-lg overflow-x-auto">
                                 {JSON.stringify(result.record_data, null, 2)}
                               </pre>
                             </details>
                           </div>
                         ))}
-                      
-                      {validationResults.filter(r => !r.is_valid).length > 20 && (
-                        <Alert>
-                          <Info className="h-4 w-4" />
-                          <AlertDescription>
-                            Showing first 20 errors. Export the full error report for complete details.
-                          </AlertDescription>
-                        </Alert>
-                      )}
+                    </div>
+                  )}
+
+                  {job.error_report && Object.keys(job.error_report).length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="font-medium mb-2">Error Summary</h4>
+                      <div className="bg-destructive/5 p-3 rounded-lg">
+                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
+                          {JSON.stringify(job.error_report, null, 2)}
+                        </pre>
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -440,40 +442,24 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
             <TabsContent value="configuration" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Import Configuration</CardTitle>
-                  <CardDescription>Settings and parameters used for this import</CardDescription>
+                  <CardTitle>Job Configuration</CardTitle>
+                  <CardDescription>Import settings and validation rules</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-2">Duplicate Strategy</h4>
-                      <Badge variant="outline">{job.duplicate_strategy}</Badge>
-                    </div>
-
-                    {job.unique_key_fields.length > 0 && (
-                      <div>
-                        <h4 className="font-medium mb-2">Unique Key Fields</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {job.unique_key_fields.map((field, index) => (
-                            <Badge key={index} variant="secondary">{field}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {Object.keys(job.validation_rules).length > 0 && (
+                    {job.validation_rules && Object.keys(job.validation_rules).length > 0 && (
                       <div>
                         <h4 className="font-medium mb-2">Validation Rules</h4>
-                        <pre className="text-sm bg-muted p-3 rounded-md overflow-auto">
+                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
                           {JSON.stringify(job.validation_rules, null, 2)}
                         </pre>
                       </div>
                     )}
 
-                    {Object.keys(job.filters).length > 0 && (
+                    {job.filters && Object.keys(job.filters).length > 0 && (
                       <div>
                         <h4 className="font-medium mb-2">Applied Filters</h4>
-                        <pre className="text-sm bg-muted p-3 rounded-md overflow-auto">
+                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
                           {JSON.stringify(job.filters, null, 2)}
                         </pre>
                       </div>

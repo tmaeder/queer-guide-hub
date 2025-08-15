@@ -78,14 +78,14 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
   };
 
   return (
-    <Card className="group relative overflow-hidden bg-gradient-to-br from-card to-card/80 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-2 border-0 ring-1 ring-border/50 hover:ring-primary/20">
+    <Card className="group relative overflow-hidden bg-card hover:opacity-90 transition-opacity duration-500">
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/[0.02] to-primary/[0.05] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute inset-0 bg-primary/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
       {/* Event Images */}
       {event.images && event.images.length > 0 ? (
         <div className="relative h-56 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
+          <div className="absolute inset-0 bg-foreground/20 z-10" />
           <img
             src={event.images[0]}
             alt={event.title}
@@ -100,13 +100,13 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
           <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start">
             <div className="flex gap-2">
               {event.featured && (
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg">
+                <Badge className="bg-primary text-primary-foreground">
                   <Star className="h-3 w-3 mr-1" />
                   Featured
                 </Badge>
               )}
               <Badge className={cn(
-                "backdrop-blur-sm border-0 shadow-lg",
+                "bg-muted text-foreground",
                 getEventTypeColor(event.event_type)
               )}>
                 {event.event_type}
@@ -115,7 +115,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
             
             <div className="flex items-center gap-2">
               {event.images.length > 1 && (
-                <Badge variant="secondary" className="backdrop-blur-sm bg-black/20 text-white border-0">
+                <Badge variant="secondary" className="bg-muted text-foreground">
                   +{event.images.length - 1} photos
                 </Badge>
               )}
@@ -125,12 +125,12 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
           {/* Price Badge */}
           <div className="absolute bottom-4 right-4 z-20">
             {event.is_free ? (
-              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg text-sm px-3 py-1">
+              <Badge className="bg-success text-success-foreground text-sm px-3 py-1">
                 <Ticket className="h-3 w-3 mr-1" />
                 Free
               </Badge>
             ) : (
-              <Badge variant="secondary" className="backdrop-blur-sm bg-black/40 text-white border-0 shadow-lg text-sm px-3 py-1">
+              <Badge variant="secondary" className="bg-muted text-foreground text-sm px-3 py-1">
                 <DollarSign className="h-3 w-3 mr-1" />
                 {getPriceDisplay()}
               </Badge>
@@ -139,14 +139,14 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
         </div>
       ) : (
         // Placeholder for events without images
-        <div className="relative h-56 bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center">
+        <div className="relative h-56 bg-primary/10 flex items-center justify-center">
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 mx-auto bg-primary/20 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto bg-primary/20 rounded-lg flex items-center justify-center">
               <Calendar className="h-8 w-8 text-primary" />
             </div>
             <div className="flex gap-2 justify-center">
               {event.featured && (
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+                <Badge className="bg-primary text-primary-foreground">
                   <Star className="h-3 w-3 mr-1" />
                   Featured
                 </Badge>
@@ -160,12 +160,12 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
           {/* Price Badge for no-image cards */}
           <div className="absolute bottom-4 right-4">
             {event.is_free ? (
-              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg">
+              <Badge className="bg-success text-success-foreground">
                 <Ticket className="h-3 w-3 mr-1" />
                 Free
               </Badge>
             ) : (
-              <Badge variant="outline" className="bg-background/80 backdrop-blur-sm">
+              <Badge variant="outline" className="bg-background">
                 <DollarSign className="h-3 w-3 mr-1" />
                 {getPriceDisplay()}
               </Badge>
@@ -182,11 +182,11 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
         {/* Date and Time Info */}
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-full">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-lg">
               <Calendar className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">{formatEventDate(event.start_date, event.end_date)}</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
             </div>
@@ -224,7 +224,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
         <div className="flex items-center justify-between py-2">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-primary/10 rounded-full">
+              <div className="p-1.5 bg-primary/10 rounded-lg">
                 <Users className="h-3 w-3 text-primary" />
               </div>
               <span className="text-sm font-medium">{attendeeCount} attending</span>
@@ -263,7 +263,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
               </Button>
             )}
             {event.ticket_url && (
-              <Button size="sm" variant="default" className="px-3 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70" asChild>
+              <Button size="sm" variant="default" className="px-3 bg-primary hover:opacity-90" asChild>
                 <a href={event.ticket_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                   <Ticket className="h-4 w-4" />
                 </a>
@@ -278,7 +278,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
             <Button 
               size="sm" 
               variant="default" 
-              className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0"
+              className="flex-1 bg-success text-success-foreground hover:opacity-90"
               onClick={(e) => {
                 e.stopPropagation();
                 onUpdateAttendance(event.id, 'going');
@@ -290,7 +290,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
             <Button 
               size="sm" 
               variant="outline" 
-              className="flex-1 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300"
+              className="flex-1 hover:opacity-90"
               onClick={(e) => {
                 e.stopPropagation();
                 onUpdateAttendance(event.id, 'interested');
@@ -311,7 +311,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
       </CardContent>
 
       {/* Hover Glow Effect */}
-      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="absolute inset-0 rounded-lg bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
     </Card>
   );
 }
