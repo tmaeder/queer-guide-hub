@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, MapPin, Globe, Users, Building2, Calendar, Star, Heart, TrendingUp, MapIcon } from "lucide-react";
+import { ArrowLeft, MapPin, Globe, Users, Building2, Calendar, Star, Heart, TrendingUp, MapIcon, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,8 @@ import LGBTJurisdictionInfo from "@/components/country/LGBTJurisdictionInfo";
 import { useOptimizedCountry, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
 import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
 import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
+import { useNews } from "@/hooks/useNews";
+import { NewsCard } from "@/components/news/NewsCard";
 
 export default function CountryDetail() {
   const { id: countryId } = useParams<{ id: string }>();
@@ -70,7 +72,18 @@ export default function CountryDetail() {
     limit: 12 
   });
 
-  const loading = countryLoading || citiesLoading || venuesLoading || cityVenuesLoading || eventsLoading;
+  // Fetch local news for this country
+  const { articles: localNews, loading: newsLoading, incrementViews } = useNews();
+  const countryNews = useMemo(() => {
+    if (!localNews || !country) return [];
+    return localNews.filter(article => 
+      article.country_ids?.includes(country.id) ||
+      article.title.toLowerCase().includes(country.name.toLowerCase()) ||
+      article.content?.toLowerCase().includes(country.name.toLowerCase())
+    ).slice(0, 12);
+  }, [localNews, country]);
+
+  const loading = countryLoading || citiesLoading || venuesLoading || cityVenuesLoading || eventsLoading || newsLoading;
 
   if (loading) {
     return (
@@ -248,7 +261,7 @@ export default function CountryDetail() {
         <Card className="border-muted/30 shadow-sm">
           <CardContent className="p-6">
             <Tabs defaultValue="cities" className="space-y-8">
-              <TabsList className="grid w-full max-w-lg grid-cols-4 mx-auto h-12 bg-muted/50">
+              <TabsList className="grid w-full max-w-2xl grid-cols-5 mx-auto h-12 bg-muted/50">
                 <TabsTrigger value="cities" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <Building2 className="h-4 w-4" />
                   <span className="hidden sm:inline">Cities</span>
@@ -260,6 +273,10 @@ export default function CountryDetail() {
                 <TabsTrigger value="events" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <Calendar className="h-4 w-4" />
                   <span className="hidden sm:inline">Events</span>
+                </TabsTrigger>
+                <TabsTrigger value="news" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  <Newspaper className="h-4 w-4" />
+                  <span className="hidden sm:inline">News</span>
                 </TabsTrigger>
                 <TabsTrigger value="info" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <Globe className="h-4 w-4" />
@@ -380,6 +397,46 @@ export default function CountryDetail() {
                         <div>
                           <h3 className="text-lg font-semibold">No upcoming events</h3>
                           <p className="text-muted-foreground">No events are currently scheduled for this country.</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              {/* News Tab */}
+              <TabsContent value="news" className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold tracking-tight">Local News</h2>
+                    <p className="text-muted-foreground mt-1">Stay updated with the latest news from {country.name}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-sm px-3 py-1">
+                    {countryNews.length} articles
+                  </Badge>
+                </div>
+                
+                {countryNews.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     {countryNews.map((article) => (
+                       <div key={article.id} className="group transform transition-all duration-200 hover:scale-105">
+                         <NewsCard
+                           article={article}
+                           onViewArticle={incrementViews}
+                         />
+                       </div>
+                     ))}
+                  </div>
+                ) : (
+                  <Card className="border-dashed border-2 border-muted/50">
+                    <CardContent className="text-center py-16">
+                      <div className="space-y-4">
+                        <div className="p-4 bg-muted/30 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
+                          <Newspaper className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold">No local news found</h3>
+                          <p className="text-muted-foreground">No news articles are currently available for {country.name}.</p>
                         </div>
                       </div>
                     </CardContent>
