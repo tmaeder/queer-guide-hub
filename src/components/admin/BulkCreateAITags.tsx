@@ -13,6 +13,7 @@ interface BulkCreateResult {
   tag?: any;
   category?: string;
   description?: string;
+  image_url?: string;
   error?: string;
 }
 
@@ -161,6 +162,11 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
                         {result.category && (
                           <div className="text-xs text-muted-foreground mt-1">
                             Category: {result.category}
+                          </div>
+                        )}
+                        {result.image_url && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            <img src={result.image_url} alt={result.term} className="w-16 h-12 object-cover rounded mt-1" />
                           </div>
                         )}
                         {result.description && (
