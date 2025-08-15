@@ -2,11 +2,12 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Users, Clock, DollarSign, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, DollarSign, ExternalLink, Star, Ticket, Heart, Eye } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { FavoriteButton } from '@/components/ui/favorite-button';
+import { cn } from '@/lib/utils';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -77,153 +78,240 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
   };
 
   return (
-    <Card className="group hover:shadow-elegant transition-all duration-300">
+    <Card className="group relative overflow-hidden bg-gradient-to-br from-card to-card/80 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-2 border-0 ring-1 ring-border/50 hover:ring-primary/20">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/[0.02] to-primary/[0.05] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      
       {/* Event Images */}
-      {event.images && event.images.length > 0 && (
-        <div className="relative h-48 overflow-hidden rounded-t-lg">
+      {event.images && event.images.length > 0 ? (
+        <div className="relative h-56 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
           <img
             src={event.images[0]}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
             }}
           />
-          {event.images.length > 1 && (
-            <div className="absolute top-2 right-2 bg-background/90 text-foreground text-xs px-2 py-1 rounded border">
-              +{event.images.length - 1} more
-            </div>
-          )}
-        </div>
-      )}
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
-              {event.title}
+          
+          {/* Image Overlay Content */}
+          <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start">
+            <div className="flex gap-2">
               {event.featured && (
-                <Badge variant="secondary" className="ml-2 text-xs">
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg">
+                  <Star className="h-3 w-3 mr-1" />
                   Featured
                 </Badge>
               )}
-            </CardTitle>
-            <div className="flex items-center gap-2 mt-2 text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              <span className="text-sm">{formatEventDate(event.start_date, event.end_date)}</span>
+              <Badge className={cn(
+                "backdrop-blur-sm border-0 shadow-lg",
+                getEventTypeColor(event.event_type)
+              )}>
+                {event.event_type}
+              </Badge>
             </div>
-            <div className="flex items-center gap-2 mt-1 text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
+            
+            <div className="flex items-center gap-2">
+              {event.images.length > 1 && (
+                <Badge variant="secondary" className="backdrop-blur-sm bg-black/20 text-white border-0">
+                  +{event.images.length - 1} photos
+                </Badge>
+              )}
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <Badge className={getEventTypeColor(event.event_type)}>
-              {event.event_type}
-            </Badge>
+
+          {/* Price Badge */}
+          <div className="absolute bottom-4 right-4 z-20">
             {event.is_free ? (
-              <Badge variant="outline" className="text-accent">
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg text-sm px-3 py-1">
+                <Ticket className="h-3 w-3 mr-1" />
                 Free
               </Badge>
             ) : (
-              <div className="flex items-center gap-1 text-sm">
-                <DollarSign className="h-3 w-3" />
-                <span>{getPriceDisplay()}</span>
-              </div>
+              <Badge variant="secondary" className="backdrop-blur-sm bg-black/40 text-white border-0 shadow-lg text-sm px-3 py-1">
+                <DollarSign className="h-3 w-3 mr-1" />
+                {getPriceDisplay()}
+              </Badge>
             )}
+          </div>
+        </div>
+      ) : (
+        // Placeholder for events without images
+        <div className="relative h-56 bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 mx-auto bg-primary/20 rounded-full flex items-center justify-center">
+              <Calendar className="h-8 w-8 text-primary" />
+            </div>
+            <div className="flex gap-2 justify-center">
+              {event.featured && (
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+                  <Star className="h-3 w-3 mr-1" />
+                  Featured
+                </Badge>
+              )}
+              <Badge className={getEventTypeColor(event.event_type)}>
+                {event.event_type}
+              </Badge>
+            </div>
+          </div>
+          
+          {/* Price Badge for no-image cards */}
+          <div className="absolute bottom-4 right-4">
+            {event.is_free ? (
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg">
+                <Ticket className="h-3 w-3 mr-1" />
+                Free
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="bg-background/80 backdrop-blur-sm">
+                <DollarSign className="h-3 w-3 mr-1" />
+                {getPriceDisplay()}
+              </Badge>
+            )}
+          </div>
+        </div>
+      )}
+
+      <CardHeader className="relative z-10 space-y-4 pb-4">
+        <CardTitle className="text-xl font-bold leading-tight group-hover:text-primary transition-colors duration-300 line-clamp-2">
+          {event.title}
+        </CardTitle>
+        
+        {/* Date and Time Info */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-full">
+              <Calendar className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">{formatEventDate(event.start_date, event.end_date)}</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
+            </div>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="relative z-10 space-y-4 pt-0">
+        {/* Description */}
         {event.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
             {event.description}
           </p>
         )}
 
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <MapPin className="h-3 w-3" />
-          <span className="text-sm">
-            {event.venues?.name || event.venue_name || 'Location TBA'} • {event.city}, {event.state}
-          </span>
-        </div>
-
-        {event.venues && (
-          <div className="text-xs text-muted-foreground">
-            {event.venues.address}
-            {event.venues.phone && (
-              <span className="ml-2">• {event.venues.phone}</span>
+        {/* Location */}
+        <div className="flex items-start gap-2 p-3 bg-muted/30 rounded-lg">
+          <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">
+              {event.venues?.name || event.venue_name || 'Location TBA'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {event.city}, {event.state}
+            </p>
+            {event.venues?.address && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {event.venues.address}
+              </p>
             )}
           </div>
-        )}
+        </div>
 
-        {/* Tags will be loaded via unified tag assignments - remove for now */}
-
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-2">
-            <FavoriteButton itemId={event.id} type="event" />
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Users className="h-3 w-3" />
-              <span>{attendeeCount} going</span>
+        {/* Event Stats */}
+        <div className="flex items-center justify-between py-2">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-primary/10 rounded-full">
+                <Users className="h-3 w-3 text-primary" />
+              </div>
+              <span className="text-sm font-medium">{attendeeCount} attending</span>
             </div>
+            
             {event.age_restriction && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs bg-muted/50">
                 {event.age_restriction}
               </Badge>
             )}
           </div>
           
+          <FavoriteButton itemId={event.id} type="event" />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-2 pt-4 border-t border-border/50">
+          <Link to={`/events/${event.id}`} className="flex-1">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="w-full hover:bg-primary hover:text-primary-foreground transition-all duration-300 group/btn"
+            >
+              <Eye className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform" />
+              View Details
+            </Button>
+          </Link>
+          
+          {/* External Links */}
           <div className="flex gap-1">
             {event.venues?.website && (
-              <Button size="sm" variant="outline" className="h-6 w-6 p-0" asChild>
+              <Button size="sm" variant="outline" className="px-3 hover:bg-primary/10" asChild>
                 <a href={event.venues.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                  <ExternalLink className="h-3 w-3" />
+                  <ExternalLink className="h-4 w-4" />
                 </a>
               </Button>
             )}
             {event.ticket_url && (
-              <Button size="sm" variant="outline" className="h-6 w-6 p-0" asChild>
+              <Button size="sm" variant="default" className="px-3 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70" asChild>
                 <a href={event.ticket_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                  <ExternalLink className="h-3 w-3" />
+                  <Ticket className="h-4 w-4" />
                 </a>
               </Button>
             )}
-            <Link to={`/events/${event.id}`}>
-              <Button size="sm" variant="outline" className="text-xs">
-                View Details
-              </Button>
-            </Link>
           </div>
         </div>
 
+        {/* Attendance Buttons */}
         {onUpdateAttendance && (
           <div className="flex gap-2 pt-2">
             <Button 
               size="sm" 
-              variant="outline" 
-              className="flex-1 text-xs"
+              variant="default" 
+              className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0"
               onClick={(e) => {
                 e.stopPropagation();
                 onUpdateAttendance(event.id, 'going');
               }}
             >
-              Going
+              <Heart className="h-4 w-4 mr-2" />
+              I'm Going
             </Button>
             <Button 
               size="sm" 
               variant="outline" 
-              className="flex-1 text-xs"
+              className="flex-1 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300"
               onClick={(e) => {
                 e.stopPropagation();
                 onUpdateAttendance(event.id, 'interested');
               }}
             >
+              <Star className="h-4 w-4 mr-2" />
               Interested
             </Button>
           </div>
         )}
+
+        {/* Venue Contact Info */}
+        {event.venues?.phone && (
+          <div className="text-xs text-muted-foreground pt-2 border-t border-border/30">
+            <span>Contact: {event.venues.phone}</span>
+          </div>
+        )}
       </CardContent>
+
+      {/* Hover Glow Effect */}
+      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
     </Card>
   );
 }
