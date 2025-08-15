@@ -1322,10 +1322,14 @@ export default function AdminDashboard() {
                     {/* Quick Actions */}
                     <div>
                       <h3 className="font-semibold mb-3">Quick Actions</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <Button variant="outline" size="sm" onClick={() => navigate("/admin/users")}>
                           <Users className="h-4 w-4 mr-2" />
                           Manage Users
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => navigate("/admin/personalities")}>
+                          <UserCheck className="h-4 w-4 mr-2" />
+                          Personalities
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => navigate("/admin/groups")}>
                           <Users className="h-4 w-4 mr-2" />

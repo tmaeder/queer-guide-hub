@@ -66,6 +66,7 @@ const AdminEvents = lazy(() => import("./pages/AdminEvents"));
 const AdminMarketplace = lazy(() => import("./pages/AdminMarketplace"));
 const AdminNewsSources = lazy(() => import("./pages/AdminNewsSources"));
 const EmailTemplates = lazy(() => import("./pages/admin/EmailTemplates"));
+const AdminPersonalities = lazy(() => import("./pages/AdminPersonalities"));
 const AdminImportHub = lazy(() => import("./pages/AdminImportHub"));
 const News = lazy(() => import("./pages/News"));
 
@@ -244,8 +245,13 @@ const App = () => {
                      <AdminRouteGuard requiredRole="admin">
                        <EmailTemplates />
                      </AdminRouteGuard>
-                   } />
-                   <Route path="/admin/import-hub" element={
+                    } />
+                    <Route path="/admin/personalities" element={
+                      <AdminRouteGuard>
+                        <AdminPersonalities />
+                      </AdminRouteGuard>
+                    } />
+                    <Route path="/admin/import-hub" element={
                      <AdminRouteGuard>
                        <AdminImportHub />
                      </AdminRouteGuard>
