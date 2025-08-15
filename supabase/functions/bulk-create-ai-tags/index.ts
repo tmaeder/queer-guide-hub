@@ -83,6 +83,7 @@ serve(async (req) => {
             category: aiResponse.category,
             description: aiResponse.description,
             image_url: imageUrl,
+            wikipedia_url: wikiData.url,
             usage_count: 0
           })
           .select()
@@ -102,7 +103,8 @@ serve(async (req) => {
             tag: newTag,
             category: aiResponse.category,
             description: aiResponse.description,
-            image_url: imageUrl
+            image_url: imageUrl,
+            wikipedia_url: wikiData.url
           });
         }
 

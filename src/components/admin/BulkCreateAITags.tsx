@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Sparkles, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Loader2, Sparkles, CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 
@@ -14,6 +14,7 @@ interface BulkCreateResult {
   category?: string;
   description?: string;
   image_url?: string;
+  wikipedia_url?: string;
   error?: string;
 }
 
@@ -173,6 +174,17 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
                           <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
                             {result.description}
                           </div>
+                        )}
+                        {result.wikipedia_url && (
+                          <a
+                            href={result.wikipedia_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline mt-1 inline-flex items-center gap-1"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Wikipedia
+                          </a>
                         )}
                         {result.error && (
                           <div className="text-xs text-destructive mt-1">
