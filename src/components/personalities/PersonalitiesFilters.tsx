@@ -55,8 +55,7 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
     onFiltersChange({});
   };
 
-  const hasActiveFilters = searchTerm || selectedFields.length > 0 || 
-    filters.verification_status || filters.is_living !== undefined || filters.featured_only;
+  const hasActiveFilters = searchTerm || selectedFields.length > 0 || filters.is_living !== undefined;
 
   return (
     <Card>
@@ -94,37 +93,6 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
           </div>
         </div>
 
-        {/* Quick Filters */}
-        <div className="space-y-3">
-          <Label>Quick Filters</Label>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={filters.featured_only ? "default" : "outline"}
-              size="sm"
-              onClick={() => onFiltersChange({ 
-                ...filters, 
-                featured_only: !filters.featured_only || undefined 
-              })}
-              className="flex items-center gap-1"
-            >
-              <Star className="h-4 w-4" />
-              Featured
-            </Button>
-            
-            <Button
-              variant={filters.verification_status === 'verified' ? "default" : "outline"}
-              size="sm"
-              onClick={() => onFiltersChange({ 
-                ...filters, 
-                verification_status: filters.verification_status === 'verified' ? undefined : 'verified'
-              })}
-              className="flex items-center gap-1"
-            >
-              <CheckCircle className="h-4 w-4" />
-              Verified
-            </Button>
-          </div>
-        </div>
 
         {/* Living Status */}
         <div className="space-y-3">
