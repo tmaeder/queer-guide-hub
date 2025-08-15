@@ -3,8 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { useBackgroundImports, BackgroundJob } from "@/hooks/useBackgroundImports";
-import { RefreshCw, CheckCircle, AlertCircle, Clock, Pause, Play, X, Trash2 } from "lucide-react";
+import { useBackgroundImports, BackgroundJob, ImportConfig } from "@/hooks/useBackgroundImports";
+import { AdvancedImportDialog } from "./AdvancedImportDialog";
+import { RefreshCw, CheckCircle, AlertCircle, Clock, Pause, Play, X, Trash2, Settings, TrendingUp, TrendingDown, Users } from "lucide-react";
 
 interface BackgroundImportManagerProps {
   onJobUpdate?: (job: BackgroundJob) => void;
@@ -81,69 +82,126 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
     };
 
     return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <RefreshCw className="h-5 w-5" />
-                Background Import Jobs
-              </CardTitle>
-              <CardDescription>
-                Reliable, batched imports running in the background (default batch size: 5 items)
-              </CardDescription>
-              <div className="flex gap-4 mt-2 text-sm">
-                <span className="text-muted-foreground">
-                  Total: <span className="font-medium">{stats.totalJobs}</span>
-                </span>
-                <span className="text-green-600">
-                  Completed: <span className="font-medium">{stats.completedJobs}</span>
-                </span>
-                <span className="text-red-600">
-                  Failed: <span className="font-medium">{stats.failedJobs}</span>
-                </span>
-                <span className="text-blue-600">
-                  Running: <span className="font-medium">{stats.runningJobs}</span>
-                </span>
+      <div className="space-y-6">
+        {/* Enhanced Statistics Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
+                  <Users className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Jobs</p>
+                  <p className="text-xl font-bold">{stats.totalJobs}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Successful Items</p>
+                  <p className="text-xl font-bold text-green-600">{stats.totalSuccessfulItems}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
+                  <TrendingDown className="h-4 w-4 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Failed Items</p>
+                  <p className="text-xl font-bold text-red-600">{stats.totalFailedItems}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/20">
+                  <AlertCircle className="h-4 w-4 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Duplicates</p>
+                  <p className="text-xl font-bold text-orange-600">{stats.totalDuplicateItems}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <RefreshCw className="h-5 w-5" />
+                  Background Import Jobs
+                </CardTitle>
+                <CardDescription>
+                  Reliable, batched imports with duplicate detection and error handling
+                </CardDescription>
+                <div className="flex gap-4 mt-2 text-sm">
+                  <span className="text-green-600">
+                    Completed: <span className="font-medium">{stats.completedJobs}</span>
+                  </span>
+                  <span className="text-red-600">
+                    Failed: <span className="font-medium">{stats.failedJobs}</span>
+                  </span>
+                  <span className="text-blue-600">
+                    Running: <span className="font-medium">{stats.runningJobs}</span>
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={cleanupOldJobs}
+                  disabled={loading}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Cleanup
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={togglePolling}
+                >
+                  {isPolling ? 'Pause' : 'Resume'} Polling
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={refreshJobs}
+                  disabled={loading}
+                >
+                  <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                </Button>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={cleanupOldJobs}
-                disabled={loading}
-              >
-                <Trash2 className="h-4 w-4" />
-                Cleanup
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={togglePolling}
-              >
-                {isPolling ? 'Pause' : 'Resume'} Polling
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={refreshJobs}
-                disabled={loading}
-              >
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {jobs.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No background jobs found. Start an import to see jobs here.</p>
-              <p className="text-xs mt-2">
-                Supported types: {supportedTypes.slice(0, 5).join(', ')} and {supportedTypes.length - 5} more...
-              </p>
-            </div>
-          ) : (
+          </CardHeader>
+          <CardContent>
+            {jobs.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No background jobs found. Start an import to see jobs here.</p>
+                <p className="text-xs mt-2">
+                  Supported types: {supportedTypes.slice(0, 5).join(', ')} and {supportedTypes.length - 5} more...
+                </p>
+              </div>
+            ) : (
             <div className="space-y-4">
               {jobs.map(job => (
                 <div key={job.id} className="border rounded-lg p-4 space-y-3">
@@ -231,9 +289,9 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
           )}
         </CardContent>
       </Card>
-    );
-  }
-);
+    </div>
+  );
+});
 
 BackgroundImportManager.displayName = "BackgroundImportManager";
 
