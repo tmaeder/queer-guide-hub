@@ -341,27 +341,35 @@ export default function Directory() {
                 
                 {/* Countries Grid */}
                 <div className="space-y-10">
-                  {continents.map((continent) => {
-                    const continentCountries = filteredCountries.filter(country => 
-                      country.continent_id === continent.id
-                    );
-                    
-                    if (continentCountries.length === 0) return null;
-                    
-                    return (
-                      <div key={continent.id} className="group space-y-6">
-                        {/* Continent Header */}
-                        <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-muted/40 to-muted/20 border border-border/50">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-primary/10">
-                              <Globe className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-semibold">{continent.name}</h3>
-                              <p className="text-sm text-muted-foreground">{continentCountries.length} countries to explore</p>
+                  {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <div key={i} className="h-32 bg-muted/50 rounded-lg animate-pulse" />
+                      ))}
+                    </div>
+                  ) : continents.length > 0 ? (
+                    // Group by continents when available
+                    continents.map((continent) => {
+                      const continentCountries = filteredCountries.filter(country => 
+                        country.continent_id === continent.id
+                      );
+                      
+                      if (continentCountries.length === 0) return null;
+                      
+                      return (
+                        <div key={continent.id} className="group space-y-6">
+                          {/* Continent Header */}
+                          <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-muted/40 to-muted/20 border border-border/50">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <Globe className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-semibold">{continent.name}</h3>
+                                <p className="text-sm text-muted-foreground">{continentCountries.length} countries to explore</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
                         
                         {/* Countries Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 pl-6">
@@ -379,11 +387,30 @@ export default function Directory() {
                               />
                             </div>
                           ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                         </div>
+                       </div>
+                     );
+                   })
+                 ) : (
+                   // Fallback: show all countries ungrouped if continents not loaded
+                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                     {filteredCountries.map((country, index) => (
+                       <div
+                         key={country.id}
+                         className="animate-fade-in"
+                         style={{ animationDelay: `${index * 50}ms` }}
+                       >
+                         <DirectoryCard
+                           type="country"
+                           name={country.name}
+                           data={country}
+                           onClick={() => handleCountryClick(country)}
+                         />
+                       </div>
+                     ))}
+                   </div>
+                 )}
+               </div>
               </TabsContent>
 
               <TabsContent value="cities" className="space-y-6 animate-fade-in">
