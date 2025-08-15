@@ -100,9 +100,13 @@ export const BulkCreatePersonalities = () => {
         description: `Processing ${validNames.length} personalities...`,
       });
 
+      console.log('Calling bulk-create-personalities with:', { names: validNames });
+      
       const { data, error } = await supabase.functions.invoke('bulk-create-personalities', {
         body: { names: validNames }
       });
+
+      console.log('Function response:', { data, error });
 
       if (error) {
         console.error('Edge function error:', error);
@@ -111,6 +115,10 @@ export const BulkCreatePersonalities = () => {
 
       if (!data) {
         throw new Error('No response data received from server');
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'Function returned error');
       }
 
       const createdCount = data.created || 0;
