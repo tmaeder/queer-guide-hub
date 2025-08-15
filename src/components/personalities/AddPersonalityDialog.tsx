@@ -8,9 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Upload, ImageIcon } from "lucide-react";
 import { usePersonalities, Personality } from "@/hooks/usePersonalities";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AddPersonalityDialogProps {
   onSuccess?: () => void;
@@ -70,6 +71,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
   const [newAchievement, setNewAchievement] = useState('');
   const [newTag, setNewTag] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   const handleFieldToggle = (field: string) => {
     setFormData(prev => ({
@@ -112,6 +114,68 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
       ...prev,
       tags: prev.tags.filter((_, i) => i !== index)
     }));
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please select an image file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Error", 
+        description: "Image must be less than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('personalities')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('personalities')
+        .getPublicUrl(fileName);
+
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+      
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully"
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({ ...prev, image_url: '' }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -297,14 +361,65 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   </Select>
                 </div>
 
+                {/* Image Upload */}
                 <div>
-                  <Label htmlFor="image_url">Image URL</Label>
-                  <Input
-                    id="image_url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                    placeholder="https://..."
-                  />
+                  <Label>Profile Image</Label>
+                  <div className="space-y-3">
+                    {formData.image_url ? (
+                      <div className="relative">
+                        <img 
+                          src={formData.image_url} 
+                          alt="Preview" 
+                          className="w-32 h-32 object-cover rounded-lg border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                          onClick={removeImage}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                        <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                        <p className="text-sm text-muted-foreground">No image uploaded</p>
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => document.getElementById('image-upload')?.click()}
+                        disabled={uploading}
+                      >
+                        <Upload className="h-4 w-4" />
+                        {uploading ? 'Uploading...' : 'Upload Image'}
+                      </Button>
+                      <input
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                      />
+                    </div>
+                    
+                    <div className="text-xs text-muted-foreground">
+                      Or enter URL manually:
+                    </div>
+                    <Input
+                      value={formData.image_url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                      placeholder="https://..."
+                      className="text-sm"
+                    />
+                  </div>
                 </div>
 
                 <div>
