@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 interface PrivacyGuardProps {
   children: React.ReactNode;
   profileUserId: string;
-  requiredPrivacyField: 'sexual_orientation_public' | 'gender_identity_public' | 'pronouns_public' | 'bio_public' | 'location_public';
+  requiredPrivacyField: 'sexual_orientation_public' | 'gender_identity_public' | 'pronouns_public' | 'bio_public' | 'location_public' | 'phone_public' | 'emergency_contact_public' | 'relationship_status_public' | 'income_range_public' | 'political_views_public' | 'religious_beliefs_public';
   privacySettings?: Record<string, any>;
   fallback?: React.ReactNode;
   isAdminOverride?: boolean;
