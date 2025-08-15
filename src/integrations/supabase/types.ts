@@ -1884,14 +1884,18 @@ export type Database = {
           created_at: string
           current_batch: number
           data: Json
+          duplicate_items: number | null
           error_details: string | null
+          failed_items: number | null
           id: string
+          import_config: Json | null
           max_retries: number
           message: string
           processed_items: number
           progress: number
           retry_count: number
           status: string
+          successful_items: number | null
           total_batches: number
           total_items: number
           type: string
@@ -1902,14 +1906,18 @@ export type Database = {
           created_at?: string
           current_batch?: number
           data?: Json
+          duplicate_items?: number | null
           error_details?: string | null
+          failed_items?: number | null
           id?: string
+          import_config?: Json | null
           max_retries?: number
           message?: string
           processed_items?: number
           progress?: number
           retry_count?: number
           status?: string
+          successful_items?: number | null
           total_batches?: number
           total_items?: number
           type: string
@@ -1920,14 +1928,18 @@ export type Database = {
           created_at?: string
           current_batch?: number
           data?: Json
+          duplicate_items?: number | null
           error_details?: string | null
+          failed_items?: number | null
           id?: string
+          import_config?: Json | null
           max_retries?: number
           message?: string
           processed_items?: number
           progress?: number
           retry_count?: number
           status?: string
+          successful_items?: number | null
           total_batches?: number
           total_items?: number
           type?: string
