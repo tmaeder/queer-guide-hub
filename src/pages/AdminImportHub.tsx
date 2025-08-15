@@ -92,12 +92,12 @@ export default function AdminImportHub() {
       await backgroundManagerRef.current.createBackgroundJob(
         `${type}-csv`,
         { csvData: text, lines },
-        50 // batch size
+        5 // batch size set to 5
       );
       
       toast({
         title: "Import Job Created",
-        description: `Background import job for ${type} has been queued and will process in batches.`
+        description: `Background import job for ${type} has been queued and will process in batches of 5 items.`
       });
       
     } catch (error) {
@@ -122,12 +122,12 @@ export default function AdminImportHub() {
       await backgroundManagerRef.current.createBackgroundJob(
         functionName,
         params,
-        25 // smaller batch size for API imports
+        5 // batch size set to 5 for API imports
       );
       
       toast({
         title: "Import Job Created",
-        description: `Background import job for ${functionName} has been queued.`
+        description: `Background import job for ${functionName} has been queued and will process in batches of 5 items.`
       });
       
     } catch (error) {

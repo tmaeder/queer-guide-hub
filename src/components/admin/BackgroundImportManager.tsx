@@ -86,7 +86,7 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
     const createBackgroundJob = async (
       type: string, 
       data: any, 
-      batchSize: number = 50
+      batchSize: number = 5 // Default batch size of 5
     ): Promise<string> => {
       try {
         const { data: result, error } = await supabase.functions.invoke('background-import-manager', {
@@ -103,7 +103,7 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
         const jobId = result.jobId;
         toast({
           title: "Import Job Created",
-          description: `Background import job ${type} has been queued and will process in batches.`
+          description: `Background import job ${type} has been queued and will process in batches of ${batchSize} items.`
         });
         
         loadJobs();
@@ -244,7 +244,7 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
                 Background Import Jobs
               </CardTitle>
               <CardDescription>
-                Reliable, batched imports running in the background with automatic retry
+                Reliable, batched imports running in the background (batch size: 5 items)
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
