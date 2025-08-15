@@ -161,3 +161,9 @@ verify_jwt = true
 
 [functions.redis-keys]
 verify_jwt = true
+
+[functions.fetch-ilga-data]
+verify_jwt = false
+
+[functions.import-ilga-data]
+verify_jwt = true
