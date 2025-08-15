@@ -149,8 +149,8 @@ export function usePersonalities(filters?: PersonalityFilters) {
         death_date: personality.death_date,
         is_living: personality.is_living,
         profession: personality.profession,
-        fields: personality.fields,
-        achievements: personality.achievements,
+        fields: personality.fields as any, // jsonb column
+        achievements: personality.achievements as any, // jsonb column
         image_url: personality.image_url,
         social_links: personality.social_links,
         website_url: personality.website_url,
