@@ -148,79 +148,121 @@ serve(async (req) => {
 
     // Validate and prepare personalities data with image downloads
     const personalitiesData = [];
+    const BATCH_SIZE = 3; // Small batch size to avoid timeout
     
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
+    // Process rows in small batches to avoid timeout
+    for (let batchStart = 0; batchStart < rows.length; batchStart += BATCH_SIZE) {
+      const batch = rows.slice(batchStart, batchStart + BATCH_SIZE);
+      console.log(`Processing batch ${Math.floor(batchStart / BATCH_SIZE) + 1}/${Math.ceil(rows.length / BATCH_SIZE)} (${batch.length} items)`);
       
-      // Validate required fields
-      if (!row.name || row.name.trim() === '') {
-        errors.push(`Row ${i + 2}: Name is required`);
-        continue;
-      }
-
-      let imageUrl = null;
-      
-      // Download and upload image if URL provided
-      if (row.picture && row.picture.trim() !== '') {
-        try {
-          console.log(`Downloading image for ${row.name}: ${row.picture}`);
-          
-          const imageResponse = await fetch(row.picture);
-          if (imageResponse.ok) {
-            const imageBlob = await imageResponse.blob();
-            const fileExtension = imageResponse.headers.get('content-type')?.split('/')[1] || 'jpg';
-            const fileName = `${row.name.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}_${Date.now()}.${fileExtension}`;
-            
-            // Upload to Supabase storage
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('adult-model-images')
-              .upload(fileName, imageBlob, {
-                contentType: imageResponse.headers.get('content-type') || 'image/jpeg',
-                upsert: false
-              });
-            
-            if (uploadError) {
-              console.error(`Failed to upload image for ${row.name}:`, uploadError);
-              errors.push(`Row ${i + 2}: Failed to upload image - ${uploadError.message}`);
-            } else {
-              // Get public URL
-              const { data: { publicUrl } } = supabase.storage
-                .from('adult-model-images')
-                .getPublicUrl(fileName);
-              
-              imageUrl = publicUrl;
-              console.log(`Successfully uploaded image for ${row.name}: ${imageUrl}`);
-            }
-          } else {
-            console.error(`Failed to download image for ${row.name}: ${imageResponse.status}`);
-            errors.push(`Row ${i + 2}: Failed to download image from ${row.picture}`);
-          }
-        } catch (error) {
-          console.error(`Error processing image for ${row.name}:`, error);
-          errors.push(`Row ${i + 2}: Error processing image - ${error.message}`);
+      // Process batch items in parallel but with timeout control
+      const batchPromises = batch.map(async (row, batchIndex) => {
+        const rowIndex = batchStart + batchIndex;
+        
+        // Validate required fields
+        if (!row.name || row.name.trim() === '') {
+          errors.push(`Row ${rowIndex + 2}: Name is required`);
+          return null;
         }
+
+        let imageUrl = null;
+        
+        // Download and upload image if URL provided
+        if (row.picture && row.picture.trim() !== '') {
+          try {
+            console.log(`Downloading image for ${row.name}: ${row.picture}`);
+            
+            // Add timeout to prevent hanging
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout per image
+            
+            const imageResponse = await fetch(row.picture, {
+              signal: controller.signal,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (compatible; QueerGuide/1.0)'
+              }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (imageResponse.ok) {
+              const imageBlob = await imageResponse.blob();
+              const fileExtension = imageResponse.headers.get('content-type')?.split('/')[1] || 'jpg';
+              const fileName = `${row.name.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${fileExtension}`;
+              
+              // Upload to Supabase storage
+              const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('adult-model-images')
+                .upload(fileName, imageBlob, {
+                  contentType: imageResponse.headers.get('content-type') || 'image/jpeg',
+                  upsert: false
+                });
+              
+              if (uploadError) {
+                console.error(`Failed to upload image for ${row.name}:`, uploadError);
+                errors.push(`Row ${rowIndex + 2}: Failed to upload image - ${uploadError.message}`);
+              } else {
+                // Get public URL
+                const { data: { publicUrl } } = supabase.storage
+                  .from('adult-model-images')
+                  .getPublicUrl(fileName);
+                
+                imageUrl = publicUrl;
+                console.log(`Successfully uploaded image for ${row.name}: ${imageUrl}`);
+              }
+            } else {
+              console.error(`Failed to download image for ${row.name}: ${imageResponse.status}`);
+              errors.push(`Row ${rowIndex + 2}: Failed to download image from ${row.picture} (Status: ${imageResponse.status})`);
+            }
+          } catch (error) {
+            console.error(`Error processing image for ${row.name}:`, error);
+            if (error instanceof Error && error.name === 'AbortError') {
+              errors.push(`Row ${rowIndex + 2}: Image download timeout`);
+            } else {
+              errors.push(`Row ${rowIndex + 2}: Error processing image - ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
+          }
+        }
+
+        const personalityData = {
+          name: row.name.trim(),
+          profession: 'adult model',
+          bio: null,
+          birth_date: null,
+          death_date: null,
+          nationality: null,
+          birth_place: null,
+          image_url: imageUrl,
+          verification_status: 'pending',
+          is_featured: false,
+          is_living: true,
+          fields: row['pornhub-profile'] && row['pornhub-profile'].trim() !== '' 
+            ? { pornhub_profile: row['pornhub-profile'].trim() }
+            : null,
+          view_count: 0,
+          created_by: user.id
+        };
+
+        return personalityData;
+      });
+
+      // Wait for batch to complete
+      try {
+        const batchResults = await Promise.allSettled(batchPromises);
+        batchResults.forEach((result) => {
+          if (result.status === 'fulfilled' && result.value) {
+            personalitiesData.push(result.value);
+          }
+        });
+      } catch (batchError) {
+        console.error('Batch processing error:', batchError);
+        errors.push(`Batch processing error: ${batchError instanceof Error ? batchError.message : 'Unknown error'}`);
       }
-
-      const personalityData = {
-        name: row.name.trim(),
-        profession: 'adult model',
-        bio: null,
-        birth_date: null,
-        death_date: null,
-        nationality: null,
-        birth_place: null,
-        image_url: imageUrl,
-        verification_status: 'pending',
-        is_featured: false,
-        is_living: true,
-        fields: row['pornhub-profile'] && row['pornhub-profile'].trim() !== '' 
-          ? { pornhub_profile: row['pornhub-profile'].trim() }
-          : null,
-        view_count: 0,
-        created_by: user.id
-      };
-
-      personalitiesData.push(personalityData);
+      
+      // Small delay between batches to prevent overwhelming the server
+      if (batchStart + BATCH_SIZE < rows.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
 
     // Insert personalities into database
