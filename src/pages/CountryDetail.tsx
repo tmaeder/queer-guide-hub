@@ -12,6 +12,7 @@ import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import CountryHeroImages from "@/components/country/CountryHeroImages";
+import LGBTJurisdictionInfo from "@/components/country/LGBTJurisdictionInfo";
 import { useOptimizedCountry, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
 import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
 import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
@@ -176,7 +177,7 @@ export default function CountryDetail() {
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-6 pb-12">
         {/* Country Information */}
-        <div className="grid gap-8 lg:grid-cols-2 mb-12">
+        <div className="grid gap-8 lg:grid-cols-3 mb-12">
           <LocationInfo
             name={country.name}
             type="country"
@@ -187,6 +188,12 @@ export default function CountryDetail() {
             latitude={country.latitude}
             longitude={country.longitude}
             cityName={country.capital || country.name}
+            className="h-fit"
+          />
+
+          <LGBTJurisdictionInfo
+            countryName={country.name}
+            countryCode={country.code}
             className="h-fit"
           />
         </div>
