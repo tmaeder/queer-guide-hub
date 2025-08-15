@@ -170,8 +170,8 @@ serve(async (req) => {
         verification_status: 'pending',
         is_featured: false,
         is_living: true,
-        profession_details: row['pornhub-profile'] && row['pornhub-profile'].trim() !== '' 
-          ? JSON.stringify({ pornhub_profile: row['pornhub-profile'].trim() })
+        fields: row['pornhub-profile'] && row['pornhub-profile'].trim() !== '' 
+          ? { pornhub_profile: row['pornhub-profile'].trim() }
           : null,
         view_count: 0,
         created_by: user.id
