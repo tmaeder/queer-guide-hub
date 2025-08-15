@@ -2779,6 +2779,7 @@ export type Database = {
           nationality: string | null
           next_concerts: Json | null
           profession: string | null
+          profile_url: string | null
           pronouns: string | null
           social_links: Json | null
           tags: string[] | null
@@ -2807,6 +2808,7 @@ export type Database = {
           nationality?: string | null
           next_concerts?: Json | null
           profession?: string | null
+          profile_url?: string | null
           pronouns?: string | null
           social_links?: Json | null
           tags?: string[] | null
@@ -2835,6 +2837,7 @@ export type Database = {
           nationality?: string | null
           next_concerts?: Json | null
           profession?: string | null
+          profile_url?: string | null
           pronouns?: string | null
           social_links?: Json | null
           tags?: string[] | null
