@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, X, Upload, ImageIcon } from "lucide-react";
+import { Plus, X, Upload, ImageIcon, Search, Loader2 } from "lucide-react";
 import { usePersonalities, Personality } from "@/hooks/usePersonalities";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -72,6 +72,8 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const [newAchievement, setNewAchievement] = useState('');
   const [newTag, setNewTag] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [lookupLoading, setLookupLoading] = useState(false);
 
   const handleFieldToggle = (field: string) => {
     setFormData(prev => ({
@@ -178,6 +180,68 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     setFormData(prev => ({ ...prev, image_url: '' }));
   };
 
+  const handleWikipediaLookup = async () => {
+    if (!searchTerm.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a name to search",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLookupLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-personality-data', {
+        body: { searchTerm: searchTerm.trim() }
+      });
+
+      if (error) throw error;
+
+      if (data.success && data.data) {
+        const personalityData = data.data;
+        
+        // Prefill the form with the fetched data
+        setFormData(prev => ({
+          ...prev,
+          name: personalityData.name || prev.name,
+          description: personalityData.description || prev.description,
+          bio: personalityData.bio || prev.bio,
+          birth_date: personalityData.birth_date || prev.birth_date,
+          death_date: personalityData.death_date || prev.death_date,
+          is_living: personalityData.is_living !== undefined ? personalityData.is_living : prev.is_living,
+          profession: personalityData.profession || prev.profession,
+          nationality: personalityData.nationality || prev.nationality,
+          birth_place: personalityData.birth_place || prev.birth_place,
+          image_url: personalityData.image_url || prev.image_url,
+          website_url: personalityData.website_url || prev.website_url,
+          fields: personalityData.fields.length > 0 ? personalityData.fields : prev.fields
+        }));
+
+        toast({
+          title: "Success",
+          description: `Data found and prefilled for ${personalityData.name}`,
+        });
+      } else {
+        toast({
+          title: "No data found",
+          description: "No Wikipedia/Wikidata entry found for this person",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error looking up personality:', error);
+      toast({
+        title: "Error",
+        description: "Failed to lookup personality data",
+        variant: "destructive"
+      });
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -244,6 +308,38 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
           <DialogTitle>Add New Personality</DialogTitle>
         </DialogHeader>
         
+        {/* Wikipedia/Wikidata Lookup */}
+        <Card className="mb-6">
+          <CardContent className="p-4 space-y-4">
+            <h3 className="font-semibold text-lg mb-3">Quick Lookup</h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              Search Wikipedia/Wikidata to automatically prefill personality information
+            </p>
+            
+            <div className="flex gap-2">
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Enter person's name to lookup..."
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleWikipediaLookup())}
+              />
+              <Button
+                type="button"
+                onClick={handleWikipediaLookup}
+                disabled={lookupLoading || !searchTerm.trim()}
+                className="gap-2"
+              >
+                {lookupLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+                {lookupLoading ? 'Searching...' : 'Lookup'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Information */}
