@@ -15,6 +15,7 @@ import { usePersonalities, PersonalityFilters } from "@/hooks/usePersonalities";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { toast } from "@/hooks/use-toast";
 import { PersonalitiesCsvImport } from "@/components/personalities/PersonalitiesCsvImport";
+import { AdultModelsCsvImport } from "@/components/personalities/AdultModelsCsvImport";
 import { BulkCreatePersonalities } from "@/components/personalities/BulkCreatePersonalities";
 import { 
   Users, 
@@ -181,6 +182,7 @@ export default function AdminPersonalities() {
         </div>
         <div className="flex gap-2">
           <PersonalitiesCsvImport onImportComplete={refetchPersonalities} />
+          <AdultModelsCsvImport onImportComplete={refetchPersonalities} />
           <Button onClick={exportPersonalities} variant="outline" className="gap-2">
             <Download className="h-4 w-4" />
             Export CSV
