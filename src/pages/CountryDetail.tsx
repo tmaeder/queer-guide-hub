@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, MapPin, Globe, Users, Building2, Calendar, Star, Heart, TrendingUp, MapIcon, Newspaper, Cloud, Sun, CloudRain, Thermometer } from "lucide-react";
+import { ArrowLeft, MapPin, Globe, Users, Building2, Calendar, Star, Heart, TrendingUp, MapIcon, Newspaper, Cloud, Sun, CloudRain, Thermometer, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -301,7 +301,7 @@ export default function CountryDetail() {
         <Card className="border-muted/30 shadow-sm">
           <CardContent className="p-6">
             <Tabs defaultValue="cities" className="space-y-8">
-              <TabsList className="grid w-full max-w-2xl grid-cols-5 mx-auto h-12 bg-muted/50">
+              <TabsList className="grid w-full max-w-2xl grid-cols-6 mx-auto h-12 bg-muted/50">
                 <TabsTrigger value="cities" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <Building2 className="h-4 w-4" />
                   <span className="hidden sm:inline">Cities</span>
@@ -313,6 +313,10 @@ export default function CountryDetail() {
                 <TabsTrigger value="events" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <Calendar className="h-4 w-4" />
                   <span className="hidden sm:inline">Events</span>
+                </TabsTrigger>
+                <TabsTrigger value="flights" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  <Plane className="h-4 w-4" />
+                  <span className="hidden sm:inline">Flights</span>
                 </TabsTrigger>
                 <TabsTrigger value="news" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <Newspaper className="h-4 w-4" />
@@ -442,6 +446,32 @@ export default function CountryDetail() {
                     </CardContent>
                   </Card>
                 )}
+              </TabsContent>
+
+              {/* Flights Tab */}
+              <TabsContent value="flights" className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold tracking-tight">Flight Deals</h2>
+                    <p className="text-muted-foreground mt-1">Find the best flight deals to {country.capital || country.name}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-sm px-3 py-1 flex items-center gap-1">
+                    <Plane className="h-3 w-3" />
+                    Travel
+                  </Badge>
+                </div>
+                
+                <Card className="border-muted/50">
+                  <CardContent className="p-6">
+                    <div className="min-h-[400px] w-full">
+                      <div 
+                        dangerouslySetInnerHTML={{
+                          __html: `<script async src="https://tpscr.com/content?currency=eur&trs=241762&shmarker=452012&powered_by=true&locale=en&to_name=${(country.capital || country.name).toLowerCase().replace(/\s+/g, '_')}_${country.code?.toLowerCase() || 'xx'}&show_header=false&limit=3&primary_color=000000ff&results_background_color=FFFFFF&form_background_color=FFFFFF&campaign_id=111&promo_id=4478" charset="utf-8"></script>`
+                        }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               {/* News Tab */}
