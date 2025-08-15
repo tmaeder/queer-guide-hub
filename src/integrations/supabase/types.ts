@@ -1878,6 +1878,47 @@ export type Database = {
           },
         ]
       }
+      import_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          import_job_id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          import_job_id: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          import_job_id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_audit_log_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs_enhanced"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_jobs: {
         Row: {
           batch_size: number
@@ -1946,6 +1987,152 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      import_jobs_enhanced: {
+        Row: {
+          api_endpoint: string | null
+          completed_at: string | null
+          created_at: string | null
+          duplicate_records: number | null
+          duplicate_strategy: string
+          error_report: Json | null
+          failed_records: number | null
+          file_hash: string | null
+          file_name: string | null
+          file_size: number | null
+          filters: Json
+          id: string
+          import_summary: Json | null
+          invalid_records: number | null
+          ip_address: unknown | null
+          phase: string
+          processed_records: number | null
+          progress_percentage: number | null
+          source_data: Json | null
+          source_type: string
+          started_at: string | null
+          status: string
+          successful_records: number | null
+          total_records: number | null
+          type: string
+          unique_key_fields: string[]
+          updated_at: string | null
+          user_agent: string | null
+          user_id: string
+          valid_records: number | null
+          validation_report: Json | null
+          validation_rules: Json
+        }
+        Insert: {
+          api_endpoint?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          duplicate_records?: number | null
+          duplicate_strategy?: string
+          error_report?: Json | null
+          failed_records?: number | null
+          file_hash?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          filters?: Json
+          id?: string
+          import_summary?: Json | null
+          invalid_records?: number | null
+          ip_address?: unknown | null
+          phase?: string
+          processed_records?: number | null
+          progress_percentage?: number | null
+          source_data?: Json | null
+          source_type: string
+          started_at?: string | null
+          status?: string
+          successful_records?: number | null
+          total_records?: number | null
+          type: string
+          unique_key_fields?: string[]
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id: string
+          valid_records?: number | null
+          validation_report?: Json | null
+          validation_rules?: Json
+        }
+        Update: {
+          api_endpoint?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          duplicate_records?: number | null
+          duplicate_strategy?: string
+          error_report?: Json | null
+          failed_records?: number | null
+          file_hash?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          filters?: Json
+          id?: string
+          import_summary?: Json | null
+          invalid_records?: number | null
+          ip_address?: unknown | null
+          phase?: string
+          processed_records?: number | null
+          progress_percentage?: number | null
+          source_data?: Json | null
+          source_type?: string
+          started_at?: string | null
+          status?: string
+          successful_records?: number | null
+          total_records?: number | null
+          type?: string
+          unique_key_fields?: string[]
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+          valid_records?: number | null
+          validation_report?: Json | null
+          validation_rules?: Json
+        }
+        Relationships: []
+      }
+      import_validation_results: {
+        Row: {
+          created_at: string | null
+          id: string
+          import_job_id: string
+          is_valid: boolean
+          record_data: Json
+          record_index: number
+          validation_errors: Json | null
+          validation_warnings: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          import_job_id: string
+          is_valid?: boolean
+          record_data: Json
+          record_index: number
+          validation_errors?: Json | null
+          validation_warnings?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          import_job_id?: string
+          is_valid?: boolean
+          record_data?: Json
+          record_index?: number
+          validation_errors?: Json | null
+          validation_warnings?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_validation_results_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs_enhanced"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       knowledge_base: {
         Row: {
@@ -5094,6 +5281,10 @@ export type Database = {
           tag_name: string
         }[]
       }
+      get_import_statistics: {
+        Args: { user_id_param?: string }
+        Returns: Json
+      }
       get_location_access_level: {
         Args: { checkin_user_id: string; requesting_user_id: string }
         Returns: string
@@ -5367,6 +5558,10 @@ export type Database = {
       validate_content_security_enhanced: {
         Args: { content: string }
         Returns: boolean
+      }
+      validate_import_data: {
+        Args: { job_id: string; validation_rules: Json }
+        Returns: Json
       }
       validate_session_token: {
         Args: { token_to_validate: string }
