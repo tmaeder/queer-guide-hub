@@ -34,8 +34,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useCityImages } from "@/hooks/useCityImages";
 import { useNews } from "@/hooks/useNews";
-import { useVenues } from "@/hooks/useVenues";
-import { useEvents } from "@/hooks/useEvents";
+import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
+import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
 import CityHeroImages from "@/components/city/CityHeroImages";
 import { NewsCard } from "@/components/news/NewsCard";
 import { VenueCard } from "@/components/venues/VenueCard";
@@ -89,12 +89,19 @@ export default function CityDetail() {
   const { toggleFavorite, isFavorited } = useFavorites('city');
   const { fetchCityImage } = useCityImages();
   const { articles, loading: newsLoading, fetchArticles } = useNews();
-  const { venues, loading: venuesLoading, fetchVenues } = useVenues();
-  const { events, loading: eventsLoading, fetchEvents } = useEvents();
 
   const [city, setCity] = useState<CityWithCountry | null>(null);
   const [loading, setLoading] = useState(true);
   const [imageUrl, setImageUrl] = useState<string>("");
+
+  const { venues, loading: venuesLoading } = useOptimizedVenues({ 
+    city: city?.name,
+    limit: 12 
+  });
+  const { events, loading: eventsLoading } = useOptimizedEvents({ 
+    city: city?.name,
+    limit: 12 
+  });
 
   useEffect(() => {
     if (id) {
@@ -112,16 +119,11 @@ export default function CityDetail() {
   const loadRelatedContent = async () => {
     if (!city) return;
     
-    // Fetch related news, venues, and events for this city
-    // Use city ID for precise news filtering, fallback to name search for venues/events
-    await Promise.all([
-      fetchArticles({ 
-        cityIds: [city.id],
-        countryIds: city.countries?.id ? [city.countries.id] : undefined
-      }),
-      fetchVenues({ city: city.name }),
-      fetchEvents({ city: city.name })
-    ]);
+    // Fetch related news for this city
+    await fetchArticles({ 
+      cityIds: [city.id],
+      countryIds: city.countries?.id ? [city.countries.id] : undefined
+    });
   };
 
   const fetchCityDetails = async () => {
