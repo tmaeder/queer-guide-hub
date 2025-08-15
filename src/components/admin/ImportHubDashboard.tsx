@@ -23,8 +23,8 @@ export const ImportHubDashboard = () => {
     isPolling,
     cancelImportJob,
     togglePolling,
-    refreshJobs,
-    refreshStatistics
+    refreshJobs: loadJobs,
+    refreshStatistics: loadStatistics
   } = useImportHub();
 
   const [showValidation, setShowValidation] = useState<string | null>(null);
@@ -198,8 +198,8 @@ export const ImportHubDashboard = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  refreshJobs();
-                  refreshStatistics();
+                  loadJobs();
+                  loadStatistics();
                 }}
                 disabled={loading}
                 className="gap-2 bg-background/50 backdrop-blur-sm"
@@ -319,16 +319,16 @@ export const ImportHubDashboard = () => {
                               <span className="font-medium text-sm">{job.type}</span>
                               {getStatusBadge(job.status)}
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                              {job.processed_records}/{job.total_records} records • {new Date(job.created_at).toLocaleDateString()}
-                            </p>
+                             <p className="text-xs text-muted-foreground">
+                               {job.processed_records || 0}/{job.total_records || 0} records • {new Date(job.created_at).toLocaleDateString()}
+                             </p>
                           </div>
                         </div>
                         
-                        <div className="text-right">
-                          <Progress value={job.progress_percentage} className="w-16 h-2 mb-1" />
-                          <span className="text-xs text-muted-foreground">{job.progress_percentage}%</span>
-                        </div>
+                         <div className="text-right">
+                           <Progress value={job.progress_percentage || 0} className="w-16 h-2 mb-1" />
+                           <span className="text-xs text-muted-foreground">{job.progress_percentage || 0}%</span>
+                         </div>
                       </div>
                     ))}
                   </div>
@@ -401,11 +401,11 @@ export const ImportHubDashboard = () => {
                       
                       {/* Progress Display */}
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium">Overall Progress</span>
-                          <span className="font-bold">{job.progress_percentage}%</span>
-                        </div>
-                        <Progress value={job.progress_percentage} className="h-3" />
+                         <div className="flex items-center justify-between text-sm">
+                           <span className="font-medium">Overall Progress</span>
+                           <span className="font-bold">{job.progress_percentage || 0}%</span>
+                         </div>
+                         <Progress value={job.progress_percentage || 0} className="h-3" />
                         
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
                           <div className="text-center">
