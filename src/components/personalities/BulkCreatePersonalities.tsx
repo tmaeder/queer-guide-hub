@@ -23,11 +23,11 @@ export const BulkCreatePersonalities = () => {
     
     for (const name of namesList) {
       if (name.length < 2) {
-        validationErrors.push(`"${name}" is too short (minimum 2 characters)`);
+        validationErrors.push(`"${name}" is too short (minimum 2 characters) - skipped`);
       } else if (name.length > 100) {
-        validationErrors.push(`"${name}" is too long (maximum 100 characters)`);
-      } else if (!new RegExp("^[\\p{L}\\p{M}\\p{N}\\s\\-.()''\":,&;]+$", "u").test(name)) {
-        validationErrors.push(`"${name}" contains invalid characters`);
+        validationErrors.push(`"${name}" is too long (maximum 100 characters) - skipped`);
+      } else if (!new RegExp("^[\\p{L}\\p{M}\\p{N}\\s\\-.'()\":,&;]+$", "u").test(name)) {
+        validationErrors.push(`"${name}" contains invalid characters - skipped`);
       } else {
         validNames.push(name);
       }
@@ -69,10 +69,10 @@ export const BulkCreatePersonalities = () => {
       // Validate names
       const { validNames, validationErrors } = validateNames(namesList);
       
-      if (validationErrors.length > 0) {
+      if (validNames.length === 0) {
         toast({
-          title: "Validation Errors Found",
-          description: `${validationErrors.length} names have validation issues. Check the details below.`,
+          title: "No Valid Names",
+          description: "All provided names failed validation",
           variant: "destructive",
         });
         
@@ -83,13 +83,11 @@ export const BulkCreatePersonalities = () => {
         return;
       }
 
-      if (validNames.length === 0) {
+      if (validationErrors.length > 0) {
         toast({
-          title: "No Valid Names",
-          description: "All provided names failed validation",
-          variant: "destructive",
+          title: "Processing Valid Names",
+          description: `Skipping ${validationErrors.length} invalid names, processing ${validNames.length} valid names`,
         });
-        return;
       }
 
       // Set progress tracking
@@ -132,10 +130,13 @@ export const BulkCreatePersonalities = () => {
       const createdCount = data.created || 0;
       const errorCount = Array.isArray(data.errorDetails) ? data.errorDetails.length : 0;
       
-      // Store results for display
+      // Store results for display, including validation errors
       setResults({
         created: data.results || [],
-        errors: data.errorDetails || []
+        errors: [
+          ...validationErrors.map(error => ({ name: 'Validation', error })),
+          ...(data.errorDetails || [])
+        ]
       });
 
       // Show completion message
