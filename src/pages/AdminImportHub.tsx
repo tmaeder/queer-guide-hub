@@ -11,6 +11,7 @@ import { Upload, Download, Rss, Globe, MapPin, Calendar, Building2, Newspaper, U
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewsSourcesManager } from "@/components/admin/NewsSourcesManager";
 import { BulkCreatePersonalities } from "@/components/personalities/BulkCreatePersonalities";
+import BulkCreateAITags from "@/components/admin/BulkCreateAITags";
 
 export default function AdminImportHub() {
   const { toast } = useToast();
@@ -82,7 +83,7 @@ export default function AdminImportHub() {
       </div>
 
       <Tabs defaultValue="personalities" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="personalities" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Personalities
@@ -94,6 +95,10 @@ export default function AdminImportHub() {
           <TabsTrigger value="venues" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             Venues
+          </TabsTrigger>
+          <TabsTrigger value="tags" className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            Tags
           </TabsTrigger>
           <TabsTrigger value="news" className="flex items-center gap-2">
             <Newspaper className="h-4 w-4" />
@@ -202,6 +207,21 @@ export default function AdminImportHub() {
               <p className="text-sm text-muted-foreground">
                 Extracts schema.org Event data from crawled pages, normalizes and de-duplicates before inserting into the Events table.
               </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tags" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                AI Bulk Tag Creation
+              </CardTitle>
+              <CardDescription>Create tags with AI-generated descriptions and images from Wikimedia/Unsplash</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BulkCreateAITags />
             </CardContent>
           </Card>
         </TabsContent>
