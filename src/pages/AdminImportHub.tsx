@@ -7,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, Download, Rss, Globe, MapPin, Calendar, Building2, Newspaper } from "lucide-react";
+import { Upload, Download, Rss, Globe, MapPin, Calendar, Building2, Newspaper, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewsSourcesManager } from "@/components/admin/NewsSourcesManager";
+import { BulkCreatePersonalities } from "@/components/personalities/BulkCreatePersonalities";
 
 export default function AdminImportHub() {
   const { toast } = useToast();
@@ -80,8 +81,12 @@ export default function AdminImportHub() {
         </div>
       </div>
 
-      <Tabs defaultValue="events" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs defaultValue="personalities" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="personalities" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Personalities
+          </TabsTrigger>
           <TabsTrigger value="events" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Events
@@ -103,6 +108,21 @@ export default function AdminImportHub() {
             Countries
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="personalities" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Import Personalities
+              </CardTitle>
+              <CardDescription>Bulk create personalities from names and enrich with Wikipedia/Wikidata</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BulkCreatePersonalities />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="events" className="space-y-6">
           <Card>
