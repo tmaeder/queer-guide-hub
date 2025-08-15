@@ -1,28 +1,10 @@
-import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
+import { useImperativeHandle, forwardRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { RefreshCw, CheckCircle, AlertCircle, Clock, Pause, Play, X } from "lucide-react";
-
-interface BackgroundJob {
-  id: string;
-  type: string;
-  status: 'queued' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
-  progress: number;
-  currentBatch: number;
-  totalBatches: number;
-  processedItems: number;
-  totalItems: number;
-  message: string;
-  errorDetails?: string;
-  retryCount: number;
-  maxRetries: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { useBackgroundImports, BackgroundJob } from "@/hooks/useBackgroundImports";
+import { RefreshCw, CheckCircle, AlertCircle, Clock, Pause, Play, X, Trash2 } from "lucide-react";
 
 interface BackgroundImportManagerProps {
   onJobUpdate?: (job: BackgroundJob) => void;
@@ -34,165 +16,29 @@ export interface BackgroundImportManagerRef {
 
 const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, BackgroundImportManagerProps>(
   ({ onJobUpdate }, ref) => {
-    const [jobs, setJobs] = useState<BackgroundJob[]>([]);
-    const [isPolling, setIsPolling] = useState(true);
-    const { toast } = useToast();
-
-    useEffect(() => {
-      loadJobs();
-      const interval = setInterval(loadJobs, 2000);
-      return () => clearInterval(interval);
-    }, []);
-
-    const loadJobs = async () => {
-      if (!isPolling) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('import_jobs')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(20);
-        
-        if (error) throw error;
-        
-        const mappedJobs: BackgroundJob[] = data?.map((job: any) => ({
-          id: job.id,
-          type: job.type,
-          status: job.status,
-          progress: job.progress,
-          currentBatch: job.current_batch,
-          totalBatches: job.total_batches,
-          processedItems: job.processed_items,
-          totalItems: job.total_items,
-          message: job.message,
-          errorDetails: job.error_details,
-          retryCount: job.retry_count,
-          maxRetries: job.max_retries,
-          createdAt: new Date(job.created_at),
-          updatedAt: new Date(job.updated_at)
-        })) || [];
-        
-        setJobs(mappedJobs);
-        
-        // Notify parent of job updates
-        mappedJobs.forEach(job => onJobUpdate?.(job));
-        
-      } catch (error) {
-        console.error('Failed to load jobs:', error);
-      }
-    };
-
-    const createBackgroundJob = async (
-      type: string, 
-      data: any, 
-      batchSize: number = 5 // Default batch size of 5
-    ): Promise<string> => {
-      try {
-        const { data: result, error } = await supabase.functions.invoke('background-import-manager', {
-          body: {
-            action: 'create',
-            type,
-            data,
-            batchSize
-          }
-        });
-
-        if (error) throw error;
-        
-        const jobId = result.jobId;
-        toast({
-          title: "Import Job Created",
-          description: `Background import job ${type} has been queued and will process in batches of ${batchSize} items.`
-        });
-        
-        loadJobs();
-        return jobId;
-      } catch (error) {
-        console.error('Failed to create background job:', error);
-        throw error;
-      }
-    };
-
-    const retryJob = async (jobId: string) => {
-      try {
-        const { error } = await supabase.functions.invoke('background-import-manager', {
-          body: {
-            action: 'retry',
-            jobId
-          }
-        });
-
-        if (error) throw error;
-        
-        toast({
-          title: "Job Retry Initiated",
-          description: "The job has been queued for retry."
-        });
-        
-        loadJobs();
-      } catch (error) {
-        console.error('Failed to retry job:', error);
-        toast({
-          title: "Retry Failed",
-          description: "Failed to retry the job.",
-          variant: "destructive"
-        });
-      }
-    };
-
-    const pauseJob = async (jobId: string) => {
-      try {
-        const { error } = await supabase.functions.invoke('background-import-manager', {
-          body: {
-            action: 'pause',
-            jobId
-          }
-        });
-
-        if (error) throw error;
-        loadJobs();
-      } catch (error) {
-        console.error('Failed to pause job:', error);
-      }
-    };
-
-    const resumeJob = async (jobId: string) => {
-      try {
-        const { error } = await supabase.functions.invoke('background-import-manager', {
-          body: {
-            action: 'resume',
-            jobId
-          }
-        });
-
-        if (error) throw error;
-        loadJobs();
-      } catch (error) {
-        console.error('Failed to resume job:', error);
-      }
-    };
-
-    const cancelJob = async (jobId: string) => {
-      try {
-        const { error } = await supabase.functions.invoke('background-import-manager', {
-          body: {
-            action: 'cancel',
-            jobId
-          }
-        });
-
-        if (error) throw error;
-        loadJobs();
-      } catch (error) {
-        console.error('Failed to cancel job:', error);
-      }
-    };
+    const {
+      jobs,
+      stats,
+      loading,
+      isPolling,
+      supportedTypes,
+      createImportJob,
+      retryJob,
+      pauseJob,
+      resumeJob,
+      cancelJob,
+      cleanupOldJobs,
+      togglePolling,
+      refreshJobs
+    } = useBackgroundImports();
 
     // Expose methods to parent component
     useImperativeHandle(ref, () => ({
-      createBackgroundJob
+      createBackgroundJob: createImportJob
     }));
+
+    // Notify parent of job updates
+    jobs.forEach(job => onJobUpdate?.(job));
 
     const getStatusIcon = (status: BackgroundJob['status']) => {
       switch (status) {
@@ -244,19 +90,47 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
                 Background Import Jobs
               </CardTitle>
               <CardDescription>
-                Reliable, batched imports running in the background (batch size: 5 items)
+                Reliable, batched imports running in the background (default batch size: 5 items)
               </CardDescription>
+              <div className="flex gap-4 mt-2 text-sm">
+                <span className="text-muted-foreground">
+                  Total: <span className="font-medium">{stats.totalJobs}</span>
+                </span>
+                <span className="text-green-600">
+                  Completed: <span className="font-medium">{stats.completedJobs}</span>
+                </span>
+                <span className="text-red-600">
+                  Failed: <span className="font-medium">{stats.failedJobs}</span>
+                </span>
+                <span className="text-blue-600">
+                  Running: <span className="font-medium">{stats.runningJobs}</span>
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsPolling(!isPolling)}
+                onClick={cleanupOldJobs}
+                disabled={loading}
+              >
+                <Trash2 className="h-4 w-4" />
+                Cleanup
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={togglePolling}
               >
                 {isPolling ? 'Pause' : 'Resume'} Polling
               </Button>
-              <Button variant="outline" size="sm" onClick={loadJobs}>
-                <RefreshCw className="h-4 w-4" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshJobs}
+                disabled={loading}
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>
             </div>
           </div>
@@ -264,7 +138,10 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
         <CardContent>
           {jobs.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No background jobs found. Start an import to see jobs here.
+              <p>No background jobs found. Start an import to see jobs here.</p>
+              <p className="text-xs mt-2">
+                Supported types: {supportedTypes.slice(0, 5).join(', ')} and {supportedTypes.length - 5} more...
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -296,7 +173,7 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
                       {job.status === 'failed' && job.retryCount < job.maxRetries && (
                         <Button variant="outline" size="sm" onClick={() => retryJob(job.id)}>
                           <RefreshCw className="h-4 w-4" />
-                          Retry
+                          Retry ({job.retryCount}/{job.maxRetries})
                         </Button>
                       )}
                       {['running', 'queued', 'paused'].includes(job.status) && (
@@ -333,7 +210,7 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
                   
                   {/* Error details */}
                   {job.errorDetails && (
-                    <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                    <div className="text-sm text-red-600 bg-red-50 dark:bg-red-950/20 p-3 rounded">
                       <strong>Error:</strong> {job.errorDetails}
                       {job.retryCount > 0 && (
                         <div className="mt-1">
@@ -344,7 +221,7 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
                   )}
                   
                   {/* Timestamps */}
-                  <div className="flex justify-between text-xs text-muted-foreground">
+                  <div className="flex justify-between text-xs text-muted-foreground pt-2 border-t">
                     <span>Started: {job.createdAt.toLocaleString()}</span>
                     <span>Updated: {job.updatedAt.toLocaleString()}</span>
                   </div>
