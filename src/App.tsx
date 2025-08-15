@@ -87,7 +87,6 @@ const SearchResults = lazy(() => import("./pages/SearchResults"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
-const HistoricEvents = lazy(() => import("./pages/HistoricEvents"));
 
 const queryClient = new QueryClient();
 
@@ -259,11 +258,10 @@ const App = () => {
                        <AdminImportHub />
                      </AdminRouteGuard>
                    } />
-                    <Route path="/news" element={<News />} />
-                    <Route path="/search" element={<SearchResults />} />
-                    <Route path="/historic-events" element={<HistoricEvents />} />
-                    
-                     <Route path="/groups" element={<Groups />} />
+                   <Route path="/news" element={<News />} />
+                   <Route path="/search" element={<SearchResults />} />
+                   
+                    <Route path="/groups" element={<Groups />} />
                     <Route path="/groups/:groupId" element={<GroupDetail />} />
                     <Route path="/my-groups" element={<MyGroups />} />
                    <Route path="/accessibility" element={<AccessibilityHub />} />
