@@ -4060,6 +4060,8 @@ export type Database = {
       venue_checkins: {
         Row: {
           anonymized_at: string | null
+          approximate_only: boolean | null
+          auto_anonymize_after: unknown | null
           checked_in_at: string
           created_at: string
           distance_meters: number | null
@@ -4067,12 +4069,16 @@ export type Database = {
           is_public: boolean | null
           latitude: number
           location_precision: string | null
+          location_shared_with: Json | null
+          location_visibility: string | null
           longitude: number
           user_id: string
           venue_id: string
         }
         Insert: {
           anonymized_at?: string | null
+          approximate_only?: boolean | null
+          auto_anonymize_after?: unknown | null
           checked_in_at?: string
           created_at?: string
           distance_meters?: number | null
@@ -4080,12 +4086,16 @@ export type Database = {
           is_public?: boolean | null
           latitude: number
           location_precision?: string | null
+          location_shared_with?: Json | null
+          location_visibility?: string | null
           longitude: number
           user_id: string
           venue_id: string
         }
         Update: {
           anonymized_at?: string | null
+          approximate_only?: boolean | null
+          auto_anonymize_after?: unknown | null
           checked_in_at?: string
           created_at?: string
           distance_meters?: number | null
@@ -4093,6 +4103,8 @@ export type Database = {
           is_public?: boolean | null
           latitude?: number
           location_precision?: string | null
+          location_shared_with?: Json | null
+          location_visibility?: string | null
           longitude?: number
           user_id?: string
           venue_id?: string
@@ -4628,7 +4640,7 @@ export type Database = {
         }[]
       }
       anonymize_location_data: {
-        Args: { lat: number; lng: number; precision_level: string }
+        Args: { lat: number; lng: number; precision_level?: string }
         Returns: Json
       }
       assign_admin_by_id: {
@@ -4659,8 +4671,16 @@ export type Database = {
             }
         Returns: boolean
       }
+      auto_anonymize_old_checkins: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       calculate_profile_completion: {
         Args: { user_id_param: string }
+        Returns: number
+      }
+      calculate_secure_venue_distance: {
+        Args: { user_lat: number; user_lng: number; venue_id_param: string }
         Returns: number
       }
       can_view_sensitive_profile_data: {
@@ -4939,6 +4959,19 @@ export type Database = {
           updated_at: string
           user_id: string
           website: string
+        }[]
+      }
+      get_secure_venue_checkins: {
+        Args: { requesting_user_id?: string; target_venue_id?: string }
+        Returns: {
+          can_view_precise_location: boolean
+          checked_in_at: string
+          distance_meters: number
+          id: string
+          is_public: boolean
+          location_data: Json
+          user_id: string
+          venue_id: string
         }[]
       }
       get_table_policies: {
