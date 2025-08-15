@@ -34,7 +34,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewsSourcesManager } from "@/components/admin/NewsSourcesManager";
 import { BulkCreatePersonalities } from "@/components/personalities/BulkCreatePersonalities";
-import BulkCreateAITags from "@/components/admin/BulkCreateAITags";
 
 interface ImportStats {
   totalImports: number;
@@ -58,6 +57,7 @@ export default function AdminImportHub() {
   const [progress, setProgress] = useState<{[key: string]: number}>({});
   const [eventSeeds, setEventSeeds] = useState<string>('');
   const [eventLimit, setEventLimit] = useState<string>('100');
+  const [aiTagsInput, setAiTagsInput] = useState<string>('');
   const [importJobs, setImportJobs] = useState<ImportJob[]>([]);
   const [stats, setStats] = useState<ImportStats>({
     totalImports: 0,
@@ -496,8 +496,72 @@ export default function AdminImportHub() {
                   Create tags with AI-generated descriptions and images from Wikimedia/Unsplash
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <BulkCreateAITags />
+              <CardContent className="space-y-4">
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Each term will be automatically categorized and enhanced with AI-generated descriptions using Wikipedia and OpenAI.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ai-tags-textarea">Enter terms (one per line)</Label>
+                  <Textarea
+                    id="ai-tags-textarea"
+                    placeholder={"pride\nrainbow flag\ncoming out\ndrag show\nqueer history"}
+                    value={aiTagsInput}
+                    onChange={(e) => setAiTagsInput(e.target.value)}
+                    className="min-h-32"
+                    disabled={loading === 'bulk-create-ai-tags'}
+                  />
+                </div>
+
+                <Button
+                  onClick={() => {
+                    if (!aiTagsInput.trim()) {
+                      toast({
+                        title: "Error",
+                        description: "Please enter some terms to create tags",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    
+                    const termsList = aiTagsInput
+                      .split('\n')
+                      .map(term => term.trim())
+                      .filter(term => term.length > 0);
+                      
+                    if (termsList.length === 0) {
+                      toast({
+                        title: "Error",
+                        description: "No valid terms found",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    
+                    handleApiImport('bulk-create-ai-tags', { terms: termsList });
+                  }}
+                  disabled={loading === 'bulk-create-ai-tags'}
+                  className="w-full"
+                >
+                  {loading === 'bulk-create-ai-tags' ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Creating Tags with AI...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-4 w-4 mr-2" />
+                      Create Tags with AI
+                    </>
+                  )}
+                </Button>
+                
+                {loading === 'bulk-create-ai-tags' && progress['bulk-create-ai-tags'] > 0 && (
+                  <Progress value={progress['bulk-create-ai-tags']} className="h-2" />
+                )}
               </CardContent>
             </Card>
           </TabsContent>
