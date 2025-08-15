@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck, Map, Smile, Handshake, Home, Leaf, UsersRound, Rss } from 'lucide-react';
+import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck, Map, Smile, Handshake, Home, Leaf, UsersRound, Rss, Upload } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -210,10 +210,16 @@ export function Header() {
                       </Button>
                     ))}
                     {isAdmin && (
-                      <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin')}>
-                        <Settings className="h-4 w-4" />
-                        <span className="text-xs">Admin</span>
-                      </Button>
+                      <>
+                        <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin')}>
+                          <Settings className="h-4 w-4" />
+                          <span className="text-xs">Admin</span>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin/import')}>
+                          <Upload className="h-4 w-4" />
+                          <span className="text-xs">Import</span>
+                        </Button>
+                      </>
                     )}
                   </div>
 
