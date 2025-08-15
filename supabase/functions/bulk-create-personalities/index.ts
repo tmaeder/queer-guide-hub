@@ -18,6 +18,7 @@ interface PersonalityData {
   description: string;
   birth_date: string | null;
   death_date: string | null;
+  is_living: boolean;
   profession: string; // Changed from occupation to profession
   nationality: string;
   birth_place: string | null;
@@ -72,6 +73,7 @@ serve(async (req) => {
                 description: personalityData.description,
                 birth_date: personalityData.birth_date,
                 death_date: personalityData.death_date,
+                is_living: personalityData.is_living,
                 profession: personalityData.profession,
                 nationality: personalityData.nationality,
                 birth_place: personalityData.birth_place,
@@ -255,6 +257,7 @@ async function fetchPersonalityData(searchTerm: string): Promise<PersonalityData
       description,
       birth_date: formatDate(birthDate),
       death_date: formatDate(deathDate),
+      is_living: !deathDate, // True if no death date
       profession: occupation, // Map occupation data to profession field
       nationality,
       birth_place: birthPlace,
