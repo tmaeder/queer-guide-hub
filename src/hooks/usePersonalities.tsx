@@ -130,7 +130,12 @@ export function usePersonalities(filters?: PersonalityFilters) {
   };
 
   const createPersonality = async (personality: Omit<Personality, 'id' | 'created_at' | 'updated_at' | 'view_count' | 'created_by'>) => {
+    console.log('=== CREATE PERSONALITY HOOK ===');
+    console.log('User:', user);
+    console.log('Personality input:', personality);
+    
     if (!user) {
+      console.log('No user found, authentication required');
       toast({
         title: "Authentication required",
         description: "Please log in to add a personality",
@@ -163,12 +168,14 @@ export function usePersonalities(filters?: PersonalityFilters) {
         created_by: user.id
       };
 
+      console.log('Insert data prepared:', insertData);
+
       const { error } = await supabase
         .from('personalities')
         .insert(insertData);
 
       if (error) {
-        console.error('Error creating personality:', error);
+        console.error('Supabase insert error:', error);
         toast({
           title: "Error",
           description: error.message,
@@ -177,6 +184,8 @@ export function usePersonalities(filters?: PersonalityFilters) {
         return;
       }
 
+      console.log('Insert successful');
+      
       toast({
         title: "Success",
         description: "Personality added successfully"

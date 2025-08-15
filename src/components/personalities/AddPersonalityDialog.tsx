@@ -245,7 +245,11 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('=== SUBMIT STARTED ===');
+    console.log('Form data:', formData);
+    
     if (!formData.name.trim()) {
+      console.log('Name validation failed');
       toast({
         title: "Error",
         description: "Name is required",
@@ -257,10 +261,16 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     setLoading(true);
     
     try {
-      await createPersonality({
+      console.log('Calling createPersonality...');
+      const personalityData = {
         ...formData,
         social_links: {}
-      });
+      };
+      console.log('Personality data to create:', personalityData);
+      
+      await createPersonality(personalityData);
+      
+      console.log('Personality created successfully');
       
       // Reset form
       setFormData({
@@ -288,7 +298,12 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
       onSuccess?.();
       
     } catch (error) {
-      console.error('Error creating personality:', error);
+      console.error('Error in handleSubmit:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add personality. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
