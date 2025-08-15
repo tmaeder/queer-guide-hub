@@ -4059,31 +4059,40 @@ export type Database = {
       }
       venue_checkins: {
         Row: {
+          anonymized_at: string | null
           checked_in_at: string
           created_at: string
           distance_meters: number | null
           id: string
+          is_public: boolean | null
           latitude: number
+          location_precision: string | null
           longitude: number
           user_id: string
           venue_id: string
         }
         Insert: {
+          anonymized_at?: string | null
           checked_in_at?: string
           created_at?: string
           distance_meters?: number | null
           id?: string
+          is_public?: boolean | null
           latitude: number
+          location_precision?: string | null
           longitude: number
           user_id: string
           venue_id: string
         }
         Update: {
+          anonymized_at?: string | null
           checked_in_at?: string
           created_at?: string
           distance_meters?: number | null
           id?: string
+          is_public?: boolean | null
           latitude?: number
+          location_precision?: string | null
           longitude?: number
           user_id?: string
           venue_id?: string
@@ -4618,6 +4627,10 @@ export type Database = {
           table_name: string
         }[]
       }
+      anonymize_location_data: {
+        Args: { lat: number; lng: number; precision_level: string }
+        Returns: Json
+      }
       assign_admin_by_id: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -4872,6 +4885,10 @@ export type Database = {
           tag_name: string
         }[]
       }
+      get_location_access_level: {
+        Args: { checkin_user_id: string; requesting_user_id: string }
+        Returns: string
+      }
       get_news_cron_status: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -4940,6 +4957,19 @@ export type Database = {
         Args: { user_id_param?: string }
         Returns: {
           conversation_id: string
+        }[]
+      }
+      get_venue_checkins_secure: {
+        Args: { user_id_param?: string; venue_id_param?: string }
+        Returns: {
+          checked_in_at: string
+          created_at: string
+          distance_meters: number
+          id: string
+          is_public: boolean
+          location_data: Json
+          user_id: string
+          venue_id: string
         }[]
       }
       has_role: {
