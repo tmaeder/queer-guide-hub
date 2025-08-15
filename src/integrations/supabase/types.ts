@@ -2720,6 +2720,7 @@ export type Database = {
           is_living: boolean | null
           name: string
           nationality: string | null
+          next_concerts: Json | null
           profession: string | null
           pronouns: string | null
           social_links: Json | null
@@ -2747,6 +2748,7 @@ export type Database = {
           is_living?: boolean | null
           name: string
           nationality?: string | null
+          next_concerts?: Json | null
           profession?: string | null
           pronouns?: string | null
           social_links?: Json | null
@@ -2774,6 +2776,7 @@ export type Database = {
           is_living?: boolean | null
           name?: string
           nationality?: string | null
+          next_concerts?: Json | null
           profession?: string | null
           pronouns?: string | null
           social_links?: Json | null

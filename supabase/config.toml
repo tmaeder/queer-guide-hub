@@ -167,3 +167,6 @@ verify_jwt = false
 
 [functions.import-ilga-data]
 verify_jwt = true
+
+[functions.update-musician-concerts]
+verify_jwt = false

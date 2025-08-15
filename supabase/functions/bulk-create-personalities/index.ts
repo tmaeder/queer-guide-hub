@@ -25,6 +25,7 @@ interface PersonalityData {
   image_url: string | null;
   bio: string;
   top_book?: string | null;
+  next_concerts?: any[] | null;
 }
 
 serve(async (req) => {
@@ -81,6 +82,7 @@ serve(async (req) => {
                 image_url: personalityData.image_url,
                 bio: personalityData.bio,
                 top_book: personalityData.top_book,
+                next_concerts: personalityData.next_concerts || [],
                 is_featured: false,
                 visibility: 'public'
               })
@@ -287,6 +289,12 @@ async function fetchPersonalityData(searchTerm: string): Promise<PersonalityData
       topBook = await fetchTopBook(name);
     }
 
+    // Fetch upcoming concerts if the person is a musician
+    let nextConcerts = null;
+    if (occupation && (occupation.toLowerCase().includes('musician') || occupation.toLowerCase().includes('singer') || occupation.toLowerCase().includes('composer') || occupation.toLowerCase().includes('rapper') || occupation.toLowerCase().includes('band') || occupation.toLowerCase().includes('artist'))) {
+      nextConcerts = await fetchUpcomingConcerts(name);
+    }
+
     return {
       name,
       description,
@@ -298,7 +306,8 @@ async function fetchPersonalityData(searchTerm: string): Promise<PersonalityData
       birth_place: birthPlace,
       image_url: imageUrl,
       bio,
-      top_book: topBook
+      top_book: topBook,
+      next_concerts: nextConcerts
     };
 
   } catch (error) {
@@ -375,6 +384,73 @@ async function fetchTopBook(authorName: string): Promise<string | null> {
     return null;
   } catch (error) {
     console.error(`Error fetching top book for ${authorName}:`, error);
+    return null;
+  }
+}
+
+async function fetchUpcomingConcerts(artistName: string): Promise<any[] | null> {
+  try {
+    // Clean artist name for search (remove common suffixes that might interfere)
+    const cleanedName = artistName
+      .replace(/\s*\(.*?\).*$/, '') // Remove parenthetical content
+      .trim();
+
+    console.log(`Searching for concerts for: ${cleanedName}`);
+
+    // Search for the artist on Bandsintown
+    const artistSearchUrl = `https://rest.bandsintown.com/artists/${encodeURIComponent(cleanedName)}?app_id=queer-guide`;
+    const artistResponse = await fetch(artistSearchUrl);
+    
+    if (!artistResponse.ok) {
+      console.log(`No artist found on Bandsintown for: ${cleanedName}`);
+      return null;
+    }
+
+    const artistData = await artistResponse.json();
+    
+    if (!artistData || artistData.error) {
+      console.log(`Artist not found on Bandsintown: ${cleanedName}`);
+      return null;
+    }
+
+    // Get upcoming events for the artist
+    const eventsUrl = `https://rest.bandsintown.com/artists/${encodeURIComponent(cleanedName)}/events?app_id=queer-guide&date=upcoming`;
+    const eventsResponse = await fetch(eventsUrl);
+
+    if (!eventsResponse.ok) {
+      console.log(`No events found for artist: ${cleanedName}`);
+      return null;
+    }
+
+    const eventsData = await eventsResponse.json();
+
+    if (!Array.isArray(eventsData) || eventsData.length === 0) {
+      console.log(`No upcoming events for ${cleanedName}`);
+      return null;
+    }
+
+    // Format the concert data - take first 5 upcoming events
+    const concerts = eventsData.slice(0, 5).map(event => ({
+      id: event.id,
+      datetime: event.datetime,
+      venue: {
+        name: event.venue?.name || 'TBA',
+        city: event.venue?.city || 'TBA',
+        country: event.venue?.country || 'TBA',
+        region: event.venue?.region || '',
+      },
+      lineup: event.lineup || [cleanedName],
+      offers: event.offers || [],
+      url: event.url || event.facebook_rsvp_url || '',
+      description: event.description || '',
+      on_sale_datetime: event.on_sale_datetime || null
+    }));
+
+    console.log(`Found ${concerts.length} upcoming concerts for ${cleanedName}`);
+    return concerts;
+
+  } catch (error) {
+    console.error(`Error fetching concerts for ${artistName}:`, error);
     return null;
   }
 }
