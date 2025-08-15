@@ -14,6 +14,7 @@ import { Upload, Download, Rss, Globe, MapPin, Calendar, Building2, Newspaper, U
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewsSourcesManager } from "@/components/admin/NewsSourcesManager";
 import { BulkCreatePersonalities } from "@/components/personalities/BulkCreatePersonalities";
+import { AdultModelsCsvImport } from "@/components/personalities/AdultModelsCsvImport";
 import BackgroundImportManager, { BackgroundImportManagerRef } from "@/components/admin/BackgroundImportManager";
 import { useRef } from "react";
 interface ImportStats {
@@ -260,6 +261,21 @@ export default function AdminImportHub() {
             <Card>
               <CardContent>
                 <BulkCreatePersonalities />
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  Adult Models CSV Import
+                </CardTitle>
+                <CardDescription>
+                  Import adult models from CSV with pornhub profile, picture, and name columns
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AdultModelsCsvImport />
               </CardContent>
             </Card>
             
