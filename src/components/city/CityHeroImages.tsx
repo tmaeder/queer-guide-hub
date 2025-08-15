@@ -56,40 +56,46 @@ export default function CityHeroImages({ cityName, countryName, className = "" }
   }
 
   return (
-    <div className={`relative h-48 rounded-lg overflow-hidden mb-6 ${className}`}>
-      {/* Main image as background */}
+    <div className={`relative h-80 rounded-2xl overflow-hidden ${className}`}>
+      {/* Main image as background with enhanced styling */}
       <div 
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 hover:scale-105"
         style={{ backgroundImage: `url(${images[0]?.url})` }}
       >
-        <div className="absolute inset-0 bg-foreground/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
       </div>
       
-      {/* Small thumbnail images overlay */}
+      {/* Enhanced thumbnail images overlay */}
       {images.length > 1 && (
-        <div className="absolute bottom-4 right-4 flex gap-2">
-          {images.slice(1).map((image) => (
+        <div className="absolute bottom-6 right-6 flex gap-3">
+          {images.slice(1).map((image, index) => (
             <div
               key={image.id}
-              className="w-12 h-12 rounded border-2 border-foreground/70 overflow-hidden bg-cover bg-center"
+              className="w-16 h-16 rounded-xl border-2 border-white/70 overflow-hidden bg-cover bg-center shadow-lg hover:scale-110 transition-all duration-300 cursor-pointer"
               style={{ backgroundImage: `url(${image.thumbnail})` }}
             />
           ))}
         </div>
       )}
       
-      {/* Photographer credit */}
-      <div className="absolute bottom-2 left-2 text-xs text-primary-foreground drop-shadow-lg">
-        Photo by{' '}
-        <a 
-          href={images[0]?.photographer_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline hover:text-primary-foreground/80"
-        >
-          {images[0]?.photographer}
-        </a>
+      {/* Enhanced photographer credit */}
+      <div className="absolute bottom-3 left-4 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm">
+        <span className="text-xs text-white/90 font-medium">
+          Photo by{' '}
+          <a 
+            href={images[0]?.photographer_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:text-white/70 transition-colors story-link"
+          >
+            {images[0]?.photographer}
+          </a>
+        </span>
       </div>
+
+      {/* Decorative overlay elements */}
+      <div className="absolute top-4 left-4 w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm animate-pulse" />
+      <div className="absolute top-8 right-8 w-12 h-12 rounded-full bg-white/5 backdrop-blur-sm animate-pulse" style={{ animationDelay: '1s' }} />
     </div>
   );
 }
