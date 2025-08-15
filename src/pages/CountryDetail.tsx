@@ -246,7 +246,7 @@ export default function CountryDetail() {
             </CardContent>
           </Card>
 
-          <Card className="border-muted/50 shadow-lg bg-card/80 backdrop-blur-sm">
+          <Card className="border-muted/30 shadow-sm bg-card/60 backdrop-blur-sm">
             <CardContent className="p-0">
               <LGBTJurisdictionInfo
                 countryName={country.name}
