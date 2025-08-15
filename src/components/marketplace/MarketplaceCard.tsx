@@ -34,10 +34,10 @@ export function MarketplaceCard({
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      products: 'bg-primary/10 text-primary',
-      services: 'bg-accent/10 text-accent',
+      products: 'bg-muted text-foreground',
+      services: 'bg-muted text-foreground',
     };
-    return colors[category] || 'bg-muted/10 text-muted-foreground';
+    return colors[category] || 'bg-muted text-foreground';
   };
 
   const formatPrice = () => {
@@ -79,9 +79,7 @@ export function MarketplaceCard({
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-200 border-0 bg-card/50 backdrop-blur-sm relative overflow-hidden">
-      {/* Subtle gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+    <Card className="group transition-opacity bg-card relative overflow-hidden">
       
       {showFavoriteButton && (
         <div className="absolute top-3 right-3 z-10">
@@ -90,7 +88,7 @@ export function MarketplaceCard({
             type="marketplace" 
             variant="ghost" 
             size="sm"
-            className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+            className="bg-background"
           />
         </div>
       )}
@@ -100,7 +98,7 @@ export function MarketplaceCard({
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-base leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+              <h3 className="font-semibold text-base leading-tight line-clamp-1 text-foreground">
                 {listing.title}
               </h3>
               <p className="text-sm text-muted-foreground mt-0.5">
@@ -113,7 +111,7 @@ export function MarketplaceCard({
                 {listing.category}
               </Badge>
               {listing.featured && (
-                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                <div className="w-2 h-2 bg-foreground" />
               )}
             </div>
           </div>
@@ -143,7 +141,7 @@ export function MarketplaceCard({
               {formatPrice()}
             </span>
             {listing.shipping_available && (
-              <Badge variant="outline" className="text-xs border-muted">
+              <Badge variant="outline" className="text-xs">
                 Ships
               </Badge>
             )}
@@ -151,29 +149,29 @@ export function MarketplaceCard({
 
           {averageRating > 0 && (
             <div className="flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-accent text-accent" />
+              <Star className="h-3.5 w-3.5 fill-foreground text-foreground" />
               <span className="text-sm font-medium">{averageRating.toFixed(1)}</span>
             </div>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-border/50">
+        <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-1">
             {listing.website && (
-              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 hover:bg-muted/50" asChild>
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0" asChild>
                 <a href={listing.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </Button>
             )}
             {listing.contact_phone && (
-              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 hover:bg-muted/50">
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
                 <Phone className="h-3 w-3" />
               </Button>
             )}
             {listing.contact_email && (
-              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 hover:bg-muted/50">
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
                 <Mail className="h-3 w-3" />
               </Button>
             )}
@@ -187,7 +185,7 @@ export function MarketplaceCard({
           </div>
           
           <Link to={`/marketplace/${listing.id}`}>
-            <Button size="sm" className="h-7 text-xs bg-primary/90 hover:bg-primary">
+            <Button size="sm" className="h-7 text-xs">
               View
             </Button>
           </Link>
