@@ -58,7 +58,8 @@ export default function PersonalityDetail() {
           return;
         }
 
-        // Transform data to match interface
+        // Transform data to match interface, preserving raw fields data for external links
+        const rawFields = data.fields as Record<string, any> || {};
         const transformedData: Personality = {
           ...data,
           fields: Array.isArray(data.fields) ? data.fields as string[] : [],
@@ -68,6 +69,9 @@ export default function PersonalityDetail() {
           verification_status: (data.verification_status as 'pending' | 'verified' | 'disputed') || 'pending',
           visibility: (data.visibility as 'public' | 'private' | 'draft') || 'public'
         };
+
+        // Store raw fields data for external links
+        (transformedData as any).rawFields = rawFields;
 
         setPersonality(transformedData);
 
@@ -464,6 +468,33 @@ export default function PersonalityDetail() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* External Links */}
+            {(personality as any).rawFields?.pornhub_profile && (
+              <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <div className="h-1 w-6 bg-gradient-to-r from-pink-500 to-red-500 rounded-full" />
+                    External Profiles
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-pink-500/10 border border-pink-500/20">
+                      <ExternalLink className="h-5 w-5 text-pink-500 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground">Pornhub Profile</p>
+                        <Button variant="link" size="sm" asChild className="p-0 h-auto text-pink-500 hover:text-pink-600">
+                          <a href={(personality as any).rawFields.pornhub_profile} target="_blank" rel="noopener noreferrer">
+                            View Profile
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Tags */}
             {personality.tags && personality.tags.length > 0 && (
