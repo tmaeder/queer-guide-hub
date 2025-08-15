@@ -52,7 +52,8 @@ serve(async (req) => {
       pornhub: sources.pornhub === true
     };
 
-    console.log(`Processing ${names.length} personality names`);
+    console.log(`Processing ${names.length} personality names with sources:`, sourceConfig);
+    console.log('Input validation passed, starting processing...');
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -61,8 +62,15 @@ serve(async (req) => {
 
     const results = [];
     const errors = [];
+    const batchSize = 10; // Process in smaller batches to avoid rate limiting
+    const delayBetweenRequests = 1000; // 1 second delay between batches
 
-    for (const name of names) {
+    // Process names in batches
+    for (let i = 0; i < names.length; i += batchSize) {
+      const batch = names.slice(i, i + batchSize);
+      console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(names.length / batchSize)} (${batch.length} names)`);
+      
+      for (const name of batch) {
       try {
         console.log(`Processing: ${name}`);
         
@@ -73,6 +81,8 @@ serve(async (req) => {
         const personalityData = isPornhubUrl && sourceConfig.pornhub 
           ? await fetchPornhubPersonalityData(name.trim())
           : await fetchPersonalityData(name.trim(), sourceConfig);
+        
+        console.log(`Data fetched for ${name}:`, personalityData ? 'success' : 'failed');
         
         if (personalityData) {
           // Check if personality already exists
@@ -143,13 +153,20 @@ serve(async (req) => {
           }
         } else {
           console.log(`No data found for: ${name}`);
-          errors.push({ name, error: 'No data found' });
+          errors.push({ name, error: 'No data found from external sources' });
         }
       } catch (error) {
         console.error(`Error processing ${name}:`, error);
         errors.push({ name, error: error.message });
       }
     }
+    
+    // Add delay between batches to respect rate limits
+    if (i + batchSize < names.length) {
+      console.log(`Waiting ${delayBetweenRequests}ms before next batch...`);
+      await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
+    }
+  }
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -257,9 +274,22 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
       return null;
     }
 
+    // Add delay to respect rate limits
+    await new Promise(resolve => setTimeout(resolve, 200));
+
     // Search for the entity in Wikidata
     const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(searchTerm)}&language=en&format=json&limit=1`;
-    const searchResponse = await fetch(searchUrl);
+    const searchResponse = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
+      }
+    });
+    
+    if (!searchResponse.ok) {
+      console.log(`Wikidata API error ${searchResponse.status} for: ${searchTerm}`);
+      return null;
+    }
+    
     const searchData = await searchResponse.json();
 
     if (!searchData.search || searchData.search.length === 0) {
