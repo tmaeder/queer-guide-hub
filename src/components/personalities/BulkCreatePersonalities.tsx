@@ -41,15 +41,22 @@ export const BulkCreatePersonalities = () => {
         body: { names: namesList }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to create personalities');
+      }
+
+      if (!data) {
+        throw new Error('No response data received');
+      }
 
       toast({
         title: "Bulk Creation Complete",
-        description: `Created ${data.created} personalities. ${data.errors} errors occurred.`,
+        description: `Created ${data.created || 0} personalities. ${data.errors || 0} errors occurred.`,
       });
 
-      if (data.errors > 0) {
-        console.log('Errors:', data.errors);
+      if (data.errors && data.errors > 0) {
+        console.log('Creation errors:', data.errorDetails || data.errors);
       }
 
       // Clear the textarea on success
