@@ -30,6 +30,157 @@ interface LGBTJurisdiction {
   sources: string[];
 }
 
+// Helper function to get country name in URL format
+function getCountrySlug(countryName: string): string {
+  return countryName.toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+// Function to scrape ILGA data from their website
+async function scrapeILGAData(countryName: string): Promise<LGBTJurisdiction | null> {
+  try {
+    const countrySlug = getCountrySlug(countryName);
+    const url = `https://database.ilga.org/${countrySlug}-lgbti`;
+    
+    console.log(`Fetching ILGA data from: ${url}`);
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.log(`Failed to fetch ILGA page for ${countryName}: ${response.status}`);
+      return null;
+    }
+    
+    const html = await response.text();
+    
+    // Parse the HTML to extract jurisdiction data
+    const jurisdiction: LGBTJurisdiction = {
+      country: countryName,
+      countryCode: '', // Will need to be mapped separately
+      criminalisation: {
+        status: extractCriminalisationStatus(html),
+        description: extractCriminalisationDescription(html),
+        penalty: extractPenalty(html),
+        enforcement: extractEnforcement(html)
+      },
+      sameSeMarriage: {
+        status: extractSameSexMarriageStatus(html),
+        description: extractSameSexMarriageDescription(html),
+        date: extractSameSexMarriageDate(html)
+      },
+      antidiscrimination: {
+        status: extractAntidiscriminationStatus(html),
+        description: extractAntidiscriminationDescription(html),
+        scope: extractAntidiscriminationScope(html)
+      },
+      constitutionalProtection: extractConstitutionalProtection(html),
+      hateClimeLaws: extractHateCrimeLaws(html),
+      lastUpdated: new Date().toISOString().split('T')[0],
+      sources: [`ILGA World Database - ${url}`]
+    };
+    
+    return jurisdiction;
+  } catch (error) {
+    console.error(`Error scraping ILGA data for ${countryName}:`, error);
+    return null;
+  }
+}
+
+// Helper functions to extract data from HTML
+function extractCriminalisationStatus(html: string): string {
+  // Look for criminalisation status indicators
+  if (html.includes('Legal') || html.includes('Not criminalised')) {
+    return 'Legal';
+  } else if (html.includes('Criminalised') || html.includes('Illegal')) {
+    return 'Criminalised';
+  }
+  return 'Unknown';
+}
+
+function extractCriminalisationDescription(html: string): string {
+  // Extract description from the criminalisation section
+  const match = html.match(/Criminalisation[^<]*<[^>]*>([^<]+)/i);
+  return match ? match[1].trim() : 'No data available';
+}
+
+function extractPenalty(html: string): string {
+  // Look for penalty information
+  if (html.includes('death penalty') || html.includes('Death penalty')) {
+    return 'Death penalty';
+  } else if (html.includes('imprisonment') || html.includes('prison')) {
+    return 'Imprisonment';
+  } else if (html.includes('fine')) {
+    return 'Fine';
+  }
+  return 'None';
+}
+
+function extractEnforcement(html: string): string {
+  if (html.includes('actively enforced')) {
+    return 'Actively enforced';
+  } else if (html.includes('not enforced')) {
+    return 'Not enforced';
+  }
+  return 'Unknown';
+}
+
+function extractSameSexMarriageStatus(html: string): string {
+  if (html.includes('same-sex marriage') && (html.includes('legal') || html.includes('Legal'))) {
+    return 'Legal';
+  } else if (html.includes('civil union') || html.includes('civil partnership')) {
+    return 'Civil unions';
+  } else if (html.includes('prohibited') || html.includes('banned')) {
+    return 'Prohibited';
+  }
+  return 'Not recognized';
+}
+
+function extractSameSexMarriageDescription(html: string): string {
+  const match = html.match(/same-sex marriage[^<]*<[^>]*>([^<]+)/i);
+  return match ? match[1].trim() : 'No data available';
+}
+
+function extractSameSexMarriageDate(html: string): string | undefined {
+  const dateMatch = html.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2})/);
+  return dateMatch ? dateMatch[1] : undefined;
+}
+
+function extractAntidiscriminationStatus(html: string): string {
+  if (html.includes('comprehensive') && html.includes('protection')) {
+    return 'Protected';
+  } else if (html.includes('partial') && html.includes('protection')) {
+    return 'Partial';
+  } else if (html.includes('no protection')) {
+    return 'None';
+  }
+  return 'Unknown';
+}
+
+function extractAntidiscriminationDescription(html: string): string {
+  const match = html.match(/discrimination[^<]*<[^>]*>([^<]+)/i);
+  return match ? match[1].trim() : 'No data available';
+}
+
+function extractAntidiscriminationScope(html: string): string[] {
+  const scope: string[] = [];
+  if (html.includes('employment')) scope.push('employment');
+  if (html.includes('housing')) scope.push('housing');
+  if (html.includes('education')) scope.push('education');
+  if (html.includes('public services')) scope.push('public services');
+  if (html.includes('healthcare')) scope.push('healthcare');
+  return scope;
+}
+
+function extractConstitutionalProtection(html: string): boolean {
+  return html.includes('constitutional protection') || html.includes('Constitution') && html.includes('protect');
+}
+
+function extractHateCrimeLaws(html: string): boolean {
+  return html.includes('hate crime') || html.includes('hate-crime');
+}
+
 // Static LGBT rights data based on ILGA database - this would normally be fetched from their API
 // This is a simplified version focusing on major jurisdictions
 const LGBT_JURISDICTIONS: Record<string, LGBTJurisdiction> = {
@@ -233,7 +384,7 @@ serve(async (req) => {
   }
 
   try {
-    const { countryCode, countryName } = await req.json();
+    const { countryCode, countryName, forceUpdate } = await req.json();
     
     if (!countryCode && !countryName) {
       return new Response(
@@ -242,24 +393,36 @@ serve(async (req) => {
       );
     }
 
-    console.log('Fetching ILGA data for:', { countryCode, countryName });
+    console.log('Fetching ILGA data for:', { countryCode, countryName, forceUpdate });
 
-    // Try to find by country code first, then by name
     let jurisdictionData = null;
-    
-    if (countryCode) {
-      jurisdictionData = LGBT_JURISDICTIONS[countryCode.toUpperCase()];
-    }
-    
-    if (!jurisdictionData && countryName) {
-      // Search by country name
-      jurisdictionData = Object.values(LGBT_JURISDICTIONS).find(
-        j => j.country.toLowerCase() === countryName.toLowerCase()
-      );
+
+    // If forceUpdate is true, always try to scrape fresh data
+    if (forceUpdate || !countryCode) {
+      const nameToUse = countryName || countryCode;
+      jurisdictionData = await scrapeILGAData(nameToUse);
+      
+      if (jurisdictionData && countryCode) {
+        jurisdictionData.countryCode = countryCode.toUpperCase();
+      }
     }
 
+    // Fallback to static data if scraping failed
     if (!jurisdictionData) {
-      // Return default/unknown status
+      if (countryCode) {
+        jurisdictionData = LGBT_JURISDICTIONS[countryCode.toUpperCase()];
+      }
+      
+      if (!jurisdictionData && countryName) {
+        // Search by country name in static data
+        jurisdictionData = Object.values(LGBT_JURISDICTIONS).find(
+          j => j.country.toLowerCase() === countryName.toLowerCase()
+        );
+      }
+    }
+
+    // Final fallback to unknown status
+    if (!jurisdictionData) {
       jurisdictionData = {
         country: countryName || countryCode,
         countryCode: countryCode || "UNKNOWN",
