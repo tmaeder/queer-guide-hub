@@ -2703,6 +2703,87 @@ export type Database = {
         }
         Relationships: []
       }
+      personalities: {
+        Row: {
+          achievements: Json | null
+          bio: string | null
+          birth_date: string | null
+          birth_place: string | null
+          created_at: string
+          created_by: string | null
+          death_date: string | null
+          description: string | null
+          fields: Json | null
+          id: string
+          image_url: string | null
+          is_featured: boolean | null
+          is_living: boolean | null
+          name: string
+          nationality: string | null
+          profession: string | null
+          pronouns: string | null
+          social_links: Json | null
+          tags: string[] | null
+          updated_at: string
+          verification_status: string | null
+          view_count: number | null
+          visibility: string | null
+          website_url: string | null
+        }
+        Insert: {
+          achievements?: Json | null
+          bio?: string | null
+          birth_date?: string | null
+          birth_place?: string | null
+          created_at?: string
+          created_by?: string | null
+          death_date?: string | null
+          description?: string | null
+          fields?: Json | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          is_living?: boolean | null
+          name: string
+          nationality?: string | null
+          profession?: string | null
+          pronouns?: string | null
+          social_links?: Json | null
+          tags?: string[] | null
+          updated_at?: string
+          verification_status?: string | null
+          view_count?: number | null
+          visibility?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          achievements?: Json | null
+          bio?: string | null
+          birth_date?: string | null
+          birth_place?: string | null
+          created_at?: string
+          created_by?: string | null
+          death_date?: string | null
+          description?: string | null
+          fields?: Json | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          is_living?: boolean | null
+          name?: string
+          nationality?: string | null
+          profession?: string | null
+          pronouns?: string | null
+          social_links?: Json | null
+          tags?: string[] | null
+          updated_at?: string
+          verification_status?: string | null
+          view_count?: number | null
+          visibility?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string
@@ -5069,6 +5150,10 @@ export type Database = {
       }
       increment_listing_views: {
         Args: { listing_id: string }
+        Returns: undefined
+      }
+      increment_personality_views: {
+        Args: { personality_id: string }
         Returns: undefined
       }
       increment_post_comments: {
