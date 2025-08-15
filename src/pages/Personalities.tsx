@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { PersonalityCard } from "@/components/personalities/PersonalityCard";
 import { PersonalitiesFilters } from "@/components/personalities/PersonalitiesFilters";
+import { AddPersonalityDialog } from "@/components/personalities/AddPersonalityDialog";
 import { usePersonalities, PersonalityFilters } from "@/hooks/usePersonalities";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -83,10 +84,7 @@ export default function Personalities() {
           </p>
           
           {user && (
-            <Button size="lg" className="gap-2">
-              <Plus className="h-5 w-5" />
-              Add Personality
-            </Button>
+            <AddPersonalityDialog onSuccess={() => window.location.reload()} />
           )}
         </div>
 
