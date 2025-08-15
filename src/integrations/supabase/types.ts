@@ -4651,11 +4651,13 @@ export type Database = {
         Returns: number
       }
       can_view_sensitive_profile_data: {
-        Args: {
-          privacy_field?: string
-          profile_user_id: string
-          requesting_user_id: string
-        }
+        Args:
+          | {
+              privacy_field?: string
+              profile_user_id: string
+              requesting_user_id: string
+            }
+          | { requesting_user_id: string; target_user_id: string }
         Returns: boolean
       }
       check_rate_limit: {
@@ -5080,6 +5082,10 @@ export type Database = {
         Returns: undefined
       }
       validate_content_security: {
+        Args: { content: string }
+        Returns: boolean
+      }
+      validate_content_security_enhanced: {
         Args: { content: string }
         Returns: boolean
       }
