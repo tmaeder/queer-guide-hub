@@ -15,6 +15,7 @@ import { usePersonalities, PersonalityFilters } from "@/hooks/usePersonalities";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { toast } from "@/hooks/use-toast";
 import { PersonalitiesCsvImport } from "@/components/personalities/PersonalitiesCsvImport";
+import { BulkCreatePersonalities } from "@/components/personalities/BulkCreatePersonalities";
 import { 
   Users, 
   Search, 
@@ -185,6 +186,11 @@ export default function AdminPersonalities() {
             Export CSV
           </Button>
         </div>
+      </div>
+
+      {/* Bulk Import Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <BulkCreatePersonalities />
       </div>
 
       {/* Stats Cards */}
