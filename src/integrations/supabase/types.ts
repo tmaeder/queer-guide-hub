@@ -445,6 +445,13 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       community_groups: {
@@ -578,6 +585,13 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       content_embeddings: {
@@ -695,6 +709,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "conversation_participants_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "fk_conversation_participants_user_id"
             columns: ["user_id"]
             isOneToOne: false
@@ -713,6 +734,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_conversation_participants_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
             referencedColumns: ["user_id"]
           },
         ]
@@ -1265,6 +1293,13 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "event_attendees_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       event_categories: {
@@ -1510,6 +1545,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
             referencedColumns: ["user_id"]
           },
           {
@@ -2018,6 +2060,13 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "marketplace_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       marketplace_listings: {
@@ -2135,6 +2184,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "marketplace_listings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "marketplace_listings_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
@@ -2209,6 +2265,13 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "marketplace_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       message_reactions: {
@@ -2260,6 +2323,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
             referencedColumns: ["user_id"]
           },
         ]
@@ -2338,6 +2408,13 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_profiles_user_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
             referencedColumns: ["user_id"]
           },
         ]
@@ -2746,6 +2823,13 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       post_likes: {
@@ -2794,6 +2878,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
             referencedColumns: ["user_id"]
           },
         ]
@@ -3711,6 +3802,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "user_follows_following_id_fkey"
             columns: ["following_id"]
             isOneToOne: false
@@ -3729,6 +3827,13 @@ export type Database = {
             columns: ["following_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
             referencedColumns: ["user_id"]
           },
         ]
@@ -4173,6 +4278,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "venue_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "venue_reviews_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
@@ -4424,6 +4536,13 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "secure_profile_view"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
     }
@@ -4583,6 +4702,105 @@ export type Database = {
           sexual_orientation?: never
           social_links?: Json | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      secure_profile_view: {
+        Row: {
+          accessibility_needs: string | null
+          age_range: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          display_name: string | null
+          education: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          first_name: string | null
+          gender_identity: string | null
+          income_range: string | null
+          interests: Json | null
+          languages: Json | null
+          last_name: string | null
+          location: string | null
+          occupation: string | null
+          phone: string | null
+          political_views: string | null
+          preferences: Json | null
+          privacy_settings: Json | null
+          pronouns: string | null
+          relationship_status: string | null
+          religious_beliefs: string | null
+          sexual_orientation: string | null
+          social_links: Json | null
+          updated_at: string | null
+          user_id: string | null
+          website: string | null
+        }
+        Insert: {
+          accessibility_needs?: string | null
+          age_range?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          display_name?: string | null
+          education?: string | null
+          emergency_contact_name?: never
+          emergency_contact_phone?: never
+          first_name?: string | null
+          gender_identity?: never
+          income_range?: never
+          interests?: Json | null
+          languages?: Json | null
+          last_name?: string | null
+          location?: string | null
+          occupation?: string | null
+          phone?: never
+          political_views?: never
+          preferences?: Json | null
+          privacy_settings?: Json | null
+          pronouns?: string | null
+          relationship_status?: never
+          religious_beliefs?: never
+          sexual_orientation?: never
+          social_links?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          website?: string | null
+        }
+        Update: {
+          accessibility_needs?: string | null
+          age_range?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          display_name?: string | null
+          education?: string | null
+          emergency_contact_name?: never
+          emergency_contact_phone?: never
+          first_name?: string | null
+          gender_identity?: never
+          income_range?: never
+          interests?: Json | null
+          languages?: Json | null
+          last_name?: string | null
+          location?: string | null
+          occupation?: string | null
+          phone?: never
+          political_views?: never
+          preferences?: Json | null
+          privacy_settings?: Json | null
+          pronouns?: string | null
+          relationship_status?: never
+          religious_beliefs?: never
+          sexual_orientation?: never
+          social_links?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -4759,12 +4977,20 @@ export type Database = {
         Args: { encrypted_data: string; user_salt: string }
         Returns: string
       }
+      decrypt_profile_data: {
+        Args: { encrypted_data: string; user_id_param: string }
+        Returns: string
+      }
       decrypt_sensitive_data: {
         Args: { encrypted_data: string; user_salt: string }
         Returns: string
       }
       encrypt_booking_data: {
         Args: { data_text: string; user_salt: string }
+        Returns: string
+      }
+      encrypt_profile_data: {
+        Args: { data_text: string; user_id_param: string }
         Returns: string
       }
       encrypt_sensitive_data: {
