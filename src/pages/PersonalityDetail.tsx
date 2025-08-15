@@ -70,9 +70,6 @@ export default function PersonalityDetail() {
 
         setPersonality(transformedData);
 
-        // Increment view count
-        incrementViews(id);
-
         // Set page title for SEO
         document.title = `${transformedData.name} - Queer Guide`;
         
@@ -102,7 +99,14 @@ export default function PersonalityDetail() {
     };
 
     fetchPersonality();
-  }, [id, navigate, incrementViews]);
+  }, [id, navigate]);
+
+  // Separate effect for incrementing views to avoid infinite loops
+  useEffect(() => {
+    if (personality?.id) {
+      incrementViews(personality.id);
+    }
+  }, [personality?.id, incrementViews]);
 
   const calculateAge = (birthDate: string, deathDate?: string) => {
     const birth = new Date(birthDate);
