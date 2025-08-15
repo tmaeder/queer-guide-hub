@@ -258,9 +258,50 @@ export default function AdminImportHub() {
 
           <TabsContent value="personalities" className="space-y-6">
             <Card>
-              
               <CardContent>
                 <BulkCreatePersonalities />
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <RefreshCw className="h-5 w-5" />
+                  Wikipedia Image Reimport
+                </CardTitle>
+                <CardDescription>
+                  Reimport all personality images from Wikipedia (processes in batches of 5)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    This will search Wikipedia for updated images for all personalities and update their image URLs. Processing is done in batches to avoid overwhelming the Wikipedia API.
+                  </AlertDescription>
+                </Alert>
+                
+                <Button 
+                  onClick={() => handleApiImport('reimport-personality-images')} 
+                  disabled={loading === 'reimport-personality-images'} 
+                  className="w-full"
+                >
+                  {loading === 'reimport-personality-images' ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Reimporting Images...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Reimport All Wikipedia Images
+                    </>
+                  )}
+                </Button>
+                
+                {loading === 'reimport-personality-images' && progress['reimport-personality-images'] > 0 && (
+                  <Progress value={progress['reimport-personality-images']} className="h-2" />
+                )}
               </CardContent>
             </Card>
           </TabsContent>
