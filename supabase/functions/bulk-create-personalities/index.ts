@@ -24,6 +24,7 @@ interface PersonalityData {
   birth_place: string | null;
   image_url: string | null;
   bio: string;
+  top_book?: string | null;
 }
 
 serve(async (req) => {
@@ -79,6 +80,7 @@ serve(async (req) => {
                 birth_place: personalityData.birth_place,
                 image_url: personalityData.image_url,
                 bio: personalityData.bio,
+                top_book: personalityData.top_book,
                 is_featured: false,
                 visibility: 'public'
               })
@@ -279,6 +281,12 @@ async function fetchPersonalityData(searchTerm: string): Promise<PersonalityData
       return null;
     };
 
+    // Fetch top book if the person is an author
+    let topBook = null;
+    if (occupation && (occupation.toLowerCase().includes('author') || occupation.toLowerCase().includes('writer') || occupation.toLowerCase().includes('novelist') || occupation.toLowerCase().includes('poet'))) {
+      topBook = await fetchTopBook(name);
+    }
+
     return {
       name,
       description,
@@ -289,11 +297,84 @@ async function fetchPersonalityData(searchTerm: string): Promise<PersonalityData
       nationality,
       birth_place: birthPlace,
       image_url: imageUrl,
-      bio
+      bio,
+      top_book: topBook
     };
 
   } catch (error) {
     console.error('Error fetching personality data:', error);
+    return null;
+  }
+}
+
+async function fetchTopBook(authorName: string): Promise<string | null> {
+  try {
+    // Search for the author in Open Library
+    const searchUrl = `https://openlibrary.org/search/authors.json?q=${encodeURIComponent(authorName)}&limit=1`;
+    const searchResponse = await fetch(searchUrl);
+    const searchData = await searchResponse.json();
+
+    if (!searchData.docs || searchData.docs.length === 0) {
+      console.log(`No Open Library author found for: ${authorName}`);
+      return null;
+    }
+
+    const author = searchData.docs[0];
+    const authorKey = author.key;
+
+    if (!authorKey) {
+      return null;
+    }
+
+    // Get author's works
+    const worksUrl = `https://openlibrary.org/authors/${authorKey}/works.json?limit=50`;
+    const worksResponse = await fetch(worksUrl);
+    const worksData = await worksResponse.json();
+
+    if (!worksData.entries || worksData.entries.length === 0) {
+      console.log(`No works found for author: ${authorName}`);
+      return null;
+    }
+
+    // Find the most popular work (highest edition count or first in list)
+    let topWork = null;
+    let maxEditions = 0;
+
+    for (const work of worksData.entries.slice(0, 20)) { // Check first 20 works
+      const workKey = work.key;
+      
+      try {
+        // Get work details to find edition count
+        const workUrl = `https://openlibrary.org${workKey}.json`;
+        const workResponse = await fetch(workUrl);
+        const workData = await workResponse.json();
+        
+        // Count editions by checking covers or simply use the work if it has a title
+        if (workData.title) {
+          const editionCount = workData.covers ? workData.covers.length : 1;
+          
+          if (editionCount > maxEditions || !topWork) {
+            maxEditions = editionCount;
+            topWork = workData.title;
+          }
+        }
+      } catch (error) {
+        console.log(`Error fetching work details for ${workKey}:`, error);
+        // If we can't get details, just use the first work with a title
+        if (work.title && !topWork) {
+          topWork = work.title;
+        }
+      }
+    }
+
+    if (topWork) {
+      console.log(`Found top book for ${authorName}: ${topWork}`);
+      return topWork;
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`Error fetching top book for ${authorName}:`, error);
     return null;
   }
 }
