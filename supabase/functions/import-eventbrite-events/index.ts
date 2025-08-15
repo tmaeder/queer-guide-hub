@@ -94,124 +94,140 @@ serve(async (req) => {
 
     console.log('Importing events from Eventbrite:', { query, location, categoryId });
 
-    // Build search parameters
-    const searchParams = new URLSearchParams({
-      q: query,
-      'location.within': location ? `25mi` : '',
-      'location.address': location || '',
-      'start_date.range_start': new Date().toISOString(),
-      'sort_by': 'relevance',
-      'page_size': '50'
-    });
+    // Create background task for processing
+    const backgroundTask = async () => {
+      console.log('Starting background task for Eventbrite import');
+      
+      // Build search parameters
+      const searchParams = new URLSearchParams({
+        q: query,
+        'location.within': location ? `25mi` : '',
+        'location.address': location || '',
+        'start_date.range_start': new Date().toISOString(),
+        'sort_by': 'relevance',
+        'page_size': '50'
+      });
 
-    if (categoryId) {
-      searchParams.append('categories', categoryId);
-    }
-
-    if (location) {
-      searchParams.append('location.address', location);
-      searchParams.append('location.within', '25mi');
-    }
-
-    // Make request to Eventbrite API
-    const eventbriteUrl = `https://www.eventbriteapi.com/v3/events/search/?${searchParams.toString()}`;
-    
-    console.log('Eventbrite API URL:', eventbriteUrl);
-
-    const eventbriteResponse = await fetch(eventbriteUrl, {
-      headers: {
-        'Authorization': `Bearer ${eventbriteToken}`,
-        'Content-Type': 'application/json'
+      if (categoryId) {
+        searchParams.append('categories', categoryId);
       }
-    });
 
-    if (!eventbriteResponse.ok) {
-      const errorText = await eventbriteResponse.text();
-      console.error('Eventbrite API error:', errorText);
-      throw new Error(`Eventbrite API error: ${eventbriteResponse.status} - ${errorText}`);
-    }
+      if (location) {
+        searchParams.append('location.address', location);
+        searchParams.append('location.within', '25mi');
+      }
 
-    const eventbriteData: EventbriteResponse = await eventbriteResponse.json();
-    console.log(`Found ${eventbriteData.events.length} events from Eventbrite`);
+      // Make request to Eventbrite API
+      const eventbriteUrl = `https://www.eventbriteapi.com/v3/events/search/?${searchParams.toString()}`;
+      
+      console.log('Eventbrite API URL:', eventbriteUrl);
 
-    let importedCount = 0;
-
-    for (const event of eventbriteData.events) {
       try {
-        // Map event type from category
-        let eventType = 'other';
-        if (event.category?.name) {
-          const category = event.category.name.toLowerCase();
-          if (category.includes('music')) eventType = 'concert';
-          else if (category.includes('food') || category.includes('drink')) eventType = 'party';
-          else if (category.includes('arts') || category.includes('performing')) eventType = 'exhibition';
-          else if (category.includes('sports') || category.includes('fitness')) eventType = 'sports';
-          else if (category.includes('business') || category.includes('professional')) eventType = 'conference';
-          else if (category.includes('community') || category.includes('culture')) eventType = 'meetup';
+        const eventbriteResponse = await fetch(eventbriteUrl, {
+          headers: {
+            'Authorization': `Bearer ${eventbriteToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!eventbriteResponse.ok) {
+          const errorText = await eventbriteResponse.text();
+          console.error('Eventbrite API error:', errorText);
+          throw new Error(`Eventbrite API error: ${eventbriteResponse.status} - ${errorText}`);
         }
 
-        // Extract location data
-        const address = event.venue?.address;
-        const city = address?.city || '';
-        const state = address?.region || '';
-        const country = address?.country || 'US';
-        const latitude = address?.latitude ? parseFloat(address.latitude) : null;
-        const longitude = address?.longitude ? parseFloat(address.longitude) : null;
-        const fullAddress = address?.address_1 || '';
+        const eventbriteData: EventbriteResponse = await eventbriteResponse.json();
+        console.log(`Found ${eventbriteData.events.length} events from Eventbrite`);
 
-        // Extract pricing
-        const isFree = event.ticket_availability?.is_free || false;
-        const priceMin = event.ticket_availability?.minimum_ticket_price?.major_value || null;
-        const priceMax = event.ticket_availability?.maximum_ticket_price?.major_value || null;
+        let importedCount = 0;
 
-        const eventData = {
-          title: event.name.text,
-          description: event.description?.text || null,
-          event_type: eventType,
-          start_date: event.start.utc,
-          end_date: event.end.utc,
-          venue_name: event.venue?.name || null,
-          address: fullAddress || null,
-          city: city,
-          state: state,
-          country: country,
-          latitude: latitude,
-          longitude: longitude,
-          website: event.url,
-          ticket_url: event.url,
-          organizer_name: event.organizer?.name || null,
-          organizer_contact: event.organizer?.url || null,
-          is_free: isFree,
-          price_min: priceMin,
-          price_max: priceMax,
-          max_attendees: event.capacity || null,
-          status: 'active',
-          featured: false
-        };
+        for (const event of eventbriteData.events) {
+          try {
+            // Map event type from category
+            let eventType = 'other';
+            if (event.category?.name) {
+              const category = event.category.name.toLowerCase();
+              if (category.includes('music')) eventType = 'concert';
+              else if (category.includes('food') || category.includes('drink')) eventType = 'party';
+              else if (category.includes('arts') || category.includes('performing')) eventType = 'exhibition';
+              else if (category.includes('sports') || category.includes('fitness')) eventType = 'sports';
+              else if (category.includes('business') || category.includes('professional')) eventType = 'conference';
+              else if (category.includes('community') || category.includes('culture')) eventType = 'meetup';
+            }
 
-        console.log('Inserting event:', eventData.title);
+            // Extract location data
+            const address = event.venue?.address;
+            const city = address?.city || '';
+            const state = address?.region || '';
+            const country = address?.country || 'US';
+            const latitude = address?.latitude ? parseFloat(address.latitude) : null;
+            const longitude = address?.longitude ? parseFloat(address.longitude) : null;
+            const fullAddress = address?.address_1 || '';
 
-        const { error } = await supabaseClient
-          .from('events')
-          .insert(eventData);
+            // Extract pricing
+            const isFree = event.ticket_availability?.is_free || false;
+            const priceMin = event.ticket_availability?.minimum_ticket_price?.major_value || null;
+            const priceMax = event.ticket_availability?.maximum_ticket_price?.major_value || null;
 
-        if (error) {
-          console.error('Error inserting event:', error);
-          // Continue with next event instead of failing completely
-        } else {
-          importedCount++;
+            const eventData = {
+              title: event.name.text,
+              description: event.description?.text || null,
+              event_type: eventType,
+              start_date: event.start.utc,
+              end_date: event.end.utc,
+              venue_name: event.venue?.name || null,
+              address: fullAddress || null,
+              city: city,
+              state: state,
+              country: country,
+              latitude: latitude,
+              longitude: longitude,
+              website: event.url,
+              ticket_url: event.url,
+              organizer_name: event.organizer?.name || null,
+              organizer_contact: event.organizer?.url || null,
+              is_free: isFree,
+              price_min: priceMin,
+              price_max: priceMax,
+              max_attendees: event.capacity || null,
+              status: 'active',
+              featured: false
+            };
+
+            console.log('Inserting event:', eventData.title);
+
+            const { error } = await supabaseClient
+              .from('events')
+              .insert(eventData);
+
+            if (error) {
+              console.error('Error inserting event:', error);
+              // Continue with next event instead of failing completely
+            } else {
+              importedCount++;
+            }
+          } catch (eventError) {
+            console.error('Error processing event:', event.name.text, eventError);
+            // Continue with next event
+          }
         }
-      } catch (eventError) {
-        console.error('Error processing event:', event.name.text, eventError);
-        // Continue with next event
+
+        console.log(`Background task completed. Imported ${importedCount} out of ${eventbriteData.events.length} events`);
+      } catch (error) {
+        console.error('Background task error:', error);
       }
-    }
+    };
 
+    // Start the background task
+    EdgeRuntime.waitUntil(backgroundTask());
+
+    // Return immediate response
     return new Response(
       JSON.stringify({ 
         success: true, 
-        imported: importedCount,
-        total_found: eventbriteData.events.length 
+        message: 'Eventbrite import started in background',
+        query: query,
+        location: location
       }),
       { 
         headers: { 

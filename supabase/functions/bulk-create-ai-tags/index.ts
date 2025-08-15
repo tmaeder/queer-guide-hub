@@ -35,99 +35,110 @@ serve(async (req) => {
       );
     }
 
-    const results = [];
-    const categories = [
-      'identity', 'relationships', 'health', 'culture', 'politics', 'entertainment',
-      'business', 'technology', 'education', 'travel', 'food', 'sports',
-      'arts', 'community', 'activism', 'legal', 'history', 'literature'
-    ];
+    // Create background task for processing
+    const backgroundTask = async () => {
+      console.log(`Starting background task to process ${terms.length} terms`);
+      
+      const results = [];
+      const categories = [
+        'identity', 'relationships', 'health', 'culture', 'politics', 'entertainment',
+        'business', 'technology', 'education', 'travel', 'food', 'sports',
+        'arts', 'community', 'activism', 'legal', 'history', 'literature'
+      ];
 
-    for (const term of terms) {
-      if (!term.trim()) continue;
+      for (const term of terms) {
+        if (!term.trim()) continue;
 
-      const cleanTerm = term.trim();
-      const slug = cleanTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const cleanTerm = term.trim();
+        const slug = cleanTerm.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-      try {
-        // Check if tag already exists
-        const { data: existingTag } = await supabaseClient
-          .from('unified_tags')
-          .select('id, name')
-          .eq('slug', slug)
-          .single();
+        try {
+          // Check if tag already exists
+          const { data: existingTag } = await supabaseClient
+            .from('unified_tags')
+            .select('id, name')
+            .eq('slug', slug)
+            .single();
 
-        if (existingTag) {
-          results.push({
-            term: cleanTerm,
-            status: 'exists',
-            tag: existingTag
-          });
-          continue;
-        }
+          if (existingTag) {
+            results.push({
+              term: cleanTerm,
+              status: 'exists',
+              tag: existingTag
+            });
+            continue;
+          }
 
-        // Get Wikipedia data
-        const wikiData = await getWikipediaData(cleanTerm);
-        
-        // Use AI to categorize and enhance description
-        const aiResponse = await categorizeWithAI(cleanTerm, wikiData.description, categories, openAIApiKey);
-        
-        // Fetch and upload image
-        const imageUrl = await fetchAndStoreImage(cleanTerm, supabaseClient);
-        
-        // Create the tag
-        const { data: newTag, error: tagError } = await supabaseClient
-          .from('unified_tags')
-          .insert({
-            name: cleanTerm,
-            slug: slug,
-            category: aiResponse.category,
-            description: aiResponse.description,
-            image_url: imageUrl,
-            wikipedia_url: wikiData.url,
-            usage_count: 0
-          })
-          .select()
-          .single();
+          // Get Wikipedia data
+          const wikiData = await getWikipediaData(cleanTerm);
+          
+          // Use AI to categorize and enhance description
+          const aiResponse = await categorizeWithAI(cleanTerm, wikiData.description, categories, openAIApiKey);
+          
+          // Fetch and upload image
+          const imageUrl = await fetchAndStoreImage(cleanTerm, supabaseClient);
+          
+          // Create the tag
+          const { data: newTag, error: tagError } = await supabaseClient
+            .from('unified_tags')
+            .insert({
+              name: cleanTerm,
+              slug: slug,
+              category: aiResponse.category,
+              description: aiResponse.description,
+              image_url: imageUrl,
+              wikipedia_url: wikiData.url,
+              usage_count: 0
+            })
+            .select()
+            .single();
 
-        if (tagError) {
-          console.error('Error creating tag:', tagError);
+          if (tagError) {
+            console.error('Error creating tag:', tagError);
+            results.push({
+              term: cleanTerm,
+              status: 'error',
+              error: tagError.message
+            });
+          } else {
+            results.push({
+              term: cleanTerm,
+              status: 'created',
+              tag: newTag,
+              category: aiResponse.category,
+              description: aiResponse.description,
+              image_url: imageUrl,
+              wikipedia_url: wikiData.url
+            });
+          }
+
+        } catch (error) {
+          console.error(`Error processing term "${cleanTerm}":`, error);
           results.push({
             term: cleanTerm,
             status: 'error',
-            error: tagError.message
-          });
-        } else {
-          results.push({
-            term: cleanTerm,
-            status: 'created',
-            tag: newTag,
-            category: aiResponse.category,
-            description: aiResponse.description,
-            image_url: imageUrl,
-            wikipedia_url: wikiData.url
+            error: error.message
           });
         }
-
-      } catch (error) {
-        console.error(`Error processing term "${cleanTerm}":`, error);
-        results.push({
-          term: cleanTerm,
-          status: 'error',
-          error: error.message
-        });
       }
-    }
 
+      console.log(`Background task completed. Summary:`, {
+        total: terms.length,
+        created: results.filter(r => r.status === 'created').length,
+        exists: results.filter(r => r.status === 'exists').length,
+        errors: results.filter(r => r.status === 'error').length
+      });
+    };
+
+    // Start the background task
+    EdgeRuntime.waitUntil(backgroundTask());
+
+    // Return immediate response
     return new Response(
       JSON.stringify({ 
         success: true, 
-        results,
-        summary: {
-          total: terms.length,
-          created: results.filter(r => r.status === 'created').length,
-          exists: results.filter(r => r.status === 'exists').length,
-          errors: results.filter(r => r.status === 'error').length
-        }
+        message: `Started processing ${terms.length} terms in background`,
+        terms_count: terms.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
