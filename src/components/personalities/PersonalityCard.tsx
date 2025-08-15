@@ -41,8 +41,13 @@ export function PersonalityCard({ personality, onClick }: PersonalityCardProps) 
     return personality.is_living ? `${age} years old` : `${age} years`;
   };
 
+  const handleCardClick = () => {
+    // Navigate to detail page
+    window.location.href = `/personalities/${personality.id}`;
+  };
+
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer" onClick={onClick}>
+    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer" onClick={handleCardClick}>
       <CardHeader className="pb-3">
         <div className="flex items-start gap-4">
           <Avatar className="h-16 w-16">
