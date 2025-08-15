@@ -71,6 +71,9 @@ serve(async (req) => {
         // Use AI to categorize and enhance description
         const aiResponse = await categorizeWithAI(cleanTerm, wikiData.description, categories, openAIApiKey);
         
+        // Fetch and upload image
+        const imageUrl = await fetchAndStoreImage(cleanTerm, supabaseClient);
+        
         // Create the tag
         const { data: newTag, error: tagError } = await supabaseClient
           .from('unified_tags')
@@ -79,6 +82,7 @@ serve(async (req) => {
             slug: slug,
             category: aiResponse.category,
             description: aiResponse.description,
+            image_url: imageUrl,
             usage_count: 0
           })
           .select()
@@ -97,7 +101,8 @@ serve(async (req) => {
             status: 'created',
             tag: newTag,
             category: aiResponse.category,
-            description: aiResponse.description
+            description: aiResponse.description,
+            image_url: imageUrl
           });
         }
 
@@ -232,5 +237,143 @@ Respond with JSON in this format:
       category: 'general',
       description: wikiDescription || `Information about ${term}`
     };
+  }
+}
+
+async function fetchAndStoreImage(term: string, supabaseClient: any): Promise<string | null> {
+  try {
+    console.log(`Fetching image for term: ${term}`);
+    
+    // Try Wikimedia Commons first
+    let imageUrl = await getWikimediaImage(term);
+    
+    // If no Wikimedia image, try Unsplash
+    if (!imageUrl) {
+      imageUrl = await getUnsplashImage(term);
+    }
+    
+    if (!imageUrl) {
+      console.log(`No image found for term: ${term}`);
+      return null;
+    }
+    
+    // Download and upload to Supabase storage
+    const storedImageUrl = await downloadAndStoreImage(imageUrl, term, supabaseClient);
+    return storedImageUrl;
+    
+  } catch (error) {
+    console.error(`Error fetching image for "${term}":`, error);
+    return null;
+  }
+}
+
+async function getWikimediaImage(term: string): Promise<string | null> {
+  try {
+    // Search for images on Wikimedia Commons
+    const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srnamespace=6&format=json&origin=*&srlimit=5`;
+    
+    const searchResponse = await fetch(searchUrl);
+    const searchData = await searchResponse.json();
+    
+    if (searchData.query?.search?.length > 0) {
+      // Get the first image file
+      const fileName = searchData.query.search[0].title;
+      
+      // Get image info
+      const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json&origin=*`;
+      
+      const imageResponse = await fetch(imageInfoUrl);
+      const imageData = await imageResponse.json();
+      
+      const pages = imageData.query?.pages;
+      if (pages) {
+        const pageId = Object.keys(pages)[0];
+        const imageInfo = pages[pageId]?.imageinfo?.[0];
+        
+        if (imageInfo?.thumburl) {
+          console.log(`Found Wikimedia image for "${term}": ${imageInfo.thumburl}`);
+          return imageInfo.thumburl;
+        }
+      }
+    }
+  } catch (error) {
+    console.log(`Wikimedia search failed for "${term}":`, error.message);
+  }
+  
+  return null;
+}
+
+async function getUnsplashImage(term: string): Promise<string | null> {
+  try {
+    const unsplashAccessKey = Deno.env.get('UNSPLASH_ACCESS_KEY');
+    if (!unsplashAccessKey) {
+      console.log('Unsplash access key not configured');
+      return null;
+    }
+    
+    const searchUrl = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(term)}&per_page=1&orientation=landscape`;
+    
+    const response = await fetch(searchUrl, {
+      headers: {
+        'Authorization': `Client-ID ${unsplashAccessKey}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.results?.length > 0) {
+        const imageUrl = data.results[0].urls.regular;
+        console.log(`Found Unsplash image for "${term}": ${imageUrl}`);
+        return imageUrl;
+      }
+    }
+  } catch (error) {
+    console.log(`Unsplash search failed for "${term}":`, error.message);
+  }
+  
+  return null;
+}
+
+async function downloadAndStoreImage(imageUrl: string, term: string, supabaseClient: any): Promise<string | null> {
+  try {
+    console.log(`Downloading image from: ${imageUrl}`);
+    
+    // Download the image
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download image: ${response.status}`);
+    }
+    
+    const imageBlob = await response.blob();
+    const arrayBuffer = await imageBlob.arrayBuffer();
+    
+    // Generate filename
+    const fileExtension = imageUrl.includes('.jpg') || imageUrl.includes('jpeg') ? 'jpg' : 'png';
+    const fileName = `${term.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}.${fileExtension}`;
+    
+    // Upload to Supabase storage
+    const { data, error } = await supabaseClient.storage
+      .from('tag-images')
+      .upload(fileName, arrayBuffer, {
+        contentType: imageBlob.type || 'image/jpeg',
+        cacheControl: '3600'
+      });
+    
+    if (error) {
+      console.error('Error uploading to storage:', error);
+      return null;
+    }
+    
+    // Get public URL
+    const { data: publicUrlData } = supabaseClient.storage
+      .from('tag-images')
+      .getPublicUrl(fileName);
+    
+    console.log(`Image stored successfully: ${publicUrlData.publicUrl}`);
+    return publicUrlData.publicUrl;
+    
+  } catch (error) {
+    console.error('Error downloading and storing image:', error);
+    return null;
   }
 }
