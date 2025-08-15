@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, MapPin, Globe, Users, Building2, Calendar, Star, Heart, TrendingUp, MapIcon, Newspaper } from "lucide-react";
+import { ArrowLeft, MapPin, Globe, Users, Building2, Calendar, Star, Heart, TrendingUp, MapIcon, Newspaper, Cloud, Sun, CloudRain, Thermometer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,10 +20,12 @@ import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
 import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
 import { useNews } from "@/hooks/useNews";
 import { NewsCard } from "@/components/news/NewsCard";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function CountryDetail() {
   const { id: countryId } = useParams<{ id: string }>();
   const { t } = useTranslation();
+  const [weatherData, setWeatherData] = useState<any>(null);
   
   if (!countryId) {
     return <div>Country not found</div>;
@@ -84,6 +86,37 @@ export default function CountryDetail() {
   }, [localNews, country]);
 
   const loading = countryLoading || citiesLoading || venuesLoading || cityVenuesLoading || eventsLoading || newsLoading;
+
+  // Fetch weather data for header indicator
+  useEffect(() => {
+    const fetchWeatherData = async () => {
+      if (!country?.latitude || !country?.longitude) return;
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('get-weather-forecast', {
+          body: {
+            latitude: country.latitude,
+            longitude: country.longitude,
+            cityName: country.capital || country.name
+          }
+        });
+
+        if (data && !error) {
+          setWeatherData(data);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch weather data for header:', error);
+      }
+    };
+
+    fetchWeatherData();
+  }, [country?.latitude, country?.longitude, country?.capital, country?.name]);
+
+  const getWeatherIcon = (condition: string) => {
+    if (condition?.includes('rain') || condition?.includes('drizzle')) return CloudRain;
+    if (condition?.includes('cloud')) return Cloud;
+    return Sun;
+  };
 
   if (loading) {
     return (
@@ -152,9 +185,27 @@ export default function CountryDetail() {
             
             <div className="text-center space-y-6">
               <div className="space-y-4">
-                <h1 className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
-                  {country.flag_emoji} {country.name}
-                </h1>
+                <div className="flex items-center justify-center gap-4 flex-wrap">
+                  <h1 className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
+                    {country.flag_emoji} {country.name}
+                  </h1>
+                  
+                  {/* Weather Indicator */}
+                  {weatherData?.current && (
+                    <div className="flex items-center gap-2 bg-muted/20 backdrop-blur-sm rounded-full px-4 py-2 border border-muted/30">
+                      {(() => {
+                        const WeatherIcon = getWeatherIcon(weatherData.current.condition);
+                        return <WeatherIcon className="h-5 w-5 text-primary" />;
+                      })()}
+                      <span className="text-lg font-semibold">
+                        {Math.round(weatherData.current.temperature)}°C
+                      </span>
+                      <span className="text-sm text-muted-foreground hidden sm:inline">
+                        {country.capital || country.name}
+                      </span>
+                    </div>
+                  )}
+                </div>
                 
                 <p className="text-xl lg:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
                   {country.description || `Discover everything about ${country.name} - from major cities and cultural landmarks to local venues and upcoming events.`}
