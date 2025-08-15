@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 import { DirectorySearch } from "@/components/directory/DirectorySearch";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +41,7 @@ type SortOption = "alphabetical" | "usage" | "recent" | "popular";
 export default function Ressources() {
   const { tagName } = useParams<{ tagName: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { allTags, tagsByCategory, loading, error, searchTags } = useCentralizedTags();
   
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
@@ -54,6 +55,39 @@ export default function Ressources() {
   const [processingImages, setProcessingImages] = useState(false);
   const [categorizingTags, setCategorizingTags] = useState(false);
   const [tagUsageCounts, setTagUsageCounts] = useState<Record<string, number>>({});
+  const [professions, setProfessions] = useState<string[]>([]);
+  const [selectedProfession, setSelectedProfession] = useState<string>("");
+
+  // Load professions from personalities
+  useEffect(() => {
+    const loadProfessions = async () => {
+      try {
+        const { data } = await supabase
+          .from('personalities')
+          .select('profession')
+          .not('profession', 'is', null);
+        
+        if (data) {
+          const uniqueProfessions = [...new Set(data.map(p => p.profession).filter(Boolean))].sort();
+          setProfessions(uniqueProfessions);
+        }
+      } catch (error) {
+        console.error('Error loading professions:', error);
+      }
+    };
+    
+    loadProfessions();
+  }, []);
+
+  // Handle profession filtering from URL params
+  useEffect(() => {
+    const profession = searchParams.get('profession');
+    if (profession) {
+      setSelectedProfession(profession);
+      setViewMode("search");
+      setSearchQuery(profession);
+    }
+  }, [searchParams]);
 
   // Calculate real usage counts for tags
   useEffect(() => {
@@ -440,7 +474,7 @@ export default function Ressources() {
               Ressources
             </h1>
             <p className="text-muted-foreground">
-              Discover and explore LGBTQ+ community tags and resources
+              Discover and explore LGBTQ+ community tags, resources, and professions
             </p>
           </div>
         </div>
@@ -456,51 +490,94 @@ export default function Ressources() {
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search tags, categories, descriptions..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-[150px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                <SelectTrigger className="w-[150px]">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="alphabetical">Alphabetical</SelectItem>
-                  <SelectItem value="usage">Most Used</SelectItem>
-                  <SelectItem value="popular">Popular</SelectItem>
-                  <SelectItem value="recent">Recent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tabs for different resource types */}
+      <Tabs defaultValue="tags" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="tags">Tags & Categories</TabsTrigger>
+          <TabsTrigger value="professions">Professions</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="tags" className="space-y-4">
+          {/* Search and Filters */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search tags, categories, descriptions..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger className="w-[150px]">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map(category => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+                    <SelectTrigger className="w-[150px]">
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alphabetical">Alphabetical</SelectItem>
+                      <SelectItem value="usage">Most Used</SelectItem>
+                      <SelectItem value="popular">Popular</SelectItem>
+                      <SelectItem value="recent">Recent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="professions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>LGBTQ+ Personalities by Profession</CardTitle>
+              <p className="text-muted-foreground">
+                Explore different professions represented by LGBTQ+ personalities in our directory
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {professions.map((profession) => (
+                  <Button
+                    key={profession}
+                    variant={selectedProfession === profession ? "default" : "outline"}
+                    className="h-auto p-3 text-left justify-start"
+                    onClick={() => {
+                      if (selectedProfession === profession) {
+                        setSelectedProfession("");
+                        navigate('/personalities');
+                      } else {
+                        setSelectedProfession(profession);
+                        navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
+                      }
+                    }}
+                  >
+                    <div className="truncate">{profession}</div>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

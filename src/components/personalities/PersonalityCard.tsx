@@ -61,9 +61,15 @@ export function PersonalityCard({
                 {personality.pronouns}
               </p>}
             
-            {personality.profession && <p className="text-sm font-medium text-foreground mb-2">
+            {personality.profession && <button 
+                className="text-sm font-medium text-primary hover:underline mb-2 text-left"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `/ressources?profession=${encodeURIComponent(personality.profession)}`;
+                }}
+              >
                 {personality.profession}
-              </p>}
+              </button>}
           </div>
         </div>
       </CardHeader>
