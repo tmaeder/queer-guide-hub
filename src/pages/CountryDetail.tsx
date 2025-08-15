@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, MapPin, Globe, Users, Building2, Calendar, Star, Heart, TrendingUp, MapIcon, Newspaper, Cloud, Sun, CloudRain, Thermometer, Plane } from "lucide-react";
+import { ArrowLeft, MapPin, Globe, Users, Building2, Calendar, Star, Heart, TrendingUp, MapIcon, Newspaper, Cloud, Sun, CloudRain, Thermometer, Plane, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import CountryHeroImages from "@/components/country/CountryHeroImages";
 import LGBTJurisdictionInfo from "@/components/country/LGBTJurisdictionInfo";
 import { FlightsWidget } from "@/components/flights/FlightsWidget";
+import { ActivitiesWidget } from "@/components/activities/ActivitiesWidget";
 import { useOptimizedCountry, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
 import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
 import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
@@ -302,7 +303,7 @@ export default function CountryDetail() {
         <Card className="border-muted/30 shadow-sm">
           <CardContent className="p-6">
             <Tabs defaultValue="cities" className="space-y-8">
-              <TabsList className="grid w-full max-w-2xl grid-cols-6 mx-auto h-12 bg-muted/50">
+              <TabsList className="grid w-full max-w-3xl grid-cols-7 mx-auto h-12 bg-muted/50">
                 <TabsTrigger value="cities" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <Building2 className="h-4 w-4" />
                   <span className="hidden sm:inline">Cities</span>
@@ -318,6 +319,10 @@ export default function CountryDetail() {
                 <TabsTrigger value="flights" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <Plane className="h-4 w-4" />
                   <span className="hidden sm:inline">Flights</span>
+                </TabsTrigger>
+                <TabsTrigger value="activities" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  <Activity className="h-4 w-4" />
+                  <span className="hidden sm:inline">Tours</span>
                 </TabsTrigger>
                 <TabsTrigger value="news" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   <Newspaper className="h-4 w-4" />
@@ -465,6 +470,29 @@ export default function CountryDetail() {
                 <Card className="border-muted/50">
                   <CardContent className="p-6">
                     <FlightsWidget 
+                      destination={country.capital || country.name}
+                      countryCode={country.code}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Activities Tab */}
+              <TabsContent value="activities" className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold tracking-tight">Activities & Tours</h2>
+                    <p className="text-muted-foreground mt-1">Discover amazing experiences in {country.name}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-sm px-3 py-1 flex items-center gap-1">
+                    <Activity className="h-3 w-3" />
+                    Popular Tours
+                  </Badge>
+                </div>
+                
+                <Card className="border-muted/50">
+                  <CardContent className="p-6">
+                    <ActivitiesWidget 
                       destination={country.capital || country.name}
                       countryCode={country.code}
                     />
