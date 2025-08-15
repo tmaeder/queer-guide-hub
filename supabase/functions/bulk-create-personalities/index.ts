@@ -18,7 +18,7 @@ interface PersonalityData {
   description: string;
   birth_date: string | null;
   death_date: string | null;
-  occupation: string;
+  profession: string; // Changed from occupation to profession
   nationality: string;
   birth_place: string | null;
   image_url: string | null;
@@ -61,7 +61,7 @@ serve(async (req) => {
             .from('personalities')
             .select('id')
             .ilike('name', personalityData.name)
-            .single();
+            .maybeSingle();
 
           if (!existing) {
             // Create personality entry
@@ -72,7 +72,7 @@ serve(async (req) => {
                 description: personalityData.description,
                 birth_date: personalityData.birth_date,
                 death_date: personalityData.death_date,
-                profession: personalityData.occupation, // Map occupation to profession
+                profession: personalityData.profession,
                 nationality: personalityData.nationality,
                 birth_place: personalityData.birth_place,
                 image_url: personalityData.image_url,
@@ -109,7 +109,7 @@ serve(async (req) => {
       created: results.length,
       errors: errors.length,
       results,
-      errors 
+      errorDetails: errors 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -255,7 +255,7 @@ async function fetchPersonalityData(searchTerm: string): Promise<PersonalityData
       description,
       birth_date: formatDate(birthDate),
       death_date: formatDate(deathDate),
-      occupation,
+      profession: occupation, // Map occupation data to profession field
       nationality,
       birth_place: birthPlace,
       image_url: imageUrl,
