@@ -26,7 +26,7 @@ export const BulkCreatePersonalities = () => {
         validationErrors.push(`"${name}" is too short (minimum 2 characters)`);
       } else if (name.length > 100) {
         validationErrors.push(`"${name}" is too long (maximum 100 characters)`);
-      } else if (!new RegExp("^[\\p{L}\\p{M}\\s\\-.()\',:&\";\\d]+$", "u").test(name)) {
+      } else if (!new RegExp("^[\\p{L}\\p{M}\\p{N}\\s\\-.()''\":,&;]+$", "u").test(name)) {
         validationErrors.push(`"${name}" contains invalid characters`);
       } else {
         validNames.push(name);
