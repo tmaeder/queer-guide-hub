@@ -239,6 +239,38 @@ async function processBatch(supabase: any, type: string, batchData: any, jobId: 
       functionName = 'bulk-scrape-events';
       payload = batchData;
       break;
+    case 'import-foursquare-venues':
+      functionName = 'import-foursquare-venues';
+      payload = batchData;
+      break;
+    case 'import-tripadvisor-venues':
+      functionName = 'import-tripadvisor-venues';
+      payload = batchData;
+      break;
+    case 'import-google-places-venues':
+      functionName = 'import-google-places-venues';
+      payload = batchData;
+      break;
+    case 'import-tomtom-venues':
+      functionName = 'import-tomtom-venues';
+      payload = batchData;
+      break;
+    case 'import-refuge-restrooms':
+      functionName = 'import-refuge-restrooms';
+      payload = batchData;
+      break;
+    case 'reimport-personality-images':
+      functionName = 'reimport-personality-images';
+      payload = batchData;
+      break;
+    case 'import-eventbrite-events':
+      functionName = 'import-eventbrite-events';
+      payload = batchData;
+      break;
+    case 'import-ticketmaster-events':
+      functionName = 'import-ticketmaster-events';
+      payload = batchData;
+      break;
     default:
       throw new Error(`Unknown import type: ${type}`);
   }
