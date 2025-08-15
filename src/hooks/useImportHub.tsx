@@ -102,7 +102,9 @@ export const useImportHub = () => {
       
       if (error) throw error;
       
-      setStatistics((data as ImportStatistics) || {
+      // Safely handle the RPC response
+      const statsData = data as unknown as ImportStatistics;
+      setStatistics(statsData || {
         total_jobs: 0,
         completed_jobs: 0,
         failed_jobs: 0,
@@ -114,6 +116,17 @@ export const useImportHub = () => {
       });
     } catch (error) {
       console.error('Failed to load statistics:', error);
+      // Set default statistics on error
+      setStatistics({
+        total_jobs: 0,
+        completed_jobs: 0,
+        failed_jobs: 0,
+        pending_jobs: 0,
+        total_records_processed: 0,
+        total_successful_records: 0,
+        total_failed_records: 0,
+        total_duplicate_records: 0
+      });
     }
   }, []);
 
