@@ -14,6 +14,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { usePersonalities, PersonalityFilters } from "@/hooks/usePersonalities";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { toast } from "@/hooks/use-toast";
+import { PersonalitiesCsvImport } from "@/components/personalities/PersonalitiesCsvImport";
 import { 
   Users, 
   Search, 
@@ -177,10 +178,13 @@ export default function AdminPersonalities() {
             Manage and moderate LGBTQ+ personalities in the directory
           </p>
         </div>
-        <Button onClick={exportPersonalities} variant="outline" className="gap-2">
-          <Download className="h-4 w-4" />
-          Export CSV
-        </Button>
+        <div className="flex gap-2">
+          <PersonalitiesCsvImport onImportComplete={refetchPersonalities} />
+          <Button onClick={exportPersonalities} variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
