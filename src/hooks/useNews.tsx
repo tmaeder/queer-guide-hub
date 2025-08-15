@@ -34,7 +34,8 @@ export const useNews = () => {
     setError(null);
     
     try {
-      const response = await supabase
+      // Build the query step by step to avoid TypeScript issues
+      let queryBuilder = supabase
         .from('news_articles')
         .select(`
           *,
@@ -46,10 +47,53 @@ export const useNews = () => {
           )
         `)
         .not('published_at', 'is', null)
-        .order('published_at', { ascending: false })
-        .limit(50);
+        .order('published_at', { ascending: false });
 
-      const { data, error: fetchError } = response as { data: any[] | null; error: any };
+      // Apply city filtering if provided
+      if (filters?.cityIds && filters.cityIds.length > 0) {
+        queryBuilder = (queryBuilder as any).in('city_id', filters.cityIds);
+      }
+
+      // Apply country filtering if provided  
+      if (filters?.countryIds && filters.countryIds.length > 0) {
+        queryBuilder = (queryBuilder as any).in('country_id', filters.countryIds);
+      }
+
+      // Apply location filtering if provided
+      if (filters?.location?.city_id) {
+        queryBuilder = (queryBuilder as any).eq('city_id', filters.location.city_id);
+      }
+
+      if (filters?.location?.country_id) {
+        queryBuilder = (queryBuilder as any).eq('country_id', filters.location.country_id);
+      }
+
+      // Apply search filtering if provided
+      if (filters?.search) {
+        queryBuilder = (queryBuilder as any).or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
+      }
+
+      // Apply featured filtering if provided
+      if (filters?.featured !== undefined) {
+        queryBuilder = (queryBuilder as any).eq('featured', filters.featured);
+      }
+
+      // Apply date range filtering if provided
+      if (filters?.dateRange?.from) {
+        queryBuilder = (queryBuilder as any).gte('published_at', filters.dateRange.from);
+      }
+
+      if (filters?.dateRange?.to) {
+        queryBuilder = (queryBuilder as any).lte('published_at', filters.dateRange.to);
+      }
+
+      // Apply tags filtering if provided
+      if (filters?.tags && filters.tags.length > 0) {
+        queryBuilder = (queryBuilder as any).overlaps('tags', filters.tags);
+      }
+
+      // Execute the query
+      const { data, error: fetchError } = await (queryBuilder as any).limit(50);
 
       if (fetchError) {
         console.error('Error fetching articles:', fetchError);
@@ -71,13 +115,11 @@ export const useNews = () => {
 
   const fetchSources = useCallback(async () => {
     try {
-      const response = await supabase
+      const { data, error: fetchError } = await supabase
         .from('news_sources')
         .select('*')
         .eq('is_active', true)
         .order('name', { ascending: true });
-
-      const { data, error: fetchError } = response as { data: any[] | null; error: any };
 
       if (fetchError) {
         console.warn('Error fetching sources:', fetchError);
@@ -94,11 +136,9 @@ export const useNews = () => {
 
   const incrementViews = useCallback(async (articleId: string) => {
     try {
-      const response = await supabase.rpc('increment_article_views', {
+      const { error } = await supabase.rpc('increment_article_views', {
         article_id: articleId
       });
-
-      const { error } = response as { error: any };
 
       if (error) {
         console.warn('Error incrementing views:', error);
@@ -119,7 +159,7 @@ export const useNews = () => {
 
   const getTrendingTags = useCallback(async () => {
     try {
-      const response = await supabase
+      const { data, error: fetchError } = await supabase
         .from('unified_tag_assignments')
         .select(`
           unified_tags!inner(
@@ -131,8 +171,6 @@ export const useNews = () => {
         .eq('entity_type', 'news')
         .order('unified_tags(usage_count)', { ascending: false })
         .limit(10);
-
-      const { data, error: fetchError } = response as { data: any[] | null; error: any };
 
       if (fetchError) {
         console.warn('Error fetching trending tags:', fetchError);
