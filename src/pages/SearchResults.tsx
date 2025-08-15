@@ -316,7 +316,7 @@ export default function SearchResults() {
       <div className="mb-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
           <div>
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold mb-2 text-foreground">
               Search Results
             </h1>
             <p className="text-muted-foreground text-lg">
@@ -363,7 +363,7 @@ export default function SearchResults() {
               className="pl-10"
             />
           </div>
-          <Button onClick={handleSearch} className="bg-gradient-primary">
+          <Button onClick={handleSearch}>
             Search
           </Button>
         </div>
