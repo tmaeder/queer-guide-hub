@@ -5,7 +5,7 @@ export interface SearchResult {
   id: string;
   title: string;
   description?: string;
-  type: 'venue' | 'event' | 'marketplace' | 'user' | 'news' | 'location' | 'content' | 'travel';
+  type: 'venue' | 'event' | 'marketplace' | 'user' | 'news' | 'location' | 'content' | 'travel' | 'ressource' | 'personality';
   imageUrl?: string;
   location?: string;
   category?: string;
@@ -232,6 +232,59 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
     return [];
   };
 
+  const searchRessources = async (searchQuery: string): Promise<SearchResult[]> => {
+    const { data, error } = await supabase
+      .from('unified_tags')
+      .select('*')
+      .or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,category.ilike.%${searchQuery}%`)
+      .limit(10);
+
+    if (error) return [];
+
+    return data.map(tag => ({
+      id: tag.id,
+      title: tag.name,
+      description: tag.description || `${tag.category} tag`,
+      type: 'ressource' as const,
+      imageUrl: tag.image_url,
+      category: tag.category,
+      metadata: {
+        slug: tag.slug,
+        color: tag.color,
+        usageCount: tag.usage_count
+      }
+    }));
+  };
+
+  const searchPersonalities = async (searchQuery: string): Promise<SearchResult[]> => {
+    const { data, error } = await supabase
+      .from('personalities')
+      .select('*')
+      .or(`name.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%,profession.ilike.%${searchQuery}%`)
+      .limit(10);
+
+    if (error) return [];
+
+    return data.map(personality => ({
+      id: personality.id,
+      title: personality.name,
+      description: personality.bio,
+      type: 'personality' as const,
+      imageUrl: personality.image_url,
+      category: personality.profession,
+      metadata: {
+        profession: personality.profession,
+        birthDate: personality.birth_date,
+        deathDate: personality.death_date,
+        nationality: personality.nationality,
+        viewCount: personality.view_count,
+        tags: personality.tags,
+        isFeatured: personality.is_featured,
+        isLiving: personality.is_living
+      }
+    }));
+  };
+
   const searchTravel = async (searchQuery: string): Promise<SearchResult[]> => {
     // Travel booking search removed as booking functionality has been removed
     return [];
@@ -248,7 +301,7 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
 
     try {
       const searchPromises: Promise<SearchResult[]>[] = [];
-      const enabledTypes = filters.types.length > 0 ? filters.types : ['venue', 'event', 'marketplace', 'user', 'news', 'location', 'content', 'travel'];
+      const enabledTypes = filters.types.length > 0 ? filters.types : ['venue', 'event', 'marketplace', 'user', 'news', 'location', 'content', 'travel', 'ressource', 'personality'];
 
       if (enabledTypes.includes('venue')) searchPromises.push(searchVenues(searchQuery));
       if (enabledTypes.includes('event')) searchPromises.push(searchEvents(searchQuery));
@@ -258,6 +311,8 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
       if (enabledTypes.includes('location')) searchPromises.push(searchLocations(searchQuery));
       if (enabledTypes.includes('content')) searchPromises.push(searchContent(searchQuery));
       if (enabledTypes.includes('travel')) searchPromises.push(searchTravel(searchQuery));
+      if (enabledTypes.includes('ressource')) searchPromises.push(searchRessources(searchQuery));
+      if (enabledTypes.includes('personality')) searchPromises.push(searchPersonalities(searchQuery));
 
       const searchResults = await Promise.all(searchPromises);
       const allResults = searchResults.flat();

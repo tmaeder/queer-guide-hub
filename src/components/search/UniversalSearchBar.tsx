@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Command, CommandEmpty, CommandList, CommandSeparator, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Search, Filter, X, Clock, Zap, MapPin, Calendar, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, SlidersHorizontal } from "lucide-react";
+import { Search, Filter, X, Clock, Zap, MapPin, Calendar, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, SlidersHorizontal, Tag, User } from "lucide-react";
 import { useUniversalSearch, SearchResult, SearchFilters } from "@/hooks/useUniversalSearch";
 import { SearchFiltersPanel } from "./SearchFiltersPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -17,7 +17,9 @@ const contentTypeIcons = {
   news: Newspaper,
   location: Globe,
   content: FileText,
-  travel: Plane
+  travel: Plane,
+  ressource: Tag,
+  personality: User
 };
 const contentTypeLabels = {
   venue: "Venues",
@@ -27,7 +29,9 @@ const contentTypeLabels = {
   news: "News",
   location: "Locations",
   content: "Wiki",
-  travel: "Travel"
+  travel: "Travel",
+  ressource: "Ressources",
+  personality: "Personalities"
 };
 export const UniversalSearchBar = () => {
   const [query, setQuery] = useState("");
@@ -120,6 +124,14 @@ export const UniversalSearchBar = () => {
         // Navigate to ressources directory for content
         navigate(`/ressources/${result.metadata?.slug || result.title}`);
         break;
+      case 'ressource':
+        // Navigate to ressources directory for specific ressource
+        navigate(`/ressources/${result.metadata?.slug || result.title}`);
+        break;
+      case 'personality':
+        // Navigate to personality detail page
+        navigate(`/personalities/${result.id}`);
+        break;
       case 'travel':
         navigate(`/travel`);
         break;
@@ -176,7 +188,7 @@ export const UniversalSearchBar = () => {
                 <Search className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
               </Button>
               
-              <Input ref={inputRef} placeholder={isMobile ? "Search..." : "Search venues, events, marketplace, users, news..."} value={query} onChange={e => {
+              <Input ref={inputRef} placeholder={isMobile ? "Search..." : "Search venues, events, marketplace, users, news, ressources, personalities..."} value={query} onChange={e => {
               setQuery(e.target.value);
               if (!isOpen) setIsOpen(true);
             }} onKeyDown={handleKeyDown} onFocus={() => {
