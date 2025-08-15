@@ -72,11 +72,13 @@ serve(async (req) => {
                 description: personalityData.description,
                 birth_date: personalityData.birth_date,
                 death_date: personalityData.death_date,
-                occupation: personalityData.occupation,
+                profession: personalityData.occupation, // Map occupation to profession
                 nationality: personalityData.nationality,
                 birth_place: personalityData.birth_place,
                 image_url: personalityData.image_url,
-                bio: personalityData.bio
+                bio: personalityData.bio,
+                is_featured: false,
+                visibility: 'public'
               })
               .select()
               .single();
