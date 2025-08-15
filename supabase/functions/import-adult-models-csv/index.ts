@@ -146,7 +146,7 @@ serve(async (req) => {
 
     console.log(`Parsed ${rows.length} rows from CSV`);
 
-    // Validate and prepare personalities data
+    // Validate and prepare personalities data with image downloads
     const personalitiesData = [];
     
     for (let i = 0; i < rows.length; i++) {
@@ -158,6 +158,49 @@ serve(async (req) => {
         continue;
       }
 
+      let imageUrl = null;
+      
+      // Download and upload image if URL provided
+      if (row.picture && row.picture.trim() !== '') {
+        try {
+          console.log(`Downloading image for ${row.name}: ${row.picture}`);
+          
+          const imageResponse = await fetch(row.picture);
+          if (imageResponse.ok) {
+            const imageBlob = await imageResponse.blob();
+            const fileExtension = imageResponse.headers.get('content-type')?.split('/')[1] || 'jpg';
+            const fileName = `${row.name.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}_${Date.now()}.${fileExtension}`;
+            
+            // Upload to Supabase storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('adult-model-images')
+              .upload(fileName, imageBlob, {
+                contentType: imageResponse.headers.get('content-type') || 'image/jpeg',
+                upsert: false
+              });
+            
+            if (uploadError) {
+              console.error(`Failed to upload image for ${row.name}:`, uploadError);
+              errors.push(`Row ${i + 2}: Failed to upload image - ${uploadError.message}`);
+            } else {
+              // Get public URL
+              const { data: { publicUrl } } = supabase.storage
+                .from('adult-model-images')
+                .getPublicUrl(fileName);
+              
+              imageUrl = publicUrl;
+              console.log(`Successfully uploaded image for ${row.name}: ${imageUrl}`);
+            }
+          } else {
+            console.error(`Failed to download image for ${row.name}: ${imageResponse.status}`);
+            errors.push(`Row ${i + 2}: Failed to download image from ${row.picture}`);
+          }
+        } catch (error) {
+          console.error(`Error processing image for ${row.name}:`, error);
+          errors.push(`Row ${i + 2}: Error processing image - ${error.message}`);
+        }
+      }
+
       const personalityData = {
         name: row.name.trim(),
         profession: 'adult model',
@@ -166,7 +209,7 @@ serve(async (req) => {
         death_date: null,
         nationality: null,
         birth_place: null,
-        image_url: row.picture && row.picture.trim() !== '' ? row.picture.trim() : null,
+        image_url: imageUrl,
         verification_status: 'pending',
         is_featured: false,
         is_living: true,
