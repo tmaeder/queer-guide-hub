@@ -102,9 +102,17 @@ export const BulkCreatePersonalities = () => {
 
       console.log('Calling bulk-create-personalities with:', { names: validNames });
       
-      const { data, error } = await supabase.functions.invoke('bulk-create-personalities', {
-        body: { names: validNames }
-      });
+      let data, error;
+      try {
+        const response = await supabase.functions.invoke('bulk-create-personalities', {
+          body: { names: validNames }
+        });
+        data = response.data;
+        error = response.error;
+      } catch (invokeError) {
+        console.error('Network error calling edge function:', invokeError);
+        throw new Error(`Network error: ${invokeError.message || 'Failed to send request to the Edge Function'}`);
+      }
 
       console.log('Function response:', { data, error });
 
