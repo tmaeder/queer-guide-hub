@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TagCategorizer } from "@/components/admin/TagCategorizer";
 import { TagsCsvImport } from "@/components/admin/TagsCsvImport";
 import { TagImageUpload } from "@/components/admin/TagImageUpload";
+import BulkCreateAITags from "@/components/admin/BulkCreateAITags";
 
 
 export default function AdminTags() {
@@ -243,6 +244,7 @@ export default function AdminTags() {
         </div>
         <div className="flex gap-2">
           <TagsCsvImport onImportComplete={() => window.location.reload()} />
+          <BulkCreateAITags onComplete={() => window.location.reload()} />
           <Button variant="outline" onClick={handleBulkEdit}>
             <Edit className="h-4 w-4 mr-2" />
             Bulk Edit Descriptions
