@@ -98,6 +98,10 @@ export function Header() {
       icon: UserCheck,
       label: "Users"
     }, {
+      to: "/personalities",
+      icon: Users,
+      label: "Personalities"
+    }, {
       to: "/groups",
       icon: UsersRound,
       label: "Crews"

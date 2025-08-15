@@ -29,6 +29,7 @@ const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
 const Directory = lazy(() => import("./pages/Directory"));
 const TagsDirectory = lazy(() => import("./pages/TagsDirectory"));
 const UserDirectory = lazy(() => import("./pages/UserDirectory"));
+const Personalities = lazy(() => import("./pages/Personalities"));
 const About = lazy(() => import("./pages/About"));
 const AboutHub = lazy(() => import("./pages/AboutHub"));
 const Contact = lazy(() => import("./pages/Contact"));
@@ -125,6 +126,7 @@ const App = () => {
                   <Route path="/city/:id" element={<CityDetail />} />
                   <Route path="/country/:id" element={<CountryDetail />} />
                   <Route path="/users" element={<UserDirectory />} />
+                  <Route path="/personalities" element={<Personalities />} />
                    <Route path="/tags" element={<TagsDirectory />} />
                    <Route path="/tags/:tagName" element={<TagsDirectory />} />
                    <Route path="/knowledge" element={<KnowledgeBase />} />
