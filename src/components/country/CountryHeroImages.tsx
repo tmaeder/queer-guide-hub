@@ -29,7 +29,7 @@ export default function CountryHeroImages({ countryName, className = "" }: Count
       
       const { data, error } = await supabase.functions.invoke('get-pexels-images', {
         body: {
-          query: `${countryName} famous landmarks architecture cityscape`,
+          query: `${countryName} famous landmarks architecture cityscape national symbols capital`,
           type: 'country',
           page: 1
         }

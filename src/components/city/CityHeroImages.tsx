@@ -30,7 +30,7 @@ export default function CityHeroImages({ cityName, countryName, className = "" }
       
       const { data, error } = await supabase.functions.invoke('get-pexels-images', {
         body: {
-          query: `${cityName} ${countryName || ''} city skyline architecture landmarks`,
+          query: `${cityName} ${countryName || ''} city skyline architecture landmarks downtown`,
           type: 'city',
           page: 1
         }

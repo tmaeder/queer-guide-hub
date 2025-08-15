@@ -11,6 +11,7 @@ import { LocationInfo } from "@/components/location/LocationInfo";
 import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
+import CountryHeroImages from "@/components/country/CountryHeroImages";
 import { useOptimizedCountry, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
 import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
 import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
@@ -125,8 +126,11 @@ export default function CountryDetail() {
           </div>
 
           {/* Country Header */}
-          <div className="text-center space-y-6 mb-12">
-            <div className="space-y-4">
+          <div className="space-y-6 mb-12">
+            {/* Country Images */}
+            <CountryHeroImages countryName={country.name} />
+            
+            <div className="text-center space-y-4">
               <div className="flex items-center justify-center gap-4 flex-wrap">
                 <h1 className="text-4xl lg:text-5xl font-bold">
                   {country.flag_emoji} {country.name}
