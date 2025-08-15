@@ -117,21 +117,21 @@ export const ImportHubDashboard = () => {
   );
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Enhanced Header */}
-      <div className="border-b bg-card/80 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+    <div className="w-full min-h-screen bg-background">
+      {/* Header */}
+      <div className="bg-card sticky top-0 z-40">
         <div className="container mx-auto p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             {/* Title Section */}
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="p-3 bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-lg">
+                <div className="p-3 bg-primary">
                   <Database className="h-8 w-8 text-primary-foreground" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-background animate-pulse" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-success" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold text-foreground">
                   Import Hub
                 </h1>
                 <p className="text-muted-foreground text-lg">
@@ -142,43 +142,43 @@ export const ImportHubDashboard = () => {
             
             {/* Statistics Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20">
+              <Card className="bg-success">
                 <CardContent className="p-4 text-center">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <CheckCircle className="h-5 w-5 text-success" />
-                    <span className="text-2xl font-bold text-success">{statistics.completed_jobs}</span>
+                    <CheckCircle className="h-5 w-5 text-success-foreground" />
+                    <span className="text-2xl font-bold text-success-foreground">{statistics?.completed_jobs || 0}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Completed Jobs</p>
+                  <p className="text-xs text-success-foreground">Completed Jobs</p>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
+              <Card className="bg-destructive">
                 <CardContent className="p-4 text-center">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <AlertTriangle className="h-5 w-5 text-destructive" />
-                    <span className="text-2xl font-bold text-destructive">{statistics.failed_jobs}</span>
+                    <AlertTriangle className="h-5 w-5 text-destructive-foreground" />
+                    <span className="text-2xl font-bold text-destructive-foreground">{statistics?.failed_jobs || 0}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Failed Jobs</p>
+                  <p className="text-xs text-destructive-foreground">Failed Jobs</p>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
+              <Card className="bg-warning">
                 <CardContent className="p-4 text-center">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <Clock className="h-5 w-5 text-warning" />
-                    <span className="text-2xl font-bold text-warning">{statistics.pending_jobs}</span>
+                    <Clock className="h-5 w-5 text-warning-foreground" />
+                    <span className="text-2xl font-bold text-warning-foreground">{statistics?.pending_jobs || 0}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Pending Jobs</p>
+                  <p className="text-xs text-warning-foreground">Pending Jobs</p>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+              <Card className="bg-primary">
                 <CardContent className="p-4 text-center">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <Package className="h-5 w-5 text-primary" />
-                    <span className="text-2xl font-bold text-primary">{statistics.total_records_processed.toLocaleString()}</span>
+                    <Package className="h-5 w-5 text-primary-foreground" />
+                    <span className="text-2xl font-bold text-primary-foreground">{statistics?.total_records_processed?.toLocaleString() || 0}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Records Processed</p>
+                  <p className="text-xs text-primary-foreground">Records Processed</p>
                 </CardContent>
               </Card>
             </div>
@@ -189,12 +189,12 @@ export const ImportHubDashboard = () => {
                 variant="outline"
                 size="sm"
                 onClick={togglePolling}
-                className="gap-2 bg-background/50 backdrop-blur-sm"
+                className="gap-2"
               >
                 {isPolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 {isPolling ? 'Pause' : 'Resume'}
               </Button>
-              <Button
+                <Button 
                 variant="outline"
                 size="sm"
                 onClick={() => {
@@ -202,7 +202,7 @@ export const ImportHubDashboard = () => {
                   loadStatistics();
                 }}
                 disabled={loading}
-                className="gap-2 bg-background/50 backdrop-blur-sm"
+                className="gap-2"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -214,7 +214,7 @@ export const ImportHubDashboard = () => {
 
       <div className="container mx-auto p-6">
         {/* Search and Filter Bar */}
-        <Card className="mb-6 bg-card/50 backdrop-blur-sm">
+        <Card className="mb-6 bg-card">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="relative flex-1">
@@ -223,7 +223,7 @@ export const ImportHubDashboard = () => {
                   placeholder="Search jobs by type, filename, or ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-background/50"
+                  className="pl-10 bg-background"
                 />
               </div>
               <div className="flex gap-2">
@@ -268,7 +268,7 @@ export const ImportHubDashboard = () => {
         </Card>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-card/50 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-4 bg-card">
             <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-background">
               <BarChart3 className="h-4 w-4" />
               Analytics
@@ -309,7 +309,7 @@ export const ImportHubDashboard = () => {
                     {jobs.slice(0, 5).map((job) => (
                       <div
                         key={job.id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                        className="flex items-center justify-between p-3 bg-card hover:bg-muted cursor-pointer transition-colors"
                         onClick={() => setShowValidation(job.id)}
                       >
                         <div className="flex items-center gap-3">
@@ -356,8 +356,8 @@ export const ImportHubDashboard = () => {
               </Card>
             ) : (
               <div className="space-y-4">
-                {activeJobs.map((job) => (
-                  <Card key={job.id} className="bg-card/50 backdrop-blur-sm">
+                 {activeJobs.map((job) => (
+                   <Card key={job.id} className="bg-card">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -407,7 +407,7 @@ export const ImportHubDashboard = () => {
                          </div>
                          <Progress value={job.progress_percentage || 0} className="h-3" />
                         
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
                           <div className="text-center">
                             <div className="text-lg font-bold text-primary">{job.total_records}</div>
                             <div className="text-xs text-muted-foreground">Total Records</div>
@@ -478,7 +478,7 @@ export const ImportHubDashboard = () => {
                 ) : (
                   <div className="space-y-4">
                     {filteredJobs.map((job) => (
-                      <Card key={job.id} className="bg-card/30 hover:bg-card/50 transition-colors">
+                      <Card key={job.id} className="bg-card hover:bg-muted transition-colors">
                         <CardContent className="p-6">
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-4">
@@ -528,8 +528,8 @@ export const ImportHubDashboard = () => {
                             </div>
                           </div>
                           
-                          {/* Statistics Grid */}
-                          <div className="grid grid-cols-3 md:grid-cols-6 gap-4 pt-4 border-t text-center">
+                           {/* Statistics Grid */}
+                           <div className="grid grid-cols-3 md:grid-cols-6 gap-4 pt-4 text-center">
                             <div>
                               <div className="text-lg font-bold text-primary">{job.total_records}</div>
                               <div className="text-xs text-muted-foreground">Total</div>

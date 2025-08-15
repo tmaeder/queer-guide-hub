@@ -23,15 +23,14 @@ export default {
 				'sans': ['Noto Sans', 'system-ui', '-apple-system', 'sans-serif'],
 			},
 			colors: {
-				border: 'hsl(var(--border))',
+				border: 'transparent',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))',
-					glow: 'hsl(var(--primary-glow))'
+					foreground: 'hsl(var(--primary-foreground))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -40,6 +39,14 @@ export default {
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
@@ -64,7 +71,7 @@ export default {
 					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
 					accent: 'hsl(var(--sidebar-accent))',
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
+					border: 'transparent',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
@@ -119,10 +126,9 @@ export default {
 				enter: 'fade-in 0.3s ease-out, scale-in 0.2s ease-out',
 				exit: 'fade-out 0.3s ease-out, scale-out 0.2s ease-out'
 			},
-			/* Gradients removed */
+			/* No shadows in flat design */
 			boxShadow: {
-				'elegant': 'var(--shadow-elegant)',
-				'glow': 'var(--shadow-glow)'
+				'none': 'none'
 			},
 			transitionTimingFunction: {
 				'smooth': 'var(--transition-smooth)'
