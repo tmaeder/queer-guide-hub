@@ -76,9 +76,7 @@ serve(async (req) => {
                 nationality: personalityData.nationality,
                 birth_place: personalityData.birth_place,
                 image_url: personalityData.image_url,
-                bio: personalityData.bio,
-                is_verified: true,
-                is_featured: false
+                bio: personalityData.bio
               })
               .select()
               .single();
