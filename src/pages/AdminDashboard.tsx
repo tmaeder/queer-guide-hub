@@ -15,6 +15,7 @@ import { RecentActivity } from "@/components/admin/dashboard/RecentActivity";
 // Feature Components
 import { NewsModeration } from "@/components/admin/NewsModeration";
 import { SecurityMonitoringDashboard } from "@/components/admin/SecurityMonitoringDashboard";
+import { DataManagement } from "@/components/admin/dashboard/DataManagement";
 import { UmamiAnalyticsDashboard } from "@/components/analytics/UmamiAnalyticsDashboard";
 import { CrawlForm } from "@/components/admin/CrawlForm";
 import { CrawlJobsList } from "@/components/admin/CrawlJobsList";
@@ -444,13 +445,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="data" className="space-y-6">
-            <div className="text-center py-8">
-              <Database className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Data Management</h3>
-              <p className="text-muted-foreground mb-4">
-                Advanced data management tools and utilities will be available here.
-              </p>
-            </div>
+            <DataManagement />
           </TabsContent>
 
           <TabsContent value="crawling" className="space-y-6">
