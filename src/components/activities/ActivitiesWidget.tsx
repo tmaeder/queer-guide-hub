@@ -14,28 +14,16 @@ export function ActivitiesWidget({ destination, countryCode }: ActivitiesWidgetP
     // Clear any existing content
     containerRef.current.innerHTML = '';
 
-    // Create GetYourGuide widget
-    const widget = document.createElement('div');
-    widget.className = 'gyg-widget';
-    widget.setAttribute('data-gyg-href', `https://widget.getyourguide.com/default/activities.frame?partner_id=AFCJS2I&placement=other&utm_medium=online_publisher&utm_source=partner&q=${encodeURIComponent(destination)}&cnt_code=${countryCode || ''}&currency=EUR&locale_code=en-US`);
-    widget.setAttribute('data-gyg-locale-code', 'en-US');
-    widget.setAttribute('data-gyg-currency', 'EUR');
-    widget.setAttribute('data-gyg-number-of-items', '6');
-    widget.setAttribute('data-gyg-partner-id', 'AFCJS2I');
-    
-    // Add widget styles
-    widget.style.width = '100%';
-    widget.style.minHeight = '400px';
+    // Create the GetYourGuide iframe widget
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://widget.getyourguide.com/default/activities.frame?partner_id=AFCJS2I&placement=other&utm_medium=online_publisher&utm_source=partner&q=${encodeURIComponent(destination)}&cnt_code=${countryCode || ''}&currency=EUR&locale_code=en-US`;
+    iframe.width = '100%';
+    iframe.height = '400';
+    iframe.style.border = 'none';
+    iframe.style.borderRadius = '8px';
+    iframe.title = `Activities and tours in ${destination}`;
 
-    containerRef.current.appendChild(widget);
-
-    // Load GetYourGuide widget script
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = 'https://widget.getyourguide.com/dist/pa.umd.production.min.js';
-    script.setAttribute('data-gyg-partner-id', 'AFCJS2I');
-    
-    document.head.appendChild(script);
+    containerRef.current.appendChild(iframe);
 
     // Cleanup function
     return () => {
@@ -48,9 +36,9 @@ export function ActivitiesWidget({ destination, countryCode }: ActivitiesWidgetP
   return (
     <div 
       ref={containerRef} 
-      className="min-h-[400px] w-full flex items-center justify-center"
+      className="min-h-[400px] w-full"
     >
-      <div className="text-center text-muted-foreground">
+      <div className="text-center text-muted-foreground py-16">
         <p>Loading activities...</p>
       </div>
     </div>
