@@ -53,7 +53,7 @@ export function useVenueCheckins() {
     });
   };
 
-  const checkInAtVenue = async (venueId: string, venueLat: number, venueLng: number) => {
+  const checkInAtVenue = async (venueId: string, venueLat: number, venueLng: number, privacySettings = { isPublic: false, locationVisibility: 'private' }) => {
     setLoading(true);
     
     try {
@@ -62,8 +62,17 @@ export function useVenueCheckins() {
       const userLat = position.coords.latitude;
       const userLng = position.coords.longitude;
       
-      // Calculate distance between user and venue
-      const distance = calculateDistance(userLat, userLng, venueLat, venueLng);
+      // Use secure distance calculation without exposing coordinates
+      const { data: distanceData, error: distanceError } = await supabase
+        .rpc('calculate_secure_venue_distance', {
+          user_lat: userLat,
+          user_lng: userLng,
+          venue_id_param: venueId
+        });
+
+      if (distanceError) throw distanceError;
+      
+      const distance = distanceData;
       
       // Check if user is within check-in radius
       if (distance > MAX_CHECKIN_DISTANCE_METERS) {
@@ -75,7 +84,7 @@ export function useVenueCheckins() {
         return { success: false, distance };
       }
 
-      // Create check-in record
+      // Create check-in record with enhanced privacy controls
       const { data, error } = await supabase
         .from('venue_checkins')
         .insert({
@@ -83,7 +92,11 @@ export function useVenueCheckins() {
           user_id: (await supabase.auth.getUser()).data.user?.id,
           latitude: userLat,
           longitude: userLng,
-          distance_meters: distance
+          distance_meters: distance,
+          is_public: privacySettings.isPublic,
+          location_visibility: privacySettings.locationVisibility,
+          approximate_only: true,
+          auto_anonymize_after: '24 hours'
         })
         .select()
         .single();
@@ -92,7 +105,7 @@ export function useVenueCheckins() {
 
       toast({
         title: "Successfully checked in!",
-        description: `You've checked in at this venue. Distance: ${Math.round(distance)}m`,
+        description: `You've checked in at this venue. Your location data will be ${privacySettings.isPublic ? 'visible to friends' : 'kept private'}.`,
       });
 
       return { success: true, distance, checkin: data };
@@ -126,46 +139,68 @@ export function useVenueCheckins() {
   };
 
   const getVenueCheckins = async (venueId: string) => {
-    // SECURITY: Only show anonymized venue statistics, no personal data
-    // Users cannot see other users' check-ins for privacy protection
+    // SECURITY: Use secure function that applies proper privacy controls
     const { data, error } = await supabase
-      .from('venue_checkin_stats')
-      .select('*')
-      .eq('venue_id', venueId)
-      .order('checkin_hour', { ascending: false })
-      .limit(50);
+      .rpc('get_secure_venue_checkins', {
+        target_venue_id: venueId,
+        requesting_user_id: null // Will use auth.uid() internally
+      });
 
     if (error) {
-      console.error('Error fetching venue statistics:', error);
+      console.error('Error fetching secure venue check-ins:', error);
       return [];
     }
 
-    return data || [];
+    // Transform the secure data for compatibility
+    return (data || []).map(checkin => ({
+      id: checkin.id,
+      venue_id: checkin.venue_id,
+      user_id: checkin.user_id,
+      checked_in_at: checkin.checked_in_at,
+      location_data: checkin.location_data,
+      distance_meters: checkin.distance_meters,
+      is_public: checkin.is_public,
+      can_view_precise_location: checkin.can_view_precise_location
+    }));
   };
 
   const getUserCheckins = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
+    // Use secure function to get user's own check-ins with full access
     const { data, error } = await supabase
-      .from('venue_checkins')
-      .select(`
-        *,
-        venues (
-          name,
-          address,
-          city
-        )
-      `)
-      .eq('user_id', user.id)
-      .order('checked_in_at', { ascending: false });
+      .rpc('get_secure_venue_checkins', {
+        target_venue_id: null, // Get all venues
+        requesting_user_id: user.id
+      });
 
     if (error) {
       console.error('Error fetching user check-ins:', error);
       return [];
     }
 
-    return data || [];
+    // Get venue details for user's check-ins
+    const checkinData = data || [];
+    const venueIds = [...new Set(checkinData.map(c => c.venue_id))];
+    
+    if (venueIds.length === 0) return [];
+
+    const { data: venues, error: venueError } = await supabase
+      .from('venues')
+      .select('id, name, address, city')
+      .in('id', venueIds);
+
+    if (venueError) {
+      console.error('Error fetching venue details:', venueError);
+      return checkinData;
+    }
+
+    // Merge venue data with check-ins
+    return checkinData.map(checkin => ({
+      ...checkin,
+      venues: venues?.find(v => v.id === checkin.venue_id) || null
+    }));
   };
 
   return {
