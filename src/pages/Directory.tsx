@@ -9,7 +9,7 @@ import { LocationInfo } from "@/components/location/LocationInfo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Globe, MapPin, Building2, Users, Map } from "lucide-react";
+import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Crown } from "lucide-react";
 
 // Lazy load the map component
 const DirectoryMapView = lazy(() => import("@/components/directory/DirectoryMapView").then(m => ({ default: m.DirectoryMapView })));
@@ -39,16 +39,27 @@ export default function Directory() {
     sortOrder: "asc"
   });
 
+  // Animation states for better UX
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
   const handleCityClick = (city: any) => {
-    setSelectedCity(city);
-    setViewMode("city");
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setSelectedCity(city);
+      setViewMode("city");
+      setIsTransitioning(false);
+    }, 150);
   };
 
   const handleCountryClick = async (country: any) => {
-    setSelectedCountry(country);
-    setViewMode("country");
-    const cities = await fetchCitiesByCountry(country.id);
-    setCountryCities(cities);
+    setIsTransitioning(true);
+    setTimeout(async () => {
+      setSelectedCountry(country);
+      setViewMode("country");
+      const cities = await fetchCitiesByCountry(country.id);
+      setCountryCities(cities);
+      setIsTransitioning(false);
+    }, 150);
   };
 
   const handleSearch = async (query: string) => {
@@ -127,367 +138,566 @@ export default function Directory() {
   }, [cities, filters]);
 
   const handleBack = () => {
-    if (viewMode === "city") {
-      setViewMode("country");
-    } else if (viewMode === "country" || viewMode === "search") {
-      setViewMode("overview");
-    }
+    setIsTransitioning(true);
+    setTimeout(() => {
+      if (viewMode === "city") {
+        setViewMode("country");
+      } else if (viewMode === "country" || viewMode === "search") {
+        setViewMode("overview");
+      }
+      setIsTransitioning(false);
+    }, 150);
   };
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">{t('directory.loading')}</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-pulse">
+            <Globe className="h-12 w-12 mx-auto text-primary/60" />
+          </div>
+          <p className="text-muted-foreground">{t('directory.loading')}</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center text-destructive">{t('directory.error', { message: error })}</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-destructive">
+            <MapPin className="h-12 w-12 mx-auto" />
+          </div>
+          <p className="text-destructive">{t('directory.error', { message: error })}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          {viewMode !== "overview" && (
-            <Button variant="outline" onClick={handleBack}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('directory.back')}
-            </Button>
-          )}
-          <div>
-            <h1 className="text-3xl font-bold">{t('directory.title')}</h1>
-            {viewMode === "country" && selectedCountry && (
-              <p className="text-muted-foreground">{t('directory.citiesIn', { country: selectedCountry.name })}</p>
+    <div className={`w-full transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent"></div>
+        
+        <div className="relative mx-auto max-w-7xl px-6 py-12 lg:py-20">
+          {/* Navigation Header */}
+          <div className="mb-8">
+            {viewMode !== "overview" && (
+              <div className="animate-fade-in">
+                <Button 
+                  variant="ghost" 
+                  onClick={handleBack}
+                  className="mb-4 hover:bg-accent/50 transition-all duration-200"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {t('directory.back')}
+                </Button>
+              </div>
             )}
-            {viewMode === "city" && selectedCity && (
-              <p className="text-muted-foreground">{selectedCity.name} Details</p>
-            )}
+            
+            {/* Dynamic Title */}
+            <div className="space-y-3">
+              <h1 className="text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                {viewMode === "overview" && t('directory.title')}
+                {viewMode === "country" && selectedCountry && (
+                  <>Explore {selectedCountry.name}</>
+                )}
+                {viewMode === "city" && selectedCity && (
+                  <>Discover {selectedCity.name}</>
+                )}
+                {viewMode === "search" && "Search Results"}
+              </h1>
+              
+              <p className="text-lg text-muted-foreground max-w-2xl">
+                {viewMode === "overview" && "Discover amazing places around the world. Find countries, cities, and locations that match your interests."}
+                {viewMode === "country" && selectedCountry && `Explore cities and regions in ${selectedCountry.name}. Find the perfect destination for your next adventure.`}
+                {viewMode === "city" && selectedCity && `Everything you need to know about ${selectedCity.name}. Weather, demographics, and local insights.`}
+                {viewMode === "search" && "Find exactly what you're looking for with our powerful search and filtering tools."}
+              </p>
+            </div>
+          </div>
+          
+          {/* Enhanced Search */}
+          <div className="mb-8">
+            <DirectorySearch 
+              onSearch={handleSearch} 
+              onFiltersChange={handleFiltersChange} 
+              onNearMeSearch={handleNearMeSearch}
+              placeholder="Search countries, cities, or regions..."
+            />
           </div>
         </div>
       </div>
 
-      {/* Search */}
-      <DirectorySearch 
-        onSearch={handleSearch} 
-        onFiltersChange={handleFiltersChange} 
-        onNearMeSearch={handleNearMeSearch}
-      />
-
-      {/* Breadcrumb */}
-      {viewMode !== "overview" && viewMode !== "search" && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button onClick={() => setViewMode("overview")} className="hover:text-foreground">
-            {t('directory.breadcrumb')}
-          </button>
-          {selectedCountry && (
-            <>
-              <span>/</span>
+      {/* Main Content Area */}
+      <div className="mx-auto max-w-7xl px-6 pb-12">
+        {/* Breadcrumb Navigation */}
+        {viewMode !== "overview" && viewMode !== "search" && (
+          <div className="mb-6 animate-fade-in">
+            <nav className="flex items-center gap-2 text-sm">
               <button 
-                onClick={() => setViewMode("country")} 
-                className="hover:text-foreground"
+                onClick={() => setViewMode("overview")} 
+                className="text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent/50"
               >
-                {selectedCountry.name}
+                Directory
               </button>
-            </>
-          )}
-          {selectedCity && (
-            <>
-              <span>/</span>
-              <span className="text-foreground">{selectedCity.name}</span>
-            </>
-          )}
-        </div>
-      )}
+              {selectedCountry && (
+                <>
+                  <span className="text-muted-foreground/50">/</span>
+                  <button 
+                    onClick={() => setViewMode("country")} 
+                    className="text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent/50"
+                  >
+                    {selectedCountry.name}
+                  </button>
+                </>
+              )}
+              {selectedCity && (
+                <>
+                  <span className="text-muted-foreground/50">/</span>
+                  <span className="text-foreground font-medium px-2 py-1">{selectedCity.name}</span>
+                </>
+              )}
+            </nav>
+          </div>
+        )}
 
-      {/* Content based on view mode */}
-      {viewMode === "overview" && (
-        <Tabs defaultValue="countries" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="countries" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              {t('directory.countries')}
-            </TabsTrigger>
-            <TabsTrigger value="cities" className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              {t('directory.cities')}
-            </TabsTrigger>
-            <TabsTrigger value="map" className="flex items-center gap-2">
-              <Map className="h-4 w-4" />
-              Map View
-            </TabsTrigger>
-          </TabsList>
+        {/* Content based on view mode */}
+        <div className="animate-fade-in">
+          {viewMode === "overview" && (
+            <Tabs defaultValue="countries" className="space-y-8">
+              {/* Enhanced Tab Navigation */}
+              <div className="flex items-center justify-between">
+                <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted/50">
+                  <TabsTrigger 
+                    value="countries" 
+                    className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    <span className="hidden sm:inline">Countries</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="cities" 
+                    className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+                  >
+                    <Building2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Cities</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="map" 
+                    className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+                  >
+                    <Map className="h-4 w-4" />
+                    <span className="hidden sm:inline">Map</span>
+                  </TabsTrigger>
+                </TabsList>
+                
+                {/* Stats Overview */}
+                <div className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    <span>{countries.length} countries</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Building2 className="h-4 w-4" />
+                    <span>{cities.length} cities</span>
+                  </div>
+                </div>
+              </div>
 
-          <TabsContent value="countries" className="space-y-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">{t('directory.countriesByContinent')}</h2>
-              <Badge variant="secondary">{filteredCountries.length}</Badge>
-            </div>
-            <div className="space-y-8">
-              {continents.map((continent) => {
-                const continentCountries = filteredCountries.filter(country => 
-                  country.continent_id === continent.id
-                );
+              <TabsContent value="countries" className="space-y-6 animate-fade-in">
+                {/* Section Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-semibold">Explore Countries</h2>
+                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                      {filteredCountries.length} found
+                    </Badge>
+                  </div>
+                </div>
                 
-                if (continentCountries.length === 0) return null;
+                {/* Countries Grid */}
+                <div className="space-y-10">
+                  {continents.map((continent) => {
+                    const continentCountries = filteredCountries.filter(country => 
+                      country.continent_id === continent.id
+                    );
+                    
+                    if (continentCountries.length === 0) return null;
+                    
+                    return (
+                      <div key={continent.id} className="group space-y-6">
+                        {/* Continent Header */}
+                        <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-muted/40 to-muted/20 border border-border/50">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <Globe className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold">{continent.name}</h3>
+                              <p className="text-sm text-muted-foreground">{continentCountries.length} countries to explore</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Countries Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 pl-6">
+                          {continentCountries.map((country, index) => (
+                            <div
+                              key={country.id}
+                              className="animate-fade-in"
+                              style={{ animationDelay: `${index * 50}ms` }}
+                            >
+                              <DirectoryCard
+                                type="country"
+                                name={country.name}
+                                data={country}
+                                onClick={() => handleCountryClick(country)}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="cities" className="space-y-6 animate-fade-in">
+                {/* Section Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-semibold">Discover Cities</h2>
+                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                      {filteredCities.length} found
+                    </Badge>
+                  </div>
+                </div>
                 
-                return (
-                  <div key={continent.id} className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <Globe className="h-5 w-5 text-primary" />
-                      <h3 className="text-lg font-semibold text-primary">{continent.name}</h3>
-                      <Badge variant="outline">{continentCountries.length} countries</Badge>
+                {/* Cities by Continent */}
+                <div className="space-y-10">
+                  {continents.map((continent) => {
+                    const continentCountries = countries.filter(country => 
+                      country.continent_id === continent.id
+                    );
+                    
+                    // Filter cities for this continent
+                    const continentCities = filteredCities.filter(city => 
+                      continentCountries.some(country => country.id === city.country_id)
+                    );
+                    
+                    if (continentCities.length === 0) return null;
+                    
+                    return (
+                      <div key={continent.id} className="space-y-6">
+                        {/* Continent Header */}
+                        <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-muted/40 to-muted/20 border border-border/50">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <Globe className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold">{continent.name}</h3>
+                              <p className="text-sm text-muted-foreground">{continentCities.length} cities to discover</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Cities by Country */}
+                        <div className="space-y-8 pl-6">
+                          {continentCountries.map((country) => {
+                            const countryCities = filteredCities.filter(city => 
+                              city.country_id === country.id
+                            );
+                            
+                            if (countryCities.length === 0) return null;
+                            
+                            return (
+                              <div key={country.id} className="space-y-4">
+                                {/* Country Header */}
+                                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+                                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                                  <h4 className="text-base font-medium">{country.name}</h4>
+                                  <Badge variant="outline" className="text-xs">
+                                    {countryCities.length} cities
+                                  </Badge>
+                                </div>
+                                
+                                {/* Cities Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 pl-6">
+                                  {countryCities.map((city, index) => (
+                                    <div
+                                      key={city.id}
+                                      className="animate-fade-in"
+                                      style={{ animationDelay: `${index * 30}ms` }}
+                                    >
+                                      <DirectoryCard
+                                        type="city"
+                                        name={city.name}
+                                        data={city}
+                                        onClick={() => handleCityClick(city)}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="map" className="space-y-6 animate-fade-in">
+                {/* Section Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-semibold">Interactive World Map</h2>
+                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                      {countries.length} countries, {cities.length} cities
+                    </Badge>
+                  </div>
+                </div>
+                
+                {/* Map Container */}
+                <div className="rounded-xl overflow-hidden border border-border/50 shadow-lg">
+                  <Suspense 
+                    fallback={
+                      <div className="flex items-center justify-center h-96 bg-muted/20">
+                        <div className="text-center space-y-3">
+                          <Map className="h-12 w-12 mx-auto text-primary/60 animate-pulse" />
+                          <p className="text-muted-foreground">Loading interactive map...</p>
+                        </div>
+                      </div>
+                    }
+                  >
+                    <DirectoryMapView
+                      countries={countries}
+                      cities={cities}
+                      loading={loading}
+                      onCountryClick={handleCountryClick}
+                      onCityClick={handleCityClick}
+                    />
+                  </Suspense>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
+
+          {viewMode === "country" && (
+            <div className="space-y-8 animate-fade-in">
+              {/* Country Header */}
+              <div className="text-center space-y-4">
+                <div className="flex items-center justify-center gap-3">
+                  <h2 className="text-3xl font-bold">{selectedCountry?.name}</h2>
+                  <Badge variant="secondary" className="px-3 py-1 font-medium">
+                    {countryCities.length} cities
+                  </Badge>
+                </div>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Explore the diverse cities and regions of {selectedCountry?.name}. 
+                  Find your perfect destination with local insights and weather information.
+                </p>
+              </div>
+              
+              {/* Country Information Grid */}
+              <div className="grid gap-6 lg:grid-cols-2">
+                <LocationInfo
+                  name={selectedCountry?.name}
+                  type="country"
+                  className="h-fit"
+                />
+                
+                <WeatherForecast
+                  latitude={selectedCountry?.latitude}
+                  longitude={selectedCountry?.longitude}
+                  cityName={selectedCountry?.capital || selectedCountry?.name}
+                  className="h-fit"
+                />
+              </div>
+              
+              {/* Cities Grid */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Cities to Explore</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                  {countryCities.map((city, index) => (
+                    <div
+                      key={city.id}
+                      className="animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <DirectoryCard
+                        type="city"
+                        name={city.name}
+                        data={city}
+                        onClick={() => handleCityClick(city)}
+                      />
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 pl-8">
-                      {continentCountries.map((country) => (
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {viewMode === "city" && (
+            <div className="space-y-8 animate-fade-in">
+              {/* City Hero Section */}
+              <div className="text-center space-y-6">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center gap-3 flex-wrap">
+                    <h2 className="text-4xl font-bold">{selectedCity?.name}</h2>
+                    {selectedCity?.is_capital && (
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Crown className="h-3 w-3" />
+                        Capital
+                      </Badge>
+                    )}
+                    {selectedCity?.is_major_city && (
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        <Building2 className="h-3 w-3" />
+                        Major City
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Discover everything about {selectedCity?.name}. Get local insights, weather updates, and essential information for your visit.
+                  </p>
+                </div>
+                
+                {/* Quick Stats */}
+                <div className="flex items-center justify-center gap-6 flex-wrap text-sm">
+                  {selectedCity?.region_name && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>{selectedCity.region_name}</span>
+                    </div>
+                  )}
+                  {selectedCity?.population && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>{selectedCity.population.toLocaleString()} people</span>
+                    </div>
+                  )}
+                  {selectedCity?.timezone && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <span>{selectedCity.timezone}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* City Information Grid */}
+              <div className="grid gap-6 lg:grid-cols-2">
+                <LocationInfo
+                  name={selectedCity?.name}
+                  type="city"
+                  className="h-fit"
+                />
+                
+                <WeatherForecast
+                  latitude={selectedCity?.latitude}
+                  longitude={selectedCity?.longitude}
+                  cityName={selectedCity?.name}
+                  className="h-fit"
+                />
+              </div>
+            </div>
+          )}
+
+          {viewMode === "search" && (
+            <div className="space-y-8 animate-fade-in">
+              {/* Search Results Header */}
+              <div className="text-center space-y-3">
+                <h2 className="text-3xl font-bold">Search Results</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                  Found {(searchResults.countries?.length || 0) + (searchResults.cities?.length || 0)} results matching your search criteria.
+                </p>
+              </div>
+              
+              {/* Countries Results */}
+              {searchResults.countries?.length > 0 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <h3 className="text-xl font-semibold">Countries</h3>
+                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                      {searchResults.countries.length} found
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                    {searchResults.countries.map((country: any, index: number) => (
+                      <div
+                        key={country.id}
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
                         <DirectoryCard
-                          key={country.id}
                           type="country"
                           name={country.name}
                           data={country}
                           onClick={() => handleCountryClick(country)}
                         />
-                      ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Cities Results */}
+              {searchResults.cities?.length > 0 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    <h3 className="text-xl font-semibold">Cities</h3>
+                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                      {searchResults.cities.length} found
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                    {searchResults.cities.map((city: any, index: number) => (
+                      <div
+                        key={city.id}
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${(searchResults.countries?.length || 0) * 50 + index * 50}ms` }}
+                      >
+                        <DirectoryCard
+                          type="city"
+                          name={city.name}
+                          data={city}
+                          onClick={() => handleCityClick(city)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No Results State */}
+              {(searchResults.countries?.length || 0) === 0 && (searchResults.cities?.length || 0) === 0 && (
+                <div className="text-center py-16">
+                  <div className="space-y-4">
+                    <div className="mx-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center">
+                      <MapPin className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">No results found</h3>
+                      <p className="text-muted-foreground max-w-sm mx-auto">
+                        Try adjusting your search terms or explore our featured locations above.
+                      </p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="cities" className="space-y-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">{t('directory.citiesByContinent')}</h2>
-              <Badge variant="secondary">{filteredCities.length}</Badge>
-            </div>
-            <div className="space-y-8">
-              {continents.map((continent) => {
-                const continentCountries = countries.filter(country => 
-                  country.continent_id === continent.id
-                );
-                
-                // Filter cities for this continent
-                const continentCities = filteredCities.filter(city => 
-                  continentCountries.some(country => country.id === city.country_id)
-                );
-                
-                if (continentCities.length === 0) return null;
-                
-                return (
-                  <div key={continent.id} className="space-y-6">
-                    <div className="flex items-center gap-3">
-                      <Globe className="h-5 w-5 text-primary" />
-                      <h3 className="text-lg font-semibold text-primary">{continent.name}</h3>
-                      <Badge variant="outline">{continentCities.length} cities</Badge>
-                    </div>
-                    <div className="space-y-6 pl-8">
-                      {continentCountries.map((country) => {
-                        const countryCities = filteredCities.filter(city => 
-                          city.country_id === country.id
-                        );
-                        
-                        if (countryCities.length === 0) return null;
-                        
-                        return (
-                          <div key={country.id} className="space-y-3">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <h4 className="text-base font-medium text-muted-foreground">{country.name}</h4>
-                              <Badge variant="secondary" className="text-xs">{countryCities.length}</Badge>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 pl-6">
-                              {countryCities.map((city) => (
-                                <DirectoryCard
-                                  key={city.id}
-                                  type="city"
-                                  name={city.name}
-                                  data={city}
-                                  onClick={() => handleCityClick(city)}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="map" className="space-y-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">Interactive World Map</h2>
-              <Badge variant="secondary">{countries.length} countries, {cities.length} cities</Badge>
-            </div>
-            <Suspense fallback={<div className="flex items-center justify-center h-96">Loading map...</div>}>
-              <DirectoryMapView
-                countries={countries}
-                cities={cities}
-                loading={loading}
-                onCountryClick={handleCountryClick}
-                onCityClick={handleCityClick}
-              />
-            </Suspense>
-          </TabsContent>
-        </Tabs>
-      )}
-
-
-      {viewMode === "country" && (
-        <div className="space-y-6">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">{t('directory.citiesIn', { country: selectedCountry?.name })}</h2>
-            <Badge variant="secondary">{countryCities.length}</Badge>
-          </div>
-          
-          {/* Country Information */}
-          <LocationInfo
-            name={selectedCountry?.name}
-            type="country"
-            className="mb-6"
-          />
-          
-          {/* Weather Forecast for Country */}
-          <WeatherForecast
-            latitude={selectedCountry?.latitude}
-            longitude={selectedCountry?.longitude}
-            cityName={selectedCountry?.capital || selectedCountry?.name}
-            className="mb-6"
-          />
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {countryCities.map((city) => (
-              <DirectoryCard
-                key={city.id}
-                type="city"
-                name={city.name}
-                data={city}
-                onClick={() => handleCityClick(city)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {viewMode === "city" && (
-        <div className="space-y-6">
-          <div className="grid gap-6">
-            {/* City Header */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-bold">{selectedCity?.name}</h2>
-                {selectedCity?.is_capital && (
-                  <Badge variant="secondary">{t('directory.capital')}</Badge>
-                )}
-                {selectedCity?.is_major_city && (
-                  <Badge variant="outline">{t('directory.majorCity')}</Badge>
-                )}
-              </div>
-              
-              <div className="space-y-2 text-sm text-muted-foreground">
-                {selectedCity?.region_name && (
-                  <p><span className="font-medium">{t('directory.region')}:</span> {selectedCity.region_name}</p>
-                )}
-                {selectedCity?.population && (
-                  <p className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    <span className="font-medium">{t('directory.population')}:</span> 
-                    {selectedCity.population.toLocaleString()}
-                  </p>
-                )}
-                {selectedCity?.timezone && (
-                  <p><span className="font-medium">{t('directory.timezone')}:</span> {selectedCity.timezone}</p>
-                )}
-                {selectedCity?.latitude && selectedCity?.longitude && (
-                  <p><span className="font-medium">{t('directory.coordinates')}:</span> {selectedCity.latitude}°, {selectedCity.longitude}°</p>
-                )}
-              </div>
-            </div>
-
-            {/* City Information */}
-            <LocationInfo
-              name={selectedCity?.name}
-              type="city"
-            />
-
-            {/* Weather Forecast */}
-            <WeatherForecast
-              latitude={selectedCity?.latitude}
-              longitude={selectedCity?.longitude}
-              cityName={selectedCity?.name}
-              className="h-fit"
-            />
-          </div>
-        </div>
-      )}
-
-      {viewMode === "search" && (
-        <div className="space-y-6">
-          <h2 className="text-xl font-semibold">{t('directory.searchResults')}</h2>
-          
-          {searchResults.countries.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-medium">{t('directory.countries')}</h3>
-                <Badge variant="secondary">{searchResults.countries.length}</Badge>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {searchResults.countries.map((country: any) => (
-                  <DirectoryCard
-                    key={country.id}
-                    type="country"
-                    name={country.name}
-                    data={country}
-                    onClick={() => handleCountryClick(country)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {searchResults.cities.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-medium">{t('directory.cities')}</h3>
-                <Badge variant="secondary">{searchResults.cities.length}</Badge>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {searchResults.cities.map((city: any) => (
-                  <div key={city.id} className="space-y-4">
-                    <DirectoryCard
-                      type="city"
-                      name={city.name}
-                      data={city}
-                      onClick={() => handleCityClick(city)}
-                    />
-                    <WeatherForecast
-                      latitude={city.latitude}
-                      longitude={city.longitude}
-                      cityName={city.name}
-                      className="w-full"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {searchResults.countries.length === 0 && 
-           searchResults.cities.length === 0 && (
-            <div className="text-center text-muted-foreground py-8">
-              {t('directory.noResults')}
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
