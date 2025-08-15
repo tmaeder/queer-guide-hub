@@ -9,12 +9,21 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 export const BulkCreatePersonalities = () => {
   const [names, setNames] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [results, setResults] = useState<{ created: any[], errors: any[] } | null>(null);
+  const [sources, setSources] = useState({
+    wikidata: true,
+    wikipedia: true,
+    openLibrary: true,
+    bandsintown: true,
+    pexelsImages: true
+  });
   const { toast } = useToast();
 
   const validateNames = (namesList: string[]) => {
@@ -98,12 +107,12 @@ export const BulkCreatePersonalities = () => {
         description: `Processing ${validNames.length} personalities...`,
       });
 
-      console.log('Calling bulk-create-personalities with:', { names: validNames });
+      console.log('Calling bulk-create-personalities with:', { names: validNames, sources });
       
       let data, error;
       try {
         const response = await supabase.functions.invoke('bulk-create-personalities', {
-          body: { names: validNames }
+          body: { names: validNames, sources }
         });
         data = response.data;
         error = response.error;
@@ -214,29 +223,92 @@ export const BulkCreatePersonalities = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Textarea
-              placeholder="Albert Einstein&#10;Marie Curie&#10;Leonardo da Vinci&#10;..."
-              value={names}
-              onChange={(e) => setNames(e.target.value)}
-              rows={8}
-              className="resize-none"
-              disabled={isLoading}
-            />
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>
-                {names.split('\n').filter(name => name.trim().length > 0).length} names entered
-              </span>
-              {names.trim() && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setNames("")}
-                  disabled={isLoading}
-                >
-                  Clear
-                </Button>
-              )}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Textarea
+                placeholder="Albert Einstein&#10;Marie Curie&#10;Leonardo da Vinci&#10;..."
+                value={names}
+                onChange={(e) => setNames(e.target.value)}
+                rows={8}
+                className="resize-none"
+                disabled={isLoading}
+              />
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>
+                  {names.split('\n').filter(name => name.trim().length > 0).length} names entered
+                </span>
+                {names.trim() && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setNames("")}
+                    disabled={isLoading}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Data Sources</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="wikidata"
+                    checked={sources.wikidata}
+                    onCheckedChange={(checked) => 
+                      setSources(prev => ({ ...prev, wikidata: checked as boolean }))
+                    }
+                    disabled={isLoading}
+                  />
+                  <Label htmlFor="wikidata" className="text-sm">Wikidata (core data)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="wikipedia"
+                    checked={sources.wikipedia}
+                    onCheckedChange={(checked) => 
+                      setSources(prev => ({ ...prev, wikipedia: checked as boolean }))
+                    }
+                    disabled={isLoading}
+                  />
+                  <Label htmlFor="wikipedia" className="text-sm">Wikipedia (bio)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="openLibrary"
+                    checked={sources.openLibrary}
+                    onCheckedChange={(checked) => 
+                      setSources(prev => ({ ...prev, openLibrary: checked as boolean }))
+                    }
+                    disabled={isLoading}
+                  />
+                  <Label htmlFor="openLibrary" className="text-sm">Open Library (books)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="bandsintown"
+                    checked={sources.bandsintown}
+                    onCheckedChange={(checked) => 
+                      setSources(prev => ({ ...prev, bandsintown: checked as boolean }))
+                    }
+                    disabled={isLoading}
+                  />
+                  <Label htmlFor="bandsintown" className="text-sm">Bandsintown (concerts)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="pexelsImages"
+                    checked={sources.pexelsImages}
+                    onCheckedChange={(checked) => 
+                      setSources(prev => ({ ...prev, pexelsImages: checked as boolean }))
+                    }
+                    disabled={isLoading}
+                  />
+                  <Label htmlFor="pexelsImages" className="text-sm">Pexels (fallback images)</Label>
+                </div>
+              </div>
             </div>
           </div>
           

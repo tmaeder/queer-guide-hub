@@ -35,11 +35,20 @@ serve(async (req) => {
   }
 
   try {
-    const { names } = await req.json();
+    const { names, sources = {} } = await req.json();
     
     if (!names || !Array.isArray(names)) {
       throw new Error('Names array is required');
     }
+
+    // Default sources configuration
+    const sourceConfig = {
+      wikidata: sources.wikidata !== false,
+      wikipedia: sources.wikipedia !== false,
+      openLibrary: sources.openLibrary !== false,
+      bandsintown: sources.bandsintown !== false,
+      pexelsImages: sources.pexelsImages !== false
+    };
 
     console.log(`Processing ${names.length} personality names`);
 
@@ -56,7 +65,7 @@ serve(async (req) => {
         console.log(`Processing: ${name}`);
         
         // Fetch personality data using the same logic as fetch-personality-data
-        const personalityData = await fetchPersonalityData(name.trim());
+        const personalityData = await fetchPersonalityData(name.trim(), sourceConfig);
         
         if (personalityData) {
           // Check if personality already exists
@@ -93,8 +102,8 @@ serve(async (req) => {
               console.error(`Error inserting personality ${name}:`, insertError);
               errors.push({ name, error: insertError.message });
             } else {
-              // Try to fetch additional images if no image was found from Wikidata
-              if (!personalityData.image_url) {
+              // Try to fetch additional images if no image was found from Wikidata and Pexels is enabled
+              if (!personalityData.image_url && sourceConfig.pexelsImages) {
                 try {
                   const imageResponse = await supabase.functions.invoke('get-pexels-images', {
                     body: { 
@@ -153,8 +162,13 @@ serve(async (req) => {
   }
 });
 
-async function fetchPersonalityData(searchTerm: string): Promise<PersonalityData | null> {
+async function fetchPersonalityData(searchTerm: string, sources: any): Promise<PersonalityData | null> {
   try {
+    if (!sources.wikidata) {
+      console.log(`Wikidata source disabled for: ${searchTerm}`);
+      return null;
+    }
+
     // Search for the entity in Wikidata
     const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(searchTerm)}&language=en&format=json&limit=1`;
     const searchResponse = await fetch(searchUrl);
@@ -242,7 +256,7 @@ async function fetchPersonalityData(searchTerm: string): Promise<PersonalityData
     // Get Wikipedia page and bio
     let bio = description;
     const wikipediaTitle = entityInfo.sitelinks?.enwiki?.title;
-    if (wikipediaTitle) {
+    if (wikipediaTitle && sources.wikipedia) {
       try {
         const wikiResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikipediaTitle)}`);
         const wikiData = await wikiResponse.json();
@@ -283,15 +297,15 @@ async function fetchPersonalityData(searchTerm: string): Promise<PersonalityData
       return null;
     };
 
-    // Fetch top book if the person is an author
+    // Fetch top book if the person is an author and Open Library is enabled
     let topBook = null;
-    if (occupation && (occupation.toLowerCase().includes('author') || occupation.toLowerCase().includes('writer') || occupation.toLowerCase().includes('novelist') || occupation.toLowerCase().includes('poet'))) {
+    if (sources.openLibrary && occupation && (occupation.toLowerCase().includes('author') || occupation.toLowerCase().includes('writer') || occupation.toLowerCase().includes('novelist') || occupation.toLowerCase().includes('poet'))) {
       topBook = await fetchTopBook(name);
     }
 
-    // Fetch upcoming concerts if the person is a musician
+    // Fetch upcoming concerts if the person is a musician and Bandsintown is enabled
     let nextConcerts = null;
-    if (occupation && (occupation.toLowerCase().includes('musician') || occupation.toLowerCase().includes('singer') || occupation.toLowerCase().includes('composer') || occupation.toLowerCase().includes('rapper') || occupation.toLowerCase().includes('band') || occupation.toLowerCase().includes('artist'))) {
+    if (sources.bandsintown && occupation && (occupation.toLowerCase().includes('musician') || occupation.toLowerCase().includes('singer') || occupation.toLowerCase().includes('composer') || occupation.toLowerCase().includes('rapper') || occupation.toLowerCase().includes('band') || occupation.toLowerCase().includes('artist'))) {
       nextConcerts = await fetchUpcomingConcerts(name);
     }
 
