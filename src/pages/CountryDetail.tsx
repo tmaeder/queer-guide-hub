@@ -1,859 +1,373 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { useState, useEffect, useMemo } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { ArrowLeft, MapPin, Globe, Users, Building2, Calendar, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, MapPin, Globe, Users, Calendar, Building, Star, Heart, ExternalLink, Clock, Thermometer, Mountain, Phone, Mail, DollarSign, GraduationCap, Landmark, Info, Scale, Flag, Plane, Shield, Briefcase, TrendingUp, FileText } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useFavorites } from "@/hooks/useFavorites";
-import { useNews } from "@/hooks/useNews";
-import { useVenues } from "@/hooks/useVenues";
-import { useEvents } from "@/hooks/useEvents";
-import CountryWeatherForecast from "@/components/weather/CountryWeatherForecast";
-import CountryHeroImages from "@/components/country/CountryHeroImages";
-import { NewsCard } from "@/components/news/NewsCard";
+import { WeatherForecast } from "@/components/weather/WeatherForecast";
+import { LocationInfo } from "@/components/location/LocationInfo";
 import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
-type CountryWithRelations = {
-  id: string;
-  name: string;
-  iso_code?: string;
-  code?: string;
-  capital?: string;
-  population?: number;
-  area_km2?: number;
-  latitude?: number;
-  longitude?: number;
-  currency?: string;
-  languages?: string[];
-  timezone?: string;
-  government_type?: string;
-  capital_coordinates?: any;
-  national_anthem?: string;
-  national_day?: string;
-  calling_code?: string;
-  internet_tld?: string;
-  driving_side?: string;
-  major_religions?: string[];
-  airport_codes?: string[];
-  major_airports?: string[];
-  gdp_usd?: number;
-  gdp_per_capita_usd?: number;
-  human_development_index?: number;
-  life_expectancy?: number;
-  literacy_rate?: number;
-  climate_zones?: string[];
-  natural_resources?: string[];
-  unesco_sites?: string[];
-  major_industries?: string[];
-  exports?: string[];
-  imports?: string[];
-  visa_requirements?: any;
-  lgbt_rights_status?: string;
-  lgbt_legal_status?: string;
-  lgbti_criminalization?: any;
-  lgbti_expression_restrictions?: any;
-  lgbti_association_restrictions?: any;
-  lgbti_constitutional_protection?: any;
-  lgbti_goods_services_protection?: any;
-  lgbti_health_protection?: any;
-  lgbti_education_protection?: any;
-  lgbti_bullying_protection?: any;
-  lgbti_employment_protection?: any;
-  lgbti_housing_protection?: any;
-  lgbti_hate_crime_law?: any;
-  lgbti_incitement_prohibition?: any;
-  lgbti_conversion_therapy_regulation?: string;
-  lgbti_same_sex_unions?: string;
-  lgbti_adoption_rights?: string;
-  lgbti_intersex_protection?: string;
-  lgbti_gender_recognition?: any;
-  lgbti_data_last_updated?: string;
-  description?: string;
-  flag_emoji?: string;
-  national_symbols?: any;
-};
-export default function CountryDetail() {
-  const {
-    id
-  } = useParams<{
-    id: string;
-  }>();
-  const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
-  const {
-    toggleFavorite,
-    isFavorited
-  } = useFavorites('country');
-  const {
-    articles,
-    loading: newsLoading,
-    fetchArticles
-  } = useNews();
-  const {
-    venues,
-    loading: venuesLoading,
-    fetchVenues
-  } = useVenues();
-  const {
-    events,
-    loading: eventsLoading,
-    fetchEvents
-  } = useEvents();
-  const [country, setCountry] = useState<CountryWithRelations | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    if (id) {
-      fetchCountryDetails();
-    }
-  }, [id]);
-  useEffect(() => {
-    if (country) {
-      loadRelatedContent();
-    }
-  }, [country]);
-  const loadRelatedContent = async () => {
-    if (!country) return;
+import { DirectoryCard } from "@/components/directory/DirectoryCard";
+import { useOptimizedCountry, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
+import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
+import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
 
-    // Fetch related news, venues, and events for this country
-    // Use country ID for precise news filtering, fallback to name search for venues/events
-    await Promise.all([
-      fetchArticles({
-        countryIds: [country.id]
-      }), 
-      fetchVenues({
-        search: country.name
-      }), 
-      fetchEvents({
-        search: country.name
-      })
-    ]);
-  };
-  const fetchCountryDetails = async () => {
-    try {
-      const {
-        data,
-        error
-      } = await supabase.from('countries').select('*').eq('id', id).single();
-      if (error) throw error;
-      setCountry(data);
-    } catch (error) {
-      console.error('Error fetching country details:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load country details",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleFavoriteToggle = async () => {
-    if (!country) return;
-    try {
-      await toggleFavorite(country.id);
-      toast({
-        title: isFavorited(country.id) ? "Removed from favorites" : "Added to favorites",
-        description: `${country.name} ${isFavorited(country.id) ? 'removed from' : 'added to'} your favorites`
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update favorites",
-        variant: "destructive"
-      });
-    }
-  };
-  const formatCurrency = (value: number): string => {
-    if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
-    if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-    if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
-    return `$${value.toLocaleString()}`;
-  };
-  const renderLGBTStatus = () => {
-    if (!country?.lgbt_rights_status && !country?.lgbt_legal_status) return null;
-    const getStatusColor = (status: string) => {
-      const lowerStatus = status.toLowerCase();
-      if (lowerStatus.includes('legal') || lowerStatus.includes('protected')) return 'bg-green-100 text-green-800';
-      if (lowerStatus.includes('illegal') || lowerStatus.includes('criminalized')) return 'bg-red-100 text-red-800';
-      return 'bg-yellow-100 text-yellow-800';
-    };
-    return <div className="space-y-2">
-        {country.lgbt_rights_status && <div>
-            <span className="text-sm font-medium">LGBTQ+ Rights Status:</span>
-            <Badge className={`ml-2 ${getStatusColor(country.lgbt_rights_status)}`}>
-              {country.lgbt_rights_status}
-            </Badge>
-          </div>}
-        {country.lgbt_legal_status && <div>
-            <span className="text-sm font-medium">Legal Status:</span>
-            <Badge className={`ml-2 ${getStatusColor(country.lgbt_legal_status)}`}>
-              {country.lgbt_legal_status}
-            </Badge>
-          </div>}
-      </div>;
-  };
-  if (loading) {
-    return <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">Loading country details...</div>
-        </div>
-      </div>;
+export default function CountryDetail() {
+  const { countryId } = useParams<{ countryId: string }>();
+  const { t } = useTranslation();
+  
+  if (!countryId) {
+    return <div>Country not found</div>;
   }
+
+  const { country, loading: countryLoading } = useOptimizedCountry(countryId);
+  const { cities, loading: citiesLoading } = useOptimizedCities({ 
+    countryId,
+    limit: 12 
+  });
+  
+  // Filter venues by country name to match the current country
+  const { venues, loading: venuesLoading } = useOptimizedVenues({ 
+    city: country?.name, // Use country name as filter since venues might have country in city field
+    limit: 12 
+  });
+  
+  // Also try filtering by actual cities in this country
+  const cityNames = cities.map(city => city.name);
+  const { venues: cityVenues, loading: cityVenuesLoading } = useOptimizedVenues({ 
+    limit: 12 
+  });
+  
+  // Filter city venues to only include venues from cities in this country
+  const filteredCityVenues = useMemo(() => {
+    if (!cityVenues || cityNames.length === 0) return [];
+    return cityVenues.filter(venue => 
+      cityNames.some(cityName => 
+        venue.city?.toLowerCase().includes(cityName.toLowerCase()) ||
+        venue.address?.toLowerCase().includes(cityName.toLowerCase())
+      )
+    );
+  }, [cityVenues, cityNames]);
+  
+  // Combine and deduplicate venues
+  const countryVenues = useMemo(() => {
+    const allVenues = [...(venues || []), ...filteredCityVenues];
+    const uniqueVenues = allVenues.filter((venue, index, self) => 
+      index === self.findIndex(v => v.id === venue.id)
+    );
+    return uniqueVenues.slice(0, 12); // Limit to 12 venues
+  }, [venues, filteredCityVenues]);
+
+  const { events, loading: eventsLoading } = useOptimizedEvents({ 
+    country: country?.code || country?.name,
+    limit: 12 
+  });
+
+  const loading = countryLoading || citiesLoading || venuesLoading || cityVenuesLoading || eventsLoading;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-pulse">
+            <Globe className="h-12 w-12 mx-auto text-primary/60" />
+          </div>
+          <p className="text-muted-foreground">Loading country details...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!country) {
-    return <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Country Not Found</h1>
-            <Button onClick={() => navigate('/directory')}>Back to Directory</Button>
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold">Country not found</h1>
+          <p className="text-muted-foreground">The country you're looking for doesn't exist.</p>
+          <Button asChild>
+            <Link to="/directory">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Directory
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent"></div>
+        
+        <div className="relative mx-auto max-w-7xl px-6 py-12">
+          {/* Navigation */}
+          <div className="mb-8">
+            <Button variant="ghost" asChild className="mb-4">
+              <Link to="/directory">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Directory
+              </Link>
+            </Button>
+            
+            {/* Breadcrumb */}
+            <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+              <Link to="/directory" className="hover:text-foreground transition-colors">
+                Directory
+              </Link>
+              <span>/</span>
+              <span className="text-foreground font-medium">{country.name}</span>
+            </nav>
+          </div>
+
+          {/* Country Header */}
+          <div className="text-center space-y-6 mb-12">
+            <div className="space-y-4">
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                <h1 className="text-4xl lg:text-5xl font-bold">
+                  {country.flag_emoji} {country.name}
+                </h1>
+              </div>
+              
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                {country.description || `Discover everything about ${country.name} - from major cities and cultural landmarks to local venues and upcoming events.`}
+              </p>
+            </div>
+            
+            {/* Country Stats */}
+            <div className="flex items-center justify-center gap-6 flex-wrap text-sm">
+              {country.capital && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg">
+                  <Star className="h-4 w-4 text-yellow-500" />
+                  <span>Capital: {country.capital}</span>
+                </div>
+              )}
+              {country.population && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span>{country.population.toLocaleString()} people</span>
+                </div>
+              )}
+              {country.area_km2 && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span>{country.area_km2.toLocaleString()} km²</span>
+                </div>
+              )}
+              {cities.length > 0 && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg">
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                  <span>{cities.length} cities</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>;
-  }
-  return <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button variant="outline" onClick={() => navigate('/directory')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Directory
-          </Button>
-          <Button variant="outline" onClick={handleFavoriteToggle}>
-            <Heart className={`h-4 w-4 mr-2 ${isFavorited(country.id) ? 'fill-primary text-primary' : ''}`} />
-            {isFavorited(country.id) ? 'Remove from Favorites' : 'Add to Favorites'}
-          </Button>
+      </div>
+
+      {/* Main Content */}
+      <div className="mx-auto max-w-7xl px-6 pb-12">
+        {/* Country Information */}
+        <div className="grid gap-8 lg:grid-cols-2 mb-12">
+          <LocationInfo
+            name={country.name}
+            type="country"
+            className="h-fit"
+          />
+          
+          <WeatherForecast
+            latitude={country.latitude}
+            longitude={country.longitude}
+            cityName={country.capital || country.name}
+            className="h-fit"
+          />
         </div>
 
-        {/* Hero Section */}
-        <Card className="mb-8 overflow-hidden">
-          <CardContent className="p-0">
-            {/* Country Images with overlay */}
-            <div className="relative">
-              <CountryHeroImages countryName={country.name} />
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-8 text-primary-foreground">
-                <div className="flex items-center gap-4 mb-4">
-                  {country.flag_emoji && <span className="text-6xl drop-shadow-lg">{country.flag_emoji}</span>}
-                  <div>
-                    <h1 className="text-5xl font-bold mb-2 drop-shadow-lg">{country.name}</h1>
-                    <p className="text-xl text-primary-foreground/90 flex items-center gap-2">
-                      {country.capital && <>
-                          <Landmark className="h-5 w-5" />
-                          <button onClick={async () => {
-                        const {
-                          data: cities
-                        } = await supabase.from('cities').select('id').eq('name', country.capital).eq('country_id', country.id).eq('is_capital', true).maybeSingle();
-                        if (cities?.id) {
-                          navigate(`/city/${cities.id}`);
-                        } else {
-                          navigate(`/directory?search=${encodeURIComponent(country.capital)}&type=cities`);
-                        }
-                        }} className="text-primary-foreground hover:text-primary-foreground/80 font-medium hover:underline">
-                            {country.capital}
-                          </button>
-                        </>}
-                    </p>
-                  </div>
+        {/* Content Tabs */}
+        <Tabs defaultValue="cities" className="space-y-8">
+          <TabsList className="grid w-full max-w-md grid-cols-4 mx-auto">
+            <TabsTrigger value="cities" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Cities</span>
+            </TabsTrigger>
+            <TabsTrigger value="venues" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              <span className="hidden sm:inline">Venues</span>
+            </TabsTrigger>
+            <TabsTrigger value="events" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Events</span>
+            </TabsTrigger>
+            <TabsTrigger value="info" className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              <span className="hidden sm:inline">Info</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Cities Tab */}
+          <TabsContent value="cities" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Major Cities</h2>
+              <Badge variant="secondary">{cities.length} cities</Badge>
+            </div>
+            
+            {cities.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {cities.map((city) => (
+                  <DirectoryCard
+                    key={city.id}
+                    type="city"
+                    name={city.name}
+                    data={city}
+                    onClick={() => window.location.href = `/city/${city.id}`}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No cities found for this country.</p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Venues Tab */}
+          <TabsContent value="venues" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Local Venues</h2>
+              <Badge variant="secondary">{countryVenues.length} venues</Badge>
+            </div>
+            
+            {countryVenues.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {countryVenues.map((venue) => (
+                  <VenueCard
+                    key={venue.id}
+                    venue={venue}
+                    showDistance={false}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No venues found for this country yet.</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Be the first to add venues from {country.name}!
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Events Tab */}
+          <TabsContent value="events" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Upcoming Events</h2>
+              <Badge variant="secondary">{events.length} events</Badge>
+            </div>
+            
+            {events.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {events.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    showDistance={false}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No upcoming events found for this country.</p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Info Tab */}
+          <TabsContent value="info" className="space-y-8">
+            <div className="grid gap-8 md:grid-cols-2">
+              {/* Basic Information */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold">Basic Information</h3>
+                <div className="space-y-4">
+                  {country.capital && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Capital:</span>
+                      <span className="font-medium">{country.capital}</span>
+                    </div>
+                  )}
+                  {country.currency && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Currency:</span>
+                      <span className="font-medium">{country.currency}</span>
+                    </div>
+                  )}
+                  {country.languages && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Languages:</span>
+                      <span className="font-medium">{country.languages.join(', ')}</span>
+                    </div>
+                  )}
+                  {country.timezone && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Timezone:</span>
+                      <span className="font-medium">{country.timezone}</span>
+                    </div>
+                  )}
+                  {country.calling_code && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Calling Code:</span>
+                      <span className="font-medium">{country.calling_code}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Demographics */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold">Demographics & Economy</h3>
+                <div className="space-y-4">
+                  {country.population && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Population:</span>
+                      <span className="font-medium">{country.population.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {country.area_km2 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Area:</span>
+                      <span className="font-medium">{country.area_km2.toLocaleString()} km²</span>
+                    </div>
+                  )}
+                  {country.gdp_per_capita_usd && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">GDP per capita:</span>
+                      <span className="font-medium">${country.gdp_per_capita_usd.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {country.life_expectancy && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Life Expectancy:</span>
+                      <span className="font-medium">{country.life_expectancy} years</span>
+                    </div>
+                  )}
+                  {country.human_development_index && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">HDI:</span>
+                      <span className="font-medium">{country.human_development_index}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-
-            {/* Weather Forecast */}
-            {country.latitude && country.longitude && <div className="p-6 border-b border-border">
-                <CountryWeatherForecast latitude={country.latitude} longitude={country.longitude} countryName={country.name} capital={country.capital} />
-              </div>}
-
-            {country.description && <div className="p-6">
-                <p className="text-muted-foreground leading-relaxed text-lg">{country.description}</p>
-              </div>}
-          </CardContent>
-        </Card>
-
-        <Tabs defaultValue="overview" className="space-y-8">
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-4 mb-6">
-            <TabsList className="grid w-full grid-cols-6 h-12">
-              <TabsTrigger value="overview" className="text-sm font-medium">Overview</TabsTrigger>
-              <TabsTrigger value="travel" className="text-sm font-medium">Travel</TabsTrigger>
-              <TabsTrigger value="lgbti" className="text-sm font-medium">LGBTI Rights</TabsTrigger>
-              <TabsTrigger value="news" className="text-sm font-medium">News</TabsTrigger>
-              <TabsTrigger value="venues" className="text-sm font-medium">Venues</TabsTrigger>
-              <TabsTrigger value="events" className="text-sm font-medium">Events</TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Basic Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Info className="h-5 w-5" />
-                    Basic Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {country.population && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Population</span>
-                      <span className="font-medium">{country.population.toLocaleString()}</span>
-                    </div>}
-                  {country.area_km2 && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Area</span>
-                      <span className="font-medium">{country.area_km2.toLocaleString()} km²</span>
-                    </div>}
-                  {country.currency && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Currency</span>
-                      <span className="font-medium">{country.currency}</span>
-                    </div>}
-                  {country.calling_code && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Calling Code</span>
-                      <span className="font-medium">{country.calling_code}</span>
-                    </div>}
-                  {country.internet_tld && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Internet TLD</span>
-                      <span className="font-medium">{country.internet_tld}</span>
-                    </div>}
-                  {country.driving_side && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Driving Side</span>
-                      <span className="font-medium capitalize">{country.driving_side}</span>
-                    </div>}
-                </CardContent>
-              </Card>
-
-              {/* Population Statistics */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Population Statistics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {country.population && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Total Population</span>
-                      <span className="font-medium">{country.population.toLocaleString()}</span>
-                    </div>}
-                  {country.area_km2 && country.population && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Population Density</span>
-                      <span className="font-medium">
-                        {Math.round(country.population / country.area_km2)} people/km²
-                      </span>
-                    </div>}
-                  {country.life_expectancy && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Life Expectancy</span>
-                      <span className="font-medium">{country.life_expectancy} years</span>
-                    </div>}
-                  {country.literacy_rate && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Literacy Rate</span>
-                      <span className="font-medium">{country.literacy_rate}%</span>
-                    </div>}
-                  {country.human_development_index && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">HDI</span>
-                      <span className="font-medium">{country.human_development_index}</span>
-                    </div>}
-                </CardContent>
-              </Card>
-
-              {/* Languages & Culture */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Globe className="h-5 w-5" />
-                    Languages & Culture
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {country.languages && country.languages.length > 0 && <div>
-                      <span className="text-sm text-muted-foreground block mb-2">Languages</span>
-                      <div className="flex flex-wrap gap-1">
-                        {country.languages.map((language, index) => <Badge key={index} variant="outline" className="text-xs">{language}</Badge>)}
-                      </div>
-                    </div>}
-                  {country.major_religions && country.major_religions.length > 0 && <div>
-                      <span className="text-sm text-muted-foreground block mb-2">Major Religions</span>
-                      <div className="flex flex-wrap gap-1">
-                        {country.major_religions.map((religion, index) => <Badge key={index} variant="outline" className="text-xs">{religion}</Badge>)}
-                      </div>
-                    </div>}
-                  {country.national_anthem && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">National Anthem</span>
-                      <span className="font-medium text-sm">{country.national_anthem}</span>
-                    </div>}
-                  {country.national_day && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">National Day</span>
-                      <span className="font-medium">{new Date(country.national_day).toLocaleDateString()}</span>
-                    </div>}
-                </CardContent>
-              </Card>
-
-              {/* Economic Indicators */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Economic Indicators
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {country.gdp_usd && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">GDP</span>
-                      <span className="font-medium">{formatCurrency(country.gdp_usd)}</span>
-                    </div>}
-                  {country.gdp_per_capita_usd && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">GDP per Capita</span>
-                      <span className="font-medium">{formatCurrency(country.gdp_per_capita_usd)}</span>
-                    </div>}
-                  {country.currency && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Currency</span>
-                      <span className="font-medium">{country.currency}</span>
-                    </div>}
-                </CardContent>
-              </Card>
-
-              {/* Government Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Scale className="h-5 w-5" />
-                    Government Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {country.government_type && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Government Type</span>
-                      <span className="font-medium">{country.government_type}</span>
-                    </div>}
-                  {country.capital && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Capital</span>
-                      <span className="font-medium">{country.capital}</span>
-                    </div>}
-                </CardContent>
-              </Card>
-
-              {/* Climate & Geography */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Thermometer className="h-5 w-5" />
-                    Climate & Geography
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {country.climate_zones && country.climate_zones.length > 0 && <div>
-                      <span className="text-sm text-muted-foreground block mb-2">Climate Zones</span>
-                      <div className="flex flex-wrap gap-1">
-                        {country.climate_zones.map((zone, index) => <Badge key={index} variant="outline" className="text-xs">{zone}</Badge>)}
-                      </div>
-                    </div>}
-                  {country.latitude && country.longitude && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Coordinates</span>
-                      <span className="font-medium text-xs">
-                        {country.latitude.toFixed(4)}, {country.longitude.toFixed(4)}
-                      </span>
-                    </div>}
-                  {country.timezone && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Timezone</span>
-                      <span className="font-medium">{country.timezone}</span>
-                    </div>}
-                </CardContent>
-              </Card>
-
-              {/* Major Industries */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="h-5 w-5" />
-                    Major Industries
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.major_industries && country.major_industries.length > 0 ? <div className="flex flex-wrap gap-2">
-                      {country.major_industries.map((industry, index) => <Badge key={index} variant="outline">{industry}</Badge>)}
-                    </div> : <p className="text-muted-foreground">No industry information available.</p>}
-                </CardContent>
-              </Card>
-
-              {/* Natural Resources */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Mountain className="h-5 w-5" />
-                    Natural Resources
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.natural_resources && country.natural_resources.length > 0 ? <div className="flex flex-wrap gap-2">
-                      {country.natural_resources.map((resource, index) => <Badge key={index} variant="outline">{resource}</Badge>)}
-                    </div> : <p className="text-muted-foreground">No natural resource information available.</p>}
-                </CardContent>
-              </Card>
-
-              {/* UNESCO Sites */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Landmark className="h-5 w-5" />
-                    UNESCO World Heritage Sites
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.unesco_sites && country.unesco_sites.length > 0 ? <ul className="space-y-2">
-                      {country.unesco_sites.map((site, index) => <li key={index} className="text-sm">• {site}</li>)}
-                    </ul> : <p className="text-muted-foreground">No UNESCO sites information available.</p>}
-                </CardContent>
-              </Card>
-
-              {/* LGBTQ+ Rights */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    LGBTQ+ Rights
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {renderLGBTStatus()}
-                  {!country.lgbt_rights_status && !country.lgbt_legal_status && <p className="text-muted-foreground text-sm">No LGBTQ+ rights information available.</p>}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Trade Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Exports */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Major Exports</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.exports && country.exports.length > 0 ? <div className="flex flex-wrap gap-2">
-                      {country.exports.map((export_item, index) => <Badge key={index} variant="secondary">{export_item}</Badge>)}
-                    </div> : <p className="text-muted-foreground">No export information available.</p>}
-                </CardContent>
-              </Card>
-
-              {/* Imports */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Major Imports</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.imports && country.imports.length > 0 ? <div className="flex flex-wrap gap-2">
-                      {country.imports.map((import_item, index) => <Badge key={index} variant="outline">{import_item}</Badge>)}
-                    </div> : <p className="text-muted-foreground">No import information available.</p>}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Visa Requirements */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Visa Requirements
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {country.visa_requirements && Object.keys(country.visa_requirements).length > 0 ? <div className="space-y-2">
-                    {Object.entries(country.visa_requirements).map(([key, value]) => <div key={key} className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground capitalize">
-                          {key.replace(/_/g, ' ')}
-                        </span>
-                        <span className="font-medium text-sm">{String(value)}</span>
-                      </div>)}
-                  </div> : <p className="text-muted-foreground">No visa requirement information available.</p>}
-              </CardContent>
-            </Card>
-
-            {/* National Symbols */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Flag className="h-5 w-5" />
-                  National Symbols
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {country.national_symbols && Object.keys(country.national_symbols).length > 0 ? <div className="space-y-2">
-                    {Object.entries(country.national_symbols).map(([key, value]) => <div key={key} className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground capitalize">
-                          {key.replace(/_/g, ' ')}
-                        </span>
-                        <span className="font-medium text-sm">{String(value)}</span>
-                      </div>)}
-                  </div> : <p className="text-muted-foreground">No national symbols information available.</p>}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-
-          <TabsContent value="travel" className="space-y-6">
-            <div className="grid grid-cols-1 gap-6">
-              {/* Tours & Activities */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    Tours & Activities
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div data-gyg-widget="auto" data-gyg-partner-id="2PBDXWH" data-gyg-locale="en-US" data-gyg-location-name={country?.name} data-gyg-country-code={country?.code} data-gyg-cta="Book Now" data-gyg-exclude-soldout="true" data-gyg-number-of-items="6" style={{
-                  minHeight: '400px'
-                }} />
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="lgbti" className="space-y-6">
-            <div className="grid grid-cols-1 gap-6">
-              {/* Criminalization */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Scale className="h-5 w-5" />
-                    Criminalization of Same-Sex Relations
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.lgbti_criminalization ? <div className="space-y-3">
-                      {country.lgbti_criminalization.status && <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Status</span>
-                          <Badge variant={country.lgbti_criminalization.status.toLowerCase().includes('legal') ? 'default' : 'destructive'}>
-                            {country.lgbti_criminalization.status}
-                          </Badge>
-                        </div>}
-                      {country.lgbti_criminalization.penalty && <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Penalty</span>
-                          <span className="font-medium text-sm">{country.lgbti_criminalization.penalty}</span>
-                        </div>}
-                      {country.lgbti_criminalization.last_amended && <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Last Amendment</span>
-                          <span className="font-medium text-sm">{country.lgbti_criminalization.last_amended}</span>
-                        </div>}
-                    </div> : <p className="text-muted-foreground">No criminalization data available.</p>}
-                </CardContent>
-              </Card>
-
-              {/* Constitutional Protection */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Constitutional Protection
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.lgbti_constitutional_protection ? <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {['SO', 'GI', 'GE', 'SC'].map(type => <div key={type} className="text-center">
-                          <div className="text-xs text-muted-foreground mb-1">
-                            {type === 'SO' ? 'Sexual Orientation' : type === 'GI' ? 'Gender Identity' : type === 'GE' ? 'Gender Expression' : 'Sex Characteristics'}
-                          </div>
-                          <Badge variant={country.lgbti_constitutional_protection[type] === 'Yes' ? 'default' : 'secondary'}>
-                            {country.lgbti_constitutional_protection[type] || 'No'}
-                          </Badge>
-                        </div>)}
-                    </div> : <p className="text-muted-foreground">No constitutional protection data available.</p>}
-                </CardContent>
-              </Card>
-
-              {/* Discrimination Protection Areas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[{
-                key: 'lgbti_goods_services_protection',
-                title: 'Goods & Services',
-                icon: DollarSign
-              }, {
-                key: 'lgbti_health_protection',
-                title: 'Healthcare',
-                icon: Heart
-              }, {
-                key: 'lgbti_education_protection',
-                title: 'Education',
-                icon: GraduationCap
-              }, {
-                key: 'lgbti_employment_protection',
-                title: 'Employment',
-                icon: Briefcase
-              }, {
-                key: 'lgbti_housing_protection',
-                title: 'Housing',
-                icon: Building
-              }, {
-                key: 'lgbti_hate_crime_law',
-                title: 'Hate Crime Law',
-                icon: Scale
-              }].map(({
-                key,
-                title,
-                icon: Icon
-              }) => <Card key={key}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <Icon className="h-4 w-4" />
-                        {title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {country[key as keyof CountryWithRelations] ? <div className="grid grid-cols-2 gap-2">
-                          {['SO', 'GI', 'GE', 'SC'].map(type => <div key={type} className="flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground">{type}</span>
-                              <Badge variant={(country[key as keyof CountryWithRelations] as any)?.[type] === 'Yes' ? 'default' : 'secondary'} className="text-xs">
-                                {(country[key as keyof CountryWithRelations] as any)?.[type] || 'No'}
-                              </Badge>
-                            </div>)}
-                        </div> : <p className="text-muted-foreground text-sm">No data available.</p>}
-                    </CardContent>
-                  </Card>)}
-              </div>
-
-              {/* Legal Rights */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Heart className="h-5 w-5" />
-                      Same-Sex Unions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Badge variant={country.lgbti_same_sex_unions?.toLowerCase().includes('yes') || country.lgbti_same_sex_unions?.toLowerCase().includes('legal') ? 'default' : 'secondary'}>
-                      {country.lgbti_same_sex_unions || 'No data'}
-                    </Badge>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Adoption Rights
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Badge variant={country.lgbti_adoption_rights?.toLowerCase().includes('possible') || country.lgbti_adoption_rights?.toLowerCase().includes('legal') ? 'default' : 'secondary'}>
-                      {country.lgbti_adoption_rights || 'No data'}
-                    </Badge>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Shield className="h-5 w-5" />
-                      Intersex Protection
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Badge variant={country.lgbti_intersex_protection?.toLowerCase().includes('yes') || country.lgbti_intersex_protection?.toLowerCase().includes('protected') ? 'default' : 'secondary'}>
-                      {country.lgbti_intersex_protection || 'No data'}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Conversion Therapy */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Conversion Therapy Regulation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Badge variant={country.lgbti_conversion_therapy_regulation?.toLowerCase().includes('banned') || country.lgbti_conversion_therapy_regulation?.toLowerCase().includes('restricted') ? 'default' : 'secondary'}>
-                    {country.lgbti_conversion_therapy_regulation || 'No regulation'}
-                  </Badge>
-                </CardContent>
-              </Card>
-
-              {/* Legal Gender Recognition */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Legal Gender Recognition
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {country.lgbti_gender_recognition ? <div className="space-y-3">
-                      {Object.entries(country.lgbti_gender_recognition).map(([key, value]) => <div key={key} className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground capitalize">
-                            {key.replace(/_/g, ' ')}
-                          </span>
-                          <Badge variant="outline" className="text-xs">
-                            {String(value)}
-                          </Badge>
-                        </div>)}
-                    </div> : <p className="text-muted-foreground">No legal gender recognition data available.</p>}
-                </CardContent>
-              </Card>
-
-              {/* Data Last Updated */}
-              {country.lgbti_data_last_updated && <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center text-sm text-muted-foreground">
-                      LGBTI data last updated: {new Date(country.lgbti_data_last_updated).toLocaleDateString()}
-                    </div>
-                  </CardContent>
-                </Card>}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="news" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Related News
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {newsLoading ? <div className="text-center py-8">Loading news...</div> : articles.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {articles.slice(0, 9).map(article => <NewsCard key={article.id} article={article} />)}
-                  </div> : <p className="text-muted-foreground text-center py-8">No news articles found for {country?.name}.</p>}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="venues" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Local Venues
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {venuesLoading ? <div className="text-center py-8">Loading venues...</div> : venues.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {venues.slice(0, 9).map(venue => <VenueCard key={venue.id} venue={venue} />)}
-                  </div> : <p className="text-muted-foreground text-center py-8">No venues found in {country?.name}.</p>}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="events" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  Upcoming Events
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {eventsLoading ? <div className="text-center py-8">Loading events...</div> : events.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {events.slice(0, 9).map(event => <EventCard key={event.id} event={event} />)}
-                  </div> : <p className="text-muted-foreground text-center py-8">No upcoming events found in {country?.name}.</p>}
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
-
       </div>
-    </div>;
+    </div>
+  );
 }
