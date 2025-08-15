@@ -16,7 +16,7 @@ import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
 import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
 
 export default function CountryDetail() {
-  const { countryId } = useParams<{ countryId: string }>();
+  const { id: countryId } = useParams<{ id: string }>();
   const { t } = useTranslation();
   
   if (!countryId) {
