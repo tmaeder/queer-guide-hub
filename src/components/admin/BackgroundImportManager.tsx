@@ -44,17 +44,17 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
     const getStatusIcon = (status: BackgroundJob['status']) => {
       switch (status) {
         case 'completed':
-          return <CheckCircle className="h-4 w-4 text-green-600" />;
+          return <CheckCircle className="h-4 w-4 text-foreground" />;
         case 'failed':
-          return <AlertCircle className="h-4 w-4 text-red-600" />;
+          return <AlertCircle className="h-4 w-4 text-destructive" />;
         case 'running':
-          return <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />;
+          return <RefreshCw className="h-4 w-4 text-foreground animate-spin" />;
         case 'paused':
-          return <Pause className="h-4 w-4 text-orange-600" />;
+          return <Pause className="h-4 w-4 text-muted-foreground" />;
         case 'cancelled':
-          return <X className="h-4 w-4 text-gray-600" />;
+          return <X className="h-4 w-4 text-muted-foreground" />;
         default:
-          return <Clock className="h-4 w-4 text-yellow-600" />;
+          return <Clock className="h-4 w-4 text-muted-foreground" />;
       }
     };
 
@@ -72,12 +72,12 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
 
     const getStatusColor = (status: BackgroundJob['status']) => {
       switch (status) {
-        case 'completed': return 'text-green-600';
-        case 'failed': return 'text-red-600';
-        case 'running': return 'text-blue-600';
-        case 'paused': return 'text-orange-600';
-        case 'cancelled': return 'text-gray-600';
-        default: return 'text-yellow-600';
+        case 'completed': return 'text-foreground';
+        case 'failed': return 'text-destructive';
+        case 'running': return 'text-foreground';
+        case 'paused': return 'text-muted-foreground';
+        case 'cancelled': return 'text-muted-foreground';
+        default: return 'text-muted-foreground';
       }
     };
 
@@ -88,8 +88,8 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
-                  <Users className="h-4 w-4 text-blue-600" />
+                <div className="p-2 rounded-lg bg-muted">
+                  <Users className="h-4 w-4 text-foreground" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Jobs</p>
@@ -102,12 +102,12 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
+                <div className="p-2 rounded-lg bg-muted">
+                  <TrendingUp className="h-4 w-4 text-foreground" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Successful Items</p>
-                  <p className="text-xl font-bold text-green-600">{stats.totalSuccessfulItems}</p>
+                  <p className="text-xl font-bold text-foreground">{stats.totalSuccessfulItems}</p>
                 </div>
               </div>
             </CardContent>
@@ -116,12 +116,12 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
-                  <TrendingDown className="h-4 w-4 text-red-600" />
+                <div className="p-2 rounded-lg bg-muted">
+                  <TrendingDown className="h-4 w-4 text-destructive" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Failed Items</p>
-                  <p className="text-xl font-bold text-red-600">{stats.totalFailedItems}</p>
+                  <p className="text-xl font-bold text-destructive">{stats.totalFailedItems}</p>
                 </div>
               </div>
             </CardContent>
@@ -130,12 +130,12 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/20">
-                  <AlertCircle className="h-4 w-4 text-orange-600" />
+                <div className="p-2 rounded-lg bg-muted">
+                  <AlertCircle className="h-4 w-4 text-warning" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Duplicates</p>
-                  <p className="text-xl font-bold text-orange-600">{stats.totalDuplicateItems}</p>
+                  <p className="text-xl font-bold text-warning">{stats.totalDuplicateItems}</p>
                 </div>
               </div>
             </CardContent>
@@ -154,13 +154,13 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
                   Reliable, batched imports with duplicate detection and error handling
                 </CardDescription>
                 <div className="flex gap-4 mt-2 text-sm">
-                  <span className="text-green-600">
+                  <span className="text-foreground">
                     Completed: <span className="font-medium">{stats.completedJobs}</span>
                   </span>
-                  <span className="text-red-600">
+                  <span className="text-destructive">
                     Failed: <span className="font-medium">{stats.failedJobs}</span>
                   </span>
-                  <span className="text-blue-600">
+                  <span className="text-foreground">
                     Running: <span className="font-medium">{stats.runningJobs}</span>
                   </span>
                 </div>
@@ -204,7 +204,7 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
             ) : (
             <div className="space-y-4">
               {jobs.map(job => (
-                <div key={job.id} className="border rounded-lg p-4 space-y-3">
+                <div key={job.id} className="rounded-lg p-4 space-y-3 bg-muted/30">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {getStatusIcon(job.status)}
@@ -268,7 +268,7 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
                   
                   {/* Error details */}
                   {job.errorDetails && (
-                    <div className="text-sm text-red-600 bg-red-50 dark:bg-red-950/20 p-3 rounded">
+                    <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
                       <strong>Error:</strong> {job.errorDetails}
                       {job.retryCount > 0 && (
                         <div className="mt-1">
@@ -279,7 +279,7 @@ const BackgroundImportManager = forwardRef<BackgroundImportManagerRef, Backgroun
                   )}
                   
                   {/* Timestamps */}
-                  <div className="flex justify-between text-xs text-muted-foreground pt-2 border-t">
+                  <div className="flex justify-between text-xs text-muted-foreground pt-2">
                     <span>Started: {job.createdAt.toLocaleString()}</span>
                     <span>Updated: {job.updatedAt.toLocaleString()}</span>
                   </div>

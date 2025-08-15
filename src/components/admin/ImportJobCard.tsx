@@ -46,7 +46,7 @@ export const ImportJobCard = ({
 
   if (compact) {
     return (
-      <Card className="hover:shadow-md transition-all duration-200 cursor-pointer border-l-4 border-l-primary/20 hover:border-l-primary">
+      <Card className="hover:opacity-90 transition-opacity duration-200 cursor-pointer">
         <CardContent className="p-4" onClick={() => onViewDetails(job.id)}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -74,12 +74,12 @@ export const ImportJobCard = ({
   }
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-card to-card/50">
+    <Card className="hover:opacity-90 transition-opacity duration-300 bg-card">
       <CardContent className="p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5">
+            <div className="p-3 rounded-lg bg-primary/10">
               <JobTypeIcon className="h-6 w-6 text-primary" />
             </div>
             <div>
@@ -154,13 +154,13 @@ export const ImportJobCard = ({
           <Progress value={job.progress_percentage} className="h-2" />
           
           {/* Statistics Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4">
             <div className="text-center">
               <div className="text-lg font-bold text-primary">{job.total_records.toLocaleString()}</div>
               <div className="text-xs text-muted-foreground">Total</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-blue-600">{job.processed_records.toLocaleString()}</div>
+              <div className="text-lg font-bold text-foreground">{job.processed_records.toLocaleString()}</div>
               <div className="text-xs text-muted-foreground">Processed</div>
             </div>
             <div className="text-center">
@@ -179,7 +179,7 @@ export const ImportJobCard = ({
 
           {/* Configuration */}
           {(job.duplicate_strategy || job.unique_key_fields?.length) && (
-            <div className="flex items-center gap-3 pt-3 border-t text-sm">
+            <div className="flex items-center gap-3 pt-3 text-sm">
               {job.duplicate_strategy && (
                 <Badge variant="outline" className="gap-1">
                   <Settings className="h-3 w-3" />
@@ -197,7 +197,7 @@ export const ImportJobCard = ({
 
           {/* Warnings/Info */}
           {job.status === 'failed' && (
-            <div className="flex items-center gap-2 p-3 bg-destructive/5 border border-destructive/20 rounded-lg">
+            <div className="flex items-center gap-2 p-3 bg-destructive/5 rounded-lg">
               <AlertTriangle className="h-4 w-4 text-destructive" />
               <span className="text-sm text-destructive">
                 Import failed. Check the validation report for details.
@@ -206,7 +206,7 @@ export const ImportJobCard = ({
           )}
           
           {job.duplicate_records > 0 && job.status === 'completed' && (
-            <div className="flex items-center gap-2 p-3 bg-warning/5 border border-warning/20 rounded-lg">
+            <div className="flex items-center gap-2 p-3 bg-warning/5 rounded-lg">
               <Info className="h-4 w-4 text-warning" />
               <span className="text-sm text-warning">
                 {job.duplicate_records} duplicate records were handled using {job.duplicate_strategy} strategy.

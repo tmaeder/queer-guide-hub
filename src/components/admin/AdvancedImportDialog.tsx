@@ -115,7 +115,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
     }
   };
 
-  const removeKeyword = (keyword: string) => {
+  const deleteKeyword = (keyword: string) => {
     setKeywords(keywords.filter(k => k !== keyword));
   };
 
@@ -134,7 +134,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
     }
   };
 
-  const removeRequiredField = (field: string) => {
+  const deleteRequiredField = (field: string) => {
     setRequiredFields(requiredFields.filter(f => f !== field));
   };
 
@@ -187,18 +187,18 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                   {DUPLICATE_STRATEGIES.map((strategy) => (
                     <div 
                       key={strategy.value}
-                      className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                      className={`p-4 rounded-lg cursor-pointer transition-opacity ${
                         config.duplicateStrategy === strategy.value 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-primary/50'
+                          ? 'bg-primary/10' 
+                          : 'bg-muted hover:opacity-80'
                       }`}
                       onClick={() => setConfig(prev => ({ ...prev, duplicateStrategy: strategy.value as any }))}
                     >
                       <div className="flex items-center space-x-2">
-                        <div className={`h-4 w-4 rounded-full border-2 ${
+                        <div className={`h-4 w-4 rounded-sm ${
                           config.duplicateStrategy === strategy.value 
-                            ? 'border-primary bg-primary' 
-                            : 'border-border'
+                            ? 'bg-primary' 
+                            : 'bg-muted'
                         }`} />
                         <div>
                           <p className="font-medium">{strategy.label}</p>
@@ -225,18 +225,18 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                   {ERROR_STRATEGIES.map((strategy) => (
                     <div 
                       key={strategy.value}
-                      className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                      className={`p-4 rounded-lg cursor-pointer transition-opacity ${
                         config.errorStrategy === strategy.value 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-primary/50'
+                          ? 'bg-primary/10' 
+                          : 'bg-muted hover:opacity-80'
                       }`}
                       onClick={() => setConfig(prev => ({ ...prev, errorStrategy: strategy.value as any }))}
                     >
                       <div className="flex items-center space-x-2">
-                        <div className={`h-4 w-4 rounded-full border-2 ${
+                        <div className={`h-4 w-4 rounded-sm ${
                           config.errorStrategy === strategy.value 
-                            ? 'border-primary bg-primary' 
-                            : 'border-border'
+                            ? 'bg-primary' 
+                            : 'bg-muted'
                         }`} />
                         <div>
                           <p className="font-medium">{strategy.label}</p>
@@ -284,7 +284,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                           {field}
                           <X 
                             className="h-3 w-3 ml-1" 
-                            onClick={() => removeRequiredField(field)}
+                            onClick={() => deleteRequiredField(field)}
                           />
                         </Badge>
                       ))}
@@ -350,7 +350,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                         {keyword}
                         <X 
                           className="h-3 w-3 ml-1" 
-                          onClick={() => removeKeyword(keyword)}
+                          onClick={() => deleteKeyword(keyword)}
                         />
                       </Badge>
                     ))}

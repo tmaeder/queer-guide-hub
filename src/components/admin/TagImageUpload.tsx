@@ -88,7 +88,7 @@ export const TagImageUpload = ({
     }
   };
 
-  const handleRemoveImage = async () => {
+  const handleDeleteImage = async () => {
     if (currentImageUrl) {
       try {
         // Extract filename from URL
@@ -109,7 +109,7 @@ export const TagImageUpload = ({
     
     toast({
       title: "Success",
-      description: "Image removed successfully"
+      description: "Image deleted successfully"
     });
   };
 
@@ -119,7 +119,7 @@ export const TagImageUpload = ({
       
       {previewUrl ? (
         <div className="relative">
-          <div className="w-full h-32 border-2 border-dashed border-muted rounded-lg overflow-hidden">
+          <div className="w-full h-32 rounded-lg overflow-hidden bg-muted">
             <img 
               src={previewUrl} 
               alt={tagName || "Tag image"} 
@@ -131,14 +131,14 @@ export const TagImageUpload = ({
             variant="destructive"
             size="sm"
             className="absolute top-2 right-2"
-            onClick={handleRemoveImage}
+            onClick={handleDeleteImage}
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
       ) : (
         <div className="w-full">
-          <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center">
+          <div className="rounded-lg p-6 text-center bg-muted/50">
             <Image className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">

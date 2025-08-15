@@ -16,42 +16,42 @@ export const ImportStatusBadge = ({ status, showIcon = true, size = 'default' }:
           variant: 'default' as const,
           icon: CheckCircle,
           label: 'Completed',
-          className: 'bg-success/10 text-success border-success/20 hover:bg-success/20'
+          className: 'bg-muted text-foreground hover:opacity-80'
         };
       case 'failed':
         return {
           variant: 'destructive' as const,
           icon: AlertTriangle,
           label: 'Failed',
-          className: 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20'
+          className: 'bg-destructive text-destructive-foreground hover:opacity-80'
         };
       case 'processing':
         return {
           variant: 'secondary' as const,
           icon: RefreshCw,
           label: 'Processing',
-          className: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
+          className: 'bg-secondary text-secondary-foreground hover:opacity-80'
         };
       case 'validating':
         return {
           variant: 'secondary' as const,
           icon: RefreshCw,
           label: 'Validating',
-          className: 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800'
+          className: 'bg-accent text-accent-foreground hover:opacity-80'
         };
       case 'cancelled':
         return {
           variant: 'outline' as const,
           icon: X,
           label: 'Cancelled',
-          className: 'bg-muted/50 text-muted-foreground border-muted'
+          className: 'bg-muted/50 text-muted-foreground hover:opacity-80'
         };
       default:
         return {
           variant: 'outline' as const,
           icon: Clock,
           label: 'Pending',
-          className: 'bg-warning/10 text-warning border-warning/20 hover:bg-warning/20'
+          className: 'bg-warning text-warning-foreground hover:opacity-80'
         };
     }
   };
