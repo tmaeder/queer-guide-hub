@@ -40,7 +40,7 @@
     --border: transparent;
     --input: 0 0% 95%;
     --ring: 0 0% 0%;
-    --radius: 8px;
+    --radius: 4px;
 
     /* Sidebar (monochrome) */
     --sidebar-background: 0 0% 98%;
@@ -104,6 +104,19 @@
 
   * {
     @apply border-border;
+  }
+
+  /* Force all rectangular elements to have rounded corners */
+  button, input, textarea, select, 
+  .card, [class*="card"], 
+  .dialog, [class*="dialog"],
+  .popover, [class*="popover"],
+  .dropdown, [class*="dropdown"],
+  .badge, [class*="badge"],
+  .alert, [class*="alert"],
+  img:not([class*="rounded-full"]),
+  video:not([class*="rounded-full"]) {
+    border-radius: var(--radius) !important;
   }
   
   body {
