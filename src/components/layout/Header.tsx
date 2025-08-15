@@ -215,7 +215,7 @@ export function Header() {
                           <Settings className="h-4 w-4" />
                           <span className="text-xs">Admin</span>
                         </Button>
-                        <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin/import')}>
+                        <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin/import-hub')}>
                           <Upload className="h-4 w-4" />
                           <span className="text-xs">Import</span>
                         </Button>
