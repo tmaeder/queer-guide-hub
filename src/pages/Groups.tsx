@@ -79,7 +79,7 @@ export default function Groups() {
           <p className="text-lg text-muted-foreground mb-8">
             Please sign in to view and join community groups
           </p>
-          <Button asChild className="bg-gradient-primary hover:opacity-90">
+          <Button asChild className="bg-primary hover:opacity-90">
             <a href="/auth">Sign In</a>
           </Button>
         </div>
@@ -88,7 +88,7 @@ export default function Groups() {
   return <div className="space-y-8 py-8">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-slate-950">
+        <h1 className="text-4xl font-bold mb-4 text-foreground">
           Community Groups
         </h1>
         <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -105,7 +105,7 @@ export default function Groups() {
 
       <Tabs defaultValue="discover" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="discover" className="flex items-center gap-2 text-gray-950 font-bold text-right">
+          <TabsTrigger value="discover" className="flex items-center gap-2 text-foreground font-bold text-right">
             <Search className="h-4 w-4" />
             Discover
           </TabsTrigger>
@@ -124,7 +124,7 @@ export default function Groups() {
 
           {isLoading ? <Card>
               <CardContent className="p-8 text-center">
-                <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+                <div className="animate-spin h-8 w-8 bg-primary rounded-lg mx-auto mb-4" />
                 <p className="text-muted-foreground">Loading groups...</p>
               </CardContent>
             </Card> : filteredGroups.length === 0 ? <Card>

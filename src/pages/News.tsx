@@ -158,7 +158,7 @@ export default function News() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold gradient-text">
+            <h1 className="text-4xl font-bold text-foreground">
               LGBTQ+ News Hub
             </h1>
             <p className="text-lg text-muted-foreground">

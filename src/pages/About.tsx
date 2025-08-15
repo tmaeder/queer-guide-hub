@@ -53,7 +53,7 @@ export default function About() {
       <div className="text-center mb-12">
         <div className="flex items-center justify-center gap-3 mb-4">
           <Heart className="h-12 w-12 text-primary fill-current" />
-          <h1 className="text-4xl font-bold gradient-text">About The Queer Guide</h1>
+          <h1 className="text-4xl font-bold text-foreground">About The Queer Guide</h1>
         </div>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
           A comprehensive platform connecting the LGBTQ+ community with safe spaces, events, businesses, and each other.

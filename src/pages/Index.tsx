@@ -172,13 +172,13 @@ const SliderSkeleton = ({
   title: string;
 }) => {
   const isMobile = useIsMobile();
-  return <section className={`bg-gradient-to-b from-muted/5 to-background ${isMobile ? 'py-12' : 'py-20'} px-4`}>
+  return <section className={`bg-muted/5 ${isMobile ? 'py-12' : 'py-20'} px-4`}>
       <div className="container mx-auto">
         <div className={`${isMobile ? 'mb-8' : 'mb-12'}`}>
           <div className="flex items-center justify-between mb-6">
             <div>
-              <div className={`h-10 bg-gradient-to-r from-muted via-muted/70 to-muted rounded-lg animate-pulse ${isMobile ? 'w-56' : 'w-80'} mb-4`}></div>
-              <div className={`h-6 bg-gradient-to-r from-muted/70 via-muted/50 to-muted/70 rounded animate-pulse ${isMobile ? 'w-80' : 'w-96'}`}></div>
+              <div className={`h-10 bg-muted rounded-lg animate-pulse ${isMobile ? 'w-56' : 'w-80'} mb-4`}></div>
+              <div className={`h-6 bg-muted rounded-lg animate-pulse ${isMobile ? 'w-80' : 'w-96'}`}></div>
             </div>
             <div className={`h-10 bg-muted rounded-lg animate-pulse ${isMobile ? 'w-24' : 'w-32'}`}></div>
           </div>
@@ -187,31 +187,31 @@ const SliderSkeleton = ({
         <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
           {Array.from({
           length: isMobile ? 2 : 3
-        }).map((_, i) => <Card key={i} className="h-80 bg-card/50 border-border/50 animate-pulse">
+        }).map((_, i) => <Card key={i} className="h-80 bg-card/50 animate-pulse">
               <CardContent className="p-8">
                 <div className="space-y-6">
                   <div className="flex items-start justify-between">
-                    <div className="h-6 bg-gradient-to-r from-muted to-muted/70 rounded w-20 animate-pulse"></div>
-                    <div className="h-6 bg-gradient-to-r from-muted/70 to-muted rounded w-16 animate-pulse"></div>
+                    <div className="h-6 bg-muted rounded-lg w-20 animate-pulse"></div>
+                    <div className="h-6 bg-muted rounded-lg w-16 animate-pulse"></div>
                   </div>
                   <div className="space-y-3">
-                    <div className="h-7 bg-gradient-to-r from-muted via-muted/80 to-muted rounded animate-pulse"></div>
-                    <div className="h-7 bg-gradient-to-r from-muted/80 via-muted to-muted/80 rounded w-3/4 animate-pulse"></div>
+                    <div className="h-7 bg-muted rounded-lg animate-pulse"></div>
+                    <div className="h-7 bg-muted rounded-lg w-3/4 animate-pulse"></div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 bg-muted rounded animate-pulse"></div>
-                      <div className="h-4 bg-muted rounded w-24 animate-pulse"></div>
+                      <div className="h-4 w-4 bg-muted rounded-lg animate-pulse"></div>
+                      <div className="h-4 bg-muted rounded-lg w-24 animate-pulse"></div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 bg-muted rounded animate-pulse"></div>
-                      <div className="h-4 bg-muted rounded w-32 animate-pulse"></div>
+                      <div className="h-4 w-4 bg-muted rounded-lg animate-pulse"></div>
+                      <div className="h-4 bg-muted rounded-lg w-32 animate-pulse"></div>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <div className="h-4 bg-gradient-to-r from-muted/60 to-muted/40 rounded animate-pulse"></div>
-                    <div className="h-4 bg-gradient-to-r from-muted/40 to-muted/60 rounded w-5/6 animate-pulse"></div>
-                    <div className="h-4 bg-gradient-to-r from-muted/60 to-muted/40 rounded w-2/3 animate-pulse"></div>
+                    <div className="h-4 bg-muted rounded-lg animate-pulse"></div>
+                    <div className="h-4 bg-muted rounded-lg w-5/6 animate-pulse"></div>
+                    <div className="h-4 bg-muted rounded-lg w-2/3 animate-pulse"></div>
                   </div>
                   <div className="h-10 bg-muted rounded-lg animate-pulse mt-auto"></div>
                 </div>

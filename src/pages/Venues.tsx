@@ -150,7 +150,7 @@ const Venues = () => {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold gradient-text mb-4 animate-fade-in">
+          <h1 className="text-5xl font-bold text-foreground mb-4 animate-fade-in">
             Venues & Organizations
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -158,7 +158,7 @@ const Venues = () => {
           </p>
           {user && (
             <Button 
-              className="bg-primary hover:bg-primary/90 gap-2 px-6 py-3 text-lg hover-scale"
+              className="bg-primary hover:opacity-90 gap-2 px-6 py-3 text-lg hover-scale"
               onClick={() => navigate('/admin/venues')}
             >
               <Plus className="h-5 w-5" />
@@ -236,7 +236,7 @@ const Venues = () => {
 
             {/* Empty State */}
             {!loading && venues.length === 0 && (
-              <Card className="p-12 text-center border-dashed border-2 animate-fade-in">
+              <Card className="p-12 text-center animate-fade-in">
                 <CardContent>
                   <MapPin className="h-16 w-16 mx-auto mb-6 text-muted-foreground" />
                   <h3 className="text-2xl font-semibold mb-3">No venues found</h3>
@@ -245,7 +245,7 @@ const Venues = () => {
                   </p>
                   {user && (
                     <Button 
-                      className="bg-primary hover:bg-primary/90 px-6 py-3"
+                      className="bg-primary hover:opacity-90 px-6 py-3"
                       onClick={() => navigate('/admin/venues')}
                     >
                       Add the First Venue

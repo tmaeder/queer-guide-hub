@@ -199,8 +199,8 @@ export default function Directory() {
   return (
     <div className={`w-full transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent"></div>
+      <div className="relative overflow-hidden bg-background">
+        <div className="absolute inset-0 bg-primary/5"></div>
         
         <div className="relative mx-auto max-w-7xl px-6 py-12 lg:py-20">
           {/* Navigation Header */}
@@ -220,7 +220,7 @@ export default function Directory() {
             
             {/* Dynamic Title */}
             <div className="space-y-3">
-              <h1 className="text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+              <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
                 {viewMode === "overview" && t('directory.title')}
                 {viewMode === "country" && selectedCountry && (
                   <>Explore {selectedCountry.name}</>
@@ -359,7 +359,7 @@ export default function Directory() {
                       return (
                         <div key={continent.id} className="group space-y-6">
                           {/* Continent Header */}
-                          <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-muted/40 to-muted/20 border border-border/50">
+                          <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/40">
                             <div className="flex items-center gap-3">
                               <div className="p-2 rounded-lg bg-primary/10">
                                 <Globe className="h-5 w-5 text-primary" />
@@ -441,7 +441,7 @@ export default function Directory() {
                     return (
                       <div key={continent.id} className="space-y-6">
                         {/* Continent Header */}
-                        <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-muted/40 to-muted/20 border border-border/50">
+                        <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/40">
                           <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-primary/10">
                               <Globe className="h-5 w-5 text-primary" />

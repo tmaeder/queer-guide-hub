@@ -85,7 +85,7 @@ const Marketplace = () => {
     count: listings.filter(l => l.category === 'services').length
   }];
   if (error) {
-    return <div className="min-h-screen bg-gradient-subtle">
+    return <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <CardContent>
@@ -96,12 +96,12 @@ const Marketplace = () => {
         </div>
       </div>;
   }
-  return <div className="min-h-screen bg-gradient-subtle">
-      <div className="w-full px-4 py-8 bg-slate-50">
+  return <div className="min-h-screen bg-background">
+      <div className="w-full px-4 py-8 bg-background">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold gradient-text mb-2">
+            <h1 className="text-4xl font-bold text-foreground mb-2">
               Marketplace
             </h1>
             <p className="text-lg text-muted-foreground">
@@ -109,7 +109,7 @@ const Marketplace = () => {
             </p>
           </div>
           {user && (
-            <Button className="bg-gradient-primary gap-2">
+            <Button className="bg-primary gap-2">
               <Plus className="h-4 w-4" />
               List Your Business
             </Button>
@@ -156,7 +156,7 @@ const Marketplace = () => {
                   We couldn't find any listings matching your criteria. Try adjusting your filters or be the first to add your business!
                 </p>
                 {user && (
-                  <Button className="bg-gradient-primary">
+                  <Button className="bg-primary">
                     List Your Business
                   </Button>
                 )}
@@ -164,7 +164,7 @@ const Marketplace = () => {
             </Card>}
 
           {/* Tab Contents */}
-          {categories.map(category => <TabsContent key={category.id} value={category.id} className="bg-slate-50">
+          {categories.map(category => <TabsContent key={category.id} value={category.id} className="bg-background">
               {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length > 0 && <>
                   <div className="flex items-center justify-between mb-6">
                     <p className="text-muted-foreground">
