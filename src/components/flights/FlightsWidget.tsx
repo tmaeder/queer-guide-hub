@@ -38,9 +38,9 @@ export function FlightsWidget({ destination, countryCode = 'xx' }: FlightsWidget
   return (
     <div 
       ref={containerRef} 
-      className="min-h-[400px] w-full flex items-center justify-center"
+      className="min-h-[400px] w-full"
     >
-      <div className="text-center text-muted-foreground">
+      <div className="text-center text-muted-foreground py-16">
         <p>Loading flight deals...</p>
       </div>
     </div>
