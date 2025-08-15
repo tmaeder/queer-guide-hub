@@ -218,7 +218,7 @@ async function fetchPornhubPersonalityData(url: string): Promise<PersonalityData
     }
     
     // Extract basic info from meta tags or page content
-    const titleMatch = html.match(/<title>([^<]+)</title>/i);
+    const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
     const descriptionMatch = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i);
     
     let description = '';
