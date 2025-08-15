@@ -388,6 +388,28 @@ export default function AdminImportHub() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                ILGA LGBT+ Rights Data
+              </CardTitle>
+              <CardDescription>Import LGBT+ jurisdiction data from ILGA World Database</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button
+                onClick={() => handleApiImport('import-ilga-data', { batchSize: 10, startIndex: 0 })}
+                disabled={loading === 'import-ilga-data'}
+                className="w-full"
+              >
+                {loading === 'import-ilga-data' ? 'Importing...' : 'Import ILGA Data for All Countries'}
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Imports real LGBT+ rights and legal status data from ILGA World Database for all countries. This includes criminalization status, same-sex marriage, anti-discrimination laws, and more.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
                 Location Linking
               </CardTitle>
