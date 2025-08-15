@@ -5052,11 +5052,19 @@ export type Database = {
         Args: { post_id: string }
         Returns: undefined
       }
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       is_conversation_participant: {
         Args:
           | { conversation_id: string }
           | { conversation_id_param: string; user_id_param: string }
           | { p_conversation_id: number; p_user_id: string }
+        Returns: boolean
+      }
+      is_group_admin: {
+        Args: { group_id: string; user_id: string }
         Returns: boolean
       }
       is_group_member_or_admin: {
