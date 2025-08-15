@@ -224,23 +224,12 @@ export default function CountryDetail() {
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-6 pb-16">
         {/* Quick Info Cards */}
-        <div className="grid gap-6 lg:grid-cols-3 mb-12 -mt-8">
+        <div className="grid gap-6 lg:grid-cols-2 mb-12 -mt-8">
           <Card className="border-muted/50 shadow-lg bg-card/80 backdrop-blur-sm">
             <CardContent className="p-0">
               <LocationInfo
                 name={country.name}
                 type="country"
-                className="h-full border-0 bg-transparent"
-              />
-            </CardContent>
-          </Card>
-          
-          <Card className="border-muted/50 shadow-lg bg-card/80 backdrop-blur-sm">
-            <CardContent className="p-0">
-              <WeatherForecast
-                latitude={country.latitude}
-                longitude={country.longitude}
-                cityName={country.capital || country.name}
                 className="h-full border-0 bg-transparent"
               />
             </CardContent>
@@ -450,6 +439,18 @@ export default function CountryDetail() {
                   <h2 className="text-3xl font-bold tracking-tight mb-2">Country Information</h2>
                   <p className="text-muted-foreground">Detailed statistics and information about {country.name}</p>
                 </div>
+
+                {/* Weather Forecast */}
+                <Card className="border-muted/50">
+                  <CardContent className="p-0">
+                    <WeatherForecast
+                      latitude={country.latitude}
+                      longitude={country.longitude}
+                      cityName={country.capital || country.name}
+                      className="h-full border-0 bg-transparent"
+                    />
+                  </CardContent>
+                </Card>
 
                 <div className="grid gap-8 md:grid-cols-2">
                   {/* Basic Information */}
