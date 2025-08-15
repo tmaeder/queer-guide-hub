@@ -308,10 +308,27 @@ export const BulkCreatePersonalities = () => {
                 <CollapsibleContent className="space-y-2 pt-2">
                   {results.created.map((personality: any, index: number) => (
                     <div key={index} className="text-sm p-2 bg-green-50 rounded border-l-4 border-green-500">
-                      <div className="font-medium">{personality.name}</div>
-                      {personality.profession && (
-                        <div className="text-muted-foreground">{personality.profession}</div>
-                      )}
+                      <div className="flex items-start gap-3">
+                        {personality.image_url && (
+                          <img 
+                            src={personality.image_url} 
+                            alt={personality.name}
+                            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        )}
+                        <div className="flex-1">
+                          <div className="font-medium">{personality.name}</div>
+                          {personality.profession && (
+                            <div className="text-muted-foreground">{personality.profession}</div>
+                          )}
+                          {personality.nationality && (
+                            <div className="text-xs text-muted-foreground">{personality.nationality}</div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </CollapsibleContent>

@@ -89,6 +89,30 @@ serve(async (req) => {
               console.error(`Error inserting personality ${name}:`, insertError);
               errors.push({ name, error: insertError.message });
             } else {
+              // Try to fetch additional images if no image was found from Wikidata
+              if (!personalityData.image_url) {
+                try {
+                  const imageResponse = await supabase.functions.invoke('get-pexels-images', {
+                    body: { 
+                      query: `${personalityData.name} portrait`,
+                      type: 'person'
+                    }
+                  });
+                  
+                  if (imageResponse.data?.images?.[0]?.url) {
+                    // Update personality with fetched image
+                    await supabase
+                      .from('personalities')
+                      .update({ image_url: imageResponse.data.images[0].url })
+                      .eq('id', personality.id);
+                    
+                    personality.image_url = imageResponse.data.images[0].url;
+                  }
+                } catch (imageError) {
+                  console.log(`Could not fetch image for ${name}:`, imageError);
+                }
+              }
+              
               console.log(`Successfully created personality: ${personalityData.name}`);
               results.push(personality);
             }
