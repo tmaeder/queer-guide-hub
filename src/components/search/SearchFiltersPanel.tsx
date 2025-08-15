@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, BookOpen, Plane } from 'lucide-react';
+import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, BookOpen, Plane, Tag } from 'lucide-react';
 import { SearchFilters } from '@/hooks/useUniversalSearch';
 import { format } from 'date-fns';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
@@ -26,14 +26,18 @@ const contentTypes = [
   { id: 'news', label: 'News', icon: Newspaper },
   { id: 'location', label: 'Locations', icon: Globe },
   { id: 'content', label: 'Wiki', icon: BookOpen },
-  { id: 'travel', label: 'Travel', icon: Plane }
+  { id: 'travel', label: 'Travel', icon: Plane },
+  { id: 'personality', label: 'Personalities', icon: Users },
+  { id: 'ressource', label: 'Resources', icon: Tag }
 ];
 
 const popularCategories = {
   venue: ['Restaurant', 'Bar', 'Hotel', 'Club', 'Gallery', 'Theater'],
   event: ['Concert', 'Festival', 'Workshop', 'Conference', 'Sports', 'Art'],
   marketplace: ['Electronics', 'Fashion', 'Food', 'Services', 'Automotive', 'Health'],
-  news: ['Local', 'Politics', 'Business', 'Technology', 'Sports', 'Entertainment']
+  news: ['Local', 'Politics', 'Business', 'Technology', 'Sports', 'Entertainment'],
+  personality: ['Artist', 'Actor', 'Musician', 'Writer', 'Activist', 'Politician'],
+  ressource: ['Health', 'Education', 'Legal', 'Community', 'Support', 'Resources']
 };
 
 export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPanelProps) => {
