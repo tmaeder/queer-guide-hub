@@ -91,7 +91,16 @@ export function PersonalityCard({
             
             {personality.nationality && <div className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                <span>{personality.nationality}</span>
+                <button 
+                  className="text-primary hover:underline" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Navigate to country page - you'll need to implement country lookup by name
+                    window.location.href = `/countries?search=${encodeURIComponent(personality.nationality)}`;
+                  }}
+                >
+                  {personality.nationality}
+                </button>
               </div>}
           </div>
 
