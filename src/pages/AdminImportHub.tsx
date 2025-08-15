@@ -10,38 +10,16 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Upload, 
-  Download, 
-  Rss, 
-  Globe, 
-  MapPin, 
-  Calendar, 
-  Building2, 
-  Newspaper, 
-  Users,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  FileText,
-  Zap,
-  Settings,
-  Database,
-  Info,
-  Activity
-} from "lucide-react";
+import { Upload, Download, Rss, Globe, MapPin, Calendar, Building2, Newspaper, Users, RefreshCw, AlertCircle, CheckCircle, Clock, FileText, Zap, Settings, Database, Info, Activity } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewsSourcesManager } from "@/components/admin/NewsSourcesManager";
 import { BulkCreatePersonalities } from "@/components/personalities/BulkCreatePersonalities";
-
 interface ImportStats {
   totalImports: number;
   successfulImports: number;
   failedImports: number;
   lastImport: string | null;
 }
-
 interface ImportJob {
   id: string;
   type: string;
@@ -50,11 +28,14 @@ interface ImportJob {
   message: string;
   createdAt: Date;
 }
-
 export default function AdminImportHub() {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
-  const [progress, setProgress] = useState<{[key: string]: number}>({});
+  const [progress, setProgress] = useState<{
+    [key: string]: number;
+  }>({});
   const [eventSeeds, setEventSeeds] = useState<string>('');
   const [eventLimit, setEventLimit] = useState<string>('100');
   const [aiTagsInput, setAiTagsInput] = useState<string>('');
@@ -65,11 +46,12 @@ export default function AdminImportHub() {
     failedImports: 0,
     lastImport: null
   });
-
   const updateProgress = (jobId: string, progress: number) => {
-    setProgress(prev => ({ ...prev, [jobId]: progress }));
+    setProgress(prev => ({
+      ...prev,
+      [jobId]: progress
+    }));
   };
-
   const addImportJob = (type: string, status: ImportJob['status'] = 'pending') => {
     const job: ImportJob = {
       id: `${type}-${Date.now()}`,
@@ -82,151 +64,149 @@ export default function AdminImportHub() {
     setImportJobs(prev => [job, ...prev.slice(0, 9)]); // Keep last 10 jobs
     return job.id;
   };
-
   const updateImportJob = (jobId: string, updates: Partial<ImportJob>) => {
-    setImportJobs(prev => prev.map(job => 
-      job.id === jobId ? { ...job, ...updates } : job
-    ));
+    setImportJobs(prev => prev.map(job => job.id === jobId ? {
+      ...job,
+      ...updates
+    } : job));
   };
-
   const handleFileImport = async (type: string, file: File) => {
     if (!file) return;
-    
     const jobId = addImportJob(`${type}-csv`, 'running');
     setLoading(type);
     updateProgress(jobId, 10);
-    
     try {
       // Validate file
       if (!file.name.endsWith('.csv')) {
         throw new Error('Please select a valid CSV file');
       }
-      
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB limit
         throw new Error('File size must be less than 10MB');
       }
-
       updateProgress(jobId, 30);
-      updateImportJob(jobId, { message: 'Uploading file...' });
-
+      updateImportJob(jobId, {
+        message: 'Uploading file...'
+      });
       const formData = new FormData();
       formData.append('file', file);
-
       updateProgress(jobId, 50);
-      updateImportJob(jobId, { message: 'Processing data...' });
-
-      const { data, error } = await supabase.functions.invoke(`import-${type}-csv`, {
-        body: formData,
+      updateImportJob(jobId, {
+        message: 'Processing data...'
       });
-
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke(`import-${type}-csv`, {
+        body: formData
+      });
       if (error) throw error;
-
       updateProgress(jobId, 100);
-      updateImportJob(jobId, { 
-        status: 'completed', 
+      updateImportJob(jobId, {
+        status: 'completed',
         progress: 100,
         message: `Successfully imported ${data?.imported || 'unknown'} items`
       });
-
       setStats(prev => ({
         ...prev,
         totalImports: prev.totalImports + 1,
         successfulImports: prev.successfulImports + 1,
         lastImport: new Date().toISOString()
       }));
-
       toast({
         title: "Import Successful",
-        description: `${type} data imported successfully. Processed ${data?.imported || 'unknown'} items.`,
+        description: `${type} data imported successfully. Processed ${data?.imported || 'unknown'} items.`
       });
     } catch (error) {
-      updateImportJob(jobId, { 
-        status: 'failed', 
+      updateImportJob(jobId, {
+        status: 'failed',
         message: error instanceof Error ? error.message : 'Import failed'
       });
-
       setStats(prev => ({
         ...prev,
         totalImports: prev.totalImports + 1,
         failedImports: prev.failedImports + 1
       }));
-
       toast({
         title: "Import Failed",
         description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(null);
-      setTimeout(() => setProgress(prev => ({ ...prev, [jobId]: 0 })), 2000);
+      setTimeout(() => setProgress(prev => ({
+        ...prev,
+        [jobId]: 0
+      })), 2000);
     }
   };
-
   const handleApiImport = async (functionName: string, params: any = {}) => {
     const jobId = addImportJob(functionName, 'running');
     setLoading(functionName);
     updateProgress(jobId, 20);
-    
     try {
-      updateImportJob(jobId, { message: 'Connecting to API...' });
-      updateProgress(jobId, 40);
-
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body: params,
+      updateImportJob(jobId, {
+        message: 'Connecting to API...'
       });
-
+      updateProgress(jobId, 40);
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke(functionName, {
+        body: params
+      });
       if (error) throw error;
-
       updateProgress(jobId, 100);
-      updateImportJob(jobId, { 
-        status: 'completed', 
+      updateImportJob(jobId, {
+        status: 'completed',
         progress: 100,
         message: data?.message || `Processed ${data?.imported || data?.processed_articles || 'items'} successfully`
       });
-
       setStats(prev => ({
         ...prev,
         totalImports: prev.totalImports + 1,
         successfulImports: prev.successfulImports + 1,
         lastImport: new Date().toISOString()
       }));
-
       toast({
-        title: "Import Successful", 
-        description: `Data imported successfully. ${data?.message || `Processed ${data?.imported || data?.processed_articles || 'items'} successfully.`}`,
+        title: "Import Successful",
+        description: `Data imported successfully. ${data?.message || `Processed ${data?.imported || data?.processed_articles || 'items'} successfully.`}`
       });
     } catch (error) {
-      updateImportJob(jobId, { 
-        status: 'failed', 
+      updateImportJob(jobId, {
+        status: 'failed',
         message: error instanceof Error ? error.message : 'Import failed'
       });
-
       setStats(prev => ({
         ...prev,
         totalImports: prev.totalImports + 1,
         failedImports: prev.failedImports + 1
       }));
-
       toast({
         title: "Import Failed",
         description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(null);
-      setTimeout(() => setProgress(prev => ({ ...prev, [jobId]: 0 })), 2000);
+      setTimeout(() => setProgress(prev => ({
+        ...prev,
+        [jobId]: 0
+      })), 2000);
     }
   };
-
   const getStatusIcon = (status: ImportJob['status']) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'failed': return <AlertCircle className="h-4 w-4 text-red-600" />;
-      case 'running': return <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />;
-      default: return <Clock className="h-4 w-4 text-yellow-600" />;
+      case 'completed':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'failed':
+        return <AlertCircle className="h-4 w-4 text-red-600" />;
+      case 'running':
+        return <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />;
+      default:
+        return <Clock className="h-4 w-4 text-yellow-600" />;
     }
   };
-
   const getStatusBadge = (status: ImportJob['status']) => {
     const variants = {
       completed: 'default',
@@ -234,12 +214,9 @@ export default function AdminImportHub() {
       running: 'secondary',
       pending: 'outline'
     } as const;
-    
     return <Badge variant={variants[status]}>{status}</Badge>;
   };
-
-  return (
-    <div className="w-full min-h-screen bg-background">
+  return <div className="w-full min-h-screen bg-background">
       {/* Enhanced Header */}
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container mx-auto p-6">
@@ -283,8 +260,7 @@ export default function AdminImportHub() {
 
       <div className="container mx-auto p-6">
         {/* Active Jobs Monitor */}
-        {importJobs.length > 0 && (
-          <Card className="mb-6">
+        {importJobs.length > 0 && <Card className="mb-6">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Activity className="h-4 w-4" />
@@ -293,8 +269,7 @@ export default function AdminImportHub() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3 max-h-64 overflow-y-auto">
-                {importJobs.map((job) => (
-                  <div key={job.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                {importJobs.map(job => <div key={job.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
                     {getStatusIcon(job.status)}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -302,19 +277,15 @@ export default function AdminImportHub() {
                         {getStatusBadge(job.status)}
                       </div>
                       <p className="text-xs text-muted-foreground truncate">{job.message}</p>
-                      {job.status === 'running' && progress[job.id] > 0 && (
-                        <Progress value={progress[job.id]} className="h-1 mt-2" />
-                      )}
+                      {job.status === 'running' && progress[job.id] > 0 && <Progress value={progress[job.id]} className="h-1 mt-2" />}
                     </div>
                     <span className="text-xs text-muted-foreground">
                       {job.createdAt.toLocaleTimeString()}
                     </span>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         <Tabs defaultValue="personalities" className="space-y-6">
           <TabsList className="grid w-full grid-cols-7">
@@ -350,15 +321,7 @@ export default function AdminImportHub() {
 
           <TabsContent value="personalities" className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Bulk Create Personalities
-                </CardTitle>
-                <CardDescription>
-                  Create personalities from names and enrich with Wikipedia/Wikidata information
-                </CardDescription>
-              </CardHeader>
+              
               <CardContent>
                 <BulkCreatePersonalities />
               </CardContent>
@@ -385,19 +348,11 @@ export default function AdminImportHub() {
                   
                   <div className="space-y-2">
                     <Label htmlFor="events-csv">CSV File (Max 10MB)</Label>
-                    <Input
-                      id="events-csv"
-                      type="file"
-                      accept=".csv"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileImport('events', file);
-                      }}
-                      disabled={loading === 'events'}
-                    />
-                    {loading === 'events' && progress['events-csv'] > 0 && (
-                      <Progress value={progress['events-csv']} className="h-2" />
-                    )}
+                    <Input id="events-csv" type="file" accept=".csv" onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileImport('events', file);
+                  }} disabled={loading === 'events'} />
+                    {loading === 'events' && progress['events-csv'] > 0 && <Progress value={progress['events-csv']} className="h-2" />}
                   </div>
                 </CardContent>
               </Card>
@@ -415,13 +370,7 @@ export default function AdminImportHub() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="event-seeds">Seed URLs (one per line)</Label>
-                    <Textarea
-                      id="event-seeds"
-                      value={eventSeeds}
-                      onChange={(e) => setEventSeeds(e.target.value)}
-                      placeholder={"https://example.com/events\nhttps://another-site.com/whats-on"}
-                      className="min-h-[100px]"
-                    />
+                    <Textarea id="event-seeds" value={eventSeeds} onChange={e => setEventSeeds(e.target.value)} placeholder={"https://example.com/events\nhttps://another-site.com/whats-on"} className="min-h-[100px]" />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
@@ -442,44 +391,31 @@ export default function AdminImportHub() {
                     </div>
                   </div>
 
-                  <Button
-                    onClick={() => {
-                      const seeds = eventSeeds
-                        .split(/\n|,/)
-                        .map((s) => s.trim())
-                        .filter(Boolean);
-                      if (seeds.length === 0) {
-                        toast({ 
-                          title: 'No URLs provided', 
-                          description: 'Add at least one URL to scrape', 
-                          variant: 'destructive' 
-                        });
-                        return;
-                      }
-                      handleApiImport('bulk-scrape-events', { 
-                        seeds, 
-                        limit: Number(eventLimit) || 100 
-                      });
-                    }}
-                    disabled={loading === 'bulk-scrape-events'}
-                    className="w-full"
-                  >
-                    {loading === 'bulk-scrape-events' ? (
-                      <>
+                  <Button onClick={() => {
+                  const seeds = eventSeeds.split(/\n|,/).map(s => s.trim()).filter(Boolean);
+                  if (seeds.length === 0) {
+                    toast({
+                      title: 'No URLs provided',
+                      description: 'Add at least one URL to scrape',
+                      variant: 'destructive'
+                    });
+                    return;
+                  }
+                  handleApiImport('bulk-scrape-events', {
+                    seeds,
+                    limit: Number(eventLimit) || 100
+                  });
+                }} disabled={loading === 'bulk-scrape-events'} className="w-full">
+                    {loading === 'bulk-scrape-events' ? <>
                         <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                         Scraping...
-                      </>
-                    ) : (
-                      <>
+                      </> : <>
                         <Zap className="h-4 w-4 mr-2" />
                         Scrape & Import Events
-                      </>
-                    )}
+                      </>}
                   </Button>
                   
-                  {loading === 'bulk-scrape-events' && progress['bulk-scrape-events'] > 0 && (
-                    <Progress value={progress['bulk-scrape-events']} className="h-2" />
-                  )}
+                  {loading === 'bulk-scrape-events' && progress['bulk-scrape-events'] > 0 && <Progress value={progress['bulk-scrape-events']} className="h-2" />}
                 </CardContent>
               </Card>
             </div>
@@ -506,62 +442,41 @@ export default function AdminImportHub() {
 
                 <div className="space-y-2">
                   <Label htmlFor="ai-tags-textarea">Enter terms (one per line)</Label>
-                  <Textarea
-                    id="ai-tags-textarea"
-                    placeholder={"pride\nrainbow flag\ncoming out\ndrag show\nqueer history"}
-                    value={aiTagsInput}
-                    onChange={(e) => setAiTagsInput(e.target.value)}
-                    className="min-h-32"
-                    disabled={loading === 'bulk-create-ai-tags'}
-                  />
+                  <Textarea id="ai-tags-textarea" placeholder={"pride\nrainbow flag\ncoming out\ndrag show\nqueer history"} value={aiTagsInput} onChange={e => setAiTagsInput(e.target.value)} className="min-h-32" disabled={loading === 'bulk-create-ai-tags'} />
                 </div>
 
-                <Button
-                  onClick={() => {
-                    if (!aiTagsInput.trim()) {
-                      toast({
-                        title: "Error",
-                        description: "Please enter some terms to create tags",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-                    
-                    const termsList = aiTagsInput
-                      .split('\n')
-                      .map(term => term.trim())
-                      .filter(term => term.length > 0);
-                      
-                    if (termsList.length === 0) {
-                      toast({
-                        title: "Error",
-                        description: "No valid terms found",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-                    
-                    handleApiImport('bulk-create-ai-tags', { terms: termsList });
-                  }}
-                  disabled={loading === 'bulk-create-ai-tags'}
-                  className="w-full"
-                >
-                  {loading === 'bulk-create-ai-tags' ? (
-                    <>
+                <Button onClick={() => {
+                if (!aiTagsInput.trim()) {
+                  toast({
+                    title: "Error",
+                    description: "Please enter some terms to create tags",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                const termsList = aiTagsInput.split('\n').map(term => term.trim()).filter(term => term.length > 0);
+                if (termsList.length === 0) {
+                  toast({
+                    title: "Error",
+                    description: "No valid terms found",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                handleApiImport('bulk-create-ai-tags', {
+                  terms: termsList
+                });
+              }} disabled={loading === 'bulk-create-ai-tags'} className="w-full">
+                  {loading === 'bulk-create-ai-tags' ? <>
                       <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                       Creating Tags with AI...
-                    </>
-                  ) : (
-                    <>
+                    </> : <>
                       <Zap className="h-4 w-4 mr-2" />
                       Create Tags with AI
-                    </>
-                  )}
+                    </>}
                 </Button>
                 
-                {loading === 'bulk-create-ai-tags' && progress['bulk-create-ai-tags'] > 0 && (
-                  <Progress value={progress['bulk-create-ai-tags']} className="h-2" />
-                )}
+                {loading === 'bulk-create-ai-tags' && progress['bulk-create-ai-tags'] > 0 && <Progress value={progress['bulk-create-ai-tags']} className="h-2" />}
               </CardContent>
             </Card>
           </TabsContent>
@@ -577,30 +492,39 @@ export default function AdminImportHub() {
                   <CardDescription className="text-sm">Import from CSV file</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Input
-                    type="file"
-                    accept=".csv"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleFileImport('venues', file);
-                    }}
-                    disabled={loading === 'venues'}
-                    className="text-sm"
-                  />
-                  {loading === 'venues' && progress['venues-csv'] > 0 && (
-                    <Progress value={progress['venues-csv']} className="h-1" />
-                  )}
+                  <Input type="file" accept=".csv" onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileImport('venues', file);
+                }} disabled={loading === 'venues'} className="text-sm" />
+                  {loading === 'venues' && progress['venues-csv'] > 0 && <Progress value={progress['venues-csv']} className="h-1" />}
                 </CardContent>
               </Card>
 
-              {[
-                { name: 'Foursquare', key: 'import-foursquare-venues', icon: Building2 },
-                { name: 'TripAdvisor', key: 'import-tripadvisor-venues', icon: Globe },
-                { name: 'TomTom', key: 'import-tomtom-venues', icon: MapPin },
-                { name: 'Google Places', key: 'import-google-places-venues', icon: Globe },
-                { name: 'Refuge Restrooms', key: 'import-refuge-restrooms', icon: Building2 }
-              ].map(({ name, key, icon: Icon }) => (
-                <Card key={key}>
+              {[{
+              name: 'Foursquare',
+              key: 'import-foursquare-venues',
+              icon: Building2
+            }, {
+              name: 'TripAdvisor',
+              key: 'import-tripadvisor-venues',
+              icon: Globe
+            }, {
+              name: 'TomTom',
+              key: 'import-tomtom-venues',
+              icon: MapPin
+            }, {
+              name: 'Google Places',
+              key: 'import-google-places-venues',
+              icon: Globe
+            }, {
+              name: 'Refuge Restrooms',
+              key: 'import-refuge-restrooms',
+              icon: Building2
+            }].map(({
+              name,
+              key,
+              icon: Icon
+            }) => <Card key={key}>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2">
                       <Icon className="h-4 w-4" />
@@ -609,30 +533,18 @@ export default function AdminImportHub() {
                     <CardDescription className="text-sm">Import from {name} API</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button
-                      onClick={() => handleApiImport(key)}
-                      disabled={loading === key}
-                      size="sm"
-                      className="w-full"
-                    >
-                      {loading === key ? (
-                        <>
+                    <Button onClick={() => handleApiImport(key)} disabled={loading === key} size="sm" className="w-full">
+                      {loading === key ? <>
                           <RefreshCw className="h-3 w-3 mr-2 animate-spin" />
                           Importing...
-                        </>
-                      ) : (
-                        <>
+                        </> : <>
                           <Download className="h-3 w-3 mr-2" />
                           Import
-                        </>
-                      )}
+                        </>}
                     </Button>
-                    {loading === key && progress[key] > 0 && (
-                      <Progress value={progress[key]} className="h-1 mt-2" />
-                    )}
+                    {loading === key && progress[key] > 0 && <Progress value={progress[key]} className="h-1 mt-2" />}
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </TabsContent>
 
@@ -657,27 +569,17 @@ export default function AdminImportHub() {
                   </AlertDescription>
                 </Alert>
                 
-                <Button
-                  onClick={() => handleApiImport('fetch-news')}
-                  disabled={loading === 'fetch-news'}
-                  className="w-full"
-                >
-                  {loading === 'fetch-news' ? (
-                    <>
+                <Button onClick={() => handleApiImport('fetch-news')} disabled={loading === 'fetch-news'} className="w-full">
+                  {loading === 'fetch-news' ? <>
                       <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                       Importing News...
-                    </>
-                  ) : (
-                    <>
+                    </> : <>
                       <Download className="h-4 w-4 mr-2" />
                       Import News Now
-                    </>
-                  )}
+                    </>}
                 </Button>
                 
-                {loading === 'fetch-news' && progress['fetch-news'] > 0 && (
-                  <Progress value={progress['fetch-news']} className="h-2" />
-                )}
+                {loading === 'fetch-news' && progress['fetch-news'] > 0 && <Progress value={progress['fetch-news']} className="h-2" />}
               </CardContent>
             </Card>
           </TabsContent>
@@ -695,61 +597,68 @@ export default function AdminImportHub() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 md:grid-cols-3">
-                  {[
-                    { label: 'Fetch City Images', action: 'fetch_images', icon: FileText },
-                    { label: 'Fetch Wikipedia Data', action: 'fetch_wikipedia', icon: Globe },
-                    { label: 'Import All Data', action: 'fetch_all', icon: Download }
-                  ].map(({ label, action, icon: Icon }) => (
-                    <Button
-                      key={action}
-                      onClick={() => handleApiImport('import-city-data', { action })}
-                      disabled={loading === 'import-city-data'}
-                      variant="outline"
-                      className="h-auto p-4 flex-col gap-2"
-                    >
+                  {[{
+                  label: 'Fetch City Images',
+                  action: 'fetch_images',
+                  icon: FileText
+                }, {
+                  label: 'Fetch Wikipedia Data',
+                  action: 'fetch_wikipedia',
+                  icon: Globe
+                }, {
+                  label: 'Import All Data',
+                  action: 'fetch_all',
+                  icon: Download
+                }].map(({
+                  label,
+                  action,
+                  icon: Icon
+                }) => <Button key={action} onClick={() => handleApiImport('import-city-data', {
+                  action
+                })} disabled={loading === 'import-city-data'} variant="outline" className="h-auto p-4 flex-col gap-2">
                       <Icon className="h-5 w-5" />
                       <span className="text-sm">{label}</span>
-                      {loading === 'import-city-data' && (
-                        <RefreshCw className="h-3 w-3 animate-spin" />
-                      )}
-                    </Button>
-                  ))}
+                      {loading === 'import-city-data' && <RefreshCw className="h-3 w-3 animate-spin" />}
+                    </Button>)}
                 </div>
                 
-                {loading === 'import-city-data' && progress['import-city-data'] > 0 && (
-                  <Progress value={progress['import-city-data']} className="h-2" />
-                )}
+                {loading === 'import-city-data' && progress['import-city-data'] > 0 && <Progress value={progress['import-city-data']} className="h-2" />}
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="countries" className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
-              {[
-                {
-                  title: 'REST Countries Import',
-                  description: 'Import country data from REST Countries API',
-                  function: 'import-country-data',
-                  buttonText: 'Import Countries & Capitals',
-                  icon: Globe
-                },
-                {
-                  title: 'Weather Data Import',
-                  description: 'Update weather forecast data for cities and countries',
-                  function: 'get-weather-forecast',
-                  buttonText: 'Update Weather Data',
-                  icon: Globe
-                },
-                {
-                  title: 'ILGA LGBT+ Rights Data',
-                  description: 'Import LGBT+ jurisdiction data from ILGA World Database',
-                  function: 'import-ilga-data',
-                  buttonText: 'Import ILGA Data',
-                  icon: Globe,
-                  params: { batchSize: 10, startIndex: 0 }
-                }
-              ].map(({ title, description, function: func, buttonText, icon: Icon, params }) => (
-                <Card key={func}>
+              {[{
+              title: 'REST Countries Import',
+              description: 'Import country data from REST Countries API',
+              function: 'import-country-data',
+              buttonText: 'Import Countries & Capitals',
+              icon: Globe
+            }, {
+              title: 'Weather Data Import',
+              description: 'Update weather forecast data for cities and countries',
+              function: 'get-weather-forecast',
+              buttonText: 'Update Weather Data',
+              icon: Globe
+            }, {
+              title: 'ILGA LGBT+ Rights Data',
+              description: 'Import LGBT+ jurisdiction data from ILGA World Database',
+              function: 'import-ilga-data',
+              buttonText: 'Import ILGA Data',
+              icon: Globe,
+              params: {
+                batchSize: 10,
+                startIndex: 0
+              }
+            }].map(({
+              title,
+              description,
+              function: func,
+              buttonText,
+              icon: Icon,
+              params
+            }) => <Card key={func}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Icon className="h-5 w-5" />
@@ -758,33 +667,21 @@ export default function AdminImportHub() {
                     <CardDescription>{description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <Button
-                      onClick={() => handleApiImport(func, params)}
-                      disabled={loading === func}
-                      className="w-full"
-                    >
-                      {loading === func ? (
-                        <>
+                    <Button onClick={() => handleApiImport(func, params)} disabled={loading === func} className="w-full">
+                      {loading === func ? <>
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                           Processing...
-                        </>
-                      ) : (
-                        <>
+                        </> : <>
                           <Download className="h-4 w-4 mr-2" />
                           {buttonText}
-                        </>
-                      )}
+                        </>}
                     </Button>
-                    {loading === func && progress[func] > 0 && (
-                      <Progress value={progress[func]} className="h-2" />
-                    )}
+                    {loading === func && progress[func] > 0 && <Progress value={progress[func]} className="h-2" />}
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>;
 }
