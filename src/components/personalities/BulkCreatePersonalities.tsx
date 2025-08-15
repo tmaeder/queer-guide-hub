@@ -22,8 +22,7 @@ export const BulkCreatePersonalities = () => {
     wikipedia: true,
     openLibrary: true,
     bandsintown: true,
-    pexelsImages: true,
-    pornhub: false
+    pexelsImages: true
   });
   const { toast } = useToast();
 
@@ -308,17 +307,6 @@ export const BulkCreatePersonalities = () => {
                     disabled={isLoading}
                   />
                   <Label htmlFor="pexelsImages" className="text-sm">Pexels (fallback images)</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="pornhub"
-                    checked={sources.pornhub}
-                    onCheckedChange={(checked) => 
-                      setSources(prev => ({ ...prev, pornhub: checked as boolean }))
-                    }
-                    disabled={isLoading}
-                  />
-                  <Label htmlFor="pornhub" className="text-sm">Pornhub (adult models)</Label>
                 </div>
               </div>
             </div>

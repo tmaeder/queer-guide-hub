@@ -26,7 +26,6 @@ interface PersonalityData {
   bio: string;
   top_book?: string | null;
   next_concerts?: any[] | null;
-  profile_url?: string | null;
 }
 
 serve(async (req) => {
@@ -48,8 +47,7 @@ serve(async (req) => {
       wikipedia: sources.wikipedia !== false,
       openLibrary: sources.openLibrary !== false,
       bandsintown: sources.bandsintown !== false,
-      pexelsImages: sources.pexelsImages !== false,
-      pornhub: sources.pornhub === true
+      pexelsImages: sources.pexelsImages !== false
     };
 
     console.log(`Processing ${names.length} personality names with sources:`, sourceConfig);
@@ -74,13 +72,8 @@ serve(async (req) => {
       try {
         console.log(`Processing: ${name}`);
         
-        // Check if this is a Pornhub URL
-        const isPornhubUrl = name.includes('pornhub.com/pornstar/');
-        
         // Fetch personality data using the same logic as fetch-personality-data
-        const personalityData = isPornhubUrl && sourceConfig.pornhub 
-          ? await fetchPornhubPersonalityData(name.trim())
-          : await fetchPersonalityData(name.trim(), sourceConfig);
+        const personalityData = await fetchPersonalityData(name.trim(), sourceConfig);
         
         console.log(`Data fetched for ${name}:`, personalityData ? 'success' : 'failed');
         
@@ -109,7 +102,6 @@ serve(async (req) => {
                 bio: personalityData.bio,
                 top_book: personalityData.top_book,
                 next_concerts: personalityData.next_concerts || [],
-                profile_url: personalityData.profile_url || null,
                 is_featured: false,
                 visibility: 'public'
               })
@@ -186,86 +178,6 @@ serve(async (req) => {
     });
   }
 });
-
-async function fetchPornhubPersonalityData(url: string): Promise<PersonalityData | null> {
-  try {
-    console.log(`Fetching Pornhub data from: ${url}`);
-    
-    // Extract performer name from URL
-    const match = url.match(/pornstar\/([^/?]+)/);
-    if (!match) {
-      console.error('Could not extract performer name from URL');
-      return null;
-    }
-    
-    const performerSlug = match[1];
-    const performerName = performerSlug
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-    
-    // Fetch page content
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
-    });
-    
-    if (!response.ok) {
-      console.error(`Failed to fetch Pornhub page: ${response.status}`);
-      return null;
-    }
-    
-    const html = await response.text();
-    
-    // Extract image URL - look for profile image
-    let imageUrl = null;
-    const imageMatch = html.match(/<img[^>]+class="[^"]*profileImage[^"]*"[^>]+src="([^"]+)"/i) ||
-                      html.match(/<img[^>]+src="([^"]+)"[^>]*class="[^"]*profileImage[^"]*"/i) ||
-                      html.match(/<div[^>]+class="[^"]*profileImage[^"]*"[^>]*style="[^"]*background-image:\s*url\(([^)]+)\)/i);
-    
-    if (imageMatch) {
-      imageUrl = imageMatch[1].replace(/['"]/g, '');
-      // Ensure it's a full URL
-      if (imageUrl.startsWith('//')) {
-        imageUrl = 'https:' + imageUrl;
-      } else if (imageUrl.startsWith('/')) {
-        imageUrl = 'https://www.pornhub.com' + imageUrl;
-      }
-    }
-    
-    // Extract basic info from meta tags or page content
-    const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
-    const descriptionMatch = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i);
-    
-    let description = '';
-    if (descriptionMatch) {
-      description = descriptionMatch[1];
-    } else if (titleMatch) {
-      description = `Adult performer on Pornhub`;
-    }
-    
-    return {
-      name: performerName,
-      description: description || `Adult performer known for their work on Pornhub`,
-      birth_date: null,
-      death_date: null,
-      is_living: true,
-      profession: 'adult model',
-      nationality: '',
-      birth_place: null,
-      image_url: imageUrl,
-      bio: `${performerName} is an adult performer featured on Pornhub.`,
-      top_book: null,
-      next_concerts: null,
-      profile_url: url
-    };
-    
-  } catch (error) {
-    console.error('Error fetching Pornhub personality data:', error);
-    return null;
-  }
-}
 
 async function fetchPersonalityData(searchTerm: string, sources: any): Promise<PersonalityData | null> {
   try {
@@ -439,8 +351,7 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
       image_url: imageUrl,
       bio,
       top_book: topBook,
-      next_concerts: nextConcerts,
-      profile_url: null
+      next_concerts: nextConcerts
     };
 
   } catch (error) {
