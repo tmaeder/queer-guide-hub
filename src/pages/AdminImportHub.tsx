@@ -14,6 +14,8 @@ import { Upload, Download, Rss, Globe, MapPin, Calendar, Building2, Newspaper, U
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewsSourcesManager } from "@/components/admin/NewsSourcesManager";
 import { BulkCreatePersonalities } from "@/components/personalities/BulkCreatePersonalities";
+import BackgroundImportManager, { BackgroundImportManagerRef } from "@/components/admin/BackgroundImportManager";
+import { useRef } from "react";
 interface ImportStats {
   totalImports: number;
   successfulImports: number;
@@ -46,6 +48,7 @@ export default function AdminImportHub() {
     failedImports: 0,
     lastImport: null
   });
+  const backgroundManagerRef = useRef<BackgroundImportManagerRef>(null);
   const updateProgress = (jobId: string, progress: number) => {
     setProgress(prev => ({
       ...prev,
@@ -71,128 +74,68 @@ export default function AdminImportHub() {
     } : job));
   };
   const handleFileImport = async (type: string, file: File) => {
-    if (!file) return;
-    const jobId = addImportJob(`${type}-csv`, 'running');
-    setLoading(type);
-    updateProgress(jobId, 10);
+    if (!file || !backgroundManagerRef.current) return;
+    
     try {
       // Validate file
       if (!file.name.endsWith('.csv')) {
         throw new Error('Please select a valid CSV file');
       }
       if (file.size > 10 * 1024 * 1024) {
-        // 10MB limit
         throw new Error('File size must be less than 10MB');
       }
-      updateProgress(jobId, 30);
-      updateImportJob(jobId, {
-        message: 'Uploading file...'
-      });
-      const formData = new FormData();
-      formData.append('file', file);
-      updateProgress(jobId, 50);
-      updateImportJob(jobId, {
-        message: 'Processing data...'
-      });
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke(`import-${type}-csv`, {
-        body: formData
-      });
-      if (error) throw error;
-      updateProgress(jobId, 100);
-      updateImportJob(jobId, {
-        status: 'completed',
-        progress: 100,
-        message: `Successfully imported ${data?.imported || 'unknown'} items`
-      });
-      setStats(prev => ({
-        ...prev,
-        totalImports: prev.totalImports + 1,
-        successfulImports: prev.successfulImports + 1,
-        lastImport: new Date().toISOString()
-      }));
+
+      // Read file as text for processing
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      await backgroundManagerRef.current.createBackgroundJob(
+        `${type}-csv`,
+        { csvData: text, lines },
+        50 // batch size
+      );
+      
       toast({
-        title: "Import Successful",
-        description: `${type} data imported successfully. Processed ${data?.imported || 'unknown'} items.`
+        title: "Import Job Created",
+        description: `Background import job for ${type} has been queued and will process in batches.`
       });
+      
     } catch (error) {
-      updateImportJob(jobId, {
-        status: 'failed',
-        message: error instanceof Error ? error.message : 'Import failed'
-      });
-      setStats(prev => ({
-        ...prev,
-        totalImports: prev.totalImports + 1,
-        failedImports: prev.failedImports + 1
-      }));
       toast({
         title: "Import Failed",
         description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       });
-    } finally {
-      setLoading(null);
-      setTimeout(() => setProgress(prev => ({
-        ...prev,
-        [jobId]: 0
-      })), 2000);
     }
   };
   const handleApiImport = async (functionName: string, params: any = {}) => {
-    const jobId = addImportJob(functionName, 'running');
-    setLoading(functionName);
-    updateProgress(jobId, 20);
-    try {
-      updateImportJob(jobId, {
-        message: 'Connecting to API...'
-      });
-      updateProgress(jobId, 40);
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke(functionName, {
-        body: params
-      });
-      if (error) throw error;
-      updateProgress(jobId, 100);
-      updateImportJob(jobId, {
-        status: 'completed',
-        progress: 100,
-        message: data?.message || `Processed ${data?.imported || data?.processed_articles || 'items'} successfully`
-      });
-      setStats(prev => ({
-        ...prev,
-        totalImports: prev.totalImports + 1,
-        successfulImports: prev.successfulImports + 1,
-        lastImport: new Date().toISOString()
-      }));
+    if (!backgroundManagerRef.current) {
       toast({
-        title: "Import Successful",
-        description: `Data imported successfully. ${data?.message || `Processed ${data?.imported || data?.processed_articles || 'items'} successfully.`}`
+        title: "Error",
+        description: "Background manager not initialized",
+        variant: "destructive"
       });
+      return;
+    }
+    
+    try {
+      await backgroundManagerRef.current.createBackgroundJob(
+        functionName,
+        params,
+        25 // smaller batch size for API imports
+      );
+      
+      toast({
+        title: "Import Job Created",
+        description: `Background import job for ${functionName} has been queued.`
+      });
+      
     } catch (error) {
-      updateImportJob(jobId, {
-        status: 'failed',
-        message: error instanceof Error ? error.message : 'Import failed'
-      });
-      setStats(prev => ({
-        ...prev,
-        totalImports: prev.totalImports + 1,
-        failedImports: prev.failedImports + 1
-      }));
       toast({
         title: "Import Failed",
         description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       });
-    } finally {
-      setLoading(null);
-      setTimeout(() => setProgress(prev => ({
-        ...prev,
-        [jobId]: 0
-      })), 2000);
     }
   };
   const getStatusIcon = (status: ImportJob['status']) => {
@@ -259,33 +202,27 @@ export default function AdminImportHub() {
       </div>
 
       <div className="container mx-auto p-6">
-        {/* Active Jobs Monitor */}
-        {importJobs.length > 0 && <Card className="mb-6">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Activity className="h-4 w-4" />
-                Recent Import Jobs
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {importJobs.map(job => <div key={job.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                    {getStatusIcon(job.status)}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm truncate">{job.type}</span>
-                        {getStatusBadge(job.status)}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">{job.message}</p>
-                      {job.status === 'running' && progress[job.id] > 0 && <Progress value={progress[job.id]} className="h-1 mt-2" />}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {job.createdAt.toLocaleTimeString()}
-                    </span>
-                  </div>)}
-              </div>
-            </CardContent>
-          </Card>}
+        {/* Background Import Manager */}
+        <BackgroundImportManager 
+          ref={backgroundManagerRef}
+          onJobUpdate={(job) => {
+            // Update stats when jobs complete
+            if (job.status === 'completed') {
+              setStats(prev => ({
+                ...prev,
+                totalImports: prev.totalImports + 1,
+                successfulImports: prev.successfulImports + 1,
+                lastImport: new Date().toISOString()
+              }));
+            } else if (job.status === 'failed') {
+              setStats(prev => ({
+                ...prev,
+                totalImports: prev.totalImports + 1,
+                failedImports: prev.failedImports + 1
+              }));
+            }
+          }}
+        />
 
         <Tabs defaultValue="personalities" className="space-y-6">
           <TabsList className="grid w-full grid-cols-7">

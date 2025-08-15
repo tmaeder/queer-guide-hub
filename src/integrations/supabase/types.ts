@@ -1878,6 +1878,63 @@ export type Database = {
           },
         ]
       }
+      import_jobs: {
+        Row: {
+          batch_size: number
+          created_at: string
+          current_batch: number
+          data: Json
+          error_details: string | null
+          id: string
+          max_retries: number
+          message: string
+          processed_items: number
+          progress: number
+          retry_count: number
+          status: string
+          total_batches: number
+          total_items: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          batch_size?: number
+          created_at?: string
+          current_batch?: number
+          data?: Json
+          error_details?: string | null
+          id?: string
+          max_retries?: number
+          message?: string
+          processed_items?: number
+          progress?: number
+          retry_count?: number
+          status?: string
+          total_batches?: number
+          total_items?: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          batch_size?: number
+          created_at?: string
+          current_batch?: number
+          data?: Json
+          error_details?: string | null
+          id?: string
+          max_retries?: number
+          message?: string
+          processed_items?: number
+          progress?: number
+          retry_count?: number
+          status?: string
+          total_batches?: number
+          total_items?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       knowledge_base: {
         Row: {
           category: string

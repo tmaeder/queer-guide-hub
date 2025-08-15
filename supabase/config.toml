@@ -170,3 +170,6 @@ verify_jwt = true
 
 [functions.update-musician-concerts]
 verify_jwt = false
+
+[functions.background-import-manager]
+verify_jwt = false
