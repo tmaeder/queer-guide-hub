@@ -9,38 +9,26 @@ export function ActivitiesWidget({ destination, countryCode }: ActivitiesWidgetP
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current || !destination) return;
-
-    // Clear any existing content
-    containerRef.current.innerHTML = '';
-
-    // Create the GetYourGuide iframe widget
-    const iframe = document.createElement('iframe');
-    iframe.src = `https://widget.getyourguide.com/default/activities.frame?partner_id=AFCJS2I&placement=other&utm_medium=online_publisher&utm_source=partner&q=${encodeURIComponent(destination)}&cnt_code=${countryCode || ''}&currency=EUR&locale_code=en-US`;
-    iframe.width = '100%';
-    iframe.height = '400';
-    iframe.style.border = 'none';
-    iframe.style.borderRadius = '8px';
-    iframe.title = `Activities and tours in ${destination}`;
-
-    containerRef.current.appendChild(iframe);
-
-    // Cleanup function
-    return () => {
-      if (containerRef.current) {
-        containerRef.current.innerHTML = '';
-      }
-    };
-  }, [destination, countryCode]);
+    // Load GetYourGuide script if not already loaded
+    const existingScript = document.querySelector('script[data-gyg-partner-id="2PBDXWH"]');
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.async = true;
+      script.defer = true;
+      script.src = 'https://widget.getyourguide.com/dist/pa.umd.production.min.js';
+      script.setAttribute('data-gyg-partner-id', '2PBDXWH');
+      document.head.appendChild(script);
+    }
+  }, []);
 
   return (
-    <div 
-      ref={containerRef} 
-      className="min-h-[400px] w-full"
-    >
-      <div className="text-center text-muted-foreground py-16">
-        <p>Loading activities...</p>
-      </div>
+    <div className="min-h-[400px] w-full">
+      <div 
+        ref={containerRef}
+        data-gyg-widget="auto" 
+        data-gyg-partner-id="2PBDXWH"
+        className="w-full min-h-[400px]"
+      />
     </div>
   );
 }
