@@ -50,13 +50,28 @@ export const BulkCreatePersonalities = () => {
         throw new Error('No response data received');
       }
 
+      const errorCount = Array.isArray(data.errors) ? data.errors.length : 0;
+      const createdCount = data.created || 0;
+
       toast({
         title: "Bulk Creation Complete",
-        description: `Created ${data.created || 0} personalities. ${data.errors || 0} errors occurred.`,
+        description: `Created ${createdCount} personalities. ${errorCount} errors occurred.`,
+        variant: errorCount > 0 ? "destructive" : "default",
       });
 
-      if (data.errors && data.errors > 0) {
-        console.log('Creation errors:', data.errorDetails || data.errors);
+      if (errorCount > 0) {
+        console.log('Creation errors:', data.errors);
+        
+        // Show detailed error information
+        const errorMessages = data.errors.slice(0, 5).map((err: any) => 
+          `${err.name}: ${err.error}`
+        ).join('\n');
+        
+        toast({
+          title: `${errorCount} Import Errors`,
+          description: errorMessages + (errorCount > 5 ? `\n... and ${errorCount - 5} more` : ''),
+          variant: "destructive",
+        });
       }
 
       // Clear the textarea on success
