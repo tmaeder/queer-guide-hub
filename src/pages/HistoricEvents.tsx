@@ -26,7 +26,7 @@ interface HistoricFilters {
   sortOrder: 'asc' | 'desc';
 }
 
-export default function HistoricEvents() {
+function HistoricEvents() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -481,3 +481,5 @@ export default function HistoricEvents() {
     </div>
   );
 }
+
+export default HistoricEvents;
