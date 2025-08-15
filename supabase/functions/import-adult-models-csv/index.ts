@@ -167,9 +167,9 @@ serve(async (req) => {
         nationality: null,
         birth_place: null,
         image_url: row.picture && row.picture.trim() !== '' ? row.picture.trim() : null,
-        verified: false,
-        featured: false,
-        living: true,
+        verification_status: 'pending',
+        is_featured: false,
+        is_living: true,
         profession_details: row['pornhub-profile'] && row['pornhub-profile'].trim() !== '' 
           ? JSON.stringify({ pornhub_profile: row['pornhub-profile'].trim() })
           : null,
