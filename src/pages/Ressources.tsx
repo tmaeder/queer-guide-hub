@@ -504,46 +504,61 @@ export default function Ressources() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+        <Card className="bg-gradient-to-br from-primary/10 to-primary/20 border-primary/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
-              <Tag className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Tags</span>
+              <Tag className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Total Tags</span>
             </div>
-            <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{allTags.length}</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <span className="text-sm font-medium text-green-700 dark:text-green-300">Categories</span>
-            </div>
-            <p className="text-2xl font-bold text-green-900 dark:text-green-100">{categories.length}</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Usage</span>
-            </div>
-            <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
-              {Object.values(tagUsageCounts).reduce((total, count) => total + count, 0)}
+            <p className="text-2xl font-bold text-foreground">{allTags.length.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {allTags.length > 0 ? `${Math.round((allTags.filter(tag => tagUsageCounts[tag.name] > 0).length / allTags.length) * 100)}% active` : 'No tags yet'}
             </p>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
+        <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/20 border-emerald-500/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              <span className="text-sm font-medium text-orange-700 dark:text-orange-300">Active Tags</span>
+              <Users className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Categories</span>
             </div>
-            <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-              {allTags.filter(tag => tagUsageCounts[tag.name] > 0).length}
+            <p className="text-2xl font-bold text-foreground">{categories.length}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {categories.length > 0 ? `Avg ${Math.round(allTags.length / categories.length)} tags per category` : 'No categories'}
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-violet-500/10 to-violet-500/20 border-violet-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <BarChart3 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+              <span className="text-sm font-medium text-violet-700 dark:text-violet-300">Total Usage</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">
+              {Object.values(tagUsageCounts).reduce((total, count) => total + count, 0).toLocaleString()}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {allTags.length > 0 ? `Avg ${Math.round(Object.values(tagUsageCounts).reduce((total, count) => total + count, 0) / allTags.length)} uses per tag` : 'No usage yet'}
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/20 border-amber-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <span className="text-sm font-medium text-amber-700 dark:text-amber-300">Most Used</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">
+              {Math.max(...Object.values(tagUsageCounts), 0).toLocaleString()}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {Object.keys(tagUsageCounts).length > 0 
+                ? Object.entries(tagUsageCounts).sort(([,a], [,b]) => b - a)[0]?.[0] || 'No tags used'
+                : 'No usage data'
+              }
             </p>
           </CardContent>
         </Card>
