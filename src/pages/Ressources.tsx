@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 type ViewMode = "overview" | "category" | "search" | "tag-detail";
-export default function TagsDirectory() {
+export default function Ressources() {
   const {
     tagName
   } = useParams<{
@@ -336,7 +336,7 @@ export default function TagsDirectory() {
               Back
             </Button>}
           <div>
-            <h1 className="text-3xl font-bold">Tags Wiki</h1>
+            <h1 className="text-3xl font-bold">Ressources</h1>
             {viewMode === "category" && <p className="text-muted-foreground">Exploring {selectedCategory} tags</p>}
             {viewMode === "tag-detail" && selectedTag && <p className="text-muted-foreground">#{selectedTag.name}</p>}
           </div>
@@ -349,7 +349,7 @@ export default function TagsDirectory() {
       {/* Breadcrumb */}
       {viewMode !== "overview" && viewMode !== "search" && <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <button onClick={() => setViewMode("overview")} className="hover:text-foreground">
-            Tags Wiki
+            Ressources
           </button>
           {selectedCategory && <>
               <span>/</span>

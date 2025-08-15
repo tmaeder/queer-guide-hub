@@ -27,7 +27,7 @@ const Donations = lazy(() => import("./pages/Donations"));
 const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
 
 const Directory = lazy(() => import("./pages/Directory"));
-const TagsDirectory = lazy(() => import("./pages/TagsDirectory"));
+const Ressources = lazy(() => import("./pages/Ressources"));
 const UserDirectory = lazy(() => import("./pages/UserDirectory"));
 const Personalities = lazy(() => import("./pages/Personalities"));
 const PersonalityDetail = lazy(() => import("./pages/PersonalityDetail"));
@@ -130,8 +130,10 @@ const App = () => {
                   <Route path="/users" element={<UserDirectory />} />
                    <Route path="/personalities" element={<Personalities />} />
                    <Route path="/personalities/:id" element={<PersonalityDetail />} />
-                   <Route path="/tags" element={<TagsDirectory />} />
-                   <Route path="/tags/:tagName" element={<TagsDirectory />} />
+                   <Route path="/ressources" element={<Ressources />} />
+                   <Route path="/ressources/:tagName" element={<Ressources />} />
+                   <Route path="/tags" element={<Navigate to="/ressources" replace />} />
+                   <Route path="/tags/:tagName" element={<Navigate to="/ressources" replace />} />
                    <Route path="/knowledge" element={<KnowledgeBase />} />
                    <Route path="/about-hub" element={<AboutHub />} />
                    <Route path="/about" element={<About />} />

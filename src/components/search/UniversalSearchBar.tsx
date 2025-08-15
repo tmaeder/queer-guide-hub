@@ -117,8 +117,8 @@ export const UniversalSearchBar = () => {
         }
         break;
       case 'content':
-        // Navigate to tags directory for content
-        navigate(`/tags/${result.metadata?.slug || result.title}`);
+        // Navigate to ressources directory for content
+        navigate(`/ressources/${result.metadata?.slug || result.title}`);
         break;
       case 'travel':
         navigate(`/travel`);

@@ -79,7 +79,7 @@ export function Header() {
       icon: CreditCard,
       label: "Donate"
     }, {
-      to: "/tags",
+      to: "/ressources",
       icon: Tags,
       label: "Ressources"
     }, {
