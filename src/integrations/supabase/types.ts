@@ -2909,6 +2909,7 @@ export type Database = {
           pet_preferences: string | null
           phone: string | null
           phone_encrypted: string | null
+          photos_visibility: string | null
           physical_affection_preference: string | null
           political_views: string | null
           political_views_encrypted: string | null
@@ -3046,6 +3047,7 @@ export type Database = {
           pet_preferences?: string | null
           phone?: string | null
           phone_encrypted?: string | null
+          photos_visibility?: string | null
           physical_affection_preference?: string | null
           political_views?: string | null
           political_views_encrypted?: string | null
@@ -3183,6 +3185,7 @@ export type Database = {
           pet_preferences?: string | null
           phone?: string | null
           phone_encrypted?: string | null
+          photos_visibility?: string | null
           physical_affection_preference?: string | null
           political_views?: string | null
           political_views_encrypted?: string | null
