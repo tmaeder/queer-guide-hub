@@ -15,6 +15,7 @@ import { EventCard } from "@/components/events/EventCard";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import CountryHeroImages from "@/components/country/CountryHeroImages";
 import LGBTJurisdictionInfo from "@/components/country/LGBTJurisdictionInfo";
+import { FlightsWidget } from "@/components/flights/FlightsWidget";
 import { useOptimizedCountry, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
 import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
 import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
@@ -463,13 +464,10 @@ export default function CountryDetail() {
                 
                 <Card className="border-muted/50">
                   <CardContent className="p-6">
-                    <div className="min-h-[400px] w-full">
-                      <div 
-                        dangerouslySetInnerHTML={{
-                          __html: `<script async src="https://tpscr.com/content?currency=eur&trs=241762&shmarker=452012&powered_by=true&locale=en&to_name=${(country.capital || country.name).toLowerCase().replace(/\s+/g, '_')}_${country.code?.toLowerCase() || 'xx'}&show_header=false&limit=3&primary_color=000000ff&results_background_color=FFFFFF&form_background_color=FFFFFF&campaign_id=111&promo_id=4478" charset="utf-8"></script>`
-                        }}
-                      />
-                    </div>
+                    <FlightsWidget 
+                      destination={country.capital || country.name}
+                      countryCode={country.code}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
