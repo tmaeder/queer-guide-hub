@@ -6,7 +6,7 @@ import { ImportJob } from '@/hooks/useImportHub';
 import { ImportStatusBadge } from './ImportStatusBadge';
 import { 
   Eye, Download, X, Clock, FileText, Database, 
-  AlertTriangle, Info, Calendar, Settings
+  AlertTriangle, Info, Calendar, Settings, Users
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 

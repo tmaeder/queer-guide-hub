@@ -46,13 +46,6 @@ export const ImportStatusBadge = ({ status, showIcon = true, size = 'default' }:
           label: 'Cancelled',
           className: 'bg-muted/50 text-muted-foreground border-muted'
         };
-      case 'paused':
-        return {
-          variant: 'outline' as const,
-          icon: Pause,
-          label: 'Paused',
-          className: 'bg-warning/10 text-warning border-warning/20 hover:bg-warning/20'
-        };
       default:
         return {
           variant: 'outline' as const,

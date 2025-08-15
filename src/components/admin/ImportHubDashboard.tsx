@@ -1,20 +1,18 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useImportHub, ImportJob } from '@/hooks/useImportHub';
 import { 
   Upload, Database, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, 
-  Clock, RefreshCw, Eye, Download, Trash2, X, Play, Pause, Settings,
-  FileText, Filter, Search, BarChart3, Activity, Zap, Package, Users
+  Clock, RefreshCw, Eye, Download, X, Play, Pause,
+  FileText, Search, BarChart3, Activity, Zap, Package
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ImportJobCreator } from './ImportJobCreator';
 import { ValidationReport } from './ValidationReport';
-import { ImportFilters } from './ImportFilters';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const ImportHubDashboard = () => {
@@ -29,7 +27,6 @@ export const ImportHubDashboard = () => {
     refreshStatistics
   } = useImportHub();
 
-  const [selectedJob, setSelectedJob] = useState<ImportJob | null>(null);
   const [showValidation, setShowValidation] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,17 +58,6 @@ export const ImportHubDashboard = () => {
       pending: 'outline'
     } as const;
     return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
-  };
-
-  const getPhaseDescription = (phase: ImportJob['phase']) => {
-    switch (phase) {
-      case 'queued': return 'Waiting in queue';
-      case 'pre_validation': return 'Validating data structure';
-      case 'processing': return 'Importing records';
-      case 'post_validation': return 'Verifying results';
-      case 'cleanup': return 'Cleaning up resources';
-      default: return phase;
-    }
   };
 
   const formatFileSize = (bytes?: number) => {
@@ -302,212 +288,56 @@ export const ImportHubDashboard = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Performance Metrics */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <Card className="bg-gradient-to-br from-success/5 to-transparent border-success/20">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Success Rate</p>
-                      <p className="text-3xl font-bold text-success">
-                        {statistics.total_jobs > 0 
-                          ? Math.round((statistics.completed_jobs / statistics.total_jobs) * 100)
-                          : 0}%
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {statistics.completed_jobs} successful imports
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-full bg-success/10">
-                      <TrendingUp className="h-6 w-6 text-success" />
-                    </div>
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Recent Activity
+                </CardTitle>
+                <CardDescription>Latest import jobs overview</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {jobs.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="font-medium">No import jobs yet</p>
+                    <p className="text-sm">Create your first import to get started</p>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Total Records</p>
-                      <p className="text-3xl font-bold text-primary">
-                        {(statistics.total_records_processed / 1000).toFixed(1)}K
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {statistics.total_records_processed.toLocaleString()} processed
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-full bg-primary/10">
-                      <Database className="h-6 w-6 text-primary" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-warning/5 to-transparent border-warning/20">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Avg Processing Time</p>
-                      <p className="text-3xl font-bold text-warning">
-                        {statistics.total_jobs > 0 ? '2.3' : '0'}m
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Per 1000 records
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-full bg-warning/10">
-                      <Clock className="h-6 w-6 text-warning" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-destructive/5 to-transparent border-destructive/20">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Error Rate</p>
-                      <p className="text-3xl font-bold text-destructive">
-                        {statistics.total_records_processed > 0 
-                          ? Math.round((statistics.total_failed_records / statistics.total_records_processed) * 100)
-                          : 0}%
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {statistics.total_failed_records.toLocaleString()} failed
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-full bg-destructive/10">
-                      <TrendingDown className="h-6 w-6 text-destructive" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Import Quality Overview */}
-            <div className="grid gap-6 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Import Quality Analysis
-                  </CardTitle>
-                  <CardDescription>Quality metrics for recent imports</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Data Validation</span>
-                      <div className="flex items-center gap-2">
-                        <Progress value={92} className="w-20 h-2" />
-                        <span className="text-sm font-medium">92%</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Duplicate Detection</span>
-                      <div className="flex items-center gap-2">
-                        <Progress value={88} className="w-20 h-2" />
-                        <span className="text-sm font-medium">88%</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Processing Speed</span>
-                      <div className="flex items-center gap-2">
-                        <Progress value={95} className="w-20 h-2" />
-                        <span className="text-sm font-medium">95%</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    Recent Activity
-                  </CardTitle>
-                  <CardDescription>Latest import jobs overview</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {jobs.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p className="font-medium">No import jobs yet</p>
-                      <p className="text-sm">Create your first import to get started</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {jobs.slice(0, 5).map((job) => (
-                        <div
-                          key={job.id}
-                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                          onClick={() => setSelectedJob(job)}
-                        >
-                          <div className="flex items-center gap-3">
-                            {getStatusIcon(job.status)}
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-sm">{job.type}</span>
-                                {getStatusBadge(job.status)}
-                              </div>
-                              <p className="text-xs text-muted-foreground">
-                                {job.processed_records}/{job.total_records} records • {new Date(job.created_at).toLocaleDateString()}
-                              </p>
+                ) : (
+                  <div className="space-y-3">
+                    {jobs.slice(0, 5).map((job) => (
+                      <div
+                        key={job.id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                        onClick={() => setShowValidation(job.id)}
+                      >
+                        <div className="flex items-center gap-3">
+                          {getStatusIcon(job.status)}
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">{job.type}</span>
+                              {getStatusBadge(job.status)}
                             </div>
-                          </div>
-                          
-                          <div className="text-right">
-                            <Progress value={job.progress_percentage} className="w-16 h-2 mb-1" />
-                            <span className="text-xs text-muted-foreground">{job.progress_percentage}%</span>
+                            <p className="text-xs text-muted-foreground">
+                              {job.processed_records}/{job.total_records} records • {new Date(job.created_at).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                        
+                        <div className="text-right">
+                          <Progress value={job.progress_percentage} className="w-16 h-2 mb-1" />
+                          <span className="text-xs text-muted-foreground">{job.progress_percentage}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="active" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <RefreshCw className="h-5 w-5 text-blue-600 animate-spin" />
-                    <span className="text-2xl font-bold text-blue-600">{activeJobs.length}</span>
-                  </div>
-                  <p className="text-sm text-blue-600">Active Jobs</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Database className="h-5 w-5 text-purple-600" />
-                    <span className="text-2xl font-bold text-purple-600">
-                      {activeJobs.reduce((sum, job) => sum + job.total_records, 0).toLocaleString()}
-                    </span>
-                  </div>
-                  <p className="text-sm text-purple-600">Records in Queue</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <TrendingUp className="h-5 w-5 text-green-600" />
-                    <span className="text-2xl font-bold text-green-600">
-                      {activeJobs.reduce((sum, job) => sum + job.processed_records, 0).toLocaleString()}
-                    </span>
-                  </div>
-                  <p className="text-sm text-green-600">Records Processed</p>
-                </CardContent>
-              </Card>
-            </div>
-
             {activeJobs.length === 0 ? (
               <Card>
                 <CardContent className="p-12 text-center">
@@ -536,15 +366,7 @@ export const ImportHubDashboard = () => {
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-lg">{job.type}</span>
                               {getStatusBadge(job.status)}
-                              {job.source_type && (
-                                <Badge variant="outline" className="text-xs">
-                                  {job.source_type}
-                                </Badge>
-                              )}
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                              {getPhaseDescription(job.phase)}
-                            </p>
                             {job.file_name && (
                               <p className="text-xs text-muted-foreground">
                                 File: {job.file_name}
@@ -577,7 +399,7 @@ export const ImportHubDashboard = () => {
                         </div>
                       </div>
                       
-                      {/* Enhanced Progress Display */}
+                      {/* Progress Display */}
                       <div className="space-y-4">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-medium">Overall Progress</span>
@@ -627,21 +449,11 @@ export const ImportHubDashboard = () => {
           <TabsContent value="history" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Import History
-                    </CardTitle>
-                    <CardDescription>Complete history of all import jobs with advanced filtering</CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Download className="h-4 w-4" />
-                      Export History
-                    </Button>
-                  </div>
-                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Import History
+                </CardTitle>
+                <CardDescription>Complete history of all import jobs</CardDescription>
               </CardHeader>
               <CardContent>
                 {filteredJobs.length === 0 ? (
@@ -691,60 +503,63 @@ export const ImportHubDashboard = () => {
                                 </div>
                               </div>
                             </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowValidation(job.id)}
-                            className="gap-2"
-                          >
-                            <Eye className="h-4 w-4" />
-                            Details
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => exportValidationReport(job)}
-                            className="gap-2"
-                          >
-                            <Download className="h-4 w-4" />
-                            Export
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      {/* Statistics */}
-                      <div className="grid grid-cols-6 gap-4 mt-3 text-sm">
-                        <div className="text-center">
-                          <div className="font-medium">{job.total_records}</div>
-                          <div className="text-muted-foreground">Total</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium text-success">{job.successful_records}</div>
-                          <div className="text-muted-foreground">Success</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium text-destructive">{job.failed_records}</div>
-                          <div className="text-muted-foreground">Failed</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium text-warning">{job.duplicate_records}</div>
-                          <div className="text-muted-foreground">Duplicates</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium">{job.duplicate_strategy}</div>
-                          <div className="text-muted-foreground">Strategy</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium">{job.progress_percentage}%</div>
-                          <div className="text-muted-foreground">Progress</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowValidation(job.id)}
+                                className="gap-2"
+                              >
+                                <Eye className="h-4 w-4" />
+                                View Report
+                              </Button>
+                              {job.status === 'completed' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => exportValidationReport(job)}
+                                  className="gap-2"
+                                >
+                                  <Download className="h-4 w-4" />
+                                  Export
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Statistics Grid */}
+                          <div className="grid grid-cols-3 md:grid-cols-6 gap-4 pt-4 border-t text-center">
+                            <div>
+                              <div className="text-lg font-bold text-primary">{job.total_records}</div>
+                              <div className="text-xs text-muted-foreground">Total</div>
+                            </div>
+                            <div>
+                              <div className="text-lg font-bold text-success">{job.successful_records}</div>
+                              <div className="text-xs text-muted-foreground">Success</div>
+                            </div>
+                            <div>
+                              <div className="text-lg font-bold text-destructive">{job.failed_records}</div>
+                              <div className="text-xs text-muted-foreground">Failed</div>
+                            </div>
+                            <div>
+                              <div className="text-lg font-bold text-warning">{job.duplicate_records}</div>
+                              <div className="text-xs text-muted-foreground">Duplicates</div>
+                            </div>
+                            <div>
+                              <div className="text-lg font-bold">{job.duplicate_strategy || 'N/A'}</div>
+                              <div className="text-xs text-muted-foreground">Strategy</div>
+                            </div>
+                            <div>
+                              <div className="text-lg font-bold">{job.progress_percentage}%</div>
+                              <div className="text-xs text-muted-foreground">Progress</div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
