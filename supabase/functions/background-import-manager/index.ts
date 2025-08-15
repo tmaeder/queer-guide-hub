@@ -15,12 +15,41 @@ interface ImportJob {
   total_batches: number;
   processed_items: number;
   total_items: number;
+  successful_items: number;
+  failed_items: number;
+  duplicate_items: number;
   message: string;
   error_details?: string;
   retry_count: number;
   max_retries: number;
   data: any;
   batch_size: number;
+  import_config: ImportConfig;
+}
+
+interface ImportConfig {
+  duplicateStrategy: 'skip' | 'update' | 'fail' | 'create_new';
+  errorStrategy: 'continue' | 'stop' | 'retry_batch';
+  validation: {
+    strict: boolean;
+    required_fields: string[];
+    custom_validations: Record<string, any>;
+  };
+  filters: {
+    location?: string;
+    date_range?: { start: string; end: string };
+    keywords?: string[];
+    categories?: string[];
+    limit?: number;
+    offset?: number;
+  };
+  advanced: {
+    enable_geocoding: boolean;
+    enable_image_processing: boolean;
+    enable_ai_enhancement: boolean;
+    concurrent_limit: number;
+    timeout_seconds: number;
+  };
 }
 
 // Complete mapping of all import types to their corresponding edge functions
@@ -80,11 +109,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { action, type, data, batchSize, jobId } = await req.json();
+    const { action, type, data, batchSize, jobId, importConfig } = await req.json();
 
     switch (action) {
       case 'create':
-        return await createJob(supabase, type, data, batchSize || 5);
+        return await createJob(supabase, type, data, batchSize || 5, importConfig);
       case 'retry':
         return await retryJob(supabase, jobId);
       case 'pause':
@@ -114,7 +143,7 @@ serve(async (req) => {
   }
 });
 
-async function createJob(supabase: any, type: string, data: any, batchSize: number) {
+async function createJob(supabase: any, type: string, data: any, batchSize: number, importConfig?: ImportConfig) {
   console.log(`Creating job for type: ${type}`);
   
   // Validate import type
@@ -122,8 +151,44 @@ async function createJob(supabase: any, type: string, data: any, batchSize: numb
     throw new Error(`Unsupported import type: ${type}. Supported types: ${Object.keys(IMPORT_TYPE_MAPPING).join(', ')}`);
   }
 
+  // Set default import configuration if not provided
+  const defaultConfig: ImportConfig = {
+    duplicateStrategy: 'skip',
+    errorStrategy: 'continue',
+    validation: {
+      strict: false,
+      required_fields: [],
+      custom_validations: {}
+    },
+    filters: {
+      limit: 1000
+    },
+    advanced: {
+      enable_geocoding: false,
+      enable_image_processing: true,
+      enable_ai_enhancement: false,
+      concurrent_limit: 3,
+      timeout_seconds: 60
+    }
+  };
+
+  const config = { ...defaultConfig, ...importConfig };
+
+  // Apply filters to data if specified
+  let filteredData = data;
+  if (config.filters) {
+    filteredData = applyFilters(data, config.filters, type);
+  }
+
   // Calculate total items and batches
-  let totalItems = calculateTotalItems(data, type);
+  let totalItems = calculateTotalItems(filteredData, type);
+  
+  // Apply limit from filters
+  if (config.filters.limit && totalItems > config.filters.limit) {
+    totalItems = config.filters.limit;
+    filteredData = limitData(filteredData, config.filters.limit, type);
+  }
+  
   const totalBatches = Math.max(1, Math.ceil(totalItems / batchSize));
 
   console.log(`Creating job: type=${type}, totalItems=${totalItems}, batchSize=${batchSize}, totalBatches=${totalBatches}`);
@@ -138,18 +203,26 @@ async function createJob(supabase: any, type: string, data: any, batchSize: numb
       total_batches: totalBatches,
       processed_items: 0,
       total_items: totalItems,
-      message: `Job created for ${type}`,
+      successful_items: 0,
+      failed_items: 0,
+      duplicate_items: 0,
+      message: `Job created for ${type} with ${Object.keys(config.filters || {}).length} filters applied`,
       retry_count: 0,
       max_retries: 3,
-      data,
-      batch_size: batchSize
+      data: filteredData,
+      batch_size: batchSize,
+      import_config: config
     })
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Failed to create job:', error);
     throw error;
+  }
+
+  if (!job) {
+    throw new Error('Failed to create job - no data returned');
   }
 
   console.log(`Job created with ID: ${job.id}`);
@@ -163,10 +236,53 @@ async function createJob(supabase: any, type: string, data: any, batchSize: numb
       message: `Job created for ${type}`,
       totalItems,
       totalBatches,
-      batchSize
+      batchSize,
+      config: config
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
+}
+
+function applyFilters(data: any, filters: any, type: string): any {
+  console.log(`Applying filters to ${type}:`, filters);
+  
+  // Apply location filter for venue/event imports
+  if (filters.location && ['import-foursquare-venues', 'import-tripadvisor-venues', 'import-google-places-venues', 'import-tomtom-venues', 'import-refuge-restrooms', 'import-eventbrite-events', 'import-ticketmaster-events'].includes(type)) {
+    data = { ...data, location: filters.location };
+  }
+  
+  // Apply keywords filter
+  if (filters.keywords && filters.keywords.length > 0) {
+    data = { ...data, keywords: filters.keywords };
+  }
+  
+  // Apply categories filter
+  if (filters.categories && filters.categories.length > 0) {
+    data = { ...data, categories: filters.categories };
+  }
+  
+  // Apply date range filter
+  if (filters.date_range) {
+    data = { ...data, date_range: filters.date_range };
+  }
+  
+  return data;
+}
+
+function limitData(data: any, limit: number, type: string): any {
+  if (Array.isArray(data)) {
+    return data.slice(0, limit);
+  } else if (data.names && Array.isArray(data.names)) {
+    return { ...data, names: data.names.slice(0, limit) };
+  } else if (data.seeds && Array.isArray(data.seeds)) {
+    return { ...data, seeds: data.seeds.slice(0, limit) };
+  } else if (data.urls && Array.isArray(data.urls)) {
+    return { ...data, urls: data.urls.slice(0, limit) };
+  } else if (data.items && Array.isArray(data.items)) {
+    return { ...data, items: data.items.slice(0, limit) };
+  }
+  
+  return data;
 }
 
 function calculateTotalItems(data: any, type: string): number {
