@@ -4959,6 +4959,17 @@ export type Database = {
           conversation_id: string
         }[]
       }
+      get_user_sessions_secure: {
+        Args: { target_user_id?: string }
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          last_activity: string
+          session_info: Json
+        }[]
+      }
       get_venue_checkins_secure: {
         Args: { user_id_param?: string; venue_id_param?: string }
         Returns: {
@@ -5118,6 +5129,14 @@ export type Database = {
       validate_content_security_enhanced: {
         Args: { content: string }
         Returns: boolean
+      }
+      validate_session_token: {
+        Args: { token_to_validate: string }
+        Returns: {
+          expires_at: string
+          is_valid: boolean
+          user_id: string
+        }[]
       }
     }
     Enums: {
