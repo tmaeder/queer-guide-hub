@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Filter, Search, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import { CMSDuplicateManager } from './CMSDuplicateManager';
 import { UniversalContentDashboard } from './UniversalContentDashboard';
 
 export function CMSDashboard() {
+  const navigate = useNavigate();
   const { content, loading, error, fetchContent, deleteContent, publishContent, archiveContent } = useCMS();
   const { allContent, contentStats, loading: universalLoading, error: universalError, fetchAllContent } = useUniversalCMS();
   const { isAdmin, canManageContent } = useAdminRoles();
@@ -256,7 +258,7 @@ export function CMSDashboard() {
                             if (typeof url === 'function') {
                               url();
                             } else if (url) {
-                              window.location.href = url;
+                              navigate(url);
                             }
                           }}
                         >
