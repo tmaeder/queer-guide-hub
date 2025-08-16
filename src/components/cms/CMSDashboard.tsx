@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCMS } from '@/hooks/useCMS';
+import { useUniversalCMS } from '@/hooks/useUniversalCMS';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { CMSContentEditor } from './CMSContentEditor';
 import { CMSMediaManager } from './CMSMediaManager';
@@ -16,6 +17,7 @@ import { UniversalContentDashboard } from './UniversalContentDashboard';
 
 export function CMSDashboard() {
   const { content, loading, error, fetchContent, deleteContent, publishContent, archiveContent } = useCMS();
+  const { allContent, contentStats, loading: universalLoading, error: universalError, fetchAllContent } = useUniversalCMS();
   const { isAdmin, canManageContent } = useAdminRoles();
   const [selectedTab, setSelectedTab] = useState('universal');
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,6 +48,16 @@ export function CMSDashboard() {
     const matchesState = selectedWorkflowState === 'all' || item.workflow_state === selectedWorkflowState;
     
     return matchesSearch && matchesType && matchesState;
+  });
+
+  // Filter universal content for CMS Content tab
+  const filteredUniversalContent = allContent.filter(item => {
+    const matchesSearch = !searchQuery || 
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesType = selectedContentType === 'all' || item.content_type === selectedContentType;
+    
+    return matchesSearch && matchesType;
   });
 
   const getStatusColor = (state: string) => {
@@ -140,15 +152,12 @@ export function CMSDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="event">Events</SelectItem>
-                  <SelectItem value="space">Spaces</SelectItem>
-                  <SelectItem value="place">Places</SelectItem>
-                  <SelectItem value="market">Market</SelectItem>
-                  <SelectItem value="resource">Resources</SelectItem>
-                  <SelectItem value="community">Community</SelectItem>
-                  <SelectItem value="news">News</SelectItem>
-                  <SelectItem value="page">Pages</SelectItem>
-                  <SelectItem value="personality">Personalities</SelectItem>
+                  <SelectItem value="events">Events</SelectItem>
+                  <SelectItem value="venues">Venues</SelectItem>
+                  <SelectItem value="personalities">Personalities</SelectItem>
+                  <SelectItem value="community_groups">Community Groups</SelectItem>
+                  <SelectItem value="community_posts">Community Posts</SelectItem>
+                  <SelectItem value="cms_content">CMS Content</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -173,7 +182,7 @@ export function CMSDashboard() {
           </div>
 
           {/* Content Grid */}
-          {loading ? (
+          {universalLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i}>
@@ -190,80 +199,71 @@ export function CMSDashboard() {
                 </Card>
               ))}
             </div>
-          ) : error ? (
+          ) : universalError ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <p className="text-destructive">{error}</p>
-                <Button onClick={() => fetchContent()} className="mt-4">
+                <p className="text-destructive">{universalError}</p>
+                <Button onClick={() => fetchAllContent()} className="mt-4">
                   Retry
                 </Button>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredContent.map((item) => (
-                <Card key={item.id} className="hover:shadow-lg transition-shadow">
+              {filteredUniversalContent.map((item) => (
+                <Card key={`${item.content_type}-${item.id}`} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle className="text-lg line-clamp-2">
-                          {typeof item.title === 'object' && item.title ? 
-                            Object.values(item.title)[0] as string : 
-                            'Untitled'
-                          }
+                          {item.title || 'Untitled'}
                         </CardTitle>
                         <CardDescription className="capitalize">
                           {item.content_type.replace('_', ' ')}
                         </CardDescription>
                       </div>
-                      <Badge className={getStatusColor(item.workflow_state)}>
-                        {item.workflow_state}
+                      <Badge className={`${item.status === 'active' || item.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                        {item.status || 'draft'}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <p className="text-sm text-muted-foreground line-clamp-3">
-                        {typeof item.description === 'object' && item.description ? 
-                          Object.values(item.description)[0] as string : 
-                          'No description'
-                        }
+                        {item.description || 'No description'}
                       </p>
                       
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>Updated {new Date(item.updated_at).toLocaleDateString()}</span>
-                        <span className="capitalize">{item.visibility_level}</span>
+                        <span className="capitalize">{item.content_type}</span>
                       </div>
 
                       <div className="flex gap-2">
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => handleEditContent(item.id)}
+                          onClick={() => {
+                            // Navigate to the appropriate edit page based on content type
+                            const editUrls = {
+                              'events': `/admin/events`,
+                              'venues': `/admin/venues`, 
+                              'personalities': `/admin/personalities`,
+                              'community_groups': `/admin/groups`,
+                              'community_posts': `/feed`,
+                              'cms_content': () => handleEditContent(item.id)
+                            };
+                            const url = editUrls[item.content_type as keyof typeof editUrls];
+                            if (typeof url === 'function') {
+                              url();
+                            } else if (url) {
+                              window.location.href = url;
+                            }
+                          }}
                         >
                           Edit
                         </Button>
                         
-                        {item.workflow_state === 'draft' && (
-                          <Button 
-                            size="sm"
-                            onClick={() => handleAction('publish', item.id)}
-                          >
-                            Publish
-                          </Button>
-                        )}
-                        
-                        {item.workflow_state === 'published' && (
-                          <Button 
-                            size="sm" 
-                            variant="secondary"
-                            onClick={() => handleAction('archive', item.id)}
-                          >
-                            Archive
-                          </Button>
-                        )}
-                        
-                        {isAdmin && (
+                        {(item.content_type === 'cms_content' || item.content_type === 'community_posts') && isAdmin && (
                           <Button 
                             size="sm" 
                             variant="destructive"
@@ -280,7 +280,7 @@ export function CMSDashboard() {
             </div>
           )}
 
-          {filteredContent.length === 0 && !loading && (
+          {filteredUniversalContent.length === 0 && !universalLoading && (
             <Card>
               <CardContent className="p-8 text-center">
                 <p className="text-muted-foreground mb-4">No content found matching your criteria.</p>
