@@ -361,7 +361,7 @@ export function useUniversalCMS() {
         const promises = contentTypes.map(async (type) => {
           try {
             console.log(`Fetching ${type}...`);
-            const result = await fetchContentByType(type, 100, 0, search, status); // Higher limit per type
+            const result = await fetchContentByType(type, 10000, 0, search, status); // High limit to get all content
             console.log(`${type}: ${result.data.length} items`);
             return result;
           } catch (error) {
