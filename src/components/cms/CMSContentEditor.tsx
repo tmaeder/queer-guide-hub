@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCMS } from '@/hooks/useCMS';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
+import type { Database } from '@/integrations/supabase/types';
 
 interface CMSContentEditorProps {
   contentId?: string | null;
@@ -398,7 +399,7 @@ export function CMSContentEditor({ contentId, onClose }: CMSContentEditorProps) 
                   <Label htmlFor="content_type">Content Type</Label>
                   <Select 
                     value={watchedValues.content_type} 
-                    onValueChange={(value) => setValue('content_type', value)}
+                    onValueChange={(value) => setValue('content_type', value as Database['public']['Enums']['cms_content_type'])}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -432,7 +433,7 @@ export function CMSContentEditor({ contentId, onClose }: CMSContentEditorProps) 
                   <Label htmlFor="workflow_state">Status</Label>
                   <Select 
                     value={watchedValues.workflow_state} 
-                    onValueChange={(value) => setValue('workflow_state', value)}
+                    onValueChange={(value) => setValue('workflow_state', value as Database['public']['Enums']['cms_workflow_state'])}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -450,7 +451,7 @@ export function CMSContentEditor({ contentId, onClose }: CMSContentEditorProps) 
                   <Label htmlFor="visibility_level">Visibility</Label>
                   <Select 
                     value={watchedValues.visibility_level} 
-                    onValueChange={(value) => setValue('visibility_level', value)}
+                    onValueChange={(value) => setValue('visibility_level', value as Database['public']['Enums']['cms_visibility_level'])}
                   >
                     <SelectTrigger>
                       <SelectValue />
