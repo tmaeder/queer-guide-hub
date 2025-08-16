@@ -200,7 +200,7 @@ export default function Directory() {
     <div className={`w-full transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-background">
-        <div className="absolute inset-0 bg-primary/5"></div>
+        
         
         <div className="relative mx-auto max-w-7xl px-6 py-12 lg:py-20">
           {/* Navigation Header */}
