@@ -364,11 +364,128 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         };
 
       default:
-        return {
-          basic: Object.keys(formData)
-            .filter(key => !['id', 'created_at', 'updated_at', 'content_type'].includes(key))
-            .map(key => ({ key, label: key.replace(/_/g, ' '), type: 'auto', icon: <Tag className="h-4 w-4" /> }))
-        };
+        // Create comprehensive field groups for unknown content types
+        const allFields = Object.keys(formData).filter(key => !['id', 'created_at', 'updated_at', 'content_type'].includes(key));
+        
+        // Group fields by common patterns
+        const basicFields = allFields.filter(key => 
+          ['name', 'title', 'description', 'bio', 'content', 'slug', 'type', 'category', 'status'].some(pattern => key.includes(pattern))
+        );
+        
+        const locationFields = allFields.filter(key => 
+          ['latitude', 'longitude', 'address', 'city', 'country', 'location', 'timezone', 'region'].some(pattern => key.includes(pattern))
+        );
+        
+        const mediaFields = allFields.filter(key => 
+          ['image_url', 'images', 'video', 'audio', 'media', 'avatar', 'photo', 'picture'].some(pattern => key.includes(pattern))
+        );
+        
+        const contactFields = allFields.filter(key => 
+          ['email', 'phone', 'website', 'social', 'contact'].some(pattern => key.includes(pattern))
+        );
+        
+        const metaFields = allFields.filter(key => 
+          ['tags', 'categories', 'meta_', 'seo_', 'keywords', 'featured', 'priority', 'weight', 'order'].some(pattern => key.includes(pattern))
+        );
+        
+        const statsFields = allFields.filter(key => 
+          ['count', 'views', 'likes', 'shares', 'rating', 'score', 'popularity', 'usage'].some(pattern => key.includes(pattern))
+        );
+        
+        const dateFields = allFields.filter(key => 
+          ['_at', '_date', 'published', 'expires', 'start', 'end', 'birth', 'death'].some(pattern => key.includes(pattern))
+        );
+        
+        const otherFields = allFields.filter(key => 
+          ![...basicFields, ...locationFields, ...mediaFields, ...contactFields, ...metaFields, ...statsFields, ...dateFields].includes(key)
+        );
+        
+        const fieldGroups: any = {};
+        
+        if (basicFields.length > 0) {
+          fieldGroups.basic = basicFields.map(key => ({ 
+            key, 
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+            type: 'auto', 
+            icon: <Tag className="h-4 w-4" /> 
+          }));
+        }
+        
+        if (locationFields.length > 0) {
+          fieldGroups.location = locationFields.map(key => ({ 
+            key, 
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+            type: 'auto', 
+            icon: <MapPin className="h-4 w-4" /> 
+          }));
+        }
+        
+        if (contactFields.length > 0) {
+          fieldGroups.contact = contactFields.map(key => ({ 
+            key, 
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+            type: 'auto', 
+            icon: <Users className="h-4 w-4" /> 
+          }));
+        }
+        
+        if (mediaFields.length > 0) {
+          fieldGroups.media = mediaFields.map(key => ({ 
+            key, 
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+            type: 'auto', 
+            icon: <Upload className="h-4 w-4" /> 
+          }));
+        }
+        
+        if (dateFields.length > 0) {
+          fieldGroups.dates = dateFields.map(key => ({ 
+            key, 
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+            type: 'auto', 
+            icon: <Calendar className="h-4 w-4" /> 
+          }));
+        }
+        
+        if (metaFields.length > 0) {
+          fieldGroups.metadata = metaFields.map(key => ({ 
+            key, 
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+            type: 'auto', 
+            icon: <Tag className="h-4 w-4" /> 
+          }));
+        }
+        
+        if (statsFields.length > 0) {
+          fieldGroups.statistics = statsFields.map(key => ({ 
+            key, 
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+            type: 'auto', 
+            icon: <Star className="h-4 w-4" />,
+            readonly: true // Stats are usually read-only
+          }));
+        }
+        
+        if (otherFields.length > 0) {
+          fieldGroups.other = otherFields.map(key => ({ 
+            key, 
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+            type: 'auto', 
+            icon: <Tag className="h-4 w-4" /> 
+          }));
+        }
+        
+        // If no fields were categorized, put everything in basic
+        if (Object.keys(fieldGroups).length === 0) {
+          fieldGroups.basic = allFields.map(key => ({ 
+            key, 
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+            type: 'auto', 
+            icon: <Tag className="h-4 w-4" /> 
+          }));
+        }
+        
+        return fieldGroups;
     }
   };
 
