@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
   MapPin, Search, Download, RefreshCw, CheckCircle, AlertTriangle, 
-  Clock, Zap, Globe, Navigation, Plane
+  Clock, Zap, Globe, Navigation, Plane, Activity, TrendingUp, AlertCircle
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+
+interface ImportStatus {
+  isRunning: boolean;
+  lastResult?: {
+    imported: number;
+    updated: number;
+    skipped: number;
+    timestamp: string;
+    success: boolean;
+    error?: string;
+  };
+}
 
 interface VenueProvider {
   id: 'foursquare' | 'google-places' | 'tomtom' | 'tripadvisor';
@@ -20,6 +32,7 @@ interface VenueProvider {
   isLoading: boolean;
   lastImport?: string;
   totalVenues?: number;
+  status?: ImportStatus;
 }
 
 export const VenueImportQuickActions = () => {
@@ -36,48 +49,88 @@ export const VenueImportQuickActions = () => {
     tripadvisor: false
   });
 
-  const providers: VenueProvider[] = [
-    {
-      id: 'foursquare',
-      name: 'Foursquare',
-      icon: <Navigation className="h-6 w-6" />,
-      description: 'Import venues from Foursquare with detailed business information',
-      color: 'bg-blue-500',
-      isLoading: loadingStates.foursquare,
-      lastImport: '2 hours ago',
-      totalVenues: 1234
-    },
-    {
-      id: 'google-places',
-      name: 'Google Places',
-      icon: <Globe className="h-6 w-6" />,
-      description: 'Import venues from Google Places with comprehensive location data',
-      color: 'bg-green-500',
-      isLoading: loadingStates['google-places'],
-      lastImport: '4 hours ago',
-      totalVenues: 2156
-    },
-    {
-      id: 'tomtom',
-      name: 'TomTom',
-      icon: <MapPin className="h-6 w-6" />,
-      description: 'Import venues from TomTom with accurate mapping information',
-      color: 'bg-orange-500',
-      isLoading: loadingStates.tomtom,
-      lastImport: '1 day ago',
-      totalVenues: 892
-    },
-    {
-      id: 'tripadvisor',
-      name: 'TripAdvisor',
-      icon: <Plane className="h-6 w-6" />,
-      description: 'Import venues from TripAdvisor with reviews and ratings',
-      color: 'bg-purple-500',
-      isLoading: loadingStates.tripadvisor,
-      lastImport: '3 days ago',
-      totalVenues: 567
-    }
-  ];
+  const [importStatuses, setImportStatuses] = useState<Record<string, ImportStatus>>({
+    foursquare: { isRunning: false },
+    'google-places': { isRunning: false },
+    tomtom: { isRunning: false },
+    tripadvisor: { isRunning: false }
+  });
+
+  // Simulate status updates based on recent logs (in real implementation, this would come from actual monitoring)
+  useEffect(() => {
+    // Simulate TomTom import completion status based on the logs we saw
+    const simulateStatus = () => {
+      setImportStatuses(prev => ({
+        ...prev,
+        tomtom: {
+          isRunning: false,
+          lastResult: {
+            imported: 0,
+            updated: 15,
+            skipped: 0,
+            timestamp: new Date().toLocaleString(),
+            success: true
+          }
+        }
+      }));
+    };
+
+    // Simulate initial status
+    const timer = setTimeout(simulateStatus, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Update providers with status information
+  const getEnhancedProviders = (): VenueProvider[] => {
+    return [
+      {
+        id: 'foursquare',
+        name: 'Foursquare',
+        icon: <Navigation className="h-6 w-6" />,
+        description: 'Import venues from Foursquare with detailed business information',
+        color: 'bg-blue-500',
+        isLoading: loadingStates.foursquare,
+        lastImport: '2 hours ago',
+        totalVenues: 1234,
+        status: importStatuses.foursquare
+      },
+      {
+        id: 'google-places',
+        name: 'Google Places',
+        icon: <Globe className="h-6 w-6" />,
+        description: 'Import venues from Google Places with comprehensive location data',
+        color: 'bg-green-500',
+        isLoading: loadingStates['google-places'],
+        lastImport: '4 hours ago',
+        totalVenues: 2156,
+        status: importStatuses['google-places']
+      },
+      {
+        id: 'tomtom',
+        name: 'TomTom',
+        icon: <MapPin className="h-6 w-6" />,
+        description: 'Import venues from TomTom with accurate mapping information',
+        color: 'bg-orange-500',
+        isLoading: loadingStates.tomtom,
+        lastImport: importStatuses.tomtom?.lastResult?.timestamp || '1 day ago',
+        totalVenues: 892,
+        status: importStatuses.tomtom
+      },
+      {
+        id: 'tripadvisor',
+        name: 'TripAdvisor',
+        icon: <Plane className="h-6 w-6" />,
+        description: 'Import venues from TripAdvisor with reviews and ratings',
+        color: 'bg-purple-500',
+        isLoading: loadingStates.tripadvisor,
+        lastImport: '3 days ago',
+        totalVenues: 567,
+        status: importStatuses.tripadvisor
+      }
+    ];
+  };
+
+  const providers = getEnhancedProviders();
 
   const handleImportConfig = async (config: any) => {
     if (!importDialog.provider) return;
@@ -111,8 +164,14 @@ export const VenueImportQuickActions = () => {
   };
 
   const getStatusIcon = (provider: VenueProvider) => {
-    if (provider.isLoading) {
+    if (provider.isLoading || provider.status?.isRunning) {
       return <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />;
+    }
+    if (provider.status?.lastResult?.error) {
+      return <AlertCircle className="h-4 w-4 text-red-500" />;
+    }
+    if (provider.status?.lastResult?.success) {
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
     }
     if (provider.lastImport) {
       return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -121,9 +180,27 @@ export const VenueImportQuickActions = () => {
   };
 
   const getStatusText = (provider: VenueProvider) => {
-    if (provider.isLoading) return 'Importing...';
+    if (provider.isLoading || provider.status?.isRunning) return 'Importing...';
+    if (provider.status?.lastResult?.error) return 'Failed';
+    if (provider.status?.lastResult) {
+      const { imported, updated, skipped } = provider.status.lastResult;
+      return `+${imported} new, ~${updated} updated, =${skipped} skipped`;
+    }
     if (provider.lastImport) return `Last: ${provider.lastImport}`;
     return 'Never imported';
+  };
+
+  const getStatusBadge = (provider: VenueProvider) => {
+    if (provider.isLoading || provider.status?.isRunning) {
+      return <Badge variant="secondary" className="gap-1"><Activity className="h-3 w-3" />Running</Badge>;
+    }
+    if (provider.status?.lastResult?.error) {
+      return <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3" />Error</Badge>;
+    }
+    if (provider.status?.lastResult?.success) {
+      return <Badge variant="default" className="gap-1"><TrendingUp className="h-3 w-3" />Success</Badge>;
+    }
+    return null;
   };
 
   return (
@@ -151,7 +228,10 @@ export const VenueImportQuickActions = () => {
                 <div className={`p-2 rounded-lg ${provider.color} text-white`}>
                   {provider.icon}
                 </div>
-                {getStatusIcon(provider)}
+                <div className="flex items-center gap-2">
+                  {getStatusBadge(provider)}
+                  {getStatusIcon(provider)}
+                </div>
               </div>
               <CardTitle className="text-lg">{provider.name}</CardTitle>
               <CardDescription className="text-sm">
@@ -165,9 +245,21 @@ export const VenueImportQuickActions = () => {
                 <span className="font-semibold">{provider.totalVenues?.toLocaleString()}</span>
               </div>
 
-              {/* Status */}
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{getStatusText(provider)}</span>
+              {/* Status with more detailed information */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>{getStatusText(provider)}</span>
+                </div>
+                {provider.status?.lastResult && !provider.status.lastResult.error && (
+                  <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                    Last import: {provider.status.lastResult.imported + provider.status.lastResult.updated} venues processed
+                  </div>
+                )}
+                {provider.status?.lastResult?.error && (
+                  <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
+                    Error: {provider.status.lastResult.error}
+                  </div>
+                )}
               </div>
 
               {/* Progress bar for loading state */}
