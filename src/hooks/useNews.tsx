@@ -75,7 +75,7 @@ export const useNews = () => {
 
       // Apply featured filtering if provided
       if (filters?.featured !== undefined) {
-        queryBuilder = (queryBuilder as any).eq('featured', filters.featured);
+        queryBuilder = (queryBuilder as any).eq('is_featured', filters.featured);
       }
 
       // Apply date range filtering if provided
