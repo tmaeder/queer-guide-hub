@@ -5110,6 +5110,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_old_sensitive_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       consolidate_all_multiple_policies: {
         Args: Record<PropertyKey, never>
         Returns: undefined
