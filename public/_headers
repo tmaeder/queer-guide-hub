@@ -69,3 +69,6 @@
 
 /*.xml
   Content-Encoding: gzip
+
+# Redirect sitemap.xml to dynamic generation
+/sitemap.xml https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/generate-sitemap 200!
