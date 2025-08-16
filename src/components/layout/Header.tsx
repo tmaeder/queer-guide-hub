@@ -86,6 +86,10 @@ export function Header() {
       to: "/news",
       icon: Newspaper,
       label: "News"
+    }, {
+      to: "/personalities",
+      icon: Users,
+      label: "Personalities"
     }]
   }, {
     title: "Community",
@@ -93,10 +97,6 @@ export function Header() {
       to: "/feed",
       icon: Rss,
       label: "Feed"
-    }, {
-      to: "/personalities",
-      icon: Users,
-      label: "Personalities"
     }, {
       to: "/groups",
       icon: UsersRound,
