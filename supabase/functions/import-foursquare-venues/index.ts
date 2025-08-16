@@ -460,18 +460,40 @@ Deno.serve(async (req) => {
     for (const location of locationsToProcess) {
       console.log(`Searching venues in ${location}...`)
 
-      // Use search terms instead of fixed categories
+      // Use search terms with fallback to generic terms for failed searches
       for (const searchTerm of searchTerms.slice(0, 3)) { // Limit to 3 search terms per location
         try {
-          // Use text search with custom search terms
-          const searchUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=${encodeURIComponent(searchTerm)}&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
+          // Try original search term first
+          let searchUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=${encodeURIComponent(searchTerm)}&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
           
-          const response = await fetch(searchUrl, {
+          let response = await fetch(searchUrl, {
             headers: {
               'Authorization': foursquareApiKey,
               'Accept': 'application/json'
             }
           })
+
+          // If original search fails with 400, try fallback terms
+          if (!response.ok && response.status === 400) {
+            console.log(`Original search "${searchTerm}" failed, trying fallback...`)
+            
+            // Map problematic terms to acceptable alternatives
+            let fallbackTerm = searchTerm;
+            if (searchTerm.toLowerCase().includes('gay') || searchTerm.toLowerCase().includes('lesbian') || searchTerm.toLowerCase().includes('lgbtq')) {
+              fallbackTerm = 'bar'; // Generic bar search
+            }
+            
+            if (fallbackTerm !== searchTerm) {
+              searchUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=${encodeURIComponent(fallbackTerm)}&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
+              
+              response = await fetch(searchUrl, {
+                headers: {
+                  'Authorization': foursquareApiKey,
+                  'Accept': 'application/json'
+                }
+              })
+            }
+          }
 
           if (!response.ok) {
             console.error(`Foursquare API error for ${location} "${searchTerm}": ${response.status}`)
