@@ -6113,15 +6113,34 @@ export type Database = {
         Returns: undefined
       }
       validate_content_security: {
-        Args: { content: string }
-        Returns: boolean
+        Args:
+          | { content: string }
+          | {
+              content_text: string
+              content_type?: string
+              user_id_param?: string
+            }
+        Returns: Json
       }
       validate_content_security_enhanced: {
         Args: { content: string }
         Returns: boolean
       }
+      validate_file_upload: {
+        Args: {
+          file_name: string
+          file_size: number
+          mime_type: string
+          user_id_param?: string
+        }
+        Returns: Json
+      }
       validate_import_data: {
         Args: { job_id: string; validation_rules: Json }
+        Returns: Json
+      }
+      validate_password_enhanced: {
+        Args: { password_text: string }
         Returns: Json
       }
       validate_password_strength: {

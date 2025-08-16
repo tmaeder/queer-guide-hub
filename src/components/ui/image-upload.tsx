@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useSecurityValidation } from '@/hooks/useSecurityValidation';
 
 interface ImageUploadProps {
   value?: string;
@@ -28,6 +29,7 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { validateFileUpload } = useSecurityValidation();
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(value || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,6 +70,12 @@ export function ImageUpload({
     setUploading(true);
 
     try {
+      // Validate file security first
+      const validation = await validateFileUpload(file.name, file.size, file.type);
+      if (!validation.is_valid) {
+        throw new Error(validation.errors.join(', '));
+      }
+
       // Create a unique filename
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
