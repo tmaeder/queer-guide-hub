@@ -16,6 +16,7 @@ import { CMSConnectorManager } from './CMSConnectorManager';
 import { CMSDuplicateManager } from './CMSDuplicateManager';
 import { UniversalContentDashboard } from './UniversalContentDashboard';
 import { UniversalContentEditor } from './UniversalContentEditor';
+import { CMSListView } from './CMSListView';
 
 export function CMSDashboard() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export function CMSDashboard() {
   const [selectedWorkflowState, setSelectedWorkflowState] = useState('all');
   const [showEditor, setShowEditor] = useState(false);
   const [editingContent, setEditingContent] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   if (!canManageContent) {
     return (
@@ -103,6 +105,12 @@ export function CMSDashboard() {
     }
   };
 
+  const onDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this content?')) {
+      await handleAction('delete', id);
+    }
+  };
+
   if (showEditor && editingContent) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -122,8 +130,9 @@ export function CMSDashboard() {
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="universal">All Content</TabsTrigger>
+          <TabsTrigger value="list">List View</TabsTrigger>
           <TabsTrigger value="content">CMS Content</TabsTrigger>
           <TabsTrigger value="media">Media</TabsTrigger>
           <TabsTrigger value="connectors">Connectors</TabsTrigger>
@@ -133,6 +142,19 @@ export function CMSDashboard() {
 
         <TabsContent value="universal">
           <UniversalContentDashboard />
+        </TabsContent>
+
+        <TabsContent value="list">
+          <CMSListView
+            data={allContent}
+            loading={universalLoading}
+            error={universalError}
+            onEdit={handleEditContent}
+            onDelete={onDelete}
+            onRefresh={() => fetchAllContent()}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
         </TabsContent>
 
         <TabsContent value="content" className="space-y-6">
