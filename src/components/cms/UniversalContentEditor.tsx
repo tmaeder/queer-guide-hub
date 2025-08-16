@@ -234,6 +234,135 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
           ]
         };
 
+      case 'cms_content':
+        return {
+          basic: [
+            { key: 'title', label: 'Title', type: 'text', required: true, icon: <Tag className="h-4 w-4" /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
+            { key: 'content_type', label: 'Content Type', type: 'select', options: ['page', 'article', 'blog_post'], icon: <Tag className="h-4 w-4" /> },
+            { key: 'workflow_state', label: 'Workflow State', type: 'select', options: ['draft', 'review', 'published', 'archived'], icon: <Star className="h-4 w-4" /> }
+          ],
+          settings: [
+            { key: 'visibility_level', label: 'Visibility', type: 'select', options: ['public', 'private', 'restricted'], icon: <Eye className="h-4 w-4" /> },
+            { key: 'featured_weight', label: 'Featured Weight', type: 'number', icon: <Star className="h-4 w-4" /> }
+          ],
+          meta: [
+            { key: 'meta_title', label: 'Meta Title', type: 'text', icon: <Globe className="h-4 w-4" /> },
+            { key: 'meta_description', label: 'Meta Description', type: 'textarea', icon: <Globe className="h-4 w-4" /> },
+            { key: 'slug', label: 'URL Slug', type: 'text', icon: <Globe className="h-4 w-4" /> },
+            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag className="h-4 w-4" /> }
+          ]
+        };
+
+      case 'news_articles':
+        return {
+          basic: [
+            { key: 'title', label: 'Article Title', type: 'text', required: true, icon: <Tag className="h-4 w-4" /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
+            { key: 'excerpt', label: 'Excerpt', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
+            { key: 'content', label: 'Article Content', type: 'textarea', icon: <Tag className="h-4 w-4" /> }
+          ],
+          meta: [
+            { key: 'author', label: 'Author', type: 'text', icon: <User className="h-4 w-4" /> },
+            { key: 'category', label: 'Category', type: 'text', icon: <Tag className="h-4 w-4" /> },
+            { key: 'status', label: 'Status', type: 'select', options: ['draft', 'published', 'archived'], icon: <Star className="h-4 w-4" /> },
+            { key: 'published_at', label: 'Published Date', type: 'datetime', icon: <Calendar className="h-4 w-4" /> }
+          ],
+          media: [
+            { key: 'image_url', label: 'Featured Image', type: 'url', icon: <Upload className="h-4 w-4" /> },
+            { key: 'source_url', label: 'Source URL', type: 'url', icon: <Globe className="h-4 w-4" /> }
+          ],
+          settings: [
+            { key: 'is_featured', label: 'Featured Article', type: 'boolean', icon: <Star className="h-4 w-4" /> },
+            { key: 'views_count', label: 'Views', type: 'number', readonly: true, icon: <Eye className="h-4 w-4" /> },
+            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag className="h-4 w-4" /> }
+          ]
+        };
+
+      case 'tags':
+        return {
+          basic: [
+            { key: 'name', label: 'Tag Name', type: 'text', required: true, icon: <Tag className="h-4 w-4" /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
+            { key: 'category', label: 'Category', type: 'text', icon: <Tag className="h-4 w-4" /> },
+            { key: 'slug', label: 'URL Slug', type: 'text', icon: <Globe className="h-4 w-4" /> }
+          ],
+          appearance: [
+            { key: 'color', label: 'Tag Color', type: 'text', icon: <Star className="h-4 w-4" /> },
+            { key: 'image_url', label: 'Tag Image', type: 'url', icon: <Upload className="h-4 w-4" /> }
+          ],
+          metadata: [
+            { key: 'usage_count', label: 'Usage Count', type: 'number', readonly: true, icon: <Users className="h-4 w-4" /> },
+            { key: 'wikipedia_url', label: 'Wikipedia URL', type: 'url', icon: <Globe className="h-4 w-4" /> }
+          ]
+        };
+
+      case 'cities':
+        return {
+          basic: [
+            { key: 'name', label: 'City Name', type: 'text', required: true, icon: <Building className="h-4 w-4" /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
+            { key: 'region_name', label: 'Region', type: 'text', icon: <MapPin className="h-4 w-4" /> }
+          ],
+          location: [
+            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin className="h-4 w-4" /> },
+            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin className="h-4 w-4" /> },
+            { key: 'timezone', label: 'Timezone', type: 'text', icon: <Clock className="h-4 w-4" /> }
+          ],
+          details: [
+            { key: 'population', label: 'Population', type: 'number', icon: <Users className="h-4 w-4" /> },
+            { key: 'is_capital', label: 'Is Capital', type: 'boolean', icon: <Star className="h-4 w-4" /> },
+            { key: 'is_major_city', label: 'Is Major City', type: 'boolean', icon: <Star className="h-4 w-4" /> },
+            { key: 'image_url', label: 'City Image', type: 'url', icon: <Upload className="h-4 w-4" /> }
+          ]
+        };
+
+      case 'countries':
+        return {
+          basic: [
+            { key: 'name', label: 'Country Name', type: 'text', required: true, icon: <Globe className="h-4 w-4" /> },
+            { key: 'code', label: 'Country Code', type: 'text', icon: <Globe className="h-4 w-4" /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
+            { key: 'capital', label: 'Capital City', type: 'text', icon: <Building className="h-4 w-4" /> }
+          ],
+          details: [
+            { key: 'population', label: 'Population', type: 'number', icon: <Users className="h-4 w-4" /> },
+            { key: 'area_km2', label: 'Area (km²)', type: 'number', icon: <MapPin className="h-4 w-4" /> },
+            { key: 'currency', label: 'Currency', type: 'text', icon: <Tag className="h-4 w-4" /> },
+            { key: 'languages', label: 'Languages', type: 'array', icon: <Globe className="h-4 w-4" /> }
+          ],
+          location: [
+            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin className="h-4 w-4" /> },
+            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin className="h-4 w-4" /> },
+            { key: 'timezone', label: 'Timezone', type: 'text', icon: <Clock className="h-4 w-4" /> }
+          ]
+        };
+
+      case 'marketplace_listings':
+        return {
+          basic: [
+            { key: 'title', label: 'Listing Title', type: 'text', required: true, icon: <Tag className="h-4 w-4" /> },
+            { key: 'business_name', label: 'Business Name', type: 'text', icon: <Building className="h-4 w-4" /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
+            { key: 'category', label: 'Category', type: 'text', icon: <Tag className="h-4 w-4" /> }
+          ],
+          pricing: [
+            { key: 'price', label: 'Price', type: 'number', icon: <Tag className="h-4 w-4" /> },
+            { key: 'currency', label: 'Currency', type: 'text', icon: <Tag className="h-4 w-4" /> },
+            { key: 'business_type', label: 'Business Type', type: 'text', icon: <Building className="h-4 w-4" /> }
+          ],
+          contact: [
+            { key: 'contact_email', label: 'Contact Email', type: 'email', icon: <Users className="h-4 w-4" /> },
+            { key: 'contact_phone', label: 'Contact Phone', type: 'tel', icon: <Users className="h-4 w-4" /> },
+            { key: 'website', label: 'Website', type: 'url', icon: <Globe className="h-4 w-4" /> }
+          ],
+          details: [
+            { key: 'location', label: 'Location', type: 'text', icon: <MapPin className="h-4 w-4" /> },
+            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'pending'], icon: <Star className="h-4 w-4" /> },
+            { key: 'images', label: 'Images', type: 'array', icon: <Upload className="h-4 w-4" /> }
+          ]
+        };
+
       default:
         return {
           basic: Object.keys(formData)

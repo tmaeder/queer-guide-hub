@@ -16,6 +16,7 @@ import { CMSConnectorManager } from './CMSConnectorManager';
 import { CMSDuplicateManager } from './CMSDuplicateManager';
 import { UniversalContentDashboard } from './UniversalContentDashboard';
 import { UniversalContentEditor } from './UniversalContentEditor';
+import { UniversalContentCreator } from './UniversalContentCreator';
 import { CMSListView } from './CMSListView';
 import { MediaLibrary } from './MediaLibrary';
 export function CMSDashboard() {
@@ -171,6 +172,7 @@ export function CMSDashboard() {
                   <SelectItem value="cities">Cities</SelectItem>
                   <SelectItem value="countries">Countries</SelectItem>
                   <SelectItem value="marketplace_listings">Products & Services</SelectItem>
+                  <SelectItem value="news_articles">News Articles</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -188,10 +190,7 @@ export function CMSDashboard() {
               </Select>
             </div>
 
-            <Button onClick={handleCreateContent} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Create Content
-            </Button>
+            <UniversalContentCreator onContentCreated={() => fetchAllContent()} />
           </div>
 
           {/* Content Grid */}

@@ -34,8 +34,8 @@ export function useUniversalCMS() {
   const fetchContentStats = async () => {
     try {
       // Get stats for each content type
-      const [eventsCount, venuesCount, postsCount, personalitiesCount, cmsCount, groupsCount, tagsCount, citiesCount, countriesCount, marketplaceCount] = await Promise.all([
-        supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+      const [eventsCount, venuesCount, postsCount, personalitiesCount, cmsCount, groupsCount, tagsCount, citiesCount, countriesCount, marketplaceCount, newsCount] = await Promise.all([
+        supabase.from('events').select('*', { count: 'exact', head: true }),
         supabase.from('venues').select('*', { count: 'exact', head: true }),
         supabase.from('community_posts').select('*', { count: 'exact', head: true }),
         supabase.from('personalities').select('*', { count: 'exact', head: true }),
@@ -44,7 +44,8 @@ export function useUniversalCMS() {
         supabase.from('unified_tags').select('*', { count: 'exact', head: true }),
         supabase.from('cities').select('*', { count: 'exact', head: true }),
         supabase.from('countries').select('*', { count: 'exact', head: true }),
-        supabase.from('marketplace_listings').select('*', { count: 'exact', head: true })
+        supabase.from('marketplace_listings').select('*', { count: 'exact', head: true }),
+        supabase.from('news_articles').select('*', { count: 'exact', head: true })
       ]);
 
       const stats: ContentTypeStats[] = [
@@ -57,7 +58,8 @@ export function useUniversalCMS() {
         { content_type: 'tags', count: tagsCount.count || 0, table_name: 'unified_tags' },
         { content_type: 'cities', count: citiesCount.count || 0, table_name: 'cities' },
         { content_type: 'countries', count: countriesCount.count || 0, table_name: 'countries' },
-        { content_type: 'marketplace_listings', count: marketplaceCount.count || 0, table_name: 'marketplace_listings' }
+        { content_type: 'marketplace_listings', count: marketplaceCount.count || 0, table_name: 'marketplace_listings' },
+        { content_type: 'news_articles', count: newsCount.count || 0, table_name: 'news_articles' }
       ].sort((a, b) => b.count - a.count);
 
       setContentStats(stats);
@@ -246,6 +248,36 @@ export function useUniversalCMS() {
     }));
   };
 
+  // Fetch news articles
+  const fetchNewsArticles = async (limit = 50) => {
+    const { data, error } = await supabase
+      .from('news_articles')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    
+    return (data || []).map(article => ({
+      id: article.id,
+      title: article.title || 'Untitled Article',
+      description: article.excerpt,
+      content_type: 'news_articles',
+      status: 'published',
+      created_at: article.created_at,
+      updated_at: article.updated_at,
+      metadata: {
+        author: article.author,
+        source_id: article.source_id,
+        category: article.category,
+        published_at: article.published_at,
+        views_count: article.views_count,
+        is_featured: article.is_featured
+      },
+      raw_data: article
+    }));
+  };
+
   // Fetch tags
   const fetchTags = async (limit = 50) => {
     const { data, error } = await supabase
@@ -375,20 +407,21 @@ export function useUniversalCMS() {
 
       if (!contentType || contentType === 'all') {
         // Fetch from all sources
-        const [events, venues, personalities, groups, posts, cmsContent, tags, cities, countries, marketplace] = await Promise.all([
-          fetchEvents(Math.floor(limit / 10)),
-          fetchVenues(Math.floor(limit / 10)),
-          fetchPersonalities(Math.floor(limit / 10)),
-          fetchCommunityGroups(Math.floor(limit / 10)),
-          fetchCommunityPosts(Math.floor(limit / 10)),
-          fetchCMSContent(Math.floor(limit / 10)),
-          fetchTags(Math.floor(limit / 10)),
-          fetchCities(Math.floor(limit / 10)),
-          fetchCountries(Math.floor(limit / 10)),
-          fetchMarketplaceListings(Math.floor(limit / 10))
+        const [events, venues, personalities, groups, posts, cmsContent, tags, cities, countries, marketplace, news] = await Promise.all([
+          fetchEvents(Math.floor(limit / 11)),
+          fetchVenues(Math.floor(limit / 11)),
+          fetchPersonalities(Math.floor(limit / 11)),
+          fetchCommunityGroups(Math.floor(limit / 11)),
+          fetchCommunityPosts(Math.floor(limit / 11)),
+          fetchCMSContent(Math.floor(limit / 11)),
+          fetchTags(Math.floor(limit / 11)),
+          fetchCities(Math.floor(limit / 11)),
+          fetchCountries(Math.floor(limit / 11)),
+          fetchMarketplaceListings(Math.floor(limit / 11)),
+          fetchNewsArticles(Math.floor(limit / 11))
         ]);
 
-        allContentData = [...events, ...venues, ...personalities, ...groups, ...posts, ...cmsContent, ...tags, ...cities, ...countries, ...marketplace];
+        allContentData = [...events, ...venues, ...personalities, ...groups, ...posts, ...cmsContent, ...tags, ...cities, ...countries, ...marketplace, ...news];
       } else {
         // Fetch specific content type
         switch (contentType) {
@@ -421,6 +454,9 @@ export function useUniversalCMS() {
             break;
           case 'marketplace_listings':
             allContentData = await fetchMarketplaceListings(limit);
+            break;
+          case 'news_articles':
+            allContentData = await fetchNewsArticles(limit);
             break;
         }
       }
