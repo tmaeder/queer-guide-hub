@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { ProfessionAutocomplete } from '@/components/ui/profession-autocomplete';
 
 interface UniversalContentEditorProps {
   content: any;
@@ -262,6 +263,26 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
     // Handle different field types based on configuration
     switch (type) {
       case 'text':
+        // Special handling for profession field
+        if (key === 'profession') {
+          return (
+            <div key={key} className="space-y-2">
+              <Label htmlFor={key} className="flex items-center gap-2">
+                {icon}
+                {label}
+                {required && <span className="text-destructive">*</span>}
+              </Label>
+              <ProfessionAutocomplete
+                id={key}
+                value={fieldValue || ''}
+                onValueChange={(value) => handleFieldChange(key, value)}
+                placeholder="Select or type a profession..."
+                required={required}
+              />
+            </div>
+          );
+        }
+        
         return (
           <div key={key} className="space-y-2">
             <Label htmlFor={key} className="flex items-center gap-2">
