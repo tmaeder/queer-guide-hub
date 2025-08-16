@@ -1,12 +1,13 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { CredentialSecurityGuard } from '@/components/security/CredentialSecurityGuard';
 import { Toaster } from '@/components/ui/toaster';
+import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
 
-const queryClient = new QueryClient();
+const queryClient = createOptimizedQueryClient();
 
 /**
  * Enhanced App component with comprehensive security controls

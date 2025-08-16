@@ -28,18 +28,14 @@ export function useOptimizedEvents(filters?: EventFilters) {
     let query = supabase
       .from('events')
       .select(`
-        *,
-        event_attendees(status),
-        venues(
-          id,
-          name,
-          address,
-          city,
-          state,
-          country,
-          phone,
-          website,
-          email
+        id,title,description,start_date,end_date,timezone,
+        city,state,country,latitude,longitude,
+        event_type,status,featured,accessibility_attributes,
+        target_groups,created_at,updated_at,venue_id,
+        event_attendees!left(status),
+        venues!left(
+          id,name,address,city,state,country,
+          phone,website,email
         )
       `)
       .eq('status', 'active')

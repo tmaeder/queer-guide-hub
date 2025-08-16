@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { useInfiniteData } from './useInfiniteQuery';
 
 type Country = Database['public']['Tables']['countries']['Row'];
 type City = Database['public']['Tables']['cities']['Row'];
@@ -19,10 +20,52 @@ const CACHE_TIME = 30 * 60 * 1000; // 30 minutes - geographic data is stable
 const STALE_TIME = 15 * 60 * 1000; // 15 minutes
 
 export function useOptimizedCountries(filters?: DirectoryFilters) {
+  // Use infinite query for large datasets with efficient pagination
+  if (filters?.limit && filters.limit > 50) {
+    const infiniteFilters: Record<string, any> = {};
+    
+    if (filters.search) {
+      infiniteFilters.name = `%${filters.search}%`;
+    }
+    if (filters.populationRange) {
+      infiniteFilters.population = filters.populationRange;
+    }
+
+    const {
+      data: countries,
+      isLoading,
+      error,
+      fetchNextPage,
+      hasNextPage,
+      isFetching,
+      refetch
+    } = useInfiniteData<Country>({
+      queryKey: [COUNTRIES_QUERY_KEY, 'infinite', filters],
+      table: 'countries',
+      select: 'id,name,code,capital,population,area_km2,latitude,longitude,flag_emoji',
+      filters: infiniteFilters,
+      orderBy: { column: 'name', ascending: true },
+      pageSize: 50,
+      staleTime: STALE_TIME,
+      gcTime: CACHE_TIME,
+    });
+
+    return {
+      countries,
+      loading: isLoading,
+      error,
+      isFetching,
+      refetch,
+      fetchNextPage,
+      hasNextPage,
+    };
+  }
+
+  // Standard query for smaller datasets
   const fetchCountries = async (): Promise<Country[]> => {
     let query = supabase
       .from('countries')
-      .select('*')
+      .select('id,name,code,capital,population,area_km2,latitude,longitude,flag_emoji')
       .order('name', { ascending: true });
 
     if (filters?.search) {
@@ -35,7 +78,7 @@ export function useOptimizedCountries(filters?: DirectoryFilters) {
         .lte('population', filters.populationRange[1]);
     }
 
-    if (filters?.limit) {
+    if (filters?.limit && filters.limit <= 50) {
       query = query.limit(filters.limit);
     }
 
