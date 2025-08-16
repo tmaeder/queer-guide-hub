@@ -17,6 +17,7 @@ import { CMSDuplicateManager } from './CMSDuplicateManager';
 import { UniversalContentDashboard } from './UniversalContentDashboard';
 import { UniversalContentEditor } from './UniversalContentEditor';
 import { CMSListView } from './CMSListView';
+import { MediaLibrary } from './MediaLibrary';
 
 export function CMSDashboard() {
   const navigate = useNavigate();
@@ -130,11 +131,12 @@ export function CMSDashboard() {
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="universal">All Content</TabsTrigger>
           <TabsTrigger value="list">List View</TabsTrigger>
           <TabsTrigger value="content">CMS Content</TabsTrigger>
           <TabsTrigger value="media">Media</TabsTrigger>
+          <TabsTrigger value="library">Media Library</TabsTrigger>
           <TabsTrigger value="connectors">Connectors</TabsTrigger>
           <TabsTrigger value="duplicates">Duplicates</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -303,6 +305,10 @@ export function CMSDashboard() {
 
         <TabsContent value="media">
           <CMSMediaManager />
+        </TabsContent>
+
+        <TabsContent value="library">
+          <MediaLibrary />
         </TabsContent>
 
         <TabsContent value="connectors">
