@@ -11,34 +11,44 @@ interface SecurityStatusProps {
 export function SecurityStatusIndicator({ className = '' }: SecurityStatusProps) {
   const securityFeatures = [
     {
-      name: 'Data Encryption',
+      name: 'Enhanced Profile Protection',
       status: 'active',
-      description: 'All sensitive data is encrypted at rest and in transit'
+      description: 'Encrypted sensitive data with field-level privacy controls'
     },
     {
-      name: 'Privacy Controls',
+      name: 'Location Privacy',
       status: 'active', 
-      description: 'Granular privacy settings for profile information'
+      description: 'Location data with automatic 6-month retention limits'
     },
     {
-      name: 'Location Protection',
+      name: 'Message Security',
       status: 'active',
-      description: 'Location data secured with user-controlled visibility'
+      description: 'End-to-end conversation participant verification'
     },
     {
-      name: 'Content Security Policy',
+      name: 'Photo Privacy Controls',
       status: 'active',
-      description: 'XSS protection through strict content policies'
+      description: 'Friend-based photo access with public/private settings'
     },
     {
-      name: 'Rate Limiting',
+      name: 'Donation Data Protection',
       status: 'active',
-      description: 'Protection against abuse and automated attacks'
+      description: 'Restricted admin access with critical audit logging'
     },
     {
-      name: 'Audit Logging',
+      name: 'Security Event Monitoring',
       status: 'active',
-      description: 'Comprehensive security event monitoring'
+      description: 'Admin-only access to security incident data'
+    },
+    {
+      name: 'Enhanced Password Policy',
+      status: 'active',
+      description: '12+ character passwords with complexity requirements'
+    },
+    {
+      name: 'Rate Limiting & Audit',
+      status: 'active',
+      description: 'Comprehensive rate limiting with security event logging'
     }
   ];
 

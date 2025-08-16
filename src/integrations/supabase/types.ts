@@ -5106,6 +5106,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_location_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_old_cancelled_bookings: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -5533,6 +5537,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      request_data_deletion: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       revoke_role: {
         Args: {
           role_to_revoke: Database["public"]["Enums"]["app_role"]
@@ -5570,6 +5578,10 @@ export type Database = {
       validate_import_data: {
         Args: { job_id: string; validation_rules: Json }
         Returns: Json
+      }
+      validate_password_strength: {
+        Args: { password_text: string }
+        Returns: boolean
       }
       validate_session_token: {
         Args: { token_to_validate: string }
