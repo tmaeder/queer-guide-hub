@@ -5398,6 +5398,184 @@ export type Database = {
           },
         ]
       }
+      video_processing_jobs: {
+        Row: {
+          completed_at: string | null
+          completed_renditions: number | null
+          created_at: string
+          current_stage: string | null
+          error_message: string | null
+          failed_renditions: number | null
+          id: string
+          processing_config: Json | null
+          progress_percent: number | null
+          results: Json | null
+          started_at: string | null
+          status: string
+          total_renditions: number | null
+          updated_at: string
+          video_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_renditions?: number | null
+          created_at?: string
+          current_stage?: string | null
+          error_message?: string | null
+          failed_renditions?: number | null
+          id?: string
+          processing_config?: Json | null
+          progress_percent?: number | null
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          total_renditions?: number | null
+          updated_at?: string
+          video_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_renditions?: number | null
+          created_at?: string
+          current_stage?: string | null
+          error_message?: string | null
+          failed_renditions?: number | null
+          id?: string
+          processing_config?: Json | null
+          progress_percent?: number | null
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          total_renditions?: number | null
+          updated_at?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_processing_jobs_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_renditions: {
+        Row: {
+          bitrate_kbps: number | null
+          codec: string
+          container: string
+          created_at: string
+          file_path: string
+          file_size: number | null
+          format: string
+          height: number | null
+          id: string
+          resolution: string
+          segment_count: number | null
+          video_id: string
+          width: number | null
+        }
+        Insert: {
+          bitrate_kbps?: number | null
+          codec: string
+          container: string
+          created_at?: string
+          file_path: string
+          file_size?: number | null
+          format: string
+          height?: number | null
+          id?: string
+          resolution: string
+          segment_count?: number | null
+          video_id: string
+          width?: number | null
+        }
+        Update: {
+          bitrate_kbps?: number | null
+          codec?: string
+          container?: string
+          created_at?: string
+          file_path?: string
+          file_size?: number | null
+          format?: string
+          height?: number | null
+          id?: string
+          resolution?: string
+          segment_count?: number | null
+          video_id?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_renditions_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      videos: {
+        Row: {
+          captions_path: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          metadata: Json | null
+          original_filename: string
+          original_height: number | null
+          original_size: number | null
+          original_width: number | null
+          poster_image_path: string | null
+          processing_job_id: string | null
+          status: string
+          storage_path: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          captions_path?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          metadata?: Json | null
+          original_filename: string
+          original_height?: number | null
+          original_size?: number | null
+          original_width?: number | null
+          poster_image_path?: string | null
+          processing_job_id?: string | null
+          status?: string
+          storage_path: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          captions_path?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          metadata?: Json | null
+          original_filename?: string
+          original_height?: number | null
+          original_size?: number | null
+          original_width?: number | null
+          poster_image_path?: string | null
+          processing_job_id?: string | null
+          status?: string
+          storage_path?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       events_public: {
