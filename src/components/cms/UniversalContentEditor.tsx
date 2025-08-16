@@ -596,7 +596,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <Input
               id={key}
               type="number"
-              value={fieldValue || ''}
+              value={fieldValue !== null && fieldValue !== undefined ? fieldValue : ''}
               onChange={(e) => handleFieldChange(key, e.target.value ? Number(e.target.value) : null)}
               required={required}
             />
@@ -684,7 +684,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <Input
               id={key}
               type="date"
-              value={fieldValue ? new Date(fieldValue).toISOString().split('T')[0] : ''}
+              value={fieldValue ? (fieldValue instanceof Date ? fieldValue.toISOString().split('T')[0] : new Date(fieldValue).toISOString().split('T')[0]) : ''}
               onChange={(e) => handleFieldChange(key, e.target.value ? new Date(e.target.value).toISOString() : null)}
               required={required}
             />
@@ -702,7 +702,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <Input
               id={key}
               type="datetime-local"
-              value={fieldValue ? new Date(fieldValue).toISOString().slice(0, 16) : ''}
+              value={fieldValue ? (fieldValue instanceof Date ? fieldValue.toISOString().slice(0, 16) : new Date(fieldValue).toISOString().slice(0, 16)) : ''}
               onChange={(e) => handleFieldChange(key, e.target.value ? new Date(e.target.value).toISOString() : null)}
               required={required}
             />
@@ -798,6 +798,25 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         );
 
       case 'json':
+        // Handle different JSON data formats
+        let jsonDisplayValue = '';
+        if (fieldValue) {
+          if (typeof fieldValue === 'object') {
+            jsonDisplayValue = JSON.stringify(fieldValue, null, 2);
+          } else if (typeof fieldValue === 'string') {
+            try {
+              // Try to parse and format as JSON
+              const parsed = JSON.parse(fieldValue);
+              jsonDisplayValue = JSON.stringify(parsed, null, 2);
+            } catch {
+              // Keep as string if not valid JSON
+              jsonDisplayValue = fieldValue;
+            }
+          } else {
+            jsonDisplayValue = String(fieldValue);
+          }
+        }
+        
         return (
           <div key={key} className="space-y-2">
             <Label htmlFor={key} className="flex items-center gap-2">
@@ -807,7 +826,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             </Label>
             <Textarea
               id={key}
-              value={typeof fieldValue === 'object' ? JSON.stringify(fieldValue, null, 2) : fieldValue || ''}
+              value={jsonDisplayValue}
               onChange={(e) => {
                 try {
                   const parsed = JSON.parse(e.target.value);
@@ -820,6 +839,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               className="min-h-24 font-mono text-sm"
               placeholder="Enter JSON data"
             />
+            {jsonDisplayValue && (
+              <div className="text-xs text-muted-foreground">
+                {jsonDisplayValue.length > 100 ? `${jsonDisplayValue.length} characters` : 'Valid JSON'}
+              </div>
+            )}
           </div>
         );
 
