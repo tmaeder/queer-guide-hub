@@ -247,9 +247,12 @@ export function CMSListView({
                             </Avatar>
                           )}
                           <div>
-                            <div className="font-medium line-clamp-1 max-w-xs">
+                            <button
+                              onClick={() => onEdit(item)}
+                              className="font-medium line-clamp-1 max-w-xs text-left hover:text-primary transition-colors cursor-pointer underline-offset-4 hover:underline"
+                            >
                               {item.title || 'Untitled'}
-                            </div>
+                            </button>
                             {item.description && (
                               <div className="text-sm text-muted-foreground line-clamp-1 max-w-xs">
                                 {item.description}
