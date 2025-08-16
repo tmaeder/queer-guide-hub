@@ -15,6 +15,7 @@ import { CMSMediaManager } from './CMSMediaManager';
 import { CMSConnectorManager } from './CMSConnectorManager';
 import { CMSDuplicateManager } from './CMSDuplicateManager';
 import { UniversalContentDashboard } from './UniversalContentDashboard';
+import { UniversalContentEditor } from './UniversalContentEditor';
 
 export function CMSDashboard() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export function CMSDashboard() {
   const [selectedContentType, setSelectedContentType] = useState('all');
   const [selectedWorkflowState, setSelectedWorkflowState] = useState('all');
   const [showEditor, setShowEditor] = useState(false);
-  const [editingContent, setEditingContent] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState<any>(null);
 
   if (!canManageContent) {
     return (
@@ -77,8 +78,8 @@ export function CMSDashboard() {
     setShowEditor(true);
   };
 
-  const handleEditContent = (id: string) => {
-    setEditingContent(id);
+  const handleEditContent = (contentItem: any) => {
+    setEditingContent(contentItem);
     setShowEditor(true);
   };
 
@@ -102,11 +103,11 @@ export function CMSDashboard() {
     }
   };
 
-  if (showEditor) {
+  if (showEditor && editingContent) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <CMSContentEditor 
-          contentId={editingContent} 
+        <UniversalContentEditor 
+          content={editingContent} 
           onClose={handleCloseEditor}
         />
       </div>
@@ -244,23 +245,7 @@ export function CMSDashboard() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => {
-                            // Navigate to the appropriate edit page based on content type
-                            const editUrls = {
-                              'events': `/admin/events`,
-                              'venues': `/admin/venues`, 
-                              'personalities': `/admin/personalities`,
-                              'community_groups': `/admin/groups`,
-                              'community_posts': `/feed`,
-                              'cms_content': () => handleEditContent(item.id)
-                            };
-                            const url = editUrls[item.content_type as keyof typeof editUrls];
-                            if (typeof url === 'function') {
-                              url();
-                            } else if (url) {
-                              navigate(url);
-                            }
-                          }}
+                          onClick={() => handleEditContent(item)}
                         >
                           Edit
                         </Button>
