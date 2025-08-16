@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useEvents } from '@/hooks/useEvents';
 import { EventCard } from '@/components/events/EventCard';
 import { EventsCalendarView } from '@/components/events/EventsCalendarView';
@@ -37,7 +37,18 @@ const eventTypes = [
 
 
 const Events = () => {
-  const navigate = useNavigate();
+  // Safety check for Router context
+  let navigate;
+  try {
+    navigate = useNavigate();
+  } catch (error) {
+    console.error('Router context not available:', error);
+    // Fallback navigation
+    navigate = (path: string) => {
+      window.location.href = path;
+    };
+  }
+  
   const { events, loading, error, hasMore, fetchEvents, updateAttendance } = useEvents(false);
   const { user } = useAuth();
   const { toast } = useToast();
