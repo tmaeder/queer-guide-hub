@@ -11,6 +11,8 @@ export interface CMSFilters {
   sortBy: string;
   sortOrder: 'asc' | 'desc';
   showDeleted: boolean;
+  page: number;
+  pageSize: number;
 }
 
 export interface UseCMSFiltersProps {
@@ -28,13 +30,26 @@ export function useCMSFilters({ data }: UseCMSFiltersProps) {
     },
     sortBy: 'updated_at',
     sortOrder: 'desc',
-    showDeleted: false
+    showDeleted: false,
+    page: 1,
+    pageSize: 10
   });
 
   const updateFilter = (key: keyof CMSFilters, value: any) => {
     setFilters(prev => ({
       ...prev,
-      [key]: value
+      [key]: value,
+      // Reset to first page when filters change (except for page changes)
+      ...(key !== 'page' && key !== 'pageSize' ? { page: 1 } : {})
+    }));
+  };
+
+  const updateSort = (column: string) => {
+    setFilters(prev => ({
+      ...prev,
+      sortBy: column,
+      sortOrder: prev.sortBy === column && prev.sortOrder === 'asc' ? 'desc' : 'asc',
+      page: 1
     }));
   };
 
@@ -49,7 +64,9 @@ export function useCMSFilters({ data }: UseCMSFiltersProps) {
       },
       sortBy: 'updated_at',
       sortOrder: 'desc',
-      showDeleted: false
+      showDeleted: false,
+      page: 1,
+      pageSize: 10
     });
   };
 
@@ -117,6 +134,15 @@ export function useCMSFilters({ data }: UseCMSFiltersProps) {
     return result;
   }, [data, filters]);
 
+  // Pagination
+  const paginatedData = useMemo(() => {
+    const startIndex = (filters.page - 1) * filters.pageSize;
+    const endIndex = startIndex + filters.pageSize;
+    return filteredAndSortedData.slice(startIndex, endIndex);
+  }, [filteredAndSortedData, filters.page, filters.pageSize]);
+
+  const totalPages = Math.ceil(filteredAndSortedData.length / filters.pageSize);
+
   // Get unique values for filter options
   const filterOptions = useMemo(() => {
     const contentTypes = [...new Set(data.map(item => item.content_type))].sort();
@@ -131,10 +157,15 @@ export function useCMSFilters({ data }: UseCMSFiltersProps) {
   return {
     filters,
     updateFilter,
+    updateSort,
     resetFilters,
-    filteredData: filteredAndSortedData,
+    filteredData: paginatedData,
+    allFilteredData: filteredAndSortedData,
     filterOptions,
     totalResults: filteredAndSortedData.length,
-    totalRecords: data.length
+    totalRecords: data.length,
+    totalPages,
+    currentPage: filters.page,
+    pageSize: filters.pageSize
   };
 }

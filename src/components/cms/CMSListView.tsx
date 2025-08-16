@@ -9,7 +9,10 @@ import {
   Tag,
   MoreHorizontal,
   Grid3X3,
-  List
+  List,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +23,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CMSAdvancedFilters } from './CMSAdvancedFilters';
@@ -51,12 +55,33 @@ export function CMSListView({
   const {
     filters,
     updateFilter,
+    updateSort,
     resetFilters,
     filteredData,
+    allFilteredData,
     filterOptions,
     totalResults,
-    totalRecords
+    totalRecords,
+    totalPages,
+    currentPage,
+    pageSize
   } = useCMSFilters({ data });
+
+  const getSortIcon = (column: string) => {
+    if (filters.sortBy !== column) {
+      return <ArrowUpDown className="h-4 w-4" />;
+    }
+    return filters.sortOrder === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
+  };
+
+  const SortableHeader = ({ column, children }: { column: string; children: React.ReactNode }) => (
+    <TableHead className="cursor-pointer select-none" onClick={() => updateSort(column)}>
+      <div className="flex items-center gap-2 hover:text-foreground">
+        {children}
+        {getSortIcon(column)}
+      </div>
+    </TableHead>
+  );
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -212,11 +237,11 @@ export function CMSListView({
                         onCheckedChange={handleSelectAll}
                       />
                     </TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Updated</TableHead>
-                    <TableHead>Created</TableHead>
+                    <SortableHeader column="title">Title</SortableHeader>
+                    <SortableHeader column="content_type">Type</SortableHeader>
+                    <SortableHeader column="status">Status</SortableHeader>
+                    <SortableHeader column="updated_at">Updated</SortableHeader>
+                    <SortableHeader column="created_at">Created</SortableHeader>
                     <TableHead className="w-24">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -397,6 +422,87 @@ export function CMSListView({
           )}
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>
+              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalResults)} of {totalResults} results
+            </span>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={(value) => updateFilter('pageSize', parseInt(value))}
+            >
+              <SelectTrigger className="w-20 h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+            <span>per page</span>
+          </div>
+
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => currentPage > 1 && updateFilter('page', currentPage - 1)}
+                  className={cn(
+                    currentPage <= 1 && "pointer-events-none opacity-50"
+                  )}
+                />
+              </PaginationItem>
+              
+              {/* Page numbers */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={() => updateFilter('page', pageNum)}
+                      isActive={currentPage === pageNum}
+                      className="cursor-pointer"
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+              
+              {totalPages > 5 && currentPage < totalPages - 2 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+              
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => currentPage < totalPages && updateFilter('page', currentPage + 1)}
+                  className={cn(
+                    currentPage >= totalPages && "pointer-events-none opacity-50"
+                  )}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 }
