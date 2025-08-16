@@ -34,13 +34,17 @@ export function useUniversalCMS() {
   const fetchContentStats = async () => {
     try {
       // Get stats for each content type
-      const [eventsCount, venuesCount, postsCount, personalitiesCount, cmsCount, groupsCount] = await Promise.all([
+      const [eventsCount, venuesCount, postsCount, personalitiesCount, cmsCount, groupsCount, tagsCount, citiesCount, countriesCount, marketplaceCount] = await Promise.all([
         supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'active'),
         supabase.from('venues').select('*', { count: 'exact', head: true }),
         supabase.from('community_posts').select('*', { count: 'exact', head: true }),
         supabase.from('personalities').select('*', { count: 'exact', head: true }),
         supabase.from('cms_content').select('*', { count: 'exact', head: true }).is('deleted_at', null),
-        supabase.from('community_groups').select('*', { count: 'exact', head: true })
+        supabase.from('community_groups').select('*', { count: 'exact', head: true }),
+        supabase.from('unified_tags').select('*', { count: 'exact', head: true }),
+        supabase.from('cities').select('*', { count: 'exact', head: true }),
+        supabase.from('countries').select('*', { count: 'exact', head: true }),
+        supabase.from('marketplace_listings').select('*', { count: 'exact', head: true })
       ]);
 
       const stats: ContentTypeStats[] = [
@@ -49,7 +53,11 @@ export function useUniversalCMS() {
         { content_type: 'community_posts', count: postsCount.count || 0, table_name: 'community_posts' },
         { content_type: 'personalities', count: personalitiesCount.count || 0, table_name: 'personalities' },
         { content_type: 'cms_content', count: cmsCount.count || 0, table_name: 'cms_content' },
-        { content_type: 'community_groups', count: groupsCount.count || 0, table_name: 'community_groups' }
+        { content_type: 'community_groups', count: groupsCount.count || 0, table_name: 'community_groups' },
+        { content_type: 'tags', count: tagsCount.count || 0, table_name: 'unified_tags' },
+        { content_type: 'cities', count: citiesCount.count || 0, table_name: 'cities' },
+        { content_type: 'countries', count: countriesCount.count || 0, table_name: 'countries' },
+        { content_type: 'marketplace_listings', count: marketplaceCount.count || 0, table_name: 'marketplace_listings' }
       ].sort((a, b) => b.count - a.count);
 
       setContentStats(stats);
@@ -238,6 +246,125 @@ export function useUniversalCMS() {
     }));
   };
 
+  // Fetch tags
+  const fetchTags = async (limit = 50) => {
+    const { data, error } = await supabase
+      .from('unified_tags')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    
+    return (data || []).map(tag => ({
+      id: tag.id,
+      title: tag.name,
+      description: tag.description,
+      content_type: 'tags',
+      status: 'active',
+      created_at: tag.created_at,
+      updated_at: tag.updated_at,
+      metadata: {
+        category: tag.category,
+        color: tag.color,
+        usage_count: tag.usage_count,
+        slug: tag.slug
+      },
+      raw_data: tag
+    }));
+  };
+
+  // Fetch cities
+  const fetchCities = async (limit = 50) => {
+    const { data, error } = await supabase
+      .from('cities')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    
+    return (data || []).map(city => ({
+      id: city.id,
+      title: city.name,
+      description: city.description,
+      content_type: 'cities',
+      status: 'active',
+      created_at: city.created_at,
+      updated_at: city.updated_at,
+      metadata: {
+        country_id: city.country_id,
+        population: city.population,
+        latitude: city.latitude,
+        longitude: city.longitude,
+        is_capital: city.is_capital,
+        is_major_city: city.is_major_city
+      },
+      raw_data: city
+    }));
+  };
+
+  // Fetch countries
+  const fetchCountries = async (limit = 50) => {
+    const { data, error } = await supabase
+      .from('countries')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    
+    return (data || []).map(country => ({
+      id: country.id,
+      title: country.name,
+      description: country.description,
+      content_type: 'countries',
+      status: 'active',
+      created_at: country.created_at,
+      updated_at: country.updated_at,
+      metadata: {
+        code: country.code,
+        capital: country.capital,
+        population: country.population,
+        area_km2: country.area_km2,
+        languages: country.languages,
+        currency: country.currency
+      },
+      raw_data: country
+    }));
+  };
+
+  // Fetch marketplace listings
+  const fetchMarketplaceListings = async (limit = 50) => {
+    const { data, error } = await supabase
+      .from('marketplace_listings')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    
+    return (data || []).map(listing => ({
+      id: listing.id,
+      title: listing.title || listing.business_name || 'Untitled Listing',
+      description: listing.description,
+      content_type: 'marketplace_listings',
+      status: listing.status || 'draft',
+      created_at: listing.created_at,
+      updated_at: listing.updated_at,
+      created_by: listing.created_by,
+      metadata: {
+        business_name: listing.business_name,
+        price: listing.price,
+        location: listing.location,
+        category: listing.category,
+        contact_email: listing.contact_email,
+        contact_phone: listing.contact_phone
+      },
+      raw_data: listing
+    }));
+  };
+
   // Fetch all content
   const fetchAllContent = async (contentType?: string, limit = 200) => {
     try {
@@ -248,16 +375,20 @@ export function useUniversalCMS() {
 
       if (!contentType || contentType === 'all') {
         // Fetch from all sources
-        const [events, venues, personalities, groups, posts, cmsContent] = await Promise.all([
-          fetchEvents(Math.floor(limit / 6)),
-          fetchVenues(Math.floor(limit / 6)),
-          fetchPersonalities(Math.floor(limit / 6)),
-          fetchCommunityGroups(Math.floor(limit / 6)),
-          fetchCommunityPosts(Math.floor(limit / 6)),
-          fetchCMSContent(Math.floor(limit / 6))
+        const [events, venues, personalities, groups, posts, cmsContent, tags, cities, countries, marketplace] = await Promise.all([
+          fetchEvents(Math.floor(limit / 10)),
+          fetchVenues(Math.floor(limit / 10)),
+          fetchPersonalities(Math.floor(limit / 10)),
+          fetchCommunityGroups(Math.floor(limit / 10)),
+          fetchCommunityPosts(Math.floor(limit / 10)),
+          fetchCMSContent(Math.floor(limit / 10)),
+          fetchTags(Math.floor(limit / 10)),
+          fetchCities(Math.floor(limit / 10)),
+          fetchCountries(Math.floor(limit / 10)),
+          fetchMarketplaceListings(Math.floor(limit / 10))
         ]);
 
-        allContentData = [...events, ...venues, ...personalities, ...groups, ...posts, ...cmsContent];
+        allContentData = [...events, ...venues, ...personalities, ...groups, ...posts, ...cmsContent, ...tags, ...cities, ...countries, ...marketplace];
       } else {
         // Fetch specific content type
         switch (contentType) {
@@ -278,6 +409,18 @@ export function useUniversalCMS() {
             break;
           case 'cms_content':
             allContentData = await fetchCMSContent(limit);
+            break;
+          case 'tags':
+            allContentData = await fetchTags(limit);
+            break;
+          case 'cities':
+            allContentData = await fetchCities(limit);
+            break;
+          case 'countries':
+            allContentData = await fetchCountries(limit);
+            break;
+          case 'marketplace_listings':
+            allContentData = await fetchMarketplaceListings(limit);
             break;
         }
       }
