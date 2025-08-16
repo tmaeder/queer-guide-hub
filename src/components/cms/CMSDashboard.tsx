@@ -12,11 +12,12 @@ import { CMSContentEditor } from './CMSContentEditor';
 import { CMSMediaManager } from './CMSMediaManager';
 import { CMSConnectorManager } from './CMSConnectorManager';
 import { CMSDuplicateManager } from './CMSDuplicateManager';
+import { UniversalContentDashboard } from './UniversalContentDashboard';
 
 export function CMSDashboard() {
   const { content, loading, error, fetchContent, deleteContent, publishContent, archiveContent } = useCMS();
   const { isAdmin, canManageContent } = useAdminRoles();
-  const [selectedTab, setSelectedTab] = useState('content');
+  const [selectedTab, setSelectedTab] = useState('universal');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContentType, setSelectedContentType] = useState('all');
   const [selectedWorkflowState, setSelectedWorkflowState] = useState('all');
@@ -106,13 +107,18 @@ export function CMSDashboard() {
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="content">Content</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="universal">All Content</TabsTrigger>
+          <TabsTrigger value="content">CMS Content</TabsTrigger>
           <TabsTrigger value="media">Media</TabsTrigger>
           <TabsTrigger value="connectors">Connectors</TabsTrigger>
           <TabsTrigger value="duplicates">Duplicates</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="universal">
+          <UniversalContentDashboard />
+        </TabsContent>
 
         <TabsContent value="content" className="space-y-6">
           {/* Content Management */}
