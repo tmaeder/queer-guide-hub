@@ -17,7 +17,9 @@ import {
   AlertCircle,
   FolderOpen,
   Trash2,
-  Eye
+  Eye,
+  Clock,
+  Server
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
@@ -36,35 +38,89 @@ interface ImageFile {
   error?: string;
   generated?: number;
   savings?: number;
+  bucket?: string;
 }
 
-interface OptimizationReport {
-  timestamp: string;
-  summary: {
-    successful: number;
-    failed: number;
-    totalGenerated: number;
-    originalSize: number;
-    optimizedSize: number;
-    savings: number;
-  };
-  details: any[];
+interface OptimizationJob {
+  id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  total_images: number;
+  processed_images: number;
+  successful_images: number;
+  failed_images: number;
+  created_at: string;
+  updated_at: string;
+  results?: any[];
 }
 
 export function ImageOptimizationManager() {
   const [images, setImages] = useState<ImageFile[]>([]);
   const [isScanning, setIsScanning] = useState(false);
-  const [isOptimizing, setIsOptimizing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [report, setReport] = useState<OptimizationReport | null>(null);
+  const [jobs, setJobs] = useState<OptimizationJob[]>([]);
+  const [currentJob, setCurrentJob] = useState<OptimizationJob | null>(null);
   const [selectedTab, setSelectedTab] = useState('scan');
   
   const { toast } = useToast();
   const { isAdmin } = useAdminRoles();
 
+  // Load optimization jobs
+  const loadJobs = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
+        body: { action: 'list' }
+      });
+      
+      if (error) throw error;
+      setJobs(data.jobs || []);
+    } catch (error) {
+      console.error('Failed to load jobs:', error);
+    }
+  };
+
+  // Check job status
+  const checkJobStatus = async (jobId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
+        body: { action: 'status', jobId }
+      });
+      
+      if (error) throw error;
+      
+      const job = data.job;
+      setCurrentJob(job);
+      
+      // If job is completed or failed, reload the jobs list
+      if (job.status === 'completed' || job.status === 'failed') {
+        await loadJobs();
+      }
+      
+      return job;
+    } catch (error) {
+      console.error('Failed to check job status:', error);
+      return null;
+    }
+  };
+
+  // Poll active jobs
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (currentJob && (currentJob.status === 'pending' || currentJob.status === 'processing')) {
+        await checkJobStatus(currentJob.id);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [currentJob]);
+
+  // Load jobs on mount
+  useEffect(() => {
+    if (isAdmin) {
+      loadJobs();
+    }
+  }, [isAdmin]);
+
   const scanForImages = async () => {
     setIsScanning(true);
-    setProgress(0);
     
     try {
       // Call the image scanning edge function
@@ -76,6 +132,7 @@ export function ImageOptimizationManager() {
         fileName: img.fileName,
         baseName: img.baseName,
         originalSize: img.size,
+        bucket: img.bucket,
         status: 'pending' as const
       }));
       
@@ -97,72 +154,40 @@ export function ImageOptimizationManager() {
     }
   };
 
-  const optimizeAllImages = async () => {
-    setIsOptimizing(true);
-    setProgress(0);
-    
+  const startOptimizationJob = async () => {
     try {
-      // Simulate optimization process
-      for (let i = 0; i < images.length; i++) {
-        setProgress((i / images.length) * 100);
-        
-        setImages(prev => prev.map((img, index) => 
-          index === i ? { ...img, status: 'processing' } : img
-        ));
-        
-        // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock optimization results
-        const mockOptimized = {
-          ...images[i],
-          status: 'completed' as const,
-          optimizedSizes: {
-            avif: Math.round(images[i].originalSize * 0.3),
-            webp: Math.round(images[i].originalSize * 0.5),
-            jpeg: Math.round(images[i].originalSize * 0.7),
-          },
-          generated: 21, // 7 sizes × 3 formats
-          savings: 70
-        };
-        
-        setImages(prev => prev.map((img, index) => 
-          index === i ? mockOptimized : img
-        ));
-      }
+      const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
+        body: { action: 'start', batchSize: 10 }
+      });
       
-      setProgress(100);
+      if (error) throw error;
       
-      // Generate mock report
-      const mockReport: OptimizationReport = {
-        timestamp: new Date().toISOString(),
-        summary: {
-          successful: images.length,
-          failed: 0,
-          totalGenerated: images.length * 21,
-          originalSize: images.reduce((sum, img) => sum + img.originalSize, 0),
-          optimizedSize: images.reduce((sum, img) => sum + img.originalSize * 0.5, 0),
-          savings: 70
-        },
-        details: []
+      const job = {
+        id: data.jobId,
+        status: 'pending' as const,
+        total_images: data.totalImages,
+        processed_images: 0,
+        successful_images: 0,
+        failed_images: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       
-      setReport(mockReport);
-      setSelectedTab('report');
+      setCurrentJob(job);
+      setSelectedTab('jobs');
       
       toast({
-        title: "Optimization Complete!",
-        description: `Successfully optimized ${images.length} images with ${mockReport.summary.savings}% savings`,
+        title: "Optimization Started!",
+        description: `Background optimization job started for ${data.totalImages} images. You can close this page and it will continue processing.`,
       });
       
     } catch (error) {
+      console.error('Failed to start optimization job:', error);
       toast({
-        title: "Optimization Failed",
-        description: "Failed to optimize images",
+        title: "Failed to Start Optimization",
+        description: "Could not start the optimization job",
         variant: "destructive",
       });
-    } finally {
-      setIsOptimizing(false);
     }
   };
 
@@ -178,9 +203,15 @@ export function ImageOptimizationManager() {
     switch (status) {
       case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'processing': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
-      case 'error': return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case 'failed': return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case 'pending': return <Clock className="h-4 w-4 text-yellow-500" />;
       default: return <FileImage className="h-4 w-4 text-muted-foreground" />;
     }
+  };
+
+  const getJobProgress = (job: OptimizationJob) => {
+    if (job.total_images === 0) return 0;
+    return Math.round((job.processed_images / job.total_images) * 100);
   };
 
   if (!isAdmin) {
@@ -212,25 +243,30 @@ export function ImageOptimizationManager() {
             {isScanning ? 'Scanning...' : 'Scan Images'}
           </Button>
           <Button 
-            onClick={optimizeAllImages}
-            disabled={images.length === 0 || isOptimizing}
+            onClick={startOptimizationJob}
+            disabled={currentJob?.status === 'processing'}
           >
-            <Zap className="h-4 w-4 mr-2" />
-            {isOptimizing ? 'Optimizing...' : 'Optimize All'}
+            <Server className="h-4 w-4 mr-2" />
+            Start Background Optimization
           </Button>
         </div>
       </div>
 
-      {/* Progress Bar */}
-      {(isScanning || isOptimizing) && (
+      {/* Current Job Progress */}
+      {currentJob && (currentJob.status === 'pending' || currentJob.status === 'processing') && (
         <Card>
           <CardContent className="p-6">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>{isScanning ? 'Scanning for images...' : 'Optimizing images...'}</span>
-                <span>{Math.round(progress)}%</span>
+                <span>Processing {currentJob.total_images} images in background...</span>
+                <span>{getJobProgress(currentJob)}%</span>
               </div>
-              <Progress value={progress} className="h-2" />
+              <Progress value={getJobProgress(currentJob)} className="h-2" />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{currentJob.processed_images} processed</span>
+                <span>{currentJob.successful_images} successful</span>
+                <span>{currentJob.failed_images} failed</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -239,7 +275,7 @@ export function ImageOptimizationManager() {
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="scan">Images Found ({images.length})</TabsTrigger>
-          <TabsTrigger value="report" disabled={!report}>Optimization Report</TabsTrigger>
+          <TabsTrigger value="jobs">Background Jobs ({jobs.length})</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -275,20 +311,6 @@ export function ImageOptimizationManager() {
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                      <div>
-                        <p className="text-2xl font-bold">
-                          {images.filter(img => img.status === 'completed').length}
-                        </p>
-                        <p className="text-sm text-muted-foreground">Optimized</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2">
                       <HardDrive className="h-5 w-5 text-purple-500" />
                       <div>
                         <p className="text-2xl font-bold">
@@ -303,12 +325,24 @@ export function ImageOptimizationManager() {
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-orange-500" />
+                      <Server className="h-5 w-5 text-green-500" />
                       <div>
                         <p className="text-2xl font-bold">
-                          {images.filter(img => img.savings).reduce((sum, img) => sum + (img.savings || 0), 0) / Math.max(1, images.filter(img => img.savings).length) || 0}%
+                          {jobs.filter(job => job.status === 'completed').length}
                         </p>
-                        <p className="text-sm text-muted-foreground">Avg Savings</p>
+                        <p className="text-sm text-muted-foreground">Completed Jobs</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-5 w-5 text-orange-500" />
+                      <div>
+                        <p className="text-2xl font-bold">21</p>
+                        <p className="text-sm text-muted-foreground">Files per Image</p>
                       </div>
                     </div>
                   </CardContent>
@@ -319,7 +353,7 @@ export function ImageOptimizationManager() {
               <Card>
                 <CardHeader>
                   <CardTitle>Image Files</CardTitle>
-                  <CardDescription>Images found in your project ready for optimization</CardDescription>
+                  <CardDescription>Images found in storage buckets ready for optimization</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ScrollArea className="h-96">
@@ -331,20 +365,14 @@ export function ImageOptimizationManager() {
                             <div>
                               <p className="font-medium">{image.fileName}</p>
                               <p className="text-sm text-muted-foreground">
-                                {formatFileSize(image.originalSize)}
-                                {image.generated && ` • ${image.generated} files generated`}
+                                {formatFileSize(image.originalSize)} • {image.bucket}
                               </p>
                             </div>
                           </div>
                           
                           <div className="flex items-center gap-2">
-                            {image.savings && (
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                {image.savings}% saved
-                              </Badge>
-                            )}
                             <Badge variant="outline" className="capitalize">
-                              {image.status}
+                              Ready
                             </Badge>
                           </div>
                         </div>
@@ -357,74 +385,95 @@ export function ImageOptimizationManager() {
           )}
         </TabsContent>
 
-        <TabsContent value="report" className="space-y-4">
-          {!report ? (
+        <TabsContent value="jobs" className="space-y-4">
+          {jobs.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No Report Available</h3>
-                <p className="text-muted-foreground">Run image optimization to generate a report</p>
+                <Server className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">No Background Jobs</h3>
+                <p className="text-muted-foreground mb-4">Start an optimization job to see it here</p>
+                <Button onClick={startOptimizationJob}>
+                  <Server className="h-4 w-4 mr-2" />
+                  Start Background Optimization
+                </Button>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-6">
-              {/* Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Optimization Summary</CardTitle>
-                  <CardDescription>
-                    Report generated on {new Date(report.timestamp).toLocaleString()}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="text-center p-4 border rounded-lg">
-                      <p className="text-2xl font-bold text-green-600">{report.summary.successful}</p>
-                      <p className="text-sm text-muted-foreground">Images Optimized</p>
+            <div className="space-y-4">
+              {jobs.map((job, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(job.status)}
+                        <CardTitle className="text-lg">Job {job.id.slice(0, 8)}</CardTitle>
+                      </div>
+                      <Badge variant={
+                        job.status === 'completed' ? 'default' :
+                        job.status === 'processing' ? 'secondary' :
+                        job.status === 'failed' ? 'destructive' : 'outline'
+                      }>
+                        {job.status}
+                      </Badge>
                     </div>
-                    <div className="text-center p-4 border rounded-lg">
-                      <p className="text-2xl font-bold text-blue-600">{report.summary.totalGenerated}</p>
-                      <p className="text-sm text-muted-foreground">Files Generated</p>
-                    </div>
-                    <div className="text-center p-4 border rounded-lg">
-                      <p className="text-2xl font-bold text-purple-600">
-                        {formatFileSize(report.summary.originalSize - report.summary.optimizedSize)}
-                      </p>
-                      <p className="text-sm text-muted-foreground">Space Saved</p>
-                    </div>
-                    <div className="text-center p-4 border rounded-lg">
-                      <p className="text-2xl font-bold text-orange-600">{report.summary.savings}%</p>
-                      <p className="text-sm text-muted-foreground">Total Savings</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    <CardDescription>
+                      Started {new Date(job.created_at).toLocaleString()}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {/* Progress bar for active jobs */}
+                      {(job.status === 'processing' || job.status === 'pending') && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Processing {job.total_images} images...</span>
+                            <span>{getJobProgress(job)}%</span>
+                          </div>
+                          <Progress value={getJobProgress(job)} className="h-2" />
+                        </div>
+                      )}
+                      
+                      {/* Stats */}
+                      <div className="grid grid-cols-4 gap-4 text-center">
+                        <div>
+                          <p className="text-2xl font-bold">{job.total_images}</p>
+                          <p className="text-xs text-muted-foreground">Total</p>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-blue-600">{job.processed_images}</p>
+                          <p className="text-xs text-muted-foreground">Processed</p>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-green-600">{job.successful_images}</p>
+                          <p className="text-xs text-muted-foreground">Success</p>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-red-600">{job.failed_images}</p>
+                          <p className="text-xs text-muted-foreground">Failed</p>
+                        </div>
+                      </div>
 
-              {/* Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Next Steps</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Alert>
-                    <CheckCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Your images have been optimized! The system generated AVIF, WebP, and JPEG versions in multiple sizes.
-                    </AlertDescription>
-                  </Alert>
-                  
-                  <div className="flex gap-2">
-                    <Button variant="outline">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Report
-                    </Button>
-                    <Button variant="outline">
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Generated Files
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                      {/* Actions */}
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => checkJobStatus(job.id)}
+                        >
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Refresh
+                        </Button>
+                        {job.status === 'completed' && (
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            Download Report
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </TabsContent>
@@ -432,10 +481,18 @@ export function ImageOptimizationManager() {
         <TabsContent value="settings" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Optimization Settings</CardTitle>
-              <CardDescription>Configure image optimization parameters</CardDescription>
+              <CardTitle>Background Processing Settings</CardTitle>
+              <CardDescription>Configure server-side optimization parameters</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <Alert>
+                <Server className="h-4 w-4" />
+                <AlertDescription>
+                  Optimization runs on the server and continues even if you close this page or refresh.
+                  Jobs process images in batches of 10 to prevent system overload.
+                </AlertDescription>
+              </Alert>
+              
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium">AVIF Quality</label>
@@ -452,7 +509,7 @@ export function ImageOptimizationManager() {
               <div>
                 <label className="text-sm font-medium block mb-2">Responsive Breakpoints</label>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Current: 320px, 640px, 768px, 1024px, 1280px, 1440px, 1920px
+                  Current: 320px, 640px, 768px, 1024px, 1280px, 1440px, 1920px (21 files per image)
                 </p>
               </div>
               

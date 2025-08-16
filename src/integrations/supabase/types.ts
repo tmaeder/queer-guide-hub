@@ -2411,6 +2411,45 @@ export type Database = {
           },
         ]
       }
+      image_optimization_jobs: {
+        Row: {
+          created_at: string
+          failed_images: number
+          id: string
+          processed_images: number
+          results: Json | null
+          settings: Json | null
+          status: string
+          successful_images: number
+          total_images: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          failed_images?: number
+          id?: string
+          processed_images?: number
+          results?: Json | null
+          settings?: Json | null
+          status?: string
+          successful_images?: number
+          total_images?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          failed_images?: number
+          id?: string
+          processed_images?: number
+          results?: Json | null
+          settings?: Json | null
+          status?: string
+          successful_images?: number
+          total_images?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       import_audit_log: {
         Row: {
           action: string
