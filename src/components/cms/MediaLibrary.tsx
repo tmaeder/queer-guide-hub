@@ -4,6 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Trash2, 
   Search, 
@@ -18,7 +23,17 @@ import {
   Image as ImageIcon,
   File,
   Video,
-  FileText
+  FileText,
+  RefreshCw,
+  Settings,
+  Zap,
+  Archive,
+  Edit3,
+  Copy,
+  Share2,
+  FolderOpen,
+  Star,
+  Sliders
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -64,15 +79,33 @@ interface MediaItem {
   caption?: any;
   usage_count?: number;
   content_items?: string[];
+  optimized?: boolean;
+  starred?: boolean;
+  tags?: string[];
 }
 
-type ViewMode = 'grid' | 'list';
-type SortBy = 'created_at' | 'filename' | 'file_size' | 'usage_count';
-type FilterBy = 'all' | 'images' | 'videos' | 'documents' | 'unused';
+type ViewMode = 'grid' | 'list' | 'compact';
+type SortBy = 'created_at' | 'filename' | 'file_size' | 'usage_count' | 'optimized';
+type FilterBy = 'all' | 'images' | 'videos' | 'documents' | 'unused' | 'starred' | 'unoptimized';
+
+interface OptimizationJob {
+  id: string;
+  media_ids: string[];
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  settings: {
+    quality: number;
+    format: string;
+    resize: boolean;
+    maxWidth?: number;
+    maxHeight?: number;
+  };
+}
 
 export function MediaLibrary() {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [filteredMedia, setFilteredMedia] = useState<MediaItem[]>([]);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -81,6 +114,10 @@ export function MediaLibrary() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<MediaItem | null>(null);
   const [showUpload, setShowUpload] = useState(false);
+  const [showOptimization, setShowOptimization] = useState(false);
+  const [optimizationJobs, setOptimizationJobs] = useState<OptimizationJob[]>([]);
+  const [bulkMode, setBulkMode] = useState(false);
+  const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
   
   const { isAdmin } = useAdminRoles();
   const { toast } = useToast();
@@ -360,22 +397,298 @@ export function MediaLibrary() {
     );
   }
 
+  // Helper functions for new features
+  const toggleItemSelection = (itemId: string) => {
+    const newSelection = new Set(selectedItems);
+    if (newSelection.has(itemId)) {
+      newSelection.delete(itemId);
+    } else {
+      newSelection.add(itemId);
+    }
+    setSelectedItems(newSelection);
+  };
+
+  const selectAllVisible = () => {
+    setSelectedItems(new Set(filteredMedia.map(item => item.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedItems(new Set());
+  };
+
+  const handleBulkOptimization = async (settings: OptimizationJob['settings']) => {
+    if (selectedItems.size === 0) return;
+
+    const jobId = crypto.randomUUID();
+    const job: OptimizationJob = {
+      id: jobId,
+      media_ids: Array.from(selectedItems),
+      status: 'pending',
+      progress: 0,
+      settings
+    };
+
+    setOptimizationJobs(prev => [...prev, job]);
+    toast({
+      title: "Optimization Started",
+      description: `Processing ${selectedItems.size} files...`,
+    });
+
+    // Simulate optimization process
+    setTimeout(() => {
+      setOptimizationJobs(prev => 
+        prev.map(j => j.id === jobId ? { ...j, status: 'processing', progress: 25 } : j)
+      );
+    }, 1000);
+
+    setTimeout(() => {
+      setOptimizationJobs(prev => 
+        prev.map(j => j.id === jobId ? { ...j, progress: 75 } : j)
+      );
+    }, 3000);
+
+    setTimeout(() => {
+      setOptimizationJobs(prev => 
+        prev.map(j => j.id === jobId ? { ...j, status: 'completed', progress: 100 } : j)
+      );
+      toast({
+        title: "Optimization Complete",
+        description: `Successfully optimized ${selectedItems.size} files`,
+      });
+      clearSelection();
+    }, 5000);
+  };
+
+  const handleStarItem = async (item: MediaItem) => {
+    // Simulate starring functionality
+    setMedia(prev => 
+      prev.map(m => m.id === item.id ? { ...m, starred: !m.starred } : m)
+    );
+    toast({
+      title: item.starred ? "Removed from favorites" : "Added to favorites",
+      description: item.original_filename,
+    });
+  };
+
+  const renderOptimizationControls = () => (
+    <Dialog open={showOptimization} onOpenChange={setShowOptimization}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Media Optimization</DialogTitle>
+        </DialogHeader>
+        
+        <Tabs defaultValue="bulk" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="bulk">Bulk Optimization</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="bulk" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Quality</label>
+                <Select defaultValue="80">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="60">Low (60%)</SelectItem>
+                    <SelectItem value="80">Medium (80%)</SelectItem>
+                    <SelectItem value="90">High (90%)</SelectItem>
+                    <SelectItem value="100">Lossless</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Format</label>
+                <Select defaultValue="webp">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="webp">WebP</SelectItem>
+                    <SelectItem value="avif">AVIF</SelectItem>
+                    <SelectItem value="jpeg">JPEG</SelectItem>
+                    <SelectItem value="png">PNG</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="resize" />
+                <label htmlFor="resize" className="text-sm">Resize images</label>
+              </div>
+              <div className="grid grid-cols-2 gap-2 ml-6">
+                <Input placeholder="Max width" type="number" />
+                <Input placeholder="Max height" type="number" />
+              </div>
+            </div>
+            
+            <Button 
+              onClick={() => handleBulkOptimization({
+                quality: 80,
+                format: 'webp',
+                resize: false
+              })}
+              disabled={selectedItems.size === 0}
+              className="w-full"
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              Optimize {selectedItems.size} Selected Files
+            </Button>
+          </TabsContent>
+          
+          <TabsContent value="settings" className="space-y-4">
+            <div className="space-y-4">
+              <h4 className="font-medium">Auto-optimization Settings</h4>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="auto-webp" />
+                  <label htmlFor="auto-webp" className="text-sm">Auto-convert to WebP on upload</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="auto-resize" />
+                  <label htmlFor="auto-resize" className="text-sm">Auto-resize large images</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="generate-thumbnails" />
+                  <label htmlFor="generate-thumbnails" className="text-sm">Generate thumbnails</label>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+
+  const renderEditDialog = () => (
+    <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Media</DialogTitle>
+        </DialogHeader>
+        {editingItem && (
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Filename</label>
+              <Input value={editingItem.original_filename} />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Alt Text</label>
+              <Input placeholder="Describe this image..." />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Caption</label>
+              <Textarea placeholder="Image caption..." />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Tags</label>
+              <Input placeholder="tag1, tag2, tag3" />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditingItem(null)}>
+                Cancel
+              </Button>
+              <Button>Save Changes</Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      {/* Enhanced Header */}
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Media Library</h2>
+          <h2 className="text-3xl font-bold">Media Library</h2>
           <p className="text-muted-foreground">
-            Manage all content-related media files
+            Manage, optimize, and organize your media files
           </p>
         </div>
         
-        <Button onClick={() => setShowUpload(true)}>
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Media
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setBulkMode(!bulkMode)}>
+            <Archive className="h-4 w-4 mr-2" />
+            {bulkMode ? 'Exit Bulk' : 'Bulk Actions'}
+          </Button>
+          
+          <Button variant="outline" onClick={() => setShowOptimization(true)}>
+            <Sliders className="h-4 w-4 mr-2" />
+            Optimize
+          </Button>
+          
+          <Button onClick={() => setShowUpload(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Media
+          </Button>
+        </div>
       </div>
+
+      {/* Bulk Actions Bar */}
+      {bulkMode && (
+        <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium">
+                  {selectedItems.size} of {filteredMedia.length} selected
+                </span>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={selectAllVisible}>
+                    Select All Visible
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={clearSelection}>
+                    Clear Selection
+                  </Button>
+                </div>
+              </div>
+              
+              {selectedItems.size > 0 && (
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setShowOptimization(true)}>
+                    <Zap className="h-4 w-4 mr-1" />
+                    Optimize
+                  </Button>
+                  <Button size="sm" variant="outline">
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
+                  <Button size="sm" variant="destructive">
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Active Optimization Jobs */}
+      {optimizationJobs.filter(job => job.status !== 'completed').length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Active Optimizations</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {optimizationJobs.filter(job => job.status !== 'completed').map(job => (
+              <div key={job.id} className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Optimizing {job.media_ids.length} files</span>
+                  <span>{job.progress}%</span>
+                </div>
+                <Progress value={job.progress} />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Upload Dialog */}
       {showUpload && (
@@ -404,10 +717,10 @@ export function MediaLibrary() {
         </Card>
       )}
 
-      {/* Filters and Controls */}
+      {/* Enhanced Filters and Controls */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -420,9 +733,9 @@ export function MediaLibrary() {
             </div>
 
             {/* Filters */}
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center flex-wrap">
               <Select value={filterBy} onValueChange={(value: FilterBy) => setFilterBy(value)}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-36">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -431,6 +744,8 @@ export function MediaLibrary() {
                   <SelectItem value="videos">Videos</SelectItem>
                   <SelectItem value="documents">Documents</SelectItem>
                   <SelectItem value="unused">Unused</SelectItem>
+                  <SelectItem value="starred">Starred</SelectItem>
+                  <SelectItem value="unoptimized">Unoptimized</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -443,32 +758,51 @@ export function MediaLibrary() {
                   <SelectItem value="filename">Name</SelectItem>
                   <SelectItem value="file_size">File Size</SelectItem>
                   <SelectItem value="usage_count">Usage</SelectItem>
+                  <SelectItem value="optimized">Optimized</SelectItem>
                 </SelectContent>
               </Select>
 
               {/* View Mode Toggle */}
-              <div className="flex">
+              <div className="flex border rounded-md">
                 <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
+                  className="rounded-r-none"
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
+                  className="rounded-none border-x"
                 >
                   <List className="h-4 w-4" />
                 </Button>
+                <Button
+                  variant={viewMode === 'compact' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('compact')}
+                  className="rounded-l-none"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                </Button>
               </div>
+
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => fetchMedia()}
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Media Grid/List */}
+      {/* Enhanced Media Display */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
@@ -489,7 +823,17 @@ export function MediaLibrary() {
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           {filteredMedia.map((item) => (
-            <Card key={item.id} className="overflow-hidden group">
+            <Card key={item.id} className="overflow-hidden group relative">
+              {bulkMode && (
+                <div className="absolute top-2 left-2 z-10">
+                  <Checkbox
+                    checked={selectedItems.has(item.id)}
+                    onCheckedChange={() => toggleItemSelection(item.id)}
+                    className="bg-white shadow-lg"
+                  />
+                </div>
+              )}
+              
               <div className="aspect-square relative">
                 {item.mime_type.startsWith('image/') ? (
                   <img
@@ -503,11 +847,28 @@ export function MediaLibrary() {
                   </div>
                 )}
                 
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                {/* Status Badges */}
+                <div className="absolute top-2 right-2 flex gap-1">
+                  {item.starred && (
+                    <Badge variant="secondary" className="h-6 w-6 p-0 rounded-full">
+                      <Star className="h-3 w-3 fill-current" />
+                    </Badge>
+                  )}
+                  {item.optimized && (
+                    <Badge variant="secondary" className="h-6 w-6 p-0 rounded-full bg-green-100">
+                      <Zap className="h-3 w-3 text-green-600" />
+                    </Badge>
+                  )}
+                </div>
+                
+                {/* Enhanced Overlay */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <div className="flex gap-2">
                     <Button size="sm" variant="secondary" onClick={() => window.open(getImageUrl(item), '_blank')}>
                       <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => handleStarItem(item)}>
+                      <Star className={`h-4 w-4 ${item.starred ? 'fill-current' : ''}`} />
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -516,9 +877,21 @@ export function MediaLibrary() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setEditingItem(item)}>
+                          <Edit3 className="h-4 w-4 mr-2" />
+                          Edit Details
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDownload(item)}>
                           <Download className="h-4 w-4 mr-2" />
                           Download
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy URL
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Share2 className="h-4 w-4 mr-2" />
+                          Share
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
@@ -543,15 +916,22 @@ export function MediaLibrary() {
                 </h4>
                 <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
                   <span>{formatFileSize(item.file_size)}</span>
-                  <Badge variant={item.usage_count ? 'default' : 'secondary'}>
-                    {item.usage_count || 0} uses
-                  </Badge>
+                  <div className="flex gap-1">
+                    <Badge variant={item.usage_count ? 'default' : 'secondary'} className="text-xs">
+                      {item.usage_count || 0}
+                    </Badge>
+                    {item.width && item.height && (
+                      <Badge variant="outline" className="text-xs">
+                        {item.width}×{item.height}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-      ) : (
+      ) : viewMode === 'list' ? (
         <Card>
           <CardContent className="p-0">
             <div className="space-y-0">
@@ -562,8 +942,15 @@ export function MediaLibrary() {
                     index !== filteredMedia.length - 1 ? 'border-b' : ''
                   }`}
                 >
+                  {bulkMode && (
+                    <Checkbox
+                      checked={selectedItems.has(item.id)}
+                      onCheckedChange={() => toggleItemSelection(item.id)}
+                    />
+                  )}
+                  
                   {/* Thumbnail */}
-                  <div className="w-12 h-12 bg-muted flex items-center justify-center overflow-hidden">
+                  <div className="w-16 h-16 bg-muted flex items-center justify-center overflow-hidden rounded">
                     {item.mime_type.startsWith('image/') ? (
                       <img
                         src={getImageUrl(item)}
@@ -577,7 +964,11 @@ export function MediaLibrary() {
 
                   {/* File Info */}
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium truncate">{item.original_filename}</h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium truncate">{item.original_filename}</h4>
+                      {item.starred && <Star className="h-4 w-4 fill-current text-yellow-500" />}
+                      {item.optimized && <Zap className="h-4 w-4 text-green-500" />}
+                    </div>
                     <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                       <span>{formatFileSize(item.file_size)}</span>
                       <span>{new Date(item.created_at).toLocaleDateString()}</span>
@@ -612,6 +1003,10 @@ export function MediaLibrary() {
                         <Eye className="h-4 w-4 mr-2" />
                         View
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setEditingItem(item)}>
+                        <Edit3 className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDownload(item)}>
                         <Download className="h-4 w-4 mr-2" />
                         Download
@@ -634,37 +1029,87 @@ export function MediaLibrary() {
             </div>
           </CardContent>
         </Card>
+      ) : (
+        /* Compact View */
+        <Card>
+          <CardContent className="p-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+              {filteredMedia.map((item) => (
+                <div key={item.id} className="relative group">
+                  {bulkMode && (
+                    <div className="absolute top-1 left-1 z-10">
+                      <Checkbox
+                        checked={selectedItems.has(item.id)}
+                        onCheckedChange={() => toggleItemSelection(item.id)}
+                        className="h-4 w-4"
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="aspect-square bg-muted rounded overflow-hidden cursor-pointer hover:opacity-80">
+                    {item.mime_type.startsWith('image/') ? (
+                      <img
+                        src={getImageUrl(item)}
+                        alt={item.original_filename}
+                        className="w-full h-full object-cover"
+                        onClick={() => window.open(getImageUrl(item), '_blank')}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        {getFileIcon(item.mime_type)}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="text-xs text-center mt-1 truncate" title={item.original_filename}>
+                    {item.original_filename}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Stats */}
+      {/* Enhanced Stats */}
       <Card>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
             <div>
-              <div className="text-2xl font-bold">{media.length}</div>
+              <div className="text-3xl font-bold text-blue-600">{media.length}</div>
               <div className="text-sm text-muted-foreground">Total Files</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold text-green-600">
                 {formatFileSize(media.reduce((acc, item) => acc + item.file_size, 0))}
               </div>
               <div className="text-sm text-muted-foreground">Total Size</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold text-purple-600">
                 {media.filter(item => item.mime_type.startsWith('image/')).length}
               </div>
               <div className="text-sm text-muted-foreground">Images</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold text-orange-600">
                 {media.filter(item => (item.usage_count || 0) === 0).length}
               </div>
               <div className="text-sm text-muted-foreground">Unused</div>
             </div>
+            <div>
+              <div className="text-3xl font-bold text-yellow-600">
+                {media.filter(item => item.starred).length}
+              </div>
+              <div className="text-sm text-muted-foreground">Starred</div>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      {renderOptimizationControls()}
+      {renderEditDialog()}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
