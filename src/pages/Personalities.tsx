@@ -7,9 +7,10 @@ import { PersonalityCard } from "@/components/personalities/PersonalityCard";
 import { PersonalitiesFilters } from "@/components/personalities/PersonalitiesFilters";
 import { AddPersonalityDialog } from "@/components/personalities/AddPersonalityDialog";
 import { usePersonalities, PersonalityFilters } from "@/hooks/usePersonalities";
+import { usePersonalityStats } from "@/hooks/usePersonalityStats";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Star, Plus, Search } from "lucide-react";
+import { Users, Star, Plus, Search, CheckCircle, Heart, Clock } from "lucide-react";
 
 export default function Personalities() {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ export default function Personalities() {
     featured_only: true, 
     limit: 6 
   });
+  const { stats, loading: statsLoading } = usePersonalityStats();
 
   const handlePersonalityClick = (personality: any) => {
     setSelectedPersonality(personality);
@@ -88,6 +90,54 @@ export default function Personalities() {
           )}
         </div>
 
+        {/* Stats Section */}
+        {!statsLoading && stats && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+            <Card className="text-center">
+              <CardContent className="py-4">
+                <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <div className="text-2xl font-bold">{stats.total.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground">Total Personalities</div>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="py-4">
+                <CheckCircle className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                <div className="text-2xl font-bold">{stats.verified.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground">Verified</div>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="py-4">
+                <Star className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
+                <div className="text-2xl font-bold">{stats.featured.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground">Featured</div>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="py-4">
+                <Heart className="h-6 w-6 mx-auto mb-2 text-red-500" />
+                <div className="text-2xl font-bold">{stats.living.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground">Living</div>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="py-4">
+                <Users className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                <div className="text-2xl font-bold">{stats.deceased.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground">Historical</div>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="py-4">
+                <Clock className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+                <div className="text-2xl font-bold">{stats.recentlyAdded.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground">Added This Month</div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         <Tabs defaultValue="all" className="space-y-8">
           <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-3">
             <TabsTrigger value="all" className="gap-2">
@@ -119,7 +169,12 @@ export default function Personalities() {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-4">
                     <h2 className="text-2xl font-bold">
-                      {personalities.length} Personalities
+                      {personalities.length} Results
+                      {stats && personalities.length < stats.total && (
+                        <span className="text-lg font-normal text-muted-foreground ml-2">
+                          of {stats.total.toLocaleString()} total
+                        </span>
+                      )}
                     </h2>
                     {filters.search && (
                       <Badge variant="secondary">
