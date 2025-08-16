@@ -70,14 +70,19 @@ export function useUniversalCMS() {
 
   // Fetch events
   const fetchEvents = async (limit = 50) => {
+    console.log('Fetching events...');
     const { data, error } = await supabase
       .from('events')
       .select('*')
-      .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching events:', error);
+      throw error;
+    }
+    
+    console.log('Fetched events:', data?.length || 0);
     
     return (data || []).map(event => ({
       id: event.id,
@@ -101,13 +106,19 @@ export function useUniversalCMS() {
 
   // Fetch venues
   const fetchVenues = async (limit = 50) => {
+    console.log('Fetching venues...');
     const { data, error } = await supabase
       .from('venues')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching venues:', error);
+      throw error;
+    }
+    
+    console.log('Fetched venues:', data?.length || 0);
     
     return (data || []).map(venue => ({
       id: venue.id,
@@ -402,11 +413,13 @@ export function useUniversalCMS() {
     try {
       setLoading(true);
       setError(null);
+      console.log('Fetching all content, type:', contentType, 'limit:', limit);
 
       let allContentData: UniversalContent[] = [];
 
       if (!contentType || contentType === 'all') {
         // Fetch from all sources
+        console.log('Fetching all content types...');
         const [events, venues, personalities, groups, posts, cmsContent, tags, cities, countries, marketplace, news] = await Promise.all([
           fetchEvents(Math.floor(limit / 11)),
           fetchVenues(Math.floor(limit / 11)),
@@ -422,6 +435,7 @@ export function useUniversalCMS() {
         ]);
 
         allContentData = [...events, ...venues, ...personalities, ...groups, ...posts, ...cmsContent, ...tags, ...cities, ...countries, ...marketplace, ...news];
+        console.log('Total content fetched:', allContentData.length);
       } else {
         // Fetch specific content type
         switch (contentType) {

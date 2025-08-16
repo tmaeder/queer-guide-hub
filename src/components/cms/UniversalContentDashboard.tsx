@@ -189,6 +189,11 @@ export function UniversalContentDashboard() {
                     <SelectItem value="community_groups">Community Groups</SelectItem>
                     <SelectItem value="community_posts">Community Posts</SelectItem>
                     <SelectItem value="cms_content">CMS Content</SelectItem>
+                    <SelectItem value="tags">Tags</SelectItem>
+                    <SelectItem value="cities">Cities</SelectItem>
+                    <SelectItem value="countries">Countries</SelectItem>
+                    <SelectItem value="marketplace_listings">Marketplace Listings</SelectItem>
+                    <SelectItem value="news_articles">News Articles</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
