@@ -18,7 +18,7 @@ export function CMSConnectorManager() {
     connectors,
     syncJobs,
     loading,
-    createConnector: createConnectorHook,
+    createConnector,
     toggleConnector,
     runConnector,
     deleteConnector,
@@ -42,7 +42,7 @@ export function CMSConnectorManager() {
     
     setCreating(true);
     try {
-      await createConnectorHook(newConnector);
+      await createConnector(newConnector);
       setShowCreateDialog(false);
       setNewConnector({
         name: '',
@@ -53,158 +53,6 @@ export function CMSConnectorManager() {
       });
     } finally {
       setCreating(false);
-    }
-  };
-
-  const toggleConnector = async (connectorId: string, isActive: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('cms_connectors')
-        .update({ is_active: isActive })
-        .eq('id', connectorId);
-
-      if (error) throw error;
-
-      setConnectors(prev => 
-        prev.map(c => c.id === connectorId ? { ...c, is_active: isActive } : c)
-      );
-
-      toast({
-        title: "Success",
-        description: `Connector ${isActive ? 'enabled' : 'disabled'}`,
-      });
-    } catch (error) {
-      console.error('Error updating connector:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update connector",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const runConnector = async (connectorId: string) => {
-    try {
-      const connector = connectors.find(c => c.id === connectorId);
-      if (!connector) return;
-
-      toast({
-        title: "Running Sync",
-        description: `Starting ${connector.name} synchronization...`,
-      });
-
-      const { data, error } = await supabase.functions.invoke('cms-connector-sync', {
-        body: { connectorId, provider: connector.provider, config: connector.config }
-      });
-
-      if (error) throw error;
-
-      // Refresh jobs to show the new sync
-      fetchSyncJobs();
-
-      toast({
-        title: "Sync Started",
-        description: "The connector sync has been started",
-      });
-    } catch (error) {
-      console.error('Error running connector:', error);
-      toast({
-        title: "Error",
-        description: "Failed to start connector sync",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const deleteConnector = async (connectorId: string) => {
-    if (!confirm('Are you sure you want to delete this connector?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('cms_connectors')
-        .delete()
-        .eq('id', connectorId);
-
-      if (error) throw error;
-
-      setConnectors(prev => prev.filter(c => c.id !== connectorId));
-
-      toast({
-        title: "Success",
-        description: "Connector deleted successfully",
-      });
-    } catch (error) {
-      console.error('Error deleting connector:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete connector",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getProviderConfig = (provider: string) => {
-    switch (provider) {
-      case 'wikidata':
-        return {
-          endpoint: 'https://query.wikidata.org/sparql',
-          queries: {
-            lgbtq_events: `
-              SELECT ?item ?itemLabel ?startTime ?endTime ?location ?description WHERE {
-                ?item wdt:P31/wdt:P279* wd:Q1656682 .
-                ?item wdt:P921 wd:Q17884 .
-                OPTIONAL { ?item wdt:P580 ?startTime }
-                OPTIONAL { ?item wdt:P582 ?endTime }
-                OPTIONAL { ?item wdt:P276 ?location }
-                OPTIONAL { ?item wdt:P1476 ?description }
-                SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
-              }
-              LIMIT 100
-            `,
-            lgbtq_venues: `
-              SELECT ?item ?itemLabel ?location ?coords ?description WHERE {
-                ?item wdt:P31/wdt:P279* wd:Q41176 .
-                ?item wdt:P921 wd:Q17884 .
-                OPTIONAL { ?item wdt:P276 ?location }
-                OPTIONAL { ?item wdt:P625 ?coords }
-                OPTIONAL { ?item wdt:P1476 ?description }
-                SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
-              }
-              LIMIT 100
-            `
-          }
-        };
-      case 'openstreetmap':
-        return {
-          overpass_endpoint: 'https://overpass-api.de/api/interpreter',
-          queries: {
-            lgbtq_venues: `
-              [out:json][timeout:25];
-              (
-                nwr["lgbtq"="yes"];
-                nwr["community_centre"="lgbtq"];
-                nwr["club"="gay"];
-                nwr["amenity"="bar"]["gay"="yes"];
-              );
-              out geom;
-            `
-          }
-        };
-      case 'eventbrite':
-        return {
-          api_endpoint: 'https://www.eventbriteapi.com/v3/',
-          categories: ['103', '199'], // Community & LGBTQ
-          keywords: ['pride', 'lgbtq', 'queer', 'transgender', 'rainbow'],
-          search_radius: '50km'
-        };
-      case 'meetup':
-        return {
-          api_endpoint: 'https://api.meetup.com/',
-          categories: ['lgbtq', 'community', 'pride'],
-          search_radius: '50'
-        };
-      default:
-        return {};
     }
   };
 
@@ -337,7 +185,7 @@ export function CMSConnectorManager() {
                   <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={createConnector} disabled={creating}>
+                  <Button onClick={handleCreateConnector} disabled={creating}>
                     {creating ? 'Creating...' : 'Create'}
                   </Button>
                 </div>
@@ -379,7 +227,12 @@ export function CMSConnectorManager() {
                             {connector.provider}
                           </Badge>
                         </CardTitle>
-                        <CardDescription>{connector.description}</CardDescription>
+                        <CardDescription>
+                          {connector.provider === 'wikidata' && 'Import LGBTQ+ events and venues from Wikidata'}
+                          {connector.provider === 'openstreetmap' && 'Import LGBTQ+ venues from OpenStreetMap'}
+                          {connector.provider === 'eventbrite' && 'Import events from Eventbrite'}
+                          {connector.provider === 'meetup' && 'Import events from Meetup'}
+                        </CardDescription>
                       </div>
                       <Switch 
                         checked={connector.is_active} 
@@ -424,7 +277,6 @@ export function CMSConnectorManager() {
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        onClick={() => setSelectedConnector(connector)}
                         className="flex-1"
                       >
                         <Settings className="h-3 w-3 mr-1" />
