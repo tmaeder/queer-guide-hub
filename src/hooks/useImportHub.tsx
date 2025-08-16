@@ -378,20 +378,28 @@ export const useImportHub = () => {
     parseCSVPreview,
     togglePolling,
     refreshJobs: loadJobs,
-    refreshStatistics: loadStatistics
+    refreshStatistics: loadStatistics,
+    getVenueImportStats
   };
 };
 
-const handleVenueImport = async (provider: string, config: any) => {
-  const { supabase } = await import('@/integrations/supabase/client');
-  const functionName = `import-${provider}-venues`;
-  const { data, error } = await supabase.functions.invoke(functionName, {
-    body: { config }
-  });
+const getVenueImportStats = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('venues')
+      .select('data_source')
+      .in('data_source', ['foursquare', 'google_places', 'tomtom', 'tripadvisor']);
 
-  if (error) {
-    throw error;
+    if (error) throw error;
+
+    const stats = data.reduce((acc, venue) => {
+      acc[venue.data_source] = (acc[venue.data_source] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return stats;
+  } catch (error) {
+    console.error('Error fetching venue import stats:', error);
+    return {};
   }
-
-  return data;
 };
