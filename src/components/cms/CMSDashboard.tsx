@@ -18,12 +18,28 @@ import { UniversalContentDashboard } from './UniversalContentDashboard';
 import { UniversalContentEditor } from './UniversalContentEditor';
 import { CMSListView } from './CMSListView';
 import { MediaLibrary } from './MediaLibrary';
-
 export function CMSDashboard() {
   const navigate = useNavigate();
-  const { content, loading, error, fetchContent, deleteContent, publishContent, archiveContent } = useCMS();
-  const { allContent, contentStats, loading: universalLoading, error: universalError, fetchAllContent } = useUniversalCMS();
-  const { isAdmin, canManageContent } = useAdminRoles();
+  const {
+    content,
+    loading,
+    error,
+    fetchContent,
+    deleteContent,
+    publishContent,
+    archiveContent
+  } = useCMS();
+  const {
+    allContent,
+    contentStats,
+    loading: universalLoading,
+    error: universalError,
+    fetchAllContent
+  } = useUniversalCMS();
+  const {
+    isAdmin,
+    canManageContent
+  } = useAdminRoles();
   const [selectedTab, setSelectedTab] = useState('universal');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContentType, setSelectedContentType] = useState('all');
@@ -31,67 +47,56 @@ export function CMSDashboard() {
   const [showEditor, setShowEditor] = useState(false);
   const [editingContent, setEditingContent] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-
   if (!canManageContent) {
-    return (
-      <div className="container mx-auto px-4 py-8">
+    return <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="p-8 text-center">
             <h2 className="text-2xl font-semibold mb-2">Access Denied</h2>
             <p className="text-muted-foreground">You don't have permission to access the CMS dashboard.</p>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>;
   }
-
   const filteredContent = content.filter(item => {
-    const matchesSearch = !searchQuery || 
-      (item.title && Object.values(item.title).some(title => 
-        typeof title === 'string' && title.toLowerCase().includes(searchQuery.toLowerCase())
-      ));
+    const matchesSearch = !searchQuery || item.title && Object.values(item.title).some(title => typeof title === 'string' && title.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesType = selectedContentType === 'all' || item.content_type === selectedContentType;
     const matchesState = selectedWorkflowState === 'all' || item.workflow_state === selectedWorkflowState;
-    
     return matchesSearch && matchesType && matchesState;
   });
 
   // Filter universal content for CMS Content tab
   const filteredUniversalContent = allContent.filter(item => {
-    const matchesSearch = !searchQuery || 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = !searchQuery || item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedContentType === 'all' || item.content_type === selectedContentType;
-    
     return matchesSearch && matchesType;
   });
-
   const getStatusColor = (state: string) => {
     switch (state) {
-      case 'published': return 'bg-green-100 text-green-800 border-green-200';
-      case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'review': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'archived': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'published':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'draft':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'review':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'archived':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
-
   const handleCreateContent = () => {
     setEditingContent(null);
     setShowEditor(true);
   };
-
   const handleEditContent = (contentItem: any) => {
     setEditingContent(contentItem);
     setShowEditor(true);
   };
-
   const handleCloseEditor = () => {
     setShowEditor(false);
     setEditingContent(null);
     fetchContent(); // Refresh content list
   };
-
   const handleAction = async (action: string, id: string) => {
     switch (action) {
       case 'publish':
@@ -105,26 +110,17 @@ export function CMSDashboard() {
         break;
     }
   };
-
   const onDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this content?')) {
       await handleAction('delete', id);
     }
   };
-
   if (showEditor && editingContent) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <UniversalContentEditor 
-          content={editingContent} 
-          onClose={handleCloseEditor}
-        />
-      </div>
-    );
+    return <div className="container mx-auto px-4 py-8">
+        <UniversalContentEditor content={editingContent} onClose={handleCloseEditor} />
+      </div>;
   }
-
-  return (
-    <div className="container mx-auto px-4 py-8">
+  return <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Content Management System</h1>
         <p className="text-muted-foreground">Manage all your content types, media, and integrations</p>
@@ -134,8 +130,8 @@ export function CMSDashboard() {
         <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="universal">All Content</TabsTrigger>
           <TabsTrigger value="list">List View</TabsTrigger>
-          <TabsTrigger value="content">CMS Content</TabsTrigger>
-          <TabsTrigger value="media">Media</TabsTrigger>
+          
+          
           <TabsTrigger value="library">Media Library</TabsTrigger>
           <TabsTrigger value="connectors">Connectors</TabsTrigger>
           <TabsTrigger value="duplicates">Duplicates</TabsTrigger>
@@ -147,16 +143,7 @@ export function CMSDashboard() {
         </TabsContent>
 
         <TabsContent value="list">
-          <CMSListView
-            data={allContent}
-            loading={universalLoading}
-            error={universalError}
-            onEdit={handleEditContent}
-            onDelete={onDelete}
-            onRefresh={() => fetchAllContent()}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          />
+          <CMSListView data={allContent} loading={universalLoading} error={universalError} onEdit={handleEditContent} onDelete={onDelete} onRefresh={() => fetchAllContent()} viewMode={viewMode} onViewModeChange={setViewMode} />
         </TabsContent>
 
         <TabsContent value="content" className="space-y-6">
@@ -165,12 +152,7 @@ export function CMSDashboard() {
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search content..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+                <Input placeholder="Search content..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
               </div>
               
               <Select value={selectedContentType} onValueChange={setSelectedContentType}>
@@ -209,10 +191,8 @@ export function CMSDashboard() {
           </div>
 
           {/* Content Grid */}
-          {universalLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <Card key={i}>
+          {universalLoading ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => <Card key={i}>
                   <CardHeader>
                     <div className="h-4 bg-muted animate-pulse rounded" />
                     <div className="h-3 bg-muted animate-pulse rounded w-2/3" />
@@ -223,22 +203,16 @@ export function CMSDashboard() {
                       <div className="h-3 bg-muted animate-pulse rounded w-3/4" />
                     </div>
                   </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : universalError ? (
-            <Card>
+                </Card>)}
+            </div> : universalError ? <Card>
               <CardContent className="p-8 text-center">
                 <p className="text-destructive">{universalError}</p>
                 <Button onClick={() => fetchAllContent()} className="mt-4">
                   Retry
                 </Button>
               </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredUniversalContent.map((item) => (
-                <Card key={`${item.content_type}-${item.id}`} className="hover:shadow-lg transition-shadow">
+            </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredUniversalContent.map(item => <Card key={`${item.content_type}-${item.id}`} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -266,41 +240,27 @@ export function CMSDashboard() {
                       </div>
 
                       <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleEditContent(item)}
-                        >
+                        <Button size="sm" variant="outline" onClick={() => handleEditContent(item)}>
                           Edit
                         </Button>
                         
-                        {(item.content_type === 'cms_content' || item.content_type === 'community_posts') && isAdmin && (
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => handleAction('delete', item.id)}
-                          >
+                        {(item.content_type === 'cms_content' || item.content_type === 'community_posts') && isAdmin && <Button size="sm" variant="destructive" onClick={() => handleAction('delete', item.id)}>
                             Delete
-                          </Button>
-                        )}
+                          </Button>}
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                </Card>)}
+            </div>}
 
-          {filteredUniversalContent.length === 0 && !universalLoading && (
-            <Card>
+          {filteredUniversalContent.length === 0 && !universalLoading && <Card>
               <CardContent className="p-8 text-center">
                 <p className="text-muted-foreground mb-4">No content found matching your criteria.</p>
                 <Button onClick={handleCreateContent}>
                   Create your first content
                 </Button>
               </CardContent>
-            </Card>
-          )}
+            </Card>}
         </TabsContent>
 
         <TabsContent value="media">
@@ -336,6 +296,5 @@ export function CMSDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 }
