@@ -86,10 +86,6 @@ export function Header() {
       to: "/news",
       icon: Newspaper,
       label: "News"
-    }, {
-      to: "/users",
-      icon: UserCheck,
-      label: "Users"
     }]
   }, {
     title: "Community",
@@ -105,6 +101,10 @@ export function Header() {
       to: "/groups",
       icon: UsersRound,
       label: "Crews"
+    }, {
+      to: "/users",
+      icon: UserCheck,
+      label: "Users"
     }]
   }];
   const userMenuItems = [{
