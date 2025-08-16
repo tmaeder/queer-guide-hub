@@ -78,98 +78,106 @@ export function useUniversalCMS() {
     }
   };
 
+  // Core pagination fetch function with explicit queries to avoid TypeScript deep inference
   const fetchContentByType = async (contentType: string, limit: number, offset: number, search: string, status?: string) => {
-    const tableNames = {
-      events: 'events' as const,
-      venues: 'venues' as const,
-      personalities: 'personalities' as const,
-      community_groups: 'community_groups' as const,
-      community_posts: 'community_posts' as const,
-      cms_content: 'cms_content' as const,
-      tags: 'unified_tags' as const,
-      cities: 'cities' as const,
-      countries: 'countries' as const,
-      marketplace_listings: 'marketplace_listings' as const,
-      news_articles: 'news_articles' as const
-    };
-    
-    const tableName = tableNames[contentType as keyof typeof tableNames];
-    if (!tableName) throw new Error(`Invalid content type: ${contentType}`);
-    
-    let query = supabase.from(tableName).select('*', { count: 'exact' });
-    
-    // Add search filters
-    if (search) {
+    try {
+      let queryResult: any;
+
+      // Use explicit queries for each type to avoid TypeScript issues
       switch (contentType) {
-        case 'events':
-        case 'venues':
-        case 'personalities':
-        case 'community_groups':
-          query = query.ilike('name', `%${search}%`);
+        case 'events': {
+          let query = supabase.from('events').select('*', { count: 'exact' });
+          if (search) query = query.ilike('title', `%${search}%`);
+          if (status) query = query.eq('status', status);
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
-        case 'cms_content':
-          query = query.or(`title->>'en'.ilike.%${search}%,description->>'en'.ilike.%${search}%`);
+        }
+        case 'venues': {
+          let query = supabase.from('venues').select('*', { count: 'exact' });
+          if (search) query = query.ilike('name', `%${search}%`);
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
-        case 'tags':
-        case 'cities':
-        case 'countries':
-          query = query.ilike('name', `%${search}%`);
+        }
+        case 'personalities': {
+          let query = supabase.from('personalities').select('*', { count: 'exact' });
+          if (search) query = query.ilike('name', `%${search}%`);
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
-        case 'news_articles':
-          query = query.ilike('title', `%${search}%`);
+        }
+        case 'community_groups': {
+          let query = supabase.from('community_groups').select('*', { count: 'exact' });
+          if (search) query = query.ilike('name', `%${search}%`);
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
-        case 'marketplace_listings':
-          query = query.or(`title.ilike.%${search}%,business_name.ilike.%${search}%`);
+        }
+        case 'community_posts': {
+          let query = supabase.from('community_posts').select('*', { count: 'exact' });
+          if (search) query = query.ilike('content', `%${search}%`);
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
-        case 'community_posts':
-          query = query.ilike('content', `%${search}%`);
+        }
+        case 'cms_content': {
+          let query = supabase.from('cms_content').select('*', { count: 'exact' }).is('deleted_at', null);
+          if (search) query = query.or(`title->>'en'.ilike.%${search}%,description->>'en'.ilike.%${search}%`);
+          if (status) {
+            // Ensure status is a valid workflow_state value
+            const validStates = ['draft', 'review', 'published', 'archived'];
+            if (validStates.includes(status)) {
+              query = query.eq('workflow_state', status as any);
+            }
+          }
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
+        }
+        case 'tags': {
+          let query = supabase.from('unified_tags').select('*', { count: 'exact' });
+          if (search) query = query.ilike('name', `%${search}%`);
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
+          break;
+        }
+        case 'cities': {
+          let query = supabase.from('cities').select('*', { count: 'exact' });
+          if (search) query = query.ilike('name', `%${search}%`);
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
+          break;
+        }
+        case 'countries': {
+          let query = supabase.from('countries').select('*', { count: 'exact' });
+          if (search) query = query.ilike('name', `%${search}%`);
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
+          break;
+        }
+        case 'marketplace_listings': {
+          let query = supabase.from('marketplace_listings').select('*', { count: 'exact' });
+          if (search) query = query.or(`title.ilike.%${search}%,business_name.ilike.%${search}%`);
+          if (status) query = query.eq('status', status);
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
+          break;
+        }
+        case 'news_articles': {
+          let query = supabase.from('news_articles').select('*', { count: 'exact' });
+          if (search) query = query.ilike('title', `%${search}%`);
+          queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
+          break;
+        }
+        default:
+          throw new Error(`Invalid content type: ${contentType}`);
       }
+
+      const { data, error, count } = queryResult;
+      if (error) throw error;
+
+      return {
+        data: (data || []).map((item: any) => transformContentItem(item, contentType)),
+        totalCount: count || 0
+      };
+    } catch (error) {
+      console.error(`Error fetching ${contentType}:`, error);
+      throw error;
     }
-
-    // Add status filters
-    if (status && contentType !== 'cities' && contentType !== 'countries' && contentType !== 'tags') {
-      if (contentType === 'cms_content') {
-        query = query.eq('workflow_state', status);
-      } else {
-        query = query.eq('status', status);
-      }
-    }
-
-    // Add soft delete filter for CMS content
-    if (contentType === 'cms_content') {
-      query = query.is('deleted_at', null);
-    }
-
-    const { data, error, count } = await query
-      .order('updated_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (error) throw error;
-
-    return {
-      data: (data || []).map(item => transformContentItem(item, contentType)),
-      totalCount: count || 0
-    };
   };
 
-  const getTableName = (contentType: string): string => {
-    const tableMap: Record<string, string> = {
-      events: 'events',
-      venues: 'venues',
-      personalities: 'personalities',
-      community_groups: 'community_groups',
-      community_posts: 'community_posts',
-      cms_content: 'cms_content',
-      tags: 'unified_tags',
-      cities: 'cities',
-      countries: 'countries',
-      marketplace_listings: 'marketplace_listings',
-      news_articles: 'news_articles'
-    };
-    return tableMap[contentType] || contentType;
-  };
-
+  // Transform function
   const transformContentItem = (item: any, contentType: string): UniversalContent => {
     const baseItem = {
       id: item.id,
