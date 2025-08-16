@@ -5019,6 +5019,10 @@ export type Database = {
         Args: { lat: number; lng: number; precision_level?: string }
         Returns: Json
       }
+      anonymize_old_location_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       assign_admin_by_id: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -5193,6 +5197,10 @@ export type Database = {
         Args: { encrypted_data: string; user_salt: string }
         Returns: string
       }
+      detect_suspicious_access_patterns: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       encrypt_booking_data: {
         Args: { data_text: string; user_salt: string }
         Returns: string
@@ -5204,6 +5212,10 @@ export type Database = {
       encrypt_sensitive_data: {
         Args: { data_text: string; user_salt: string }
         Returns: string
+      }
+      enforce_data_retention_policies: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       examine_table_policies: {
         Args:

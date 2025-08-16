@@ -9,20 +9,32 @@ import { supabase } from "@/integrations/supabase/client";
 
 function usePublishableKey() {
   const [key, setKey] = useState<string | null>(null);
-  const [temp, setTemp] = useState("");
   const [keyLoaded, setKeyLoaded] = useState(false);
+  const [error, setError] = useState<string>('');
 
-  // Secure key management - no localStorage storage of API keys
+  // Enhanced secure key management - eliminate client-side credential storage
   useEffect(() => {
+    // Clear any legacy localStorage credentials immediately
+    const legacyKeys = ['STRIPE_PUBLISHABLE_KEY', 'STRIPE_SECRET_KEY', 'MAPBOX_TOKEN'];
+    legacyKeys.forEach(legacyKey => {
+      if (localStorage.getItem(legacyKey)) {
+        localStorage.removeItem(legacyKey);
+        console.warn(`Removed insecure credential storage: ${legacyKey}`);
+      }
+    });
+
     const loadSecureKey = async () => {
       try {
-        // Try to get key from secure environment or edge function
+        // Only attempt secure edge function retrieval
         const { data, error } = await supabase.functions.invoke('get-stripe-publishable-key');
-        if (data?.publishable_key && !error) {
+        if (data?.publishable_key && !error && data.publishable_key.startsWith('pk_')) {
           setKey(data.publishable_key);
+        } else {
+          setError('Payment system configuration required. Please contact support.');
         }
       } catch (error) {
-        console.warn('Could not load Stripe key from secure source');
+        console.error('Failed to load secure payment configuration:', error);
+        setError('Payment system temporarily unavailable');
       } finally {
         setKeyLoaded(true);
       }
@@ -30,20 +42,8 @@ function usePublishableKey() {
     loadSecureKey();
   }, []);
 
-  const save = () => {
-    if (temp && temp.startsWith('pk_')) {
-      // Only set for this session - no persistent storage
-      setKey(temp);
-      setTemp("");
-    }
-  };
-  
-  const clear = () => {
-    setKey(null);
-    setTemp("");
-  };
-  
-  return { key, temp, setTemp, save, clear, keyLoaded };
+  // Removed insecure temporary key functionality
+  return { key, keyLoaded, error };
 }
 
 function SEO() {
@@ -167,7 +167,7 @@ function PaymentStep({ clientSecret }: { clientSecret: string }) {
 
 export default function Donations() {
   const { user } = useAuth();
-  const { key, temp, setTemp, save, clear, keyLoaded } = usePublishableKey();
+  const { key, keyLoaded, error } = usePublishableKey();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   const stripePromise = useMemo(() => (key ? loadStripe(key) : null), [key]);
@@ -188,27 +188,18 @@ export default function Donations() {
       {keyLoaded && !key && (
         <Card className="bg-card border border-border">
           <CardHeader>
-            <CardTitle>⚠️ Secure Stripe Configuration Required</CardTitle>
+            <CardTitle>Payment System Unavailable</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
-              <p className="text-sm text-yellow-800">
-                <strong>Security Notice:</strong> For security, API keys should be configured server-side. 
-                This temporary input is for development only and keys are not stored persistently.
+            <div className="p-3 bg-red-50 border border-red-200 rounded">
+              <p className="text-sm text-red-800">
+                <strong>Secure Payment Configuration Required:</strong> {error}
               </p>
             </div>
-            <p className="text-sm text-muted-foreground">Enter your Stripe Publishable Key temporarily (starts with pk_...).</p>
-            <Input 
-              placeholder="pk_live_... or pk_test_..." 
-              value={temp} 
-              onChange={(e) => setTemp(e.target.value)}
-              type="password"
-            />
-            <div className="flex gap-2">
-              <Button onClick={save} disabled={!temp || !temp.startsWith('pk_')}>
-                Use Key (Session Only)
-              </Button>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              Our secure payment system requires server-side configuration. 
+              Please contact support for assistance with donations.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -220,9 +211,6 @@ export default function Donations() {
       {key && clientSecret && stripePromise && options && (
         <Elements stripe={stripePromise} options={options}>
           <PaymentStep clientSecret={clientSecret} />
-          <div className="text-xs text-muted-foreground mt-2">
-            Not seeing payment methods? <button className="underline" onClick={clear}>Reset key</button>
-          </div>
         </Elements>
       )}
     </div>
