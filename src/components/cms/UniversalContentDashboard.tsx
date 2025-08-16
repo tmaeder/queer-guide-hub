@@ -17,6 +17,7 @@ export function UniversalContentDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContentType, setSelectedContentType] = useState('all');
   const [selectedContent, setSelectedContent] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
   const filteredContent = allContent.filter(content => {
     const matchesSearch = content.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,7 +91,7 @@ export function UniversalContentDashboard() {
         </Button>
       </div>
 
-      <Tabs value="overview" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">
             <BarChart3 className="h-4 w-4 mr-2" />
