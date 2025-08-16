@@ -1,0 +1,24 @@
+# Source Images Directory
+
+Place your original images here (JPEG, PNG, WebP).
+
+The build script will generate optimized AVIF, WebP, and JPEG versions in multiple sizes from these source images.
+
+## Supported formats:
+- .jpg / .jpeg
+- .png  
+- .webp
+
+## Naming convention:
+Use descriptive names without spaces or special characters:
+- ✅ hero-banner.jpg
+- ✅ product-showcase.png
+- ✅ team-photo.webp
+- ❌ Hero Banner!.jpg
+- ❌ my image (1).png
+
+## Image guidelines:
+- Upload high-quality source images (at least 1920px wide)
+- The script will automatically generate smaller responsive sizes
+- Avoid uploading already compressed/optimized images
+- Original aspect ratios will be preserved

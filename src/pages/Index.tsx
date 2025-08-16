@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, CheckCircle, Sparkles, Globe, Search, BookOpen, Quote } from 'lucide-react';
+import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, CheckCircle, Sparkles, Globe, Search, BookOpen, Quote, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
-
+import { ImageOptimizationDemo } from '@/components/demo/ImageOptimizationDemo';
 
 import FrontPageVenueMap from '@/components/home/FrontPageVenueMap';
 import { VenueMapSearch } from '@/components/venues/VenueMapSearch';
@@ -157,8 +157,12 @@ const Index = React.memo(() => {
         <LatestNewsSlider />
       </React.Suspense>
 
-      {/* Testimonials Section */}
-      
+      {/* Image Optimization Demo */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <ImageOptimizationDemo />
+        </div>
+      </section>
 
       {/* Final CTA Section */}
       
