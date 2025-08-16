@@ -286,10 +286,10 @@ export function VenueImportDialog({
                       }))}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Default limit" />
+                        <SelectValue placeholder="No limit" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="default">Default limit</SelectItem>
+                        <SelectItem value="default">No limit</SelectItem>
                         <SelectItem value="5">5 venues</SelectItem>
                         <SelectItem value="10">10 venues</SelectItem>
                         <SelectItem value="20">20 venues</SelectItem>
@@ -308,10 +308,10 @@ export function VenueImportDialog({
                       }))}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Default radius" />
+                        <SelectValue placeholder="No radius" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="default">Default radius</SelectItem>
+                        <SelectItem value="default">No radius</SelectItem>
                         <SelectItem value="5000">5 km</SelectItem>
                         <SelectItem value="10000">10 km</SelectItem>
                         <SelectItem value="25000">25 km</SelectItem>
