@@ -23,17 +23,27 @@ export interface ContentTypeStats {
   table_name: string;
 }
 
+export interface ContentFilters {
+  contentType?: string;
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
+
 export function useUniversalCMS() {
   const { user } = useAuth();
   const [allContent, setAllContent] = useState<UniversalContent[]>([]);
   const [contentStats, setContentStats] = useState<ContentTypeStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   // Fetch content statistics
   const fetchContentStats = async () => {
     try {
-      // Get stats for each content type
       const [eventsCount, venuesCount, postsCount, personalitiesCount, cmsCount, groupsCount, tagsCount, citiesCount, countriesCount, marketplaceCount, newsCount] = await Promise.all([
         supabase.from('events').select('*', { count: 'exact', head: true }),
         supabase.from('venues').select('*', { count: 'exact', head: true }),
@@ -68,436 +78,299 @@ export function useUniversalCMS() {
     }
   };
 
-  // Fetch events
-  const fetchEvents = async (limit = 50) => {
-    console.log('Fetching events...');
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      console.error('Error fetching events:', error);
-      throw error;
+  const fetchContentByType = async (contentType: string, limit: number, offset: number, search: string, status?: string) => {
+    const tableNames = {
+      events: 'events' as const,
+      venues: 'venues' as const,
+      personalities: 'personalities' as const,
+      community_groups: 'community_groups' as const,
+      community_posts: 'community_posts' as const,
+      cms_content: 'cms_content' as const,
+      tags: 'unified_tags' as const,
+      cities: 'cities' as const,
+      countries: 'countries' as const,
+      marketplace_listings: 'marketplace_listings' as const,
+      news_articles: 'news_articles' as const
+    };
+    
+    const tableName = tableNames[contentType as keyof typeof tableNames];
+    if (!tableName) throw new Error(`Invalid content type: ${contentType}`);
+    
+    let query = supabase.from(tableName).select('*', { count: 'exact' });
+    
+    // Add search filters
+    if (search) {
+      switch (contentType) {
+        case 'events':
+        case 'venues':
+        case 'personalities':
+        case 'community_groups':
+          query = query.ilike('name', `%${search}%`);
+          break;
+        case 'cms_content':
+          query = query.or(`title->>'en'.ilike.%${search}%,description->>'en'.ilike.%${search}%`);
+          break;
+        case 'tags':
+        case 'cities':
+        case 'countries':
+          query = query.ilike('name', `%${search}%`);
+          break;
+        case 'news_articles':
+          query = query.ilike('title', `%${search}%`);
+          break;
+        case 'marketplace_listings':
+          query = query.or(`title.ilike.%${search}%,business_name.ilike.%${search}%`);
+          break;
+        case 'community_posts':
+          query = query.ilike('content', `%${search}%`);
+          break;
+      }
     }
-    
-    console.log('Fetched events:', data?.length || 0);
-    
-    return (data || []).map(event => ({
-      id: event.id,
-      title: event.title,
-      description: event.description,
-      content_type: 'events',
-      status: event.status,
-      created_at: event.created_at,
-      updated_at: event.updated_at,
-      created_by: event.created_by,
-      image_url: (event as any).image_url || undefined,
-      metadata: {
-        start_date: event.start_date,
-        end_date: event.end_date,
-        venue_id: event.venue_id,
-        tags: (event as any).tags || []
-      },
-      raw_data: event
-    }));
-  };
 
-  // Fetch venues
-  const fetchVenues = async (limit = 50) => {
-    console.log('Fetching venues...');
-    const { data, error } = await supabase
-      .from('venues')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      console.error('Error fetching venues:', error);
-      throw error;
+    // Add status filters
+    if (status && contentType !== 'cities' && contentType !== 'countries' && contentType !== 'tags') {
+      if (contentType === 'cms_content') {
+        query = query.eq('workflow_state', status);
+      } else {
+        query = query.eq('status', status);
+      }
     }
-    
-    console.log('Fetched venues:', data?.length || 0);
-    
-    return (data || []).map(venue => ({
-      id: venue.id,
-      title: venue.name,
-      description: venue.description,
-      content_type: 'venues',
-      status: 'active', // venues don't have status field
-      created_at: venue.created_at,
-      updated_at: venue.updated_at,
-      created_by: venue.created_by,
-      image_url: (venue as any).image_url || undefined,
-      metadata: {
-        address: venue.address,
-        city: venue.city,
-        country: venue.country,
-        tags: (venue as any).tags || [],
-        amenities: venue.amenities || []
-      },
-      raw_data: venue
-    }));
-  };
 
-  // Fetch personalities
-  const fetchPersonalities = async (limit = 50) => {
-    const { data, error } = await supabase
-      .from('personalities')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    // Add soft delete filter for CMS content
+    if (contentType === 'cms_content') {
+      query = query.is('deleted_at', null);
+    }
 
-    if (error) throw error;
-    
-    return (data || []).map(personality => ({
-      id: personality.id,
-      title: personality.name,
-      description: personality.description,
-      content_type: 'personalities',
-      status: 'active',
-      created_at: personality.created_at,
-      updated_at: personality.updated_at,
-      image_url: personality.image_url,
-      metadata: {
-        birth_date: personality.birth_date,
-        nationality: personality.nationality,
-        profession: personality.profession,
-        tags: personality.tags || []
-      },
-      raw_data: personality
-    }));
-  };
-
-  // Fetch community groups
-  const fetchCommunityGroups = async (limit = 50) => {
-    const { data, error } = await supabase
-      .from('community_groups')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    
-    return (data || []).map(group => ({
-      id: group.id,
-      title: group.name,
-      description: group.description,
-      content_type: 'community_groups',
-      status: 'active',
-      created_at: group.created_at,
-      updated_at: group.updated_at,
-      created_by: group.created_by,
-      image_url: group.image_url,
-      metadata: {
-        member_count: group.member_count,
-        is_private: group.is_private,
-        tags: group.tags
-      },
-      raw_data: group
-    }));
-  };
-
-  // Fetch community posts
-  const fetchCommunityPosts = async (limit = 50) => {
-    const { data, error } = await supabase
-      .from('community_posts')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    
-    return (data || []).map(post => ({
-      id: post.id,
-      title: `Post by User ${post.user_id.slice(0, 8)}...`,
-      description: post.content?.slice(0, 200),
-      content_type: 'community_posts',
-      status: 'active',
-      created_at: post.created_at,
-      updated_at: post.updated_at,
-      created_by: post.user_id,
-      metadata: {
-        post_type: post.post_type,
-        visibility: post.visibility,
-        likes_count: post.likes_count,
-        comments_count: post.comments_count,
-        tags: post.tags
-      },
-      raw_data: post
-    }));
-  };
-
-  // Fetch CMS content
-  const fetchCMSContent = async (limit = 50) => {
-    const { data, error } = await supabase
-      .from('cms_content')
-      .select('*')
-      .is('deleted_at', null)
+    const { data, error, count } = await query
       .order('updated_at', { ascending: false })
-      .limit(limit);
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
-    
-    return (data || []).map(content => ({
-      id: content.id,
-      title: typeof content.title === 'string' ? content.title : (content.title as any)?.en || 'Untitled',
-      description: typeof content.description === 'string' ? content.description : (content.description as any)?.en,
-      content_type: 'cms_content',
-      status: content.workflow_state,
-      created_at: content.created_at,
-      updated_at: content.updated_at,
-      created_by: content.created_by,
-      metadata: {
-        content_type: content.content_type,
-        visibility_level: content.visibility_level,
-        workflow_state: content.workflow_state,
-        tags: content.tags
-      },
-      raw_data: content
-    }));
+
+    return {
+      data: (data || []).map(item => transformContentItem(item, contentType)),
+      totalCount: count || 0
+    };
   };
 
-  // Fetch news articles
-  const fetchNewsArticles = async (limit = 50) => {
-    const { data, error } = await supabase
-      .from('news_articles')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    
-    return (data || []).map(article => ({
-      id: article.id,
-      title: article.title || 'Untitled Article',
-      description: article.excerpt,
-      content_type: 'news_articles',
-      status: 'published',
-      created_at: article.created_at,
-      updated_at: article.updated_at,
-      metadata: {
-        author: article.author,
-        source_id: article.source_id,
-        category: article.category,
-        published_at: article.published_at,
-        views_count: article.views_count,
-        is_featured: article.is_featured
-      },
-      raw_data: article
-    }));
+  const getTableName = (contentType: string): string => {
+    const tableMap: Record<string, string> = {
+      events: 'events',
+      venues: 'venues',
+      personalities: 'personalities',
+      community_groups: 'community_groups',
+      community_posts: 'community_posts',
+      cms_content: 'cms_content',
+      tags: 'unified_tags',
+      cities: 'cities',
+      countries: 'countries',
+      marketplace_listings: 'marketplace_listings',
+      news_articles: 'news_articles'
+    };
+    return tableMap[contentType] || contentType;
   };
 
-  // Fetch tags
-  const fetchTags = async (limit = 50) => {
-    const { data, error } = await supabase
-      .from('unified_tags')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(limit);
+  const transformContentItem = (item: any, contentType: string): UniversalContent => {
+    const baseItem = {
+      id: item.id,
+      content_type: contentType,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      raw_data: item
+    };
 
-    if (error) throw error;
-    
-    return (data || []).map(tag => ({
-      id: tag.id,
-      title: tag.name,
-      description: tag.description,
-      content_type: 'tags',
-      status: 'active',
-      created_at: tag.created_at,
-      updated_at: tag.updated_at,
-      metadata: {
-        category: tag.category,
-        color: tag.color,
-        usage_count: tag.usage_count,
-        slug: tag.slug
-      },
-      raw_data: tag
-    }));
+    switch (contentType) {
+      case 'events':
+        return {
+          ...baseItem,
+          title: item.title,
+          description: item.description,
+          status: item.status,
+          created_by: item.created_by,
+          image_url: item.image_url,
+          metadata: {
+            start_date: item.start_date,
+            end_date: item.end_date,
+            venue_id: item.venue_id,
+            tags: item.tags || []
+          }
+        };
+      case 'venues':
+        return {
+          ...baseItem,
+          title: item.name,
+          description: item.description,
+          status: 'active',
+          created_by: item.created_by,
+          image_url: item.image_url,
+          metadata: {
+            address: item.address,
+            city: item.city,
+            country: item.country,
+            tags: item.tags || [],
+            amenities: item.amenities || []
+          }
+        };
+      case 'personalities':
+        return {
+          ...baseItem,
+          title: item.name,
+          description: item.description,
+          status: 'active',
+          image_url: item.image_url,
+          metadata: {
+            birth_date: item.birth_date,
+            nationality: item.nationality,
+            profession: item.profession,
+            tags: item.tags || []
+          }
+        };
+      case 'cms_content':
+        return {
+          ...baseItem,
+          title: typeof item.title === 'string' ? item.title : item.title?.en || 'Untitled',
+          description: typeof item.description === 'string' ? item.description : item.description?.en,
+          status: item.workflow_state,
+          created_by: item.created_by,
+          metadata: {
+            content_type: item.content_type,
+            visibility_level: item.visibility_level,
+            workflow_state: item.workflow_state,
+            tags: item.tags
+          }
+        };
+      case 'tags':
+        return {
+          ...baseItem,
+          title: item.name,
+          description: item.description,
+          status: 'active',
+          metadata: {
+            category: item.category,
+            color: item.color,
+            usage_count: item.usage_count,
+            slug: item.slug
+          }
+        };
+      case 'community_groups':
+        return {
+          ...baseItem,
+          title: item.name,
+          description: item.description,
+          status: 'active',
+          created_by: item.created_by,
+          image_url: item.image_url,
+          metadata: {
+            member_count: item.member_count,
+            is_private: item.is_private,
+            tags: item.tags
+          }
+        };
+      case 'community_posts':
+        return {
+          ...baseItem,
+          title: `Post by User ${item.user_id.slice(0, 8)}...`,
+          description: item.content?.slice(0, 200),
+          status: 'active',
+          created_by: item.user_id,
+          metadata: {
+            post_type: item.post_type,
+            visibility: item.visibility,
+            likes_count: item.likes_count,
+            comments_count: item.comments_count,
+            tags: item.tags
+          }
+        };
+      case 'news_articles':
+        return {
+          ...baseItem,
+          title: item.title || 'Untitled Article',
+          description: item.excerpt,
+          status: 'published',
+          metadata: {
+            author: item.author,
+            source_id: item.source_id,
+            category: item.category,
+            published_at: item.published_at,
+            views_count: item.views_count,
+            is_featured: item.is_featured
+          }
+        };
+      case 'marketplace_listings':
+        return {
+          ...baseItem,
+          title: item.title || item.business_name || 'Untitled Listing',
+          description: item.description,
+          status: item.status || 'draft',
+          created_by: item.created_by,
+          metadata: {
+            business_name: item.business_name,
+            price: item.price,
+            location: item.location,
+            category: item.category,
+            contact_email: item.contact_email,
+            contact_phone: item.contact_phone
+          }
+        };
+      default:
+        return {
+          ...baseItem,
+          title: item.name || item.title || 'Untitled',
+          description: item.description,
+          status: item.status || 'active'
+        };
+    }
   };
 
-  // Fetch cities
-  const fetchCities = async (limit = 50) => {
-    const { data, error } = await supabase
-      .from('cities')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    
-    return (data || []).map(city => ({
-      id: city.id,
-      title: city.name,
-      description: city.description,
-      content_type: 'cities',
-      status: 'active',
-      created_at: city.created_at,
-      updated_at: city.updated_at,
-      metadata: {
-        country_id: city.country_id,
-        population: city.population,
-        latitude: city.latitude,
-        longitude: city.longitude,
-        is_capital: city.is_capital,
-        is_major_city: city.is_major_city
-      },
-      raw_data: city
-    }));
-  };
-
-  // Fetch countries
-  const fetchCountries = async (limit = 50) => {
-    const { data, error } = await supabase
-      .from('countries')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    
-    return (data || []).map(country => ({
-      id: country.id,
-      title: country.name,
-      description: country.description,
-      content_type: 'countries',
-      status: 'active',
-      created_at: country.created_at,
-      updated_at: country.updated_at,
-      metadata: {
-        code: country.code,
-        capital: country.capital,
-        population: country.population,
-        area_km2: country.area_km2,
-        languages: country.languages,
-        currency: country.currency
-      },
-      raw_data: country
-    }));
-  };
-
-  // Fetch marketplace listings
-  const fetchMarketplaceListings = async (limit = 50) => {
-    const { data, error } = await supabase
-      .from('marketplace_listings')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    
-    return (data || []).map(listing => ({
-      id: listing.id,
-      title: listing.title || listing.business_name || 'Untitled Listing',
-      description: listing.description,
-      content_type: 'marketplace_listings',
-      status: listing.status || 'draft',
-      created_at: listing.created_at,
-      updated_at: listing.updated_at,
-      created_by: listing.created_by,
-      metadata: {
-        business_name: listing.business_name,
-        price: listing.price,
-        location: listing.location,
-        category: listing.category,
-        contact_email: listing.contact_email,
-        contact_phone: listing.contact_phone
-      },
-      raw_data: listing
-    }));
-  };
-
-  // Fetch all content
-  const fetchAllContent = async (contentType?: string, limit = 200) => {
+  // Fetch content with pagination and filtering
+  const fetchAllContent = async (filters: ContentFilters = {}) => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching all content, type:', contentType, 'limit:', limit);
+      
+      const {
+        contentType = 'all',
+        search = '',
+        status = '',
+        page = 1,
+        limit = 50
+      } = filters;
+
+      console.log('Fetching content with filters:', filters);
 
       let allContentData: UniversalContent[] = [];
+      let totalContentCount = 0;
 
-      if (!contentType || contentType === 'all' || contentType === 'undefined') {
-        // Fetch from all sources - use higher limits to ensure we get everything
-        console.log('Fetching all content types...');
-        const [events, venues, personalities, groups, posts, cmsContent, tags, cities, countries, marketplace, news] = await Promise.all([
-          fetchEvents(500),
-          fetchVenues(500),
-          fetchPersonalities(500),
-          fetchCommunityGroups(500),
-          fetchCommunityPosts(500),
-          fetchCMSContent(500),
-          fetchTags(500),
-          fetchCities(500),
-          fetchCountries(500),
-          fetchMarketplaceListings(500),
-          fetchNewsArticles(500)
-        ]);
+      const offset = (page - 1) * limit;
 
-        allContentData = [...events, ...venues, ...personalities, ...groups, ...posts, ...cmsContent, ...tags, ...cities, ...countries, ...marketplace, ...news];
-        console.log('Total content fetched:', allContentData.length);
+      if (contentType === 'all' || !contentType) {
+        // For 'all' content, fetch limited amount from each table
+        const contentTypes = ['events', 'venues', 'personalities', 'community_groups', 'community_posts', 'cms_content', 'tags', 'cities', 'countries', 'marketplace_listings', 'news_articles'];
+        const perTypeLimit = Math.max(1, Math.floor(limit / contentTypes.length));
+        
+        const promises = contentTypes.map(type => 
+          fetchContentByType(type, perTypeLimit, 0, search, status)
+        );
+
+        const results = await Promise.all(promises);
+        allContentData = results.flatMap(result => result.data);
+        totalContentCount = results.reduce((sum, result) => sum + result.totalCount, 0);
       } else {
-        // Fetch specific content type
-        switch (contentType) {
-          case 'events':
-            allContentData = await fetchEvents(limit);
-            break;
-          case 'venues':
-            allContentData = await fetchVenues(limit);
-            break;
-          case 'personalities':
-            allContentData = await fetchPersonalities(limit);
-            break;
-          case 'community_groups':
-            allContentData = await fetchCommunityGroups(limit);
-            break;
-          case 'community_posts':
-            allContentData = await fetchCommunityPosts(limit);
-            break;
-          case 'cms_content':
-            allContentData = await fetchCMSContent(limit);
-            break;
-          case 'tags':
-            allContentData = await fetchTags(limit);
-            break;
-          case 'cities':
-            allContentData = await fetchCities(limit);
-            break;
-          case 'countries':
-            allContentData = await fetchCountries(limit);
-            break;
-          case 'marketplace_listings':
-            allContentData = await fetchMarketplaceListings(limit);
-            break;
-          case 'news_articles':
-            allContentData = await fetchNewsArticles(limit);
-            break;
-          default:
-            // If no valid content type is provided, fetch all
-            console.log('Invalid content type, fetching all...');
-            const [events, venues, personalities, groups, posts, cmsContent, tags, cities, countries, marketplace, news] = await Promise.all([
-              fetchEvents(500),
-              fetchVenues(500),
-              fetchPersonalities(500),
-              fetchCommunityGroups(500),
-              fetchCommunityPosts(500),
-              fetchCMSContent(500),
-              fetchTags(500),
-              fetchCities(500),
-              fetchCountries(500),
-              fetchMarketplaceListings(500),
-              fetchNewsArticles(500)
-            ]);
-            allContentData = [...events, ...venues, ...personalities, ...groups, ...posts, ...cmsContent, ...tags, ...cities, ...countries, ...marketplace, ...news];
-            break;
-        }
+        // Fetch specific content type with proper pagination
+        const result = await fetchContentByType(contentType, limit, offset, search, status);
+        allContentData = result.data;
+        totalContentCount = result.totalCount;
       }
 
       // Sort by updated_at descending
       allContentData.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
       setAllContent(allContentData);
-      await fetchContentStats();
+      setTotalCount(totalContentCount);
+      setCurrentPage(page);
+      setHasNextPage(allContentData.length === limit);
+      
+      console.log(`Fetched ${allContentData.length} items, total: ${totalContentCount}`);
     } catch (err) {
       console.error('Error fetching content:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch content');
@@ -563,6 +436,7 @@ export function useUniversalCMS() {
   // Initial load
   useEffect(() => {
     fetchAllContent();
+    fetchContentStats();
   }, []);
 
   return {
@@ -570,7 +444,11 @@ export function useUniversalCMS() {
     contentStats,
     loading,
     error,
+    totalCount,
+    currentPage,
+    hasNextPage,
     fetchAllContent,
     deleteUniversalContent,
+    setCurrentPage,
   };
 }
