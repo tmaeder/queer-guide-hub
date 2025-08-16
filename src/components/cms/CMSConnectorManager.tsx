@@ -1,132 +1,228 @@
 import { useState } from 'react';
-import { Plus, Settings, Play, Pause, AlertCircle, CheckCircle, Clock, ExternalLink } from 'lucide-react';
+import { Plus, Settings, Play, Trash2, RefreshCw, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { useCMSConnectors } from '@/hooks/useCMSConnectors';
 
 export function CMSConnectorManager() {
-  const [connectors] = useState([
-    {
-      id: '1',
-      name: 'Wikidata Events',
-      provider: 'wikidata',
-      description: 'Import LGBTQ+ events and personalities from Wikidata',
-      is_active: true,
-      last_sync_at: '2024-01-15T10:00:00Z',
-      next_sync_at: '2024-01-16T10:00:00Z',
-      sync_schedule: '0 10 * * *', // Daily at 10 AM
-      config: {
-        endpoint: 'https://query.wikidata.org/sparql',
-        query_templates: ['lgbtq_events', 'pride_organizations'],
-      },
-      stats: {
-        total_imported: 1250,
-        last_batch_size: 47,
-        success_rate: 0.94,
-      },
-    },
-    {
-      id: '2',
-      name: 'OpenStreetMap Venues',
-      provider: 'openstreetmap',
-      description: 'Import LGBTQ+ venues and spaces from OpenStreetMap',
-      is_active: true,
-      last_sync_at: '2024-01-15T14:30:00Z',
-      next_sync_at: '2024-01-16T14:30:00Z',
-      sync_schedule: '30 14 * * *', // Daily at 2:30 PM
-      config: {
-        overpass_api: 'https://overpass-api.de/api/interpreter',
-        tags: ['lgbtq=yes', 'community_centre=lgbtq'],
-      },
-      stats: {
-        total_imported: 892,
-        last_batch_size: 23,
-        success_rate: 0.98,
-      },
-    },
-    {
-      id: '3',
-      name: 'Eventbrite Integration',
-      provider: 'eventbrite',
-      description: 'Import public LGBTQ+ events from Eventbrite',
-      is_active: false,
-      last_sync_at: '2024-01-10T09:00:00Z',
-      next_sync_at: null,
-      sync_schedule: '0 9 * * *', // Daily at 9 AM
-      config: {
-        api_key: '***hidden***',
-        categories: ['103', '199'], // Community & LGBTQ
-        keywords: ['pride', 'lgbtq', 'queer', 'transgender'],
-      },
-      stats: {
-        total_imported: 567,
-        last_batch_size: 0,
-        success_rate: 0.87,
-      },
-    },
-  ]);
+  const {
+    connectors,
+    syncJobs,
+    loading,
+    createConnector: createConnectorHook,
+    toggleConnector,
+    runConnector,
+    deleteConnector,
+    fetchConnectors
+  } = useCMSConnectors();
+  
+  const [creating, setCreating] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const { isAdmin } = useAdminRoles();
 
-  const [syncJobs] = useState([
-    {
-      id: '1',
-      connector_name: 'Wikidata Events',
-      job_type: 'delta_update',
-      status: 'completed',
-      records_processed: 47,
-      records_created: 12,
-      records_updated: 35,
-      records_failed: 0,
-      started_at: '2024-01-15T10:00:00Z',
-      completed_at: '2024-01-15T10:05:30Z',
-    },
-    {
-      id: '2',
-      connector_name: 'OpenStreetMap Venues',
-      job_type: 'delta_update',
-      status: 'completed',
-      records_processed: 23,
-      records_created: 8,
-      records_updated: 15,
-      records_failed: 0,
-      started_at: '2024-01-15T14:30:00Z',
-      completed_at: '2024-01-15T14:33:12Z',
-    },
-    {
-      id: '3',
-      connector_name: 'Eventbrite Integration',
-      job_type: 'initial_import',
-      status: 'failed',
-      records_processed: 0,
-      records_created: 0,
-      records_updated: 0,
-      records_failed: 0,
-      started_at: '2024-01-10T09:00:00Z',
-      completed_at: '2024-01-10T09:00:15Z',
-      error_details: {
-        message: 'Invalid API key or insufficient permissions',
-        code: 'AUTH_ERROR',
-      },
-    },
-  ]);
+  const [newConnector, setNewConnector] = useState({
+    name: '',
+    provider: 'wikidata',
+    description: '',
+    sync_schedule: '0 */6 * * *',
+    is_active: true
+  });
+
+  const handleCreateConnector = async () => {
+    if (!newConnector.name || !newConnector.provider) return;
+    
+    setCreating(true);
+    try {
+      await createConnectorHook(newConnector);
+      setShowCreateDialog(false);
+      setNewConnector({
+        name: '',
+        provider: 'wikidata',
+        description: '',
+        sync_schedule: '0 */6 * * *',
+        is_active: true
+      });
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const toggleConnector = async (connectorId: string, isActive: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('cms_connectors')
+        .update({ is_active: isActive })
+        .eq('id', connectorId);
+
+      if (error) throw error;
+
+      setConnectors(prev => 
+        prev.map(c => c.id === connectorId ? { ...c, is_active: isActive } : c)
+      );
+
+      toast({
+        title: "Success",
+        description: `Connector ${isActive ? 'enabled' : 'disabled'}`,
+      });
+    } catch (error) {
+      console.error('Error updating connector:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update connector",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const runConnector = async (connectorId: string) => {
+    try {
+      const connector = connectors.find(c => c.id === connectorId);
+      if (!connector) return;
+
+      toast({
+        title: "Running Sync",
+        description: `Starting ${connector.name} synchronization...`,
+      });
+
+      const { data, error } = await supabase.functions.invoke('cms-connector-sync', {
+        body: { connectorId, provider: connector.provider, config: connector.config }
+      });
+
+      if (error) throw error;
+
+      // Refresh jobs to show the new sync
+      fetchSyncJobs();
+
+      toast({
+        title: "Sync Started",
+        description: "The connector sync has been started",
+      });
+    } catch (error) {
+      console.error('Error running connector:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start connector sync",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteConnector = async (connectorId: string) => {
+    if (!confirm('Are you sure you want to delete this connector?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('cms_connectors')
+        .delete()
+        .eq('id', connectorId);
+
+      if (error) throw error;
+
+      setConnectors(prev => prev.filter(c => c.id !== connectorId));
+
+      toast({
+        title: "Success",
+        description: "Connector deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting connector:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete connector",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getProviderConfig = (provider: string) => {
+    switch (provider) {
+      case 'wikidata':
+        return {
+          endpoint: 'https://query.wikidata.org/sparql',
+          queries: {
+            lgbtq_events: `
+              SELECT ?item ?itemLabel ?startTime ?endTime ?location ?description WHERE {
+                ?item wdt:P31/wdt:P279* wd:Q1656682 .
+                ?item wdt:P921 wd:Q17884 .
+                OPTIONAL { ?item wdt:P580 ?startTime }
+                OPTIONAL { ?item wdt:P582 ?endTime }
+                OPTIONAL { ?item wdt:P276 ?location }
+                OPTIONAL { ?item wdt:P1476 ?description }
+                SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+              }
+              LIMIT 100
+            `,
+            lgbtq_venues: `
+              SELECT ?item ?itemLabel ?location ?coords ?description WHERE {
+                ?item wdt:P31/wdt:P279* wd:Q41176 .
+                ?item wdt:P921 wd:Q17884 .
+                OPTIONAL { ?item wdt:P276 ?location }
+                OPTIONAL { ?item wdt:P625 ?coords }
+                OPTIONAL { ?item wdt:P1476 ?description }
+                SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+              }
+              LIMIT 100
+            `
+          }
+        };
+      case 'openstreetmap':
+        return {
+          overpass_endpoint: 'https://overpass-api.de/api/interpreter',
+          queries: {
+            lgbtq_venues: `
+              [out:json][timeout:25];
+              (
+                nwr["lgbtq"="yes"];
+                nwr["community_centre"="lgbtq"];
+                nwr["club"="gay"];
+                nwr["amenity"="bar"]["gay"="yes"];
+              );
+              out geom;
+            `
+          }
+        };
+      case 'eventbrite':
+        return {
+          api_endpoint: 'https://www.eventbriteapi.com/v3/',
+          categories: ['103', '199'], // Community & LGBTQ
+          keywords: ['pride', 'lgbtq', 'queer', 'transgender', 'rainbow'],
+          search_radius: '50km'
+        };
+      case 'meetup':
+        return {
+          api_endpoint: 'https://api.meetup.com/',
+          categories: ['lgbtq', 'community', 'pride'],
+          search_radius: '50'
+        };
+      default:
+        return {};
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'failed': return <AlertCircle className="h-4 w-4 text-red-500" />;
       case 'running': return <Clock className="h-4 w-4 text-blue-500 animate-spin" />;
-      default: return <Clock className="h-4 w-4 text-gray-500" />;
+      default: return <Clock className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'failed': return 'bg-red-100 text-red-800 border-red-200';
-      case 'running': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'completed': return 'bg-green-50 text-green-700 border-green-200';
+      case 'failed': return 'bg-red-50 text-red-700 border-red-200';
+      case 'running': return 'bg-blue-50 text-blue-700 border-blue-200';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -144,6 +240,30 @@ export function CMSConnectorManager() {
     return `${remainingSeconds}s`;
   };
 
+  if (!isAdmin) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <h2 className="text-2xl font-semibold mb-2">Access Denied</h2>
+          <p className="text-muted-foreground">You need admin privileges to access data connectors.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 bg-muted animate-pulse rounded" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-64 bg-muted animate-pulse rounded" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -152,10 +272,79 @@ export function CMSConnectorManager() {
           <h2 className="text-2xl font-bold">Data Connectors</h2>
           <p className="text-muted-foreground">Manage external data sources and sync jobs</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Connector
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchConnectors}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Connector
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Create Data Connector</DialogTitle>
+                <DialogDescription>
+                  Add a new external data source connector
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    value={newConnector.name}
+                    onChange={(e) => setNewConnector(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="e.g., Wikidata Events"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="provider">Provider</Label>
+                  <Select value={newConnector.provider} onValueChange={(value) => setNewConnector(prev => ({ ...prev, provider: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="wikidata">Wikidata</SelectItem>
+                      <SelectItem value="openstreetmap">OpenStreetMap</SelectItem>
+                      <SelectItem value="eventbrite">Eventbrite</SelectItem>
+                      <SelectItem value="meetup">Meetup</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={newConnector.description}
+                    onChange={(e) => setNewConnector(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Brief description of what this connector imports"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="schedule">Sync Schedule (Cron)</Label>
+                  <Input
+                    id="schedule"
+                    value={newConnector.sync_schedule}
+                    onChange={(e) => setNewConnector(prev => ({ ...prev, sync_schedule: e.target.value }))}
+                    placeholder="0 */6 * * *"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={createConnector} disabled={creating}>
+                    {creating ? 'Creating...' : 'Create'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Tabs defaultValue="connectors" className="space-y-6">
@@ -166,140 +355,156 @@ export function CMSConnectorManager() {
         </TabsList>
 
         <TabsContent value="connectors" className="space-y-6">
-          {/* Connectors Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {connectors.map((connector) => (
-              <Card key={connector.id} className="relative">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center gap-2">
-                        {connector.name}
-                        <Badge variant="outline" className="capitalize">
-                          {connector.provider}
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>{connector.description}</CardDescription>
-                    </div>
-                    <Switch checked={connector.is_active} className="ml-4" />
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold">{connector.stats.total_imported.toLocaleString()}</div>
-                      <div className="text-xs text-muted-foreground">Total Imported</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold">{connector.stats.last_batch_size}</div>
-                      <div className="text-xs text-muted-foreground">Last Batch</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold">{Math.round(connector.stats.success_rate * 100)}%</div>
-                      <div className="text-xs text-muted-foreground">Success Rate</div>
-                    </div>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Success Rate</span>
-                      <span>{Math.round(connector.stats.success_rate * 100)}%</span>
-                    </div>
-                    <Progress value={connector.stats.success_rate * 100} className="h-2" />
-                  </div>
-
-                  {/* Sync Info */}
-                  <div className="text-sm space-y-1">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Last Sync:</span>
-                      <span>{new Date(connector.last_sync_at).toLocaleString()}</span>
-                    </div>
-                    {connector.next_sync_at && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Next Sync:</span>
-                        <span>{new Date(connector.next_sync_at).toLocaleString()}</span>
+          {connectors.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <h3 className="text-lg font-semibold mb-2">No Connectors Found</h3>
+                <p className="text-muted-foreground mb-4">Create your first data connector to start importing external content.</p>
+                <Button onClick={() => setShowCreateDialog(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Connector
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {connectors.map((connector) => (
+                <Card key={connector.id} className="relative">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="flex items-center gap-2">
+                          {connector.name}
+                          <Badge variant="outline" className="capitalize">
+                            {connector.provider}
+                          </Badge>
+                        </CardTitle>
+                        <CardDescription>{connector.description}</CardDescription>
                       </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Schedule:</span>
-                      <span className="font-mono text-xs">{connector.sync_schedule}</span>
+                      <Switch 
+                        checked={connector.is_active} 
+                        onCheckedChange={(checked) => toggleConnector(connector.id, checked)}
+                        className="ml-4" 
+                      />
                     </div>
-                  </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Sync Info */}
+                    <div className="text-sm space-y-1">
+                      {connector.last_sync_at && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Last Sync:</span>
+                          <span>{new Date(connector.last_sync_at).toLocaleString()}</span>
+                        </div>
+                      )}
+                      {connector.next_sync_at && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Next Sync:</span>
+                          <span>{new Date(connector.next_sync_at).toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Schedule:</span>
+                        <span className="font-mono text-xs">{connector.sync_schedule}</span>
+                      </div>
+                    </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-2">
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Play className="h-3 w-3 mr-1" />
-                      Run Now
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Settings className="h-3 w-3 mr-1" />
-                      Configure
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <ExternalLink className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    {/* Actions */}
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => runConnector(connector.id)}
+                        disabled={!connector.is_active}
+                        className="flex-1"
+                      >
+                        <Play className="h-3 w-3 mr-1" />
+                        Run Now
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => setSelectedConnector(connector)}
+                        className="flex-1"
+                      >
+                        <Settings className="h-3 w-3 mr-1" />
+                        Configure
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => deleteConnector(connector.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="jobs" className="space-y-6">
-          {/* Recent Sync Jobs */}
           <Card>
             <CardHeader>
               <CardTitle>Recent Sync Jobs</CardTitle>
               <CardDescription>Latest synchronization attempts and their results</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {syncJobs.map((job) => (
-                  <div key={job.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      {getStatusIcon(job.status)}
-                      <div>
-                        <div className="font-medium">{job.connector_name}</div>
-                        <div className="text-sm text-muted-foreground capitalize">
-                          {job.job_type.replace('_', ' ')} • {new Date(job.started_at).toLocaleString()}
+              {syncJobs.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No sync jobs found</p>
+              ) : (
+                <div className="space-y-4">
+                  {syncJobs.map((job) => (
+                    <div key={job.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        {getStatusIcon(job.status)}
+                        <div>
+                          <div className="font-medium">
+                            {connectors.find(c => c.id === job.connector_id)?.name || 'Unknown Connector'}
+                          </div>
+                          <div className="text-sm text-muted-foreground capitalize">
+                            {job.job_type?.replace('_', ' ')} • {new Date(job.created_at).toLocaleString()}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-4">
-                      <Badge className={getStatusColor(job.status)}>
-                        {job.status}
-                      </Badge>
                       
-                      {job.status === 'completed' && (
-                        <div className="text-sm text-right">
-                          <div className="font-medium">
-                            {job.records_processed} processed
+                      <div className="flex items-center gap-4">
+                        <Badge className={getStatusColor(job.status)}>
+                          {job.status}
+                        </Badge>
+                        
+                        {job.status === 'completed' && (
+                          <div className="text-sm text-right">
+                            <div className="font-medium">
+                              {job.records_processed || 0} processed
+                            </div>
+                            <div className="text-muted-foreground">
+                              {job.records_created || 0} created, {job.records_updated || 0} updated
+                            </div>
                           </div>
-                          <div className="text-muted-foreground">
-                            {job.records_created} created, {job.records_updated} updated
+                        )}
+                        
+                        {job.completed_at && job.started_at && (
+                          <div className="text-xs text-muted-foreground">
+                            {formatDuration(job.started_at, job.completed_at)}
                           </div>
-                        </div>
-                      )}
-                      
-                      {job.completed_at && (
-                        <div className="text-xs text-muted-foreground">
-                          {formatDuration(job.started_at, job.completed_at)}
-                        </div>
-                      )}
-                      
-                      {job.error_details && (
-                        <div className="text-sm text-red-600 max-w-xs truncate">
-                          {job.error_details.message}
-                        </div>
-                      )}
+                        )}
+                        
+                        {job.error_details && (
+                          <div className="text-sm text-red-600 max-w-xs truncate">
+                            {typeof job.error_details === 'string' 
+                              ? job.error_details 
+                              : job.error_details.message || 'Unknown error'
+                            }
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -310,8 +515,36 @@ export function CMSConnectorManager() {
               <CardTitle>Connector Settings</CardTitle>
               <CardDescription>Global configuration for data connectors</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Connector settings panel coming soon...</p>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Default Sync Interval</Label>
+                  <Select defaultValue="6h">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1h">Every Hour</SelectItem>
+                      <SelectItem value="6h">Every 6 Hours</SelectItem>
+                      <SelectItem value="12h">Every 12 Hours</SelectItem>
+                      <SelectItem value="24h">Daily</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Max Concurrent Jobs</Label>
+                  <Input type="number" defaultValue="3" min="1" max="10" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Global Rate Limits</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <Input placeholder="Requests per minute" type="number" defaultValue="60" />
+                  <Input placeholder="Requests per hour" type="number" defaultValue="1000" />
+                  <Input placeholder="Requests per day" type="number" defaultValue="10000" />
+                </div>
+              </div>
+              <Button className="w-full">Save Settings</Button>
             </CardContent>
           </Card>
         </TabsContent>
