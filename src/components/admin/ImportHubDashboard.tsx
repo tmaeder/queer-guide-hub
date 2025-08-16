@@ -8,12 +8,13 @@ import { useImportHub, ImportJob } from '@/hooks/useImportHub';
 import { 
   Upload, Database, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, 
   Clock, RefreshCw, Eye, Download, X, Play, Pause,
-  FileText, Search, BarChart3, Activity, Zap, Package, MapPin
+  FileText, Search, BarChart3, Activity, Zap, Package, MapPin, Rss
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ImportJobCreator } from './ImportJobCreator';
 import { ValidationReport } from './ValidationReport';
 import { VenueImportQuickActions } from './VenueImportQuickActions';
+import { NewsSourcesManager } from './NewsSourcesManager';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const ImportHubDashboard = () => {
@@ -269,14 +270,18 @@ export const ImportHubDashboard = () => {
         </Card>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-card">
+          <TabsList className="grid w-full grid-cols-6 bg-card">
             <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-background">
               <BarChart3 className="h-4 w-4" />
               Analytics
             </TabsTrigger>
             <TabsTrigger value="venues" className="gap-2 data-[state=active]:bg-background">
               <MapPin className="h-4 w-4" />
-              Venue Imports
+              Venues
+            </TabsTrigger>
+            <TabsTrigger value="news" className="gap-2 data-[state=active]:bg-background">
+              <Rss className="h-4 w-4" />
+              News Sources
             </TabsTrigger>
             <TabsTrigger value="active" className="gap-2 data-[state=active]:bg-background">
               <Activity className="h-4 w-4" />
@@ -344,6 +349,10 @@ export const ImportHubDashboard = () => {
 
           <TabsContent value="venues" className="space-y-6">
             <VenueImportQuickActions />
+          </TabsContent>
+
+          <TabsContent value="news" className="space-y-6">
+            <NewsSourcesManager />
           </TabsContent>
 
           <TabsContent value="active" className="space-y-6">
