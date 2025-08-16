@@ -246,10 +246,10 @@ export function Header() {
                 {/* Main navigation */}
                 {navigationSections.map(section => <div key={section.title} className="mb-6">
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">{section.title}</h3>
-                    <div className="space-y-1">
-                      {section.items.map(item => <Button key={item.to} variant="ghost" className="w-full justify-start" onClick={() => handleMenuItemClick(item.to)}>
-                          <item.icon className="h-4 w-4 mr-3" />
-                          {item.label}
+                    <div className="grid grid-cols-3 gap-2 p-2">
+                      {section.items.map(item => <Button key={item.to} variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => handleMenuItemClick(item.to)}>
+                          <item.icon className="h-4 w-4" />
+                          <span className="text-xs">{item.label}</span>
                         </Button>)}
                     </div>
                   </div>)}
