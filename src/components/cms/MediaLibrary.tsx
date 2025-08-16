@@ -99,8 +99,8 @@ export function MediaLibrary() {
     try {
       setLoading(true);
       
-      // Fetch media with usage count
-      const { data: mediaData, error } = await supabase
+      // Fetch from cms_media table first
+      const { data: cmsMediaData, error: cmsError } = await supabase
         .from('cms_media')
         .select(`
           *,
@@ -111,18 +111,63 @@ export function MediaLibrary() {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (cmsError) throw cmsError;
 
-      // Process media data to include usage information
-      const processedMedia = mediaData.map(item => ({
+      // Fetch all files from storage buckets
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from('adult-model-images')
+        .list('', { limit: 1000 });
+
+      const { data: cityData, error: cityError } = await supabase.storage
+        .from('city-images')
+        .list('', { limit: 1000 });
+
+      const { data: tagData, error: tagError } = await supabase.storage
+        .from('tag-images')
+        .list('', { limit: 1000 });
+
+      // Process CMS media data
+      const processCmsMedia = (cmsMediaData || []).map(item => ({
         ...item,
         usage_count: item.cms_content_media?.length || 0,
         content_items: item.cms_content_media?.map((rel: any) => 
           rel.cms_content?.title || 'Untitled'
-        ).filter(Boolean) || []
+        ).filter(Boolean) || [],
+        source: 'cms'
       }));
 
-      setMedia(processedMedia);
+      // Process storage files
+      const processStorageFiles = (files: any[], bucket: string) => {
+        return (files || []).map(file => ({
+          id: `${bucket}-${file.name}`,
+          filename: file.name,
+          original_filename: file.name,
+          mime_type: file.metadata?.mimetype || 'application/octet-stream',
+          file_size: file.metadata?.size || 0,
+          width: file.metadata?.width,
+          height: file.metadata?.height,
+          storage_path: file.name,
+          uploaded_by: 'system',
+          created_at: file.created_at || file.updated_at,
+          alt_text: {},
+          caption: {},
+          usage_count: 0,
+          content_items: [],
+          source: bucket,
+          bucket: bucket
+        }));
+      };
+
+      const storageFiles = [
+        ...processStorageFiles(storageData, 'adult-model-images'),
+        ...processStorageFiles(cityData, 'city-images'),
+        ...processStorageFiles(tagData, 'tag-images')
+      ];
+
+      // Combine all media
+      const allMedia = [...processCmsMedia, ...storageFiles];
+      
+      setMedia(allMedia);
     } catch (error) {
       console.error('Error fetching media:', error);
       toast({
@@ -271,8 +316,11 @@ export function MediaLibrary() {
   };
 
   const getImageUrl = (item: MediaItem) => {
+    // Determine the correct bucket
+    const bucket = (item as any).bucket || 'cms-media';
+    
     const { data } = supabase.storage
-      .from('cms-media')
+      .from(bucket)
       .getPublicUrl(item.storage_path);
     return data.publicUrl;
   };
