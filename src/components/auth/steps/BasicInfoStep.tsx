@@ -42,11 +42,11 @@ export default function BasicInfoStep({ data, updateData }: BasicInfoStepProps) 
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="Create a secure password (min. 6 characters)"
+            placeholder="Create a secure password (min. 8 characters)"
             value={data.password}
             onChange={(e) => updateData({ password: e.target.value })}
             required
-            minLength={6}
+            minLength={8}
           />
           <Button
             type="button"
@@ -86,8 +86,17 @@ export default function BasicInfoStep({ data, updateData }: BasicInfoStepProps) 
       <div className="mt-6 p-4 bg-muted/50 rounded-lg">
         <h4 className="font-medium mb-2">Password Requirements:</h4>
         <ul className="text-sm text-muted-foreground space-y-1">
-          <li className={data.password.length >= 6 ? 'text-green-600' : ''}>
-            • At least 6 characters long
+          <li className={data.password.length >= 8 ? 'text-green-600' : ''}>
+            • At least 8 characters long
+          </li>
+          <li className={/(?=.*[a-z])/.test(data.password) ? 'text-green-600' : ''}>
+            • One lowercase letter
+          </li>
+          <li className={/(?=.*[A-Z])/.test(data.password) ? 'text-green-600' : ''}>
+            • One uppercase letter
+          </li>
+          <li className={/(?=.*\d)/.test(data.password) ? 'text-green-600' : ''}>
+            • One number
           </li>
           <li className={data.password === data.confirmPassword && data.password ? 'text-green-600' : ''}>
             • Passwords match

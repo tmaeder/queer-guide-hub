@@ -5069,6 +5069,10 @@ export type Database = {
           | { requesting_user_id: string; target_user_id: string }
         Returns: boolean
       }
+      can_view_user_location: {
+        Args: { requesting_user_id: string; target_user_id: string }
+        Returns: boolean
+      }
       check_rate_limit: {
         Args: {
           identifier: string

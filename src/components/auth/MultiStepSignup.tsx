@@ -112,8 +112,13 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
           setError('Passwords do not match');
           return false;
         }
-        if (data.password.length < 6) {
-          setError('Password must be at least 6 characters long');
+        if (data.password.length < 8) {
+          setError('Password must be at least 8 characters long');
+          return false;
+        }
+        // Enhanced password security requirements
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(data.password)) {
+          setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
           return false;
         }
         break;
@@ -174,7 +179,7 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
         if (error.message.includes('User already registered')) {
           setError('An account with this email already exists. Please sign in instead.');
         } else if (error.message.includes('Password should be at least')) {
-          setError('Password must be at least 6 characters long');
+          setError('Password must be at least 8 characters long with uppercase, lowercase, and number');
         } else {
           setError(error.message);
         }
