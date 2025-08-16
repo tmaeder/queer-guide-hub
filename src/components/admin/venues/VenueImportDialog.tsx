@@ -485,7 +485,7 @@ export function VenueImportDialog({
                         <SelectValue placeholder="Any rating" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any rating</SelectItem>
+                        <SelectItem value="0">Any rating</SelectItem>
                         <SelectItem value="3.0">3.0+</SelectItem>
                         <SelectItem value="3.5">3.5+</SelectItem>
                         <SelectItem value="4.0">4.0+</SelectItem>
