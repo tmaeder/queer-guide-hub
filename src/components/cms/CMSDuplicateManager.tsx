@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, Check, X, Eye, Merge, RotateCcw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 export function CMSDuplicateManager() {
-  const [duplicateCandidates] = useState([
+  const [duplicateCandidates, setDuplicateCandidates] = useState([
     {
       id: '1',
       content_id_1: 'content-1',
@@ -95,6 +97,7 @@ export function CMSDuplicateManager() {
 
   const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null);
   const [reviewReason, setReviewReason] = useState('');
+  const [isRunningDetection, setIsRunningDetection] = useState(false);
 
   const pendingCandidates = duplicateCandidates.filter(c => c.status === 'pending');
   const reviewedCandidates = duplicateCandidates.filter(c => c.status !== 'pending');
@@ -113,6 +116,132 @@ export function CMSDuplicateManager() {
       case 'deferred': return 'bg-gray-100 text-gray-800 border-gray-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
+  };
+
+  const runDuplicateDetection = async () => {
+    setIsRunningDetection(true);
+    try {
+      // Fetch content items from multiple tables to check for duplicates
+      const { data: events, error: eventsError } = await supabase
+        .from('events')
+        .select('id, title, created_at, description')
+        .limit(100);
+
+      const { data: venues, error: venuesError } = await supabase
+        .from('venues')
+        .select('id, name, created_at, description')
+        .limit(100);
+
+      const { data: personalities, error: personalitiesError } = await supabase
+        .from('personalities')
+        .select('id, name, created_at, description')
+        .limit(100);
+
+      if (eventsError || venuesError || personalitiesError) {
+        console.error('Error fetching content:', { eventsError, venuesError, personalitiesError });
+        toast.error('Failed to fetch content for duplicate detection');
+        return;
+      }
+
+      // Simple duplicate detection logic
+      const newCandidates: any[] = [];
+      
+      // Check events for duplicates
+      if (events) {
+        for (let i = 0; i < events.length; i++) {
+          for (let j = i + 1; j < events.length; j++) {
+            const event1 = events[i];
+            const event2 = events[j];
+            const titleSimilarity = calculateTitleSimilarity(event1.title || '', event2.title || '');
+            
+            if (titleSimilarity > 0.7) {
+              newCandidates.push({
+                id: `event-${event1.id}-${event2.id}`,
+                content_id_1: event1.id,
+                content_id_2: event2.id,
+                similarity_score: titleSimilarity,
+                status: 'pending',
+                matching_criteria: {
+                  title_similarity: titleSimilarity,
+                  location_match: false,
+                  date_overlap: false,
+                  external_id_match: false,
+                },
+                content_1: {
+                  title: { en: event1.title || 'Unknown' },
+                  content_type: 'event',
+                  created_at: event1.created_at,
+                  source: 'database',
+                },
+                content_2: {
+                  title: { en: event2.title || 'Unknown' },
+                  content_type: 'event',
+                  created_at: event2.created_at,
+                  source: 'database',
+                },
+                created_at: new Date().toISOString(),
+              });
+            }
+          }
+        }
+      }
+
+      // Check venues for duplicates
+      if (venues) {
+        for (let i = 0; i < venues.length; i++) {
+          for (let j = i + 1; j < venues.length; j++) {
+            const venue1 = venues[i];
+            const venue2 = venues[j];
+            const nameSimilarity = calculateTitleSimilarity(venue1.name || '', venue2.name || '');
+            
+            if (nameSimilarity > 0.7) {
+              newCandidates.push({
+                id: `venue-${venue1.id}-${venue2.id}`,
+                content_id_1: venue1.id,
+                content_id_2: venue2.id,
+                similarity_score: nameSimilarity,
+                status: 'pending',
+                matching_criteria: {
+                  title_similarity: nameSimilarity,
+                  location_match: false,
+                  date_overlap: false,
+                  external_id_match: false,
+                },
+                content_1: {
+                  title: { en: venue1.name || 'Unknown' },
+                  content_type: 'venue',
+                  created_at: venue1.created_at,
+                  source: 'database',
+                },
+                content_2: {
+                  title: { en: venue2.name || 'Unknown' },
+                  content_type: 'venue',
+                  created_at: venue2.created_at,
+                  source: 'database',
+                },
+                created_at: new Date().toISOString(),
+              });
+            }
+          }
+        }
+      }
+
+      setDuplicateCandidates(newCandidates);
+      toast.success(`Found ${newCandidates.length} potential duplicate${newCandidates.length !== 1 ? 's' : ''}`);
+    } catch (error) {
+      console.error('Error running duplicate detection:', error);
+      toast.error('Failed to run duplicate detection');
+    } finally {
+      setIsRunningDetection(false);
+    }
+  };
+
+  const calculateTitleSimilarity = (title1: string, title2: string): number => {
+    const words1 = title1.toLowerCase().split(/\s+/);
+    const words2 = title2.toLowerCase().split(/\s+/);
+    const allWords = new Set([...words1, ...words2]);
+    const intersection = words1.filter(word => words2.includes(word));
+    return intersection.length / allWords.size;
   };
 
   const handleDecision = (candidateId: string, decision: string) => {
@@ -279,9 +408,13 @@ export function CMSDuplicateManager() {
           <h2 className="text-2xl font-bold">Duplicate Detection</h2>
           <p className="text-muted-foreground">Review and manage potential duplicate content</p>
         </div>
-        <Button variant="outline">
-          <RotateCcw className="h-4 w-4 mr-2" />
-          Run Detection
+        <Button 
+          variant="outline" 
+          onClick={runDuplicateDetection}
+          disabled={isRunningDetection}
+        >
+          <RotateCcw className={`h-4 w-4 mr-2 ${isRunningDetection ? 'animate-spin' : ''}`} />
+          {isRunningDetection ? 'Running...' : 'Run Detection'}
         </Button>
       </div>
 
