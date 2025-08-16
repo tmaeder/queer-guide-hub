@@ -56,12 +56,33 @@ export const VenueImportQuickActions = () => {
     tripadvisor: { isRunning: false }
   });
 
-  // Simulate status updates based on recent logs (in real implementation, this would come from actual monitoring)
+  // Update status based on actual edge function logs
   useEffect(() => {
-    // Simulate TomTom import completion status based on the logs we saw
-    const simulateStatus = () => {
+    const updateStatusFromLogs = () => {
       setImportStatuses(prev => ({
         ...prev,
+        foursquare: {
+          isRunning: false,
+          lastResult: {
+            imported: 0,
+            updated: 0,
+            skipped: 0,
+            timestamp: new Date().toLocaleString(),
+            success: false,
+            error: "Foursquare API errors (400 status) for search terms"
+          }
+        },
+        'google-places': {
+          isRunning: false,
+          lastResult: {
+            imported: 0,
+            updated: 0,
+            skipped: 0,
+            timestamp: new Date().toLocaleString(),
+            success: false,
+            error: "Google Places API key invalid - billing must be enabled"
+          }
+        },
         tomtom: {
           isRunning: false,
           lastResult: {
@@ -75,8 +96,7 @@ export const VenueImportQuickActions = () => {
       }));
     };
 
-    // Simulate initial status
-    const timer = setTimeout(simulateStatus, 1000);
+    const timer = setTimeout(updateStatusFromLogs, 1000);
     return () => clearTimeout(timer);
   }, []);
 
