@@ -8,20 +8,42 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 function usePublishableKey() {
-  const [key, setKey] = useState<string | null>(() => localStorage.getItem("STRIPE_PUBLISHABLE_KEY"));
+  const [key, setKey] = useState<string | null>(null);
   const [temp, setTemp] = useState("");
+  const [keyLoaded, setKeyLoaded] = useState(false);
+
+  // Secure key management - no localStorage storage of API keys
+  useEffect(() => {
+    const loadSecureKey = async () => {
+      try {
+        // Try to get key from secure environment or edge function
+        const { data, error } = await supabase.functions.invoke('get-stripe-publishable-key');
+        if (data?.publishable_key && !error) {
+          setKey(data.publishable_key);
+        }
+      } catch (error) {
+        console.warn('Could not load Stripe key from secure source');
+      } finally {
+        setKeyLoaded(true);
+      }
+    };
+    loadSecureKey();
+  }, []);
+
   const save = () => {
-    if (temp) {
-      localStorage.setItem("STRIPE_PUBLISHABLE_KEY", temp);
+    if (temp && temp.startsWith('pk_')) {
+      // Only set for this session - no persistent storage
       setKey(temp);
+      setTemp("");
     }
   };
+  
   const clear = () => {
-    localStorage.removeItem("STRIPE_PUBLISHABLE_KEY");
     setKey(null);
     setTemp("");
   };
-  return { key, temp, setTemp, save, clear };
+  
+  return { key, temp, setTemp, save, clear, keyLoaded };
 }
 
 function SEO() {
@@ -145,7 +167,7 @@ function PaymentStep({ clientSecret }: { clientSecret: string }) {
 
 export default function Donations() {
   const { user } = useAuth();
-  const { key, temp, setTemp, save, clear } = usePublishableKey();
+  const { key, temp, setTemp, save, clear, keyLoaded } = usePublishableKey();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   const stripePromise = useMemo(() => (key ? loadStripe(key) : null), [key]);
@@ -163,16 +185,29 @@ export default function Donations() {
       <h1 className="text-3xl font-bold">Donate to Queer Guide</h1>
       <p className="text-muted-foreground max-w-2xl">Your support helps us maintain a free, community-driven map of queer-friendly places, events, and resources worldwide.</p>
 
-      {!key && (
+      {keyLoaded && !key && (
         <Card className="bg-card border border-border">
           <CardHeader>
-            <CardTitle>Connect Stripe</CardTitle>
+            <CardTitle>⚠️ Secure Stripe Configuration Required</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">Enter your Stripe Publishable Key to enable the Payment Element. You can find it in your Stripe Dashboard (starts with pk_...).</p>
-            <Input placeholder="pk_live_... or pk_test_..." value={temp} onChange={(e) => setTemp(e.target.value)} />
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
+              <p className="text-sm text-yellow-800">
+                <strong>Security Notice:</strong> For security, API keys should be configured server-side. 
+                This temporary input is for development only and keys are not stored persistently.
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground">Enter your Stripe Publishable Key temporarily (starts with pk_...).</p>
+            <Input 
+              placeholder="pk_live_... or pk_test_..." 
+              value={temp} 
+              onChange={(e) => setTemp(e.target.value)}
+              type="password"
+            />
             <div className="flex gap-2">
-              <Button onClick={save} disabled={!temp}>Save key</Button>
+              <Button onClick={save} disabled={!temp || !temp.startsWith('pk_')}>
+                Use Key (Session Only)
+              </Button>
             </div>
           </CardContent>
         </Card>

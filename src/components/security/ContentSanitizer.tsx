@@ -35,33 +35,52 @@ interface ContentSanitizerProps {
   className?: string;
   allowedTags?: string[];
   allowedAttrs?: string[];
+  stripAll?: boolean; // Enhanced security option to strip all HTML
 }
 
 export function ContentSanitizer({ 
   content, 
   className = '', 
-  allowedTags = ['p', 'br', 'strong', 'em', 'u', 'a'],
-  allowedAttrs = ['href', 'target', 'rel', 'src', 'alt', 'title', 'width', 'height'] 
+  allowedTags = ['p', 'br', 'strong', 'em', 'u'],
+  allowedAttrs = ['class', 'id', 'title'],
+  stripAll = false
 }: ContentSanitizerProps) {
   ensureSanitizerHooks();
 
   const sanitizeContent = (html: string) => {
+    // Enhanced security: option to strip all HTML
+    if (stripAll) {
+      return DOMPurify.sanitize(html, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+    }
+
     return DOMPurify.sanitize(html, {
       ALLOWED_TAGS: allowedTags,
       ALLOWED_ATTR: allowedAttrs,
       ALLOW_DATA_ATTR: false,
       ALLOW_ARIA_ATTR: false,
-      FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'iframe'],
-      FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur'],
-      // Allow only HTTPS URLs plus safe schemes and relative links
-      ALLOWED_URI_REGEXP: /^(?:(?:https|mailto|tel):|\/|#)/i,
+      FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'iframe', 'style'],
+      FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'style'],
+      // Stricter URL validation - HTTPS only for external links
+      ALLOWED_URI_REGEXP: /^(?:https:|\/|#)/i,
+      // Remove unknown protocols and javascript: URLs
+      SANITIZE_DOM: true,
+      SANITIZE_NAMED_PROPS: true,
+      KEEP_CONTENT: false, // Don't keep content of forbidden elements
     });
   };
+
+  // Security improvement: avoid dangerouslySetInnerHTML when possible
+  const sanitizedContent = sanitizeContent(content);
+  
+  // If content is just text (no HTML), render as text
+  if (sanitizedContent === content && !content.includes('<')) {
+    return <div className={className}>{content}</div>;
+  }
 
   return (
     <div 
       className={className}
-      dangerouslySetInnerHTML={{ __html: sanitizeContent(content) }}
+      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );
 }
