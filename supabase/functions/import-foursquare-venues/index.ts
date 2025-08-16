@@ -405,10 +405,21 @@ Deno.serve(async (req) => {
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
     console.log(`Request from IP: ${clientIp}`);
     
-    // Parse request body for city selection
+    // Parse request body for enhanced configuration
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
-    const selectedCities = body.cities || ['New York']; // Default to single city for quick testing
-    const limit = Math.min(body.limit || 5, 20); // Limit venues per category to prevent timeouts
+    const config = body.config || {};
+    
+    // Extract configuration with defaults
+    const selectedLocations = config.locations || ['New York, NY'];
+    const searchTerms = config.searchTerms || ['LGBTQ friendly bar', 'gay bar'];
+    const limit = Math.min(config.limit || 5, 20); // Limit venues per search to prevent timeouts
+    const radius = config.radius || 30000;
+    const includeImages = config.includeImages !== false;
+    const includeReviews = config.includeReviews || false;
+    const isReimport = config.isReimport || false;
+    const minRating = config.filters?.minRating;
+    
+    console.log('Import configuration:', { selectedLocations, searchTerms, limit, radius, isReimport });
     
     // Clear timeout on completion
     clearTimeout(timeoutId);
@@ -441,20 +452,19 @@ Deno.serve(async (req) => {
       { name: 'Sydney', lat: -33.8688, lng: 151.2093, country: 'AU' },
     ]
 
-    // Filter cities based on request
-    const citiesToProcess = majorCities.filter(city => 
-      selectedCities.includes(city.name) || selectedCities.includes('all')
-    ).slice(0, 3); // Limit to 3 cities max per request
+    // Process specified locations
+    const locationsToProcess = selectedLocations.slice(0, 5); // Limit to 5 locations max per request
 
-    console.log(`Processing ${citiesToProcess.length} cities: ${citiesToProcess.map(c => c.name).join(', ')}`)
+    console.log(`Processing ${locationsToProcess.length} locations: ${locationsToProcess.join(', ')}`)
 
-    for (const city of citiesToProcess) {
-      console.log(`Searching venues in ${city.name}...`)
+    for (const location of locationsToProcess) {
+      console.log(`Searching venues in ${location}...`)
 
-      for (const [categoryName, categoryId] of Object.entries(FOURSQUARE_CATEGORIES)) {
+      // Use search terms instead of fixed categories
+      for (const searchTerm of searchTerms.slice(0, 3)) { // Limit to 3 search terms per location
         try {
-          // Search for venues using Foursquare Places API with reduced limit
-          const searchUrl = `https://api.foursquare.com/v3/places/search?ll=${city.lat},${city.lng}&radius=30000&categories=${categoryId}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
+          // Use text search with custom search terms
+          const searchUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=${encodeURIComponent(searchTerm)}&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
           
           const response = await fetch(searchUrl, {
             headers: {
@@ -464,16 +474,21 @@ Deno.serve(async (req) => {
           })
 
           if (!response.ok) {
-            console.error(`Foursquare API error for ${city.name} ${categoryName}: ${response.status}`)
+            console.error(`Foursquare API error for ${location} "${searchTerm}": ${response.status}`)
             continue
           }
 
           const data = await response.json()
           const venues: FoursquareVenue[] = data.results || []
 
-          console.log(`Found ${venues.length} ${categoryName} venues in ${city.name}`)
+          console.log(`Found ${venues.length} venues for "${searchTerm}" in ${location}`)
+          
+          // Apply rating filter if specified
+          const filteredVenues = minRating 
+            ? venues.filter(venue => venue.rating && venue.rating >= minRating)
+            : venues;
 
-          for (const venue of venues) {
+          for (const venue of filteredVenues) {
             try {
               // Validate and sanitize venue data
               const sanitizedVenue = sanitizeVenueData(venue);
@@ -485,16 +500,22 @@ Deno.serve(async (req) => {
                 .or(`foursquare_id.eq.${sanitizedVenue.fsq_id},and(data_source.eq.foursquare,external_id.eq.${sanitizedVenue.fsq_id})`)
                 .maybeSingle()
 
+              if (existingVenue && !isReimport) {
+                console.log(`Venue ${sanitizedVenue.name} already exists, skipping...`)
+                continue
+              }
+
               // Get or create city
-              const cityName = venue.location.locality || city.name
-              const countryCode = venue.location.country || city.country
+              const cityName = venue.location.locality || location.split(',')[0].trim()
+              const countryCode = venue.location.country || 'US'
               const cityId = await getOrCreateCity(supabase, cityName, countryCode, venue.geocodes.main.latitude, venue.geocodes.main.longitude)
 
-              // Map category
-              const { categorySlug, categoryId: venueCategoryId } = await mapVenueCategory(supabase, categoryName)
+              // Determine category from venue categories or default to Gay Bar
+              const venueCategoryName = venue.categories?.[0]?.name || 'Gay Bar'
+              const { categorySlug, categoryId: venueCategoryId } = await mapVenueCategory(supabase, venueCategoryName)
 
               // Map amenities and services
-              const { amenityIds, serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, venue, categoryName)
+              const { amenityIds, serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, venue, venueCategoryName)
 
               // Process photos from Foursquare
               const imageUrls = venue.photos?.slice(0, 3).map(photo => {

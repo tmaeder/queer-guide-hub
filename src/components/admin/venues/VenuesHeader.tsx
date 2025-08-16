@@ -1,4 +1,4 @@
-import { ArrowLeft, Plus, Download, ChevronDown, RefreshCw } from "lucide-react";
+import { ArrowLeft, Plus, Download, ChevronDown, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,14 +7,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { VenuesCsvImport } from "@/components/venues/VenuesCsvImport";
+import { VenueImportDialog } from "./VenueImportDialog";
+import { useState } from "react";
 
 interface VenuesHeaderProps {
   onBack: () => void;
   onAddVenue: () => void;
-  onFoursquareImport: (isReimport?: boolean) => void;
-  onTripAdvisorImport: (isReimport?: boolean) => void;
-  onTomTomImport: (isReimport?: boolean) => void;
-  onGooglePlacesImport: (isReimport?: boolean) => void;
+  onFoursquareImport: (config: any) => void;
+  onTripAdvisorImport: (config: any) => void;
+  onTomTomImport: (config: any) => void;
+  onGooglePlacesImport: (config: any) => void;
   onImportComplete: () => void;
   isImporting: boolean;
   isImportingTripAdvisor: boolean;
@@ -35,6 +37,28 @@ export function VenuesHeader({
   isImportingTomTom,
   isImportingGooglePlaces
 }: VenuesHeaderProps) {
+  const [importDialog, setImportDialog] = useState<{
+    open: boolean;
+    provider: 'foursquare' | 'google-places' | 'tomtom' | 'tripadvisor' | null;
+  }>({ open: false, provider: null });
+
+  const handleImportConfig = (config: any) => {
+    switch (importDialog.provider) {
+      case 'foursquare':
+        onFoursquareImport(config);
+        break;
+      case 'tripadvisor':
+        onTripAdvisorImport(config);
+        break;
+      case 'tomtom':
+        onTomTomImport(config);
+        break;
+      case 'google-places':
+        onGooglePlacesImport(config);
+        break;
+    }
+    setImportDialog({ open: false, provider: null });
+  };
   return (
     <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-4">
@@ -50,105 +74,49 @@ export function VenuesHeader({
       
       <div className="flex flex-col gap-2 md:flex-row">
         <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={isImporting}
-                className="text-xs"
-              >
-                <Download className="h-3 w-3 mr-1" />
-                {isImporting ? "Importing..." : "Foursquare"}
-                <ChevronDown className="h-3 w-3 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => onFoursquareImport(false)}>
-                <Download className="h-3 w-3 mr-2" />
-                Import New
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onFoursquareImport(true)}>
-                <RefreshCw className="h-3 w-3 mr-2" />
-                Re-import/Update
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={isImporting}
+            className="text-xs"
+            onClick={() => setImportDialog({ open: true, provider: 'foursquare' })}
+          >
+            <Search className="h-3 w-3 mr-1" />
+            {isImporting ? "Importing..." : "Foursquare"}
+          </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={isImportingTripAdvisor}
-                className="text-xs"
-              >
-                <Download className="h-3 w-3 mr-1" />
-                {isImportingTripAdvisor ? "Importing..." : "TripAdvisor"}
-                <ChevronDown className="h-3 w-3 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => onTripAdvisorImport(false)}>
-                <Download className="h-3 w-3 mr-2" />
-                Import New
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onTripAdvisorImport(true)}>
-                <RefreshCw className="h-3 w-3 mr-2" />
-                Re-import/Update
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={isImportingTripAdvisor}
+            className="text-xs"
+            onClick={() => setImportDialog({ open: true, provider: 'tripadvisor' })}
+          >
+            <Search className="h-3 w-3 mr-1" />
+            {isImportingTripAdvisor ? "Importing..." : "TripAdvisor"}
+          </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={isImportingTomTom}
-                className="text-xs"
-              >
-                <Download className="h-3 w-3 mr-1" />
-                {isImportingTomTom ? "Importing..." : "TomTom"}
-                <ChevronDown className="h-3 w-3 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => onTomTomImport(false)}>
-                <Download className="h-3 w-3 mr-2" />
-                Import New
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onTomTomImport(true)}>
-                <RefreshCw className="h-3 w-3 mr-2" />
-                Re-import/Update
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={isImportingTomTom}
+            className="text-xs"
+            onClick={() => setImportDialog({ open: true, provider: 'tomtom' })}
+          >
+            <Search className="h-3 w-3 mr-1" />
+            {isImportingTomTom ? "Importing..." : "TomTom"}
+          </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={isImportingGooglePlaces}
-                className="text-xs"
-              >
-                <Download className="h-3 w-3 mr-1" />
-                {isImportingGooglePlaces ? "Importing..." : "Google Places"}
-                <ChevronDown className="h-3 w-3 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => onGooglePlacesImport(false)}>
-                <Download className="h-3 w-3 mr-2" />
-                Import New
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onGooglePlacesImport(true)}>
-                <RefreshCw className="h-3 w-3 mr-2" />
-                Re-import/Update
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={isImportingGooglePlaces}
+            className="text-xs"
+            onClick={() => setImportDialog({ open: true, provider: 'google-places' })}
+          >
+            <Search className="h-3 w-3 mr-1" />
+            {isImportingGooglePlaces ? "Importing..." : "Google Places"}
+          </Button>
         </div>
         
         <div className="flex gap-2">
@@ -159,6 +127,21 @@ export function VenuesHeader({
           </Button>
         </div>
       </div>
+
+      {importDialog.provider && (
+        <VenueImportDialog
+          open={importDialog.open}
+          onOpenChange={(open) => setImportDialog({ open, provider: importDialog.provider })}
+          provider={importDialog.provider}
+          onImport={handleImportConfig}
+          isImporting={
+            importDialog.provider === 'foursquare' ? isImporting :
+            importDialog.provider === 'tripadvisor' ? isImportingTripAdvisor :
+            importDialog.provider === 'tomtom' ? isImportingTomTom :
+            isImportingGooglePlaces
+          }
+        />
+      )}
     </div>
   );
 }
