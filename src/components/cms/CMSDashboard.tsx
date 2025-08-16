@@ -19,6 +19,7 @@ import { UniversalContentEditor } from './UniversalContentEditor';
 import { UniversalContentCreator } from './UniversalContentCreator';
 import { CMSListView } from './CMSListView';
 import { MediaLibrary } from './MediaLibrary';
+import { ImageOptimizationManager } from '@/components/admin/ImageOptimizationManager';
 export function CMSDashboard() {
   const navigate = useNavigate();
   const {
@@ -128,14 +129,13 @@ export function CMSDashboard() {
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="universal">All Content</TabsTrigger>
           <TabsTrigger value="list">List View</TabsTrigger>
-          
-          
           <TabsTrigger value="library">Media Library</TabsTrigger>
           <TabsTrigger value="connectors">Connectors</TabsTrigger>
           <TabsTrigger value="duplicates">Duplicates</TabsTrigger>
+          <TabsTrigger value="images">Image Optimizer</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -280,6 +280,10 @@ export function CMSDashboard() {
 
         <TabsContent value="duplicates">
           <CMSDuplicateManager />
+        </TabsContent>
+
+        <TabsContent value="images">
+          <ImageOptimizationManager />
         </TabsContent>
 
         <TabsContent value="settings">

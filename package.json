@@ -66,6 +66,7 @@
     "dompurify": "^3.2.6",
     "embla-carousel-react": "^8.3.0",
     "fabric": "^6.7.1",
+    "glob": "^11.0.3",
     "i18next": "^25.3.2",
     "i18next-browser-languagedetector": "^8.2.0",
     "input-otp": "^1.2.4",
