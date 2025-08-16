@@ -12,10 +12,11 @@ import { useImportHub } from '@/hooks/useImportHub';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Upload, FileText, Globe, Database, AlertTriangle, Info, Eye, 
-  Settings, Filter, CheckCircle, X, Plus
+  Settings, Filter, CheckCircle, X, Plus, RefreshCw
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { VenueImportDialog } from './venues/VenueImportDialog';
 
 const IMPORT_TYPES = {
   'venues-csv': {
@@ -23,6 +24,30 @@ const IMPORT_TYPES = {
     description: 'Import venue data from CSV files',
     requiredFields: ['name', 'address', 'city', 'country'],
     optionalFields: ['description', 'website', 'phone', 'latitude', 'longitude', 'tags']
+  },
+  'venues-foursquare': {
+    label: 'Venues - Foursquare API',
+    description: 'Import venues from Foursquare with custom search terms',
+    requiredFields: ['locations', 'search_terms'],
+    optionalFields: ['limit', 'radius', 'categories', 'filters']
+  },
+  'venues-google-places': {
+    label: 'Venues - Google Places API',
+    description: 'Import venues from Google Places with custom search terms',
+    requiredFields: ['locations', 'search_terms'],
+    optionalFields: ['limit', 'radius', 'categories', 'filters']
+  },
+  'venues-tomtom': {
+    label: 'Venues - TomTom API',
+    description: 'Import venues from TomTom with custom search terms',
+    requiredFields: ['locations', 'search_terms'],
+    optionalFields: ['limit', 'radius', 'categories', 'filters']
+  },
+  'venues-tripadvisor': {
+    label: 'Venues - TripAdvisor API',
+    description: 'Import venues from TripAdvisor with custom search terms',
+    requiredFields: ['locations', 'search_terms'],
+    optionalFields: ['limit', 'radius', 'categories', 'filters']
   },
   'events-csv': {
     label: 'Events CSV',
@@ -74,8 +99,19 @@ export const ImportJobCreator = () => {
   const [filters, setFilters] = useState<Record<string, any>>({});
   const [fileName, setFileName] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showVenueImportDialog, setShowVenueImportDialog] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isVenueApiImport = importType.startsWith('venues-') && !importType.endsWith('-csv');
+
+  const getVenueProvider = (): 'foursquare' | 'google-places' | 'tomtom' | 'tripadvisor' | null => {
+    if (importType === 'venues-foursquare') return 'foursquare';
+    if (importType === 'venues-google-places') return 'google-places';
+    if (importType === 'venues-tomtom') return 'tomtom';
+    if (importType === 'venues-tripadvisor') return 'tripadvisor';
+    return null;
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -166,6 +202,12 @@ export const ImportJobCreator = () => {
       return;
     }
 
+    // Handle venue API imports differently
+    if (isVenueApiImport) {
+      setShowVenueImportDialog(true);
+      return;
+    }
+
     if (sourceType === 'csv' && !csvData) {
       toast({
         title: 'Missing CSV Data',
@@ -208,6 +250,28 @@ export const ImportJobCreator = () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+
+    } catch (error) {
+      // Error handled by the hook
+    }
+  };
+
+  const handleVenueImport = async (config: any) => {
+    try {
+      await createImportJob(importType, 'api', {
+        duplicateStrategy,
+        uniqueKeyFields,
+        validationRules,
+        filters,
+        venueImportConfig: config
+      });
+
+      // Reset form
+      setImportType('');
+      setShowVenueImportDialog(false);
+      setUniqueKeyFields([]);
+      setValidationRules({});
+      setFilters({});
 
     } catch (error) {
       // Error handled by the hook
@@ -266,14 +330,15 @@ export const ImportJobCreator = () => {
           </div>
 
           {/* Source Type */}
-          <div className="space-y-3">
-            <Label>Data Source</Label>
-            <Tabs value={sourceType} onValueChange={(value) => setSourceType(value as any)}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="csv" className="gap-2">
-                  <FileText className="h-4 w-4" />
-                  CSV File
-                </TabsTrigger>
+          {!isVenueApiImport && (
+            <div className="space-y-3">
+              <Label>Data Source</Label>
+              <Tabs value={sourceType} onValueChange={(value) => setSourceType(value as any)}>
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="csv" className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    CSV File
+                  </TabsTrigger>
                 <TabsTrigger value="api" className="gap-2">
                   <Database className="h-4 w-4" />
                   API Import
@@ -373,6 +438,7 @@ export const ImportJobCreator = () => {
               </TabsContent>
             </Tabs>
           </div>
+          )}
 
           {/* Duplicate Handling */}
           <div className="space-y-3">
@@ -483,46 +549,48 @@ export const ImportJobCreator = () => {
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
+          {/* Venue API Import Notice */}
+          {isVenueApiImport && (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                This import type will open a specialized configuration dialog for {getVenueProvider()} venue imports with customizable search terms and locations.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="flex items-center justify-between pt-6">
             <Button
               onClick={createImport}
-              disabled={loading || !importType || (sourceType === 'csv' && !csvData) || (sourceType === 'api' && !apiEndpoint)}
-              className="flex-1"
+              disabled={loading}
+              className="gap-2"
             >
               {loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
-                  Creating Import Job...
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Creating Import...
                 </>
               ) : (
                 <>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Create Import Job
+                  <CheckCircle className="h-4 w-4" />
+                  {isVenueApiImport ? 'Configure Import' : 'Create Import Job'}
                 </>
               )}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setImportType('');
-                setCsvData('');
-                setCsvPreview(null);
-                setFileName('');
-                setApiEndpoint('');
-                setUniqueKeyFields([]);
-                setValidationRules({});
-                setFilters({});
-                if (fileInputRef.current) {
-                  fileInputRef.current.value = '';
-                }
-              }}
-            >
-              Reset
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Venue Import Dialog */}
+      {showVenueImportDialog && getVenueProvider() && (
+        <VenueImportDialog
+          open={showVenueImportDialog}
+          onOpenChange={setShowVenueImportDialog}
+          provider={getVenueProvider()!}
+          onImport={handleVenueImport}
+          isImporting={loading}
+        />
+      )}
     </div>
   );
 };

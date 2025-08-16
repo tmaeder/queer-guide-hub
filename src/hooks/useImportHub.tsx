@@ -143,10 +143,29 @@ export const useImportHub = () => {
       fileName?: string;
       fileSize?: number;
       apiEndpoint?: string;
+      venueImportConfig?: any;
     } = {}
   ): Promise<string> => {
     setLoading(true);
     try {
+      // Handle venue API imports specially
+      if (type.startsWith('venues-') && !type.endsWith('-csv') && config.venueImportConfig) {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const provider = type.replace('venues-', '');
+        const functionName = `import-${provider}-venues`;
+        const { data, error } = await supabase.functions.invoke(functionName, {
+          body: { config: config.venueImportConfig }
+        });
+        
+        if (error) throw error;
+        toast({
+          title: 'Import Started',
+          description: `${provider} venue import has been initiated`,
+        });
+        await loadJobs();
+        await loadStatistics();
+        return 'venue-import-completed';
+      }
       // Generate file hash if source data is provided
       let fileHash: string | undefined;
       if (config.sourceData && typeof config.sourceData === 'string') {
@@ -361,4 +380,18 @@ export const useImportHub = () => {
     refreshJobs: loadJobs,
     refreshStatistics: loadStatistics
   };
+};
+
+const handleVenueImport = async (provider: string, config: any) => {
+  const { supabase } = await import('@/integrations/supabase/client');
+  const functionName = `import-${provider}-venues`;
+  const { data, error } = await supabase.functions.invoke(functionName, {
+    body: { config }
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
 };
