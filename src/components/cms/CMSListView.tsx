@@ -19,6 +19,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CMSAdvancedFilters } from './CMSAdvancedFilters';
@@ -268,12 +269,52 @@ export function CMSListView({
                       </TableCell>
                       
                       <TableCell>
-                        <Badge 
-                          className={getStatusColor(item.status || item.workflow_state || 'unknown')}
-                          variant="outline"
+                        <Select
+                          value={item.status || item.workflow_state || 'unknown'}
+                          onValueChange={(newStatus) => {
+                            // Update the item status directly
+                            const updatedItem = { ...item, status: newStatus, workflow_state: newStatus };
+                            onEdit(updatedItem);
+                          }}
                         >
-                          {item.status || item.workflow_state || 'unknown'}
-                        </Badge>
+                          <SelectTrigger className="w-32 h-8">
+                            <SelectValue>
+                              <Badge 
+                                className={getStatusColor(item.status || item.workflow_state || 'unknown')}
+                                variant="outline"
+                              >
+                                {item.status || item.workflow_state || 'unknown'}
+                              </Badge>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="draft">
+                              <Badge className={getStatusColor('draft')} variant="outline">
+                                draft
+                              </Badge>
+                            </SelectItem>
+                            <SelectItem value="published">
+                              <Badge className={getStatusColor('published')} variant="outline">
+                                published
+                              </Badge>
+                            </SelectItem>
+                            <SelectItem value="archived">
+                              <Badge className={getStatusColor('archived')} variant="outline">
+                                archived
+                              </Badge>
+                            </SelectItem>
+                            <SelectItem value="pending">
+                              <Badge className={getStatusColor('pending')} variant="outline">
+                                pending
+                              </Badge>
+                            </SelectItem>
+                            <SelectItem value="review">
+                              <Badge className={getStatusColor('review')} variant="outline">
+                                review
+                              </Badge>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       
                       <TableCell>
