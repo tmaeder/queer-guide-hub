@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImageFile {
   fileName: string;
@@ -61,36 +62,31 @@ export function ImageOptimizationManager() {
   const { toast } = useToast();
   const { isAdmin } = useAdminRoles();
 
-  // Mock functions - in real implementation these would call the optimization scripts
   const scanForImages = async () => {
     setIsScanning(true);
     setProgress(0);
     
     try {
-      // Simulate API call to scan for images
-      const mockImages: ImageFile[] = [
-        {
-          fileName: 'icon-512.png',
-          baseName: 'icon-512',
-          originalSize: 45623,
-          status: 'pending'
-        },
-        {
-          fileName: 'maskable-512.png', 
-          baseName: 'maskable-512',
-          originalSize: 52341,
-          status: 'pending'
-        },
-        // Add more mock images from your actual project
-      ];
+      // Call the image scanning edge function
+      const { data, error } = await supabase.functions.invoke('scan-project-images');
       
-      setImages(mockImages);
+      if (error) throw error;
+      
+      const foundImages: ImageFile[] = data.images.map((img: any) => ({
+        fileName: img.fileName,
+        baseName: img.baseName,
+        originalSize: img.size,
+        status: 'pending' as const
+      }));
+      
+      setImages(foundImages);
       toast({
         title: "Scan Complete",
-        description: `Found ${mockImages.length} images ready for optimization`,
+        description: `Found ${foundImages.length} images ready for optimization`,
       });
       
     } catch (error) {
+      console.error('Scan error:', error);
       toast({
         title: "Scan Failed",
         description: "Failed to scan for images",
