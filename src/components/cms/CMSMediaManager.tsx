@@ -1,55 +1,133 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Image, File, Trash2, Download, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export function CMSMediaManager() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedRole, setSelectedRole] = useState('all');
+  const [mediaFiles, setMediaFiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - in production this would come from a hook
-  const mediaFiles = [
-    {
-      id: '1',
-      filename: 'hero-image.jpg',
-      original_filename: 'Hero Image for Homepage.jpg',
-      mime_type: 'image/jpeg',
-      file_size: 2048000,
-      width: 1920,
-      height: 1080,
-      created_at: '2024-01-15T10:00:00Z',
-      alt_text: { en: 'Hero image for homepage' },
-      attribution: 'John Doe Photography',
-      license: 'CC BY 4.0',
-    },
-    {
-      id: '2',
-      filename: 'event-poster.png',
-      original_filename: 'Pride Event Poster 2024.png',
-      mime_type: 'image/png',
-      file_size: 1024000,
-      width: 800,
-      height: 1200,
-      created_at: '2024-01-14T14:30:00Z',
-      alt_text: { en: 'Pride event poster' },
-      attribution: 'Event Organizers',
-      license: 'All Rights Reserved',
-    },
-    {
-      id: '3',
-      filename: 'venue-guide.pdf',
-      original_filename: 'LGBTQ+ Venue Guide 2024.pdf',
-      mime_type: 'application/pdf',
-      file_size: 5120000,
-      created_at: '2024-01-13T09:15:00Z',
-      attribution: 'Community Team',
-      license: 'CC BY-SA 4.0',
-    },
-  ];
+  useEffect(() => {
+    fetchMedia();
+  }, []);
+
+  const fetchMedia = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch CMS media
+      const { data: cmsMediaData, error: cmsError } = await supabase
+        .from('cms_media')
+        .select(`
+          *,
+          content_items (
+            id,
+            title
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (cmsError) {
+        console.error('CMS media error:', cmsError);
+      }
+
+      // Process CMS media data
+      const processCmsMedia = (cmsMediaData || []).map(item => ({
+        ...item,
+        source: 'cms'
+      }));
+
+      // Fetch storage files from all buckets
+      const buckets = ['adult-model-images', 'city-images', 'tag-images'];
+      let allStorageFiles: any[] = [];
+
+      for (const bucket of buckets) {
+        try {
+          const { data: files, error } = await supabase.storage
+            .from(bucket)
+            .list('', { 
+              limit: 1000,
+              sortBy: { column: 'created_at', order: 'desc' }
+            });
+
+          if (error) {
+            console.error(`Error fetching from ${bucket}:`, error);
+            continue;
+          }
+
+          if (files && files.length > 0) {
+            const processedFiles = files
+              .filter(file => file.name && !file.name.includes('.emptyFolderPlaceholder'))
+              .map(file => ({
+                id: `${bucket}-${file.name}`,
+                filename: file.name,
+                original_filename: file.name,
+                mime_type: file.metadata?.mimetype || getFileType(file.name),
+                file_size: file.metadata?.size || 0,
+                width: file.metadata?.width,
+                height: file.metadata?.height,
+                storage_path: file.name,
+                uploaded_by: 'system',
+                created_at: file.created_at || file.updated_at || new Date().toISOString(),
+                alt_text: {},
+                caption: {},
+                usage_count: 0,
+                content_items: [],
+                source: bucket,
+                bucket: bucket
+              }));
+            
+            allStorageFiles = [...allStorageFiles, ...processedFiles];
+          }
+        } catch (storageError) {
+          console.error(`Storage error for ${bucket}:`, storageError);
+        }
+      }
+
+      // Combine all media
+      const allMedia = [...processCmsMedia, ...allStorageFiles];
+      
+      console.log(`Found ${allMedia.length} media items:`, {
+        cms: processCmsMedia.length,
+        storage: allStorageFiles.length,
+        bucketBreakdown: buckets.map(bucket => ({
+          bucket,
+          count: allStorageFiles.filter(f => f.bucket === bucket).length
+        }))
+      });
+      
+      setMediaFiles(allMedia);
+    } catch (error) {
+      console.error('Error fetching media:', error);
+      toast.error('Failed to load media files');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getFileType = (filename: string): string => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return 'image/jpeg';
+    if (['mp4', 'mov', 'avi'].includes(ext || '')) return 'video/mp4';
+    return 'application/octet-stream';
+  };
+
+  const getImageUrl = (file: any) => {
+    if (file.source === 'cms' && file.storage_path) {
+      return supabase.storage.from('cms_media').getPublicUrl(file.storage_path).data.publicUrl;
+    } else if (file.bucket && file.storage_path) {
+      return supabase.storage.from(file.bucket).getPublicUrl(file.storage_path).data.publicUrl;
+    }
+    return null;
+  };
 
   const filteredMedia = mediaFiles.filter(file => {
     const matchesSearch = !searchQuery || 
@@ -140,8 +218,25 @@ export function CMSMediaManager() {
 
       {/* Media Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredMedia.map((file) => (
-          <Card key={file.id} className="group hover:shadow-lg transition-shadow">
+        {loading ? (
+          Array.from({ length: 8 }).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader className="pb-2">
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="aspect-square bg-muted rounded-lg mb-3"></div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-muted rounded w-1/3"></div>
+                  <div className="h-3 bg-muted rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          filteredMedia.map((file) => (
+            <Card key={file.id} className="group hover:shadow-lg transition-shadow">
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
@@ -165,16 +260,30 @@ export function CMSMediaManager() {
             <CardContent className="pt-0">
               <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center overflow-hidden">
                 {isImage(file.mime_type) ? (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-                    <Image className="h-12 w-12 text-blue-300" />
-                    <span className="sr-only">Image preview placeholder</span>
-                  </div>
+                  getImageUrl(file) ? (
+                    <img 
+                      src={getImageUrl(file)} 
+                      alt={file.original_filename}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null
                 ) : (
                   <div className="flex flex-col items-center justify-center">
                     {getFileIcon(file.mime_type)}
                     <span className="text-xs text-muted-foreground mt-2 uppercase">
                       {file.mime_type.split('/')[1]}
                     </span>
+                  </div>
+                )}
+                {isImage(file.mime_type) && (
+                  <div className="hidden w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+                    <Image className="h-12 w-12 text-blue-300" />
+                    <span className="sr-only">Image preview placeholder</span>
                   </div>
                 )}
               </div>
@@ -204,7 +313,8 @@ export function CMSMediaManager() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          ))
+        )}
       </div>
 
       {filteredMedia.length === 0 && (
