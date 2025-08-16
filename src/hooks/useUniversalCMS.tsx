@@ -417,21 +417,21 @@ export function useUniversalCMS() {
 
       let allContentData: UniversalContent[] = [];
 
-      if (!contentType || contentType === 'all') {
-        // Fetch from all sources
+      if (!contentType || contentType === 'all' || contentType === 'undefined') {
+        // Fetch from all sources - use higher limits to ensure we get everything
         console.log('Fetching all content types...');
         const [events, venues, personalities, groups, posts, cmsContent, tags, cities, countries, marketplace, news] = await Promise.all([
-          fetchEvents(Math.floor(limit / 11)),
-          fetchVenues(Math.floor(limit / 11)),
-          fetchPersonalities(Math.floor(limit / 11)),
-          fetchCommunityGroups(Math.floor(limit / 11)),
-          fetchCommunityPosts(Math.floor(limit / 11)),
-          fetchCMSContent(Math.floor(limit / 11)),
-          fetchTags(Math.floor(limit / 11)),
-          fetchCities(Math.floor(limit / 11)),
-          fetchCountries(Math.floor(limit / 11)),
-          fetchMarketplaceListings(Math.floor(limit / 11)),
-          fetchNewsArticles(Math.floor(limit / 11))
+          fetchEvents(500),
+          fetchVenues(500),
+          fetchPersonalities(500),
+          fetchCommunityGroups(500),
+          fetchCommunityPosts(500),
+          fetchCMSContent(500),
+          fetchTags(500),
+          fetchCities(500),
+          fetchCountries(500),
+          fetchMarketplaceListings(500),
+          fetchNewsArticles(500)
         ]);
 
         allContentData = [...events, ...venues, ...personalities, ...groups, ...posts, ...cmsContent, ...tags, ...cities, ...countries, ...marketplace, ...news];
@@ -471,6 +471,24 @@ export function useUniversalCMS() {
             break;
           case 'news_articles':
             allContentData = await fetchNewsArticles(limit);
+            break;
+          default:
+            // If no valid content type is provided, fetch all
+            console.log('Invalid content type, fetching all...');
+            const [events, venues, personalities, groups, posts, cmsContent, tags, cities, countries, marketplace, news] = await Promise.all([
+              fetchEvents(500),
+              fetchVenues(500),
+              fetchPersonalities(500),
+              fetchCommunityGroups(500),
+              fetchCommunityPosts(500),
+              fetchCMSContent(500),
+              fetchTags(500),
+              fetchCities(500),
+              fetchCountries(500),
+              fetchMarketplaceListings(500),
+              fetchNewsArticles(500)
+            ]);
+            allContentData = [...events, ...venues, ...personalities, ...groups, ...posts, ...cmsContent, ...tags, ...cities, ...countries, ...marketplace, ...news];
             break;
         }
       }
