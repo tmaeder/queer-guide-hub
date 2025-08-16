@@ -15,7 +15,8 @@ import {
   MapPin,
   FileText,
   Newspaper,
-  Zap
+  Zap,
+  FileEdit
 } from "lucide-react";
 
 export function QuickActions() {
@@ -74,6 +75,7 @@ export function QuickActions() {
     {
       title: "Tools & Utilities",
       items: [
+        { label: "CMS", icon: FileEdit, path: "/admin/cms" },
         { label: "Import Hub", icon: Upload, path: "/admin/import-hub" },
         { label: "News Sources", icon: Newspaper, path: "/admin/news-sources" },
         { label: "Analytics", icon: Zap, path: "/admin/analytics" },

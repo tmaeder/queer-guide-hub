@@ -45,6 +45,7 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const DMCA = lazy(() => import("./pages/DMCA"));
 const LegalHub = lazy(() => import("./pages/LegalHub"));
 const Auth = lazy(() => import("./pages/Auth"));
+const AdminCMS = lazy(() => import("./pages/AdminCMS"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
@@ -153,8 +154,14 @@ const App = () => {
                     <AdminRouteGuard>
                       <AdminDashboard />
                     </AdminRouteGuard>
-                  } />
-                  
+                   } />
+                   
+                   <Route path="/admin/cms" element={
+                     <AdminRouteGuard>
+                       <AdminCMS />
+                     </AdminRouteGuard>
+                   } />
+                   
                   <Route path="/admin/tags" element={
                     <AdminRouteGuard>
                       <AdminTags />
