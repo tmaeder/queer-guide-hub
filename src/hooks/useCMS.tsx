@@ -39,8 +39,10 @@ export function useCMS() {
             *,
             cms_media (*)
           ),
-          cms_content_relationships (*)
+          from_relationships:cms_content_relationships!cms_content_relationships_from_content_id_fkey(*),
+          to_relationships:cms_content_relationships!cms_content_relationships_to_content_id_fkey(*)
         `)
+        .is('deleted_at', null)
         .order('updated_at', { ascending: false });
 
       if (filters?.contentType) {
@@ -292,7 +294,8 @@ export function useCMS() {
             *,
             cms_media (*)
           ),
-          cms_content_relationships (*)
+          from_relationships:cms_content_relationships!cms_content_relationships_from_content_id_fkey(*),
+          to_relationships:cms_content_relationships!cms_content_relationships_to_content_id_fkey(*)
         `)
         .eq('id', id)
         .single();
