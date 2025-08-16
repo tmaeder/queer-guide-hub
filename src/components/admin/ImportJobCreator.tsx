@@ -12,60 +12,184 @@ import { useImportHub } from '@/hooks/useImportHub';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Upload, FileText, Globe, Database, AlertTriangle, Info, Eye, 
-  Settings, Filter, CheckCircle, X, Plus, RefreshCw
+  Settings, Filter, CheckCircle, X, Plus, RefreshCw, MapPin, Calendar,
+  Users, Building, Shield, Tag, ShoppingCart, BookOpen, Newspaper
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { VenueImportDialog } from './venues/VenueImportDialog';
 
 const IMPORT_TYPES = {
+  // Venues
   'venues-csv': {
     label: 'Venues CSV',
     description: 'Import venue data from CSV files',
     requiredFields: ['name', 'address', 'city', 'country'],
-    optionalFields: ['description', 'website', 'phone', 'latitude', 'longitude', 'tags']
+    optionalFields: ['description', 'website', 'phone', 'latitude', 'longitude', 'tags'],
+    icon: 'MapPin'
   },
   'venues-foursquare': {
     label: 'Venues - Foursquare API',
     description: 'Import venues from Foursquare with custom search terms',
     requiredFields: ['locations', 'search_terms'],
-    optionalFields: ['limit', 'radius', 'categories', 'filters']
+    optionalFields: ['limit', 'radius', 'categories', 'filters'],
+    icon: 'MapPin'
   },
   'venues-google-places': {
     label: 'Venues - Google Places API',
     description: 'Import venues from Google Places with custom search terms',
     requiredFields: ['locations', 'search_terms'],
-    optionalFields: ['limit', 'radius', 'categories', 'filters']
+    optionalFields: ['limit', 'radius', 'categories', 'filters'],
+    icon: 'MapPin'
   },
   'venues-tomtom': {
     label: 'Venues - TomTom API',
     description: 'Import venues from TomTom with custom search terms',
     requiredFields: ['locations', 'search_terms'],
-    optionalFields: ['limit', 'radius', 'categories', 'filters']
+    optionalFields: ['limit', 'radius', 'categories', 'filters'],
+    icon: 'MapPin'
   },
   'venues-tripadvisor': {
     label: 'Venues - TripAdvisor API',
     description: 'Import venues from TripAdvisor with custom search terms',
     requiredFields: ['locations', 'search_terms'],
-    optionalFields: ['limit', 'radius', 'categories', 'filters']
+    optionalFields: ['limit', 'radius', 'categories', 'filters'],
+    icon: 'MapPin'
   },
+  
+  // Events
   'events-csv': {
     label: 'Events CSV',
     description: 'Import event data from CSV files',
     requiredFields: ['title', 'start_date', 'venue_name', 'city', 'country'],
-    optionalFields: ['description', 'end_date', 'website', 'ticket_url', 'price_min', 'price_max']
+    optionalFields: ['description', 'end_date', 'website', 'ticket_url', 'price_min', 'price_max'],
+    icon: 'Calendar'
   },
+  'events-eventbrite': {
+    label: 'Events - Eventbrite API',
+    description: 'Import events from Eventbrite',
+    requiredFields: ['event_ids'],
+    optionalFields: ['categories', 'locations', 'date_range'],
+    icon: 'Calendar'
+  },
+  'events-ticketmaster': {
+    label: 'Events - Ticketmaster API',
+    description: 'Import events from Ticketmaster',
+    requiredFields: ['locations'],
+    optionalFields: ['categories', 'date_range', 'keywords'],
+    icon: 'Calendar'
+  },
+  'events-bulk-scrape': {
+    label: 'Events - Bulk Scraper',
+    description: 'Bulk scrape events from multiple sources',
+    requiredFields: ['sources', 'locations'],
+    optionalFields: ['date_range', 'categories', 'filters'],
+    icon: 'Calendar'
+  },
+  
+  // Personalities
   'personalities-csv': {
     label: 'Personalities CSV',
     description: 'Import personality/people data from CSV files',
     requiredFields: ['name'],
-    optionalFields: ['description', 'image_url', 'website', 'social_links', 'birth_date', 'death_date']
+    optionalFields: ['description', 'image_url', 'website', 'social_links', 'birth_date', 'death_date'],
+    icon: 'Users'
   },
+  'personalities-adult-models': {
+    label: 'Adult Models CSV',
+    description: 'Import adult model data from CSV files',
+    requiredFields: ['name'],
+    optionalFields: ['description', 'image_url', 'website', 'social_links'],
+    icon: 'Users'
+  },
+  'personalities-bulk-create': {
+    label: 'Bulk Create Personalities',
+    description: 'Bulk create personalities with AI assistance',
+    requiredFields: ['count', 'categories'],
+    optionalFields: ['locations', 'attributes'],
+    icon: 'Users'
+  },
+  
+  // Geographic Data
+  'cities-data': {
+    label: 'Cities Data',
+    description: 'Import city information and metadata',
+    requiredFields: ['city_names'],
+    optionalFields: ['country_filter', 'data_sources'],
+    icon: 'Building'
+  },
+  'countries-data': {
+    label: 'Countries Data',
+    description: 'Import country information and metadata',
+    requiredFields: [],
+    optionalFields: ['data_sources', 'update_existing'],
+    icon: 'Globe'
+  },
+  'ilga-data': {
+    label: 'ILGA LGBT Rights Data',
+    description: 'Import LGBT rights data from ILGA',
+    requiredFields: [],
+    optionalFields: ['countries', 'force_update'],
+    icon: 'Shield'
+  },
+  
+  // Tags & Categories
   'tags-csv': {
     label: 'Tags CSV',
     description: 'Import tags and categories from CSV files',
     requiredFields: ['name', 'category'],
-    optionalFields: ['description', 'color', 'icon']
+    optionalFields: ['description', 'color', 'icon'],
+    icon: 'Tag'
+  },
+  'tags-bulk-ai': {
+    label: 'Bulk Create AI Tags',
+    description: 'Generate tags using AI for existing content',
+    requiredFields: ['content_type'],
+    optionalFields: ['categories', 'count'],
+    icon: 'Tag'
+  },
+  'tags-categorize': {
+    label: 'Categorize Tags',
+    description: 'Automatically categorize existing tags using AI',
+    requiredFields: [],
+    optionalFields: ['categories', 'force_recategorize'],
+    icon: 'Tag'
+  },
+  
+  // Resources & Marketplace
+  'marketplace-awin': {
+    label: 'AWIN Products',
+    description: 'Import products from AWIN affiliate network',
+    requiredFields: ['advertiser_ids'],
+    optionalFields: ['categories', 'regions', 'filters'],
+    icon: 'ShoppingCart'
+  },
+  
+  // Restrooms & Accessibility
+  'restrooms-refuge': {
+    label: 'Refuge Restrooms',
+    description: 'Import restroom data from Refuge Restrooms API',
+    requiredFields: [],
+    optionalFields: ['locations', 'accessibility_filters'],
+    icon: 'MapPin'
+  },
+  
+  // Wikipedia Data
+  'wikipedia-data': {
+    label: 'Wikipedia Data',
+    description: 'Import data from Wikipedia articles',
+    requiredFields: ['article_titles'],
+    optionalFields: ['languages', 'extract_images'],
+    icon: 'BookOpen'
+  },
+  
+  // News
+  'news-sources': {
+    label: 'News Sources',
+    description: 'Configure and import from news sources',
+    requiredFields: ['source_urls'],
+    optionalFields: ['categories', 'keywords', 'frequency'],
+    icon: 'Newspaper'
   }
 };
 
@@ -300,15 +424,25 @@ export const ImportJobCreator = () => {
               <SelectTrigger>
                 <SelectValue placeholder="Select what type of data you want to import" />
               </SelectTrigger>
-              <SelectContent>
-                {Object.entries(IMPORT_TYPES).map(([key, config]) => (
-                  <SelectItem key={key} value={key}>
-                    <div>
-                      <div className="font-medium">{config.label}</div>
-                      <div className="text-sm text-muted-foreground">{config.description}</div>
-                    </div>
-                  </SelectItem>
-                ))}
+              <SelectContent className="max-h-96">
+                {Object.entries(IMPORT_TYPES).map(([key, config]) => {
+                  const iconMap: Record<string, any> = {
+                    MapPin, Calendar, Users, Building, Globe, Shield, Tag, ShoppingCart, BookOpen, Newspaper
+                  };
+                  const IconComponent = iconMap[config.icon];
+                  
+                  return (
+                    <SelectItem key={key} value={key}>
+                      <div className="flex items-center gap-3 py-1">
+                        {IconComponent && <IconComponent className="h-4 w-4 text-muted-foreground" />}
+                        <div>
+                          <div className="font-medium">{config.label}</div>
+                          <div className="text-sm text-muted-foreground">{config.description}</div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
             
