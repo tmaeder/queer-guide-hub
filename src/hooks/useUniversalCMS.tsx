@@ -87,7 +87,7 @@ export function useUniversalCMS() {
       switch (contentType) {
         case 'events': {
           let query = supabase.from('events').select('*', { count: 'exact' });
-          if (search) query = query.ilike('title', `%${search}%`);
+          if (search) query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
           if (status) query = query.eq('status', status);
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
@@ -113,6 +113,7 @@ export function useUniversalCMS() {
         case 'community_posts': {
           let query = supabase.from('community_posts').select('*', { count: 'exact' });
           if (search) query = query.ilike('content', `%${search}%`);
+          if (status) query = query.eq('visibility', status); // community_posts use visibility, not status
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
         }
@@ -352,17 +353,28 @@ export function useUniversalCMS() {
       const offset = (page - 1) * limit;
 
       if (contentType === 'all' || !contentType) {
-        // For 'all' content, fetch limited amount from each table
+        // For 'all' content, fetch from each table with higher limits to ensure we get data
         const contentTypes = ['events', 'venues', 'personalities', 'community_groups', 'community_posts', 'cms_content', 'tags', 'cities', 'countries', 'marketplace_listings', 'news_articles'];
-        const perTypeLimit = Math.max(1, Math.floor(limit / contentTypes.length));
         
-        const promises = contentTypes.map(type => 
-          fetchContentByType(type, perTypeLimit, 0, search, status)
-        );
+        console.log('Fetching all content types with individual queries...');
+        
+        const promises = contentTypes.map(async (type) => {
+          try {
+            console.log(`Fetching ${type}...`);
+            const result = await fetchContentByType(type, 100, 0, search, status); // Higher limit per type
+            console.log(`${type}: ${result.data.length} items`);
+            return result;
+          } catch (error) {
+            console.error(`Error fetching ${type}:`, error);
+            return { data: [], totalCount: 0 };
+          }
+        });
 
         const results = await Promise.all(promises);
         allContentData = results.flatMap(result => result.data);
         totalContentCount = results.reduce((sum, result) => sum + result.totalCount, 0);
+        
+        console.log(`Total items fetched: ${allContentData.length}, Total available: ${totalContentCount}`);
       } else {
         // Fetch specific content type with proper pagination
         const result = await fetchContentByType(contentType, limit, offset, search, status);
