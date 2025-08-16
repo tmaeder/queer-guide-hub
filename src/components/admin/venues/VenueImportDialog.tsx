@@ -277,15 +277,19 @@ export function VenueImportDialog({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="limit">Venues per Location</Label>
+                    <Label htmlFor="limit">Venues per Location (Optional)</Label>
                     <Select
-                      value={config.limit.toString()}
-                      onValueChange={(value) => setConfig(prev => ({ ...prev, limit: parseInt(value) }))}
+                      value={config.limit?.toString() || "default"}
+                      onValueChange={(value) => setConfig(prev => ({ 
+                        ...prev, 
+                        limit: value === "default" ? undefined : parseInt(value) 
+                      }))}
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Default limit" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="default">Default limit</SelectItem>
                         <SelectItem value="5">5 venues</SelectItem>
                         <SelectItem value="10">10 venues</SelectItem>
                         <SelectItem value="20">20 venues</SelectItem>
@@ -295,15 +299,19 @@ export function VenueImportDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="radius">Search Radius (meters)</Label>
+                    <Label htmlFor="radius">Search Radius (Optional)</Label>
                     <Select
-                      value={config.radius.toString()}
-                      onValueChange={(value) => setConfig(prev => ({ ...prev, radius: parseInt(value) }))}
+                      value={config.radius?.toString() || "default"}
+                      onValueChange={(value) => setConfig(prev => ({ 
+                        ...prev, 
+                        radius: value === "default" ? undefined : parseInt(value) 
+                      }))}
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Default radius" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="default">Default radius</SelectItem>
                         <SelectItem value="5000">5 km</SelectItem>
                         <SelectItem value="10000">10 km</SelectItem>
                         <SelectItem value="25000">25 km</SelectItem>
