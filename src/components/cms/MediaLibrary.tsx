@@ -111,20 +111,9 @@ export function MediaLibrary() {
         `)
         .order('created_at', { ascending: false });
 
-      if (cmsError) throw cmsError;
-
-      // Fetch all files from storage buckets
-      const { data: storageData, error: storageError } = await supabase.storage
-        .from('adult-model-images')
-        .list('', { limit: 1000 });
-
-      const { data: cityData, error: cityError } = await supabase.storage
-        .from('city-images')
-        .list('', { limit: 1000 });
-
-      const { data: tagData, error: tagError } = await supabase.storage
-        .from('tag-images')
-        .list('', { limit: 1000 });
+      if (cmsError) {
+        console.error('CMS media error:', cmsError);
+      }
 
       // Process CMS media data
       const processCmsMedia = (cmsMediaData || []).map(item => ({
@@ -136,36 +125,64 @@ export function MediaLibrary() {
         source: 'cms'
       }));
 
-      // Process storage files
-      const processStorageFiles = (files: any[], bucket: string) => {
-        return (files || []).map(file => ({
-          id: `${bucket}-${file.name}`,
-          filename: file.name,
-          original_filename: file.name,
-          mime_type: file.metadata?.mimetype || 'application/octet-stream',
-          file_size: file.metadata?.size || 0,
-          width: file.metadata?.width,
-          height: file.metadata?.height,
-          storage_path: file.name,
-          uploaded_by: 'system',
-          created_at: file.created_at || file.updated_at,
-          alt_text: {},
-          caption: {},
-          usage_count: 0,
-          content_items: [],
-          source: bucket,
-          bucket: bucket
-        }));
-      };
+      // Fetch storage files from all buckets
+      const buckets = ['adult-model-images', 'city-images', 'tag-images'];
+      let allStorageFiles: any[] = [];
 
-      const storageFiles = [
-        ...processStorageFiles(storageData, 'adult-model-images'),
-        ...processStorageFiles(cityData, 'city-images'),
-        ...processStorageFiles(tagData, 'tag-images')
-      ];
+      for (const bucket of buckets) {
+        try {
+          const { data: files, error } = await supabase.storage
+            .from(bucket)
+            .list('', { 
+              limit: 1000,
+              sortBy: { column: 'created_at', order: 'desc' }
+            });
+
+          if (error) {
+            console.error(`Error fetching from ${bucket}:`, error);
+            continue;
+          }
+
+          if (files && files.length > 0) {
+            const processedFiles = files
+              .filter(file => file.name && !file.name.includes('.emptyFolderPlaceholder'))
+              .map(file => ({
+                id: `${bucket}-${file.name}`,
+                filename: file.name,
+                original_filename: file.name,
+                mime_type: file.metadata?.mimetype || getFileType(file.name),
+                file_size: file.metadata?.size || 0,
+                width: file.metadata?.width,
+                height: file.metadata?.height,
+                storage_path: file.name,
+                uploaded_by: 'system',
+                created_at: file.created_at || file.updated_at || new Date().toISOString(),
+                alt_text: {},
+                caption: {},
+                usage_count: 0,
+                content_items: [],
+                source: bucket,
+                bucket: bucket
+              }));
+            
+            allStorageFiles = [...allStorageFiles, ...processedFiles];
+          }
+        } catch (storageError) {
+          console.error(`Storage error for ${bucket}:`, storageError);
+        }
+      }
 
       // Combine all media
-      const allMedia = [...processCmsMedia, ...storageFiles];
+      const allMedia = [...processCmsMedia, ...allStorageFiles];
+      
+      console.log(`Found ${allMedia.length} media items:`, {
+        cms: processCmsMedia.length,
+        storage: allStorageFiles.length,
+        bucketBreakdown: buckets.map(bucket => ({
+          bucket,
+          count: allStorageFiles.filter(f => f.bucket === bucket).length
+        }))
+      });
       
       setMedia(allMedia);
     } catch (error) {
@@ -178,6 +195,13 @@ export function MediaLibrary() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getFileType = (filename: string): string => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return 'image/jpeg';
+    if (['mp4', 'mov', 'avi'].includes(ext || '')) return 'video/mp4';
+    return 'application/octet-stream';
   };
 
   const filterAndSortMedia = () => {
