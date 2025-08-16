@@ -143,6 +143,163 @@ export type Database = {
         }
         Relationships: []
       }
+      audio_files: {
+        Row: {
+          album: string | null
+          artist: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          metadata: Json | null
+          original_filename: string
+          poster_image_path: string | null
+          processing_job_id: string | null
+          status: string
+          storage_path: string
+          title: string
+          transcript_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          album?: string | null
+          artist?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          metadata?: Json | null
+          original_filename: string
+          poster_image_path?: string | null
+          processing_job_id?: string | null
+          status?: string
+          storage_path: string
+          title: string
+          transcript_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          album?: string | null
+          artist?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          metadata?: Json | null
+          original_filename?: string
+          poster_image_path?: string | null
+          processing_job_id?: string | null
+          status?: string
+          storage_path?: string
+          title?: string
+          transcript_path?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      audio_processing_jobs: {
+        Row: {
+          audio_id: string
+          completed_at: string | null
+          completed_renditions: number | null
+          created_at: string
+          current_stage: string | null
+          error_message: string | null
+          id: string
+          processing_config: Json
+          progress_percent: number | null
+          started_at: string | null
+          status: string
+          total_renditions: number | null
+          updated_at: string
+        }
+        Insert: {
+          audio_id: string
+          completed_at?: string | null
+          completed_renditions?: number | null
+          created_at?: string
+          current_stage?: string | null
+          error_message?: string | null
+          id?: string
+          processing_config?: Json
+          progress_percent?: number | null
+          started_at?: string | null
+          status?: string
+          total_renditions?: number | null
+          updated_at?: string
+        }
+        Update: {
+          audio_id?: string
+          completed_at?: string | null
+          completed_renditions?: number | null
+          created_at?: string
+          current_stage?: string | null
+          error_message?: string | null
+          id?: string
+          processing_config?: Json
+          progress_percent?: number | null
+          started_at?: string | null
+          status?: string
+          total_renditions?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audio_processing_jobs_audio_id_fkey"
+            columns: ["audio_id"]
+            isOneToOne: false
+            referencedRelation: "audio_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audio_renditions: {
+        Row: {
+          audio_id: string
+          bitrate_kbps: number | null
+          codec: string
+          container: string
+          created_at: string
+          file_path: string
+          file_size: number
+          format: string
+          id: string
+        }
+        Insert: {
+          audio_id: string
+          bitrate_kbps?: number | null
+          codec: string
+          container: string
+          created_at?: string
+          file_path: string
+          file_size: number
+          format: string
+          id?: string
+        }
+        Update: {
+          audio_id?: string
+          bitrate_kbps?: number | null
+          codec?: string
+          container?: string
+          created_at?: string
+          file_path?: string
+          file_size?: number
+          format?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audio_renditions_audio_id_fkey"
+            columns: ["audio_id"]
+            isOneToOne: false
+            referencedRelation: "audio_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auth_rate_limit: {
         Row: {
           attempt_count: number | null
