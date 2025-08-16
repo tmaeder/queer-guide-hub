@@ -736,8 +736,8 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               <SelectTrigger>
                 <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
               </SelectTrigger>
-              <SelectContent>
-                {options?.map((option: string) => (
+              <SelectContent className="bg-background border border-border shadow-lg z-50">
+                {options?.filter((option: string) => option && option.trim() !== '').map((option: string) => (
                   <SelectItem key={option} value={option} className="capitalize">
                     {option.replace(/_/g, ' ')}
                   </SelectItem>
