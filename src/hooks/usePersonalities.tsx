@@ -42,11 +42,13 @@ export interface PersonalityFilters {
   featured_only?: boolean;
   limit?: number;
   offset?: number;
+  page?: number;
 }
 
 export function usePersonalities(filters?: PersonalityFilters) {
   const { user } = useAuth();
   const [personalities, setPersonalities] = useState<Personality[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +57,36 @@ export function usePersonalities(filters?: PersonalityFilters) {
       setLoading(true);
       setError(null);
 
+      // First get total count
+      let countQuery = supabase
+        .from('personalities')
+        .select('*', { count: 'exact', head: true })
+        .eq('visibility', 'public');
+
+      if (filters?.search) {
+        countQuery = countQuery.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,profession.ilike.%${filters.search}%`);
+      }
+
+      if (filters?.fields && filters.fields.length > 0) {
+        countQuery = countQuery.contains('fields', filters.fields);
+      }
+
+      if (filters?.verification_status) {
+        countQuery = countQuery.eq('verification_status', filters.verification_status);
+      }
+
+      if (filters?.is_living !== undefined) {
+        countQuery = countQuery.eq('is_living', filters.is_living);
+      }
+
+      if (filters?.featured_only) {
+        countQuery = countQuery.eq('is_featured', true);
+      }
+
+      const { count } = await countQuery;
+      setTotalCount(count || 0);
+
+      // Then get the actual data
       let query = supabase
         .from('personalities')
         .select('*')
@@ -81,13 +113,12 @@ export function usePersonalities(filters?: PersonalityFilters) {
         query = query.eq('is_featured', true);
       }
 
-      if (filters?.limit) {
-        query = query.limit(filters.limit);
-      }
-
-      if (filters?.offset) {
-        query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1);
-      }
+      // Apply pagination
+      const limit = filters?.limit || 100;
+      const page = filters?.page || 1;
+      const offset = (page - 1) * limit;
+      
+      query = query.range(offset, offset + limit - 1);
 
       const { data, error } = await query;
 
@@ -247,10 +278,11 @@ export function usePersonalities(filters?: PersonalityFilters) {
 
   useEffect(() => {
     fetchPersonalities();
-  }, [filters?.search, filters?.fields, filters?.verification_status, filters?.is_living, filters?.featured_only]);
+  }, [filters?.search, filters?.fields, filters?.verification_status, filters?.is_living, filters?.featured_only, filters?.page]);
 
   return {
     personalities,
+    totalCount,
     loading,
     error,
     createPersonality,

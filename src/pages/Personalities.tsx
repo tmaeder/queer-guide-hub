@@ -10,24 +10,36 @@ import { usePersonalities, PersonalityFilters } from "@/hooks/usePersonalities";
 import { usePersonalityStats } from "@/hooks/usePersonalityStats";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Star, Plus, Search, CheckCircle, Heart, Clock } from "lucide-react";
+import { Users, Star, Plus, Search, CheckCircle, Heart, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Personalities() {
   const { user } = useAuth();
-  const [filters, setFilters] = useState<PersonalityFilters>({});
+  const [filters, setFilters] = useState<PersonalityFilters>({ page: 1, limit: 100 });
   const [selectedPersonality, setSelectedPersonality] = useState(null);
   
-  const { personalities, loading, error } = usePersonalities(filters);
+  const { personalities, totalCount, loading, error } = usePersonalities(filters);
   const { personalities: featuredPersonalities } = usePersonalities({ 
     featured_only: true, 
     limit: 6 
   });
   const { stats, loading: statsLoading } = usePersonalityStats();
 
+  const totalPages = Math.ceil(totalCount / (filters.limit || 100));
+  const currentPage = filters.page || 1;
+
   const handlePersonalityClick = (personality: any) => {
     setSelectedPersonality(personality);
     // Here you would typically navigate to a detail page or open a modal
     console.log('Selected personality:', personality);
+  };
+
+  const handleFiltersChange = (newFilters: PersonalityFilters) => {
+    setFilters({ ...newFilters, page: 1, limit: 100 }); // Reset to page 1 when filters change
+  };
+
+  const handlePageChange = (page: number) => {
+    setFilters(prev => ({ ...prev, page }));
   };
 
   if (loading) {
@@ -160,7 +172,7 @@ export default function Personalities() {
               <div className="lg:col-span-1">
                 <PersonalitiesFilters
                   filters={filters}
-                  onFiltersChange={setFilters}
+                  onFiltersChange={handleFiltersChange}
                 />
               </div>
 
@@ -170,9 +182,9 @@ export default function Personalities() {
                   <div className="flex items-center gap-4">
                     <h2 className="text-2xl font-bold">
                       {personalities.length} Results
-                      {stats && personalities.length < stats.total && (
+                      {stats && totalCount > 0 && (
                         <span className="text-lg font-normal text-muted-foreground ml-2">
-                          of {stats.total.toLocaleString()} total
+                          of {totalCount.toLocaleString()} total (Page {currentPage} of {totalPages})
                         </span>
                       )}
                     </h2>
@@ -181,6 +193,24 @@ export default function Personalities() {
                         Searching: "{filters.search}"
                       </Badge>
                     )}
+                  </div>
+                  
+                  {/* Items per page selector */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Per page:</span>
+                    <Select 
+                      value={(filters.limit || 100).toString()} 
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, limit: parseInt(value), page: 1 }))}
+                    >
+                      <SelectTrigger className="w-20">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                        <SelectItem value="200">200</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
@@ -197,15 +227,64 @@ export default function Personalities() {
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {personalities.map((personality) => (
-                      <PersonalityCard
-                        key={personality.id}
-                        personality={personality}
-                        onClick={() => handlePersonalityClick(personality)}
-                      />
-                    ))}
-                  </div>
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {personalities.map((personality) => (
+                        <PersonalityCard
+                          key={personality.id}
+                          personality={personality}
+                          onClick={() => handlePersonalityClick(personality)}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between mt-8">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                          >
+                            <ChevronLeft className="h-4 w-4 mr-1" />
+                            Previous
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                          >
+                            Next
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            Page {currentPage} of {totalPages}
+                          </span>
+                          <Select
+                            value={currentPage.toString()}
+                            onValueChange={(value) => handlePageChange(parseInt(value))}
+                          >
+                            <SelectTrigger className="w-20">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => (
+                                <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                  {i + 1}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
