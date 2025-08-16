@@ -748,6 +748,30 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         );
 
       case 'array':
+        // Handle different array data formats
+        let displayValue = '';
+        if (fieldValue) {
+          if (Array.isArray(fieldValue)) {
+            displayValue = fieldValue.join(', ');
+          } else if (typeof fieldValue === 'string') {
+            try {
+              // Try to parse as JSON array first
+              const parsed = JSON.parse(fieldValue);
+              if (Array.isArray(parsed)) {
+                displayValue = parsed.join(', ');
+              } else {
+                displayValue = fieldValue;
+              }
+            } catch {
+              // If not JSON, treat as comma-separated string
+              displayValue = fieldValue;
+            }
+          } else if (typeof fieldValue === 'object') {
+            // Handle objects that might contain array-like data
+            displayValue = Object.values(fieldValue).join(', ');
+          }
+        }
+        
         return (
           <div key={key} className="space-y-2">
             <Label htmlFor={key} className="flex items-center gap-2">
@@ -757,10 +781,19 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             </Label>
             <Textarea
               id={key}
-              value={Array.isArray(fieldValue) ? fieldValue.join(', ') : ''}
-              onChange={(e) => handleFieldChange(key, e.target.value.split(',').map(item => item.trim()).filter(Boolean))}
+              value={displayValue}
+              onChange={(e) => {
+                const items = e.target.value.split(',').map(item => item.trim()).filter(Boolean);
+                handleFieldChange(key, items);
+              }}
               placeholder="Enter comma-separated values"
+              className="min-h-24"
             />
+            {displayValue && (
+              <div className="text-xs text-muted-foreground">
+                Current: {displayValue.split(',').length} item(s)
+              </div>
+            )}
           </div>
         );
 
