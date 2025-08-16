@@ -30,13 +30,7 @@ export function useOptimizedVenues(filters?: VenueFilters) {
   const buildQuery = (filters?: VenueFilters) => {
     let query = supabase
       .from('venues')
-      .select(`
-        id,name,description,address,city,state,country,
-        latitude,longitude,phone,website,email,
-        category,tags,amenities,services,accessibility_attributes,
-        target_groups,featured,is_active,created_at,updated_at
-      `)
-      .eq('is_active', true)
+      .select('*')
       .order('featured', { ascending: false })
       .order('created_at', { ascending: false });
 
