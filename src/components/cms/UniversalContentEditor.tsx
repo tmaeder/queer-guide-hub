@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ProfessionAutocomplete } from '@/components/ui/profession-autocomplete';
 import { CountryAutocomplete } from '@/components/ui/country-autocomplete';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 interface UniversalContentEditorProps {
   content: any;
@@ -393,6 +394,22 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         );
 
       case 'url':
+        // Special handling for image URLs
+        if (key === 'image_url' || key.includes('image')) {
+          return (
+            <div key={key} className="space-y-2">
+              <ImageUpload
+                id={key}
+                value={fieldValue || ''}
+                onValueChange={(value) => handleFieldChange(key, value)}
+                label={label}
+                required={required}
+                maxSize={5}
+              />
+            </div>
+          );
+        }
+        
         return (
           <div key={key} className="space-y-2">
             <Label htmlFor={key} className="flex items-center gap-2">
