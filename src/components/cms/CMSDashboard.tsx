@@ -283,20 +283,93 @@ export function CMSDashboard() {
         </TabsContent>
 
         <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                CMS Settings
-              </CardTitle>
-              <CardDescription>
-                Configure your content management system settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Settings panel coming soon...</p>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Content Settings
+                </CardTitle>
+                <CardDescription>
+                  Configure content creation and publishing settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium">Auto-save drafts</label>
+                    <p className="text-xs text-muted-foreground">Automatically save content while editing</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="h-4 w-4" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium">Require review before publish</label>
+                    <p className="text-xs text-muted-foreground">All content must be reviewed before going live</p>
+                  </div>
+                  <input type="checkbox" className="h-4 w-4" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium">Enable content versioning</label>
+                    <p className="text-xs text-muted-foreground">Keep revision history of content changes</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="h-4 w-4" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Media Settings</CardTitle>
+                <CardDescription>
+                  Configure media upload and management settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium block mb-2">Maximum file size (MB)</label>
+                  <input type="number" defaultValue="10" className="w-24 px-3 py-1 border rounded text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-2">Allowed file types</label>
+                  <div className="text-xs text-muted-foreground">jpg, png, gif, webp, svg, pdf, doc, docx</div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium">Compress images on upload</label>
+                    <p className="text-xs text-muted-foreground">Optimize images for web performance</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="h-4 w-4" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>SEO Settings</CardTitle>
+                <CardDescription>
+                  Configure search engine optimization settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium">Auto-generate meta descriptions</label>
+                    <p className="text-xs text-muted-foreground">Create meta descriptions from content excerpts</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="h-4 w-4" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium">Generate XML sitemap</label>
+                    <p className="text-xs text-muted-foreground">Automatically update sitemap with new content</p>
+                  </div>
+                  <input type="checkbox" defaultChecked className="h-4 w-4" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>;
