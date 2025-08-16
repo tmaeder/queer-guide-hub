@@ -397,6 +397,539 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          changes: Json | null
+          content_id: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          timestamp: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          changes?: Json | null
+          content_id?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          timestamp?: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          changes?: Json | null
+          content_id?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          timestamp?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_audit_log_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_connectors: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          last_sync_at: string | null
+          mapping_profile: Json
+          name: string
+          next_sync_at: string | null
+          provider: string
+          sync_schedule: string | null
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          mapping_profile?: Json
+          name: string
+          next_sync_at?: string | null
+          provider: string
+          sync_schedule?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          mapping_profile?: Json
+          name?: string
+          next_sync_at?: string | null
+          provider?: string
+          sync_schedule?: string | null
+        }
+        Relationships: []
+      }
+      cms_content: {
+        Row: {
+          content_data: Json
+          content_type: Database["public"]["Enums"]["cms_content_type"]
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          description: Json | null
+          external_ids: Json | null
+          featured_weight: number | null
+          id: string
+          meta_description: Json | null
+          meta_title: Json | null
+          published_at: string | null
+          published_by: string | null
+          slug: string
+          source_metadata: Json | null
+          tags: string[] | null
+          title: Json
+          updated_at: string
+          updated_by: string | null
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
+        }
+        Insert: {
+          content_data?: Json
+          content_type: Database["public"]["Enums"]["cms_content_type"]
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: Json | null
+          external_ids?: Json | null
+          featured_weight?: number | null
+          id?: string
+          meta_description?: Json | null
+          meta_title?: Json | null
+          published_at?: string | null
+          published_by?: string | null
+          slug: string
+          source_metadata?: Json | null
+          tags?: string[] | null
+          title?: Json
+          updated_at?: string
+          updated_by?: string | null
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
+        }
+        Update: {
+          content_data?: Json
+          content_type?: Database["public"]["Enums"]["cms_content_type"]
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: Json | null
+          external_ids?: Json | null
+          featured_weight?: number | null
+          id?: string
+          meta_description?: Json | null
+          meta_title?: Json | null
+          published_at?: string | null
+          published_by?: string | null
+          slug?: string
+          source_metadata?: Json | null
+          tags?: string[] | null
+          title?: Json
+          updated_at?: string
+          updated_by?: string | null
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
+        }
+        Relationships: []
+      }
+      cms_content_media: {
+        Row: {
+          content_id: string
+          created_at: string
+          id: string
+          media_id: string
+          media_role: Database["public"]["Enums"]["cms_media_role"]
+          metadata: Json | null
+          sort_order: number | null
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          id?: string
+          media_id: string
+          media_role?: Database["public"]["Enums"]["cms_media_role"]
+          metadata?: Json | null
+          sort_order?: number | null
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          id?: string
+          media_id?: string
+          media_role?: Database["public"]["Enums"]["cms_media_role"]
+          metadata?: Json | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_content_media_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cms_content_media_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "cms_media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_content_relationships: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          from_content_id: string
+          id: string
+          relationship_type: string
+          role_metadata: Json | null
+          sort_order: number | null
+          to_content_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          from_content_id: string
+          id?: string
+          relationship_type: string
+          role_metadata?: Json | null
+          sort_order?: number | null
+          to_content_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          from_content_id?: string
+          id?: string
+          relationship_type?: string
+          role_metadata?: Json | null
+          sort_order?: number | null
+          to_content_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_content_relationships_from_content_id_fkey"
+            columns: ["from_content_id"]
+            isOneToOne: false
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cms_content_relationships_to_content_id_fkey"
+            columns: ["to_content_id"]
+            isOneToOne: false
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_content_revisions: {
+        Row: {
+          change_summary: string | null
+          content_data: Json
+          content_id: string
+          created_at: string
+          created_by: string | null
+          description: Json | null
+          id: string
+          meta_description: Json | null
+          meta_title: Json | null
+          revision_number: number
+          tags: string[] | null
+          title: Json
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
+        }
+        Insert: {
+          change_summary?: string | null
+          content_data: Json
+          content_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: Json | null
+          id?: string
+          meta_description?: Json | null
+          meta_title?: Json | null
+          revision_number: number
+          tags?: string[] | null
+          title: Json
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
+        }
+        Update: {
+          change_summary?: string | null
+          content_data?: Json
+          content_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: Json | null
+          id?: string
+          meta_description?: Json | null
+          meta_title?: Json | null
+          revision_number?: number
+          tags?: string[] | null
+          title?: Json
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_content_revisions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_duplicate_candidates: {
+        Row: {
+          content_id_1: string
+          content_id_2: string
+          created_at: string
+          decision_reason: string | null
+          id: string
+          matching_criteria: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          similarity_score: number
+          status: string
+        }
+        Insert: {
+          content_id_1: string
+          content_id_2: string
+          created_at?: string
+          decision_reason?: string | null
+          id?: string
+          matching_criteria?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          similarity_score: number
+          status?: string
+        }
+        Update: {
+          content_id_1?: string
+          content_id_2?: string
+          created_at?: string
+          decision_reason?: string | null
+          id?: string
+          matching_criteria?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          similarity_score?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_duplicate_candidates_content_id_1_fkey"
+            columns: ["content_id_1"]
+            isOneToOne: false
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cms_duplicate_candidates_content_id_2_fkey"
+            columns: ["content_id_2"]
+            isOneToOne: false
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_media: {
+        Row: {
+          alt_text: Json | null
+          attribution: string | null
+          author: string | null
+          caption: Json | null
+          created_at: string
+          external_id: string | null
+          external_source: string | null
+          file_size: number
+          filename: string
+          height: number | null
+          id: string
+          license: string | null
+          mime_type: string
+          original_filename: string
+          source_url: string | null
+          storage_path: string
+          uploaded_by: string | null
+          width: number | null
+        }
+        Insert: {
+          alt_text?: Json | null
+          attribution?: string | null
+          author?: string | null
+          caption?: Json | null
+          created_at?: string
+          external_id?: string | null
+          external_source?: string | null
+          file_size: number
+          filename: string
+          height?: number | null
+          id?: string
+          license?: string | null
+          mime_type: string
+          original_filename: string
+          source_url?: string | null
+          storage_path: string
+          uploaded_by?: string | null
+          width?: number | null
+        }
+        Update: {
+          alt_text?: Json | null
+          attribution?: string | null
+          author?: string | null
+          caption?: Json | null
+          created_at?: string
+          external_id?: string | null
+          external_source?: string | null
+          file_size?: number
+          filename?: string
+          height?: number | null
+          id?: string
+          license?: string | null
+          mime_type?: string
+          original_filename?: string
+          source_url?: string | null
+          storage_path?: string
+          uploaded_by?: string | null
+          width?: number | null
+        }
+        Relationships: []
+      }
+      cms_review_queue: {
+        Row: {
+          assigned_to: string | null
+          content_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          notes: string | null
+          priority: number | null
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          review_type: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          content_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          priority?: number | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          review_type: string
+        }
+        Update: {
+          assigned_to?: string | null
+          content_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          priority?: number | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          review_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_review_queue_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_sync_jobs: {
+        Row: {
+          completed_at: string | null
+          connector_id: string
+          created_at: string
+          error_details: Json | null
+          id: string
+          job_type: string
+          records_created: number | null
+          records_failed: number | null
+          records_processed: number | null
+          records_updated: number | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          connector_id: string
+          created_at?: string
+          error_details?: Json | null
+          id?: string
+          job_type: string
+          records_created?: number | null
+          records_failed?: number | null
+          records_processed?: number | null
+          records_updated?: number | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          connector_id?: string
+          created_at?: string
+          error_details?: Json | null
+          id?: string
+          job_type?: string
+          records_created?: number | null
+          records_failed?: number | null
+          records_processed?: number | null
+          records_updated?: number | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_sync_jobs_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "cms_connectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comment_likes: {
         Row: {
           comment_id: string
@@ -5606,6 +6139,24 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "editor"
+      cms_content_type:
+        | "event"
+        | "space"
+        | "place"
+        | "market"
+        | "resource"
+        | "community"
+        | "news"
+        | "page"
+        | "personality"
+      cms_media_role:
+        | "cover"
+        | "gallery"
+        | "attachment"
+        | "avatar"
+        | "thumbnail"
+      cms_visibility_level: "public" | "private" | "restricted"
+      cms_workflow_state: "draft" | "review" | "published" | "archived"
       user_mode:
         | "dating"
         | "friends"
@@ -5741,6 +6292,20 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "editor"],
+      cms_content_type: [
+        "event",
+        "space",
+        "place",
+        "market",
+        "resource",
+        "community",
+        "news",
+        "page",
+        "personality",
+      ],
+      cms_media_role: ["cover", "gallery", "attachment", "avatar", "thumbnail"],
+      cms_visibility_level: ["public", "private", "restricted"],
+      cms_workflow_state: ["draft", "review", "published", "archived"],
       user_mode: [
         "dating",
         "friends",
