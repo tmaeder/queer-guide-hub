@@ -105,6 +105,7 @@ const App = () => {
             <div className="min-h-screen flex flex-col relative">
                <div className="fixed inset-0 z-0">
                  <Aurora
+                   colorStops={["#7CFF67", "#FF9257", "#5227FF"]}
                    blend={0.4}
                    amplitude={1.2}
                    speed={0.4}

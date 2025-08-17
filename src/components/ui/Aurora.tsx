@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { Renderer, Program, Mesh, Color, Triangle } from "ogl";
-import { useTheme } from "next-themes";
 
 import "./Aurora.css";
 
@@ -119,14 +118,8 @@ interface AuroraProps {
 }
 
 export default function Aurora(props: AuroraProps) {
-  const { theme } = useTheme();
-  
-  // Use different colors based on theme - no black in light mode
-  const lightModeColors = ["#FF9A8B", "#A8E6CF", "#FFD700"]; // Soft coral, mint green, gold
-  const darkModeColors = ["#7CFF67", "#FF9257", "#5227FF"];  // Original vibrant colors
-  
   const {
-    colorStops = theme === 'dark' ? darkModeColors : lightModeColors,
+    colorStops = ["#7CFF67", "#FF9257", "#5227FF"],
     amplitude = 1.0,
     blend = 0.5,
   } = props;
@@ -216,7 +209,7 @@ export default function Aurora(props: AuroraProps) {
       }
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, [amplitude, theme]); // Re-render when theme changes
+  }, [amplitude]);
 
   return <div ref={ctnDom} className="aurora-container" />;
 }
