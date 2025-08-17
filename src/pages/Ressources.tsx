@@ -425,239 +425,350 @@ export default function Ressources() {
         </div>
       </div>;
   }
-  return <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          {viewMode !== "overview" && <Button variant="outline" onClick={handleBack} className="shrink-0">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>}
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Sparkles className="h-8 w-8 text-primary" />
-              Ressources
-            </h1>
-            <p className="text-muted-foreground">
-              Discover and explore LGBTQ+ community tags, resources, and professions
-            </p>
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="container mx-auto p-6 space-y-8">
+        {/* Header with enhanced design */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary/10 via-primary/5 to-background p-8 border">
+          <div className="absolute inset-0 bg-grid-black/[0.02] bg-[size:20px_20px]" />
+          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              {viewMode !== "overview" && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleBack} 
+                  className="shrink-0 hover-scale transition-all duration-200"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+              )}
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold flex items-center gap-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+                  Resources
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                  Discover and explore LGBTQ+ community tags, resources, and professions
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
+                <Badge variant="outline" className="animate-fade-in">
+                  {allTags.length} Total Tags
+                </Badge>
+                <Badge variant="outline" className="animate-fade-in">
+                  {categories.length} Categories
+                </Badge>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          
-        </div>
-      </div>
 
-      {/* Tabs for different resource types */}
-      <Tabs defaultValue="tags" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="tags">Tags & Categories</TabsTrigger>
-          <TabsTrigger value="professions">Professions</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="tags" className="space-y-4">
-          {/* Categories Overview */}
-          {viewMode === "overview" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Browse by Category</CardTitle>
-                <p className="text-muted-foreground">
-                  Explore tags organized by different categories
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                  {categories.map(category => {
-                    const Icon = getCategoryIcon(category);
-                    const categoryTags = allTags.filter(tag => tag.category === category);
-                    return (
-                      <Card 
-                        key={category} 
-                        className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105"
-                        onClick={() => {
-                          setFilterCategory(category);
-                          setViewMode("category");
-                          setSelectedCategory(category);
-                        }}
-                      >
-                        <CardContent className="p-4 text-center">
-                          <Icon className="h-8 w-8 mx-auto mb-3 text-primary" />
-                          <h3 className="font-semibold text-sm mb-1 capitalize">{category}</h3>
-                          <Badge variant="secondary" className="text-xs">
-                            {categoryTags.length} tags
-                          </Badge>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+        {/* Enhanced Tabs */}
+        <Tabs defaultValue="tags" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 h-12 bg-muted/50 backdrop-blur-sm border">
+            <TabsTrigger value="tags" className="text-base font-medium transition-all duration-200">
+              Tags & Categories
+            </TabsTrigger>
+            <TabsTrigger value="professions" className="text-base font-medium transition-all duration-200">
+              Professions
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="tags" className="space-y-6 animate-fade-in">
+            {/* Enhanced Categories Overview */}
+            {viewMode === "overview" && (
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+                <CardHeader className="pb-6">
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <Grid3X3 className="h-6 w-6 text-primary" />
+                    Browse by Category
+                  </CardTitle>
+                  <p className="text-muted-foreground text-base">
+                    Explore tags organized by different categories
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                    {categories.map((category, index) => {
+                      const Icon = getCategoryIcon(category);
+                      const categoryTags = allTags.filter(tag => tag.category === category);
+                      return (
+                        <Card 
+                          key={category} 
+                          className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 hover:-translate-y-1 border-2 hover:border-primary/20 bg-gradient-to-br from-card to-muted/20"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                          onClick={() => {
+                            setFilterCategory(category);
+                            setViewMode("category");
+                            setSelectedCategory(category);
+                          }}
+                        >
+                          <CardContent className="p-6 text-center">
+                            <div className="mb-4 relative">
+                              <div className="absolute inset-0 rounded-full bg-primary/10 scale-0 group-hover:scale-100 transition-transform duration-300" />
+                              <Icon className="h-12 w-12 mx-auto text-primary relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                            </div>
+                            <h3 className="font-semibold text-base mb-2 capitalize group-hover:text-primary transition-colors duration-200">
+                              {category}
+                            </h3>
+                            <Badge variant="secondary" className="text-sm px-3 py-1 group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-200">
+                              {categoryTags.length} tags
+                            </Badge>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Enhanced Search and Filters */}
+            <Card className="border-0 shadow-lg bg-card/80 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="relative flex-1 group">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
+                    <Input 
+                      placeholder="Search tags, categories, descriptions..." 
+                      value={searchQuery} 
+                      onChange={e => handleSearch(e.target.value)} 
+                      className="pl-12 h-12 text-base border-2 focus:border-primary transition-all duration-200 bg-background/50" 
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <Select value={filterCategory} onValueChange={setFilterCategory}>
+                      <SelectTrigger className="w-12 h-12 p-0 justify-center border-2 hover:border-primary/50 transition-colors duration-200">
+                        <Filter className="h-5 w-5" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card/95 backdrop-blur-sm border-2">
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categories.map(category => (
+                          <SelectItem key={category} value={category} className="capitalize">
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+                      <SelectTrigger className="w-12 h-12 p-0 justify-center border-2 hover:border-primary/50 transition-colors duration-200">
+                        <TrendingUp className="h-5 w-5" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card/95 backdrop-blur-sm border-2">
+                        <SelectItem value="alphabetical">Alphabetical</SelectItem>
+                        <SelectItem value="usage">Most Used</SelectItem>
+                        <SelectItem value="popular">Popular</SelectItem>
+                        <SelectItem value="recent">Recent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          )}
+          </TabsContent>
+          
+          <TabsContent value="professions" className="space-y-6 animate-fade-in">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl flex items-center gap-2">
+                  <Users className="h-6 w-6 text-primary" />
+                  LGBTQ+ Personalities by Profession
+                </CardTitle>
+                <p className="text-muted-foreground text-base">
+                  Explore different professions represented by LGBTQ+ personalities in our directory
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {professions.map((profession, index) => (
+                    <Button 
+                      key={profession} 
+                      variant={selectedProfession === profession ? "default" : "outline"} 
+                      className="h-auto p-4 text-left justify-start transition-all duration-300 hover:scale-105 hover:shadow-lg group"
+                      style={{ animationDelay: `${index * 30}ms` }}
+                      onClick={() => {
+                        if (selectedProfession === profession) {
+                          setSelectedProfession("");
+                          navigate('/personalities');
+                        } else {
+                          setSelectedProfession(profession);
+                          navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
+                        }
+                      }}
+                    >
+                      <div className="truncate font-medium group-hover:text-primary transition-colors duration-200">
+                        {profession}
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
-          {/* Search and Filters */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search tags, categories, descriptions..." value={searchQuery} onChange={e => handleSearch(e.target.value)} className="pl-10" />
-                </div>
-                <div className="flex gap-2">
-                  <Select value={filterCategory} onValueChange={setFilterCategory}>
-                    <SelectTrigger className="w-10 h-10 p-0 justify-center">
-                      <Filter className="h-4 w-4" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map(category => <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                    <SelectTrigger className="w-10 h-10 p-0 justify-center">
-                      <TrendingUp className="h-4 w-4" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="alphabetical">Alphabetical</SelectItem>
-                      <SelectItem value="usage">Most Used</SelectItem>
-                      <SelectItem value="popular">Popular</SelectItem>
-                      <SelectItem value="recent">Recent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="professions" className="space-y-4">
-          <Card>
+        {/* Admin Controls with enhanced design */}
+        {viewMode === "overview" && (
+          <Card className="border-0 shadow-lg bg-gradient-to-r from-card to-muted/20 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>LGBTQ+ Personalities by Profession</CardTitle>
-              <p className="text-muted-foreground">
-                Explore different professions represented by LGBTQ+ personalities in our directory
-              </p>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Brain className="h-6 w-6 text-primary" />
+                Admin Controls
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {professions.map(profession => <Button key={profession} variant={selectedProfession === profession ? "default" : "outline"} className="h-auto p-3 text-left justify-start" onClick={() => {
-                if (selectedProfession === profession) {
-                  setSelectedProfession("");
-                  navigate('/personalities');
-                } else {
-                  setSelectedProfession(profession);
-                  navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
-                }
-              }}>
-                    <div className="truncate">{profession}</div>
-                  </Button>)}
+              <div className="flex flex-wrap gap-3">
+                <Button 
+                  onClick={storeTagImages} 
+                  disabled={processingImages} 
+                  variant="outline" 
+                  size="lg"
+                  className="hover-scale transition-all duration-200"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  {processingImages ? 'Processing...' : 'Reimport All Images'}
+                </Button>
+                <Button 
+                  onClick={categorizeAllTags} 
+                  disabled={categorizingTags} 
+                  variant="outline" 
+                  size="lg"
+                  className="hover-scale transition-all duration-200"
+                >
+                  <Brain className="h-4 w-4 mr-2" />
+                  {categorizingTags ? 'Categorizing...' : 'AI Auto-Categorize'}
+                </Button>
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        )}
 
-      {/* Stats Overview */}
-      
-
-      {/* Admin Controls */}
-      {viewMode === "overview" && <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5" />
-              Admin Controls
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={storeTagImages} disabled={processingImages} variant="outline" size="sm">
-                <Upload className="h-4 w-4 mr-2" />
-                {processingImages ? 'Processing...' : 'Reimport All Images'}
-              </Button>
-              <Button onClick={categorizeAllTags} disabled={categorizingTags} variant="outline" size="sm">
-                <Brain className="h-4 w-4 mr-2" />
-                {categorizingTags ? 'Categorizing...' : 'AI Auto-Categorize'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>}
-
-      {/* Results Info */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-semibold">
-            {viewMode === "search" ? "Search Results" : "All Tags"}
-          </h2>
-          <Badge variant="secondary">{filteredAndSortedTags.length} tags</Badge>
+        {/* Enhanced Results Info */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-semibold">
+              {viewMode === "search" ? "Search Results" : viewMode === "category" ? `${selectedCategory} Tags` : "All Tags"}
+            </h2>
+            <Badge variant="secondary" className="px-3 py-1 text-sm">
+              {filteredAndSortedTags.length} tags
+            </Badge>
+          </div>
         </div>
-      </div>
 
-      {/* Tags Display */}
-      <div className={displayMode === "grid" ? "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" : "space-y-2"}>
-        {filteredAndSortedTags.map((tag, index) => <Card key={`${tag.id}-${index}`} className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${displayMode === "list" ? "flex items-center p-4" : "overflow-hidden"}`} onClick={() => handleTagClick(tag)}>
-            {displayMode === "grid" ? <>
-                <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
-                  {tag.image_url ? <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover transition-transform duration-200 hover:scale-110" onError={e => {
-              e.currentTarget.src = '/placeholder.svg';
-            }} /> : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
-                      <Tag className="h-8 w-8 text-muted-foreground" />
-                    </div>}
-                </div>
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{
-                backgroundColor: tag.color
-              }} />
-                    <span className="text-sm font-medium truncate">{tag.name}</span>
+        {/* Enhanced Tags Display */}
+        <div className={displayMode === "grid" ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6" : "space-y-3"}>
+          {filteredAndSortedTags.map((tag, index) => (
+            <Card 
+              key={`${tag.id}-${index}`} 
+              className={`group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 border-2 hover:border-primary/20 ${displayMode === "list" ? "flex items-center p-4" : "overflow-hidden bg-gradient-to-br from-card to-muted/10"}`} 
+              style={{ animationDelay: `${index * 20}ms` }}
+              onClick={() => handleTagClick(tag)}
+            >
+              {displayMode === "grid" ? (
+                <>
+                  <div className="aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50 relative">
+                    {tag.image_url ? (
+                      <img 
+                        src={tag.image_url} 
+                        alt={`${tag.name} themed image`} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                        onError={e => {
+                          e.currentTarget.src = '/placeholder.svg';
+                        }} 
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted via-muted/80 to-muted/60">
+                        <Tag className="h-12 w-12 text-muted-foreground/60 transition-transform duration-300 group-hover:scale-125" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{tag.category || 'Uncategorized'}</span>
-                    {tagUsageCounts[tag.name] > 0 && <Badge variant="outline" className="text-xs">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div 
+                        className="w-4 h-4 rounded-full shrink-0 ring-2 ring-white/20 transition-transform duration-200 group-hover:scale-125" 
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <span className="text-sm font-semibold truncate group-hover:text-primary transition-colors duration-200">
+                        {tag.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground capitalize font-medium">
+                        {tag.category || 'Uncategorized'}
+                      </span>
+                      {tagUsageCounts[tag.name] > 0 && (
+                        <Badge variant="outline" className="text-xs px-2 py-1 group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-200">
+                          {tagUsageCounts[tag.name]} uses
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </>
+              ) : (
+                <div className="flex items-center gap-4 w-full">
+                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 shrink-0 transition-transform duration-300 group-hover:scale-110">
+                    {tag.image_url ? (
+                      <img 
+                        src={tag.image_url} 
+                        alt={`${tag.name} themed image`} 
+                        className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Tag className="h-8 w-8 text-muted-foreground/60" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-4 h-4 rounded-full shrink-0 ring-2 ring-white/20" 
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <span className="font-semibold truncate text-base group-hover:text-primary transition-colors duration-200">
+                        {tag.name}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {tag.description || tag.category || 'No description'}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Badge variant="outline" className="text-xs capitalize">
+                      {tag.category || 'Uncategorized'}
+                    </Badge>
+                    {tagUsageCounts[tag.name] > 0 && (
+                      <Badge variant="secondary" className="text-xs">
                         {tagUsageCounts[tag.name]} uses
-                      </Badge>}
+                      </Badge>
+                    )}
                   </div>
-                </CardContent>
-              </> : <div className="flex items-center gap-4 w-full">
-                <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted shrink-0">
-                  {tag.image_url ? <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center">
-                      <Tag className="h-6 w-6 text-muted-foreground" />
-                    </div>}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{
-                backgroundColor: tag.color
-              }} />
-                    <span className="font-medium truncate">{tag.name}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {tag.description || tag.category || 'No description'}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant="outline" className="text-xs">
-                    {tag.category || 'Uncategorized'}
-                  </Badge>
-                  {tagUsageCounts[tag.name] > 0 && <Badge variant="secondary" className="text-xs">
-                      {tagUsageCounts[tag.name]} uses
-                    </Badge>}
-                </div>
-              </div>}
-          </Card>)}
-      </div>
+              )}
+            </Card>
+          ))}
+        </div>
 
-      {filteredAndSortedTags.length === 0 && <Card>
-          <CardContent className="p-12 text-center">
-            <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No tags found</h3>
-            <p className="text-muted-foreground">
-              {viewMode === "search" ? "Try adjusting your search terms or filters" : "No tags available yet"}
-            </p>
-          </CardContent>
-        </Card>}
+        {filteredAndSortedTags.length === 0 && (
+          <Card className="border-2 border-dashed border-muted-foreground/20">
+            <CardContent className="p-16 text-center">
+              <div className="mx-auto mb-6 w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center">
+                <Tag className="h-10 w-10 text-muted-foreground/50" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-3 text-muted-foreground">No tags found</h3>
+              <p className="text-muted-foreground text-base max-w-md mx-auto">
+                {viewMode === "search" 
+                  ? "Try adjusting your search terms or filters to find what you're looking for" 
+                  : "No tags are available yet. Check back later or contact support if this seems incorrect"}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>;
 }
