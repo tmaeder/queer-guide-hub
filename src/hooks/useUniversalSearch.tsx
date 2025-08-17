@@ -120,7 +120,7 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
   const searchUsers = async (searchQuery: string): Promise<SearchResult[]> => {
     try {
       const { data, error } = await supabase
-        .from('profiles_public')
+        .from('profiles')
         .select('user_id, display_name, avatar_url, location, bio, pronouns, interests, last_active_at')
         .or(`display_name.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%,occupation.ilike.%${searchQuery}%`)
         .limit(10);

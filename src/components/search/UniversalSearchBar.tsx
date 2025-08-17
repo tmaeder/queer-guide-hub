@@ -7,6 +7,7 @@ import { Command, CommandEmpty, CommandList, CommandSeparator, CommandGroup, Com
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Search, Filter, X, Clock, Zap, MapPin, Calendar, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, SlidersHorizontal, Tag, User } from "lucide-react";
 import { useUniversalSearch, SearchResult, SearchFilters } from "@/hooks/useUniversalSearch";
+import { useSearchSuggestions, SearchSuggestion } from "@/hooks/useSearchSuggestions";
 import { SearchFiltersPanel } from "./SearchFiltersPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 const contentTypeIcons = {
@@ -47,9 +48,11 @@ export const UniversalSearchBar = () => {
   const isMobile = useIsMobile();
   const {
     results,
-    suggestions,
+    suggestions: searchResults,
     loading
   } = useUniversalSearch(query, filters);
+
+  const { suggestions, loading: suggestionsLoading } = useSearchSuggestions(query);
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -137,6 +140,30 @@ export const UniversalSearchBar = () => {
         break;
       default:
         handleSearch(result.title);
+    }
+    setIsOpen(false);
+  };
+
+  const handleSelectSuggestion = (suggestion: SearchSuggestion) => {
+    const displayName = suggestion.name || suggestion.title;
+    setQuery(displayName);
+    
+    // Navigate directly to the item
+    switch (suggestion.type) {
+      case 'venue':
+        navigate(`/venues/${suggestion.id}`);
+        break;
+      case 'event':
+        navigate(`/events/${suggestion.id}`);
+        break;
+      case 'marketplace':
+        navigate(`/marketplace/${suggestion.id}`);
+        break;
+      case 'tag':
+        navigate(`/ressources?tag=${encodeURIComponent(suggestion.name)}`);
+        break;
+      default:
+        handleSearch(displayName);
     }
     setIsOpen(false);
   };
@@ -245,8 +272,44 @@ export const UniversalSearchBar = () => {
                   <CommandSeparator />
                 </>}
 
-              {/* Group results by type */}
-              {Object.entries(suggestions.reduce((acc, result) => {
+              {/* Live Suggestions */}
+              {suggestions.length > 0 && (
+                <>
+                  <CommandGroup heading="Suggestions">
+                    {suggestions.map((suggestion) => {
+                      const Icon = suggestion.icon;
+                      const displayName = suggestion.name || suggestion.title;
+                      const subtitle = suggestion.subtitle;
+                      
+                      return (
+                        <CommandItem
+                          key={`${suggestion.type}-${suggestion.id}`}
+                          onSelect={() => handleSelectSuggestion(suggestion)}
+                          className="cursor-pointer hover:bg-muted/50 transition-colors p-3"
+                        >
+                          <Icon className="h-4 w-4 mr-3 text-muted-foreground flex-shrink-0" />
+                          <div className="flex flex-col items-start flex-1 min-w-0">
+                            <span className="font-medium text-sm truncate w-full">{displayName}</span>
+                            {subtitle && (
+                              <span className="text-xs text-muted-foreground truncate w-full">{subtitle}</span>
+                            )}
+                          </div>
+                          <Badge 
+                            variant="outline" 
+                            className="ml-2 text-xs capitalize bg-background/50 border-muted flex-shrink-0"
+                          >
+                            {suggestion.type}
+                          </Badge>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
+
+              {/* Group search results by type */}
+              {Object.entries(searchResults.reduce((acc, result) => {
               if (!acc[result.type]) acc[result.type] = [];
               acc[result.type].push(result);
               return acc;
@@ -275,7 +338,7 @@ export const UniversalSearchBar = () => {
                     </CommandItem>)}
                 </CommandGroup>)}
 
-              {suggestions.length === 0 && query.length >= 2 && !loading && <CommandEmpty className="py-6 text-center text-muted-foreground">
+              {suggestions.length === 0 && searchResults.length === 0 && query.length >= 2 && !loading && !suggestionsLoading && <CommandEmpty className="py-6 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <Search className="h-8 w-8 opacity-50" />
                     <p>No results found for "{query}"</p>
@@ -283,7 +346,7 @@ export const UniversalSearchBar = () => {
                   </div>
                 </CommandEmpty>}
 
-              {loading && <div className="py-6 text-center text-muted-foreground">
+              {(loading || suggestionsLoading) && <div className="py-6 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
                     <p className="text-sm">Searching...</p>

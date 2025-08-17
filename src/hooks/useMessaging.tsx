@@ -133,7 +133,7 @@ export const useMessaging = () => {
       let profilesMap: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
       if (senderIds.length > 0) {
         const { data: profs } = await supabase
-          .from('profiles_public')
+        .from('profiles')
           .select('user_id, display_name, avatar_url')
           .in('user_id', senderIds);
         (profs || []).forEach((p: any) => {
@@ -389,7 +389,7 @@ export const useMessaging = () => {
         if (newMessage.sender_id !== user.id) {
           // Fetch the sender profile for the new message
           const { data: senderData } = await supabase
-            .from('profiles_public')
+            .from('profiles')
             .select('display_name, avatar_url')
             .eq('user_id', newMessage.sender_id)
             .single();
