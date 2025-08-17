@@ -42,13 +42,27 @@ export function useSecureMapbox() {
           } catch {}
         }
 
-        // 3) De-duplicated network call
+        // 3) De-duplicated network call with retry logic
         if (!mapboxTokenInflight) {
           mapboxTokenInflight = (async () => {
-            const { data, error } = await supabase.functions.invoke('secure-mapbox-token');
-            if (error) throw error;
-            if (!data?.token) throw new Error('No token received');
-            return data.token as string;
+            let attempts = 0;
+            const maxAttempts = 3;
+            
+            while (attempts < maxAttempts) {
+              try {
+                const { data, error } = await supabase.functions.invoke('secure-mapbox-token');
+                if (error) throw error;
+                if (!data?.token) throw new Error('No token received');
+                return data.token as string;
+              } catch (err: any) {
+                attempts++;
+                if (attempts >= maxAttempts) throw err;
+                
+                // Wait before retry (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
+              }
+            }
+            throw new Error('Max retry attempts reached');
           })().finally(() => {
             mapboxTokenInflight = null;
           });

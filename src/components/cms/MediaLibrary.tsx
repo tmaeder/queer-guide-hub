@@ -158,10 +158,7 @@ export function MediaLibrary() {
 
   useEffect(() => {
     if (isAdmin) {
-      // First populate optimization status, then fetch media
-      populateOptimizationStatus().then(() => {
-        fetchMedia();
-      });
+      fetchMedia();
     }
   }, [isAdmin]);
 
@@ -171,10 +168,56 @@ export function MediaLibrary() {
 
   const populateOptimizationStatus = async () => {
     try {
-      await supabase.functions.invoke('populate-optimization-status');
-      console.log('Optimization status populated');
+      setLoading(true);
+      
+      // Check if we already have data
+      const { data: existingCount } = await supabase
+        .from('media_optimization_status')
+        .select('id', { count: 'exact', head: true });
+
+      if ((existingCount || 0) > 0) {
+        toast({
+          title: "Status Already Synced",
+          description: "Optimization status is already populated.",
+        });
+        return;
+      }
+
+      // Process in smaller batches to avoid timeouts
+      let offset = 0;
+      const batchSize = 50;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase.functions.invoke('populate-optimization-status', {
+          body: { batchSize, offset }
+        });
+
+        if (error) {
+          console.error('Error populating optimization status:', error);
+          break;
+        }
+
+        hasMore = data?.totalProcessed === batchSize;
+        offset += batchSize;
+      }
+
+      toast({
+        title: "Optimization Status Synced",
+        description: "All files have been synced successfully.",
+      });
+      
+      // Refresh media after sync
+      fetchMedia();
     } catch (error) {
       console.error('Error populating optimization status:', error);
+      toast({
+        title: "Sync Failed",
+        description: "Failed to sync optimization status. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 

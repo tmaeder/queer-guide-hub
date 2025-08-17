@@ -95,14 +95,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-
       // Log security event for sign-in attempt
       console.log('Sign-in attempt for email:', email);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Add retry logic for auth requests
+      let attempts = 0;
+      const maxAttempts = 3;
+      let authResult;
+      
+      while (attempts < maxAttempts) {
+        try {
+          authResult = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          break; // Success, exit retry loop
+        } catch (networkError: any) {
+          attempts++;
+          if (attempts >= maxAttempts) {
+            throw networkError;
+          }
+          
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
+        }
+      }
+      
+      const { data, error } = authResult!;
       
       if (error) {
         console.error('Sign in error:', error);
