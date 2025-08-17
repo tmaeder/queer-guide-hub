@@ -415,9 +415,6 @@ export default function Ressources() {
           </Button>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold">{selectedTag.name}</h1>
-            <Badge variant="secondary">
-              {tagUsageCounts[selectedTag.name] || 0} uses
-            </Badge>
           </div>
         </div>
 
