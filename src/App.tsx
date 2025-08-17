@@ -85,7 +85,7 @@ const AccessibilityHub = lazy(() => import("./pages/AccessibilityHub"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SearchResults = lazy(() => import("./pages/SearchResults"));
 const Favorites = lazy(() => import("./pages/Favorites"));
-const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
+
 const Sitemap = lazy(() => import("./pages/Sitemap"));
 
 const queryClient = new QueryClient();
@@ -142,7 +142,7 @@ const App = () => {
                    <Route path="/ressources/:tagName" element={<Ressources />} />
                    <Route path="/tags" element={<Navigate to="/ressources" replace />} />
                    <Route path="/tags/:tagName" element={<Navigate to="/ressources" replace />} />
-                   <Route path="/knowledge" element={<KnowledgeBase />} />
+                   
                    <Route path="/about-hub" element={<AboutHub />} />
                    <Route path="/about" element={<About />} />
                    <Route path="/contact" element={<Contact />} />

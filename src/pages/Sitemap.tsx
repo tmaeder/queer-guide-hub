@@ -15,7 +15,7 @@ const routes: { title: string; links: { label: string; to: string }[] }[] = [
       { label: "Directory", to: "/directory" },
       { label: "Users", to: "/users" },
       { label: "Ressources", to: "/ressources" },
-      { label: "Knowledge Base", to: "/knowledge" },
+      
       { label: "News", to: "/news" },
       { label: "Travel", to: "/travel" },
       { label: "Groups", to: "/groups" },
