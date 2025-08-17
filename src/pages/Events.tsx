@@ -265,7 +265,7 @@ const Events = () => {
                 value={search}
                 onValueChange={setSearch}
                 onKeyDown={(e) => e.key === 'Enter' && handleFiltersChange()}
-                className="border-0 shadow-none p-0 h-auto bg-transparent focus-visible:ring-0 flex-1 min-w-0"
+                className="border-0 shadow-none p-0 h-auto bg-transparent focus-visible:ring-0 flex-1 min-w-0 w-full sm:min-w-[200px] md:min-w-[300px] lg:min-w-[400px]"
                 typingSpeed={75}
                 pauseDuration={1500}
               />
