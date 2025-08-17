@@ -278,14 +278,13 @@ const Events = () => {
               onClick={handleNearMe} 
               variant={nearMe ? "default" : "outline"}
               disabled={locationLoading}
-              className="gap-2"
+              size="icon"
             >
               {locationLoading ? (
                 <Loader className="h-4 w-4 animate-spin" />
               ) : (
                 <MapPin className="h-4 w-4" />
               )}
-              Near Me
             </Button>
             <Button onClick={handleFiltersChange} className="bg-primary">
               Search
