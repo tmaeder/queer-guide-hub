@@ -112,10 +112,9 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
         <Button
           variant="outline"
           onClick={() => setShowAllFilters(!showAllFilters)}
-          className="gap-2"
+          size="icon"
         >
           <Filter className="h-4 w-4" />
-          Filters
         </Button>
       </div>
 
