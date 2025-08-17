@@ -22,7 +22,7 @@
     --secondary-foreground: 0 0% 100%;
 
     --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 40%;
+    --muted-foreground: 0 0% 0%;
 
     --accent: 0 0% 90%;
     --accent-foreground: 0 0% 0%;
@@ -73,7 +73,7 @@
     --secondary-foreground: 0 0% 100%;
 
     --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 70%;
+    --muted-foreground: 0 0% 100%;
 
     --accent: 0 0% 15%;
     --accent-foreground: 0 0% 100%;
@@ -138,7 +138,7 @@
   }
   
   .text-warning {
-    @apply text-muted-foreground;
+    @apply text-foreground;
   }
   
   .text-error {
@@ -147,6 +147,11 @@
   
   .text-info {
     @apply text-foreground;
+  }
+
+  /* Force muted text to be black/white only */
+  .text-muted-foreground {
+    @apply text-foreground !important;
   }
 }
 
