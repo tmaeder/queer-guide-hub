@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useEvents } from '@/hooks/useEvents';
 import { EventCard } from '@/components/events/EventCard';
 import { EventsCalendarView } from '@/components/events/EventsCalendarView';
@@ -35,20 +35,8 @@ const eventTypes = [
   'performance'
 ];
 
-
 const Events = () => {
-  // Safety check for Router context
-  let navigate;
-  try {
-    navigate = useNavigate();
-  } catch (error) {
-    console.error('Router context not available:', error);
-    // Fallback navigation
-    navigate = (path: string) => {
-      window.location.href = path;
-    };
-  }
-  
+  const navigate = useNavigate();
   const { events, loading, error, hasMore, fetchEvents, updateAttendance } = useEvents(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -141,7 +129,6 @@ const Events = () => {
     }
   };
 
-
   const clearFilters = async () => {
     setSearch('');
     setCity('');
@@ -184,7 +171,6 @@ const Events = () => {
 
   const handleViewDetails = (event: Event) => {
     setSelectedEvent(event);
-    // In a real app, this would navigate to a detailed event page
     console.log('View event details:', event);
   };
 
