@@ -141,7 +141,7 @@ export function Header() {
     navigate(path);
     setMenuOpen(false);
   };
-  return <header className="bg-background/95 backdrop-blur-md sticky top-0 z-50 border-b border-white/20">
+  return <header className="bg-background/85 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20">
       <div className="container mx-auto px-4">
         {/* Main header */}
         <div className="h-16 flex items-center justify-between gap-2">
