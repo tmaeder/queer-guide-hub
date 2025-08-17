@@ -58,19 +58,23 @@ serve(async (req) => {
 
       // Create optimization job record
       const jobId = crypto.randomUUID()
-      const job: OptimizationJob = {
+      const job = {
         id: jobId,
         status: 'pending',
-        totalImages: allImages.length,
-        processedImages: 0,
-        successfulImages: 0,
-        failedImages: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        total_images: allImages.length,
+        processed_images: 0,
+        successful_images: 0,
+        failed_images: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
 
-      // Store job in database
-      await supabase.from('image_optimization_jobs').insert([job])
+  // Store job in database
+  const { error: insertError } = await supabase.from('image_optimization_jobs').insert([job])
+  if (insertError) {
+    console.error('Failed to insert job:', insertError)
+    throw insertError
+  }
 
       console.log(`📊 Created optimization job ${jobId} for ${allImages.length} images`)
 
