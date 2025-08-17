@@ -284,10 +284,10 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           <Button
             variant="outline"
             onClick={() => setShowAllFilters(!showAllFilters)}
-            className="gap-2 h-11 px-4"
+            size="icon"
+            className="h-11 w-11"
           >
             <Filter className="h-4 w-4" />
-            {showAllFilters ? 'Hide' : 'More'} Filters
           </Button>
         </div>
       </div>
