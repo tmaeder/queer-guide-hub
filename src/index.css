@@ -151,7 +151,7 @@
 }
 
 /* Animation Utilities */
-.hover-minimal { @apply transition-colors duration-150; }
+.hover-minimal { @apply transition-all duration-200 hover:bg-background/95 hover:backdrop-blur-md; }
 .hover-scale { @apply transition-transform duration-200 hover:scale-105 active:scale-95; }
 
 /* Tailwind animations are available via animate- classes; keep a helper for fade-in */
