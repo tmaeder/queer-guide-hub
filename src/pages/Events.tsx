@@ -8,6 +8,7 @@ import { TagSelector } from '@/components/tags/TagSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { SearchInputTyped } from '@/components/ui/search-input-typed';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -255,13 +256,22 @@ const Events = () => {
           {/* Search Bar */}
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search events..."
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-20" />
+              <SearchInputTyped
+                placeholders={[
+                  "Search for events...",
+                  "Find parties near you...",
+                  "Discover LGBTQ+ meetups...",
+                  "Look for workshops...",
+                  "Search pride events...",
+                  "Find social gatherings..."
+                ]}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onValueChange={setSearch}
                 onKeyDown={(e) => e.key === 'Enter' && handleFiltersChange()}
                 className="pl-9"
+                typingSpeed={75}
+                pauseDuration={1500}
               />
             </div>
             <Button 
