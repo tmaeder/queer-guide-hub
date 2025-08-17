@@ -354,12 +354,12 @@ const UserDirectory = () => {
                   <Button
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
-                    className="gap-2 whitespace-nowrap h-12 px-6 hover:bg-accent/50 transition-colors"
+                    size="icon"
+                    className="relative h-12 w-12 hover:bg-accent/50 transition-colors"
                   >
                     <Filter className="h-4 w-4" />
-                    <span className="hidden sm:inline">Filters</span>
                     {activeFiltersCount > 0 && (
-                      <Badge variant="secondary" className="ml-1 bg-primary text-primary-foreground">
+                      <Badge variant="secondary" className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs flex items-center justify-center bg-primary text-primary-foreground">
                         {activeFiltersCount}
                       </Badge>
                     )}
