@@ -143,7 +143,7 @@ export function Header() {
         <div className="h-16 flex items-center justify-between gap-2">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <Heart className="h-8 w-8 text-primary fill-current" />
+            <img src="/src/assets/undraw_heart.svg" alt="Queer Guide Logo" className="h-8 w-8" />
             <span className="sr-only">Queer Guide</span>
           </Link>
 
