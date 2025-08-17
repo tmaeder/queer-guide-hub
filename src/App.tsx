@@ -105,10 +105,10 @@ const App = () => {
             <div className="min-h-screen flex flex-col relative bg-background">
               <div className="fixed inset-0 z-0">
                 <Aurora
-                  colorStops={["#000000", "#333333", "#000000"]}
-                  blend={0.3}
-                  amplitude={0.8}
-                  speed={0.3}
+                  colorStops={["#FF0080", "#00FF80", "#8000FF"]}
+                  blend={0.4}
+                  amplitude={1.2}
+                  speed={0.4}
                 />
               </div>
               <AnalyticsTracker />
