@@ -158,13 +158,25 @@ export function MediaLibrary() {
 
   useEffect(() => {
     if (isAdmin) {
-      fetchMedia();
+      // First populate optimization status, then fetch media
+      populateOptimizationStatus().then(() => {
+        fetchMedia();
+      });
     }
   }, [isAdmin]);
 
   useEffect(() => {
     filterAndSortMedia();
   }, [media, searchQuery, sortBy, filterBy]);
+
+  const populateOptimizationStatus = async () => {
+    try {
+      await supabase.functions.invoke('populate-optimization-status');
+      console.log('Optimization status populated');
+    } catch (error) {
+      console.error('Error populating optimization status:', error);
+    }
+  };
 
   const fetchMedia = async () => {
     try {
@@ -957,6 +969,14 @@ export function MediaLibrary() {
         </div>
         
         <div className="flex gap-2">
+          <Button 
+            onClick={populateOptimizationStatus} 
+            variant="outline"
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Sync Optimization Status
+          </Button>
           <Button onClick={() => setShowUpload(true)}>
             <Upload className="h-4 w-4 mr-1" />
             Upload
