@@ -286,8 +286,8 @@ const Events = () => {
                 <MapPin className="h-4 w-4" />
               )}
             </Button>
-            <Button onClick={handleFiltersChange} className="bg-primary">
-              Search
+            <Button onClick={handleFiltersChange} className="bg-primary" size="icon">
+              <Search className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
