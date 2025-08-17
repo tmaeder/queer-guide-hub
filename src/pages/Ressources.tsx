@@ -43,7 +43,7 @@ export default function Ressources() {
   const [processingImages, setProcessingImages] = useState(false);
   const [categorizingTags, setCategorizingTags] = useState(false);
   const [tagUsageCounts, setTagUsageCounts] = useState<Record<string, number>>({});
-  const [professions, setProfessions] = useState<Array<{name: string, count: number}>>([]);
+  const [professions, setProfessions] = useState<string[]>([]);
   const [selectedProfession, setSelectedProfession] = useState<string>("");
 
   // Load professions from personalities
@@ -54,23 +54,8 @@ export default function Ressources() {
           data
         } = await supabase.from('personalities').select('profession').not('profession', 'is', null);
         if (data) {
-          // Split comma-separated professions and count occurrences
-          const professionCounts: Record<string, number> = {};
-          
-          data.forEach(p => {
-            if (p.profession) {
-              const profs = p.profession.split(',').map(prof => prof.trim()).filter(Boolean);
-              profs.forEach(prof => {
-                professionCounts[prof] = (professionCounts[prof] || 0) + 1;
-              });
-            }
-          });
-          
-          const professionsWithCounts = Object.entries(professionCounts)
-            .map(([name, count]) => ({ name, count }))
-            .sort((a, b) => a.name.localeCompare(b.name));
-          
-          setProfessions(professionsWithCounts);
+          const uniqueProfessions = [...new Set(data.map(p => p.profession).filter(Boolean))].sort();
+          setProfessions(uniqueProfessions);
         }
       } catch (error) {
         console.error('Error loading professions:', error);
@@ -143,13 +128,7 @@ export default function Ressources() {
 
     // Filter by category
     if (filterCategory !== "all") {
-      // Check if it's a main category (show all subcategories)
-      if (Object.keys(categoryStructure).includes(filterCategory)) {
-        const subCategories = categoryStructure[filterCategory as keyof typeof categoryStructure];
-        filtered = filtered.filter(tag => subCategories.includes(tag.category || ''));
-      } else {
-        filtered = filtered.filter(tag => tag.category === filterCategory);
-      }
+      filtered = filtered.filter(tag => tag.category === filterCategory);
     }
 
     // Sort tags
@@ -169,44 +148,11 @@ export default function Ressources() {
     return sorted;
   }, [allTags, searchResults, filterCategory, sortBy, tagUsageCounts, viewMode]);
 
-  // Define hierarchical categories structure
-  const categoryStructure = {
-    'Identity & Orientation': [
-      'Gender Identity & Expression',
-      'Sexual & Romantic Orientations'
-    ],
-    'Relationships & Dynamics': [
-      'Relationship Structures', 
-      'Partner Roles & Titles'
-    ],
-    'Sexual Practices, Kink & BDSM': [
-      'Core Concepts & Philosophies',
-      'Roles & Power Dynamics',
-      'Kink & Fetish Domains'
-    ],
-    'Community, Culture, & Support': [
-      'Community & Events',
-      'Activism & Social Issues', 
-      'Support & Resources',
-      'Slang & Cultural Terms'
-    ],
-    'Health, Safety, & Wellness': [
-      'Safety Practices & Concepts',
-      'Health & Wellness Resources',
-      'STIs & Health Conditions',
-      'Substances & Harm Reduction'
-    ],
-    'Other': [
-      'Professions',
-      'Miscellaneous'
-    ]
-  };
-
   // Get unique categories
   const categories = useMemo(() => {
-    const cats = tagsByCategory.map(cat => cat.category);
+    const cats = [...new Set(allTags.map(tag => tag.category).filter(Boolean))];
     return cats.sort();
-  }, [tagsByCategory]);
+  }, [allTags]);
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.trim()) {
@@ -414,7 +360,13 @@ export default function Ressources() {
             Back
           </Button>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">{selectedTag.name}</h1>
+            <div className="w-4 h-4 rounded-full shrink-0" style={{
+            backgroundColor: selectedTag.color
+          }} />
+            <h1 className="text-3xl font-bold">#{selectedTag.name}</h1>
+            <Badge variant="secondary">
+              {tagUsageCounts[selectedTag.name] || 0} uses
+            </Badge>
           </div>
         </div>
 
@@ -440,6 +392,30 @@ export default function Ressources() {
           </div>
 
           <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Usage Statistics
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Total Usage</span>
+                  <Badge variant="outline">{tagUsageCounts[selectedTag.name] || 0}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Category</span>
+                  <Badge variant="secondary">{selectedTag.category || 'Uncategorized'}</Badge>
+                </div>
+                {selectedTag.created_at && <div className="flex items-center justify-between">
+                    <span className="text-sm">Created</span>
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(selectedTag.created_at).toLocaleDateString()}
+                    </span>
+                  </div>}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>;
@@ -464,63 +440,57 @@ export default function Ressources() {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setDisplayMode(displayMode === "grid" ? "list" : "grid")}>
-            {displayMode === "grid" ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
-          </Button>
+          
         </div>
       </div>
 
-      {/* Main content area */}
-      <div className="space-y-4">
-        {/* Search and Filters */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search tags, categories, descriptions..." value={searchQuery} onChange={e => handleSearch(e.target.value)} className="pl-10" />
-              </div>
-              <div className="flex gap-2">
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="w-10 h-10 p-0 justify-center">
-                    <Filter className="h-4 w-4" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-96">
-                    <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="professions">Professions</SelectItem>
-                    {Object.entries(categoryStructure).map(([mainCategory, subCategories]) => (
-                      <div key={mainCategory}>
-                        <SelectItem value={mainCategory} className="font-semibold">
-                          {mainCategory}
-                        </SelectItem>
-                        {subCategories.map((subCategory) => (
-                          <SelectItem key={subCategory} value={subCategory} className="pl-6 text-muted-foreground">
-                            {subCategory}
-                          </SelectItem>
-                        ))}
-                      </div>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                  <SelectTrigger className="w-10 h-10 p-0 justify-center">
-                    <TrendingUp className="h-4 w-4" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="alphabetical">Alphabetical</SelectItem>
-                    <SelectItem value="usage">Most Used</SelectItem>
-                    <SelectItem value="popular">Popular</SelectItem>
-                    <SelectItem value="recent">Recent</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Tabs for different resource types */}
+      <Tabs defaultValue="tags" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="tags">Tags & Categories</TabsTrigger>
+          <TabsTrigger value="professions">Professions</TabsTrigger>
+        </TabsList>
         
-        {/* Content Grid */}
-        {filterCategory === "professions" ? (
+        <TabsContent value="tags" className="space-y-4">
+          {/* Search and Filters */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Search tags, categories, descriptions..." value={searchQuery} onChange={e => handleSearch(e.target.value)} className="pl-10" />
+                </div>
+                <div className="flex gap-2">
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger className="w-10 h-10 p-0 justify-center">
+                      <Filter className="h-4 w-4" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map(category => <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+                    <SelectTrigger className="w-10 h-10 p-0 justify-center">
+                      <TrendingUp className="h-4 w-4" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alphabetical">Alphabetical</SelectItem>
+                      <SelectItem value="usage">Most Used</SelectItem>
+                      <SelectItem value="popular">Popular</SelectItem>
+                      <SelectItem value="recent">Recent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="professions" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>LGBTQ+ Personalities by Profession</CardTitle>
@@ -530,194 +500,22 @@ export default function Ressources() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {professions.map(profession => (
-                  <Card 
-                    key={profession.name} 
-                    className="cursor-pointer hover:bg-accent transition-colors"
-                    onClick={() => navigate(`/professions/${encodeURIComponent(profession.name)}`)}
-                  >
-                    <CardContent className="p-4 text-center">
-                      <h3 className="font-medium">{profession.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {profession.count} {profession.count === 1 ? 'person' : 'people'}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
+                {professions.map(profession => <Button key={profession} variant={selectedProfession === profession ? "default" : "outline"} className="h-auto p-3 text-left justify-start" onClick={() => {
+                if (selectedProfession === profession) {
+                  setSelectedProfession("");
+                  navigate('/personalities');
+                } else {
+                  setSelectedProfession(profession);
+                  navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
+                }
+              }}>
+                    <div className="truncate">{profession}</div>
+                  </Button>)}
               </div>
             </CardContent>
           </Card>
-        ) : (
-          <>
-            {/* Category Overview Cards */}
-            {viewMode === "overview" && (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {/* Main hierarchical categories */}
-                {Object.entries(categoryStructure).map(([mainCategory, subCategories]) => {
-                  const totalTags = subCategories.reduce((sum, subCat) => {
-                    const categoryData = tagsByCategory.find(cat => cat.category === subCat);
-                    return sum + (categoryData?.tags.length || 0);
-                  }, 0);
-                  
-                  const totalUsage = subCategories.reduce((sum, subCat) => {
-                    const categoryData = tagsByCategory.find(cat => cat.category === subCat);
-                    return sum + (categoryData?.tags.reduce((tagSum, tag) => tagSum + (tagUsageCounts[tag.name] || 0), 0) || 0);
-                  }, 0);
-                  
-                  return (
-                    <Card key={mainCategory} className="cursor-pointer hover:shadow-md transition-all duration-200 overflow-hidden group" onClick={() => {
-                      setSelectedCategory(mainCategory);
-                      setViewMode("category");
-                    }}>
-                      <CardContent className="p-4 text-center space-y-3">
-                        <div className="flex items-center justify-center">
-                          <Tag className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-sm">{mainCategory}</h3>
-                          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
-                            <span>{totalTags} tags</span>
-                            <span>•</span>
-                            <span>{totalUsage} uses</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Category Detail View */}
-            {viewMode === "category" && selectedCategory && (
-              <div className="space-y-4">
-                {/* Check if it's a main category */}
-                {Object.keys(categoryStructure).includes(selectedCategory) ? (
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-2xl font-bold">{selectedCategory}</h2>
-                      <Badge variant="secondary">
-                        {categoryStructure[selectedCategory as keyof typeof categoryStructure].length} subcategories
-                      </Badge>
-                    </div>
-                    
-                    {/* Show subcategories */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {categoryStructure[selectedCategory as keyof typeof categoryStructure].map((subCategory) => {
-                        const categoryData = tagsByCategory.find(cat => cat.category === subCategory);
-                        const categoryUsageCount = categoryData?.tags.reduce((sum, tag) => sum + (tagUsageCounts[tag.name] || 0), 0) || 0;
-                        
-                        return (
-                          <Card key={subCategory} className="cursor-pointer hover:shadow-md transition-all duration-200 overflow-hidden group" onClick={() => {
-                            setSelectedCategory(subCategory);
-                          }}>
-                            <CardContent className="p-4 space-y-3">
-                              <div className="flex items-center gap-2">
-                                <Tag className="h-5 w-5 text-primary" />
-                                <h3 className="font-semibold">{subCategory}</h3>
-                              </div>
-                              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                <span>{categoryData?.tags.length || 0} tags</span>
-                                <span>•</span>
-                                <span>{categoryUsageCount} uses</span>
-                              </div>
-                              {categoryData && categoryData.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-2">
-                                  {categoryData.tags.slice(0, 3).map(tag => (
-                                    <Badge key={tag.id} variant="outline" className="text-xs">
-                                      {tag.name}
-                                    </Badge>
-                                  ))}
-                                  {categoryData.tags.length > 3 && (
-                                    <Badge variant="outline" className="text-xs">
-                                      +{categoryData.tags.length - 3} more
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  /* Show individual tags for subcategories */
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-2xl font-bold">{selectedCategory}</h2>
-                      <Badge variant="secondary">
-                        {tagsByCategory.find(cat => cat.category === selectedCategory)?.tags.length || 0} tags
-                      </Badge>
-                    </div>
-                    <div className={displayMode === "grid" ? "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" : "space-y-2"}>
-                      {tagsByCategory.find(cat => cat.category === selectedCategory)?.tags.map(tag => (
-                        <Card key={tag.id} className="cursor-pointer hover:shadow-md transition-all duration-200 overflow-hidden group" onClick={() => handleTagClick(tag)}>
-                          <CardContent className={displayMode === "grid" ? "p-3 text-center space-y-2" : "p-3 flex items-center justify-between"}>
-                            {tag.image_url && displayMode === "grid" && (
-                              <div className="aspect-square w-full overflow-hidden rounded-md">
-                                <img src={tag.image_url} alt={tag.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                              </div>
-                            )}
-                            <div className={displayMode === "list" ? "flex-1" : ""}>
-                              <h3 className="font-medium text-sm">{tag.name}</h3>
-                              {displayMode === "list" && tag.description && (
-                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{tag.description}</p>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <BarChart3 className="h-3 w-3" />
-                              <span>{tagUsageCounts[tag.name] || 0}</span>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Search Results */}
-            {viewMode === "search" && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold">Search Results</h2>
-                  <Badge variant="secondary">
-                    {filteredAndSortedTags.length} results
-                  </Badge>
-                </div>
-                <div className={displayMode === "grid" ? "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" : "space-y-2"}>
-                  {filteredAndSortedTags.map(tag => (
-                    <Card key={tag.id} className="cursor-pointer hover:shadow-md transition-all duration-200 overflow-hidden group" onClick={() => handleTagClick(tag)}>
-                      <CardContent className={displayMode === "grid" ? "p-3 text-center space-y-2" : "p-3 flex items-center justify-between"}>
-                        {tag.image_url && displayMode === "grid" && (
-                          <div className="aspect-square w-full overflow-hidden rounded-md">
-                            <img src={tag.image_url} alt={tag.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                          </div>
-                        )}
-                        <div className={displayMode === "list" ? "flex-1" : ""}>
-                          <h3 className="font-medium text-sm">{tag.name}</h3>
-                          {displayMode === "list" && tag.description && (
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{tag.description}</p>
-                          )}
-                          {tag.category && (
-                            <Badge variant="outline" className="text-xs mt-1">{tag.category}</Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <BarChart3 className="h-3 w-3" />
-                          <span>{tagUsageCounts[tag.name] || 0}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Stats Overview */}
       
@@ -741,6 +539,80 @@ export default function Ressources() {
                 {categorizingTags ? 'Categorizing...' : 'AI Auto-Categorize'}
               </Button>
             </div>
+          </CardContent>
+        </Card>}
+
+      {/* Results Info */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-semibold">
+            {viewMode === "search" ? "Search Results" : "All Tags"}
+          </h2>
+          <Badge variant="secondary">{filteredAndSortedTags.length} tags</Badge>
+        </div>
+      </div>
+
+      {/* Tags Display */}
+      <div className={displayMode === "grid" ? "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" : "space-y-2"}>
+        {filteredAndSortedTags.map((tag, index) => <Card key={`${tag.id}-${index}`} className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${displayMode === "list" ? "flex items-center p-4" : "overflow-hidden"}`} onClick={() => handleTagClick(tag)}>
+            {displayMode === "grid" ? <>
+                <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                  {tag.image_url ? <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover transition-transform duration-200 hover:scale-110" onError={e => {
+              e.currentTarget.src = '/placeholder.svg';
+            }} /> : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
+                      <Tag className="h-8 w-8 text-muted-foreground" />
+                    </div>}
+                </div>
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-3 h-3 rounded-full shrink-0" style={{
+                backgroundColor: tag.color
+              }} />
+                    <span className="text-sm font-medium truncate">{tag.name}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{tag.category || 'Uncategorized'}</span>
+                    {tagUsageCounts[tag.name] > 0 && <Badge variant="outline" className="text-xs">
+                        {tagUsageCounts[tag.name]} uses
+                      </Badge>}
+                  </div>
+                </CardContent>
+              </> : <div className="flex items-center gap-4 w-full">
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted shrink-0">
+                  {tag.image_url ? <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center">
+                      <Tag className="h-6 w-6 text-muted-foreground" />
+                    </div>}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-3 h-3 rounded-full shrink-0" style={{
+                backgroundColor: tag.color
+              }} />
+                    <span className="font-medium truncate">{tag.name}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {tag.description || tag.category || 'No description'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge variant="outline" className="text-xs">
+                    {tag.category || 'Uncategorized'}
+                  </Badge>
+                  {tagUsageCounts[tag.name] > 0 && <Badge variant="secondary" className="text-xs">
+                      {tagUsageCounts[tag.name]} uses
+                    </Badge>}
+                </div>
+              </div>}
+          </Card>)}
+      </div>
+
+      {filteredAndSortedTags.length === 0 && <Card>
+          <CardContent className="p-12 text-center">
+            <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No tags found</h3>
+            <p className="text-muted-foreground">
+              {viewMode === "search" ? "Try adjusting your search terms or filters" : "No tags available yet"}
+            </p>
           </CardContent>
         </Card>}
     </div>;
