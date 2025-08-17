@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Phone, Globe, Instagram } from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Instagram, Eye } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { VenueEvents } from './VenueEvents';
 import { Link } from 'react-router-dom';
@@ -103,7 +103,7 @@ export function VenueCard({
             <FavoriteButton itemId={venue.id} type="venue" />
             <Link to={`/venues/${venue.id}`}>
               <Button size="sm" variant="outline">
-                View Details
+                <Eye className="h-4 w-4" />
               </Button>
             </Link>
           </div>
