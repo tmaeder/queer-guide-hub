@@ -164,7 +164,7 @@ const Marketplace = () => {
             </Card>}
 
           {/* Tab Contents */}
-          {categories.map(category => <TabsContent key={category.id} value={category.id} className="bg-background">
+          {categories.map(category => <TabsContent key={category.id} value={category.id} className="">
               {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length > 0 && <>
                   <div className="flex items-center justify-between mb-6">
                     <p className="text-muted-foreground">
