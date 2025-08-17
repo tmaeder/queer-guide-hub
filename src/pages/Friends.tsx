@@ -34,7 +34,7 @@ export default function Friends() {
       
       const friendIds = friends.map(f => f.user_id === user.id ? f.target_user_id : f.user_id);
       const { data, error } = await supabase
-        .from('profiles_public')
+        .from('profiles')
         .select('user_id, display_name, avatar_url, location')
         .in('user_id', friendIds);
       
@@ -51,7 +51,7 @@ export default function Friends() {
       
       const requestIds = pendingRequests.map(r => r.user_id);
       const { data, error } = await supabase
-        .from('profiles_public')
+        .from('profiles')
         .select('user_id, display_name, avatar_url, location')
         .in('user_id', requestIds);
       

@@ -128,7 +128,7 @@ const UserDirectory = () => {
     queryKey: ["user-directory", filters, nearMe, userLocation],
     queryFn: async () => {
       let query: any = supabase
-        .from("profiles_public")
+        .from("profiles")
         .select("*");
 
       // Search query
