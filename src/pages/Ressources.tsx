@@ -425,63 +425,44 @@ export default function Ressources() {
         </div>
       </div>;
   }
-  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="container mx-auto p-6 space-y-8">
-        {/* Header with enhanced design */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary/10 via-primary/5 to-background p-8 border">
-          <div className="absolute inset-0 bg-grid-black/[0.02] bg-[size:20px_20px]" />
-          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              {viewMode !== "overview" && (
-                <Button 
-                  variant="outline" 
-                  onClick={handleBack} 
-                  className="shrink-0 hover-scale transition-all duration-200"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-              )}
-              <div className="space-y-2">
-                <h1 className="text-4xl font-bold flex items-center gap-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  <Sparkles className="h-10 w-10 text-primary animate-pulse" />
-                  Resources
-                </h1>
-                <p className="text-muted-foreground text-lg">
-                  Discover and explore LGBTQ+ community tags, resources, and professions
-                </p>
-              </div>
+  return <div className="min-h-screen">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <Card className="mb-8">
+          <CardContent className="p-8 text-center">
+            <h1 className="text-5xl font-bold text-foreground mb-4 animate-fade-in">
+              Resources
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Discover and explore LGBTQ+ community tags, resources, and professions
+            </p>
+            <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+              <Badge variant="outline">
+                {allTags.length} Total Tags
+              </Badge>
+              <Badge variant="outline">
+                {categories.length} Categories
+              </Badge>
             </div>
-            
-            <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
-                <Badge variant="outline" className="animate-fade-in">
-                  {allTags.length} Total Tags
-                </Badge>
-                <Badge variant="outline" className="animate-fade-in">
-                  {categories.length} Categories
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Enhanced Tabs */}
+        {/* Tabs */}
         <Tabs defaultValue="tags" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-12 bg-muted/50 backdrop-blur-sm border">
-            <TabsTrigger value="tags" className="text-base font-medium transition-all duration-200">
+          <TabsList className="grid w-full grid-cols-2 h-12 max-w-md mx-auto mb-8">
+            <TabsTrigger value="tags" className="text-base font-medium">
               Tags & Categories
             </TabsTrigger>
-            <TabsTrigger value="professions" className="text-base font-medium transition-all duration-200">
+            <TabsTrigger value="professions" className="text-base font-medium">
               Professions
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="tags" className="space-y-6 animate-fade-in">
-            {/* Enhanced Categories Overview */}
+            {/* Categories Overview */}
             {viewMode === "overview" && (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
-                <CardHeader className="pb-6">
+              <Card className="mb-8">
+                <CardHeader>
                   <CardTitle className="text-2xl flex items-center gap-2">
                     <Grid3X3 className="h-6 w-6 text-primary" />
                     Browse by Category
@@ -498,8 +479,7 @@ export default function Ressources() {
                       return (
                         <Card 
                           key={category} 
-                          className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 hover:-translate-y-1 border-2 hover:border-primary/20 bg-gradient-to-br from-card to-muted/20"
-                          style={{ animationDelay: `${index * 50}ms` }}
+                          className="group cursor-pointer transition-all duration-200 hover:bg-accent/10"
                           onClick={() => {
                             setFilterCategory(category);
                             setViewMode("category");
@@ -507,14 +487,13 @@ export default function Ressources() {
                           }}
                         >
                           <CardContent className="p-6 text-center">
-                            <div className="mb-4 relative">
-                              <div className="absolute inset-0 rounded-full bg-primary/10 scale-0 group-hover:scale-100 transition-transform duration-300" />
-                              <Icon className="h-12 w-12 mx-auto text-primary relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                            <div className="mb-4">
+                              <Icon className="h-12 w-12 mx-auto text-primary" />
                             </div>
                             <h3 className="font-semibold text-base mb-2 capitalize group-hover:text-primary transition-colors duration-200">
                               {category}
                             </h3>
-                            <Badge variant="secondary" className="text-sm px-3 py-1 group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-200">
+                            <Badge variant="secondary" className="text-sm px-3 py-1">
                               {categoryTags.length} tags
                             </Badge>
                           </CardContent>
@@ -526,25 +505,26 @@ export default function Ressources() {
               </Card>
             )}
 
-            {/* Enhanced Search and Filters */}
-            <Card className="border-0 shadow-lg bg-card/80 backdrop-blur-sm">
+            {/* Search and Filters */}
+            <Card className="mb-8">
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative flex-1 group">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input 
                       placeholder="Search tags, categories, descriptions..." 
                       value={searchQuery} 
                       onChange={e => handleSearch(e.target.value)} 
-                      className="pl-12 h-12 text-base border-2 focus:border-primary transition-all duration-200 bg-background/50" 
+                      className="pl-12 h-12 text-base" 
                     />
                   </div>
                   <div className="flex gap-3">
                     <Select value={filterCategory} onValueChange={setFilterCategory}>
-                      <SelectTrigger className="w-12 h-12 p-0 justify-center border-2 hover:border-primary/50 transition-colors duration-200">
-                        <Filter className="h-5 w-5" />
+                      <SelectTrigger className="w-48 h-12">
+                        <Filter className="h-4 w-4 mr-2" />
+                        <SelectValue placeholder="Filter by category" />
                       </SelectTrigger>
-                      <SelectContent className="bg-card/95 backdrop-blur-sm border-2">
+                      <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
                         {categories.map(category => (
                           <SelectItem key={category} value={category} className="capitalize">
@@ -555,10 +535,11 @@ export default function Ressources() {
                     </Select>
                     
                     <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                      <SelectTrigger className="w-12 h-12 p-0 justify-center border-2 hover:border-primary/50 transition-colors duration-200">
-                        <TrendingUp className="h-5 w-5" />
+                      <SelectTrigger className="w-48 h-12">
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        <SelectValue placeholder="Sort by" />
                       </SelectTrigger>
-                      <SelectContent className="bg-card/95 backdrop-blur-sm border-2">
+                      <SelectContent>
                         <SelectItem value="alphabetical">Alphabetical</SelectItem>
                         <SelectItem value="usage">Most Used</SelectItem>
                         <SelectItem value="popular">Popular</SelectItem>
