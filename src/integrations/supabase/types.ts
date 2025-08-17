@@ -6028,9 +6028,17 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      assign_user_role: {
+        Args: { role_name: string; user_id: string }
+        Returns: boolean
+      }
       basic_rate_limit: {
         Args: { identifier: string; max_attempts?: number }
         Returns: boolean
+      }
+      calculate_secure_venue_distance: {
+        Args: { user_lat: number; user_lng: number; venue_id: string }
+        Returns: number
       }
       can_view_sensitive_profile_data: {
         Args: {
@@ -6072,6 +6080,14 @@ export type Database = {
           | Record<PropertyKey, never>
           | { p_action: string; p_role_name: string; p_table_name: string }
           | { schema_name: string; table_name: string }
+        Returns: undefined
+      }
+      create_notification: {
+        Args: { data?: Json; message: string; type: string; user_id: string }
+        Returns: string
+      }
+      create_tag_relationships_table_if_not_exists: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       decrement_comment_likes: {
@@ -6147,6 +6163,10 @@ export type Database = {
           tag_name: string
         }[]
       }
+      get_import_statistics: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_news_cron_status: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -6155,6 +6175,18 @@ export type Database = {
           next_run: string
           status: string
         }[]
+      }
+      get_or_create_direct_conversation: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: string
+      }
+      get_secure_profile_data: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
+      get_secure_venue_checkins: {
+        Args: { venue_id: string }
+        Returns: Json
       }
       get_table_policies: {
         Args:
@@ -6190,8 +6222,20 @@ export type Database = {
           table_name: string
         }[]
       }
+      increment_article_views: {
+        Args: { article_id: string }
+        Returns: undefined
+      }
       increment_comment_likes: {
         Args: { comment_id: string }
+        Returns: undefined
+      }
+      increment_listing_views: {
+        Args: { listing_id: string }
+        Returns: undefined
+      }
+      increment_personality_views: {
+        Args: { personality_id: string }
         Returns: undefined
       }
       increment_post_comments: {
@@ -6275,6 +6319,10 @@ export type Database = {
       validate_file_upload: {
         Args: { file_name: string; file_size: number; mime_type: string }
         Returns: Json
+      }
+      validate_import_data: {
+        Args: { data: Json }
+        Returns: boolean
       }
       validate_password_enhanced: {
         Args: { password_text: string }
