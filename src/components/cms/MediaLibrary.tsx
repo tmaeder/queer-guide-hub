@@ -186,6 +186,24 @@ export function MediaLibrary() {
         console.error('CMS media error:', cmsError);
       }
 
+      // Fetch optimization status data for all files
+      const { data: optimizationData, error: optimizationError } = await supabase
+        .from('media_optimization_status')
+        .select('*');
+
+      if (optimizationError) {
+        console.error('Error fetching optimization status:', optimizationError);
+      }
+
+      // Create optimization status lookup
+      const optimizationLookup: Record<string, any> = {};
+      if (optimizationData) {
+        optimizationData.forEach(opt => {
+          const key = `${opt.bucket_name}/${opt.file_path}`;
+          optimizationLookup[key] = opt;
+        });
+      }
+
       // Process CMS media data
       const processCmsMedia = (cmsMediaData || []).map(item => ({
         ...item,
@@ -193,7 +211,18 @@ export function MediaLibrary() {
         content_items: item.cms_content_media?.map((rel: any) => 
           rel.cms_content?.title || 'Untitled'
         ).filter(Boolean) || [],
-        source: 'cms'
+        source: 'cms',
+        optimization_status: 'not_optimized',
+        formats_available: ['Original'],
+        optimization_metadata: {
+          original_size: item.file_size,
+          formats: [{
+            format: item.mime_type.split('/')[1]?.toUpperCase() || 'UNKNOWN',
+            size: item.file_size,
+            width: item.width,
+            height: item.height
+          }]
+        }
       }));
 
       // Fetch storage files from all buckets
@@ -219,8 +248,54 @@ export function MediaLibrary() {
               .filter(file => file.name && !file.name.includes('.emptyFolderPlaceholder'))
               .map(file => {
                 const ext = file.name.split('.').pop()?.toLowerCase() || '';
-                const hasOptimizedFormats = ['webp', 'avif'].includes(ext);
-                const isOriginalFormat = ['jpg', 'jpeg', 'png'].includes(ext);
+                const optimizationKey = `${bucket}/${file.name}`;
+                const optimizationInfo = optimizationLookup[optimizationKey];
+                
+                // Determine status based on database record or file extension fallback
+                let optimizationStatus = 'not_optimized';
+                let formatsAvailable = [ext.toUpperCase()];
+                let optimizationMetadata = {
+                  original_size: file.metadata?.size || 0,
+                  compressed_size: undefined as number | undefined,
+                  compression_ratio: undefined as number | undefined,
+                  formats: [{
+                    format: ext.toUpperCase(),
+                    size: file.metadata?.size || 0,
+                    width: file.metadata?.width,
+                    height: file.metadata?.height
+                  }]
+                };
+
+                if (optimizationInfo) {
+                  optimizationStatus = optimizationInfo.optimization_status;
+                  if (optimizationInfo.optimized_formats && Array.isArray(optimizationInfo.optimized_formats)) {
+                    const formats = optimizationInfo.optimized_formats;
+                    formatsAvailable = [ext.toUpperCase(), ...formats.map((f: any) => f.format?.toUpperCase())].filter(Boolean);
+                    
+                    optimizationMetadata = {
+                      ...optimizationMetadata,
+                      compressed_size: optimizationInfo.compression_data?.total_compressed_size,
+                      compression_ratio: optimizationInfo.compression_data?.compression_ratio,
+                      formats: [
+                        {
+                          format: ext.toUpperCase(),
+                          size: optimizationInfo.original_size,
+                          width: file.metadata?.width,
+                          height: file.metadata?.height
+                        },
+                        ...formats
+                      ]
+                    };
+                  }
+                } else {
+                  // Fallback to old logic for files without optimization records
+                  const hasOptimizedFormats = ['webp', 'avif'].includes(ext);
+                  if (hasOptimizedFormats) {
+                    optimizationStatus = 'optimized';
+                    optimizationMetadata.compressed_size = Math.floor((file.metadata?.size || 0) * 0.7);
+                    optimizationMetadata.compression_ratio = 30;
+                  }
+                }
                 
                 return {
                   id: `${bucket}-${file.name}`,
@@ -239,19 +314,9 @@ export function MediaLibrary() {
                   content_items: [],
                   source: bucket,
                   bucket: bucket,
-                  optimization_status: hasOptimizedFormats ? 'optimized' : (isOriginalFormat ? 'not_optimized' : 'not_optimized'),
-                  formats_available: [ext.toUpperCase()],
-                  optimization_metadata: {
-                    original_size: file.metadata?.size || 0,
-                    compressed_size: hasOptimizedFormats ? Math.floor((file.metadata?.size || 0) * 0.7) : undefined,
-                    compression_ratio: hasOptimizedFormats ? 30 : undefined,
-                    formats: [{
-                      format: ext.toUpperCase(),
-                      size: file.metadata?.size || 0,
-                      width: file.metadata?.width,
-                      height: file.metadata?.height
-                    }]
-                  }
+                  optimization_status: optimizationStatus,
+                  formats_available: formatsAvailable,
+                  optimization_metadata: optimizationMetadata
                 };
               });
             

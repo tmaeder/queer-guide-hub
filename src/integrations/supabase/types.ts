@@ -3223,6 +3223,48 @@ export type Database = {
           },
         ]
       }
+      media_optimization_status: {
+        Row: {
+          bucket_name: string
+          compression_data: Json | null
+          created_at: string
+          file_path: string
+          id: string
+          optimization_status: string
+          optimized_at: string | null
+          optimized_formats: Json | null
+          original_format: string
+          original_size: number
+          updated_at: string
+        }
+        Insert: {
+          bucket_name: string
+          compression_data?: Json | null
+          created_at?: string
+          file_path: string
+          id?: string
+          optimization_status?: string
+          optimized_at?: string | null
+          optimized_formats?: Json | null
+          original_format: string
+          original_size: number
+          updated_at?: string
+        }
+        Update: {
+          bucket_name?: string
+          compression_data?: Json | null
+          created_at?: string
+          file_path?: string
+          id?: string
+          optimization_status?: string
+          optimized_at?: string | null
+          optimized_formats?: Json | null
+          original_format?: string
+          original_size?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string
