@@ -6021,107 +6021,19 @@ export type Database = {
           table_name: string
         }[]
       }
-      anonymize_location_data: {
-        Args:
-          | { lat: number; lng: number; precision_level?: string }
-          | { lat: number; lng: number; precision_meters?: number }
-        Returns: Json
-      }
-      anonymize_old_location_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      assign_admin_by_id: {
-        Args: { target_user_id: string }
-        Returns: boolean
-      }
-      assign_first_admin: {
-        Args: { user_email: string }
-        Returns: boolean
-      }
-      assign_role: {
-        Args: {
-          role_to_assign: Database["public"]["Enums"]["app_role"]
-          target_user_id: string
-        }
-        Returns: undefined
-      }
-      assign_user_role: {
-        Args:
-          | {
-              action_type?: string
-              new_role: Database["public"]["Enums"]["app_role"]
-              target_user_id: string
-            }
-          | {
-              p_role: Database["public"]["Enums"]["app_role"]
-              p_target_user_id: string
-            }
-        Returns: boolean
-      }
-      auto_anonymize_old_checkins: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       basic_rate_limit: {
         Args: { identifier: string; max_attempts?: number }
         Returns: boolean
       }
-      calculate_profile_completion: {
-        Args: { user_id_param: string }
-        Returns: number
-      }
-      calculate_secure_venue_distance: {
-        Args: { user_lat: number; user_lng: number; venue_id_param: string }
-        Returns: number
-      }
       can_view_sensitive_profile_data: {
-        Args:
-          | {
-              privacy_field?: string
-              profile_user_id: string
-              requesting_user_id: string
-            }
-          | { requesting_user_id: string; target_user_id: string }
-        Returns: boolean
-      }
-      can_view_user_location: {
-        Args: { requesting_user_id: string; target_user_id: string }
-        Returns: boolean
-      }
-      check_rate_limit: {
         Args: {
-          identifier: string
-          max_attempts?: number
-          time_window_minutes?: number
+          privacy_field?: string
+          profile_user_id: string
+          requesting_user_id: string
         }
         Returns: boolean
       }
-      check_rate_limit_key: {
-        Args: {
-          identifier: string
-          max_attempts?: number
-          time_window_minutes?: number
-        }
-        Returns: boolean
-      }
-      cleanup_expired_bookings: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_expired_passkey_challenges: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_location_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_cancelled_bookings: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_sensitive_data: {
+      clean_old_rate_limits: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
@@ -6139,93 +6051,11 @@ export type Database = {
           | { p_schema_name: string; p_table_name: string }
         Returns: undefined
       }
-      consolidate_rls_policies: {
-        Args: {
-          p_action: string
-          p_role_name: string
-          p_schema_name: string
-          p_table_name: string
-        }
-        Returns: undefined
-      }
-      consolidate_rls_policies_v2: {
-        Args: {
-          p_action: string
-          p_role_name: string
-          p_schema_name: string
-          p_table_name: string
-        }
-        Returns: undefined
-      }
       consolidate_table_policies: {
         Args:
           | Record<PropertyKey, never>
           | { p_action: string; p_role_name: string; p_table_name: string }
           | { schema_name: string; table_name: string }
-        Returns: undefined
-      }
-      create_notification: {
-        Args: {
-          notification_action_url?: string
-          notification_content?: string
-          notification_metadata?: Json
-          notification_related_id?: string
-          notification_title: string
-          notification_type: string
-          target_user_id: string
-        }
-        Returns: string
-      }
-      create_tag_relationships_table_if_not_exists: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      decrement_comment_likes: {
-        Args: { comment_id: string }
-        Returns: undefined
-      }
-      decrement_post_likes: {
-        Args: { post_id: string }
-        Returns: undefined
-      }
-      decrypt_booking_data: {
-        Args: { encrypted_data: string; user_salt: string }
-        Returns: string
-      }
-      decrypt_message_content: {
-        Args: { conversation_id: string; encrypted_content: string }
-        Returns: string
-      }
-      decrypt_profile_data: {
-        Args: { encrypted_data: string; user_id_param: string }
-        Returns: string
-      }
-      decrypt_sensitive_data: {
-        Args: { encrypted_data: string; user_salt: string }
-        Returns: string
-      }
-      detect_suspicious_access_patterns: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      encrypt_booking_data: {
-        Args: { data_text: string; user_salt: string }
-        Returns: string
-      }
-      encrypt_message_content: {
-        Args: { content_text: string; conversation_id: string }
-        Returns: string
-      }
-      encrypt_profile_data: {
-        Args: { data_text: string; user_id_param: string }
-        Returns: string
-      }
-      encrypt_sensitive_data: {
-        Args: { data_text: string; user_salt: string }
-        Returns: string
-      }
-      enforce_data_retention_policies: {
-        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       examine_table_policies: {
@@ -6240,10 +6070,6 @@ export type Database = {
           with_check_expression: string
         }[]
       }
-      expire_old_location_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       fix_rls_policies: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -6253,14 +6079,7 @@ export type Database = {
         Returns: undefined
       }
       generate_optimized_rls_policy: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_action: string
-              p_role_name: string
-              p_schema_name: string
-              p_table_name: string
-            }
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       generate_optimized_rls_policy_v2: {
@@ -6270,14 +6089,6 @@ export type Database = {
           p_schema_name: string
           p_table_name: string
         }
-        Returns: string
-      }
-      generate_rls_optimization_report: {
-        Args: { p_schema_name?: string }
-        Returns: string
-      }
-      generate_secure_payment_token: {
-        Args: { payment_data: Json; user_id: string }
         Returns: string
       }
       generate_table_optimization_script: {
@@ -6292,10 +6103,6 @@ export type Database = {
           table_name: string
           total_records: number
         }[]
-      }
-      get_booking_details: {
-        Args: { booking_id: string }
-        Returns: Json
       }
       get_entity_attributes: {
         Args: { entity_id_param: string; entity_type_param: string }
@@ -6316,14 +6123,6 @@ export type Database = {
           tag_name: string
         }[]
       }
-      get_import_statistics: {
-        Args: { user_id_param?: string }
-        Returns: Json
-      }
-      get_location_access_level: {
-        Args: { checkin_user_id: string; requesting_user_id: string }
-        Returns: string
-      }
       get_news_cron_status: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -6331,62 +6130,6 @@ export type Database = {
           last_run: string
           next_run: string
           status: string
-        }[]
-      }
-      get_or_create_direct_conversation: {
-        Args: { user1_id: string; user2_id: string }
-        Returns: string
-      }
-      get_or_create_marketplace_category: {
-        Args: { category_name: string; parent_category_name?: string }
-        Returns: string
-      }
-      get_secure_profile_data: {
-        Args: { target_user_id?: string }
-        Returns: {
-          accessibility_needs: string
-          age_range: string
-          avatar_url: string
-          bio: string
-          created_at: string
-          date_of_birth: string
-          display_name: string
-          education: string
-          emergency_contact_name: string
-          emergency_contact_phone: string
-          first_name: string
-          gender_identity: string
-          income_range: string
-          interests: Json
-          languages: Json
-          last_name: string
-          location: string
-          occupation: string
-          phone: string
-          political_views: string
-          preferences: Json
-          privacy_settings: Json
-          pronouns: string
-          relationship_status: string
-          religious_beliefs: string
-          sexual_orientation: string
-          social_links: Json
-          updated_at: string
-          user_id: string
-          website: string
-        }[]
-      }
-      get_secure_venue_checkins: {
-        Args: { requesting_user_id?: string; target_venue_id?: string }
-        Returns: {
-          can_view_precise_location: boolean
-          checked_in_at: string
-          distance_meters: number
-          id: string
-          is_public: boolean
-          location_data: Json
-          user_id: string
-          venue_id: string
         }[]
       }
       get_table_policies: {
@@ -6407,30 +6150,6 @@ export type Database = {
           conversation_id: string
         }[]
       }
-      get_user_sessions_secure: {
-        Args: { target_user_id?: string }
-        Returns: {
-          created_at: string
-          expires_at: string
-          id: string
-          is_active: boolean
-          last_activity: string
-          session_info: Json
-        }[]
-      }
-      get_venue_checkins_secure: {
-        Args: { user_id_param?: string; venue_id_param?: string }
-        Returns: {
-          checked_in_at: string
-          created_at: string
-          distance_meters: number
-          id: string
-          is_public: boolean
-          location_data: Json
-          user_id: string
-          venue_id: string
-        }[]
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -6447,47 +6166,12 @@ export type Database = {
           table_name: string
         }[]
       }
-      increment_article_views: {
-        Args: { article_id: string }
-        Returns: undefined
-      }
-      increment_comment_likes: {
-        Args: { comment_id: string }
-        Returns: undefined
-      }
-      increment_listing_views: {
-        Args: { listing_id: string }
-        Returns: undefined
-      }
-      increment_personality_views: {
-        Args: { personality_id: string }
-        Returns: undefined
-      }
-      increment_post_comments: {
-        Args: { post_id: string }
-        Returns: undefined
-      }
-      increment_post_likes: {
-        Args: { post_id: string }
-        Returns: undefined
-      }
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
       }
-      is_conversation_participant: {
-        Args:
-          | { conversation_id: string }
-          | { conversation_id_param: string; user_id_param: string }
-          | { p_conversation_id: number; p_user_id: string }
-        Returns: boolean
-      }
       is_group_admin: {
         Args: { group_id: string; user_id: string }
-        Returns: boolean
-      }
-      is_group_member_or_admin: {
-        Args: { check_admin?: boolean; group_id: string }
         Returns: boolean
       }
       jwt_claim: {
@@ -6513,18 +6197,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      log_security_event: {
-        Args:
-          | {
-              details?: Json
-              event_type: string
-              ip_address_param?: unknown
-              user_agent_param?: string
-              user_id_param: string
-            }
-          | { details?: Json; event_type: string; user_id_param: string }
-        Returns: undefined
-      }
       match_content_embeddings: {
         Args: {
           match_count?: number
@@ -6540,10 +6212,10 @@ export type Database = {
         }[]
       }
       optimize_auth_uid_in_policies: {
-        Args: Record<PropertyKey, never> | { p_schema_name?: string }
+        Args: Record<PropertyKey, never>
         Returns: {
-          optimized_definition: string
-          original_definition: string
+          optimization_applied: string
+          performance_impact: string
           policy_name: string
           table_name: string
         }[]
@@ -6559,79 +6231,6 @@ export type Database = {
       refresh_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: undefined
-      }
-      request_data_deletion: {
-        Args: { target_user_id: string }
-        Returns: boolean
-      }
-      revoke_role: {
-        Args: {
-          role_to_revoke: Database["public"]["Enums"]["app_role"]
-          target_user_id: string
-        }
-        Returns: undefined
-      }
-      run_daily_ilga_import: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      sanitize_payment_data: {
-        Args: { traveler_data: Json }
-        Returns: Json
-      }
-      schedule_privacy_cleanup: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      secure_assign_user_role: {
-        Args: {
-          p_role: Database["public"]["Enums"]["app_role"]
-          p_target_user_id: string
-        }
-        Returns: undefined
-      }
-      validate_content_security: {
-        Args:
-          | { content: string }
-          | {
-              content_text: string
-              content_type?: string
-              user_id_param?: string
-            }
-        Returns: Json
-      }
-      validate_content_security_enhanced: {
-        Args: { content: string }
-        Returns: boolean
-      }
-      validate_file_upload: {
-        Args: {
-          file_name: string
-          file_size: number
-          mime_type: string
-          user_id_param?: string
-        }
-        Returns: Json
-      }
-      validate_import_data: {
-        Args: { job_id: string; validation_rules: Json }
-        Returns: Json
-      }
-      validate_password_enhanced: {
-        Args: { password_text: string }
-        Returns: Json
-      }
-      validate_password_strength: {
-        Args: { password_text: string }
-        Returns: boolean
-      }
-      validate_session_token: {
-        Args: { token_to_validate: string }
-        Returns: {
-          expires_at: string
-          is_valid: boolean
-          user_id: string
-        }[]
       }
     }
     Enums: {
