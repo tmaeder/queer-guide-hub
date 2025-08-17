@@ -475,17 +475,17 @@ export default function Ressources() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {professions.map(profession => <Button key={profession} variant={selectedProfession === profession ? "default" : "outline"} className="h-auto p-3 text-left justify-start" onClick={() => {
-                if (selectedProfession === profession) {
-                  setSelectedProfession("");
-                  navigate('/personalities');
-                } else {
-                  setSelectedProfession(profession);
-                  navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
-                }
-              }}>
-                    <div className="truncate">{profession}</div>
-                  </Button>)}
+                {professions.map(profession => (
+                  <Card 
+                    key={profession} 
+                    className="cursor-pointer hover:bg-accent transition-colors"
+                    onClick={() => navigate(`/professions/${encodeURIComponent(profession)}`)}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <h3 className="font-medium">{profession}</h3>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </CardContent>
           </Card>

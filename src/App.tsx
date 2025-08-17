@@ -69,6 +69,7 @@ const AdminNewsSources = lazy(() => import("./pages/AdminNewsSources"));
 const EmailTemplates = lazy(() => import("./pages/admin/EmailTemplates"));
 const AdminPersonalities = lazy(() => import("./pages/AdminPersonalities"));
 const AdminImportHub = lazy(() => import("./pages/AdminImportHub"));
+const ProfessionDetail = lazy(() => import("./pages/ProfessionDetail"));
 const News = lazy(() => import("./pages/News"));
 
 
@@ -140,6 +141,7 @@ const App = () => {
                    <Route path="/personalities/:id" element={<PersonalityDetail />} />
                    <Route path="/ressources" element={<Ressources />} />
                    <Route path="/ressources/:tagName" element={<Ressources />} />
+                   <Route path="/professions/:professionName" element={<ProfessionDetail />} />
                    <Route path="/tags" element={<Navigate to="/ressources" replace />} />
                    <Route path="/tags/:tagName" element={<Navigate to="/ressources" replace />} />
                    
