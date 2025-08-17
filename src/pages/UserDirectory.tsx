@@ -342,14 +342,14 @@ const UserDirectory = () => {
                     variant={nearMe ? "default" : "outline"}
                     onClick={handleNearMeToggle}
                     disabled={isDetectingLocation}
-                    className={`gap-2 whitespace-nowrap h-12 px-6 ${nearMe ? 'bg-gradient-primary hover:opacity-90' : ''}`}
+                    size="icon"
+                    className={`h-12 w-12 ${nearMe ? 'bg-gradient-primary hover:opacity-90' : ''}`}
                   >
                     {isDetectingLocation ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <Navigation className="h-4 w-4" />
                     )}
-                    Near Me
                   </Button>
                   <Button
                     variant="outline"
