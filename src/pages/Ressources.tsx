@@ -457,6 +457,45 @@ export default function Ressources() {
         </TabsList>
         
         <TabsContent value="tags" className="space-y-4">
+          {/* Categories Overview */}
+          {viewMode === "overview" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Browse by Category</CardTitle>
+                <p className="text-muted-foreground">
+                  Explore tags organized by different categories
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                  {categories.map(category => {
+                    const Icon = getCategoryIcon(category);
+                    const categoryTags = allTags.filter(tag => tag.category === category);
+                    return (
+                      <Card 
+                        key={category} 
+                        className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105"
+                        onClick={() => {
+                          setFilterCategory(category);
+                          setViewMode("category");
+                          setSelectedCategory(category);
+                        }}
+                      >
+                        <CardContent className="p-4 text-center">
+                          <Icon className="h-8 w-8 mx-auto mb-3 text-primary" />
+                          <h3 className="font-semibold text-sm mb-1 capitalize">{category}</h3>
+                          <Badge variant="secondary" className="text-xs">
+                            {categoryTags.length} tags
+                          </Badge>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Search and Filters */}
           <Card>
             <CardContent className="p-4">
