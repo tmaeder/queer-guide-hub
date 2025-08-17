@@ -177,8 +177,8 @@ const Events = () => {
   const hasActiveFilters = search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe;
 
   if (error) {
-    return (
-      <div className="min-h-screen bg-background">
+  return (
+    <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <CardContent>
@@ -200,7 +200,7 @@ const Events = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <div className="w-full px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

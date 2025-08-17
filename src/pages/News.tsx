@@ -153,7 +153,7 @@ export default function News() {
         </Card>
       </div>;
   }
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">

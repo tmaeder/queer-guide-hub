@@ -199,7 +199,7 @@ export default function Directory() {
   return (
     <div className={`w-full transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-background">
+      <div className="relative overflow-hidden">
         
         
         <div className="relative mx-auto max-w-7xl px-6 py-12 lg:py-20">
@@ -294,21 +294,21 @@ export default function Directory() {
                 <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted/50">
                   <TabsTrigger 
                     value="countries" 
-                    className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+                    className="flex items-center gap-2 data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all"
                   >
                     <MapPin className="h-4 w-4" />
                     <span className="hidden sm:inline">Countries</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="cities" 
-                    className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+                    className="flex items-center gap-2 data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all"
                   >
                     <Building2 className="h-4 w-4" />
                     <span className="hidden sm:inline">Cities</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="map" 
-                    className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+                    className="flex items-center gap-2 data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all"
                   >
                     <Map className="h-4 w-4" />
                     <span className="hidden sm:inline">Map</span>

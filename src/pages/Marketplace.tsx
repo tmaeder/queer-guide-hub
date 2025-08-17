@@ -85,7 +85,7 @@ const Marketplace = () => {
     count: listings.filter(l => l.category === 'services').length
   }];
   if (error) {
-    return <div className="min-h-screen bg-background">
+    return <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <CardContent>
@@ -96,8 +96,8 @@ const Marketplace = () => {
         </div>
       </div>;
   }
-  return <div className="min-h-screen bg-background">
-      <div className="w-full px-4 py-8 bg-background">
+  return <div className="min-h-screen">
+      <div className="w-full px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
