@@ -99,22 +99,26 @@ const Marketplace = () => {
   return <div className="min-h-screen">
       <div className="w-full px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">
-              Marketplace
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Discover and support local businesses offering products and services
-            </p>
-          </div>
-          {user && (
-            <Button className="bg-primary gap-2">
-              <Plus className="h-4 w-4" />
-              List Your Business
-            </Button>
-          )}
-        </div>
+        <Card className="mb-8">
+          <CardContent className="p-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-foreground mb-2">
+                  Marketplace
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Discover and support local businesses offering products and services
+                </p>
+              </div>
+              {user && (
+                <Button className="bg-primary gap-2">
+                  <Plus className="h-4 w-4" />
+                  List Your Business
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Filters */}
         <div className="mb-8">

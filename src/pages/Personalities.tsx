@@ -81,26 +81,28 @@ export default function Personalities() {
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
-            <Users className="h-4 w-4" />
-            Queer Personalities Directory
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Celebrating{" "}
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              LGBTQ+ Icons
-            </span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Discover inspiring stories from LGBTQ+ personalities who have made significant contributions 
-            to arts, activism, politics, and society throughout history and today.
-          </p>
-          
-          {user && (
-            <AddPersonalityDialog onSuccess={() => window.location.reload()} />
-          )}
-        </div>
+        <Card className="mb-12">
+          <CardContent className="p-12 text-center">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <Users className="h-4 w-4" />
+              Queer Personalities Directory
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              Celebrating{" "}
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                LGBTQ+ Icons
+              </span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              Discover inspiring stories from LGBTQ+ personalities who have made significant contributions 
+              to arts, activism, politics, and society throughout history and today.
+            </p>
+            
+            {user && (
+              <AddPersonalityDialog onSuccess={() => window.location.reload()} />
+            )}
+          </CardContent>
+        </Card>
 
         {/* Stats Section */}
         {!statsLoading && stats && (

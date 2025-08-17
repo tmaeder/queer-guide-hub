@@ -153,42 +153,6 @@
   .text-muted-foreground {
     @apply text-foreground !important;
   }
-
-  /* Force text at top of pages to be white for Aurora contrast */
-  .container > *:first-child h1,
-  .container > *:first-child h2,
-  .container > *:first-child h3,
-  .container > *:first-child p,
-  .container > *:first-child span,
-  .container > div:first-child h1,
-  .container > div:first-child h2,
-  .container > div:first-child h3,
-  .container > div:first-child p,
-  .container > div:first-child span,
-  header h1,
-  header h2,
-  header h3,
-  header p,
-  header span,
-  .hero-section h1,
-  .hero-section h2,
-  .hero-section h3,
-  .hero-section p,
-  .hero-section span,
-  [class*="hero"] h1,
-  [class*="hero"] h2,
-  [class*="hero"] h3,
-  [class*="hero"] p,
-  [class*="hero"] span {
-    color: white !important;
-  }
-
-  /* Top-level page headers */
-  .min-h-screen > div:first-child h1,
-  .min-h-screen > div:first-child h2,
-  .min-h-screen > div:first-child p:not(.card p):not(.bg-card p) {
-    color: white !important;
-  }
 }
 
 /* Animation Utilities */

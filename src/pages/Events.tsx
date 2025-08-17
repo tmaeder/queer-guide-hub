@@ -203,48 +203,52 @@ const Events = () => {
     <div className="min-h-screen">
       <div className="w-full px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">
-              Events Calendar
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Discover and join community events in your area
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            {/* View Toggle */}
-            <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="gap-2"
-              >
-                <Grid className="h-4 w-4" />
-                Grid
-              </Button>
-              <Button
-                variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('calendar')}
-                className="gap-2"
-              >
-                <CalendarIcon className="h-4 w-4" />
-                Calendar
-              </Button>
+        <Card className="mb-8">
+          <CardContent className="p-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-foreground mb-2">
+                  Events Calendar
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Discover and join community events in your area
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                {/* View Toggle */}
+                <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="gap-2"
+                  >
+                    <Grid className="h-4 w-4" />
+                    Grid
+                  </Button>
+                  <Button
+                    variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('calendar')}
+                    className="gap-2"
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                    Calendar
+                  </Button>
+                </div>
+                {user && (
+                  <Button 
+                    className="bg-primary gap-2"
+                    onClick={() => navigate('/admin/events')}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Create Event
+                  </Button>
+                )}
+              </div>
             </div>
-            {user && (
-              <Button 
-                className="bg-primary gap-2"
-                onClick={() => navigate('/admin/events')}
-              >
-                <Plus className="h-4 w-4" />
-                Create Event
-              </Button>
-            )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Filters */}
         <div className="space-y-4 p-4 bg-card rounded-lg border mb-8">
@@ -491,10 +495,12 @@ const Events = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2 text-muted-foreground">Loading events...</span>
-          </div>
+          <Card className="p-8">
+            <CardContent className="flex items-center justify-center py-4">
+              <Loader className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">Loading events...</span>
+            </CardContent>
+          </Card>
         )}
 
         {/* Empty State */}
@@ -521,11 +527,13 @@ const Events = () => {
         {/* Event Content */}
         {!loading && events.length > 0 && (
           <>
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-muted-foreground">
-                Found {events.length} event{events.length !== 1 ? 's' : ''}
-              </p>
-            </div>
+            <Card className="mb-6">
+              <CardContent className="p-4">
+                <p className="text-muted-foreground">
+                  Found {events.length} event{events.length !== 1 ? 's' : ''}
+                </p>
+              </CardContent>
+            </Card>
             
             {viewMode === 'grid' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

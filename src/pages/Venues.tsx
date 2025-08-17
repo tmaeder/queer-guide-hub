@@ -149,23 +149,25 @@ const Venues = () => {
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-foreground mb-4 animate-fade-in">
-            Venues & Organizations
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Discover queer-friendly venues, businesses, and organizations in your area
-          </p>
-          {user && (
-            <Button 
-              className="bg-primary hover:opacity-90 gap-2 px-6 py-3 text-lg hover-scale"
-              onClick={() => navigate('/admin/venues')}
-            >
-              <Plus className="h-5 w-5" />
-              Add Your Business
-            </Button>
-          )}
-        </div>
+        <Card className="mb-8">
+          <CardContent className="p-8 text-center">
+            <h1 className="text-5xl font-bold text-foreground mb-4 animate-fade-in">
+              Venues & Organizations
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Discover queer-friendly venues, businesses, and organizations in your area
+            </p>
+            {user && (
+              <Button 
+                className="bg-primary hover:opacity-90 gap-2 px-6 py-3 text-lg hover-scale"
+                onClick={() => navigate('/admin/venues')}
+              >
+                <Plus className="h-5 w-5" />
+                Add Your Business
+              </Button>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Filters Section */}
         <div className="mb-8">

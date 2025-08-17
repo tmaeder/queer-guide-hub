@@ -293,33 +293,35 @@ const UserDirectory = () => {
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Hero Section */}
-        <div className="text-center space-y-6">
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Community Directory
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Discover amazing people, build meaningful connections, and grow your network within our 
-              inclusive LGBTQ+ community.
-            </p>
-          </div>
-          
-          {/* Stats */}
-          <div className="flex flex-wrap justify-center gap-6 text-sm">
-            <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
-              <Users className="h-4 w-4 text-primary" />
-              <span className="font-medium">{profiles?.length || 0} Members</span>
+        <Card>
+          <CardContent className="p-8 text-center space-y-6">
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Community Directory
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                Discover amazing people, build meaningful connections, and grow your network within our 
+                inclusive LGBTQ+ community.
+              </p>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-full">
-              <Sparkles className="h-4 w-4 text-blue-600" />
-              <span className="font-medium">Active Community</span>
+            
+            {/* Stats */}
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
+                <Users className="h-4 w-4 text-primary" />
+                <span className="font-medium">{profiles?.length || 0} Members</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-full">
+                <Sparkles className="h-4 w-4 text-blue-600" />
+                <span className="font-medium">Active Community</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-full">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                <span className="font-medium">Growing Daily</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-full">
-              <TrendingUp className="h-4 w-4 text-green-600" />
-              <span className="font-medium">Growing Daily</span>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
           
         {/* Search and Filter Section */}
         <Card className="bg-gradient-to-r from-card to-card/90 border-2 shadow-lg">
