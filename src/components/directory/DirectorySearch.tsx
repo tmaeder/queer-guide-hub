@@ -141,14 +141,13 @@ export const DirectorySearch = ({
               variant="outline"
               onClick={detectLocation}
               disabled={isDetectingLocation}
-              className="flex items-center gap-2"
+              size="icon"
             >
               {isDetectingLocation ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Navigation className="h-4 w-4" />
               )}
-              Near Me
             </Button>
           )}
           
