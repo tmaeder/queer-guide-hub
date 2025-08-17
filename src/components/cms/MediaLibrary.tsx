@@ -108,10 +108,19 @@ interface OptimizationJob {
   progress: number;
   settings: {
     quality: number;
-    format: string;
+    formats: string[];
     resize: boolean;
     maxWidth?: number;
     maxHeight?: number;
+    preserveMetadata: boolean;
+    enableProgressiveJpeg: boolean;
+    enableLosslessWebP: boolean;
+  };
+  results?: {
+    processed: number;
+    successful: number;
+    failed: number;
+    totalSavings: number;
   };
 }
 
@@ -131,6 +140,17 @@ export function MediaLibrary() {
   const [optimizationJobs, setOptimizationJobs] = useState<OptimizationJob[]>([]);
   const [bulkMode, setBulkMode] = useState(false);
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
+  const [optimizingItem, setOptimizingItem] = useState<MediaItem | null>(null);
+  const [optimizationSettings, setOptimizationSettings] = useState({
+    quality: 80,
+    formats: ['WEBP'],
+    resize: false,
+    maxWidth: 1920,
+    maxHeight: 1080,
+    preserveMetadata: false,
+    enableProgressiveJpeg: true,
+    enableLosslessWebP: false,
+  });
   
   const { isAdmin } = useAdminRoles();
   const { toast } = useToast();
@@ -302,6 +322,9 @@ export function MediaLibrary() {
       case 'unused':
         filtered = filtered.filter(item => (item.usage_count || 0) === 0);
         break;
+      case 'unoptimized':
+        filtered = filtered.filter(item => item.optimization_status !== 'optimized');
+        break;
     }
 
     // Apply sorting
@@ -313,6 +336,8 @@ export function MediaLibrary() {
           return b.file_size - a.file_size;
         case 'usage_count':
           return (b.usage_count || 0) - (a.usage_count || 0);
+        case 'optimized':
+          return (a.optimization_status === 'optimized' ? 1 : 0) - (b.optimization_status === 'optimized' ? 1 : 0);
         case 'created_at':
         default:
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -464,7 +489,7 @@ export function MediaLibrary() {
     setSelectedItems(new Set());
   };
 
-  const handleBulkOptimization = async (settings: OptimizationJob['settings']) => {
+  const handleBulkOptimization = async () => {
     if (selectedItems.size === 0) return;
 
     const jobId = crypto.randomUUID();
@@ -473,38 +498,115 @@ export function MediaLibrary() {
       media_ids: Array.from(selectedItems),
       status: 'pending',
       progress: 0,
-      settings
+      settings: optimizationSettings
     };
 
     setOptimizationJobs(prev => [...prev, job]);
+    setShowOptimization(false);
+    
     toast({
       title: "Optimization Started",
-      description: `Processing ${selectedItems.size} files...`,
+      description: `Processing ${selectedItems.size} files with ${optimizationSettings.formats.join(', ')} format(s)...`,
     });
 
-    // Simulate optimization process
+    // Simulate optimization process with more realistic progress
     setTimeout(() => {
       setOptimizationJobs(prev => 
-        prev.map(j => j.id === jobId ? { ...j, status: 'processing', progress: 25 } : j)
+        prev.map(j => j.id === jobId ? { 
+          ...j, 
+          status: 'processing', 
+          progress: 15,
+          results: { processed: 0, successful: 0, failed: 0, totalSavings: 0 }
+        } : j)
       );
-    }, 1000);
+    }, 500);
 
     setTimeout(() => {
       setOptimizationJobs(prev => 
-        prev.map(j => j.id === jobId ? { ...j, progress: 75 } : j)
+        prev.map(j => j.id === jobId ? { 
+          ...j, 
+          progress: 45,
+          results: { processed: Math.floor(selectedItems.size * 0.3), successful: Math.floor(selectedItems.size * 0.3), failed: 0, totalSavings: 1024 * 150 }
+        } : j)
       );
-    }, 3000);
+    }, 2000);
 
     setTimeout(() => {
       setOptimizationJobs(prev => 
-        prev.map(j => j.id === jobId ? { ...j, status: 'completed', progress: 100 } : j)
+        prev.map(j => j.id === jobId ? { 
+          ...j, 
+          progress: 80,
+          results: { processed: Math.floor(selectedItems.size * 0.7), successful: Math.floor(selectedItems.size * 0.7), failed: 0, totalSavings: 1024 * 350 }
+        } : j)
       );
+    }, 4000);
+
+    setTimeout(() => {
+      const finalResults = {
+        processed: selectedItems.size,
+        successful: selectedItems.size - 1,
+        failed: 1,
+        totalSavings: 1024 * 500 * selectedItems.size
+      };
+      
+      setOptimizationJobs(prev => 
+        prev.map(j => j.id === jobId ? { 
+          ...j, 
+          status: 'completed', 
+          progress: 100,
+          results: finalResults
+        } : j)
+      );
+      
       toast({
         title: "Optimization Complete",
-        description: `Successfully optimized ${selectedItems.size} files`,
+        description: `Successfully optimized ${finalResults.successful} of ${selectedItems.size} files. Saved ${formatFileSize(finalResults.totalSavings)}`,
       });
+      
       clearSelection();
-    }, 5000);
+      
+      // Update media items to show optimized status
+      setMedia(prev => 
+        prev.map(item => 
+          selectedItems.has(item.id) ? {
+            ...item,
+            optimization_status: 'optimized' as const,
+            formats_available: [...(item.formats_available || []), ...optimizationSettings.formats]
+          } : item
+        )
+      );
+    }, 6000);
+  };
+
+  const handleSingleOptimization = async (item: MediaItem) => {
+    setOptimizingItem(item);
+    
+    toast({
+      title: "Optimization Started",
+      description: `Optimizing ${item.original_filename}...`,
+    });
+
+    // Simulate single file optimization
+    setTimeout(() => {
+      setMedia(prev => 
+        prev.map(m => m.id === item.id ? {
+          ...m,
+          optimization_status: 'optimized' as const,
+          formats_available: [...(m.formats_available || []), ...optimizationSettings.formats],
+          optimization_metadata: {
+            ...m.optimization_metadata,
+            compression_ratio: 30 + Math.floor(Math.random() * 20),
+            compressed_size: Math.floor(m.file_size * (0.5 + Math.random() * 0.3))
+          }
+        } : m)
+      );
+      
+      setOptimizingItem(null);
+      toast({
+        title: "Optimization Complete",
+        description: `Successfully optimized ${item.original_filename}`,
+      });
+    }, 3000);
   };
 
   const handleStarItem = async (item: MediaItem) => {
@@ -520,167 +622,293 @@ export function MediaLibrary() {
 
   const renderOptimizationControls = () => (
     <Dialog open={showOptimization} onOpenChange={setShowOptimization}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Media Optimization</DialogTitle>
+          <DialogTitle>
+            {selectedItems.size > 0 
+              ? `Optimize ${selectedItems.size} Selected Files` 
+              : 'Image Optimization Settings'
+            }
+          </DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="bulk" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="bulk">Bulk Optimization</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+        <Tabs defaultValue="settings" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="settings">Optimization Settings</TabsTrigger>
+            <TabsTrigger value="preview">Preview & Quality</TabsTrigger>
+            <TabsTrigger value="advanced">Advanced Options</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="bulk" className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Quality</label>
-                <Select defaultValue="80">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="60">Low (60%)</SelectItem>
-                    <SelectItem value="80">Medium (80%)</SelectItem>
-                    <SelectItem value="90">High (90%)</SelectItem>
-                    <SelectItem value="100">Lossless</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium">Format</label>
-                <Select defaultValue="webp">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="webp">WebP</SelectItem>
-                    <SelectItem value="avif">AVIF</SelectItem>
-                    <SelectItem value="jpeg">JPEG</SelectItem>
-                    <SelectItem value="png">PNG</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <TabsContent value="settings" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Quality Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Quality & Compression</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Quality: {optimizationSettings.quality}%
+                    </label>
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      value={optimizationSettings.quality}
+                      onChange={(e) => setOptimizationSettings(prev => ({
+                        ...prev,
+                        quality: parseInt(e.target.value)
+                      }))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>Smaller file</span>
+                      <span>Better quality</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Output Formats</label>
+                    <div className="space-y-2">
+                      {['WEBP', 'AVIF', 'JPEG', 'PNG'].map(format => (
+                        <div key={format} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={optimizationSettings.formats.includes(format)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setOptimizationSettings(prev => ({
+                                  ...prev,
+                                  formats: [...prev.formats, format]
+                                }));
+                              } else {
+                                setOptimizationSettings(prev => ({
+                                  ...prev,
+                                  formats: prev.formats.filter(f => f !== format)
+                                }));
+                              }
+                            }}
+                          />
+                          <span className="text-sm">{format}</span>
+                          {format === 'WEBP' && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
+                          {format === 'AVIF' && <Badge variant="secondary" className="text-xs">Best compression</Badge>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Resize Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Resize Options</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={optimizationSettings.resize}
+                      onCheckedChange={(checked) => setOptimizationSettings(prev => ({
+                        ...prev,
+                        resize: !!checked
+                      }))}
+                    />
+                    <span className="text-sm font-medium">Enable resizing</span>
+                  </div>
+                  
+                  {optimizationSettings.resize && (
+                    <>
+                      <div>
+                        <label className="text-sm font-medium">Max Width (px)</label>
+                        <Input
+                          type="number"
+                          value={optimizationSettings.maxWidth}
+                          onChange={(e) => setOptimizationSettings(prev => ({
+                            ...prev,
+                            maxWidth: parseInt(e.target.value) || 1920
+                          }))}
+                          placeholder="1920"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Max Height (px)</label>
+                        <Input
+                          type="number"
+                          value={optimizationSettings.maxHeight}
+                          onChange={(e) => setOptimizationSettings(prev => ({
+                            ...prev,
+                            maxHeight: parseInt(e.target.value) || 1080
+                          }))}
+                          placeholder="1080"
+                        />
+                      </div>
+                    </>
+                  )}
+                  
+                  <div className="text-xs text-muted-foreground">
+                    Images will be resized proportionally to fit within these dimensions
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox id="resize" />
-                <label htmlFor="resize" className="text-sm">Resize images</label>
-              </div>
-              <div className="grid grid-cols-2 gap-2 ml-6">
-                <Input placeholder="Max width" type="number" />
-                <Input placeholder="Max height" type="number" />
-              </div>
-            </div>
-            
-            <Button 
-              onClick={() => handleBulkOptimization({
-                quality: 80,
-                format: 'webp',
-                resize: false
-              })}
-              disabled={selectedItems.size === 0}
-              className="w-full"
-            >
-              <Zap className="h-4 w-4 mr-2" />
-              Optimize {selectedItems.size} Selected Files
-            </Button>
           </TabsContent>
           
-          <TabsContent value="settings" className="space-y-4">
-            <div className="space-y-4">
-              <h4 className="font-medium">Auto-optimization Settings</h4>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="auto-webp" />
-                  <label htmlFor="auto-webp" className="text-sm">Auto-convert to WebP on upload</label>
+          <TabsContent value="preview" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Optimization Preview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Estimated Results</h4>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span>Quality Level:</span>
+                        <span className={
+                          optimizationSettings.quality >= 90 ? 'text-green-600' :
+                          optimizationSettings.quality >= 70 ? 'text-yellow-600' : 'text-red-600'
+                        }>
+                          {optimizationSettings.quality >= 90 ? 'Excellent' :
+                           optimizationSettings.quality >= 70 ? 'Good' : 'Compressed'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Est. Size Reduction:</span>
+                        <span className="text-green-600">
+                          {100 - optimizationSettings.quality}% - {100 - Math.floor(optimizationSettings.quality * 0.8)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Output Formats:</span>
+                        <span>{optimizationSettings.formats.length} format(s)</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Format Benefits</h4>
+                    <div className="space-y-1 text-xs">
+                      {optimizationSettings.formats.includes('WEBP') && (
+                        <div className="text-green-600">✓ WebP: Up to 35% smaller than JPEG</div>
+                      )}
+                      {optimizationSettings.formats.includes('AVIF') && (
+                        <div className="text-green-600">✓ AVIF: Up to 50% smaller than JPEG</div>
+                      )}
+                      {optimizationSettings.formats.includes('JPEG') && (
+                        <div className="text-blue-600">• JPEG: Universal compatibility</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="auto-resize" />
-                  <label htmlFor="auto-resize" className="text-sm">Auto-resize large images</label>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="advanced" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Advanced Options</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={optimizationSettings.preserveMetadata}
+                        onCheckedChange={(checked) => setOptimizationSettings(prev => ({
+                          ...prev,
+                          preserveMetadata: !!checked
+                        }))}
+                      />
+                      <div>
+                        <span className="text-sm font-medium">Preserve Metadata</span>
+                        <p className="text-xs text-muted-foreground">Keep EXIF data, copyright info</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={optimizationSettings.enableProgressiveJpeg}
+                        onCheckedChange={(checked) => setOptimizationSettings(prev => ({
+                          ...prev,
+                          enableProgressiveJpeg: !!checked
+                        }))}
+                      />
+                      <div>
+                        <span className="text-sm font-medium">Progressive JPEG</span>
+                        <p className="text-xs text-muted-foreground">Better loading experience</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={optimizationSettings.enableLosslessWebP}
+                        onCheckedChange={(checked) => setOptimizationSettings(prev => ({
+                          ...prev,
+                          enableLosslessWebP: !!checked
+                        }))}
+                      />
+                      <div>
+                        <span className="text-sm font-medium">Lossless WebP</span>
+                        <p className="text-xs text-muted-foreground">No quality loss</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="generate-thumbnails" />
-                  <label htmlFor="generate-thumbnails" className="text-sm">Generate thumbnails</label>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
-      </DialogContent>
-    </Dialog>
-  );
-
-  const renderEditDialog = () => (
-    <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Media</DialogTitle>
-        </DialogHeader>
-        {editingItem && (
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Filename</label>
-              <Input value={editingItem.original_filename} />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Alt Text</label>
-              <Input placeholder="Describe this image..." />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Caption</label>
-              <Textarea placeholder="Image caption..." />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Tags</label>
-              <Input placeholder="tag1, tag2, tag3" />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setEditingItem(null)}>
-                Cancel
-              </Button>
-              <Button>Save Changes</Button>
-            </div>
-          </div>
-        )}
+        
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button variant="outline" onClick={() => setShowOptimization(false)}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleBulkOptimization}
+            disabled={selectedItems.size === 0 || optimizationSettings.formats.length === 0}
+          >
+            <Zap className="h-4 w-4 mr-1" />
+            Optimize {selectedItems.size} Files
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
 
   return (
-    <div className="space-y-6">
-      {/* Enhanced Header */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold">Media Library</h2>
+          <h1 className="text-3xl font-bold">Media Library</h1>
           <p className="text-muted-foreground">
-            Manage, optimize, and organize your media files
+            Manage and optimize your media files
           </p>
         </div>
         
-        <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={() => setBulkMode(!bulkMode)}>
-            <Archive className="h-4 w-4 mr-2" />
-            {bulkMode ? 'Exit Bulk' : 'Bulk Actions'}
-          </Button>
-          
-          <Button variant="outline" onClick={() => setShowOptimization(true)}>
-            <Sliders className="h-4 w-4 mr-2" />
-            Optimize
-          </Button>
-          
+        <div className="flex gap-2">
           <Button onClick={() => setShowUpload(true)}>
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Media
+            <Upload className="h-4 w-4 mr-1" />
+            Upload
+          </Button>
+          <Button variant="outline" onClick={() => setBulkMode(!bulkMode)}>
+            <Archive className="h-4 w-4 mr-1" />
+            {bulkMode ? 'Exit Bulk' : 'Bulk Mode'}
+          </Button>
+          <Button variant="outline" onClick={() => setShowOptimization(true)}>
+            <Sliders className="h-4 w-4 mr-1" />
+            Optimize
           </Button>
         </div>
       </div>
 
       {/* Bulk Actions Bar */}
       {bulkMode && (
-        <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -726,12 +954,25 @@ export function MediaLibrary() {
           </CardHeader>
           <CardContent className="space-y-3">
             {optimizationJobs.filter(job => job.status !== 'completed').map(job => (
-              <div key={job.id} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Optimizing {job.media_ids.length} files</span>
-                  <span>{job.progress}%</span>
+              <div key={job.id} className="space-y-3 p-4 border rounded-lg">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-medium">
+                    Optimizing {job.media_ids.length} files ({job.settings.formats.join(', ')})
+                  </span>
+                  <Badge variant={job.status === 'processing' ? 'default' : 'secondary'}>
+                    {job.status}
+                  </Badge>
                 </div>
-                <Progress value={job.progress} />
+                <Progress value={job.progress} className="h-2" />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{job.progress}% complete</span>
+                  {job.results && (
+                    <span>
+                      {job.results.successful}/{job.results.processed} processed
+                      {job.results.totalSavings > 0 && ` • ${formatFileSize(job.results.totalSavings)} saved`}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </CardContent>
@@ -888,6 +1129,7 @@ export function MediaLibrary() {
                     src={getImageUrl(item)}
                     alt={item.original_filename}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -898,8 +1140,8 @@ export function MediaLibrary() {
                 {/* Status Badges */}
                 <div className="absolute top-2 right-2 flex gap-1">
                   {item.starred && (
-                    <Badge variant="secondary" className="h-6 w-6 p-0 rounded-full">
-                      <Star className="h-3 w-3 fill-current" />
+                    <Badge variant="secondary" className="h-6 w-6 p-0 rounded-full bg-yellow-100">
+                      <Star className="h-3 w-3 text-yellow-600 fill-current" />
                     </Badge>
                   )}
                   {item.optimization_status === 'optimized' && (
@@ -912,61 +1154,64 @@ export function MediaLibrary() {
                       <RefreshCw className="h-3 w-3 text-blue-600 animate-spin" />
                     </Badge>
                   )}
+                  {optimizingItem?.id === item.id && (
+                    <Badge variant="secondary" className="h-6 w-6 p-0 rounded-full bg-blue-100">
+                      <RefreshCw className="h-3 w-3 text-blue-600 animate-spin" />
+                    </Badge>
+                  )}
                 </div>
-                
-                {/* Enhanced Overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => window.open(getImageUrl(item), '_blank')}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => handleStarItem(item)}>
-                      <Star className={`h-4 w-4 ${item.starred ? 'fill-current' : ''}`} />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="secondary">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setEditingItem(item)}>
-                          <Edit3 className="h-4 w-4 mr-2" />
-                          Edit Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDownload(item)}>
-                          <Download className="h-4 w-4 mr-2" />
-                          Download
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Copy className="h-4 w-4 mr-2" />
-                          Copy URL
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Share2 className="h-4 w-4 mr-2" />
-                          Share
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => {
-                            setItemToDelete(item);
-                            setDeleteDialogOpen(true);
-                          }}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+
+                {/* Actions Overlay */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => handleStarItem(item)}>
+                        <Star className="h-4 w-4 mr-2" />
+                        {item.starred ? 'Unstar' : 'Star'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSingleOptimization(item)}>
+                        <Zap className="h-4 w-4 mr-2" />
+                        {optimizingItem?.id === item.id ? 'Optimizing...' : 'Optimize'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        setSelectedItems(new Set([item.id]));
+                        setShowOptimization(true);
+                      }}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Optimize with Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDownload(item)}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          setItemToDelete(item);
+                          setDeleteDialogOpen(true);
+                        }}
+                        className="text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
-              
+
+              {/* Enhanced Card Content */}
               <CardContent className="p-3">
-                <h4 className="font-medium text-sm truncate" title={item.original_filename}>
-                  {item.original_filename}
-                </h4>
+                <h4 className="font-medium text-sm truncate mb-2">{item.original_filename}</h4>
+                
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>{formatFileSize(item.file_size)}</span>
@@ -1010,14 +1255,9 @@ export function MediaLibrary() {
       ) : viewMode === 'list' ? (
         <Card>
           <CardContent className="p-0">
-            <div className="space-y-0">
-              {filteredMedia.map((item, index) => (
-                <div
-                  key={item.id}
-                  className={`flex items-center gap-4 p-4 hover:bg-muted/50 ${
-                    index !== filteredMedia.length - 1 ? 'border-b' : ''
-                  }`}
-                >
+            <div className="divide-y">
+              {filteredMedia.map((item) => (
+                <div key={item.id} className="p-4 flex items-center gap-4 hover:bg-muted/50">
                   {bulkMode && (
                     <Checkbox
                       checked={selectedItems.has(item.id)}
@@ -1025,8 +1265,7 @@ export function MediaLibrary() {
                     />
                   )}
                   
-                  {/* Thumbnail */}
-                  <div className="w-16 h-16 bg-muted flex items-center justify-center overflow-hidden rounded">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                     {item.mime_type.startsWith('image/') ? (
                       <img
                         src={getImageUrl(item)}
@@ -1034,11 +1273,12 @@ export function MediaLibrary() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      getFileIcon(item.mime_type)
+                      <div className="w-full h-full flex items-center justify-center">
+                        {getFileIcon(item.mime_type)}
+                      </div>
                     )}
                   </div>
-
-                  {/* File Info */}
+                  
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium truncate">{item.original_filename}</h4>
@@ -1072,47 +1312,106 @@ export function MediaLibrary() {
                       )}
                     </div>
                   </div>
-
-                  {/* Usage */}
-                  <div className="text-right">
+                  
+                  <div className="flex items-center gap-2">
                     <Badge variant={item.usage_count ? 'default' : 'secondary'}>
-                      {item.usage_count || 0} uses
+                      {item.usage_count || 0}
                     </Badge>
-                    {item.content_items && item.content_items.length > 0 && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Used in: {item.content_items.slice(0, 2).join(', ')}
-                        {item.content_items.length > 2 && ` +${item.content_items.length - 2} more`}
-                      </div>
-                    )}
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleStarItem(item)}>
+                          <Star className="h-4 w-4 mr-2" />
+                          {item.starred ? 'Unstar' : 'Star'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleSingleOptimization(item)}>
+                          <Zap className="h-4 w-4 mr-2" />
+                          {optimizingItem?.id === item.id ? 'Optimizing...' : 'Quick Optimize'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          setSelectedItems(new Set([item.id]));
+                          setShowOptimization(true);
+                        }}>
+                          <Settings className="h-4 w-4 mr-2" />
+                          Optimize with Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDownload(item)}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={() => {
+                            setItemToDelete(item);
+                            setDeleteDialogOpen(true);
+                          }}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-
-                  {/* Actions */}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        // Compact view
+        <Card>
+          <CardContent className="p-4">
+            <div className="space-y-1">
+              {filteredMedia.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded">
+                  {bulkMode && (
+                    <Checkbox
+                      checked={selectedItems.has(item.id)}
+                      onCheckedChange={() => toggleItemSelection(item.id)}
+                    />
+                  )}
+                  
+                  {getFileIcon(item.mime_type)}
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm truncate">{item.original_filename}</span>
+                      {item.starred && <Star className="h-3 w-3 fill-current text-yellow-500" />}
+                      {getOptimizationStatusBadge(item.optimization_status)}
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-muted-foreground">
+                    {formatFileSize(item.file_size)}
+                  </div>
+                  
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm">
-                        <MoreVertical className="h-4 w-4" />
+                        <MoreVertical className="h-3 w-3" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => window.open(getImageUrl(item), '_blank')}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setEditingItem(item)}>
-                        <Edit3 className="h-4 w-4 mr-2" />
-                        Edit
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => handleSingleOptimization(item)}>
+                        <Zap className="h-4 w-4 mr-2" />
+                        Optimize
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDownload(item)}>
                         <Download className="h-4 w-4 mr-2" />
                         Download
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={() => {
                           setItemToDelete(item);
                           setDeleteDialogOpen(true);
                         }}
-                        className="text-destructive"
+                        className="text-red-600"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
@@ -1124,79 +1423,36 @@ export function MediaLibrary() {
             </div>
           </CardContent>
         </Card>
-      ) : (
-        /* Compact View */
-        <Card>
-          <CardContent className="p-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
-              {filteredMedia.map((item) => (
-                <div key={item.id} className="relative group">
-                  {bulkMode && (
-                    <div className="absolute top-1 left-1 z-10">
-                      <Checkbox
-                        checked={selectedItems.has(item.id)}
-                        onCheckedChange={() => toggleItemSelection(item.id)}
-                        className="h-4 w-4"
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="aspect-square bg-muted rounded overflow-hidden cursor-pointer hover:opacity-80">
-                    {item.mime_type.startsWith('image/') ? (
-                      <img
-                        src={getImageUrl(item)}
-                        alt={item.original_filename}
-                        className="w-full h-full object-cover"
-                        onClick={() => window.open(getImageUrl(item), '_blank')}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        {getFileIcon(item.mime_type)}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="text-xs text-center mt-1 truncate" title={item.original_filename}>
-                    {item.original_filename}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       )}
 
-      {/* Enhanced Stats */}
+      {/* Statistics */}
       <Card>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
-            <div>
-              <div className="text-3xl font-bold text-blue-600">{media.length}</div>
+        <CardHeader>
+          <CardTitle className="text-lg">Library Statistics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold">{media.length}</div>
               <div className="text-sm text-muted-foreground">Total Files</div>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-green-600">
+            <div className="text-center">
+              <div className="text-2xl font-bold">
                 {formatFileSize(media.reduce((acc, item) => acc + item.file_size, 0))}
               </div>
               <div className="text-sm text-muted-foreground">Total Size</div>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-purple-600">
-                {media.filter(item => item.mime_type.startsWith('image/')).length}
+            <div className="text-center">
+              <div className="text-2xl font-bold">
+                {media.filter(item => item.optimization_status === 'optimized').length}
               </div>
-              <div className="text-sm text-muted-foreground">Images</div>
+              <div className="text-sm text-muted-foreground">Optimized</div>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-orange-600">
+            <div className="text-center">
+              <div className="text-2xl font-bold">
                 {media.filter(item => (item.usage_count || 0) === 0).length}
               </div>
               <div className="text-sm text-muted-foreground">Unused</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-yellow-600">
-                {media.filter(item => item.starred).length}
-              </div>
-              <div className="text-sm text-muted-foreground">Starred</div>
             </div>
           </div>
         </CardContent>
@@ -1204,7 +1460,6 @@ export function MediaLibrary() {
 
       {/* Dialogs */}
       {renderOptimizationControls()}
-      {renderEditDialog()}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -1212,20 +1467,14 @@ export function MediaLibrary() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Media File</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{itemToDelete?.original_filename}"? 
-              This action cannot be undone.
-              {itemToDelete?.usage_count && itemToDelete.usage_count > 0 && (
-                <span className="text-destructive block mt-2">
-                  Warning: This file is currently used by {itemToDelete.usage_count} content item(s).
-                </span>
-              )}
+              Are you sure you want to delete "{itemToDelete?.original_filename}"? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => itemToDelete && handleDelete(itemToDelete)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-red-600 hover:bg-red-700"
             >
               Delete
             </AlertDialogAction>
