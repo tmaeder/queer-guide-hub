@@ -63,7 +63,7 @@ export function Header() {
       icon: Calendar,
       label: "Events"
     }, {
-      to: "/directory",
+      to: "/places",
       icon: Globe,
       label: "Places"
     }, {
