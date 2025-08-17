@@ -80,13 +80,22 @@ export function ImageOptimizationManager() {
   // Check job status
   const checkJobStatus = async (jobId: string) => {
     try {
+      console.log('🔍 Checking job status for:', jobId);
       const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
         body: { action: 'status', jobId }
       });
       
+      console.log('📡 Status check response:', { data, error });
+      
       if (error) throw error;
       
-      const job = data.job;
+      const job = data?.job;
+      if (!job) {
+        console.warn('⚠️ No job data received for jobId:', jobId);
+        return null;
+      }
+      
+      console.log('✅ Job status updated:', job);
       setCurrentJob(job);
       
       // If job is completed or failed, reload the jobs list
@@ -96,7 +105,7 @@ export function ImageOptimizationManager() {
       
       return job;
     } catch (error) {
-      console.error('Failed to check job status:', error);
+      console.error('💥 Failed to check job status:', error);
       return null;
     }
   };
