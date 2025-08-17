@@ -16,8 +16,8 @@ export function useSecureRoleManagement() {
       
       // Use the new secure function
       const { error } = await supabase.rpc('assign_user_role', {
-        p_target_user_id: userId,
-        p_role: role
+        user_id: userId,
+        role_name: role
       });
 
       if (error) throw error;

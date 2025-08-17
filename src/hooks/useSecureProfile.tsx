@@ -52,7 +52,7 @@ export function useSecureProfile(targetUserId?: string) {
         return;
       }
 
-      if (data && data.length > 0) {
+      if (data && Array.isArray(data) && data.length > 0) {
         setProfile(data[0] as SecureProfileData);
       } else {
         setProfile(null);

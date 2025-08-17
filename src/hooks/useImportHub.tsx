@@ -246,8 +246,7 @@ export const useImportHub = () => {
   const validateImportData = useCallback(async (jobId: string): Promise<any> => {
     try {
       const { data, error } = await supabase.rpc('validate_import_data', {
-        job_id: jobId,
-        validation_rules: {}
+        data: { job_id: jobId, validation_rules: {} }
       });
 
       if (error) throw error;

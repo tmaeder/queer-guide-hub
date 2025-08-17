@@ -90,13 +90,15 @@ export const useNotifications = () => {
   ) => {
     try {
       const { data, error } = await supabase.rpc('create_notification', {
-        target_user_id: targetUserId,
-        notification_type: type,
-        notification_title: title,
-        notification_content: content,
-        notification_action_url: actionUrl,
-        notification_related_id: relatedId,
-        notification_metadata: metadata || {}
+        user_id: targetUserId,
+        type: type,
+        message: title,
+        data: {
+          content: content,
+          action_url: actionUrl,
+          related_id: relatedId,
+          metadata: metadata || {}
+        }
       });
 
       if (error) throw error;

@@ -65,9 +65,9 @@ export function useVenueCheckins() {
       // Use secure distance calculation without exposing coordinates
       const { data: distanceData, error: distanceError } = await supabase
         .rpc('calculate_secure_venue_distance', {
+          venue_id: venueId,
           user_lat: userLat,
-          user_lng: userLng,
-          venue_id_param: venueId
+          user_lng: userLng
         });
 
       if (distanceError) throw distanceError;
@@ -142,8 +142,7 @@ export function useVenueCheckins() {
     // SECURITY: Use secure function that applies proper privacy controls
     const { data, error } = await supabase
       .rpc('get_secure_venue_checkins', {
-        target_venue_id: venueId,
-        requesting_user_id: null // Will use auth.uid() internally
+        venue_id: venueId
       });
 
     if (error) {
@@ -152,7 +151,8 @@ export function useVenueCheckins() {
     }
 
     // Transform the secure data for compatibility
-    return (data || []).map(checkin => ({
+    const checkinArray = Array.isArray(data) ? data : [];
+    return checkinArray.map((checkin: any) => ({
       id: checkin.id,
       venue_id: checkin.venue_id,
       user_id: checkin.user_id,
@@ -171,8 +171,7 @@ export function useVenueCheckins() {
     // Use secure function to get user's own check-ins with full access
     const { data, error } = await supabase
       .rpc('get_secure_venue_checkins', {
-        target_venue_id: null, // Get all venues
-        requesting_user_id: user.id
+        venue_id: null // Get all venues
       });
 
     if (error) {
@@ -181,8 +180,8 @@ export function useVenueCheckins() {
     }
 
     // Get venue details for user's check-ins
-    const checkinData = data || [];
-    const venueIds = [...new Set(checkinData.map(c => c.venue_id))];
+    const checkinData = Array.isArray(data) ? data : [];
+    const venueIds = [...new Set(checkinData.map((c: any) => c.venue_id))] as string[];
     
     if (venueIds.length === 0) return [];
 
@@ -197,7 +196,7 @@ export function useVenueCheckins() {
     }
 
     // Merge venue data with check-ins
-    return checkinData.map(checkin => ({
+    return checkinData.map((checkin: any) => ({
       ...checkin,
       venues: venues?.find(v => v.id === checkin.venue_id) || null
     }));
