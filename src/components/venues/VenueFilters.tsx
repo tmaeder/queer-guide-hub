@@ -278,8 +278,8 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               <Navigation className="h-4 w-4" />
             )}
           </Button>
-          <Button onClick={handleSearch} className="bg-primary h-11 px-6">
-            Search
+          <Button onClick={handleSearch} className="bg-primary h-11 w-11" size="icon">
+            <Search className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
