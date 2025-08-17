@@ -73,8 +73,10 @@ export function ModernVideoPlayer({
       hls.attachMedia(videoElement);
       console.log('🎬 Using HLS adaptive streaming');
     } else {
-      // Progressive fallback with codec preference
-      videoElement.innerHTML = '';
+      // Progressive fallback with codec preference - secure clearing
+      while (videoElement.firstChild) {
+        videoElement.removeChild(videoElement.firstChild);
+      }
       
       if (av1Rendition && supportsCodec('av01')) {
         addSource(av1Rendition, 'video/webm; codecs="av01.0.05M.08,opus"');
@@ -86,7 +88,7 @@ export function ModernVideoPlayer({
         addSource(h264Rendition, 'video/mp4; codecs="avc1.4d401f,mp4a.40.2"');
       }
       
-      // Add captions
+      // Add captions securely
       if (video.captions_path) {
         const track = document.createElement('track');
         track.kind = 'captions';

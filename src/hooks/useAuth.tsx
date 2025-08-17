@@ -67,13 +67,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Secure passkey enrollment check using database
   const checkPasskeyEnrollment = async () => {
+    if (!user) {
+      setHasPasskey(false);
+      return;
+    }
+
     try {
-      // Check localStorage for passkey enrollment status
-      const storedPasskeyStatus = localStorage.getItem(`passkey_enrolled_${user?.id}`);
-      setHasPasskey(storedPasskeyStatus === 'true');
+      const { data, error } = await supabase
+        .from('user_passkey_enrollment')
+        .select('is_enrolled')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // Not found error is okay
+        console.error('Error checking passkey enrollment:', error);
+        setHasPasskey(false);
+      } else {
+        setHasPasskey(data?.is_enrolled ?? false);
+      }
+      
+      // Clean up any legacy localStorage entries
+      try {
+        localStorage.removeItem('hasPasskey');
+        localStorage.removeItem(`passkey_enrolled_${user.id}`);
+      } catch (e) {
+        // Ignore localStorage errors
+      }
     } catch (error) {
-      console.error('Error checking passkey enrollment:', error);
+      console.error('Unexpected error checking passkey enrollment:', error);
+      setHasPasskey(false);
     }
   };
 
@@ -235,7 +259,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error(verifyError?.message || 'Failed to verify passkey enrollment');
         }
 
-        setHasPasskey(true);
+        // Store passkey enrollment status securely in database
+        try {
+          const { error: enrollmentError } = await supabase
+            .from('user_passkey_enrollment')
+            .upsert({
+              user_id: user.id,
+              is_enrolled: true,
+              enrolled_at: new Date().toISOString(),
+              device_name: 'WebAuthn Device',
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+
+          if (enrollmentError) {
+            console.error('Error storing passkey enrollment:', enrollmentError);
+          } else {
+            setHasPasskey(true);
+          }
+        } catch (error) {
+          console.error('Error updating passkey enrollment status:', error);
+        }
+        
         return { error: null };
       }
       

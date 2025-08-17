@@ -11,26 +11,47 @@ export function FlightsWidget({ destination, countryCode = 'xx' }: FlightsWidget
   useEffect(() => {
     if (!containerRef.current || !destination) return;
 
-    // Clear any existing content
-    containerRef.current.innerHTML = '';
+    // Securely clear existing content without using innerHTML
+    while (containerRef.current.firstChild) {
+      containerRef.current.removeChild(containerRef.current.firstChild);
+    }
 
-    // Create and append the script
+    // Create and append the script securely
     const script = document.createElement('script');
     script.async = true;
     script.charset = 'utf-8';
     
-    // Format destination name for the API
-    const formattedDestination = destination.toLowerCase().replace(/\s+/g, '_');
-    const formattedCountryCode = countryCode.toLowerCase();
+    // Format destination name for the API (sanitize input)
+    const formattedDestination = destination.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '_');
+    const formattedCountryCode = countryCode.toLowerCase().replace(/[^a-z]/g, '');
     
-    script.src = `https://tpscr.com/content?currency=eur&trs=241762&shmarker=452012&powered_by=true&locale=en&to_name=${formattedDestination}_${formattedCountryCode}&show_header=false&limit=3&primary_color=000000ff&results_background_color=FFFFFF&form_background_color=FFFFFF&campaign_id=111&promo_id=4478`;
+    // Construct URL safely
+    const url = new URL('https://tpscr.com/content');
+    url.searchParams.set('currency', 'eur');
+    url.searchParams.set('trs', '241762');
+    url.searchParams.set('shmarker', '452012');
+    url.searchParams.set('powered_by', 'true');
+    url.searchParams.set('locale', 'en');
+    url.searchParams.set('to_name', `${formattedDestination}_${formattedCountryCode}`);
+    url.searchParams.set('show_header', 'false');
+    url.searchParams.set('limit', '3');
+    url.searchParams.set('primary_color', '000000ff');
+    url.searchParams.set('results_background_color', 'FFFFFF');
+    url.searchParams.set('form_background_color', 'FFFFFF');
+    url.searchParams.set('campaign_id', '111');
+    url.searchParams.set('promo_id', '4478');
+    
+    script.src = url.toString();
 
     containerRef.current.appendChild(script);
 
     // Cleanup function
     return () => {
       if (containerRef.current) {
-        containerRef.current.innerHTML = '';
+        // Securely clear content without innerHTML
+        while (containerRef.current.firstChild) {
+          containerRef.current.removeChild(containerRef.current.firstChild);
+        }
       }
     };
   }, [destination, countryCode]);

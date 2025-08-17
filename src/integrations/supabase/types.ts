@@ -1766,13 +1766,16 @@ export type Database = {
       donations: {
         Row: {
           amount: number
+          amount_encrypted: string | null
           created_at: string
           currency: string | null
+          donor_info_encrypted: string | null
           donor_name: string | null
           email: string
           id: string
           is_anonymous: boolean | null
           message: string | null
+          payment_method_encrypted: string | null
           status: string | null
           stripe_session_id: string | null
           updated_at: string
@@ -1780,13 +1783,16 @@ export type Database = {
         }
         Insert: {
           amount: number
+          amount_encrypted?: string | null
           created_at?: string
           currency?: string | null
+          donor_info_encrypted?: string | null
           donor_name?: string | null
           email: string
           id?: string
           is_anonymous?: boolean | null
           message?: string | null
+          payment_method_encrypted?: string | null
           status?: string | null
           stripe_session_id?: string | null
           updated_at?: string
@@ -1794,13 +1800,16 @@ export type Database = {
         }
         Update: {
           amount?: number
+          amount_encrypted?: string | null
           created_at?: string
           currency?: string | null
+          donor_info_encrypted?: string | null
           donor_name?: string | null
           email?: string
           id?: string
           is_anonymous?: boolean | null
           message?: string | null
+          payment_method_encrypted?: string | null
           status?: string | null
           stripe_session_id?: string | null
           updated_at?: string
@@ -4883,6 +4892,36 @@ export type Database = {
           },
         ]
       }
+      user_passkey_enrollment: {
+        Row: {
+          created_at: string
+          device_name: string | null
+          enrolled_at: string | null
+          id: string
+          is_enrolled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_name?: string | null
+          enrolled_at?: string | null
+          id?: string
+          is_enrolled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_name?: string | null
+          enrolled_at?: string | null
+          id?: string
+          is_enrolled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_passkeys: {
         Row: {
           counter: number
@@ -5965,7 +6004,9 @@ export type Database = {
         }[]
       }
       anonymize_location_data: {
-        Args: { lat: number; lng: number; precision_level?: string }
+        Args:
+          | { lat: number; lng: number; precision_level?: string }
+          | { lat: number; lng: number; precision_meters?: number }
         Returns: Json
       }
       anonymize_old_location_data: {
@@ -6138,6 +6179,10 @@ export type Database = {
         Args: { encrypted_data: string; user_salt: string }
         Returns: string
       }
+      decrypt_message_content: {
+        Args: { conversation_id: string; encrypted_content: string }
+        Returns: string
+      }
       decrypt_profile_data: {
         Args: { encrypted_data: string; user_id_param: string }
         Returns: string
@@ -6152,6 +6197,10 @@ export type Database = {
       }
       encrypt_booking_data: {
         Args: { data_text: string; user_salt: string }
+        Returns: string
+      }
+      encrypt_message_content: {
+        Args: { content_text: string; conversation_id: string }
         Returns: string
       }
       encrypt_profile_data: {

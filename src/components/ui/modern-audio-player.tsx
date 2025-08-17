@@ -63,8 +63,10 @@ export function ModernAudioPlayer({
     const aacRendition = audio.renditions.find(r => r.codec === 'aac');
     const mp3Rendition = audio.renditions.find(r => r.codec === 'mp3');
 
-    // Clear existing sources
-    audioElement.innerHTML = '';
+    // Securely clear existing sources without innerHTML
+    while (audioElement.firstChild) {
+      audioElement.removeChild(audioElement.firstChild);
+    }
     
     // Add sources in order of preference
     if (opusRendition && supportsCodec('opus')) {
