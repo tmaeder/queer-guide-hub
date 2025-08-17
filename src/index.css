@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Strict Monochrome Palette - No Colors, No Shadows, No Borders */
+    /* Light Mode - Dark text on light backgrounds */
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;
 
@@ -57,6 +57,7 @@
   }
 
   .dark {
+    /* Dark Mode - Bright text on dark backgrounds */
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
 
@@ -147,11 +148,6 @@
   
   .text-info {
     @apply text-foreground;
-  }
-
-  /* Force muted text to be black/white only */
-  .text-muted-foreground {
-    @apply text-foreground !important;
   }
 }
 
