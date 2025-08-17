@@ -513,9 +513,8 @@ export default function Ressources() {
                 </div>
                 <div className="flex gap-2">
                   <Select value={filterCategory} onValueChange={setFilterCategory}>
-                    <SelectTrigger className="w-[150px]">
-                      <Filter className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Category" />
+                    <SelectTrigger className="w-10 h-10 p-0 justify-center">
+                      <Filter className="h-4 w-4" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
@@ -528,9 +527,8 @@ export default function Ressources() {
                   </Select>
                   
                   <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                    <SelectTrigger className="w-[150px]">
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Sort by" />
+                    <SelectTrigger className="w-10 h-10 p-0 justify-center">
+                      <TrendingUp className="h-4 w-4" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="alphabetical">Alphabetical</SelectItem>
