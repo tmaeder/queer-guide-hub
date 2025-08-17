@@ -230,9 +230,8 @@ export function Header() {
                     Peace Out
                   </Button>
                 </DropdownMenuContent>
-              </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} size="sm">
-                <User className="h-4 w-4 mr-2" />
-                Join the Fam
+              </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} size="icon">
+                <User className="h-4 w-4" />
               </Button>}
 
             {/* Main menu */}
