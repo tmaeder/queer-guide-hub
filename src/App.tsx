@@ -15,6 +15,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 import { Skeleton } from "@/components/ui/skeleton";
+import Aurora from "@/components/ui/Aurora";
 
 const Index = lazy(() => import("./pages/Index"));
 const Venues = lazy(() => import("./pages/Venues"));
@@ -102,9 +103,19 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <div className="min-h-screen flex flex-col relative bg-background">
+              <div className="fixed inset-0 z-0">
+                <Aurora
+                  colorStops={["#000000", "#333333", "#000000"]}
+                  blend={0.3}
+                  amplitude={0.8}
+                  speed={0.3}
+                />
+              </div>
               <AnalyticsTracker />
-              <Header />
-              <main className="flex-1">
+              <div className="relative z-10">
+                <Header />
+              </div>
+              <main className="flex-1 relative z-10">
                 <div className="container mx-auto px-2 sm:px-4">
                   <Suspense fallback={
                     <div className="py-10">
@@ -289,7 +300,9 @@ const App = () => {
                   </Suspense>
                 </div>
               </main>
-              <Footer />
+              <div className="relative z-10">
+                <Footer />
+              </div>
               <CookieConsentBanner />
             </div>
           </BrowserRouter>
