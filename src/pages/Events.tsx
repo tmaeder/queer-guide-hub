@@ -227,12 +227,10 @@ const Events = () => {
                   </Button>
                   <Button
                     variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-                    size="sm"
+                    size="icon"
                     onClick={() => setViewMode('calendar')}
-                    className="gap-2"
                   >
                     <CalendarIcon className="h-4 w-4" />
-                    Calendar
                   </Button>
                 </div>
                 {user && (
