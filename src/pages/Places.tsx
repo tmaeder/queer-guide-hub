@@ -200,8 +200,6 @@ export default function Places() {
     <div className={`w-full transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        
-        
         <div className="relative mx-auto max-w-7xl px-6 py-12 lg:py-20">
           {/* Navigation Header */}
           <div className="mb-8">
@@ -329,7 +327,6 @@ export default function Places() {
               </div>
 
               <TabsContent value="countries" className="space-y-6 animate-fade-in">
-                {/* Section Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <h2 className="text-2xl font-semibold">Explore Countries</h2>
@@ -339,7 +336,6 @@ export default function Places() {
                   </div>
                 </div>
                 
-                {/* Countries Grid */}
                 <div className="space-y-10">
                   {loading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
@@ -348,7 +344,6 @@ export default function Places() {
                       ))}
                     </div>
                   ) : continents.length > 0 ? (
-                    // Group by continents when available
                     continents.map((continent) => {
                       const continentCountries = filteredCountries.filter(country => 
                         country.continent_id === continent.id
@@ -358,7 +353,6 @@ export default function Places() {
                       
                       return (
                         <div key={continent.id} className="group space-y-6">
-                          {/* Continent Header */}
                           <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/40">
                             <div className="flex items-center gap-3">
                               <div className="p-2 rounded-lg bg-primary/10">
@@ -371,290 +365,279 @@ export default function Places() {
                             </div>
                           </div>
                         
-                        {/* Countries Grid */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 pl-6">
+                            {continentCountries.map((country, index) => (
+                              <div
+                                key={country.id}
+                                className="animate-fade-in"
+                                style={{ animationDelay: `${index * 50}ms` }}
+                              >
+                                <PlacesCard
+                                  type="country"
+                                  name={country.name}
+                                  data={country}
+                                  onClick={() => handleCountryClick(country)}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                      {filteredCountries.map((country, index) => (
+                        <div
+                          key={country.id}
+                          className="animate-fade-in"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                          <PlacesCard
+                            type="country"
+                            name={country.name}
+                            data={country}
+                            onClick={() => handleCountryClick(country)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="cities" className="space-y-6 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-semibold">Discover Cities</h2>
+                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                      {filteredCities.length} found
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="space-y-10">
+                  {continents.map((continent) => {
+                    const continentCountries = countries.filter(country => 
+                      country.continent_id === continent.id
+                    );
+                    
+                    const continentCities = filteredCities.filter(city => {
+                      return continentCountries.some(country => country.id === city.country_id);
+                    });
+                    
+                    if (continentCities.length === 0) return null;
+                    
+                    return (
+                      <div key={continent.id} className="space-y-6">
+                        <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/40">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <Building2 className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold">{continent.name}</h3>
+                              <p className="text-sm text-muted-foreground">{continentCities.length} cities to discover</p>
+                            </div>
+                          </div>
+                        </div>
+                      
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 pl-6">
-                          {continentCountries.map((country, index) => (
+                          {continentCities.map((city, index) => (
                             <div
-                              key={country.id}
+                              key={city.id}
                               className="animate-fade-in"
                               style={{ animationDelay: `${index * 50}ms` }}
                             >
                               <PlacesCard
-                                type="country"
-                                name={country.name}
-                                data={country}
-                                onClick={() => handleCountryClick(country)}
+                                type="city"
+                                name={city.name}
+                                data={city}
+                                onClick={() => handleCityClick(city)}
                               />
                             </div>
                           ))}
-                         </div>
-                       </div>
-                     );
-                   })
-                 ) : (
-                   // Fallback: show all countries ungrouped if continents not loaded
-                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                     {filteredCountries.map((country, index) => (
-                       <div
-                         key={country.id}
-                         className="animate-fade-in"
-                         style={{ animationDelay: `${index * 50}ms` }}
-                       >
-                         <PlacesCard
-                           type="country"
-                           name={country.name}
-                           data={country}
-                           onClick={() => handleCountryClick(country)}
-                         />
-                       </div>
-                     ))}
-                   </div>
-                 )}
-               </div>
-             </TabsContent>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
 
-             <TabsContent value="cities" className="space-y-6 animate-fade-in">
-               {/* Section Header */}
-               <div className="flex items-center justify-between">
-                 <div className="flex items-center gap-3">
-                   <h2 className="text-2xl font-semibold">Discover Cities</h2>
-                   <Badge variant="secondary" className="px-3 py-1 font-medium">
-                     {filteredCities.length} found
-                   </Badge>
-                 </div>
-               </div>
-               
-               {/* Cities by Continent */}
-               <div className="space-y-10">
-                 {continents.map((continent) => {
-                   const continentCountries = countries.filter(country => 
-                     country.continent_id === continent.id
-                   );
-                   
-                   const continentCities = filteredCities.filter(city => {
-                     return continentCountries.some(country => country.id === city.country_id);
-                   });
-                   
-                   if (continentCities.length === 0) return null;
-                   
-                   return (
-                     <div key={continent.id} className="space-y-6">
-                       {/* Continent Header */}
-                       <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/40">
-                         <div className="flex items-center gap-3">
-                           <div className="p-2 rounded-lg bg-primary/10">
-                             <Building2 className="h-5 w-5 text-primary" />
-                           </div>
-                           <div>
-                             <h3 className="text-lg font-semibold">{continent.name}</h3>
-                             <p className="text-sm text-muted-foreground">{continentCities.length} cities to discover</p>
-                           </div>
-                         </div>
-                       </div>
-                     
-                     {/* Cities Grid */}
-                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 pl-6">
-                       {continentCities.map((city, index) => (
-                         <div
-                           key={city.id}
-                           className="animate-fade-in"
-                           style={{ animationDelay: `${index * 50}ms` }}
-                         >
-                           <PlacesCard
-                             type="city"
-                             name={city.name}
-                             data={city}
-                             onClick={() => handleCityClick(city)}
-                           />
-                         </div>
-                       ))}
+              <TabsContent value="map" className="animate-fade-in">
+                <Suspense
+                  fallback={
+                    <div className="h-[600px] bg-muted/50 rounded-lg animate-pulse flex items-center justify-center">
+                      <div className="text-center space-y-2">
+                        <Map className="h-8 w-8 mx-auto text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">Loading map...</p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </TabsContent>
+                  }
+                >
+                  <PlacesMapView
+                    countries={countries}
+                    cities={cities}
+                    loading={loading}
+                    onCountryClick={handleCountryClick}
+                    onCityClick={handleCityClick}
+                  />
+                </Suspense>
+              </TabsContent>
+            </Tabs>
+          )}
 
-            <TabsContent value="map" className="animate-fade-in">
-              <Suspense
-                fallback={
-                  <div className="h-[600px] bg-muted/50 rounded-lg animate-pulse flex items-center justify-center">
-                    <div className="text-center space-y-2">
-                      <Map className="h-8 w-8 mx-auto text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Loading map...</p>
-                    </div>
-                  </div>
-                }
-              >
-                <PlacesMapView
-                  countries={countries}
-                  cities={cities}
-                  loading={loading}
-                  onCountryClick={handleCountryClick}
-                  onCityClick={handleCityClick}
+          {/* Country View */}
+          {viewMode === "country" && selectedCountry && (
+            <div className="space-y-8">
+              <div className="space-y-6">
+                <PlacesCard
+                  type="country"
+                  name={selectedCountry.name}
+                  data={selectedCountry}
                 />
-              </Suspense>
-            </TabsContent>
-          </Tabs>
-        )}
+                
+                {selectedCountry.latitude && selectedCountry.longitude && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <LocationInfo
+                      name={selectedCountry.name}
+                      type="country"
+                    />
+                    <WeatherForecast
+                      latitude={selectedCountry.latitude}
+                      longitude={selectedCountry.longitude}
+                      cityName={selectedCountry.capital || selectedCountry.name}
+                    />
+                  </div>
+                )}
+              </div>
 
-        {/* Country View */}
-        {viewMode === "country" && selectedCountry && (
-          <div className="space-y-8">
-            {/* Country Header */}
-            <div className="space-y-6">
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-semibold">Cities in {selectedCountry.name}</h2>
+                  <Badge variant="secondary" className="px-3 py-1 font-medium">
+                    {countryCities.length} cities
+                  </Badge>
+                </div>
+                
+                {countryCities.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                    {countryCities.map((city, index) => (
+                      <div
+                        key={city.id}
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <PlacesCard
+                          type="city"
+                          name={city.name}
+                          data={city}
+                          onClick={() => handleCityClick(city)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No cities found in this country</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* City View */}
+          {viewMode === "city" && selectedCity && (
+            <div className="space-y-8">
               <PlacesCard
-                type="country"
-                name={selectedCountry.name}
-                data={selectedCountry}
+                type="city"
+                name={selectedCity.name}
+                data={selectedCity}
               />
               
-              {selectedCountry.latitude && selectedCountry.longitude && (
+              {selectedCity.latitude && selectedCity.longitude && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <WeatherForecast
-                    latitude={selectedCountry.latitude}
-                    longitude={selectedCountry.longitude}
-                    locationName={selectedCountry.name}
-                  />
                   <LocationInfo
-                    latitude={selectedCountry.latitude}
-                    longitude={selectedCountry.longitude}
-                    locationName={selectedCountry.name}
+                    name={selectedCity.name}
+                    type="city"
+                  />
+                  <WeatherForecast
+                    latitude={selectedCity.latitude}
+                    longitude={selectedCity.longitude}
+                    cityName={selectedCity.name}
                   />
                 </div>
               )}
             </div>
+          )}
 
-            {/* Cities in Country */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-semibold">Cities in {selectedCountry.name}</h2>
-                <Badge variant="secondary" className="px-3 py-1 font-medium">
-                  {countryCities.length} cities
-                </Badge>
-              </div>
-              
-              {countryCities.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                  {countryCities.map((city, index) => (
-                    <div
-                      key={city.id}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <PlacesCard
-                        type="city"
-                        name={city.name}
-                        data={city}
-                        onClick={() => handleCityClick(city)}
-                      />
-                    </div>
-                  ))}
+          {/* Search Results */}
+          {viewMode === "search" && (
+            <div className="space-y-8">
+              {searchResults.countries?.length > 0 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-semibold">Countries</h2>
+                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                      {searchResults.countries.length} found
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                    {searchResults.countries.map((country: any, index: number) => (
+                      <div
+                        key={country.id}
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <PlacesCard
+                          type="country"
+                          name={country.name}
+                          data={country}
+                          onClick={() => handleCountryClick(country)}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ) : (
+              )}
+
+              {searchResults.cities?.length > 0 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-semibold">Cities</h2>
+                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                      {searchResults.cities.length} found
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                    {searchResults.cities.map((city: any, index: number) => (
+                      <div
+                        key={city.id}
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <PlacesCard
+                          type="city"
+                          name={city.name}
+                          data={city}
+                          onClick={() => handleCityClick(city)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(!searchResults.countries?.length && !searchResults.cities?.length) && (
                 <div className="text-center py-12 text-muted-foreground">
-                  <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No cities found in this country</p>
+                  <Globe className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No places found matching your search</p>
                 </div>
               )}
             </div>
-          </div>
-        )}
-
-        {/* City View */}
-        {viewMode === "city" && selectedCity && (
-          <div className="space-y-8">
-            <PlacesCard
-              type="city"
-              name={selectedCity.name}
-              data={selectedCity}
-            />
-            
-            {selectedCity.latitude && selectedCity.longitude && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <WeatherForecast
-                  latitude={selectedCity.latitude}
-                  longitude={selectedCity.longitude}
-                  locationName={selectedCity.name}
-                />
-                <LocationInfo
-                  latitude={selectedCity.latitude}
-                  longitude={selectedCity.longitude}
-                  locationName={selectedCity.name}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Search Results */}
-        {viewMode === "search" && (
-          <div className="space-y-8">
-            {searchResults.countries?.length > 0 && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-semibold">Countries</h2>
-                  <Badge variant="secondary" className="px-3 py-1 font-medium">
-                    {searchResults.countries.length} found
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                  {searchResults.countries.map((country: any, index: number) => (
-                    <div
-                      key={country.id}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <PlacesCard
-                        type="country"
-                        name={country.name}
-                        data={country}
-                        onClick={() => handleCountryClick(country)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {searchResults.cities?.length > 0 && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-semibold">Cities</h2>
-                  <Badge variant="secondary" className="px-3 py-1 font-medium">
-                    {searchResults.cities.length} found
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                  {searchResults.cities.map((city: any, index: number) => (
-                    <div
-                      key={city.id}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <PlacesCard
-                        type="city"
-                        name={city.name}
-                        data={city}
-                        onClick={() => handleCityClick(city)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {(!searchResults.countries?.length && !searchResults.cities?.length) && (
-              <div className="text-center py-12 text-muted-foreground">
-                <Globe className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No places found matching your search</p>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
-  );
     </div>
   );
 }
