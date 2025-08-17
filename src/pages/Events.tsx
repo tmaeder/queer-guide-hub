@@ -255,8 +255,8 @@ const Events = () => {
         <div className="space-y-4 p-4 bg-card rounded-lg border mb-8">
           {/* Search Bar */}
           <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-20" />
+            <div className="flex-1 flex items-center gap-2 border rounded-md px-3 py-2 bg-background">
+              <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               <SearchInputTyped
                 placeholders={[
                   "Search for events...",
@@ -269,7 +269,7 @@ const Events = () => {
                 value={search}
                 onValueChange={setSearch}
                 onKeyDown={(e) => e.key === 'Enter' && handleFiltersChange()}
-                className="pl-9"
+                className="border-0 shadow-none p-0 h-auto bg-transparent focus-visible:ring-0 flex-1"
                 typingSpeed={75}
                 pauseDuration={1500}
               />
