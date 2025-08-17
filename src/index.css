@@ -21,10 +21,10 @@
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 95%;
+    --muted: 0 0% 95% / 0.2;
     --muted-foreground: 0 0% 40%;
 
-    --accent: 0 0% 90%;
+    --accent: 0 0% 90% / 0.2;
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 0% 20%;
@@ -38,16 +38,16 @@
 
     /* UI Elements - No borders in flat design */
     --border: transparent;
-    --input: 0 0% 95%;
+    --input: 0 0% 95% / 0.3;
     --ring: 0 0% 0%;
     --radius: 4px;
 
     /* Sidebar (monochrome) */
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 98% / 0.1;
     --sidebar-foreground: 0 0% 0%;
     --sidebar-primary: 0 0% 0%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 90%;
+    --sidebar-accent: 0 0% 90% / 0.2;
     --sidebar-accent-foreground: 0 0% 0%;
     --sidebar-border: transparent;
     --sidebar-ring: 0 0% 0%;
@@ -72,10 +72,10 @@
     --secondary: 0 0% 20%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 10%;
+    --muted: 0 0% 10% / 0.2;
     --muted-foreground: 0 0% 70%;
 
-    --accent: 0 0% 15%;
+    --accent: 0 0% 15% / 0.2;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 0% 80%;
@@ -89,14 +89,14 @@
 
     /* No borders in dark mode either */
     --border: transparent;
-    --input: 0 0% 10%;
+    --input: 0 0% 10% / 0.3;
     --ring: 0 0% 100%;
 
-    --sidebar-background: 0 0% 5%;
+    --sidebar-background: 0 0% 5% / 0.1;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent: 0 0% 15% / 0.2;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: transparent;
     --sidebar-ring: 0 0% 100%;
