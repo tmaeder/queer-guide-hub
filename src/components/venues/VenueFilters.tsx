@@ -269,14 +269,14 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             variant={nearMe ? "default" : "outline"}
             onClick={handleNearMeToggle}
             disabled={isDetectingLocation}
-            className="gap-2 h-11 px-4"
+            size="icon"
+            className="h-11 w-11"
           >
             {isDetectingLocation ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Navigation className="h-4 w-4" />
             )}
-            Near Me
           </Button>
           <Button onClick={handleSearch} className="bg-primary h-11 px-6">
             Search
