@@ -155,12 +155,20 @@ export function ImageOptimizationManager() {
   };
 
   const startOptimizationJob = async () => {
+    console.log('🚀 Starting optimization job...');
+    
     try {
+      console.log('📡 Calling optimize-images-batch edge function...');
       const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
         body: { action: 'start', batchSize: 10 }
       });
       
-      if (error) throw error;
+      console.log('📡 Edge function response:', { data, error });
+      
+      if (error) {
+        console.error('❌ Edge function error:', error);
+        throw error;
+      }
       
       const job = {
         id: data.jobId,
@@ -173,6 +181,8 @@ export function ImageOptimizationManager() {
         updated_at: new Date().toISOString()
       };
       
+      console.log('✅ Job created:', job);
+      
       setCurrentJob(job);
       setSelectedTab('jobs');
       
@@ -182,10 +192,10 @@ export function ImageOptimizationManager() {
       });
       
     } catch (error) {
-      console.error('Failed to start optimization job:', error);
+      console.error('💥 Failed to start optimization job:', error);
       toast({
         title: "Failed to Start Optimization",
-        description: "Could not start the optimization job",
+        description: `Could not start the optimization job: ${error.message}`,
         variant: "destructive",
       });
     }
