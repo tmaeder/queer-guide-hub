@@ -49,16 +49,17 @@ export default function About() {
   ];
 
   return (
-    <div className="w-full p-6">
-      <div className="text-center mb-12">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Heart className="h-12 w-12 text-primary fill-current" />
-          <h1 className="text-4xl font-bold text-foreground">About The Queer Guide</h1>
+    <div className="w-full">
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Heart className="h-12 w-12 text-primary fill-current" />
+            <h1 className="text-4xl font-bold text-foreground">About The Queer Guide</h1>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            A comprehensive platform connecting the LGBTQ+ community with safe spaces, events, businesses, and each other.
+          </p>
         </div>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          A comprehensive platform connecting the LGBTQ+ community with safe spaces, events, businesses, and each other.
-        </p>
-      </div>
 
       <section className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-8">Our Mission</h2>
@@ -216,6 +217,7 @@ export default function About() {
           </Card>
         </div>
       </section>
+      </div>
     </div>
   );
 }

@@ -116,18 +116,19 @@ export default function OurValues() {
   ];
 
   return (
-    <div className="w-full p-6">
-      {/* Hero Section */}
-      <div className="text-center mb-16">
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <Star className="h-12 w-12 text-primary" />
-          <h1 className="text-4xl font-bold gradient-text">Our Values</h1>
+    <div className="w-full">
+      <div className="container mx-auto px-4 py-12">
+        {/* Hero Section */}
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <Star className="h-12 w-12 text-primary" />
+            <h1 className="text-4xl font-bold gradient-text">Our Values</h1>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            The principles that guide every decision we make and every feature we build. 
+            These values are the foundation of The Queer Guide community.
+          </p>
         </div>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          The principles that guide every decision we make and every feature we build. 
-          These values are the foundation of The Queer Guide community.
-        </p>
-      </div>
 
       {/* Core Values */}
       <section className="mb-16">
@@ -279,6 +280,7 @@ export default function OurValues() {
           </CardContent>
         </Card>
       </section>
+      </div>
     </div>
   );
 }

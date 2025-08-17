@@ -106,20 +106,20 @@ const Index = React.memo(() => {
   }], [loading, realStats, formatNumber]);
   return <div className="min-h-screen">
       {/* Find Venues & Restrooms Near You */}
-      <section className="py-8 md:py-12">
-        <div className="container mx-auto px-4">
+      <section>
+        <div className="container mx-auto px-4 py-8 md:py-12">
           <VenueMapSearch />
         </div>
       </section>
 
       {/* Hero Section */}
-      <section className="p-0">
+      <section>
         <FrontPageVenueMap fullWidth heightClass="h-[60vh]" />
       </section>
 
       {/* Features Grid */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <section>
+        <div className="container mx-auto px-4 py-20">
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {features.map((feature, index) => {

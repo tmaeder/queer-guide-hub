@@ -85,14 +85,15 @@ export default function Contact() {
     question: "Is my personal information secure?",
     answer: "Yes, we take privacy seriously. Please review our Privacy Policy for detailed information about how we collect, use, and protect your data."
   }];
-  return <div className="w-full p-6">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          We're here to help! Whether you have questions, feedback, or need support, 
-          don't hesitate to reach out to our community team.
-        </p>
-      </div>
+  return <div className="w-full">
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            We're here to help! Whether you have questions, feedback, or need support, 
+            don't hesitate to reach out to our community team.
+          </p>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
         {/* Contact Form */}
@@ -190,5 +191,6 @@ export default function Contact() {
         
         
       </section>
+      </div>
     </div>;
 }
