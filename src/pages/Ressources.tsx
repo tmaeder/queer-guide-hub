@@ -143,7 +143,13 @@ export default function Ressources() {
 
     // Filter by category
     if (filterCategory !== "all") {
-      filtered = filtered.filter(tag => tag.category === filterCategory);
+      // Check if it's a main category (show all subcategories)
+      if (Object.keys(categoryStructure).includes(filterCategory)) {
+        const subCategories = categoryStructure[filterCategory as keyof typeof categoryStructure];
+        filtered = filtered.filter(tag => subCategories.includes(tag.category || ''));
+      } else {
+        filtered = filtered.filter(tag => tag.category === filterCategory);
+      }
     }
 
     // Sort tags
@@ -162,6 +168,39 @@ export default function Ressources() {
     });
     return sorted;
   }, [allTags, searchResults, filterCategory, sortBy, tagUsageCounts, viewMode]);
+
+  // Define hierarchical categories structure
+  const categoryStructure = {
+    'Identity & Orientation': [
+      'Gender Identity & Expression',
+      'Sexual & Romantic Orientations'
+    ],
+    'Relationships & Dynamics': [
+      'Relationship Structures', 
+      'Partner Roles & Titles'
+    ],
+    'Sexual Practices, Kink & BDSM': [
+      'Core Concepts & Philosophies',
+      'Roles & Power Dynamics',
+      'Kink & Fetish Domains'
+    ],
+    'Community, Culture, & Support': [
+      'Community & Events',
+      'Activism & Social Issues', 
+      'Support & Resources',
+      'Slang & Cultural Terms'
+    ],
+    'Health, Safety, & Wellness': [
+      'Safety Practices & Concepts',
+      'Health & Wellness Resources',
+      'STIs & Health Conditions',
+      'Substances & Harm Reduction'
+    ],
+    'Other': [
+      'Professions',
+      'Miscellaneous'
+    ]
+  };
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -449,12 +488,21 @@ export default function Ressources() {
                   <SelectTrigger className="w-10 h-10 p-0 justify-center">
                     <Filter className="h-4 w-4" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-96">
                     <SelectItem value="all">All Categories</SelectItem>
                     <SelectItem value="professions">Professions</SelectItem>
-                    {categories.map(category => <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>)}
+                    {Object.entries(categoryStructure).map(([mainCategory, subCategories]) => (
+                      <div key={mainCategory}>
+                        <SelectItem value={mainCategory} className="font-semibold">
+                          {mainCategory}
+                        </SelectItem>
+                        {subCategories.map((subCategory) => (
+                          <SelectItem key={subCategory} value={subCategory} className="pl-6 text-muted-foreground">
+                            {subCategory}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    ))}
                   </SelectContent>
                 </Select>
                 
