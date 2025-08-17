@@ -152,7 +152,7 @@ const Venues = () => {
         <Card className="mb-8">
           <CardContent className="p-8 text-center">
             <h1 className="text-5xl font-bold text-foreground mb-4 animate-fade-in">
-              Venues & Organizations
+              Spaces
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Discover queer-friendly venues, businesses, and organizations in your area
