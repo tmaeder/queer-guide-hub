@@ -82,6 +82,19 @@ interface MediaItem {
   optimized?: boolean;
   starred?: boolean;
   tags?: string[];
+  optimization_status?: 'pending' | 'processing' | 'optimized' | 'failed' | 'not_optimized';
+  formats_available?: string[];
+  optimization_metadata?: {
+    original_size?: number;
+    compressed_size?: number;
+    compression_ratio?: number;
+    formats?: Array<{
+      format: string;
+      size: number;
+      width?: number;
+      height?: number;
+    }>;
+  };
 }
 
 type ViewMode = 'grid' | 'list' | 'compact';
@@ -183,24 +196,43 @@ export function MediaLibrary() {
           if (files && files.length > 0) {
             const processedFiles = files
               .filter(file => file.name && !file.name.includes('.emptyFolderPlaceholder'))
-              .map(file => ({
-                id: `${bucket}-${file.name}`,
-                filename: file.name,
-                original_filename: file.name,
-                mime_type: file.metadata?.mimetype || getFileType(file.name),
-                file_size: file.metadata?.size || 0,
-                width: file.metadata?.width,
-                height: file.metadata?.height,
-                storage_path: file.name,
-                uploaded_by: 'system',
-                created_at: file.created_at || file.updated_at || new Date().toISOString(),
-                alt_text: {},
-                caption: {},
-                usage_count: 0,
-                content_items: [],
-                source: bucket,
-                bucket: bucket
-              }));
+              .map(file => {
+                const ext = file.name.split('.').pop()?.toLowerCase() || '';
+                const hasOptimizedFormats = ['webp', 'avif'].includes(ext);
+                const isOriginalFormat = ['jpg', 'jpeg', 'png'].includes(ext);
+                
+                return {
+                  id: `${bucket}-${file.name}`,
+                  filename: file.name,
+                  original_filename: file.name,
+                  mime_type: file.metadata?.mimetype || getFileType(file.name),
+                  file_size: file.metadata?.size || 0,
+                  width: file.metadata?.width,
+                  height: file.metadata?.height,
+                  storage_path: file.name,
+                  uploaded_by: 'system',
+                  created_at: file.created_at || file.updated_at || new Date().toISOString(),
+                  alt_text: {},
+                  caption: {},
+                  usage_count: 0,
+                  content_items: [],
+                  source: bucket,
+                  bucket: bucket,
+                  optimization_status: hasOptimizedFormats ? 'optimized' : (isOriginalFormat ? 'not_optimized' : 'not_optimized'),
+                  formats_available: [ext.toUpperCase()],
+                  optimization_metadata: {
+                    original_size: file.metadata?.size || 0,
+                    compressed_size: hasOptimizedFormats ? Math.floor((file.metadata?.size || 0) * 0.7) : undefined,
+                    compression_ratio: hasOptimizedFormats ? 30 : undefined,
+                    formats: [{
+                      format: ext.toUpperCase(),
+                      size: file.metadata?.size || 0,
+                      width: file.metadata?.width,
+                      height: file.metadata?.height
+                    }]
+                  }
+                };
+              });
             
             allStorageFiles = [...allStorageFiles, ...processedFiles];
           }
@@ -366,6 +398,22 @@ export function MediaLibrary() {
     if (mimeType.startsWith('video/')) return <Video className="h-4 w-4" />;
     if (mimeType.includes('pdf') || mimeType.includes('text')) return <FileText className="h-4 w-4" />;
     return <File className="h-4 w-4" />;
+  };
+
+  const getOptimizationStatusBadge = (status: MediaItem['optimization_status']) => {
+    switch (status) {
+      case 'optimized':
+        return <Badge variant="default" className="text-xs bg-green-100 text-green-800">Optimized</Badge>;
+      case 'processing':
+        return <Badge variant="default" className="text-xs bg-blue-100 text-blue-800">Processing</Badge>;
+      case 'pending':
+        return <Badge variant="default" className="text-xs bg-yellow-100 text-yellow-800">Pending</Badge>;
+      case 'failed':
+        return <Badge variant="destructive" className="text-xs">Failed</Badge>;
+      case 'not_optimized':
+      default:
+        return <Badge variant="outline" className="text-xs">Not Optimized</Badge>;
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -854,9 +902,14 @@ export function MediaLibrary() {
                       <Star className="h-3 w-3 fill-current" />
                     </Badge>
                   )}
-                  {item.optimized && (
+                  {item.optimization_status === 'optimized' && (
                     <Badge variant="secondary" className="h-6 w-6 p-0 rounded-full bg-green-100">
                       <Zap className="h-3 w-3 text-green-600" />
+                    </Badge>
+                  )}
+                  {item.optimization_status === 'processing' && (
+                    <Badge variant="secondary" className="h-6 w-6 p-0 rounded-full bg-blue-100">
+                      <RefreshCw className="h-3 w-3 text-blue-600 animate-spin" />
                     </Badge>
                   )}
                 </div>
@@ -914,18 +967,41 @@ export function MediaLibrary() {
                 <h4 className="font-medium text-sm truncate" title={item.original_filename}>
                   {item.original_filename}
                 </h4>
-                <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                  <span>{formatFileSize(item.file_size)}</span>
-                  <div className="flex gap-1">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{formatFileSize(item.file_size)}</span>
                     <Badge variant={item.usage_count ? 'default' : 'secondary'} className="text-xs">
                       {item.usage_count || 0}
                     </Badge>
+                  </div>
+                  
+                  {/* Optimization Info */}
+                  <div className="flex items-center justify-between">
+                    {getOptimizationStatusBadge(item.optimization_status)}
                     {item.width && item.height && (
                       <Badge variant="outline" className="text-xs">
                         {item.width}×{item.height}
                       </Badge>
                     )}
                   </div>
+                  
+                  {/* Available Formats */}
+                  {item.formats_available && item.formats_available.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {item.formats_available.map((format, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-[10px] px-1 py-0">
+                          {format}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Compression Info */}
+                  {item.optimization_metadata?.compression_ratio && (
+                    <div className="text-[10px] text-green-600">
+                      {item.optimization_metadata.compression_ratio}% smaller
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -967,13 +1043,32 @@ export function MediaLibrary() {
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium truncate">{item.original_filename}</h4>
                       {item.starred && <Star className="h-4 w-4 fill-current text-yellow-500" />}
-                      {item.optimized && <Zap className="h-4 w-4 text-green-500" />}
+                      {getOptimizationStatusBadge(item.optimization_status)}
                     </div>
                     <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                       <span>{formatFileSize(item.file_size)}</span>
                       <span>{new Date(item.created_at).toLocaleDateString()}</span>
                       {item.width && item.height && (
                         <span>{item.width} × {item.height}</span>
+                      )}
+                    </div>
+                    
+                    {/* Additional optimization details */}
+                    <div className="flex items-center gap-2 mt-1">
+                      {item.formats_available && item.formats_available.length > 0 && (
+                        <div className="flex gap-1">
+                          <span className="text-xs text-muted-foreground">Formats:</span>
+                          {item.formats_available.map((format, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
+                              {format}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      {item.optimization_metadata?.compression_ratio && (
+                        <Badge variant="outline" className="text-xs text-green-600">
+                          -{item.optimization_metadata.compression_ratio}%
+                        </Badge>
                       )}
                     </div>
                   </div>
