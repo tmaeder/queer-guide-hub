@@ -73,7 +73,7 @@ export const useGroupPosts = (groupId: string) => {
       // Get user profiles separately
       const userIds = [...new Set(data?.map(post => post.user_id) || [])];
       const { data: profiles } = await supabase
-        .from('profiles_public')
+        .from('profiles')
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
 
@@ -130,7 +130,7 @@ export const useGroupPosts = (groupId: string) => {
 
       const userIds = memberships?.map(m => m.user_id) || [];
       const { data: profiles } = await supabase
-        .from('profiles_public')
+        .from('profiles')
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
 

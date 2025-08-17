@@ -53,7 +53,7 @@ export const useGroupNotifications = () => {
         .in('id', groupIds);
 
       const { data: profiles } = await supabase
-        .from('profiles_public')
+        .from('profiles')
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
 

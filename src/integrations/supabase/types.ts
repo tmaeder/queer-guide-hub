@@ -6074,6 +6074,14 @@ export type Database = {
           | { schema_name: string; table_name: string }
         Returns: undefined
       }
+      decrement_comment_likes: {
+        Args: { comment_id: string }
+        Returns: undefined
+      }
+      decrement_post_likes: {
+        Args: { post_id: string }
+        Returns: undefined
+      }
       examine_table_policies: {
         Args:
           | { p_schema_name: string; p_table_name: string }
@@ -6181,6 +6189,18 @@ export type Database = {
           suggested_index_sql: string
           table_name: string
         }[]
+      }
+      increment_comment_likes: {
+        Args: { comment_id: string }
+        Returns: undefined
+      }
+      increment_post_comments: {
+        Args: { post_id: string }
+        Returns: undefined
+      }
+      increment_post_likes: {
+        Args: { post_id: string }
+        Returns: undefined
       }
       is_admin: {
         Args: { user_id: string }
