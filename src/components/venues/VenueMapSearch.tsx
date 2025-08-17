@@ -254,10 +254,8 @@ const [filtersOpen, setFiltersOpen] = useState(false);
       </ToggleGroup>
     </div>
 
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => setFiltersOpen(!filtersOpen)}>
+                  <Button variant="outline" size="icon" onClick={() => setFiltersOpen(!filtersOpen)}>
                     <Filter className="h-4 w-4" />
-                    Advanced
-                    <ChevronDown className={`h-4 w-4 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
                   </Button>
                 </div>
 
