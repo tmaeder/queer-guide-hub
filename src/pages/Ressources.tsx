@@ -43,7 +43,7 @@ export default function Ressources() {
   const [processingImages, setProcessingImages] = useState(false);
   const [categorizingTags, setCategorizingTags] = useState(false);
   const [tagUsageCounts, setTagUsageCounts] = useState<Record<string, number>>({});
-  const [professions, setProfessions] = useState<string[]>([]);
+  const [professions, setProfessions] = useState<Array<{name: string, count: number}>>([]);
   const [selectedProfession, setSelectedProfession] = useState<string>("");
 
   // Load professions from personalities
@@ -54,14 +54,23 @@ export default function Ressources() {
           data
         } = await supabase.from('personalities').select('profession').not('profession', 'is', null);
         if (data) {
-          // Split comma-separated professions and flatten
-          const allProfessions = data
-            .map(p => p.profession)
-            .filter(Boolean)
-            .flatMap(profession => profession.split(',').map(p => p.trim()))
-            .filter(Boolean);
-          const uniqueProfessions = [...new Set(allProfessions)].sort();
-          setProfessions(uniqueProfessions);
+          // Split comma-separated professions and count occurrences
+          const professionCounts: Record<string, number> = {};
+          
+          data.forEach(p => {
+            if (p.profession) {
+              const profs = p.profession.split(',').map(prof => prof.trim()).filter(Boolean);
+              profs.forEach(prof => {
+                professionCounts[prof] = (professionCounts[prof] || 0) + 1;
+              });
+            }
+          });
+          
+          const professionsWithCounts = Object.entries(professionCounts)
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+          
+          setProfessions(professionsWithCounts);
         }
       } catch (error) {
         console.error('Error loading professions:', error);
@@ -483,12 +492,15 @@ export default function Ressources() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {professions.map(profession => (
                   <Card 
-                    key={profession} 
+                    key={profession.name} 
                     className="cursor-pointer hover:bg-accent transition-colors"
-                    onClick={() => navigate(`/professions/${encodeURIComponent(profession)}`)}
+                    onClick={() => navigate(`/professions/${encodeURIComponent(profession.name)}`)}
                   >
                     <CardContent className="p-4 text-center">
-                      <h3 className="font-medium">{profession}</h3>
+                      <h3 className="font-medium">{profession.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {profession.count} {profession.count === 1 ? 'person' : 'people'}
+                      </p>
                     </CardContent>
                   </Card>
                 ))}

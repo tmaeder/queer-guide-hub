@@ -37,9 +37,11 @@ export default function ProfessionDetail() {
 
         if (personalitiesError) throw personalitiesError;
 
-        // Filter personalities that have this profession in their comma-separated list
+        // Filter personalities that have this profession in their comma-separated list (case-insensitive)
         const filteredPersonalities = personalities?.filter(p => 
-          p.profession && p.profession.split(',').map(prof => prof.trim()).includes(decodedProfession)
+          p.profession && p.profession.split(',')
+            .map(prof => prof.trim().toLowerCase())
+            .includes(decodedProfession.toLowerCase())
         ) || [];
 
         setProfessionData({
