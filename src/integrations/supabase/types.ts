@@ -6174,6 +6174,15 @@ export type Database = {
         }
         Relationships: []
       }
+      security_overview: {
+        Row: {
+          public_records: number | null
+          recent_records: number | null
+          table_name: string | null
+          total_records: number | null
+        }
+        Relationships: []
+      }
       venue_checkin_stats: {
         Row: {
           activity_level: string | null
@@ -6245,6 +6254,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      basic_rate_limit: {
+        Args: { identifier: string; max_attempts?: number }
+        Returns: boolean
+      }
       calculate_profile_completion: {
         Args: { user_id_param: string }
         Returns: number
@@ -6269,15 +6282,6 @@ export type Database = {
       }
       check_rate_limit: {
         Args: {
-          identifier: string
-          max_attempts?: number
-          time_window_minutes?: number
-        }
-        Returns: boolean
-      }
-      check_rate_limit_enhanced: {
-        Args: {
-          action_type?: string
           identifier: string
           max_attempts?: number
           time_window_minutes?: number
