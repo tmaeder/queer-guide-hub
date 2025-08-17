@@ -9,41 +9,29 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  ArrowLeft, 
-  Tag, 
-  Users, 
-  Calendar, 
-  MapPin, 
-  ShoppingBag, 
-  Heart, 
-  Brain, 
-  Upload, 
-  Search,
-  Grid3X3,
-  List,
-  Filter,
-  TrendingUp,
-  Sparkles,
-  Eye,
-  Clock,
-  BarChart3
-} from "lucide-react";
+import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload, Search, Grid3X3, List, Filter, TrendingUp, Sparkles, Eye, Clock, BarChart3 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-
 type ViewMode = "overview" | "category" | "search" | "tag-detail";
 type DisplayMode = "grid" | "list";
 type SortOption = "alphabetical" | "usage" | "recent" | "popular";
-
 export default function Ressources() {
-  const { tagName } = useParams<{ tagName: string }>();
+  const {
+    tagName
+  } = useParams<{
+    tagName: string;
+  }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { allTags, tagsByCategory, loading, error, searchTags } = useCentralizedTags();
-  
+  const {
+    allTags,
+    tagsByCategory,
+    loading,
+    error,
+    searchTags
+  } = useCentralizedTags();
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [displayMode, setDisplayMode] = useState<DisplayMode>("grid");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -62,11 +50,9 @@ export default function Ressources() {
   useEffect(() => {
     const loadProfessions = async () => {
       try {
-        const { data } = await supabase
-          .from('personalities')
-          .select('profession')
-          .not('profession', 'is', null);
-        
+        const {
+          data
+        } = await supabase.from('personalities').select('profession').not('profession', 'is', null);
         if (data) {
           const uniqueProfessions = [...new Set(data.map(p => p.profession).filter(Boolean))].sort();
           setProfessions(uniqueProfessions);
@@ -75,7 +61,6 @@ export default function Ressources() {
         console.error('Error loading professions:', error);
       }
     };
-    
     loadProfessions();
   }, []);
 
@@ -93,55 +78,35 @@ export default function Ressources() {
   useEffect(() => {
     const calculateUsageCounts = async () => {
       if (allTags.length === 0) return;
-      
       const usageCounts: Record<string, number> = {};
-      
       try {
-        const { data: venues } = await supabase
-          .from('venues')
-          .select('tags')
-          .not('tags', 'is', null);
-        
-        const { data: groups } = await supabase
-          .from('community_groups')
-          .select('tags')
-          .not('tags', 'is', null);
-
-        const { data: events } = await supabase
-          .from('events')
-          .select('target_groups')
-          .not('target_groups', 'is', null);
-          
+        const {
+          data: venues
+        } = await supabase.from('venues').select('tags').not('tags', 'is', null);
+        const {
+          data: groups
+        } = await supabase.from('community_groups').select('tags').not('tags', 'is', null);
+        const {
+          data: events
+        } = await supabase.from('events').select('target_groups').not('target_groups', 'is', null);
         for (const tag of allTags) {
           let count = 0;
-          
           if (venues) {
-            count += venues.filter(venue => 
-              venue.tags && venue.tags.includes(tag.name)
-            ).length;
+            count += venues.filter(venue => venue.tags && venue.tags.includes(tag.name)).length;
           }
-          
           if (groups) {
-            count += groups.filter(group => 
-              group.tags && group.tags.includes(tag.name)
-            ).length;
+            count += groups.filter(group => group.tags && group.tags.includes(tag.name)).length;
           }
-
           if (events) {
-            count += events.filter(event => 
-              event.target_groups && event.target_groups.includes(tag.name)
-            ).length;
+            count += events.filter(event => event.target_groups && event.target_groups.includes(tag.name)).length;
           }
-          
           usageCounts[tag.name] = count;
         }
-        
         setTagUsageCounts(usageCounts);
       } catch (error) {
         console.error('Error calculating tag usage:', error);
       }
     };
-    
     calculateUsageCounts();
   }, [allTags]);
 
@@ -160,12 +125,12 @@ export default function Ressources() {
   // Memoized filtered and sorted tags
   const filteredAndSortedTags = useMemo(() => {
     let filtered = viewMode === "search" ? searchResults : allTags;
-    
+
     // Filter by category
     if (filterCategory !== "all") {
       filtered = filtered.filter(tag => tag.category === filterCategory);
     }
-    
+
     // Sort tags
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
@@ -180,7 +145,6 @@ export default function Ressources() {
           return a.name.localeCompare(b.name);
       }
     });
-    
     return sorted;
   }, [allTags, searchResults, filterCategory, sortBy, tagUsageCounts, viewMode]);
 
@@ -189,7 +153,6 @@ export default function Ressources() {
     const cats = [...new Set(allTags.map(tag => tag.category).filter(Boolean))];
     return cats.sort();
   }, [allTags]);
-
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.trim()) {
@@ -201,13 +164,11 @@ export default function Ressources() {
       setSearchResults([]);
     }
   };
-
   const handleTagClick = (tag: any) => {
     setSelectedTag(tag);
     setViewMode("tag-detail");
     navigate(`/ressources/${encodeURIComponent(tag.name)}`);
   };
-
   const handleBack = () => {
     if (viewMode === "tag-detail") {
       setViewMode(selectedCategory ? "category" : "overview");
@@ -220,55 +181,78 @@ export default function Ressources() {
       setSearchResults([]);
     }
   };
-
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "events": return Calendar;
-      case "venues": return MapPin;
-      case "marketplace": return ShoppingBag;
-      case "community": return Users;
-      case "gender-identity": return Heart;
-      case "health": return Brain;
-      case "sexuality": return Heart;
-      case "relationships": return Users;
-      case "activism": return Tag;
-      case "support": return Users;
-      case "lifestyle": return Tag;
-      case "dating": return Heart;
-      case "family": return Users;
-      case "workplace": return Tag;
-      case "legal": return Tag;
-      case "education": return Tag;
-      case "arts": return Tag;
-      case "sports": return Tag;
-      case "technology": return Tag;
-      case "travel": return MapPin;
-      case "fashion": return Tag;
-      case "content": return Tag;
-      default: return Tag;
+      case "events":
+        return Calendar;
+      case "venues":
+        return MapPin;
+      case "marketplace":
+        return ShoppingBag;
+      case "community":
+        return Users;
+      case "gender-identity":
+        return Heart;
+      case "health":
+        return Brain;
+      case "sexuality":
+        return Heart;
+      case "relationships":
+        return Users;
+      case "activism":
+        return Tag;
+      case "support":
+        return Users;
+      case "lifestyle":
+        return Tag;
+      case "dating":
+        return Heart;
+      case "family":
+        return Users;
+      case "workplace":
+        return Tag;
+      case "legal":
+        return Tag;
+      case "education":
+        return Tag;
+      case "arts":
+        return Tag;
+      case "sports":
+        return Tag;
+      case "technology":
+        return Tag;
+      case "travel":
+        return MapPin;
+      case "fashion":
+        return Tag;
+      case "content":
+        return Tag;
+      default:
+        return Tag;
     }
   };
-
   const storeTagImages = async () => {
     if (allTags.length === 0) return;
     setProcessingImages(true);
-    
     toast({
       title: "Processing Started",
-      description: `Processing images for ${allTags.length} tags. This may take a while...`,
+      description: `Processing images for ${allTags.length} tags. This may take a while...`
     });
-
     try {
       let successCount = 0;
       let errorCount = 0;
-
       for (let i = 0; i < allTags.length; i++) {
         const tag = allTags[i];
         try {
-          const { data, error } = await supabase.functions.invoke('store-tag-images', {
-            body: { tagId: tag.id, tagName: tag.name }
+          const {
+            data,
+            error
+          } = await supabase.functions.invoke('store-tag-images', {
+            body: {
+              tagId: tag.id,
+              tagName: tag.name
+            }
           });
-          
           if (error) {
             errorCount++;
           } else if (data?.success) {
@@ -276,18 +260,16 @@ export default function Ressources() {
           } else {
             errorCount++;
           }
-
           if ((i + 1) % 10 === 0 || i === allTags.length - 1) {
             toast({
               title: "Processing Progress",
-              description: `Processed ${i + 1}/${allTags.length} tags (${successCount} successful)`,
+              description: `Processed ${i + 1}/${allTags.length} tags (${successCount} successful)`
             });
           }
         } catch (err) {
           errorCount++;
         }
       }
-
       toast({
         title: "Processing Complete",
         description: `Processed ${allTags.length} tags. ${successCount} successful, ${errorCount} failed.`,
@@ -297,97 +279,90 @@ export default function Ressources() {
       toast({
         title: "Error",
         description: "Error processing tag images",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setProcessingImages(false);
     }
   };
-
   const categorizeAllTags = async () => {
     setCategorizingTags(true);
     try {
-      const { data, error } = await supabase.functions.invoke('categorize-tags');
-      
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('categorize-tags');
       if (error) {
         toast({
           title: "Categorization failed",
           description: `Failed to categorize tags: ${error.message}`,
-          variant: "destructive",
+          variant: "destructive"
         });
       } else if (data?.success) {
         toast({
           title: "Tags categorized",
-          description: `Successfully categorized ${data.categorized_count} tags! Refreshing...`,
+          description: `Successfully categorized ${data.categorized_count} tags! Refreshing...`
         });
         setTimeout(() => window.location.reload(), 2000);
       } else {
         toast({
           title: "Unexpected response",
           description: "Received unexpected response from categorization service",
-          variant: "destructive",
+          variant: "destructive"
         });
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to categorize tags",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setCategorizingTags(false);
     }
   };
-
   if (loading) {
-    return (
-      <div className="container mx-auto p-6 space-y-6">
+    return <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-10 w-32" />
         </div>
         <Skeleton className="h-12 w-full" />
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <Card key={i} className="overflow-hidden">
+          {Array.from({
+          length: 12
+        }).map((_, i) => <Card key={i} className="overflow-hidden">
               <Skeleton className="aspect-[4/3] w-full" />
               <div className="p-3 space-y-2">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-3 w-16" />
               </div>
-            </Card>
-          ))}
+            </Card>)}
         </div>
-      </div>
-    );
+      </div>;
   }
-
   if (error) {
-    return (
-      <div className="container mx-auto p-6">
+    return <div className="container mx-auto p-6">
         <Card className="border-destructive">
           <CardContent className="p-6 text-center">
             <p className="text-destructive">Error loading ressources: {error}</p>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>;
   }
 
   // Render Tag Detail View
   if (viewMode === "tag-detail" && selectedTag) {
-    return (
-      <div className="container mx-auto p-6 space-y-6">
+    return <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={handleBack} className="shrink-0">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
           <div className="flex items-center gap-3">
-            <div 
-              className="w-4 h-4 rounded-full shrink-0" 
-              style={{ backgroundColor: selectedTag.color }} 
-            />
+            <div className="w-4 h-4 rounded-full shrink-0" style={{
+            backgroundColor: selectedTag.color
+          }} />
             <h1 className="text-3xl font-bold">#{selectedTag.name}</h1>
             <Badge variant="secondary">
               {tagUsageCounts[selectedTag.name] || 0} uses
@@ -397,20 +372,13 @@ export default function Ressources() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            {selectedTag.image_url && (
-              <Card className="overflow-hidden">
+            {selectedTag.image_url && <Card className="overflow-hidden">
                 <div className="aspect-video">
-                  <img 
-                    src={selectedTag.image_url} 
-                    alt={`${selectedTag.name} themed image`} 
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={selectedTag.image_url} alt={`${selectedTag.name} themed image`} className="w-full h-full object-cover" />
                 </div>
-              </Card>
-            )}
+              </Card>}
             
-            {selectedTag.description && (
-              <Card>
+            {selectedTag.description && <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Eye className="h-5 w-5" />
@@ -420,8 +388,7 @@ export default function Ressources() {
                 <CardContent>
                   <p className="text-muted-foreground">{selectedTag.description}</p>
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
           </div>
 
           <div className="space-y-4">
@@ -441,33 +408,26 @@ export default function Ressources() {
                   <span className="text-sm">Category</span>
                   <Badge variant="secondary">{selectedTag.category || 'Uncategorized'}</Badge>
                 </div>
-                {selectedTag.created_at && (
-                  <div className="flex items-center justify-between">
+                {selectedTag.created_at && <div className="flex items-center justify-between">
                     <span className="text-sm">Created</span>
                     <span className="text-sm text-muted-foreground">
                       {new Date(selectedTag.created_at).toLocaleDateString()}
                     </span>
-                  </div>
-                )}
+                  </div>}
               </CardContent>
             </Card>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="container mx-auto p-6 space-y-6">
+  return <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          {viewMode !== "overview" && (
-            <Button variant="outline" onClick={handleBack} className="shrink-0">
+          {viewMode !== "overview" && <Button variant="outline" onClick={handleBack} className="shrink-0">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
-            </Button>
-          )}
+            </Button>}
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Sparkles className="h-8 w-8 text-primary" />
@@ -480,11 +440,7 @@ export default function Ressources() {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setDisplayMode(displayMode === "grid" ? "list" : "grid")}
-          >
+          <Button variant="outline" size="sm" onClick={() => setDisplayMode(displayMode === "grid" ? "list" : "grid")}>
             {displayMode === "grid" ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
           </Button>
         </div>
@@ -504,12 +460,7 @@ export default function Ressources() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search tags, categories, descriptions..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    className="pl-10"
-                  />
+                  <Input placeholder="Search tags, categories, descriptions..." value={searchQuery} onChange={e => handleSearch(e.target.value)} className="pl-10" />
                 </div>
                 <div className="flex gap-2">
                   <Select value={filterCategory} onValueChange={setFilterCategory}>
@@ -518,11 +469,9 @@ export default function Ressources() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map(category => (
-                        <SelectItem key={category} value={category}>
+                      {categories.map(category => <SelectItem key={category} value={category}>
                           {category}
-                        </SelectItem>
-                      ))}
+                        </SelectItem>)}
                     </SelectContent>
                   </Select>
                   
@@ -553,24 +502,17 @@ export default function Ressources() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {professions.map((profession) => (
-                  <Button
-                    key={profession}
-                    variant={selectedProfession === profession ? "default" : "outline"}
-                    className="h-auto p-3 text-left justify-start"
-                    onClick={() => {
-                      if (selectedProfession === profession) {
-                        setSelectedProfession("");
-                        navigate('/personalities');
-                      } else {
-                        setSelectedProfession(profession);
-                        navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
-                      }
-                    }}
-                  >
+                {professions.map(profession => <Button key={profession} variant={selectedProfession === profession ? "default" : "outline"} className="h-auto p-3 text-left justify-start" onClick={() => {
+                if (selectedProfession === profession) {
+                  setSelectedProfession("");
+                  navigate('/personalities');
+                } else {
+                  setSelectedProfession(profession);
+                  navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
+                }
+              }}>
                     <div className="truncate">{profession}</div>
-                  </Button>
-                ))}
+                  </Button>)}
               </div>
             </CardContent>
           </Card>
@@ -578,70 +520,10 @@ export default function Ressources() {
       </Tabs>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-primary/10 to-primary/20 border-primary/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Tag className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Total Tags</span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">{allTags.length.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {allTags.length > 0 ? `${Math.round((allTags.filter(tag => tagUsageCounts[tag.name] > 0).length / allTags.length) * 100)}% active` : 'No tags yet'}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/20 border-emerald-500/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Users className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Categories</span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">{categories.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {categories.length > 0 ? `Avg ${Math.round(allTags.length / categories.length)} tags per category` : 'No categories'}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-violet-500/10 to-violet-500/20 border-violet-500/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-              <span className="text-sm font-medium text-violet-700 dark:text-violet-300">Total Usage</span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">
-              {Object.values(tagUsageCounts).reduce((total, count) => total + count, 0).toLocaleString()}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {allTags.length > 0 ? `Avg ${Math.round(Object.values(tagUsageCounts).reduce((total, count) => total + count, 0) / allTags.length)} uses per tag` : 'No usage yet'}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/20 border-amber-500/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <span className="text-sm font-medium text-amber-700 dark:text-amber-300">Most Used</span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">
-              {Math.max(...Object.values(tagUsageCounts), 0).toLocaleString()}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {Object.keys(tagUsageCounts).length > 0 
-                ? Object.entries(tagUsageCounts).sort(([,a], [,b]) => b - a)[0]?.[0] || 'No tags used'
-                : 'No usage data'
-              }
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      
 
       {/* Admin Controls */}
-      {viewMode === "overview" && (
-        <Card>
+      {viewMode === "overview" && <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Brain className="h-5 w-5" />
@@ -650,28 +532,17 @@ export default function Ressources() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              <Button 
-                onClick={storeTagImages} 
-                disabled={processingImages} 
-                variant="outline" 
-                size="sm"
-              >
+              <Button onClick={storeTagImages} disabled={processingImages} variant="outline" size="sm">
                 <Upload className="h-4 w-4 mr-2" />
                 {processingImages ? 'Processing...' : 'Reimport All Images'}
               </Button>
-              <Button 
-                onClick={categorizeAllTags} 
-                disabled={categorizingTags} 
-                variant="outline" 
-                size="sm"
-              >
+              <Button onClick={categorizeAllTags} disabled={categorizingTags} variant="outline" size="sm">
                 <Brain className="h-4 w-4 mr-2" />
                 {categorizingTags ? 'Categorizing...' : 'AI Auto-Categorize'}
               </Button>
             </div>
           </CardContent>
-        </Card>
-      )}
+        </Card>}
 
       {/* Results Info */}
       <div className="flex items-center justify-between">
@@ -684,75 +555,41 @@ export default function Ressources() {
       </div>
 
       {/* Tags Display */}
-      <div className={displayMode === "grid" ? 
-        "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" : 
-        "space-y-2"
-      }>
-        {filteredAndSortedTags.map((tag, index) => (
-          <Card 
-            key={`${tag.id}-${index}`} 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
-              displayMode === "list" ? "flex items-center p-4" : "overflow-hidden"
-            }`}
-            onClick={() => handleTagClick(tag)}
-          >
-            {displayMode === "grid" ? (
-              <>
+      <div className={displayMode === "grid" ? "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" : "space-y-2"}>
+        {filteredAndSortedTags.map((tag, index) => <Card key={`${tag.id}-${index}`} className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${displayMode === "list" ? "flex items-center p-4" : "overflow-hidden"}`} onClick={() => handleTagClick(tag)}>
+            {displayMode === "grid" ? <>
                 <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
-                  {tag.image_url ? (
-                    <img 
-                      src={tag.image_url} 
-                      alt={`${tag.name} themed image`} 
-                      className="w-full h-full object-cover transition-transform duration-200 hover:scale-110"
-                      onError={(e) => {
-                        e.currentTarget.src = '/placeholder.svg';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
+                  {tag.image_url ? <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover transition-transform duration-200 hover:scale-110" onError={e => {
+              e.currentTarget.src = '/placeholder.svg';
+            }} /> : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
                       <Tag className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  )}
+                    </div>}
                 </div>
                 <CardContent className="p-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <div 
-                      className="w-3 h-3 rounded-full shrink-0" 
-                      style={{ backgroundColor: tag.color }} 
-                    />
+                    <div className="w-3 h-3 rounded-full shrink-0" style={{
+                backgroundColor: tag.color
+              }} />
                     <span className="text-sm font-medium truncate">{tag.name}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>{tag.category || 'Uncategorized'}</span>
-                    {tagUsageCounts[tag.name] > 0 && (
-                      <Badge variant="outline" className="text-xs">
+                    {tagUsageCounts[tag.name] > 0 && <Badge variant="outline" className="text-xs">
                         {tagUsageCounts[tag.name]} uses
-                      </Badge>
-                    )}
+                      </Badge>}
                   </div>
                 </CardContent>
-              </>
-            ) : (
-              <div className="flex items-center gap-4 w-full">
+              </> : <div className="flex items-center gap-4 w-full">
                 <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted shrink-0">
-                  {tag.image_url ? (
-                    <img 
-                      src={tag.image_url} 
-                      alt={`${tag.name} themed image`} 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
+                  {tag.image_url ? <img src={tag.image_url} alt={`${tag.name} themed image`} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center">
                       <Tag className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                  )}
+                    </div>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <div 
-                      className="w-3 h-3 rounded-full shrink-0" 
-                      style={{ backgroundColor: tag.color }} 
-                    />
+                    <div className="w-3 h-3 rounded-full shrink-0" style={{
+                backgroundColor: tag.color
+              }} />
                     <span className="font-medium truncate">{tag.name}</span>
                   </div>
                   <p className="text-sm text-muted-foreground truncate">
@@ -763,31 +600,22 @@ export default function Ressources() {
                   <Badge variant="outline" className="text-xs">
                     {tag.category || 'Uncategorized'}
                   </Badge>
-                  {tagUsageCounts[tag.name] > 0 && (
-                    <Badge variant="secondary" className="text-xs">
+                  {tagUsageCounts[tag.name] > 0 && <Badge variant="secondary" className="text-xs">
                       {tagUsageCounts[tag.name]} uses
-                    </Badge>
-                  )}
+                    </Badge>}
                 </div>
-              </div>
-            )}
-          </Card>
-        ))}
+              </div>}
+          </Card>)}
       </div>
 
-      {filteredAndSortedTags.length === 0 && (
-        <Card>
+      {filteredAndSortedTags.length === 0 && <Card>
           <CardContent className="p-12 text-center">
             <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No tags found</h3>
             <p className="text-muted-foreground">
-              {viewMode === "search" 
-                ? "Try adjusting your search terms or filters" 
-                : "No tags available yet"}
+              {viewMode === "search" ? "Try adjusting your search terms or filters" : "No tags available yet"}
             </p>
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+        </Card>}
+    </div>;
 }
