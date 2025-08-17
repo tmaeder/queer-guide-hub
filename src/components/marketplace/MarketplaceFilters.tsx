@@ -106,8 +106,8 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
             className="pl-9"
           />
         </div>
-        <Button onClick={handleSearch} className="bg-primary">
-          Search
+        <Button onClick={handleSearch} className="bg-primary" size="icon">
+          <Search className="h-4 w-4" />
         </Button>
         <Button
           variant="outline"
