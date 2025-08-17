@@ -15,6 +15,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import CardNav, { type CardNavItem } from '@/components/ui/card-nav';
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -137,129 +138,72 @@ export function Header() {
     navigate(path);
     setMenuOpen(false);
   };
-  return <header className="bg-background/85 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20">
-      <div className="container mx-auto px-4">
-        {/* Main header */}
-        <div className="h-16 flex items-center justify-between gap-2">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <Heart className="h-8 w-8 text-primary fill-current" />
-            <span className="sr-only">Queer Guide</span>
+  const cardNavItems: CardNavItem[] = [
+    {
+      label: "Explore",
+      bgColor: "hsl(var(--muted))",
+      textColor: "hsl(var(--muted-foreground))",
+      links: [
+        { label: "Venues", href: "/venues", ariaLabel: "Browse venues" },
+        { label: "Events", href: "/events", ariaLabel: "Browse events" },
+        { label: "Directory", href: "/directory", ariaLabel: "Browse directory" },
+        { label: "Marketplace", href: "/marketplace", ariaLabel: "Browse marketplace" }
+      ]
+    },
+    {
+      label: "Community",
+      bgColor: "hsl(var(--accent))",
+      textColor: "hsl(var(--accent-foreground))",
+      links: [
+        { label: "Feed", href: "/feed", ariaLabel: "Community feed" },
+        { label: "Groups", href: "/groups", ariaLabel: "Join groups" },
+        { label: "News", href: "/news", ariaLabel: "Latest news" },
+        { label: "Personalities", href: "/personalities", ariaLabel: "Featured personalities" }
+      ]
+    },
+    {
+      label: "Connect",
+      bgColor: "hsl(var(--card))",
+      textColor: "hsl(var(--card-foreground))",
+      links: [
+        { label: "Messages", href: "/messages", ariaLabel: "Your messages" },
+        { label: "Friends", href: "/friends", ariaLabel: "Your friends" },
+        { label: "Users", href: "/users", ariaLabel: "Browse users" },
+        { label: "Profile", href: "/profile/settings", ariaLabel: "Your profile" }
+      ]
+    }
+  ];
+
+  return (
+    <>
+      <CardNav
+        logo={
+          <Link to="/" className="flex items-center space-x-2">
+            <Heart className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl">queerguide</span>
           </Link>
+        }
+        items={cardNavItems}
+        baseColor="hsl(var(--background))"
+        menuColor="hsl(var(--foreground))"
+        buttonBgColor="hsl(var(--primary))"
+        buttonTextColor="hsl(var(--primary-foreground))"
+        ctaText={user ? "Dashboard" : "Sign In"}
+        onCtaClick={() => {
+          if (user) {
+            navigate('/feed');
+          } else {
+            setAuthDialogOpen(true);
+          }
+        }}
+      />
 
-          {/* Search */}
-          <UniversalSearchBar />
-
-          {/* Right side controls */}
-          <div className="flex items-center gap-2">
-            {/* User menu - includes notifications when logged in */}
-              {user ? <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0" aria-label="Open user menu">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={avatarSrc} alt={(profile?.display_name || user?.email || 'User avatar') as string} />
-                      <AvatarFallback>
-                        {(profile?.display_name || user?.email || 'U')?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] px-1">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 p-4 bg-background/90 backdrop-blur-md border-white/20 z-50">
-                  {/* User mode */}
-                  <div className="mb-4">
-                    
-                    <Select value={profile?.user_mode || 'community'} onValueChange={handleModeChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select mode" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {userModes.map((mode) => (
-                          <SelectItem key={mode.value} value={mode.value}>
-                            <div className="flex items-center gap-2">
-                              <mode.icon className="h-4 w-4" />
-                              <span>{mode.label}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Notifications */}
-                  <div className="mb-4">
-                    <NotificationList />
-                  </div>
-
-                  <DropdownMenuSeparator />
-
-                  {/* Quick actions grid */}
-                  <div className="grid grid-cols-3 gap-2 p-2">
-                    {userMenuItems.map(item => (
-                      <Button key={item.to} variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate(item.to)}>
-                        <item.icon className="h-4 w-4" />
-                        <span className="text-xs">{item.label}</span>
-                      </Button>
-                    ))}
-                     {isAdmin && (
-                       <>
-                         <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin')}>
-                           <Settings className="h-4 w-4" />
-                           <span className="text-xs">Admin</span>
-                         </Button>
-                         <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin/cms')}>
-                           <FileEdit className="h-4 w-4" />
-                           <span className="text-xs">CMS</span>
-                         </Button>
-                         <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin/import-hub')}>
-                           <Upload className="h-4 w-4" />
-                           <span className="text-xs">Import</span>
-                         </Button>
-                       </>
-                     )}
-                  </div>
-
-                  <DropdownMenuSeparator />
-                  
-                  <Button variant="ghost" size="sm" className="w-full justify-start text-destructive hover:text-destructive" onClick={signOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Peace Out
-                  </Button>
-                </DropdownMenuContent>
-              </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} size="icon">
-                <User className="h-4 w-4" />
-              </Button>}
-
-            {/* Main menu */}
-            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72 max-h-[80vh] overflow-y-auto p-4 bg-background/90 backdrop-blur-md border-white/20 z-50">
-                {/* Main navigation */}
-                {navigationSections.map(section => <div key={section.title} className="mb-6">
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">{section.title}</h3>
-                    <div className="grid grid-cols-3 gap-2 p-2">
-                      {section.items.map(item => <Button key={item.to} variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => handleMenuItemClick(item.to)}>
-                          <item.icon className="h-4 w-4" />
-                          <span className="text-xs">{item.label}</span>
-                        </Button>)}
-                    </div>
-                  </div>)}
-
-                {/* User actions for logged in users */}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+      {/* Hidden search bar for mobile - positioned below card nav */}
+      <div className="fixed top-20 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md z-40 md:hidden">
+        <UniversalSearchBar />
       </div>
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
-    </header>;
+    </>
+  );
 }
