@@ -220,12 +220,10 @@ const Events = () => {
                 <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
+                    size="icon"
                     onClick={() => setViewMode('grid')}
-                    className="gap-2"
                   >
                     <Grid className="h-4 w-4" />
-                    Grid
                   </Button>
                   <Button
                     variant={viewMode === 'calendar' ? 'default' : 'ghost'}
