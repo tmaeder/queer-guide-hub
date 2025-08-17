@@ -414,7 +414,7 @@ export default function Ressources() {
             Back
           </Button>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">#{selectedTag.name}</h1>
+            <h1 className="text-3xl font-bold">{selectedTag.name}</h1>
             <Badge variant="secondary">
               {tagUsageCounts[selectedTag.name] || 0} uses
             </Badge>
@@ -628,7 +628,7 @@ export default function Ressources() {
                                 <div className="flex flex-wrap gap-1 mt-2">
                                   {categoryData.tags.slice(0, 3).map(tag => (
                                     <Badge key={tag.id} variant="outline" className="text-xs">
-                                      #{tag.name}
+                                      {tag.name}
                                     </Badge>
                                   ))}
                                   {categoryData.tags.length > 3 && (
@@ -663,7 +663,7 @@ export default function Ressources() {
                               </div>
                             )}
                             <div className={displayMode === "list" ? "flex-1" : ""}>
-                              <h3 className="font-medium text-sm">#{tag.name}</h3>
+                              <h3 className="font-medium text-sm">{tag.name}</h3>
                               {displayMode === "list" && tag.description && (
                                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{tag.description}</p>
                               )}
@@ -700,7 +700,7 @@ export default function Ressources() {
                           </div>
                         )}
                         <div className={displayMode === "list" ? "flex-1" : ""}>
-                          <h3 className="font-medium text-sm">#{tag.name}</h3>
+                          <h3 className="font-medium text-sm">{tag.name}</h3>
                           {displayMode === "list" && tag.description && (
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{tag.description}</p>
                           )}
