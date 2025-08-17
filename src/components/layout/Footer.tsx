@@ -56,7 +56,7 @@ export function Footer() {
     icon: Github,
     label: "GitHub"
   }];
-  return <footer className="bg-card border-t mt-auto">
+  return <footer className="bg-background/10 backdrop-blur-sm border-t border-white/10 mt-auto">
       <div className="container mx-auto px-4 py-3">
         {/* Single Row Layout */}
         <div className="flex items-center justify-between gap-4">

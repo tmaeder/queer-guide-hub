@@ -102,7 +102,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen flex flex-col relative bg-background">
+            <div className="min-h-screen flex flex-col relative">
               <div className="fixed inset-0 z-0">
                 <Aurora
                   colorStops={["#7CFF67", "#FF9257", "#5227FF"]}
