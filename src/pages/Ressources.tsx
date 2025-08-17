@@ -392,30 +392,6 @@ export default function Ressources() {
           </div>
 
           <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Usage Statistics
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Total Usage</span>
-                  <Badge variant="outline">{tagUsageCounts[selectedTag.name] || 0}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Category</span>
-                  <Badge variant="secondary">{selectedTag.category || 'Uncategorized'}</Badge>
-                </div>
-                {selectedTag.created_at && <div className="flex items-center justify-between">
-                    <span className="text-sm">Created</span>
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(selectedTag.created_at).toLocaleDateString()}
-                    </span>
-                  </div>}
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>;
