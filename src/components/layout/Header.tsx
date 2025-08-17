@@ -75,10 +75,6 @@ export function Header() {
       icon: Store,
       label: "Market"
     }, {
-      to: "/donate",
-      icon: CreditCard,
-      label: "Donate"
-    }, {
       to: "/ressources",
       icon: Tags,
       label: "Ressources"

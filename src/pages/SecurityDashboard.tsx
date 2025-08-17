@@ -85,19 +85,6 @@ export default function SecurityDashboard() {
         "Public/private visibility",
         "Tampering prevention"
       ]
-    },
-    {
-      title: "Financial Security",
-      icon: CreditCard,
-      status: "Active",
-      description: "Secure donation and payment handling",
-      details: [
-        "Donor data encryption",
-        "Anonymization levels",
-        "Privacy-aware display",
-        "Financial audit trails"
-      ]
-    }
   ];
 
   return (

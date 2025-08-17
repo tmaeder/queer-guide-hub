@@ -31,11 +31,6 @@ export function SecurityStatusIndicator({ className = '' }: SecurityStatusProps)
       description: 'Friend-based photo access with public/private settings'
     },
     {
-      name: 'Donation Data Protection',
-      status: 'active',
-      description: 'Restricted admin access with critical audit logging'
-    },
-    {
       name: 'Security Event Monitoring',
       status: 'active',
       description: 'Admin-only access to security incident data'

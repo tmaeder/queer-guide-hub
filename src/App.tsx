@@ -24,8 +24,6 @@ const Events = lazy(() => import("./pages/Events"));
 const EventDetail = lazy(() => import("./pages/EventDetail"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const MarketplaceItemDetail = lazy(() => import("./pages/MarketplaceItemDetail"));
-const Donations = lazy(() => import("./pages/Donations"));
-const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
 
 const Directory = lazy(() => import("./pages/Directory"));
 const Ressources = lazy(() => import("./pages/Ressources"));
@@ -133,8 +131,6 @@ const App = () => {
                   <Route path="/events/:id" element={<EventDetail />} />
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/marketplace/:id" element={<MarketplaceItemDetail />} />
-                  <Route path="/donate" element={<Donations />} />
-                  <Route path="/donation-success" element={<DonationSuccess />} />
                   
                   <Route path="/directory" element={<Directory />} />
                   <Route path="/city/:id" element={<CityDetail />} />
