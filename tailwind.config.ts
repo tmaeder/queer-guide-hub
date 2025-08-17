@@ -19,6 +19,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
+				'montserrat': ['Montserrat', 'sans-serif'],
 				'noto': ['Noto Sans', 'sans-serif'],
 				'sans': ['Noto Sans', 'system-ui', '-apple-system', 'sans-serif'],
 			},
