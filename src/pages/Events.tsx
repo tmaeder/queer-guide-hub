@@ -292,10 +292,9 @@ const Events = () => {
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
+              size="icon"
             >
               <Filter className="h-4 w-4" />
-              Filters
             </Button>
           </div>
 
