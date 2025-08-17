@@ -44,7 +44,8 @@ export function VenueCard({
     return colors[category] || 'bg-muted/10 text-muted-foreground';
   };
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+    <Link to={`/venues/${venue.id}`} className="block">
+      <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
       {/* Venue Image */}
       {venue.images && venue.images.length > 0 ? (
         <div className="relative h-48 overflow-hidden">
@@ -101,14 +102,10 @@ export function VenueCard({
           {/* Actions */}
           <div className="flex items-center justify-between pt-2">
             <FavoriteButton itemId={venue.id} type="venue" />
-            <Link to={`/venues/${venue.id}`}>
-              <Button size="sm" variant="outline">
-                <Eye className="h-4 w-4" />
-              </Button>
-            </Link>
           </div>
         </div>
       </CardContent>
-    </Card>
+      </Card>
+    </Link>
   );
 }
