@@ -14,7 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-type ViewMode = "overview" | "category" | "search" | "tag-detail";
+type ViewMode = "overview" | "category" | "subcategory" | "search" | "tag-detail";
 type DisplayMode = "grid" | "list";
 type SortOption = "alphabetical" | "usage" | "recent" | "popular";
 export default function Ressources() {
@@ -35,6 +35,7 @@ export default function Ressources() {
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [displayMode, setDisplayMode] = useState<DisplayMode>("grid");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
   const [selectedTag, setSelectedTag] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -158,6 +159,101 @@ export default function Ressources() {
     const cats = [...new Set(allTags.map(tag => tag.category).filter(Boolean))];
     return cats.sort();
   }, [allTags]);
+
+  // Define subcategories for better organization
+  const subcategories = useMemo(() => {
+    const subCats: Record<string, Record<string, string[]>> = {};
+    
+    categories.forEach(category => {
+      const categoryTags = allTags.filter(tag => tag.category === category);
+      subCats[category] = {};
+      
+      // Create semantic subcategories based on tag names
+      categoryTags.forEach(tag => {
+        const name = tag.name.toLowerCase();
+        let subCategory = 'Other';
+        
+        // Define subcategory rules based on category
+        switch (category) {
+          case 'Identity':
+            if (name.includes('gay') || name.includes('lesbian') || name.includes('bisexual') || name.includes('heterosexual') || name.includes('pansexual') || name.includes('asexual') || name.includes('demisexual') || name.includes('queer') || name.includes('questioning')) {
+              subCategory = 'Sexual Orientation';
+            } else if (name.includes('trans') || name.includes('non-binary') || name.includes('gender') || name.includes('agender') || name.includes('genderfluid') || name.includes('bigender')) {
+              subCategory = 'Gender Identity';
+            } else if (name.includes('pronoun') || name.includes('he/') || name.includes('she/') || name.includes('they/')) {
+              subCategory = 'Pronouns';
+            } else if (name.includes('relationship') || name.includes('polyamor') || name.includes('monogam') || name.includes('aromantic')) {
+              subCategory = 'Relationship Style';
+            }
+            break;
+            
+          case 'Health':
+            if (name.includes('mental') || name.includes('therapy') || name.includes('depression') || name.includes('anxiety') || name.includes('counseling')) {
+              subCategory = 'Mental Health';
+            } else if (name.includes('sexual') || name.includes('std') || name.includes('hiv') || name.includes('prep') || name.includes('reproductive')) {
+              subCategory = 'Sexual Health';
+            } else if (name.includes('hormone') || name.includes('transition') || name.includes('surgery') || name.includes('medical')) {
+              subCategory = 'Medical Care';
+            }
+            break;
+            
+          case 'Events':
+            if (name.includes('pride') || name.includes('parade') || name.includes('march') || name.includes('rally')) {
+              subCategory = 'Pride & Activism';
+            } else if (name.includes('party') || name.includes('club') || name.includes('dance') || name.includes('music')) {
+              subCategory = 'Social & Entertainment';
+            } else if (name.includes('workshop') || name.includes('education') || name.includes('seminar') || name.includes('conference')) {
+              subCategory = 'Educational';
+            } else if (name.includes('support') || name.includes('group') || name.includes('meeting')) {
+              subCategory = 'Support Groups';
+            }
+            break;
+            
+          case 'Venues':
+            if (name.includes('bar') || name.includes('club') || name.includes('pub') || name.includes('nightlife')) {
+              subCategory = 'Nightlife';
+            } else if (name.includes('restaurant') || name.includes('cafe') || name.includes('food') || name.includes('dining')) {
+              subCategory = 'Food & Dining';
+            } else if (name.includes('shop') || name.includes('store') || name.includes('retail') || name.includes('market')) {
+              subCategory = 'Shopping';
+            } else if (name.includes('gym') || name.includes('sport') || name.includes('fitness') || name.includes('recreation')) {
+              subCategory = 'Recreation & Sports';
+            } else if (name.includes('hotel') || name.includes('accommodation') || name.includes('lodging')) {
+              subCategory = 'Accommodation';
+            }
+            break;
+            
+          case 'Community':
+            if (name.includes('advocacy') || name.includes('activism') || name.includes('rights') || name.includes('political')) {
+              subCategory = 'Advocacy & Rights';
+            } else if (name.includes('support') || name.includes('help') || name.includes('crisis') || name.includes('counseling')) {
+              subCategory = 'Support Services';
+            } else if (name.includes('youth') || name.includes('teen') || name.includes('young') || name.includes('student')) {
+              subCategory = 'Youth & Students';
+            } else if (name.includes('senior') || name.includes('elder') || name.includes('older')) {
+              subCategory = 'Seniors';
+            }
+            break;
+            
+          default:
+            // Group alphabetically for other categories
+            const firstChar = name.charAt(0).toUpperCase();
+            if (firstChar >= 'A' && firstChar <= 'F') subCategory = 'A-F';
+            else if (firstChar >= 'G' && firstChar <= 'L') subCategory = 'G-L';
+            else if (firstChar >= 'M' && firstChar <= 'R') subCategory = 'M-R';
+            else if (firstChar >= 'S' && firstChar <= 'Z') subCategory = 'S-Z';
+            break;
+        }
+        
+        if (!subCats[category][subCategory]) {
+          subCats[category][subCategory] = [];
+        }
+        subCats[category][subCategory].push(tag.name);
+      });
+    });
+    
+    return subCats;
+  }, [allTags, categories]);
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.trim()) {
@@ -176,10 +272,14 @@ export default function Ressources() {
   };
   const handleBack = () => {
     if (viewMode === "tag-detail") {
-      setViewMode(selectedCategory ? "category" : "overview");
+      setViewMode(selectedSubcategory ? "subcategory" : selectedCategory ? "category" : "overview");
       navigate('/ressources');
+    } else if (viewMode === "subcategory") {
+      setViewMode("category");
+      setSelectedSubcategory("");
     } else if (viewMode === "category") {
       setViewMode("overview");
+      setSelectedCategory("");
     } else if (viewMode === "search") {
       setViewMode("overview");
       setSearchQuery("");
@@ -505,6 +605,136 @@ export default function Ressources() {
               </Card>
             )}
 
+            {/* Category View with Subcategories */}
+            {viewMode === "category" && selectedCategory && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <Button variant="outline" onClick={handleBack}>
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Back
+                    </Button>
+                    <div>
+                      <CardTitle className="text-2xl flex items-center gap-2 capitalize">
+                        {getCategoryIcon(selectedCategory)({ className: "h-6 w-6 text-primary" })}
+                        {selectedCategory} Subcategories
+                      </CardTitle>
+                      <p className="text-muted-foreground text-base">
+                        Browse subcategories within {selectedCategory}
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(subcategories[selectedCategory] || {}).map(([subCategory, tagNames]) => (
+                      <Card 
+                        key={subCategory}
+                        className="group cursor-pointer transition-all duration-200 hover:bg-accent/10 hover:shadow-lg"
+                        onClick={() => {
+                          setSelectedSubcategory(subCategory);
+                          setViewMode("subcategory");
+                        }}
+                      >
+                        <CardContent className="p-6">
+                          <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors duration-200">
+                            {subCategory}
+                          </h3>
+                          <div className="space-y-2">
+                            <Badge variant="secondary" className="text-sm px-3 py-1">
+                              {tagNames.length} tags
+                            </Badge>
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {tagNames.slice(0, 3).join(", ")}
+                              {tagNames.length > 3 && ` and ${tagNames.length - 3} more...`}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Subcategory View */}
+            {viewMode === "subcategory" && selectedCategory && selectedSubcategory && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <Button variant="outline" onClick={handleBack}>
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Back
+                    </Button>
+                    <div>
+                      <CardTitle className="text-2xl flex items-center gap-2">
+                        <Tag className="h-6 w-6 text-primary" />
+                        {selectedSubcategory}
+                      </CardTitle>
+                      <p className="text-muted-foreground text-base">
+                        Tags in {selectedCategory} → {selectedSubcategory}
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                    {(subcategories[selectedCategory]?.[selectedSubcategory] || []).map((tagName) => {
+                      const tag = allTags.find(t => t.name === tagName);
+                      if (!tag) return null;
+                      
+                      return (
+                        <Card 
+                          key={tag.id} 
+                          className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 border-2 hover:border-primary/20 overflow-hidden bg-gradient-to-br from-card to-muted/10"
+                          onClick={() => handleTagClick(tag)}
+                        >
+                          <div className="aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50 relative">
+                            {tag.image_url ? (
+                              <img 
+                                src={tag.image_url} 
+                                alt={`${tag.name} themed image`} 
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                                onError={e => {
+                                  e.currentTarget.src = '/placeholder.svg';
+                                }} 
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted via-muted/80 to-muted/60">
+                                <Tag className="h-12 w-12 text-muted-foreground/60 transition-transform duration-300 group-hover:scale-125" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          </div>
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div 
+                                className="w-4 h-4 rounded-full shrink-0 ring-2 ring-white/20 transition-transform duration-200 group-hover:scale-125" 
+                                style={{ backgroundColor: tag.color }}
+                              />
+                              <span className="text-sm font-semibold truncate group-hover:text-primary transition-colors duration-200">
+                                {tag.name}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground font-medium">
+                                {selectedSubcategory}
+                              </span>
+                              {tagUsageCounts[tag.name] > 0 && (
+                                <Badge variant="outline" className="text-xs px-2 py-1 group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-200">
+                                  {tagUsageCounts[tag.name]} uses
+                                </Badge>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Search and Filters */}
             <Card className="mb-8">
               <CardContent className="p-6">
@@ -629,16 +859,18 @@ export default function Ressources() {
         )}
 
         {/* Enhanced Results Info */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-semibold">
-              {viewMode === "search" ? "Search Results" : viewMode === "category" ? `${selectedCategory} Tags` : "All Tags"}
-            </h2>
-            <Badge variant="secondary" className="px-3 py-1 text-sm">
-              {filteredAndSortedTags.length} tags
-            </Badge>
+        {(viewMode === "search" || (viewMode === "overview" && (searchQuery || filterCategory !== "all"))) && (
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-semibold">
+                {viewMode === "search" ? "Search Results" : filterCategory !== "all" ? `${filterCategory} Tags` : "All Tags"}
+              </h2>
+              <Badge variant="secondary" className="px-3 py-1 text-sm">
+                {filteredAndSortedTags.length} tags
+              </Badge>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Enhanced Tags Display */}
         <div className={displayMode === "grid" ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6" : "space-y-3"}>
