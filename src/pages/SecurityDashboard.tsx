@@ -85,6 +85,7 @@ export default function SecurityDashboard() {
         "Public/private visibility",
         "Tampering prevention"
       ]
+    }
   ];
 
   return (
