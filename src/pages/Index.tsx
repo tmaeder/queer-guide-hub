@@ -7,7 +7,7 @@ import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, Check
 import { useAuth } from '@/hooks/useAuth';
 import { useStats } from '@/hooks/useStats';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ImageOptimizationDemo } from '@/components/demo/ImageOptimizationDemo';
+
 
 import FrontPageVenueMap from '@/components/home/FrontPageVenueMap';
 import { VenueMapSearch } from '@/components/venues/VenueMapSearch';
@@ -156,13 +156,6 @@ const Index = React.memo(() => {
       <React.Suspense fallback={<SliderSkeleton title="Latest News" />}>
         <LatestNewsSlider />
       </React.Suspense>
-
-      {/* Image Optimization Demo */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <ImageOptimizationDemo />
-        </div>
-      </section>
 
       {/* Final CTA Section */}
       
