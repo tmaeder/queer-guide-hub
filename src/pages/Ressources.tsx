@@ -360,9 +360,6 @@ export default function Ressources() {
             Back
           </Button>
           <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded-full shrink-0" style={{
-            backgroundColor: selectedTag.color
-          }} />
             <h1 className="text-3xl font-bold">#{selectedTag.name}</h1>
             <Badge variant="secondary">
               {tagUsageCounts[selectedTag.name] || 0} uses
@@ -543,9 +540,6 @@ export default function Ressources() {
                 </div>
                 <CardContent className="p-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{
-                backgroundColor: tag.color
-              }} />
                     <span className="text-sm font-medium truncate">{tag.name}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -563,9 +557,6 @@ export default function Ressources() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{
-                backgroundColor: tag.color
-              }} />
                     <span className="font-medium truncate">{tag.name}</span>
                   </div>
                   <p className="text-sm text-muted-foreground truncate">
