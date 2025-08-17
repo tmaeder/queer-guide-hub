@@ -171,7 +171,7 @@ export function MediaLibrary() {
       setLoading(true);
       
       // Check if we already have data
-      const { data: existingCount } = await supabase
+      const { count: existingCount } = await supabase
         .from('media_optimization_status')
         .select('id', { count: 'exact', head: true });
 
