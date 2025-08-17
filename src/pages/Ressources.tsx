@@ -616,7 +616,10 @@ export default function Ressources() {
                     </Button>
                     <div>
                       <CardTitle className="text-2xl flex items-center gap-2 capitalize">
-                        {getCategoryIcon(selectedCategory)({ className: "h-6 w-6 text-primary" })}
+                        {(() => {
+                          const IconComponent = getCategoryIcon(selectedCategory);
+                          return <IconComponent className="h-6 w-6 text-primary" />;
+                        })()}
                         {selectedCategory} Subcategories
                       </CardTitle>
                       <p className="text-muted-foreground text-base">
