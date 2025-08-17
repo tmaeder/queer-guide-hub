@@ -5285,6 +5285,7 @@ export type Database = {
           created_at: string
           distance_meters: number | null
           id: string
+          is_anonymized: boolean | null
           is_public: boolean | null
           latitude: number
           location_precision: string | null
@@ -5302,6 +5303,7 @@ export type Database = {
           created_at?: string
           distance_meters?: number | null
           id?: string
+          is_anonymized?: boolean | null
           is_public?: boolean | null
           latitude: number
           location_precision?: string | null
@@ -5319,6 +5321,7 @@ export type Database = {
           created_at?: string
           distance_meters?: number | null
           id?: string
+          is_anonymized?: boolean | null
           is_public?: boolean | null
           latitude?: number
           location_precision?: string | null
@@ -6021,6 +6024,10 @@ export type Database = {
           table_name: string
         }[]
       }
+      anonymize_old_location_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       basic_rate_limit: {
         Args: { identifier: string; max_attempts?: number }
         Returns: boolean
@@ -6030,6 +6037,15 @@ export type Database = {
           privacy_field?: string
           profile_user_id: string
           requesting_user_id: string
+        }
+        Returns: boolean
+      }
+      check_rate_limit_enhanced: {
+        Args: {
+          action_type?: string
+          identifier: string
+          max_attempts?: number
+          time_window_minutes?: number
         }
         Returns: boolean
       }
@@ -6231,6 +6247,18 @@ export type Database = {
       refresh_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      validate_content_security: {
+        Args: { content_text: string; content_type?: string }
+        Returns: Json
+      }
+      validate_file_upload: {
+        Args: { file_name: string; file_size: number; mime_type: string }
+        Returns: Json
+      }
+      validate_password_enhanced: {
+        Args: { password_text: string }
+        Returns: Json
       }
     }
     Enums: {
