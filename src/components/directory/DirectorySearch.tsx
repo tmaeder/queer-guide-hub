@@ -155,16 +155,15 @@ export const DirectorySearch = ({
             type="button"
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
+            size="icon"
+            className="relative"
           >
             <Filter className="h-4 w-4" />
-            Filters
             {getActiveFilterCount() > 0 && (
-              <Badge variant="secondary" className="ml-1">
+              <Badge variant="secondary" className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs flex items-center justify-center">
                 {getActiveFilterCount()}
               </Badge>
             )}
-            <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
           </Button>
         </div>
       </form>
