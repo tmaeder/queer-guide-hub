@@ -33,7 +33,8 @@ import {
   Share2,
   FolderOpen,
   Star,
-  Sliders
+  Sliders,
+  ExternalLink
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -1241,14 +1242,39 @@ export function MediaLibrary() {
                     </div>
                   )}
                   
-                  {/* Compression Info */}
-                  {item.optimization_metadata?.compression_ratio && (
-                    <div className="text-[10px] text-green-600">
-                      {item.optimization_metadata.compression_ratio}% smaller
-                    </div>
-                  )}
-                </div>
-              </CardContent>
+                   {/* Compression Info */}
+                   {item.optimization_metadata?.compression_ratio && (
+                     <div className="text-[10px] text-green-600">
+                       {item.optimization_metadata.compression_ratio}% smaller
+                     </div>
+                   )}
+                   
+                   {/* Optimized Files Links */}
+                   {item.optimization_metadata?.formats && item.optimization_metadata.formats.length > 1 && (
+                     <div className="pt-2 border-t border-border">
+                       <div className="text-[10px] text-muted-foreground mb-1">Optimized versions:</div>
+                       <div className="space-y-1">
+                         {item.optimization_metadata.formats.map((formatInfo, idx) => (
+                           <div key={idx} className="flex items-center justify-between text-[10px]">
+                             <a 
+                               href={`${getImageUrl(item).split('.')[0]}.${formatInfo.format.toLowerCase()}`}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               className="text-primary hover:underline flex items-center gap-1"
+                             >
+                               <ExternalLink className="h-2 w-2" />
+                               {formatInfo.format}
+                             </a>
+                             <span className="text-muted-foreground">
+                               {formatFileSize(formatInfo.size)}
+                             </span>
+                           </div>
+                         ))}
+                       </div>
+                     </div>
+                   )}
+                 </div>
+               </CardContent>
             </Card>
           ))}
         </div>
@@ -1293,24 +1319,45 @@ export function MediaLibrary() {
                       )}
                     </div>
                     
-                    {/* Additional optimization details */}
-                    <div className="flex items-center gap-2 mt-1">
-                      {item.formats_available && item.formats_available.length > 0 && (
-                        <div className="flex gap-1">
-                          <span className="text-xs text-muted-foreground">Formats:</span>
-                          {item.formats_available.map((format, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
-                              {format}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      {item.optimization_metadata?.compression_ratio && (
-                        <Badge variant="outline" className="text-xs text-green-600">
-                          -{item.optimization_metadata.compression_ratio}%
-                        </Badge>
-                      )}
-                    </div>
+                     {/* Additional optimization details */}
+                     <div className="flex items-center gap-2 mt-1">
+                       {item.formats_available && item.formats_available.length > 0 && (
+                         <div className="flex gap-1">
+                           <span className="text-xs text-muted-foreground">Formats:</span>
+                           {item.formats_available.map((format, idx) => (
+                             <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
+                               {format}
+                             </Badge>
+                           ))}
+                         </div>
+                       )}
+                       {item.optimization_metadata?.compression_ratio && (
+                         <Badge variant="outline" className="text-xs text-green-600">
+                           -{item.optimization_metadata.compression_ratio}%
+                         </Badge>
+                       )}
+                     </div>
+                     
+                     {/* Optimized Files Links */}
+                     {item.optimization_metadata?.formats && item.optimization_metadata.formats.length > 1 && (
+                       <div className="mt-2 pt-2 border-t border-border">
+                         <div className="text-xs text-muted-foreground mb-1">Optimized versions:</div>
+                         <div className="flex gap-2 flex-wrap">
+                           {item.optimization_metadata.formats.map((formatInfo, idx) => (
+                             <a 
+                               key={idx}
+                               href={`${getImageUrl(item).split('.')[0]}.${formatInfo.format.toLowerCase()}`}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               className="text-primary hover:underline text-xs flex items-center gap-1"
+                             >
+                               <ExternalLink className="h-3 w-3" />
+                               {formatInfo.format} ({formatFileSize(formatInfo.size)})
+                             </a>
+                           ))}
+                         </div>
+                       </div>
+                     )}
                   </div>
                   
                   <div className="flex items-center gap-2">
