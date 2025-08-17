@@ -5,10 +5,10 @@
 @layer base {
   :root {
     /* Strict Monochrome Palette - No Colors, No Shadows, No Borders */
-    --background: 0 0% 100% / 0.1;
+    --background: 0 0% 100% / 0.7;
     --foreground: 0 0% 0%;
 
-    --card: 0 0% 98% / 0.1;
+    --card: 0 0% 98% / 0.8;
     --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100% / 0.9;
@@ -21,10 +21,10 @@
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 95% / 0.2;
+    --muted: 0 0% 95% / 0.6;
     --muted-foreground: 0 0% 40%;
 
-    --accent: 0 0% 90% / 0.2;
+    --accent: 0 0% 90% / 0.6;
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 0% 20%;
@@ -38,7 +38,7 @@
 
     /* UI Elements - No borders in flat design */
     --border: transparent;
-    --input: 0 0% 95% / 0.3;
+    --input: 0 0% 95% / 0.8;
     --ring: 0 0% 0%;
     --radius: 4px;
 
@@ -57,10 +57,10 @@
   }
 
   .dark {
-    --background: 0 0% 0% / 0.1;
+    --background: 0 0% 0% / 0.7;
     --foreground: 0 0% 100%;
 
-    --card: 0 0% 5% / 0.1;
+    --card: 0 0% 5% / 0.8;
     --card-foreground: 0 0% 100%;
 
     --popover: 0 0% 0% / 0.9;
@@ -72,10 +72,10 @@
     --secondary: 0 0% 20%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 10% / 0.2;
+    --muted: 0 0% 10% / 0.6;
     --muted-foreground: 0 0% 70%;
 
-    --accent: 0 0% 15% / 0.2;
+    --accent: 0 0% 15% / 0.6;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 0% 80%;
@@ -89,7 +89,7 @@
 
     /* No borders in dark mode either */
     --border: transparent;
-    --input: 0 0% 10% / 0.3;
+    --input: 0 0% 10% / 0.8;
     --ring: 0 0% 100%;
 
     --sidebar-background: 0 0% 5% / 0.1;
