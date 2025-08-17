@@ -54,7 +54,13 @@ export default function Ressources() {
           data
         } = await supabase.from('personalities').select('profession').not('profession', 'is', null);
         if (data) {
-          const uniqueProfessions = [...new Set(data.map(p => p.profession).filter(Boolean))].sort();
+          // Split comma-separated professions and flatten
+          const allProfessions = data
+            .map(p => p.profession)
+            .filter(Boolean)
+            .flatMap(profession => profession.split(',').map(p => p.trim()))
+            .filter(Boolean);
+          const uniqueProfessions = [...new Set(allProfessions)].sort();
           setProfessions(uniqueProfessions);
         }
       } catch (error) {

@@ -28,19 +28,24 @@ export default function ProfessionDetail() {
       try {
         const decodedProfession = decodeURIComponent(professionName);
         
-        // Get personalities with this profession
+        // Get personalities with this profession (including comma-separated)
         const { data: personalities, error: personalitiesError } = await supabase
           .from('personalities')
           .select('*')
-          .eq('profession', decodedProfession)
+          .not('profession', 'is', null)
           .order('name');
 
         if (personalitiesError) throw personalitiesError;
 
+        // Filter personalities that have this profession in their comma-separated list
+        const filteredPersonalities = personalities?.filter(p => 
+          p.profession && p.profession.split(',').map(prof => prof.trim()).includes(decodedProfession)
+        ) || [];
+
         setProfessionData({
           name: decodedProfession,
-          personalities: personalities || [],
-          totalCount: personalities?.length || 0
+          personalities: filteredPersonalities,
+          totalCount: filteredPersonalities.length
         });
 
       } catch (err) {
