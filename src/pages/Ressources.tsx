@@ -124,6 +124,11 @@ export default function Ressources() {
 
   // Memoized filtered and sorted tags
   const filteredAndSortedTags = useMemo(() => {
+    // Ensure all dependencies are initialized
+    if (!allTags || !Array.isArray(allTags)) return [];
+    if (!Array.isArray(searchResults)) return [];
+    if (!tagUsageCounts || typeof tagUsageCounts !== 'object') return [];
+    
     let filtered = viewMode === "search" ? searchResults : allTags;
 
     // Filter by category
