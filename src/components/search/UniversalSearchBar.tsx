@@ -262,10 +262,12 @@ export const UniversalSearchBar = () => {
         
         <PopoverContent className={`${isMobile ? 'w-[calc(100vw-2rem)]' : 'w-[600px]'} p-0 z-50 bg-background/95 backdrop-blur-sm border shadow-xl`} align="start">
           <Command shouldFilter={false} className="bg-transparent">
-            {showFilters && <>
+            {showFilters && (
+              <>
                 <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
                 <CommandSeparator />
-              </>}
+              </>
+            )}
             
             <CommandList className="max-h-96">
               {!query && recentSearches.length > 0 && <>
