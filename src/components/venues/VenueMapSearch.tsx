@@ -225,7 +225,7 @@ const [filtersOpen, setFiltersOpen] = useState(false);
   return <div className={className}>
       <Card>
         <CardContent className="p-6">
-          <div className="space-y-4">
+          <div>
             
             
             
