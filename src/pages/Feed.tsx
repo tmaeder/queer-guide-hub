@@ -8,10 +8,8 @@ import {
   TrendingUp, 
   PenSquare, 
   Search,
-  Filter,
   Heart,
-  MessageCircle,
-  Share2
+  MessageCircle
 } from 'lucide-react';
 import { PostCard } from '@/components/posts/PostCard';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
@@ -31,7 +29,7 @@ export default function Feed() {
     deletePost,
     isLikingPost,
     isDeletingPost
-  } = useCommunityPosts(); // No userId means get all public posts
+  } = useCommunityPosts();
 
   const filteredPosts = posts.filter(post => 
     post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,20 +47,17 @@ export default function Feed() {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
-          {/* Header Skeleton */}
           <div className="text-center space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3 mx-auto"></div>
-            <div className="h-4 bg-muted rounded w-2/3 mx-auto"></div>
+            <div className="h-8 bg-muted rounded w-1/3 mx-auto animate-pulse"></div>
+            <div className="h-4 bg-muted rounded w-2/3 mx-auto animate-pulse"></div>
           </div>
           
-          {/* Create Post Skeleton */}
           <Card>
             <CardContent className="p-4">
-              <div className="h-12 bg-muted rounded"></div>
+              <div className="h-12 bg-muted rounded animate-pulse"></div>
             </CardContent>
           </Card>
           
-          {/* Posts Skeleton */}
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
@@ -87,7 +82,6 @@ export default function Feed() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Header */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-3 mb-4">
           <Users className="h-8 w-8 text-primary" />
@@ -99,7 +93,6 @@ export default function Feed() {
         </p>
       </div>
 
-      {/* Community Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card>
           <CardContent className="p-4 text-center">
@@ -128,7 +121,6 @@ export default function Feed() {
         </Card>
       </div>
 
-      {/* Create Post Section */}
       {user && (
         <Card className="mb-8">
           <CardContent className="p-4">
@@ -144,7 +136,6 @@ export default function Feed() {
         </Card>
       )}
 
-      {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -157,7 +148,6 @@ export default function Feed() {
         </div>
       </div>
 
-      {/* Tabs for sorting */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="recent" className="flex items-center gap-2">
@@ -171,7 +161,6 @@ export default function Feed() {
         </TabsList>
       </Tabs>
 
-      {/* Posts Feed */}
       <div className="space-y-6">
         {sortedPosts.length === 0 ? (
           <Card>
@@ -210,7 +199,6 @@ export default function Feed() {
         )}
       </div>
 
-      {/* Call to Action for Non-Authenticated Users */}
       {!user && (
         <Card className="mt-8 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
           <CardContent className="p-8 text-center">
