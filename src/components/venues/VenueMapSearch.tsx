@@ -223,82 +223,78 @@ const [filtersOpen, setFiltersOpen] = useState(false);
     }
   }, [externalSearchTerm, filters]);
   return <div className={className}>
-      <Card>
-        <CardContent className="p-6">
-          <div>
-            
-            
-            
+      <div>
+        
+        
+        
 
 {/* Controls moved below map */}
 
-            <div className="h-[500px] w-full rounded-lg overflow-hidden border">
-              <div ref={mapContainer} className="w-full h-full" />
+        <div className="h-[500px] w-full rounded-lg overflow-hidden border">
+          <div ref={mapContainer} className="w-full h-full" />
+        </div>
+        <div className="mt-2">
+          <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+
+<div className="flex items-center gap-2">
+  <ToggleGroup
+    type="single"
+    value={mode}
+    onValueChange={(v) => v && setMode(v as 'venues' | 'organizations')}
+  >
+    <ToggleGroupItem value="venues" aria-label="Venues">
+      Venues
+    </ToggleGroupItem>
+    <ToggleGroupItem value="organizations" aria-label="Organizations">
+      Organizations
+    </ToggleGroupItem>
+  </ToggleGroup>
+</div>
+
+              <Button variant="outline" size="icon" onClick={() => setFiltersOpen(!filtersOpen)}>
+                <Filter className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="mt-2">
-              <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-                <div className="flex items-center justify-between gap-3 flex-wrap">
 
-    <div className="flex items-center gap-2">
-      <ToggleGroup
-        type="single"
-        value={mode}
-        onValueChange={(v) => v && setMode(v as 'venues' | 'organizations')}
-      >
-        <ToggleGroupItem value="venues" aria-label="Venues">
-          Venues
-        </ToggleGroupItem>
-        <ToggleGroupItem value="organizations" aria-label="Organizations">
-          Organizations
-        </ToggleGroupItem>
-      </ToggleGroup>
-    </div>
-
-                  <Button variant="outline" size="icon" onClick={() => setFiltersOpen(!filtersOpen)}>
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <CollapsibleContent className="mt-2 space-y-3">
-                  <div className="flex items-center">
-                    <Button variant="outline" size="sm" onClick={() => setShowRestrooms(!showRestrooms)}>
-                      {showRestrooms ? 'Hide' : 'Show'} Restrooms
-                    </Button>
-                  </div>
-                  <VenueFilters onFiltersChange={handleAdvancedFilters} />
-                </CollapsibleContent>
-              </Collapsible>
+            <CollapsibleContent className="mt-2 space-y-3">
+              <div className="flex items-center">
+                <Button variant="outline" size="sm" onClick={() => setShowRestrooms(!showRestrooms)}>
+                  {showRestrooms ? 'Hide' : 'Show'} Restrooms
+                </Button>
+              </div>
+              <VenueFilters onFiltersChange={handleAdvancedFilters} />
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+        {selectedItem && <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-semibold">
+                Selected {selectedItem && 'type' in selectedItem ? 'Restroom' : 'Venue'}
+              </h4>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedItem(null)}>
+                ✕
+              </Button>
             </div>
-            {selectedItem && <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold">
-                    Selected {selectedItem && 'type' in selectedItem ? 'Restroom' : 'Venue'}
-                  </h4>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedItem(null)}>
-                    ✕
-                  </Button>
-                </div>
-                <div className="max-w-md">
-                  {selectedItem && 'type' in selectedItem ? <Card>
-                      <CardContent className="p-4">
-                        <h5 className="font-medium">{selectedItem.name}</h5>
-                        <p className="text-sm text-muted-foreground">
-                          Restroom • {selectedItem.city}, {selectedItem.state}
-                        </p>
-                        <div className="flex gap-2 mt-2">
-                          {selectedItem.accessible && <span className="text-xs bg-muted px-2 py-1 rounded">
-                               Accessible
-                             </span>}
-                           {selectedItem.unisex && <span className="text-xs bg-muted px-2 py-1 rounded">
-                               Unisex
-                             </span>}
-                        </div>
-                      </CardContent>
-                    </Card> : <VenueCard venue={selectedItem as Venue} />}
-                </div>
-              </div>}
-          </div>
-        </CardContent>
-      </Card>
+            <div className="max-w-md">
+              {selectedItem && 'type' in selectedItem ? <Card>
+                  <CardContent className="p-4">
+                    <h5 className="font-medium">{selectedItem.name}</h5>
+                    <p className="text-sm text-muted-foreground">
+                      Restroom • {selectedItem.city}, {selectedItem.state}
+                    </p>
+                    <div className="flex gap-2 mt-2">
+                      {selectedItem.accessible && <span className="text-xs bg-muted px-2 py-1 rounded">
+                           Accessible
+                         </span>}
+                       {selectedItem.unisex && <span className="text-xs bg-muted px-2 py-1 rounded">
+                           Unisex
+                         </span>}
+                    </div>
+                  </CardContent>
+                </Card> : <VenueCard venue={selectedItem as Venue} />}
+            </div>
+          </div>}
+      </div>
     </div>;
 }
