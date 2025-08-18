@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,6 +24,18 @@ export default function Personalities() {
     limit: 6 
   });
   const { stats, loading: statsLoading } = usePersonalityStats();
+
+  // Randomize the order of personalities on each render
+  const randomizedPersonalities = useMemo(() => {
+    if (!personalities || personalities.length === 0) return [];
+    
+    const shuffled = [...personalities];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }, [personalities]);
 
   const totalPages = Math.ceil(totalCount / (filters.limit || 100));
   const currentPage = filters.page || 1;
@@ -216,7 +228,7 @@ export default function Personalities() {
                   </div>
                 </div>
 
-                {personalities.length === 0 ? (
+                {randomizedPersonalities.length === 0 ? (
                   <Card>
                     <CardContent className="py-12">
                       <div className="text-center">
@@ -230,8 +242,8 @@ export default function Personalities() {
                   </Card>
                 ) : (
                   <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                      {personalities.map((personality) => (
+                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                       {randomizedPersonalities.map((personality) => (
                         <PersonalityCard
                           key={personality.id}
                           personality={personality}
