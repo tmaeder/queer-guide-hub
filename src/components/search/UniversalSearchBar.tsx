@@ -161,8 +161,8 @@ export const UniversalSearchBar = () => {
         navigate(`/marketplace/${suggestion.id}`);
         break;
       case 'tag':
-        // Navigate directly to resources filtered by this tag
-        navigate(`/ressources?tag=${encodeURIComponent(suggestion.name)}`);
+        // Navigate directly to the tag's own page
+        navigate(`/tags/${encodeURIComponent(suggestion.name)}`);
         break;
       default:
         // Fallback to search results for any unhandled types
