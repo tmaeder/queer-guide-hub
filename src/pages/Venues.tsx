@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
@@ -22,7 +22,7 @@ const Venues = () => {
   const { events } = useEvents();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [currentFilters, setCurrentFilters] = useState<any>({});
-  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortBy, setSortBy] = useState<string>('random');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(1);
@@ -69,34 +69,49 @@ const Venues = () => {
   };
 
   // Sort venues based on current sort settings
-  const sortedVenues = [...venues].sort((a, b) => {
-    let aValue: any, bValue: any;
+  const sortedVenues = useMemo(() => {
+    if (!venues || venues.length === 0) return [];
     
-    switch (sortBy) {
-      case 'name':
-        aValue = a.name?.toLowerCase() || '';
-        bValue = b.name?.toLowerCase() || '';
-        break;
-      case 'category':
-        aValue = a.category?.toLowerCase() || '';
-        bValue = b.category?.toLowerCase() || '';
-        break;
-      case 'city':
-        aValue = a.city?.toLowerCase() || '';
-        bValue = b.city?.toLowerCase() || '';
-        break;
-      case 'created_at':
-        aValue = new Date(a.created_at);
-        bValue = new Date(b.created_at);
-        break;
-      default:
-        return 0;
+    if (sortBy === 'random') {
+      // Randomize the order using Fisher-Yates shuffle
+      const shuffled = [...venues];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
     }
     
-    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
+    // Regular sorting for other options
+    return [...venues].sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (sortBy) {
+        case 'name':
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+          break;
+        case 'category':
+          aValue = a.category?.toLowerCase() || '';
+          bValue = b.category?.toLowerCase() || '';
+          break;
+        case 'city':
+          aValue = a.city?.toLowerCase() || '';
+          bValue = b.city?.toLowerCase() || '';
+          break;
+        case 'created_at':
+          aValue = new Date(a.created_at);
+          bValue = new Date(b.created_at);
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [venues, sortBy, sortOrder]);
 
   const toggleSortOrder = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -195,6 +210,7 @@ const Venues = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="random">Random</SelectItem>
                     <SelectItem value="name">Name</SelectItem>
                     <SelectItem value="category">Category</SelectItem>
                     <SelectItem value="city">City</SelectItem>
