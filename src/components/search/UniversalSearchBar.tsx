@@ -381,7 +381,7 @@ export const UniversalSearchBar = () => {
                     </CommandItem>)}
                 </CommandGroup>)}
 
-              {suggestions.length === 0 && searchResults.length === 0 && query.length >= 2 && !loading && !suggestionsLoading && <CommandEmpty className="py-6 text-center text-muted-foreground">
+              {suggestions.length === 0 && searchResults.length === 0 && query.length >= 2 && !loading && !suggestionsLoading && <CommandEmpty className="py-6 text-center text-muted-foreground w-full">
                   <div className="flex flex-col items-center gap-2">
                     <Search className="h-8 w-8 opacity-50" />
                     <p>No results found for "{query}"</p>
