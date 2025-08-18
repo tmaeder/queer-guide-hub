@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { SearchInputTyped } from "@/components/ui/search-input-typed";
 import { Command, CommandEmpty, CommandList, CommandSeparator, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Search, Filter, X, Clock, Zap, MapPin, Calendar, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, SlidersHorizontal, Tag, User } from "lucide-react";
@@ -215,13 +216,30 @@ export const UniversalSearchBar = () => {
                 <Search className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
               </Button>
               
-              <Input ref={inputRef} placeholder={isMobile ? "Search..." : "Search venues, events, marketplace, users, news, ressources, personalities..."} value={query} onChange={e => {
-              setQuery(e.target.value);
-              if (!isOpen) setIsOpen(true);
-            }} onKeyDown={handleKeyDown} onFocus={() => {
-              setIsFocused(true);
-              setIsOpen(true);
-            }} onBlur={() => setIsFocused(false)} className={`border-0 bg-transparent focus-visible:ring-0 shadow-none ${isMobile ? 'text-base placeholder:text-muted-foreground/60' : 'text-sm placeholder:text-muted-foreground/60'}`} autoComplete="off" />
+              <SearchInputTyped 
+                ref={inputRef} 
+                placeholders={isMobile ? 
+                  ["Search..."] : 
+                  ["Search venues...", "Find events...", "Browse marketplace...", "Discover people...", "Read news...", "Explore resources...", "Meet personalities..."]
+                }
+                typingSpeed={75}
+                pauseDuration={2000}
+                showCursor={true}
+                cursorCharacter="|"
+                value={query} 
+                onValueChange={(value) => {
+                  setQuery(value);
+                  if (!isOpen) setIsOpen(true);
+                }} 
+                onKeyDown={handleKeyDown} 
+                onFocus={() => {
+                  setIsFocused(true);
+                  setIsOpen(true);
+                }} 
+                onBlur={() => setIsFocused(false)} 
+                className={`border-0 bg-transparent focus-visible:ring-0 shadow-none ${isMobile ? 'text-base placeholder:text-muted-foreground/60' : 'text-sm placeholder:text-muted-foreground/60'}`} 
+                autoComplete="off" 
+              />
               
               {query && <Button variant="ghost" size="sm" className={`${isMobile ? 'h-8 w-8' : 'h-6 w-6'} p-0 mr-1 text-muted-foreground hover:text-foreground`} onClick={() => {
               setQuery("");
