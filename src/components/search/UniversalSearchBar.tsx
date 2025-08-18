@@ -21,7 +21,8 @@ const contentTypeIcons = {
   content: FileText,
   travel: Plane,
   ressource: Tag,
-  personality: User
+  personality: User,
+  tag: Tag
 };
 const contentTypeLabels = {
   venue: "Venues",
@@ -33,7 +34,8 @@ const contentTypeLabels = {
   content: "Wiki",
   travel: "Travel",
   ressource: "Ressources",
-  personality: "Personalities"
+  personality: "Personalities",
+  tag: "Tags"
 };
 export const UniversalSearchBar = () => {
   const [query, setQuery] = useState("");
@@ -131,6 +133,10 @@ export const UniversalSearchBar = () => {
       case 'ressource':
         // Navigate to ressources directory for specific ressource
         navigate(`/ressources/${result.metadata?.slug || result.title}`);
+        break;
+      case 'tag':
+        // Navigate directly to the tag's own page
+        navigate(`/tags/${encodeURIComponent(result.title)}`);
         break;
       case 'personality':
         // Navigate to personality detail page
