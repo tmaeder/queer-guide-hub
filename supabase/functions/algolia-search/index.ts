@@ -42,9 +42,27 @@ serve(async (req) => {
       )
     }
 
-    // Import Algolia search client
-    const { algoliasearch } = await import('https://esm.sh/algoliasearch@5')
-    const client = algoliasearch(algoliaAppId, algoliaApiKey)
+    // Use fetch-based approach for Deno compatibility
+    const algoliaBaseUrl = `https://${algoliaAppId}-dsn.algolia.net/1/indexes`
+    
+    // Helper function to search an index
+    const searchIndex = async (indexName: string, searchParams: any) => {
+      const response = await fetch(`${algoliaBaseUrl}/${indexName}/query`, {
+        method: 'POST',
+        headers: {
+          'X-Algolia-Application-Id': algoliaAppId,
+          'X-Algolia-API-Key': algoliaApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(searchParams)
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Algolia search failed: ${response.statusText}`)
+      }
+      
+      return response.json()
+    }
 
     // Define index names for different content types
     const indices = {
@@ -85,16 +103,13 @@ serve(async (req) => {
       if (indices[type as keyof typeof indices]) {
         const indexName = indices[type as keyof typeof indices]
         searchPromises.push(
-          client.searchSingleIndex({
-            indexName,
-            searchParams: {
-              query,
-              hitsPerPage: Math.floor(hitsPerPage / enabledTypes.length) || 5,
-              filters: algoliaFilters,
-              attributesToHighlight: ['title', 'description', 'name'],
-              highlightPreTag: '<mark>',
-              highlightPostTag: '</mark>',
-            }
+          searchIndex(indexName, {
+            query,
+            hitsPerPage: Math.floor(hitsPerPage / enabledTypes.length) || 5,
+            filters: algoliaFilters,
+            attributesToHighlight: ['title', 'description', 'name'],
+            highlightPreTag: '<mark>',
+            highlightPostTag: '</mark>',
           }).then(result => ({
             type,
             hits: result.hits.map((hit: any) => ({
