@@ -146,8 +146,9 @@ export const UniversalSearchBar = () => {
         }
         break;
       case 'tag':
-        // For tags, find and go to the first/main resource with this tag
-        navigate(`/ressources?tag=${encodeURIComponent(result.title)}&direct=true`);
+        // For tags, navigate directly to the specific resource content about this tag
+        const tagSlug = result.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '%20');
+        navigate(`/ressources/${tagSlug}`);
         break;
       case 'travel':
         // Go to specific travel content
@@ -179,8 +180,10 @@ export const UniversalSearchBar = () => {
         navigate(`/marketplace/${suggestion.id}`);
         break;
       case 'tag':
-        // For tags, go to the first/main resource with this tag instead of tag directory
-        navigate(`/ressources?tag=${encodeURIComponent(suggestion.name)}&direct=true`);
+        // For tags, navigate directly to the specific resource content about this tag
+        // Convert tag name to a URL-friendly slug and go to the resource page
+        const tagSlug = suggestion.name.replace(/[^\w\s-]/g, '').replace(/\s+/g, '%20');
+        navigate(`/ressources/${tagSlug}`);
         break;
       default:
         // Fallback: try to find specific content, not search results
