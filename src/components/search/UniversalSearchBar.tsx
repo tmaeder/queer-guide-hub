@@ -149,7 +149,7 @@ export const UniversalSearchBar = () => {
     const displayName = suggestion.name || suggestion.title;
     setQuery(displayName);
     
-    // Navigate directly to the item
+    // Navigate directly to the item based on its type
     switch (suggestion.type) {
       case 'venue':
         navigate(`/venues/${suggestion.id}`);
@@ -161,10 +161,12 @@ export const UniversalSearchBar = () => {
         navigate(`/marketplace/${suggestion.id}`);
         break;
       case 'tag':
+        // Navigate directly to resources filtered by this tag
         navigate(`/ressources?tag=${encodeURIComponent(suggestion.name)}`);
         break;
       default:
-        handleSearch(displayName);
+        // Fallback to search results for any unhandled types
+        navigate(`/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}`);
     }
     setIsOpen(false);
   };
