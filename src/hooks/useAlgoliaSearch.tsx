@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDebounce } from "./useDebounce";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface AlgoliaSearchResult {
   objectID: string;
@@ -43,23 +44,18 @@ export const useAlgoliaSearch = (query: string, filters: AlgoliaSearchFilters = 
 
     setLoading(true);
     try {
-      const response = await fetch('/api/algolia-search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('algolia-search', {
+        body: {
           query: searchQuery,
           filters,
           hitsPerPage: 20,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Search failed');
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json();
       setResults(data.hits || []);
       setSuggestions(data.suggestions || []);
     } catch (error) {
