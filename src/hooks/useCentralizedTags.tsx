@@ -26,7 +26,7 @@ export const useCentralizedTags = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTags = async () => {
+  const fetchTags = async (retryCount = 0) => {
     try {
       setLoading(true);
       setError(null);
@@ -38,6 +38,7 @@ export const useCentralizedTags = () => {
         .limit(10000); // Set explicit high limit to get all tags
 
       if (fetchError) {
+        console.error("Supabase fetch error:", fetchError);
         throw fetchError;
       }
 
@@ -65,6 +66,14 @@ export const useCentralizedTags = () => {
       setTagsByCategory(categories);
     } catch (err) {
       console.error("Error fetching tags:", err);
+      
+      // Retry logic for network errors
+      if (retryCount < 3 && err instanceof Error && err.message.includes("Failed to fetch")) {
+        console.log(`Retrying tag fetch, attempt ${retryCount + 1}`);
+        setTimeout(() => fetchTags(retryCount + 1), 1000 * (retryCount + 1));
+        return;
+      }
+      
       setError(err instanceof Error ? err.message : "Failed to fetch tags");
     } finally {
       setLoading(false);
