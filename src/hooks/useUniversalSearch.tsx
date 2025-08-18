@@ -5,7 +5,7 @@ export interface SearchResult {
   id: string;
   title: string;
   description?: string;
-  type: 'venue' | 'event' | 'marketplace' | 'user' | 'news' | 'location' | 'content' | 'travel' | 'ressource' | 'personality';
+  type: 'venue' | 'event' | 'marketplace' | 'user' | 'news' | 'location' | 'content' | 'travel' | 'ressource' | 'personality' | 'group';
   imageUrl?: string;
   location?: string;
   category?: string;
@@ -285,6 +285,32 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
     }));
   };
 
+  const searchGroups = async (searchQuery: string): Promise<SearchResult[]> => {
+    const { data, error } = await supabase
+      .from('community_groups')
+      .select('*')
+      .or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,tags.cs.{${searchQuery}}`)
+      .limit(10);
+
+    if (error) return [];
+
+    return data.map(group => ({
+      id: group.id,
+      title: group.name,
+      description: group.description,
+      type: 'group' as const,
+      imageUrl: group.image_url,
+      category: 'Community Group',
+      metadata: {
+        memberCount: group.member_count,
+        isPrivate: group.is_private,
+        tags: group.tags,
+        createdBy: group.created_by,
+        rules: group.rules
+      }
+    }));
+  };
+
   const searchTravel = async (searchQuery: string): Promise<SearchResult[]> => {
     // Travel booking search removed as booking functionality has been removed
     return [];
@@ -301,7 +327,7 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
 
     try {
       const searchPromises: Promise<SearchResult[]>[] = [];
-      const enabledTypes = filters.types.length > 0 ? filters.types : ['venue', 'event', 'marketplace', 'user', 'news', 'location', 'content', 'travel', 'ressource', 'personality'];
+      const enabledTypes = filters.types.length > 0 ? filters.types : ['venue', 'event', 'marketplace', 'user', 'news', 'location', 'content', 'travel', 'ressource', 'personality', 'group'];
 
       if (enabledTypes.includes('venue')) searchPromises.push(searchVenues(searchQuery));
       if (enabledTypes.includes('event')) searchPromises.push(searchEvents(searchQuery));
@@ -313,6 +339,7 @@ export const useUniversalSearch = (query: string, filters: SearchFilters = { typ
       if (enabledTypes.includes('travel')) searchPromises.push(searchTravel(searchQuery));
       if (enabledTypes.includes('ressource')) searchPromises.push(searchRessources(searchQuery));
       if (enabledTypes.includes('personality')) searchPromises.push(searchPersonalities(searchQuery));
+      if (enabledTypes.includes('group')) searchPromises.push(searchGroups(searchQuery));
 
       const searchResults = await Promise.all(searchPromises);
       const allResults = searchResults.flat();

@@ -22,7 +22,8 @@ const contentTypeIcons = {
   travel: Plane,
   ressource: Tag,
   personality: User,
-  tag: Tag
+  tag: Tag,
+  group: Users
 };
 const contentTypeLabels = {
   venue: "Venues",
@@ -35,7 +36,8 @@ const contentTypeLabels = {
   travel: "Travel",
   ressource: "Ressources",
   personality: "Personalities",
-  tag: "Tags"
+  tag: "Tags",
+  group: "Groups"
 };
 export const UniversalSearchBar = () => {
   const [query, setQuery] = useState("");
@@ -117,6 +119,9 @@ export const UniversalSearchBar = () => {
       case 'personality':
         navigate(`/personalities/${result.objectID}`);
         break;
+      case 'group':
+        navigate(`/groups/${result.objectID}`);
+        break;
       case 'news':
         // Go to specific news article, not news directory
         navigate(`/news/${result.objectID}`);
@@ -184,6 +189,15 @@ export const UniversalSearchBar = () => {
         // Convert tag name to a URL-friendly slug and go to the resource page
         const tagSlug = suggestion.name.replace(/[^\w\s-]/g, '').replace(/\s+/g, '%20');
         navigate(`/ressources/${tagSlug}`);
+        break;
+      case 'user':
+        navigate(`/user/${suggestion.id}`);
+        break;
+      case 'personality':
+        navigate(`/personalities/${suggestion.id}`);
+        break;
+      case 'group':
+        navigate(`/groups/${suggestion.id}`);
         break;
       default:
         // Fallback: try to find specific content, not search results

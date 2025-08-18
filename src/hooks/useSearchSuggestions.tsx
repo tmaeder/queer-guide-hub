@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Calendar, Store, Tag } from "lucide-react";
+import { MapPin, Calendar, Store, Tag, Users, User } from "lucide-react";
 
 export interface SearchSuggestion {
   id: string;
   name: string;
-  type: 'venue' | 'event' | 'marketplace' | 'tag';
+  type: 'venue' | 'event' | 'marketplace' | 'tag' | 'user' | 'personality' | 'group';
   icon: any;
   subtitle?: string;
   title?: string;
@@ -89,6 +89,52 @@ export function useSearchSuggestions(query: string) {
               ...item,
               type: 'tag' as const,
               icon: Tag,
+              subtitle: item.description
+            })))
+        );
+
+        // Search users
+        promises.push(
+          supabase
+            .from('profiles')
+            .select('user_id, display_name, location')
+            .ilike('display_name', `%${searchTerm}%`)
+            .limit(2)
+            .then(({ data }) => (data || []).map((item: any) => ({
+              id: item.user_id,
+              name: item.display_name || 'Anonymous User',
+              type: 'user' as const,
+              icon: Users,
+              subtitle: item.location
+            })))
+        );
+
+        // Search personalities
+        promises.push(
+          supabase
+            .from('personalities')
+            .select('id, name, profession')
+            .ilike('name', `%${searchTerm}%`)
+            .limit(2)
+            .then(({ data }) => (data || []).map((item: any) => ({
+              ...item,
+              type: 'personality' as const,
+              icon: User,
+              subtitle: item.profession
+            })))
+        );
+
+        // Search groups
+        promises.push(
+          supabase
+            .from('community_groups')
+            .select('id, name, description')
+            .ilike('name', `%${searchTerm}%`)
+            .limit(2)
+            .then(({ data }) => (data || []).map((item: any) => ({
+              ...item,
+              type: 'group' as const,
+              icon: Users,
               subtitle: item.description
             })))
         );

@@ -6,7 +6,7 @@ export interface AlgoliaSearchResult {
   objectID: string;
   title: string;
   description?: string;
-  type: 'venue' | 'event' | 'user' | 'news' | 'marketplace' | 'location' | 'content' | 'ressource' | 'personality' | 'travel' | 'tag';
+  type: 'venue' | 'event' | 'user' | 'news' | 'marketplace' | 'location' | 'content' | 'ressource' | 'personality' | 'travel' | 'tag' | 'group';
   category?: string;
   location?: string;
   price?: number;
