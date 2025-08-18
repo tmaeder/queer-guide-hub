@@ -224,7 +224,7 @@ const [filtersOpen, setFiltersOpen] = useState(false);
   }, [externalSearchTerm, filters]);
   return <div className={className}>
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-0">
           <div className="space-y-4">
             
             
