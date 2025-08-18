@@ -283,7 +283,7 @@ export const UniversalSearchBar = () => {
           </div>
         </PopoverTrigger>
         
-        <PopoverContent className={`${isMobile ? 'w-[calc(100vw-2rem)]' : 'w-[600px]'} p-0 z-50 bg-background/95 backdrop-blur-sm border shadow-xl`} align="start">
+        <PopoverContent className={`${isMobile ? 'w-[calc(100vw-2rem)]' : 'w-full'} p-0 z-50 bg-background/95 backdrop-blur-sm border shadow-xl`} align="start">
           <Command shouldFilter={false} className="bg-transparent">
             {showFilters && (
               <>
