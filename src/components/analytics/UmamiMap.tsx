@@ -88,7 +88,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
       mapboxgl.accessToken = mapboxToken;
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
+        style: 'mapbox://styles/tmaeder/clvmrc8pj015p01o05wd581tt',
         zoom: 1.5,
         center: [0, 20],
         projection: 'globe' as any,

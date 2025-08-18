@@ -74,7 +74,7 @@ const [filtersOpen, setFiltersOpen] = useState(false);
     mapboxgl.accessToken = mapboxToken;
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/tmaeder/clvmrc8pj015p01o05wd581tt',
       center: [-74.006, 40.7128],
       // NYC default
       zoom: 12

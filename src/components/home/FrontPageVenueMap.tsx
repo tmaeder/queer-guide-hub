@@ -83,7 +83,7 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
     mapboxgl.accessToken = mapToken;
     const map = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: 'mapbox://styles/tmaeder/clvmrc8pj015p01o05wd581tt',
       center: [center[0], center[1]],
       zoom: zoom,
       projection: 'globe'

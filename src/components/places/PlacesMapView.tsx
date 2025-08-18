@@ -68,7 +68,7 @@ export function PlacesMapView({
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: 'mapbox://styles/tmaeder/clvmrc8pj015p01o05wd581tt',
       center: [0, 20], // Center on world view
       zoom: 2,
       projection: 'globe' as any

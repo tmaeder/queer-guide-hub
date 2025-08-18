@@ -96,19 +96,11 @@ export function useSecureMapbox() {
           }
         } catch {}
 
-        // Fallback: user-provided public token
-        const localToken = typeof window !== 'undefined' ? localStorage.getItem('mapbox_public_token') : null;
-        if (localToken) {
-          setToken(localToken);
-          console.warn('Using local Mapbox public token fallback');
-          return;
-        }
-
-        toast({
-          title: 'Map Loading Error',
-          description: 'Unable to load map functionality. Please try again soon.',
-          variant: 'destructive',
-        });
+        // Use your custom token as fallback
+        const customToken = 'pk.eyJ1IjoidG1hZWRlciIsImEiOiJjazh4Ym9wOTEwN3F4M21zN3FqdnM4MHE2In0.24RlCLiCNxxX-c6h_4rwWw';
+        setToken(customToken);
+        console.warn('Using custom Mapbox token fallback');
+        return;
       } finally {
         setLoading(false);
       }
