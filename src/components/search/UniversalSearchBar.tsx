@@ -283,7 +283,7 @@ export const UniversalSearchBar = () => {
           </div>
         </PopoverTrigger>
         
-        <PopoverContent className={`${isMobile ? 'w-[calc(100vw-2rem)]' : 'w-full'} p-0 z-50 bg-background/95 backdrop-blur-sm border shadow-xl`} align="start">
+        <PopoverContent className={`${isMobile ? 'w-[calc(100vw-2rem)]' : 'w-[600px]'} p-0 z-50 bg-background/95 backdrop-blur-sm border shadow-xl`} align="start">
           <Command shouldFilter={false} className="bg-transparent">
             {showFilters && (
               <>
@@ -381,7 +381,7 @@ export const UniversalSearchBar = () => {
                     </CommandItem>)}
                 </CommandGroup>)}
 
-              {suggestions.length === 0 && searchResults.length === 0 && query.length >= 2 && !loading && !suggestionsLoading && <CommandEmpty className="py-6 text-center text-muted-foreground w-full">
+              {suggestions.length === 0 && searchResults.length === 0 && query.length >= 2 && !loading && !suggestionsLoading && <CommandEmpty className="py-6 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <Search className="h-8 w-8 opacity-50" />
                     <p>No results found for "{query}"</p>
