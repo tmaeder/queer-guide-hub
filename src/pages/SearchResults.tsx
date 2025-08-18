@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { MapPin, Calendar, Star, Eye, Heart, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, Search, Filter, ArrowUpDown, Grid, List, TrendingUp, Clock, Sparkles } from 'lucide-react';
-import { useUniversalSearch, SearchResult, SearchFilters } from '@/hooks/useUniversalSearch';
+import { useAlgoliaSearch, AlgoliaSearchResult, AlgoliaSearchFilters } from '@/hooks/useAlgoliaSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 
 const contentTypeIcons = {
@@ -41,23 +41,23 @@ export default function SearchResults() {
     setSearchQuery(query);
   }, [query]);
 
-  const [filters, setFilters] = useState<SearchFilters>({
+  const [filters, setFilters] = useState<AlgoliaSearchFilters>({
     types: initialTypes,
     location: initialLocation,
     categories: initialCategories.length > 0 ? initialCategories : undefined
   });
 
-  const { results, loading } = useUniversalSearch(query, {
+  const { results, loading } = useAlgoliaSearch(query, {
     ...filters,
     types: selectedTab === 'all' ? filters.types : [selectedTab]
   });
 
-  const handleFiltersChange = (newFilters: SearchFilters) => {
+  const handleFiltersChange = (newFilters: AlgoliaSearchFilters) => {
     setFilters(newFilters);
     
     // Update URL parameters
     const params = new URLSearchParams(searchParams);
-    if (newFilters.types.length > 0) {
+    if (newFilters.types && newFilters.types.length > 0) {
       params.set('types', newFilters.types.join(','));
     } else {
       params.delete('types');
@@ -90,7 +90,7 @@ export default function SearchResults() {
       if (!acc[result.type]) acc[result.type] = [];
       acc[result.type].push(result);
       return acc;
-    }, {} as Record<string, SearchResult[]>);
+    }, {} as Record<string, AlgoliaSearchResult[]>);
   };
 
   const formatResultDate = (dateString?: string) => {
@@ -98,7 +98,7 @@ export default function SearchResults() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const sortResults = (results: SearchResult[]) => {
+  const sortResults = (results: AlgoliaSearchResult[]) => {
     const sorted = [...results];
     switch (sortBy) {
       case 'newest':
@@ -129,12 +129,12 @@ export default function SearchResults() {
     setSearchParams(params);
   };
 
-  const renderResultCard = (result: SearchResult) => {
+  const renderResultCard = (result: AlgoliaSearchResult) => {
     const Icon = contentTypeIcons[result.type];
     
     if (viewMode === 'grid') {
       return (
-        <Card key={`${result.type}-${result.id}`} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
+        <Card key={`${result.type}-${result.objectID}`} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
           <div className="relative">
             {result.imageUrl ? (
               <div className="aspect-video relative overflow-hidden rounded-t-lg">
@@ -205,7 +205,7 @@ export default function SearchResults() {
     }
 
     return (
-      <Card key={`${result.type}-${result.id}`} className="group hover:shadow-md transition-all duration-200 hover:border-primary/50">
+      <Card key={`${result.type}-${result.objectID}`} className="group hover:shadow-md transition-all duration-200 hover:border-primary/50">
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             {result.imageUrl && (
@@ -266,16 +266,16 @@ export default function SearchResults() {
                       </div>
                     )}
                   </div>
-                  {result.tags && result.tags.length > 0 && (
+                  {result.metadata?.tags && result.metadata.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {result.tags.slice(0, 4).map((tag, index) => (
+                      {result.metadata.tags.slice(0, 4).map((tag: string, index: number) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
                       ))}
-                      {result.tags.length > 4 && (
+                      {result.metadata.tags.length > 4 && (
                         <Badge variant="outline" className="text-xs">
-                          +{result.tags.length - 4} more
+                          +{result.metadata.tags.length - 4} more
                         </Badge>
                       )}
                     </div>
@@ -305,7 +305,7 @@ export default function SearchResults() {
   const sortedResultsByType = Object.entries(resultsByType).reduce((acc, [type, typeResults]) => {
     acc[type] = sortResults(typeResults);
     return acc;
-  }, {} as Record<string, SearchResult[]>);
+  }, {} as Record<string, AlgoliaSearchResult[]>);
 
   // Generate tabs based on available result types
   const availableTabs = ['all', ...Object.keys(resultsByType)];
