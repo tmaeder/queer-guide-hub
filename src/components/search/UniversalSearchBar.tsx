@@ -100,7 +100,7 @@ export const UniversalSearchBar = () => {
   const handleSelectResult = (result: AlgoliaSearchResult) => {
     setQuery(result.title);
 
-    // Navigate to specific item based on type
+    // Navigate directly to specific content (never to directory/overview pages)
     switch (result.type) {
       case 'venue':
         navigate(`/venues/${result.objectID}`);
@@ -114,12 +114,15 @@ export const UniversalSearchBar = () => {
       case 'user':
         navigate(`/user/${result.objectID}`);
         break;
+      case 'personality':
+        navigate(`/personalities/${result.objectID}`);
+        break;
       case 'news':
-        // Navigate to news page with search query for this article
-        navigate(`/news`);
+        // Go to specific news article, not news directory
+        navigate(`/news/${result.objectID}`);
         break;
       case 'location':
-        // Check if it's a city or country based on metadata
+        // Go to specific location page
         if (result.metadata?.isCountry) {
           navigate(`/country/${result.objectID}`);
         } else {
@@ -127,26 +130,32 @@ export const UniversalSearchBar = () => {
         }
         break;
       case 'content':
-        // Navigate to ressources directory for content
-        navigate(`/ressources/${result.metadata?.slug || result.title}`);
+        // Go to specific content page using slug or ID
+        if (result.metadata?.slug) {
+          navigate(`/content/${result.metadata.slug}`);
+        } else {
+          navigate(`/content/${result.objectID}`);
+        }
         break;
       case 'ressource':
-        // Navigate to ressources directory for specific ressource
-        navigate(`/ressources/${result.metadata?.slug || result.title}`);
+        // Go to specific resource page using slug or ID
+        if (result.metadata?.slug) {
+          navigate(`/ressources/${result.metadata.slug}`);
+        } else {
+          navigate(`/ressources/${result.objectID}`);
+        }
         break;
       case 'tag':
-        // Navigate directly to the tag's own page
-        navigate(`/tags/${encodeURIComponent(result.title)}`);
-        break;
-      case 'personality':
-        // Navigate to personality detail page
-        navigate(`/personalities/${result.objectID}`);
+        // For tags, find and go to the first/main resource with this tag
+        navigate(`/ressources?tag=${encodeURIComponent(result.title)}&direct=true`);
         break;
       case 'travel':
-        navigate(`/travel`);
+        // Go to specific travel content
+        navigate(`/travel/${result.objectID}`);
         break;
       default:
-        handleSearch(result.title);
+        // Last resort: search with direct flag to find specific content
+        navigate(`/search?q=${encodeURIComponent(result.title)}&direct=true`);
     }
     setIsOpen(false);
   };
@@ -155,24 +164,27 @@ export const UniversalSearchBar = () => {
     const displayName = suggestion.name || suggestion.title;
     setQuery(displayName);
     
-    // Navigate directly to the item based on its type
+    // Navigate directly to specific content (never to directory/overview pages)
     switch (suggestion.type) {
       case 'venue':
+        // Go to specific venue detail page
         navigate(`/venues/${suggestion.id}`);
         break;
       case 'event':
+        // Go to specific event detail page
         navigate(`/events/${suggestion.id}`);
         break;
       case 'marketplace':
+        // Go to specific marketplace item detail page
         navigate(`/marketplace/${suggestion.id}`);
         break;
       case 'tag':
-        // Navigate directly to the tag's own page
-        navigate(`/tags/${encodeURIComponent(suggestion.name)}`);
+        // For tags, go to the first/main resource with this tag instead of tag directory
+        navigate(`/ressources?tag=${encodeURIComponent(suggestion.name)}&direct=true`);
         break;
       default:
-        // Fallback to search results for any unhandled types
-        navigate(`/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}`);
+        // Fallback: try to find specific content, not search results
+        navigate(`/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}&direct=true`);
     }
     setIsOpen(false);
   };
