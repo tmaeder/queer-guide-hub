@@ -225,13 +225,6 @@ const [filtersOpen, setFiltersOpen] = useState(false);
   return <div className={className}>
       <Card>
         <CardContent className="p-0">
-          <div className="space-y-4">
-            
-            
-            
-
-{/* Controls moved below map */}
-
             <div className="h-[500px] w-full rounded-lg overflow-hidden border">
               <div ref={mapContainer} className="w-full h-full" />
             </div>
@@ -297,7 +290,6 @@ const [filtersOpen, setFiltersOpen] = useState(false);
                     </Card> : <VenueCard venue={selectedItem as Venue} />}
                 </div>
               </div>}
-          </div>
         </CardContent>
       </Card>
     </div>;
