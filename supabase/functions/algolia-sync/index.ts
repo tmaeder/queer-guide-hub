@@ -30,9 +30,34 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Import Algolia
-    const { algoliasearch } = await import('https://esm.sh/algoliasearch@5')
-    const client = algoliasearch(algoliaAppId, algoliaApiKey)
+    // Use fetch-based approach for Deno compatibility
+    const algoliaBaseUrl = `https://${algoliaAppId}-dsn.algolia.net/1/indexes`
+    
+    // Helper function to save objects to an index
+    const saveObjectsToIndex = async (indexName: string, records: any[]) => {
+      const response = await fetch(`${algoliaBaseUrl}/${indexName}/batch`, {
+        method: 'POST',
+        headers: {
+          'X-Algolia-Application-Id': algoliaAppId,
+          'X-Algolia-API-Key': algoliaApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          requests: records.map(record => ({
+            action: 'updateObject',
+            body: record
+          }))
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Algolia sync failed: ${response.statusText}`)
+      }
+      
+      return response.json()
+    }
+
+    const client = { saveObjectsToIndex }
 
     if (operation === 'sync') {
       // Sync all data for specified index
@@ -57,36 +82,34 @@ serve(async (req) => {
 })
 
 async function syncIndexData(client: any, supabase: any, indexName: string) {
-  const algoliaIndex = client.initIndex(indexName)
-  
   switch (indexName) {
     case 'venues':
-      await syncVenues(algoliaIndex, supabase)
+      await syncVenues(client, supabase, indexName)
       break
     case 'events':
-      await syncEvents(algoliaIndex, supabase)
+      await syncEvents(client, supabase, indexName)
       break
     case 'users':
-      await syncUsers(algoliaIndex, supabase)
+      await syncUsers(client, supabase, indexName)
       break
     case 'news':
-      await syncNews(algoliaIndex, supabase)
+      await syncNews(client, supabase, indexName)
       break
     case 'marketplace':
-      await syncMarketplace(algoliaIndex, supabase)
+      await syncMarketplace(client, supabase, indexName)
       break
     case 'locations':
-      await syncLocations(algoliaIndex, supabase)
+      await syncLocations(client, supabase, indexName)
       break
     case 'personalities':
-      await syncPersonalities(algoliaIndex, supabase)
+      await syncPersonalities(client, supabase, indexName)
       break
     default:
       throw new Error(`Unknown index: ${indexName}`)
   }
 }
 
-async function syncVenues(index: any, supabase: any) {
+async function syncVenues(client: any, supabase: any, indexName: string) {
   const { data: venues, error } = await supabase
     .from('venues')
     .select(`
@@ -116,10 +139,10 @@ async function syncVenues(index: any, supabase: any) {
     tags: venue.tags || []
   }))
 
-  await index.saveObjects(records)
+  await client.saveObjectsToIndex(indexName, records)
 }
 
-async function syncEvents(index: any, supabase: any) {
+async function syncEvents(client: any, supabase: any, indexName: string) {
   const { data: events, error } = await supabase
     .from('events')
     .select(`
@@ -150,10 +173,10 @@ async function syncEvents(index: any, supabase: any) {
     tags: event.tags || []
   }))
 
-  await index.saveObjects(records)
+  await client.saveObjectsToIndex(indexName, records)
 }
 
-async function syncUsers(index: any, supabase: any) {
+async function syncUsers(client: any, supabase: any, indexName: string) {
   const { data: profiles, error } = await supabase
     .from('profiles')
     .select(`
@@ -178,10 +201,10 @@ async function syncUsers(index: any, supabase: any) {
     interests: profile.interests || []
   }))
 
-  await index.saveObjects(records)
+  await client.saveObjectsToIndex(indexName, records)
 }
 
-async function syncNews(index: any, supabase: any) {
+async function syncNews(client: any, supabase: any, indexName: string) {
   const { data: news, error } = await supabase
     .from('news_articles')
     .select('*')
@@ -203,10 +226,10 @@ async function syncNews(index: any, supabase: any) {
     tags: article.tags || []
   }))
 
-  await index.saveObjects(records)
+  await client.saveObjectsToIndex(indexName, records)
 }
 
-async function syncMarketplace(index: any, supabase: any) {
+async function syncMarketplace(client: any, supabase: any, indexName: string) {
   const { data: listings, error } = await supabase
     .from('marketplace_listings')
     .select(`
@@ -233,10 +256,10 @@ async function syncMarketplace(index: any, supabase: any) {
     featured: listing.is_featured
   }))
 
-  await index.saveObjects(records)
+  await client.saveObjectsToIndex(indexName, records)
 }
 
-async function syncLocations(index: any, supabase: any) {
+async function syncLocations(client: any, supabase: any, indexName: string) {
   // Sync cities
   const { data: cities, error: citiesError } = await supabase
     .from('cities')
@@ -279,10 +302,10 @@ async function syncLocations(index: any, supabase: any) {
     continent: country.continent
   }))
 
-  await index.saveObjects([...cityRecords, ...countryRecords])
+  await client.saveObjectsToIndex(indexName, [...cityRecords, ...countryRecords])
 }
 
-async function syncPersonalities(index: any, supabase: any) {
+async function syncPersonalities(client: any, supabase: any, indexName: string) {
   const { data: personalities, error } = await supabase
     .from('personalities')
     .select('*')
@@ -304,10 +327,9 @@ async function syncPersonalities(index: any, supabase: any) {
     tags: personality.tags || []
   }))
 
-  await index.saveObjects(records)
+  await client.saveObjectsToIndex(indexName, records)
 }
 
 async function updateRecords(client: any, indexName: string, records: any[]) {
-  const index = client.initIndex(indexName)
-  await index.saveObjects(records)
+  await client.saveObjectsToIndex(indexName, records)
 }
