@@ -8,14 +8,14 @@ import { Switch } from '@/components/ui/switch';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, BookOpen, Plane, Tag } from 'lucide-react';
-import { SearchFilters } from '@/hooks/useUniversalSearch';
+import { AlgoliaSearchFilters } from '@/hooks/useAlgoliaSearch';
 import { format } from 'date-fns';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 
 interface SearchFiltersPanelProps {
-  filters: SearchFilters;
-  onFiltersChange: (filters: SearchFilters) => void;
+  filters: AlgoliaSearchFilters;
+  onFiltersChange: (filters: AlgoliaSearchFilters) => void;
 }
 
 const contentTypes = [
@@ -44,13 +44,14 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const selectedRange: DateRange | undefined = filters.dateRange
-    ? { from: new Date(filters.dateRange.start), to: new Date(filters.dateRange.end) }
+    ? { from: filters.dateRange[0], to: filters.dateRange[1] }
     : undefined;
 
   const toggleContentType = (type: string) => {
-    const newTypes = filters.types.includes(type)
-      ? filters.types.filter(t => t !== type)
-      : [...filters.types, type];
+    const currentTypes = filters.types || [];
+    const newTypes = currentTypes.includes(type)
+      ? currentTypes.filter(t => t !== type)
+      : [...currentTypes, type];
     
     onFiltersChange({ ...filters, types: newTypes });
   };
@@ -62,7 +63,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
   const updatePriceRange = (range: number[]) => {
     onFiltersChange({ 
       ...filters, 
-      priceRange: { min: range[0], max: range[1] }
+      priceRange: [range[0], range[1]]
     });
   };
 
@@ -89,11 +90,11 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
   };
 
   const clearAllFilters = () => {
-    onFiltersChange({ types: [] });
+    onFiltersChange({});
   };
 
   const getRelevantCategories = () => {
-    if (filters.types.length === 1) {
+    if (filters.types && filters.types.length === 1) {
       const type = filters.types[0] as keyof typeof popularCategories;
       return popularCategories[type] || [];
     }
@@ -106,7 +107,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">Content Types</Label>
-          {filters.types.length > 0 && (
+          {(filters.types && filters.types.length > 0) && (
             <Button
               variant="ghost"
               size="sm"
@@ -123,7 +124,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
             return (
               <Badge
                 key={type.id}
-                variant={filters.types.includes(type.id) ? "default" : "outline"}
+                variant={(filters.types && filters.types.includes(type.id)) ? "default" : "outline"}
                 className="cursor-pointer hover:bg-primary/80"
                 onClick={() => toggleContentType(type.id)}
               >
@@ -223,7 +224,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 if (range?.from && range.to) {
                   onFiltersChange({
                     ...filters,
-                    dateRange: { start: range.from, end: range.to }
+                    dateRange: [range.from, range.to]
                   });
                 } else {
                   onFiltersChange({ ...filters, dateRange: undefined });
@@ -240,15 +241,15 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
             </Label>
             <div className="px-2">
               <Slider
-                value={[filters.priceRange?.min || 0, filters.priceRange?.max || 1000]}
+                value={filters.priceRange || [0, 1000]}
                 onValueChange={updatePriceRange}
                 max={1000}
                 step={10}
                 className="w-full"
               />
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>${filters.priceRange?.min || 0}</span>
-                <span>${filters.priceRange?.max || 1000}</span>
+                <span>${filters.priceRange?.[0] || 0}</span>
+                <span>${filters.priceRange?.[1] || 1000}</span>
               </div>
             </div>
           </div>

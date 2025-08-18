@@ -7,7 +7,7 @@ import { SearchInputTyped } from "@/components/ui/search-input-typed";
 import { Command, CommandEmpty, CommandList, CommandSeparator, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Search, Filter, X, Clock, Zap, MapPin, Calendar, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, SlidersHorizontal, Tag, User } from "lucide-react";
-import { useUniversalSearch, SearchResult, SearchFilters } from "@/hooks/useUniversalSearch";
+import { useAlgoliaSearch, AlgoliaSearchResult, AlgoliaSearchFilters } from "@/hooks/useAlgoliaSearch";
 import { useSearchSuggestions, SearchSuggestion } from "@/hooks/useSearchSuggestions";
 import { SearchFiltersPanel } from "./SearchFiltersPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -39,7 +39,7 @@ export const UniversalSearchBar = () => {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<SearchFilters>({
+  const [filters, setFilters] = useState<AlgoliaSearchFilters>({
     types: []
   });
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -51,7 +51,7 @@ export const UniversalSearchBar = () => {
     results,
     suggestions: searchResults,
     loading
-  } = useUniversalSearch(query, filters);
+  } = useAlgoliaSearch(query, filters);
 
   const { suggestions, loading: suggestionsLoading } = useSearchSuggestions(query);
 
@@ -95,22 +95,22 @@ export const UniversalSearchBar = () => {
     navigate(`/search?${params}`);
     setIsOpen(false);
   };
-  const handleSelectResult = (result: SearchResult) => {
+  const handleSelectResult = (result: AlgoliaSearchResult) => {
     setQuery(result.title);
 
     // Navigate to specific item based on type
     switch (result.type) {
       case 'venue':
-        navigate(`/venues/${result.id}`);
+        navigate(`/venues/${result.objectID}`);
         break;
       case 'event':
-        navigate(`/events/${result.id}`);
+        navigate(`/events/${result.objectID}`);
         break;
       case 'marketplace':
-        navigate(`/marketplace/${result.id}`);
+        navigate(`/marketplace/${result.objectID}`);
         break;
       case 'user':
-        navigate(`/user/${result.id}`);
+        navigate(`/user/${result.objectID}`);
         break;
       case 'news':
         // Navigate to news page with search query for this article
@@ -119,9 +119,9 @@ export const UniversalSearchBar = () => {
       case 'location':
         // Check if it's a city or country based on metadata
         if (result.metadata?.isCountry) {
-          navigate(`/country/${result.id}`);
+          navigate(`/country/${result.objectID}`);
         } else {
-          navigate(`/city/${result.id}`);
+          navigate(`/city/${result.objectID}`);
         }
         break;
       case 'content':
@@ -134,7 +134,7 @@ export const UniversalSearchBar = () => {
         break;
       case 'personality':
         // Navigate to personality detail page
-        navigate(`/personalities/${result.id}`);
+        navigate(`/personalities/${result.objectID}`);
         break;
       case 'travel':
         navigate(`/travel`);
@@ -184,11 +184,11 @@ export const UniversalSearchBar = () => {
     setRecentSearches([]);
     localStorage.removeItem('recent-searches');
   };
-  const getResultIcon = (type: SearchResult['type']) => {
+  const getResultIcon = (type: AlgoliaSearchResult['type']) => {
     const Icon = contentTypeIcons[type];
     return <Icon className="h-4 w-4" />;
   };
-  const formatResultSubtitle = (result: SearchResult) => {
+  const formatResultSubtitle = (result: AlgoliaSearchResult) => {
     const parts = [];
     if (result.category) parts.push(result.category);
     if (result.location) parts.push(result.location);
@@ -333,8 +333,8 @@ export const UniversalSearchBar = () => {
               if (!acc[result.type]) acc[result.type] = [];
               acc[result.type].push(result);
               return acc;
-            }, {} as Record<string, SearchResult[]>)).map(([type, typeResults]) => <CommandGroup key={type} heading={contentTypeLabels[type as keyof typeof contentTypeLabels]}>
-                  {typeResults.map(result => <CommandItem key={`${result.type}-${result.id}`} onSelect={() => handleSelectResult(result)} className="cursor-pointer p-3">
+            }, {} as Record<string, AlgoliaSearchResult[]>)).map(([type, typeResults]) => <CommandGroup key={type} heading={contentTypeLabels[type as keyof typeof contentTypeLabels]}>
+                  {typeResults.map(result => <CommandItem key={`${result.type}-${result.objectID}`} onSelect={() => handleSelectResult(result)} className="cursor-pointer p-3">
                       <div className="flex items-start gap-3 w-full">
                         <div className="flex-shrink-0 mt-1">
                           {getResultIcon(result.type)}
