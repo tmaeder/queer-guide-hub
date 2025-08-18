@@ -212,50 +212,50 @@ export const UniversalSearchBar = () => {
             setIsOpen(true);
             setTimeout(() => inputRef.current?.focus(), 0);
           }}>
-              <Button variant="ghost" size="sm" className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} rounded-l-lg text-muted-foreground hover:text-foreground pointer-events-none`}>
+              <Button variant="ghost" size="sm" className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} rounded-l-lg text-muted-foreground hover:text-foreground pointer-events-none flex-shrink-0`}>
                 <Search className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
               </Button>
               
-              <SearchInputTyped 
-                ref={inputRef} 
-                placeholders={isMobile ? 
-                  ["Search..."] : 
-                  ["Search venues...", "Find events...", "Browse marketplace...", "Discover people...", "Read news...", "Explore resources...", "Meet personalities..."]
-                }
-                typingSpeed={75}
-                pauseDuration={2000}
-                showCursor={true}
-                cursorCharacter="|"
-                value={query} 
-                onValueChange={(value) => {
-                  setQuery(value);
-                  if (!isOpen) setIsOpen(true);
-                }} 
-                onKeyDown={handleKeyDown} 
-                onFocus={() => {
-                  setIsFocused(true);
-                  setIsOpen(true);
-                }} 
-                onBlur={() => setIsFocused(false)} 
-                className={`border-0 bg-transparent focus-visible:ring-0 shadow-none ${isMobile ? 'text-base placeholder:text-muted-foreground/60' : 'text-sm placeholder:text-muted-foreground/60'}`} 
-                autoComplete="off" 
-              />
+              <div className="flex-1 relative">
+                <SearchInputTyped 
+                  ref={inputRef} 
+                  placeholders={isMobile ? 
+                    ["Search..."] : 
+                    ["Search venues...", "Find events...", "Browse marketplace...", "Discover people...", "Read news...", "Explore resources...", "Meet personalities..."]
+                  }
+                  typingSpeed={75}
+                  pauseDuration={2000}
+                  showCursor={true}
+                  cursorCharacter="|"
+                  value={query} 
+                  onValueChange={(value) => {
+                    setQuery(value);
+                    if (!isOpen) setIsOpen(true);
+                  }} 
+                  onKeyDown={handleKeyDown} 
+                  onFocus={() => {
+                    setIsFocused(true);
+                    setIsOpen(true);
+                  }} 
+                  onBlur={() => setIsFocused(false)} 
+                  className={`w-full border-0 bg-transparent focus-visible:ring-0 shadow-none ${isMobile ? 'text-base placeholder:text-muted-foreground/60' : 'text-sm placeholder:text-muted-foreground/60'}`} 
+                  autoComplete="off" 
+                />
+                
+                {query && <Button variant="ghost" size="sm" className={`absolute right-2 top-1/2 -translate-y-1/2 ${isMobile ? 'h-8 w-8' : 'h-6 w-6'} p-0 text-muted-foreground hover:text-foreground`} onClick={() => {
+                  setQuery("");
+                  inputRef.current?.focus();
+                }}>
+                    <X className={`${isMobile ? 'h-4 w-4' : 'h-3 w-3'}`} />
+                  </Button>}
+              </div>
               
-              {query && <Button variant="ghost" size="sm" className={`${isMobile ? 'h-8 w-8' : 'h-6 w-6'} p-0 mr-1 text-muted-foreground hover:text-foreground`} onClick={() => {
-              setQuery("");
-              inputRef.current?.focus();
-            }}>
-                  <X className={`${isMobile ? 'h-4 w-4' : 'h-3 w-3'}`} />
-                </Button>}
-              
-              <Button variant="ghost" size="sm" className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} text-muted-foreground hover:text-foreground relative ${activeFiltersCount > 0 ? 'text-primary' : ''}`} onClick={() => setShowFilters(!showFilters)}>
+              <Button variant="ghost" size="sm" className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} text-muted-foreground hover:text-foreground relative flex-shrink-0 ${activeFiltersCount > 0 ? 'text-primary' : ''}`} onClick={() => setShowFilters(!showFilters)}>
                 <SlidersHorizontal className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
                 {activeFiltersCount > 0 && <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center">
                     {activeFiltersCount}
                   </Badge>}
               </Button>
-              
-              
             </div>
           </div>
         </PopoverTrigger>
