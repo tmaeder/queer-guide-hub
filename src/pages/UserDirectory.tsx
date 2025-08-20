@@ -127,7 +127,7 @@ const UserDirectory = () => {
     }
   };
 
-  const { data: profiles, isLoading } = useQuery({
+  const { data: profiles, isLoading, error, refetch } = useQuery({
     queryKey: ["user-directory", filters, nearMe, userLocation],
     queryFn: async () => {
       let query: any = supabase
@@ -205,7 +205,10 @@ const UserDirectory = () => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('Profile fetch error:', error);
+        throw new Error(`Failed to load profiles: ${error.message}`);
+      }
       
       // Filter by interests (client-side since it's a JSON array)
       let filteredData = data as Profile[];
@@ -261,6 +264,9 @@ const UserDirectory = () => {
       
       return filteredData;
     },
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 30000, // Cache for 30 seconds
   });
 
   const clearAllFilters = () => {
