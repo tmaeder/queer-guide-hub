@@ -11,17 +11,19 @@ interface PhotoPrivacyManagerProps {
   currentVisibility: 'private' | 'friends' | 'public';
   onVisibilityChange: (visibility: 'private' | 'friends' | 'public') => void;
   isOwner: boolean;
+  enhancedSecurity?: boolean;
 }
 
 /**
  * PhotoPrivacyManager - Granular photo privacy controls
  * Default-private with explicit consent for sharing
  */
-export function PhotoPrivacyManager({
-  photoId,
-  currentVisibility,
+export function PhotoPrivacyManager({ 
+  photoId, 
+  currentVisibility, 
   onVisibilityChange,
-  isOwner
+  isOwner,
+  enhancedSecurity = true
 }: PhotoPrivacyManagerProps) {
   const [isChanging, setIsChanging] = useState(false);
   const { toast } = useToast();

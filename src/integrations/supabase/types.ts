@@ -4634,6 +4634,42 @@ export type Database = {
         }
         Relationships: []
       }
+      security_monitoring: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          severity: string
+          target_user_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          severity?: string
+          target_user_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          severity?: string
+          target_user_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       session_config: {
         Row: {
           created_at: string
@@ -6080,6 +6116,15 @@ export type Database = {
         Args: { role_name: string; user_id: string }
         Returns: boolean
       }
+      audit_admin_sensitive_access: {
+        Args: {
+          p_admin_id: string
+          p_data_type: string
+          p_justification: string
+          p_target_user_id: string
+        }
+        Returns: boolean
+      }
       basic_rate_limit: {
         Args: { identifier: string; max_attempts?: number }
         Returns: boolean
@@ -6093,6 +6138,14 @@ export type Database = {
           privacy_field?: string
           profile_user_id: string
           requesting_user_id: string
+        }
+        Returns: boolean
+      }
+      check_financial_data_access: {
+        Args: {
+          p_admin_user_id: string
+          p_justification: string
+          p_user_id: string
         }
         Returns: boolean
       }
@@ -6363,6 +6416,22 @@ export type Database = {
       refresh_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      schedule_location_anonymization: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      secure_passkey_access: {
+        Args: { p_operation: string; p_user_id: string }
+        Returns: boolean
+      }
+      trigger_security_incident: {
+        Args: {
+          p_incident_type: string
+          p_metadata?: Json
+          p_severity?: string
+        }
+        Returns: string
       }
       validate_content_security: {
         Args: { content_text: string; content_type?: string }
