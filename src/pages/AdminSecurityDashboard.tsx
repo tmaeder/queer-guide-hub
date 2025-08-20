@@ -1,7 +1,8 @@
 import React from 'react';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
-import { SecurityMonitoringDashboard } from '@/components/security/SecurityMonitoringDashboard';
-import { SecurityAlertSystem } from '@/components/security/SecurityAlertSystem';
+import { EnhancedSecurityDashboard } from "@/components/security/EnhancedSecurityDashboard";
+import { AutomatedSecurityScheduler } from "@/components/security/AutomatedSecurityScheduler";
+import { PrivacyControlCenter } from "@/components/security/PrivacyControlCenter";
 import { useEnhancedSecurity } from '@/hooks/useEnhancedSecurity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -210,10 +211,12 @@ export default function AdminSecurityDashboard() {
           </TabsList>
 
           <TabsContent value="monitoring" className="space-y-6">
-            <SecurityMonitoringDashboard />
+            <EnhancedSecurityDashboard />
+            <AutomatedSecurityScheduler />
           </TabsContent>
 
           <TabsContent value="profiles" className="space-y-6">
+            <PrivacyControlCenter />
             <Card>
               <CardHeader>
                 <CardTitle>Profile Security Management</CardTitle>

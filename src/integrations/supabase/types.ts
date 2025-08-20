@@ -6116,6 +6116,15 @@ export type Database = {
         Args: { role_name: string; user_id: string }
         Returns: boolean
       }
+      audit_admin_data_access: {
+        Args: {
+          p_admin_id: string
+          p_data_type: string
+          p_justification: string
+          p_target_user_id: string
+        }
+        Returns: boolean
+      }
       audit_admin_sensitive_access: {
         Args: {
           p_admin_id: string
