@@ -18,6 +18,8 @@ import { UserModeBadge } from "@/components/profile/UserModeBadge";
 import { Tables } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import useScreenSize from "@/hooks/use-screen-size";
+import Gravity, { MatterBody } from "@/fancy/components/physics/cursor-attractor-and-gravity";
 
 type Profile = { user_id: string; display_name?: string | null; avatar_url?: string | null; pronouns?: string | null; age_range?: string | null; verified_identity?: boolean | null; user_mode?: string | null; is_business?: boolean | null; bio?: string | null; location?: string | null; occupation?: string | null; education?: string | null; created_at?: string | null; last_active_at?: string | null; relationship_status?: string | null; has_children?: boolean | null; has_pets?: boolean | null; gender_identity?: string | null; website?: string | null; interests?: string[] | null; };
 
@@ -39,6 +41,7 @@ interface UserFilters {
 }
 
 const UserDirectory = () => {
+  const screenSize = useScreenSize();
   const [filters, setFilters] = useState<UserFilters>({
     searchQuery: "",
     location: "",
@@ -296,9 +299,21 @@ const UserDirectory = () => {
         <Card>
           <CardContent className="p-8 text-center space-y-6">
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-                Community Directory
-              </h1>
+              <div className="relative h-20">
+                <Gravity
+                  attractorPoint={{ x: "50%", y: "50%" }}
+                  attractorStrength={0.0008}
+                  cursorStrength={-0.006}
+                  cursorFieldRadius={screenSize.lessThan("sm") ? 100 : 200}
+                  className="w-full h-full"
+                >
+                  <MatterBody x="50%" y="50%">
+                    <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+                      Community Directory
+                    </h1>
+                  </MatterBody>
+                </Gravity>
+              </div>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                 Discover amazing people, build meaningful connections, and grow your network within our 
                 inclusive LGBTQ+ community.
