@@ -167,11 +167,6 @@ export default function AdminSecurityDashboard() {
           </p>
         </div>
 
-        {/* Security Alerts */}
-        <div className="mb-6">
-          <SecurityAlertSystem />
-        </div>
-
         {/* Security Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <SecurityMetricsCard />

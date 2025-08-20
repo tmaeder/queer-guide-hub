@@ -296,7 +296,7 @@ const UserDirectory = () => {
         <Card>
           <CardContent className="p-8 text-center space-y-6">
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-5xl font-bold text-foreground">
                 Community Directory
               </h1>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">

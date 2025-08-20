@@ -134,8 +134,8 @@ export function PrivacyControlCenter() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (profile?.privacy_settings) {
-      setSettings(profile.privacy_settings);
+    if (profile?.privacy_settings && typeof profile.privacy_settings === 'object') {
+      setSettings(profile.privacy_settings as Record<string, boolean>);
     } else {
       // Set default values
       const defaultSettings = privacySettings.reduce((acc, setting) => {

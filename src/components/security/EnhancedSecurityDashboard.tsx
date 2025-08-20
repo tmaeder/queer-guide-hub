@@ -91,7 +91,7 @@ export function EnhancedSecurityDashboard() {
         id: alert.id,
         type: alert.event_type,
         severity: alert.severity as 'critical' | 'high' | 'medium',
-        message: alert.metadata?.message || `Security event: ${alert.event_type}`,
+        message: (alert.metadata as any)?.message || `Security event: ${alert.event_type}`,
         timestamp: alert.created_at,
         resolved: false
       }));
