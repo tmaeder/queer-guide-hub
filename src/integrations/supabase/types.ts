@@ -6458,6 +6458,14 @@ export type Database = {
         Args: { password_text: string }
         Returns: Json
       }
+      validate_profile_access: {
+        Args: {
+          access_type?: string
+          profile_user_id: string
+          requesting_user_id: string
+        }
+        Returns: boolean
+      }
       your_function_name: {
         Args: Record<PropertyKey, never>
         Returns: undefined
