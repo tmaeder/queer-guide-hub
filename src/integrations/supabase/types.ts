@@ -3829,6 +3829,54 @@ export type Database = {
         }
         Relationships: []
       }
+      placeholder_images: {
+        Row: {
+          category: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          file_size: number | null
+          filename: string
+          height: number | null
+          id: string
+          is_active: boolean | null
+          mime_type: string | null
+          storage_path: string
+          updated_at: string | null
+          width: number | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          file_size?: number | null
+          filename: string
+          height?: number | null
+          id?: string
+          is_active?: boolean | null
+          mime_type?: string | null
+          storage_path: string
+          updated_at?: string | null
+          width?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          file_size?: number | null
+          filename?: string
+          height?: number | null
+          id?: string
+          is_active?: boolean | null
+          mime_type?: string | null
+          storage_path?: string
+          updated_at?: string | null
+          width?: number | null
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string
@@ -6327,6 +6375,10 @@ export type Database = {
       validate_password_enhanced: {
         Args: { password_text: string }
         Returns: Json
+      }
+      your_function_name: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {
