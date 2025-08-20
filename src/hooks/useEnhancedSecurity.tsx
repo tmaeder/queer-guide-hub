@@ -163,7 +163,7 @@ export function useEnhancedSecurity() {
           throw new Error('Invalid access type');
       }
 
-      const { data, error } = await supabase.rpc(accessFunction, params);
+      const { data, error } = await supabase.rpc(accessFunction as any, params);
       
       if (error) throw error;
       

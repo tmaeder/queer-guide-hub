@@ -167,7 +167,7 @@ export default function UserProfile() {
                   {profile.display_name?.charAt(0)?.toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
-              {profile.verified_identity && (
+              {(profile as any)?.verified_identity && (
                 <Badge variant="secondary" className="mb-2">
                   <Check className="h-3 w-3 mr-1" />
                   Verified
@@ -188,10 +188,10 @@ export default function UserProfile() {
                 
                 <div className="flex flex-wrap gap-3 text-muted-foreground mb-3">
                   {profile.pronouns && <span>{profile.pronouns}</span>}
-                  {profile.age_range && (
+                  {(profile as any)?.age_range && (
                     <>
                       {profile.pronouns && <span>•</span>}
-                      <span>{profile.age_range}</span>
+                      <span>{(profile as any).age_range}</span>
                     </>
                   )}
                   {profile.location && (

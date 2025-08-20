@@ -18,6 +18,13 @@ interface PublicProfileData {
   occupation?: string;
   education?: string;
   privacy_settings?: any;
+  verified_identity?: boolean;
+  age_range?: string;
+  phone?: string;
+  gender_identity?: string;
+  sexual_orientation?: string;
+  relationship_status?: string;
+  income_range?: string;
 }
 
 export function useSecurePublicProfile(targetUserId?: string) {
@@ -50,7 +57,7 @@ export function useSecurePublicProfile(targetUserId?: string) {
           return;
         }
 
-        setProfile(data);
+        setProfile(data as PublicProfileData);
         return;
       }
 
@@ -71,7 +78,7 @@ export function useSecurePublicProfile(targetUserId?: string) {
         return;
       }
 
-      setProfile(data as PublicProfileData);
+      setProfile(data as unknown as PublicProfileData);
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
       setError('Failed to load profile data');
