@@ -6228,6 +6228,10 @@ export type Database = {
         Args: { user1_id: string; user2_id: string }
         Returns: string
       }
+      get_public_profile_safe: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       get_secure_profile_data: {
         Args: { target_user_id: string }
         Returns: Json

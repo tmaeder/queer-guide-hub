@@ -1,27 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, 
   MapPin, 
   Calendar, 
-  Briefcase, 
-  GraduationCap, 
-  Heart, 
-  Users, 
-  Globe, 
-  Phone, 
   Check,
   Shield,
   User,
-  MessageCircle,
   Share2,
   Flag
 } from 'lucide-react';
@@ -31,11 +21,10 @@ import { UserRelationshipActions } from '@/components/profile/UserRelationshipAc
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { UserPostsList } from '@/components/posts/UserPostsList';
+import { SecureProfileViewer } from '@/components/profile/SecureProfileViewer';
+import { useSecurePublicProfile } from '@/hooks/useSecurePublicProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Tables } from '@/integrations/supabase/types';
-
-type Profile = Tables<"profiles">;
 
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -43,34 +32,14 @@ export default function UserProfile() {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
 
-  const { data: profile, isLoading, error } = useQuery({
-    queryKey: ['user-profile', userId],
-    queryFn: async () => {
-      if (!userId) throw new Error('User ID is required');
-      
-      let dataRes: any = null; let errorRes: any = null;
-      if (currentUser?.id === userId) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .maybeSingle();
-        dataRes = data; errorRes = error;
-      } else {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .maybeSingle();
-        dataRes = data; errorRes = error;
-      }
-      if (errorRes) throw errorRes;
-      return dataRes as Profile;
-    },
-    enabled: !!userId,
-  });
-
-  const isOwnProfile = currentUser?.id === userId;
+  // Use the new secure profile hook
+  const { 
+    profile, 
+    loading: isLoading, 
+    error, 
+    isOwnProfile,
+    canViewSensitiveField
+  } = useSecurePublicProfile(userId);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -280,62 +249,10 @@ export default function UserProfile() {
         </TabsList>
 
         <TabsContent value="about" className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {profile.occupation && (
-                  <div className="flex items-center gap-3">
-                    <Briefcase className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">Occupation</p>
-                      <p className="text-muted-foreground">{profile.occupation}</p>
-                    </div>
-                  </div>
-                )}
-                
-                {profile.education && (
-                  <div className="flex items-center gap-3">
-                    <GraduationCap className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">Education</p>
-                      <p className="text-muted-foreground">{profile.education}</p>
-                    </div>
-                  </div>
-                )}
-
-                {profile.relationship_status && (
-                  <div className="flex items-center gap-3">
-                    <Heart className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">Relationship Status</p>
-                      <p className="text-muted-foreground">{profile.relationship_status}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Interests */}
-              {profile.interests && Array.isArray(profile.interests) && profile.interests.length > 0 && (
-                <div className="space-y-3">
-                  <Separator />
-                  <div>
-                    <h3 className="font-medium mb-2">Interests</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {(profile.interests as string[]).map((interest, index) => (
-                        <Badge key={index} variant="secondary">
-                          {interest}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <SecureProfileViewer 
+            profile={profile}
+            isOwnProfile={isOwnProfile}
+          />
         </TabsContent>
 
         <TabsContent value="posts" className="space-y-6">
@@ -347,84 +264,27 @@ export default function UserProfile() {
         </TabsContent>
 
         <TabsContent value="identity" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Identity & Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {profile.gender_identity && (
-                  <div>
-                    <p className="font-medium">Gender Identity</p>
-                    <p className="text-muted-foreground">{profile.gender_identity}</p>
-                  </div>
-                )}
-
-                {(profile as any)?.sexual_orientation && (
-                  <div>
-                    <p className="font-medium">Sexual Orientation</p>
-                    <p className="text-muted-foreground">{(profile as any).sexual_orientation}</p>
-                  </div>
-                )}
-
-                {(profile as any)?.chosen_name && (
-                  <div>
-                    <p className="font-medium">Chosen Name</p>
-                    <p className="text-muted-foreground">{(profile as any).chosen_name}</p>
-                  </div>
-                )}
-
-                {(profile as any)?.name_pronunciation && (
-                  <div>
-                    <p className="font-medium">Name Pronunciation</p>
-                    <p className="text-muted-foreground">{(profile as any).name_pronunciation}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Identity information is now handled securely in SecureProfileViewer */}
+          <div className="text-center py-8">
+            <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Protected Information</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Identity and personal details are protected by privacy settings. 
+              Only information you've chosen to make public will be visible to others.
+            </p>
+          </div>
         </TabsContent>
 
         <TabsContent value="contact" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                {profile.website && (
-                  <div className="flex items-center gap-3">
-                    <Globe className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">Website</p>
-                      <a 
-                        href={profile.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {profile.website}
-                      </a>
-                    </div>
-                  </div>
-                )}
-
-                {profile.phone && (profile.privacy_settings as any)?.phone_visible && (
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">Phone</p>
-                      <p className="text-muted-foreground">{profile.phone}</p>
-                    </div>
-                  </div>
-                )}
-
-                <SocialLinksDisplay 
-                  socialLinks={profile.social_links as any} 
-                />
-              </div>
-            </CardContent>
-          </Card>
+          {/* Contact information is now handled securely in SecureProfileViewer */}
+          <div className="text-center py-8">
+            <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Contact Privacy</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Contact details are protected. Only users who have made their contact information 
+              public will have it displayed here.
+            </p>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
