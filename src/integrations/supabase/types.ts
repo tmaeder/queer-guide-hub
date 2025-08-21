@@ -3706,6 +3706,8 @@ export type Database = {
           profession: string | null
           profile_url: string | null
           pronouns: string | null
+          regulatory_notes: string | null
+          sanctions_status: string | null
           social_links: Json | null
           tags: string[] | null
           top_book: string | null
@@ -3737,6 +3739,8 @@ export type Database = {
           profession?: string | null
           profile_url?: string | null
           pronouns?: string | null
+          regulatory_notes?: string | null
+          sanctions_status?: string | null
           social_links?: Json | null
           tags?: string[] | null
           top_book?: string | null
@@ -3768,6 +3772,8 @@ export type Database = {
           profession?: string | null
           profile_url?: string | null
           pronouns?: string | null
+          regulatory_notes?: string | null
+          sanctions_status?: string | null
           social_links?: Json | null
           tags?: string[] | null
           top_book?: string | null
