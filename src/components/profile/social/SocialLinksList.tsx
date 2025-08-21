@@ -41,8 +41,7 @@ export function SocialLinksList({
       {/* Popular Platforms */}
       <div>
         <h3 className="text-lg font-medium mb-4">Popular Platforms</h3>
-        <div className="space-y-4">
-          {POPULAR_PLATFORMS.map((platformConfig) => {
+        {POPULAR_PLATFORMS.map((platformConfig) => {
             const Icon = platformConfig.icon;
             const platformKey = platformConfig.platform.toLowerCase().replace(/\s/g, '');
             const currentValue = socialLinks[platformKey] || '';
@@ -88,7 +87,6 @@ export function SocialLinksList({
               </div>
             );
           })}
-        </div>
       </div>
 
       {/* Custom Links */}
