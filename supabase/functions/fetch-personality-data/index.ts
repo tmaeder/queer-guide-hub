@@ -354,10 +354,13 @@ serve(async (req) => {
       }
     }
 
-    // Step 5: Fetch OpenSanctions data
+    // Step 5: Fetch Celebrity API data
+    const celebrityData = await fetchCelebrityData(name);
+
+    // Step 6: Fetch OpenSanctions data
     const openSanctionsData = await fetchOpenSanctionsData(name);
 
-    // Step 6: Enhanced AI-powered LGBTI/queer community analysis
+    // Step 7: Enhanced AI-powered LGBTI/queer community analysis
     const enhancedData = await enhanceWithLGBTIContext({
       name,
       description,
@@ -371,7 +374,8 @@ serve(async (req) => {
       image_url: imageUrl,
       website_url: websiteUrl,
       fields,
-      openSanctionsData
+      openSanctionsData,
+      celebrityData
     });
 
     console.log('Returning enhanced personality data:', enhancedData)
@@ -421,14 +425,22 @@ Birth Date: ${basicData.birth_date || 'Not specified'}
 Death Date: ${basicData.death_date || 'Still living'}
 Is Living: ${basicData.is_living}
 Website URL: ${basicData.website_url || 'Not provided'}
-OpenSanctions Data: ${basicData.openSanctionsData ? JSON.stringify(basicData.openSanctionsData, null, 2) : 'No sanctions data available'}
+
+CELEBRITY API DATA (ADDITIONAL CONTEXT):
+=========================================
+${basicData.celebrityData ? JSON.stringify(basicData.celebrityData, null, 2) : 'No celebrity data available'}
+
+OPENSANCTIONS DATA:
+==================
+${basicData.openSanctionsData ? JSON.stringify(basicData.openSanctionsData, null, 2) : 'No sanctions data available'}
 
 INSTRUCTIONS:
-You MUST base your response ONLY on the Wikipedia content provided above. Do NOT add, contradict, or modify any factual information from Wikipedia. Your role is to:
+You MUST base your response ONLY on the Wikipedia content provided above. The Celebrity API data can be used as additional context to cross-verify information, but NEVER contradict Wikipedia. Your role is to:
 
 1. Preserve all Wikipedia facts exactly as stated
 2. Only enhance with LGBTI context if it's explicitly mentioned or clearly implied in the Wikipedia content
-3. If no LGBTI connection is mentioned in Wikipedia, state that clearly
+3. Use Celebrity API data only to complement, never contradict Wikipedia
+4. If no LGBTI connection is mentioned in Wikipedia, state that clearly
 
 Please provide enhanced information in JSON format with these fields:
 1. "name" - Keep exactly: ${basicData.name}
@@ -448,6 +460,7 @@ CRITICAL RULES:
 - If Wikipedia doesn't mention LGBTI connection, clearly state "none_known"
 - Preserve all Wikipedia dates, places, and factual details exactly
 - Only reorganize and clarify the existing Wikipedia content
+- Celebrity API data is ONLY for additional context, not primary facts
 
 Return ONLY valid JSON, no additional text.`;
 
@@ -578,6 +591,78 @@ async function fetchOpenSanctionsData(name: string): Promise<any | null> {
 
   } catch (error) {
     console.error(`Error fetching OpenSanctions data for ${name}:`, error);
+    return null;
+  }
+}
+
+async function fetchCelebrityData(name: string): Promise<any | null> {
+  try {
+    const apiNinjasKey = Deno.env.get('API_NINJAS_KEY');
+    if (!apiNinjasKey) {
+      console.log('API Ninjas key not found, skipping celebrity data');
+      return null;
+    }
+
+    console.log(`Fetching Celebrity API data for: ${name}`);
+    
+    // Celebrity API from api-ninjas.com
+    const celebrityUrl = `https://api.api-ninjas.com/v1/celebrity?name=${encodeURIComponent(name)}`;
+    
+    const response = await fetch(celebrityUrl, {
+      headers: {
+        'X-Api-Key': apiNinjasKey,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      console.log(`Celebrity API returned ${response.status} for: ${name}`);
+      return null;
+    }
+
+    const data = await response.json();
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      console.log(`No Celebrity API results found for: ${name}`);
+      return null;
+    }
+
+    // Find the best match (exact name match first, then partial match)
+    let bestMatch = null;
+    
+    for (const celebrity of data) {
+      if (celebrity.name && celebrity.name.toLowerCase() === name.toLowerCase()) {
+        bestMatch = celebrity;
+        break;
+      }
+    }
+    
+    // If no exact match, take the first result
+    if (!bestMatch && data.length > 0) {
+      bestMatch = data[0];
+    }
+
+    if (!bestMatch) {
+      console.log(`No suitable Celebrity API match found for: ${name}`);
+      return null;
+    }
+
+    console.log(`Found Celebrity API match for ${name}: ${bestMatch.name || 'Unknown'}`);
+    
+    return {
+      name: bestMatch.name,
+      net_worth: bestMatch.net_worth,
+      gender: bestMatch.gender,
+      nationality: bestMatch.nationality,
+      occupation: bestMatch.occupation,
+      height: bestMatch.height,
+      birthday: bestMatch.birthday,
+      age: bestMatch.age,
+      is_alive: bestMatch.is_alive
+    };
+
+  } catch (error) {
+    console.error(`Error fetching Celebrity API data for ${name}:`, error);
     return null;
   }
 }
