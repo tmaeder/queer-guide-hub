@@ -86,6 +86,45 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_api_keys: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          encrypted_key: string
+          id: string
+          is_active: boolean
+          key_name: string
+          last_used_at: string | null
+          service_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          encrypted_key: string
+          id?: string
+          is_active?: boolean
+          key_name: string
+          last_used_at?: string | null
+          service_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          encrypted_key?: string
+          id?: string
+          is_active?: boolean
+          key_name?: string
+          last_used_at?: string | null
+          service_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       amenities: {
         Row: {
           icon_name: string | null
