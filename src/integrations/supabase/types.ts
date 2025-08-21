@@ -3698,6 +3698,8 @@ export type Database = {
           image_url: string | null
           is_featured: boolean | null
           is_living: boolean | null
+          lgbti_connection: string | null
+          lgbti_details: string | null
           name: string
           nationality: string | null
           next_concerts: Json | null
@@ -3727,6 +3729,8 @@ export type Database = {
           image_url?: string | null
           is_featured?: boolean | null
           is_living?: boolean | null
+          lgbti_connection?: string | null
+          lgbti_details?: string | null
           name: string
           nationality?: string | null
           next_concerts?: Json | null
@@ -3756,6 +3760,8 @@ export type Database = {
           image_url?: string | null
           is_featured?: boolean | null
           is_living?: boolean | null
+          lgbti_connection?: string | null
+          lgbti_details?: string | null
           name?: string
           nationality?: string | null
           next_concerts?: Json | null
