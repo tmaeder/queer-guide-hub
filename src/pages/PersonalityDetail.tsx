@@ -210,159 +210,179 @@ export default function PersonalityDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
-      <main className="container mx-auto px-4 py-8 max-w-5xl">
-        {/* Navigation */}
-        <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/personalities')}
-            className="gap-2 hover:bg-accent/50"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Personalities
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/5 to-primary/5 animate-fade-in">
+      {/* Header with improved navigation */}
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4 max-w-5xl">
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/personalities')}
+              className="gap-2 hover:bg-accent/50 hover-scale transition-all duration-200"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Personalities
+            </Button>
+            
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleShare}
+                className="gap-2 hover-scale transition-all duration-200"
+                title="Share this personality"
+              >
+                <Share2 className="h-4 w-4" />
+                Share
+              </Button>
+            </div>
+          </div>
         </div>
+      </header>
 
-        {/* Hero Section with Background */}
-        <div className="relative mb-8">
-          {/* Hero Background */}
-          <div className="h-48 md:h-64 bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 rounded-2xl mb-6 relative overflow-hidden">
+      <main className="container mx-auto px-4 py-8 max-w-5xl">
+        {/* Hero Section with improved design */}
+        <section className="relative mb-12 animate-scale-in">
+          {/* Hero Background with better gradients */}
+          <div className="h-56 md:h-72 bg-gradient-to-r from-primary/20 via-accent/15 to-secondary/20 rounded-3xl mb-8 relative overflow-hidden shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
             <div className="absolute inset-0 opacity-30" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grain' width='20' height='20' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='1' cy='1' r='1' fill='currentColor' opacity='0.05'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23grain)'/%3E%3C/svg%3E")`
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='currentColor' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
             }} />
           </div>
           
-          {/* Profile Card Overlay */}
-          <Card className="relative -mt-32 mx-4 md:mx-8 shadow-2xl border-0 bg-card/95 backdrop-blur-sm">
-            <CardContent className="pt-8 pb-6">
-              <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-                {/* Avatar */}
-                <div className="relative">
-                  <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
-                    <AvatarImage src={personality.image_url || ''} alt={personality.name} />
-                    <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary to-accent text-primary-foreground">
+          {/* Profile Card with enhanced styling */}
+          <Card className="relative -mt-36 mx-4 md:mx-8 shadow-2xl border-0 bg-card/95 backdrop-blur-md ring-1 ring-border/50 hover:ring-primary/20 transition-all duration-500 animate-fade-in">
+            <CardContent className="pt-10 pb-8">
+              <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+                {/* Enhanced Avatar */}
+                <div className="relative group">
+                  <Avatar className="h-40 w-40 border-4 border-background shadow-2xl ring-4 ring-primary/10 group-hover:ring-primary/20 transition-all duration-300">
+                    <AvatarImage 
+                      src={personality.image_url || ''} 
+                      alt={personality.name}
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary via-primary/80 to-accent text-primary-foreground">
                       {getInitials(personality.name)}
                     </AvatarFallback>
                   </Avatar>
-                  {/* Verification Badge */}
+                  
+                  {/* Enhanced Verification Badge */}
                   {personality.verification_status === 'verified' && (
-                    <div className="absolute -bottom-2 -right-2 bg-background rounded-full p-1 shadow-lg">
+                    <div className="absolute -bottom-2 -right-2 bg-background rounded-full p-2 shadow-xl ring-2 ring-background animate-pulse">
                       {getVerificationIcon(personality.verification_status)}
                     </div>
                   )}
+                  
+                  {/* Living Status Indicator */}
+                  <div className="absolute -top-2 -left-2">
+                    {personality.is_living ? (
+                      <div className="flex items-center gap-1 bg-green-500/90 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg animate-pulse">
+                        <Heart className="h-3 w-3" />
+                        Living
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 bg-muted/90 text-muted-foreground px-3 py-1 rounded-full text-xs font-medium shadow-lg">
+                        <Calendar className="h-3 w-3" />
+                        Historical
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
-                {/* Profile Info */}
-                <div className="flex-1 text-center md:text-left">
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-                    <div>
-                      <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-                        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
-                          {personality.name}
-                        </h1>
-                        {personality.is_featured && (
-                          <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-                            <Star className="h-3 w-3 fill-current" />
-                            Featured
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      {personality.pronouns && (
-                        <p className="text-muted-foreground mb-3 text-lg">({personality.pronouns})</p>
-                      )}
-                      
-                      {personality.description && (
-                        <p className="text-lg text-muted-foreground mb-4 leading-relaxed max-w-2xl">
-                          {personality.description}
-                        </p>
+                {/* Enhanced Profile Info */}
+                <div className="flex-1 text-center lg:text-left space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center lg:justify-start gap-3 flex-wrap">
+                      <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent leading-tight">
+                        {personality.name}
+                      </h1>
+                      {personality.is_featured && (
+                        <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg animate-pulse">
+                          <Star className="h-4 w-4 fill-current" />
+                          Featured
+                        </Badge>
                       )}
                     </div>
                     
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="icon"
-                        onClick={handleShare}
-                        className="shadow-sm"
-                        title="Share this personality"
-                      >
-                        <Share2 className="h-4 w-4" />
-                      </Button>
+                    {personality.pronouns && (
+                      <p className="text-muted-foreground text-xl font-medium">({personality.pronouns})</p>
+                    )}
+                    
+                    {personality.description && (
+                      <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto lg:mx-0">
+                        {personality.description}
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* Enhanced Fields Tags */}
+                  {personality.fields.length > 0 && (
+                    <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+                      {personality.fields.map((field, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="secondary" 
+                          className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors duration-200 hover-scale"
+                        >
+                          {field}
+                        </Badge>
+                      ))}
                     </div>
-                  </div>
+                  )}
                   
-                  {/* Fields Tags */}
-                  <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
-                    {personality.fields.map((field, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="secondary" 
-                        className="bg-accent/50 hover:bg-accent text-accent-foreground"
-                      >
-                        {field}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  {/* Stats and Links */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground justify-center md:justify-start">
-                    <div className="flex items-center gap-1">
-                      <Eye className="h-4 w-4" />
-                      <span className="font-medium">{personality.view_count.toLocaleString()}</span> views
+                  {/* Enhanced Stats and Links */}
+                  <div className="flex flex-wrap items-center gap-6 text-sm justify-center lg:justify-start pt-4 border-t border-border/50">
+                    <div className="flex items-center gap-2 bg-muted/50 px-3 py-2 rounded-full">
+                      <Eye className="h-4 w-4 text-primary" />
+                      <span className="font-semibold">{personality.view_count.toLocaleString()}</span>
+                      <span className="text-muted-foreground">views</span>
                     </div>
                     
-                    {/* Social Links */}
+                    {/* Enhanced Social Links */}
                     {personality.social_links && Object.keys(personality.social_links).length > 0 && (
-                      <>
-                        <Separator orientation="vertical" className="h-4" />
-                        <div className="flex items-center gap-2">
-                          <SocialLinksDisplay 
-                            socialLinks={personality.social_links} 
-                            size="sm"
-                          />
-                        </div>
-                      </>
+                      <div className="flex items-center gap-2">
+                        <SocialLinksDisplay 
+                          socialLinks={personality.social_links} 
+                          size="sm"
+                        />
+                      </div>
                     )}
                     
                     {personality.website_url && (
-                      <>
-                        <Separator orientation="vertical" className="h-4" />
-                        <Button variant="link" size="sm" asChild className="p-0 h-auto text-primary">
-                          <a href={personality.website_url} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            Official Website
-                          </a>
-                        </Button>
-                      </>
+                      <Button variant="outline" size="sm" asChild className="hover-scale transition-all duration-200">
+                        <a href={personality.website_url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Official Website
+                        </a>
+                      </Button>
                     )}
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </section>
 
-        {/* Content Grid */}
+        {/* Enhanced Content Grid */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+          {/* Main Content with improved cards */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Biography */}
+            {/* Enhanced Biography */}
             {personality.bio && (
-              <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-2xl flex items-center gap-2">
-                    <div className="h-1 w-8 bg-gradient-to-r from-primary to-accent rounded-full" />
+              <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm ring-1 ring-border/50 hover:ring-primary/20 transition-all duration-300 animate-fade-in">
+                <CardHeader className="pb-6">
+                  <CardTitle className="text-2xl flex items-center gap-3">
+                    <div className="h-2 w-12 bg-gradient-to-r from-primary to-accent rounded-full" />
                     Biography
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="prose prose-lg dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+                  <div className="prose prose-lg dark:prose-invert max-w-none text-muted-foreground leading-relaxed space-y-4">
                     {personality.bio.split('\n').map((paragraph, index) => (
                       paragraph.trim() && (
-                        <p key={index} className="mb-4 last:mb-0">
+                        <p key={index} className="text-base leading-relaxed">
                           {paragraph}
                         </p>
                       )
@@ -372,21 +392,21 @@ export default function PersonalityDetail() {
               </Card>
             )}
 
-            {/* Achievements */}
+            {/* Enhanced Achievements */}
             {personality.achievements.length > 0 && (
-              <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-2xl flex items-center gap-2">
-                    <div className="h-1 w-8 bg-gradient-to-r from-accent to-secondary rounded-full" />
+              <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm ring-1 ring-border/50 hover:ring-primary/20 transition-all duration-300 animate-fade-in">
+                <CardHeader className="pb-6">
+                  <CardTitle className="text-2xl flex items-center gap-3">
+                    <div className="h-2 w-12 bg-gradient-to-r from-accent to-secondary rounded-full" />
                     Notable Achievements
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {personality.achievements.map((achievement, index) => (
-                      <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-accent/20 border border-accent/30">
-                        <div className="h-2 w-2 rounded-full bg-accent mt-2 flex-shrink-0" />
-                        <span className="text-muted-foreground leading-relaxed">{achievement}</span>
+                      <div key={index} className="group flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/10 hover:border-primary/20 transition-all duration-200 hover-scale">
+                        <div className="h-3 w-3 rounded-full bg-gradient-to-r from-primary to-accent mt-1.5 flex-shrink-0 group-hover:scale-125 transition-transform duration-200" />
+                        <span className="text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors duration-200">{achievement}</span>
                       </div>
                     ))}
                   </div>
@@ -395,46 +415,46 @@ export default function PersonalityDetail() {
             )}
           </div>
 
-          {/* Sidebar */}
+          {/* Enhanced Sidebar */}
           <div className="space-y-6">
-            {/* Personal Information */}
-            <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <div className="h-1 w-6 bg-gradient-to-r from-secondary to-primary rounded-full" />
+            {/* Enhanced Personal Information */}
+            <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm ring-1 ring-border/50 hover:ring-primary/20 transition-all duration-300 animate-fade-in">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-xl flex items-center gap-3">
+                  <div className="h-2 w-8 bg-gradient-to-r from-secondary to-primary rounded-full" />
                   Personal Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {personality.profession && (
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-secondary/20">
-                    <Briefcase className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
+                  <div className="group flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-secondary/10 to-secondary/5 border border-secondary/20 hover:border-secondary/30 transition-all duration-200 hover-scale">
+                    <Briefcase className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Profession</p>
-                      <p className="font-medium">{personality.profession}</p>
+                      <p className="text-sm text-muted-foreground font-medium">Profession</p>
+                      <p className="font-semibold text-foreground group-hover:text-secondary transition-colors duration-200">{personality.profession}</p>
                     </div>
                   </div>
                 )}
                 
                 {personality.birth_place && (
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-accent/20">
-                    <MapPin className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
+                  <div className="group flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-accent/10 to-accent/5 border border-accent/20 hover:border-accent/30 transition-all duration-200 hover-scale">
+                    <MapPin className="h-5 w-5 text-accent mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Location</p>
-                      <p className="font-medium">{personality.birth_place}</p>
+                      <p className="text-sm text-muted-foreground font-medium">Location</p>
+                      <p className="font-semibold text-foreground group-hover:text-accent transition-colors duration-200">{personality.birth_place}</p>
                       {personality.nationality && personality.nationality !== personality.birth_place && (
-                        <p className="text-sm text-muted-foreground">{personality.nationality}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{personality.nationality}</p>
                       )}
                     </div>
                   </div>
                 )}
                 
                 {personality.birth_date && (
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/20">
-                    <Calendar className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="group flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/30 transition-all duration-200 hover-scale">
+                    <Calendar className="h-5 w-5 text-primary mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Birth Date</p>
-                      <p className="font-medium">
+                      <p className="text-sm text-muted-foreground font-medium">Birth Date</p>
+                      <p className="font-semibold text-foreground group-hover:text-primary transition-colors duration-200">
                         {new Date(personality.birth_date).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
@@ -442,9 +462,9 @@ export default function PersonalityDetail() {
                         })}
                       </p>
                       {personality.is_living ? (
-                        <p className="text-sm text-muted-foreground">Age {calculateAge(personality.birth_date)}</p>
+                        <p className="text-sm text-muted-foreground mt-1">Age {calculateAge(personality.birth_date)}</p>
                       ) : personality.death_date && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground mt-1">
                           Died {new Date(personality.death_date).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -456,35 +476,35 @@ export default function PersonalityDetail() {
                   </div>
                 )}
                 
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <Users className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <div className="group flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 border border-muted/40 hover:border-muted/60 transition-all duration-200 hover-scale">
+                  <Users className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Status</p>
-                    <div className="flex items-center gap-2">
-                      <div className={`h-2 w-2 rounded-full ${personality.is_living ? 'bg-green-500' : 'bg-gray-400'}`} />
-                      <p className="font-medium">{personality.is_living ? 'Living' : 'Deceased'}</p>
+                    <p className="text-sm text-muted-foreground font-medium">Status</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className={`h-3 w-3 rounded-full shadow-lg ${personality.is_living ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                      <p className="font-semibold text-foreground">{personality.is_living ? 'Living' : 'Deceased'}</p>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* External Links */}
+            {/* Enhanced External Links */}
             {(personality as any).rawFields?.pornhub_profile && (
-              <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <div className="h-1 w-6 bg-gradient-to-r from-pink-500 to-red-500 rounded-full" />
+              <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm ring-1 ring-border/50 hover:ring-primary/20 transition-all duration-300 animate-fade-in">
+                <CardHeader className="pb-6">
+                  <CardTitle className="text-xl flex items-center gap-3">
+                    <div className="h-2 w-8 bg-gradient-to-r from-pink-500 to-red-500 rounded-full" />
                     External Profiles
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-pink-500/10 border border-pink-500/20">
-                      <ExternalLink className="h-5 w-5 text-pink-500 flex-shrink-0" />
+                    <div className="group flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-pink-500/10 to-red-500/10 border border-pink-500/20 hover:border-pink-500/30 transition-all duration-200 hover-scale">
+                      <ExternalLink className="h-5 w-5 text-pink-500 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" />
                       <div className="flex-1">
-                        <p className="text-sm text-muted-foreground">Pornhub Profile</p>
-                        <Button variant="link" size="sm" asChild className="p-0 h-auto text-pink-500 hover:text-pink-600">
+                        <p className="text-sm text-muted-foreground font-medium">Pornhub Profile</p>
+                        <Button variant="link" size="sm" asChild className="p-0 h-auto text-pink-500 hover:text-pink-600 font-semibold">
                           <a href={(personality as any).rawFields.pornhub_profile} target="_blank" rel="noopener noreferrer">
                             View Profile
                           </a>
@@ -496,12 +516,12 @@ export default function PersonalityDetail() {
               </Card>
             )}
 
-            {/* Tags */}
+            {/* Enhanced Tags */}
             {personality.tags && personality.tags.length > 0 && (
-              <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <div className="h-1 w-6 bg-gradient-to-r from-primary to-secondary rounded-full" />
+              <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm ring-1 ring-border/50 hover:ring-primary/20 transition-all duration-300 animate-fade-in">
+                <CardHeader className="pb-6">
+                  <CardTitle className="text-xl flex items-center gap-3">
+                    <div className="h-2 w-8 bg-gradient-to-r from-primary to-secondary rounded-full" />
                     Tags
                   </CardTitle>
                 </CardHeader>
@@ -511,7 +531,7 @@ export default function PersonalityDetail() {
                       <Badge 
                         key={index} 
                         variant="outline" 
-                        className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20 hover:from-primary/20 hover:to-accent/20 transition-all duration-200"
+                        className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20 hover:from-primary/20 hover:to-accent/20 hover:border-primary/30 transition-all duration-200 hover-scale font-medium"
                       >
                         {tag}
                       </Badge>
