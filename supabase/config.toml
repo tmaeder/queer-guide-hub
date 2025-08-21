@@ -176,3 +176,9 @@ verify_jwt = false
 
 [functions.import-adult-models-csv]
 verify_jwt = true
+
+[functions.manage-api-keys]
+verify_jwt = true
+
+[functions.get-api-key]
+verify_jwt = false
