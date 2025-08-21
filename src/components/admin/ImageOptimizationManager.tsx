@@ -24,6 +24,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { supabase } from '@/integrations/supabase/client';
+import { AdminRoleRequest } from './AdminRoleRequest';
 
 interface ImageFile {
   fileName: string;
@@ -234,14 +235,7 @@ export function ImageOptimizationManager() {
   };
 
   if (!isAdmin) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <h2 className="text-2xl font-semibold mb-2">Access Denied</h2>
-          <p className="text-muted-foreground">You need admin privileges to access image optimization.</p>
-        </CardContent>
-      </Card>
-    );
+    return <AdminRoleRequest />;
   }
 
   return (
