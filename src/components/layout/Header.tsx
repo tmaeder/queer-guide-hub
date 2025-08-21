@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck, Map, Smile, Handshake, Home, Leaf, UsersRound, Rss, Upload, FileEdit } from 'lucide-react';
+import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck, Map, Smile, Handshake, Home, Leaf, UsersRound, Rss } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -14,7 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationList } from '@/components/notifications/NotificationList';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { AdminMenu } from './AdminMenu';
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -29,7 +29,6 @@ export function Header() {
     updateProfile
   } = useProfile();
   const { unreadCount } = useNotifications();
-  const { isAdmin } = useAdminRoles();
   const avatarSrc = profile?.avatar_url || (user?.email ? getGravatarUrl(user.email, 96, 'mp') || undefined : undefined);
   const userModes = [{
     value: 'dating',
@@ -152,6 +151,9 @@ export function Header() {
 
           {/* Right side controls */}
           <div className="flex items-center gap-2">
+            {/* Admin menu - only visible to admins */}
+            <AdminMenu />
+            
             {/* User menu - includes notifications when logged in */}
               {user ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -204,23 +206,7 @@ export function Header() {
                         <item.icon className="h-4 w-4" />
                         <span className="text-xs">{item.label}</span>
                       </Button>
-                    ))}
-                     {isAdmin && (
-                       <>
-                         <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin')}>
-                           <Settings className="h-4 w-4" />
-                           <span className="text-xs">Admin</span>
-                         </Button>
-                         <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin/cms')}>
-                           <FileEdit className="h-4 w-4" />
-                           <span className="text-xs">CMS</span>
-                         </Button>
-                         <Button variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate('/admin/import-hub')}>
-                           <Upload className="h-4 w-4" />
-                           <span className="text-xs">Import</span>
-                         </Button>
-                       </>
-                     )}
+                     ))}
                   </div>
 
                   <DropdownMenuSeparator />
