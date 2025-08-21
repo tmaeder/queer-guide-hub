@@ -14,7 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-type ViewMode = "overview" | "category" | "subcategory" | "search" | "tag-detail";
+type ViewMode = "overview" | "category" | "subcategory" | "search" | "tag-detail" | "professions";
 type DisplayMode = "grid" | "list";
 type SortOption = "alphabetical" | "usage" | "recent" | "popular";
 export default function Ressources() {
@@ -280,6 +280,8 @@ export default function Ressources() {
     } else if (viewMode === "category") {
       setViewMode("overview");
       setSelectedCategory("");
+    } else if (viewMode === "professions") {
+      setViewMode("overview");
     } else if (viewMode === "search") {
       setViewMode("overview");
       setSearchQuery("");
@@ -596,7 +598,7 @@ export default function Ressources() {
                     <Card 
                       className="group cursor-pointer transition-all duration-200 hover:bg-accent/10"
                       onClick={() => {
-                        navigate('/personalities');
+                        setViewMode("professions");
                       }}
                     >
                       <CardContent className="p-6 text-center">
@@ -744,6 +746,54 @@ export default function Ressources() {
                         </Card>
                       );
                     })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Professions View */}
+            {viewMode === "professions" && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <Button variant="outline" onClick={handleBack}>
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Back
+                    </Button>
+                    <div>
+                      <CardTitle className="text-2xl flex items-center gap-2">
+                        <Briefcase className="h-6 w-6 text-primary" />
+                        LGBTQ+ Personalities by Profession
+                      </CardTitle>
+                      <p className="text-muted-foreground text-base">
+                        Explore different professions represented by LGBTQ+ personalities in our directory
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {professions.map((profession, index) => (
+                      <Button 
+                        key={profession} 
+                        variant={selectedProfession === profession ? "default" : "outline"} 
+                        className="h-auto p-4 text-left justify-start transition-all duration-300 hover:scale-105 hover:shadow-lg group"
+                        style={{ animationDelay: `${index * 30}ms` }}
+                        onClick={() => {
+                          if (selectedProfession === profession) {
+                            setSelectedProfession("");
+                            navigate('/personalities');
+                          } else {
+                            setSelectedProfession(profession);
+                            navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
+                          }
+                        }}
+                      >
+                        <div className="truncate font-medium group-hover:text-primary transition-colors duration-200">
+                          {profession}
+                        </div>
+                      </Button>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
