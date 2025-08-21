@@ -12,6 +12,7 @@ import { Plus, X, Upload, ImageIcon, Search, Loader2 } from "lucide-react";
 import { usePersonalities, Personality } from "@/hooks/usePersonalities";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { PersonalitySelectionDialog } from "./PersonalitySelectionDialog";
 
 interface AddPersonalityDialogProps {
   onSuccess?: () => void;
@@ -74,6 +75,8 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const [uploading, setUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [lookupLoading, setLookupLoading] = useState(false);
+  const [selectionDialogOpen, setSelectionDialogOpen] = useState(false);
+  const [candidates, setCandidates] = useState<any[]>([]);
 
   const handleFieldToggle = (field: string) => {
     setFormData(prev => ({
@@ -199,30 +202,15 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
       if (error) throw error;
 
-      if (data.success && data.data) {
-        const personalityData = data.data;
-        
-        // Prefill the form with the fetched data
-        setFormData(prev => ({
-          ...prev,
-          name: personalityData.name || prev.name,
-          description: personalityData.description || prev.description,
-          bio: personalityData.bio || prev.bio,
-          birth_date: personalityData.birth_date || prev.birth_date,
-          death_date: personalityData.death_date || prev.death_date,
-          is_living: personalityData.is_living !== undefined ? personalityData.is_living : prev.is_living,
-          profession: personalityData.profession || prev.profession,
-          nationality: personalityData.nationality || prev.nationality,
-          birth_place: personalityData.birth_place || prev.birth_place,
-          image_url: personalityData.image_url || prev.image_url,
-          website_url: personalityData.website_url || prev.website_url,
-          fields: personalityData.fields.length > 0 ? personalityData.fields : prev.fields
-        }));
-
-        toast({
-          title: "Success",
-          description: `Data found and prefilled for ${personalityData.name}`,
-        });
+      if (data.success) {
+        if (data.multiple_results && data.candidates) {
+          // Show selection dialog for multiple results
+          setCandidates(data.candidates);
+          setSelectionDialogOpen(true);
+        } else if (data.data) {
+          // Single result, prefill form
+          prefillFormData(data.data);
+        }
       } else {
         toast({
           title: "No data found",
@@ -240,6 +228,58 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     } finally {
       setLookupLoading(false);
     }
+  };
+
+  const handleCandidateSelection = async (candidate: any) => {
+    setLookupLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-personality-data', {
+        body: { 
+          searchTerm: searchTerm.trim(),
+          selectedId: candidate.id 
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success && data.data) {
+        prefillFormData(data.data);
+        setSelectionDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('Error fetching selected personality:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch personality data",
+        variant: "destructive"
+      });
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
+  const prefillFormData = (personalityData: any) => {
+    setFormData(prev => ({
+      ...prev,
+      name: personalityData.name || prev.name,
+      description: personalityData.description || prev.description,
+      bio: personalityData.bio || prev.bio,
+      birth_date: personalityData.birth_date || prev.birth_date,
+      death_date: personalityData.death_date || prev.death_date,
+      is_living: personalityData.is_living !== undefined ? personalityData.is_living : prev.is_living,
+      profession: personalityData.profession || prev.profession,
+      nationality: personalityData.nationality || prev.nationality,
+      birth_place: personalityData.birth_place || prev.birth_place,
+      image_url: personalityData.image_url || prev.image_url,
+      website_url: personalityData.website_url || prev.website_url,
+      fields: personalityData.fields && personalityData.fields.length > 0 ? personalityData.fields : prev.fields
+    }));
+
+    toast({
+      title: "Success",
+      description: `Data found and prefilled for ${personalityData.name}`,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -701,6 +741,15 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
             </Button>
           </div>
         </form>
+
+        <PersonalitySelectionDialog
+          open={selectionDialogOpen}
+          onOpenChange={setSelectionDialogOpen}
+          candidates={candidates}
+          searchTerm={searchTerm}
+          onSelect={handleCandidateSelection}
+          loading={lookupLoading}
+        />
       </DialogContent>
     </Dialog>
   );

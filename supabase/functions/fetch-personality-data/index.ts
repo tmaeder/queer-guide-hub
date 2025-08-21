@@ -38,7 +38,7 @@ serve(async (req) => {
   }
 
   try {
-    const { searchTerm } = await req.json()
+    const { searchTerm, selectedId } = await req.json()
     
     if (!searchTerm || searchTerm.trim().length < 2) {
       return new Response(
@@ -49,11 +49,14 @@ serve(async (req) => {
 
     console.log('Starting enhanced LGBTI-focused search for:', searchTerm)
 
-    // Step 1: Search Wikidata for the person
-    const wikidataSearchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(searchTerm)}&language=en&type=item&format=json&limit=5`
+    let entityId = selectedId;
     
-    const wikidataResponse = await fetch(wikidataSearchUrl)
-    const wikidataData = await wikidataResponse.json()
+    if (!entityId) {
+      // Step 1: Search Wikidata for the person
+      const wikidataSearchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(searchTerm)}&language=en&type=item&format=json&limit=5`
+      
+      const wikidataResponse = await fetch(wikidataSearchUrl)
+      const wikidataData = await wikidataResponse.json()
     
     if (!wikidataData.search || wikidataData.search.length === 0) {
       return new Response(
@@ -62,17 +65,41 @@ serve(async (req) => {
       )
     }
 
-    // Get the first result (most relevant)
-    const firstResult = wikidataData.search[0] as WikidataSearchResult
-    console.log('Found Wikidata entity:', firstResult.id)
+    // If multiple results, return them for user selection
+    if (wikidataData.search.length > 1) {
+      const candidates = wikidataData.search.slice(0, 5).map((result: WikidataSearchResult) => ({
+        id: result.id,
+        title: result.title,
+        description: result.description || 'No description available'
+      }));
+
+      console.log(`Found ${candidates.length} candidates for: ${searchTerm}`);
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          multiple_results: true,
+          candidates,
+          source: 'wikidata_search'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+      // Get the single result
+      const firstResult = wikidataData.search[0] as WikidataSearchResult
+      entityId = firstResult.id;
+    }
+    
+    console.log('Processing Wikidata entity:', entityId)
 
     // Step 2: Get detailed data from Wikidata
-    const wikidataEntityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${firstResult.id}&format=json&props=claims|labels|descriptions|sitelinks`
+    const wikidataEntityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&format=json&props=claims|labels|descriptions|sitelinks`
     
     const entityResponse = await fetch(wikidataEntityUrl)
     const entityData = await entityResponse.json()
     
-    const entity = entityData.entities[firstResult.id]
+    const entity = entityData.entities[entityId]
     if (!entity) {
       throw new Error('Entity not found')
     }
@@ -80,7 +107,7 @@ serve(async (req) => {
     console.log('Processing entity data...')
 
     // Extract basic information
-    const name = entity.labels?.en?.value || firstResult.title
+    const name = entity.labels?.en?.value || searchTerm
     const description = entity.descriptions?.en?.value || ''
     
     // Get Wikipedia page title if available
