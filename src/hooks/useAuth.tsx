@@ -198,6 +198,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setHasPasskey(false);
   };
 
+  // Helper function to check if running in iframe
+  const isInIframe = () => {
+    try {
+      return window.self !== window.top;
+    } catch (e) {
+      return true;
+    }
+  };
+
   const enrollPasskey = async () => {
     try {
       if (!user || !session) {
@@ -207,6 +216,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Check if WebAuthn is supported
       if (!window.PublicKeyCredential) {
         throw new Error('WebAuthn is not supported on this device');
+      }
+
+      // Check if running in iframe (like preview environment)
+      if (isInIframe()) {
+        throw new Error('Passkey setup is not available in preview mode. Please use the deployed app for passkey functionality.');
       }
 
       // Call secure edge function to get challenge and options
@@ -295,6 +309,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Check if WebAuthn is supported
       if (!window.PublicKeyCredential) {
         throw new Error('WebAuthn is not supported on this device');
+      }
+
+      // Check if running in iframe (like preview environment)
+      if (isInIframe()) {
+        throw new Error('Passkey sign-in is not available in preview mode. Please use the deployed app for passkey functionality.');
       }
 
       // Note: For sign-in, we would need to identify the user first
