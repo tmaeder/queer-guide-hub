@@ -20,6 +20,9 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
+import { useOptimizedProfileData } from '@/hooks/useOptimizedProfileData';
+import { OptimizedLoader } from '@/components/loading/OptimizedLoader';
+import OptimizedErrorBoundary, { DataErrorFallback } from '@/components/error/OptimizedErrorBoundary';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
 import { SocialLinksManager } from '@/components/profile/SocialLinksManager';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
@@ -27,7 +30,7 @@ import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 export default function ProfileSettings() {
   const navigate = useNavigate();
   const { user, hasPasskey } = useAuth();
-  const { profile, loading, updateProfile, uploadAvatar } = useProfile();
+  const { updateProfile, uploadAvatar } = useProfile();
   const { toast } = useToast();
 
   // Early returns before any state hooks
@@ -36,17 +39,55 @@ export default function ProfileSettings() {
     return null;
   }
 
-  if (loading) {
+  return (
+    <OptimizedErrorBoundary fallback={DataErrorFallback}>
+      <ProfileSettingsWrapper 
+        updateProfile={updateProfile} 
+        uploadAvatar={uploadAvatar} 
+        toast={toast} 
+        navigate={navigate} 
+        hasPasskey={hasPasskey} 
+        user={user} 
+      />
+    </OptimizedErrorBoundary>
+  );
+}
+
+function ProfileSettingsWrapper({ updateProfile, uploadAvatar, toast, navigate, hasPasskey, user }: any) {
+  const {
+    profile,
+    isLoading,
+    isError,
+    errors,
+    profileLoading,
+    profileError,
+  } = useOptimizedProfileData();
+
+  if (isLoading || profileLoading) {
+    return <OptimizedLoader type="profile" />;
+  }
+
+  if (isError || profileError) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      </div>
+      <DataErrorFallback 
+        error={profileError} 
+        errors={errors}
+        resetErrorBoundary={() => window.location.reload()}
+      />
     );
   }
 
-  return <ProfileSettingsContent profile={profile} updateProfile={updateProfile} uploadAvatar={uploadAvatar} toast={toast} navigate={navigate} hasPasskey={hasPasskey} user={user} />;
+  return (
+    <ProfileSettingsContent 
+      profile={profile} 
+      updateProfile={updateProfile} 
+      uploadAvatar={uploadAvatar} 
+      toast={toast} 
+      navigate={navigate} 
+      hasPasskey={hasPasskey} 
+      user={user} 
+    />
+  );
 }
 
 // Separate component with all the state logic

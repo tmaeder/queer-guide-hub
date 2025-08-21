@@ -1,31 +1,44 @@
 import { QueryClient } from '@tanstack/react-query';
 
-// Optimized query client configuration
+// Optimized query client configuration with better batching and error handling
 export const createOptimizedQueryClient = () => {
   return new QueryClient({
     defaultOptions: {
       queries: {
         // Cache for 5 minutes by default
         staleTime: 5 * 60 * 1000,
-        // Keep in memory for 10 minutes
-        gcTime: 10 * 60 * 1000,
+        // Keep in memory for 15 minutes
+        gcTime: 15 * 60 * 1000,
         // Don't refetch on window focus in production
         refetchOnWindowFocus: process.env.NODE_ENV === 'development',
-        // Retry failed requests with exponential backoff
+        // Aggressive retry strategy with better error handling
         retry: (failureCount, error: any) => {
-          // Don't retry on 4xx errors
+          // Don't retry on authentication errors
+          if (error?.status === 401 || error?.status === 403) {
+            return false;
+          }
+          // Don't retry on client errors except timeout
+          if (error?.status >= 400 && error?.status < 500 && error?.status !== 408) {
+            return false;
+          }
+          // Retry network errors and server errors up to 3 times
+          return failureCount < 3;
+        },
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+        // Network mode for better offline handling
+        networkMode: 'online',
+      },
+      mutations: {
+        // Retry mutations with better error handling
+        retry: (failureCount, error: any) => {
+          // Don't retry client errors
           if (error?.status >= 400 && error?.status < 500) {
             return false;
           }
-          // Retry up to 3 times for other errors
-          return failureCount < 3;
+          return failureCount < 2;
         },
-        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      },
-      mutations: {
-        // Retry mutations once
-        retry: 1,
-        retryDelay: 1000,
+        retryDelay: 1500,
+        networkMode: 'online',
       },
     },
   });
