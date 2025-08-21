@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,51 @@ const FIELD_OPTIONS = [
 export function PersonalitiesFilters({ filters, onFiltersChange }: PersonalitiesFiltersProps) {
   const [searchTerm, setSearchTerm] = useState(filters.search || '');
   const [selectedFields, setSelectedFields] = useState<string[]>(filters.fields || []);
+  const [professions, setProfessions] = useState<string[]>([]);
+  const [loadingProfessions, setLoadingProfessions] = useState(false);
+
+  // Load professions from database
+  useEffect(() => {
+    const fetchProfessions = async () => {
+      setLoadingProfessions(true);
+      try {
+        const { data, error } = await supabase
+          .from('personalities')
+          .select('profession')
+          .not('profession', 'is', null)
+          .neq('profession', '')
+          .eq('visibility', 'public');
+
+        if (error) {
+          console.error('Error fetching professions:', error);
+          return;
+        }
+
+        // Extract unique professions and handle comma-separated values
+        const uniqueProfessions = new Set<string>();
+        
+        data?.forEach(item => {
+          if (item.profession) {
+            // Split by comma and clean up each profession
+            const professionList = item.profession.split(',').map(p => p.trim());
+            professionList.forEach(profession => {
+              if (profession) {
+                uniqueProfessions.add(profession);
+              }
+            });
+          }
+        });
+
+        setProfessions(Array.from(uniqueProfessions).sort());
+      } catch (error) {
+        console.error('Error fetching professions:', error);
+      } finally {
+        setLoadingProfessions(false);
+      }
+    };
+
+    fetchProfessions();
+  }, []);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -55,7 +101,7 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
     onFiltersChange({});
   };
 
-  const hasActiveFilters = searchTerm || selectedFields.length > 0 || filters.is_living !== undefined;
+  const hasActiveFilters = searchTerm || selectedFields.length > 0 || filters.is_living !== undefined || filters.profession;
 
   return (
     <Card>
@@ -93,6 +139,44 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
           </div>
         </div>
 
+        {/* Profession Filter */}
+        <div className="space-y-3">
+          <Label>Profession</Label>
+          <Select
+            value={filters.profession || 'all'}
+            onValueChange={(value) => 
+              onFiltersChange({ 
+                ...filters, 
+                profession: value === 'all' ? undefined : value 
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={loadingProfessions ? "Loading..." : "All Professions"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Professions</SelectItem>
+              {professions.map((profession) => (
+                <SelectItem key={profession} value={profession}>
+                  {profession}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {filters.profession && (
+            <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+              {filters.profession}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-4 w-4 p-0 hover:bg-transparent"
+                onClick={() => onFiltersChange({ ...filters, profession: undefined })}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </Badge>
+          )}
+        </div>
 
         {/* Living Status */}
         <div className="space-y-3">
