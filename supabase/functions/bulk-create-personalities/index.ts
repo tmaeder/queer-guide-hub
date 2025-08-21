@@ -398,35 +398,43 @@ async function enhanceWithLGBTIContext(basicData: any): Promise<any> {
 
     console.log(`Enhancing LGBTI context for: ${basicData.name}`);
 
-    // Create a comprehensive prompt for LGBTI/queer community context
-    const prompt = `You are an expert researcher on LGBTI/queer history and notable figures. Your task is to enhance biographical information with accurate details about a person's relationship to the LGBTI/queer community.
+    // Create a source-based prompt that strictly adheres to existing data
+    const prompt = `You are an expert researcher specializing in LGBTI/queer history. Your task is to enhance biographical information while STRICTLY adhering to the provided source data and never contradicting it.
 
-Person: ${basicData.name}
-Current Description: ${basicData.description || 'Not available'}
-Current Bio: ${basicData.bio || 'Not available'}
-Profession: ${basicData.profession || 'Unknown'}
-Nationality: ${basicData.nationality || 'Unknown'}
-Birth Place: ${basicData.birth_place || 'Unknown'}
-Birth Date: ${basicData.birth_date || 'Unknown'}
+SOURCE DATA FOR: ${basicData.name}
+===========================================
+Description: ${basicData.description || 'Not provided'}
+Biography: ${basicData.bio || 'Not provided'}
+Profession: ${basicData.profession || 'Not specified'}
+Nationality: ${basicData.nationality || 'Not specified'}
+Birth Place: ${basicData.birth_place || 'Not specified'}
+Birth Date: ${basicData.birth_date || 'Not specified'}
 Death Date: ${basicData.death_date || 'Still living'}
 Is Living: ${basicData.is_living}
-OpenSanctions Data: ${basicData.openSanctionsData ? JSON.stringify(basicData.openSanctionsData, null, 2) : 'Not available'}
+OpenSanctions Data: ${basicData.openSanctionsData ? JSON.stringify(basicData.openSanctionsData, null, 2) : 'No sanctions data available'}
+
+INSTRUCTIONS:
+You MUST base your response ONLY on the source data provided above. Do NOT add, contradict, or modify any factual information. Your role is to:
+
+1. Preserve all source facts exactly as stated
+2. Only enhance with LGBTI context if it's explicitly mentioned or clearly implied in the source data
+3. If no LGBTI connection is mentioned in sources, state that clearly
 
 Please provide enhanced information in JSON format with these fields:
-1. "name" - Keep the exact same name
-2. "description" - A concise 1-2 sentence description that MUST include their relationship to the LGBTI/queer community if they are part of it, or clearly state if they are not known to be part of the community
-3. "bio" - An enhanced 2-3 paragraph biography that accurately describes their contributions to LGBTI/queer rights, visibility, or community (if applicable), or explains their allyship/support (if applicable), or clarifies they are not known to be connected to the LGBTI community (if that's the case)
-4. "profession" - Enhanced profession description
-5. "lgbti_connection" - One of: "community_member", "ally", "activist", "none_known", "unclear"
-6. "lgbti_details" - Specific details about their LGBTI identity, activism, or contributions (if any)
+1. "name" - Keep exactly: ${basicData.name}
+2. "description" - Rewrite the source description to be concise (1-2 sentences) while preserving all facts. Only mention LGBTI connection if explicitly stated in source
+3. "bio" - Enhance the source biography by organizing it into 2-3 clear paragraphs while preserving ALL source facts. Only add LGBTI context if explicitly mentioned
+4. "profession" - Use the profession from source data, do not modify
+5. "lgbti_connection" - Based ONLY on source content: "community_member", "ally", "activist", "representation", "none_known", "unclear"
+6. "lgbti_details" - ONLY include details that are explicitly mentioned in the source content
 
-CRITICAL REQUIREMENTS:
-- Be factually accurate - do not invent or assume LGBTI connections that don't exist
-- If someone is not known to be LGBTI or an ally, clearly state that
-- Include specific examples of their LGBTI advocacy, visibility, or community contributions where they exist
-- For historical figures, consider the context of their time period
-- Use respectful, contemporary language for identities and orientations
-- Cite their impact on LGBTI rights, representation, or community building where applicable
+CRITICAL RULES:
+- NEVER contradict source information
+- NEVER add biographical facts not in source data
+- NEVER assume LGBTI connections not explicitly mentioned
+- If source doesn't mention LGBTI connection, clearly state "none_known"
+- Preserve all source dates, places, and factual details exactly
+- Only reorganize and clarify the existing source content
 - If OpenSanctions data is available, accurately reflect any sanctions, PEP status, or regulatory information
 - Be transparent about any compliance or regulatory concerns
 

@@ -300,54 +300,47 @@ async function enhanceWithLGBTIContext(basicData: any): Promise<PersonalityData>
 
     console.log(`Enhancing LGBTI context for: ${basicData.name}`);
 
-    // Create a comprehensive prompt for LGBTI/queer community context with multiple source validation
-    const prompt = `You are an expert researcher on LGBTI/queer history and notable figures with access to comprehensive databases. Your task is to enhance biographical information with accurate, well-researched details about a person's relationship to the LGBTI/queer community.
+    // Create a source-based prompt that strictly adheres to Wikipedia content
+    const prompt = `You are an expert researcher specializing in LGBTI/queer history. Your task is to enhance biographical information while STRICTLY adhering to the provided Wikipedia content and never contradicting it.
 
-Person: ${basicData.name}
-Current Description: ${basicData.description || 'Not available'}
-Current Bio: ${basicData.bio || 'Not available'}
-Profession: ${basicData.profession || 'Unknown'}
-Nationality: ${basicData.nationality || 'Unknown'}
-Birth Place: ${basicData.birth_place || 'Unknown'}
-Birth Date: ${basicData.birth_date || 'Unknown'}
+WIKIPEDIA SOURCE DATA FOR: ${basicData.name}
+===========================================
+Description: ${basicData.description || 'Not provided'}
+Biography from Wikipedia: ${basicData.bio || 'Not provided'}
+Profession: ${basicData.profession || 'Not specified'}
+Nationality: ${basicData.nationality || 'Not specified'}
+Birth Place: ${basicData.birth_place || 'Not specified'}
+Birth Date: ${basicData.birth_date || 'Not specified'}
 Death Date: ${basicData.death_date || 'Still living'}
 Is Living: ${basicData.is_living}
-OpenSanctions Data: ${basicData.openSanctionsData ? JSON.stringify(basicData.openSanctionsData, null, 2) : 'Not available'}
+Website URL: ${basicData.website_url || 'Not provided'}
+OpenSanctions Data: ${basicData.openSanctionsData ? JSON.stringify(basicData.openSanctionsData, null, 2) : 'No sanctions data available'}
+
+INSTRUCTIONS:
+You MUST base your response ONLY on the Wikipedia content provided above. Do NOT add, contradict, or modify any factual information from Wikipedia. Your role is to:
+
+1. Preserve all Wikipedia facts exactly as stated
+2. Only enhance with LGBTI context if it's explicitly mentioned or clearly implied in the Wikipedia content
+3. If no LGBTI connection is mentioned in Wikipedia, state that clearly
 
 Please provide enhanced information in JSON format with these fields:
-1. "name" - Keep the exact same name
-2. "description" - A concise 1-2 sentence description that MUST accurately include their relationship to the LGBTI/queer community if they are part of it, their identity if publicly known, or clearly state if they are not known to be part of the community
-3. "bio" - An enhanced 2-3 paragraph biography that accurately describes:
-   - Their LGBTI/queer identity (if publicly known and relevant)
-   - Their contributions to LGBTI/queer rights, visibility, or community (if applicable)
-   - Their allyship/support work (if applicable)
-   - Their professional achievements in relation to LGBTI representation
-   - Or clearly states they are not known to be connected to the LGBTI community (if that's the case)
-4. "profession" - Enhanced profession description
-5. "lgbti_connection" - One of: "community_member", "ally", "activist", "representation", "none_known", "unclear"
-6. "lgbti_details" - Specific, factual details about their LGBTI identity, activism, or contributions (if any)
-7. "fields" - Array of relevant fields/categories for their work
-8. "sanctions_status" - Information about any sanctions, PEP status, or regulatory concerns from OpenSanctions (if applicable)
-9. "regulatory_notes" - Any relevant regulatory or compliance information
+1. "name" - Keep exactly: ${basicData.name}
+2. "description" - Rewrite the Wikipedia description to be concise (1-2 sentences) while preserving all facts. Only mention LGBTI connection if explicitly stated in Wikipedia
+3. "bio" - Enhance the Wikipedia biography by organizing it into 2-3 clear paragraphs while preserving ALL Wikipedia facts. Only add LGBTI context if explicitly mentioned in the source
+4. "profession" - Use the profession from Wikipedia data, do not modify
+5. "lgbti_connection" - Based ONLY on Wikipedia content: "community_member", "ally", "activist", "representation", "none_known", "unclear"
+6. "lgbti_details" - ONLY include details that are explicitly mentioned in the Wikipedia content
+7. "fields" - Array based on Wikipedia profession/activities
+8. "sanctions_status" - Based on OpenSanctions data if available
+9. "regulatory_notes" - Based on OpenSanctions data if available
 
-CRITICAL REQUIREMENTS FOR ACCURACY:
-- Cross-reference information from multiple reliable sources mentally
-- Be factually accurate - NEVER invent or assume LGBTI connections that don't exist
-- If someone is not known to be LGBTI or an ally, clearly state that in both description and bio
-- Include specific examples of their LGBTI advocacy, visibility, or community contributions where they exist
-- For historical figures, consider the context of their time period and coded language/relationships
-- Use respectful, contemporary terminology for identities and orientations
-- Distinguish between confirmed public identities and historical speculation
-- Include their impact on LGBTI rights, representation, or community building where applicable
-- Note if their LGBTI status is disputed, private, or speculative
-- If OpenSanctions data is available, accurately reflect any sanctions, PEP status, or regulatory information
-- Be transparent about any compliance or regulatory concerns
-
-VALIDATION APPROACH:
-- Consider multiple biographical sources
-- Look for patterns in historical documentation
-- Distinguish between well-documented facts and scholarly theories
-- Consider the reliability and bias of different source types
+CRITICAL RULES:
+- NEVER contradict Wikipedia information
+- NEVER add biographical facts not in Wikipedia
+- NEVER assume LGBTI connections not explicitly mentioned
+- If Wikipedia doesn't mention LGBTI connection, clearly state "none_known"
+- Preserve all Wikipedia dates, places, and factual details exactly
+- Only reorganize and clarify the existing Wikipedia content
 
 Return ONLY valid JSON, no additional text.`;
 
