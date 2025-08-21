@@ -37,6 +37,7 @@ export interface Personality {
 export interface PersonalityFilters {
   search?: string;
   fields?: string[];
+  profession?: string;
   verification_status?: string;
   is_living?: boolean;
   featured_only?: boolean;
@@ -67,6 +68,10 @@ export function usePersonalities(filters?: PersonalityFilters) {
         countQuery = countQuery.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,profession.ilike.%${filters.search}%`);
       }
 
+      if (filters?.profession) {
+        countQuery = countQuery.ilike('profession', `%${filters.profession}%`);
+      }
+
       if (filters?.fields && filters.fields.length > 0) {
         countQuery = countQuery.contains('fields', filters.fields);
       }
@@ -95,6 +100,10 @@ export function usePersonalities(filters?: PersonalityFilters) {
 
       if (filters?.search) {
         query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,profession.ilike.%${filters.search}%`);
+      }
+
+      if (filters?.profession) {
+        query = query.ilike('profession', `%${filters.profession}%`);
       }
 
       if (filters?.fields && filters.fields.length > 0) {
@@ -278,7 +287,7 @@ export function usePersonalities(filters?: PersonalityFilters) {
 
   useEffect(() => {
     fetchPersonalities();
-  }, [filters?.search, filters?.fields, filters?.verification_status, filters?.is_living, filters?.featured_only, filters?.page]);
+  }, [filters?.search, filters?.profession, filters?.fields, filters?.verification_status, filters?.is_living, filters?.featured_only, filters?.page]);
 
   return {
     personalities,

@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,8 +16,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function Personalities() {
   const { user } = useAuth();
-  const [filters, setFilters] = useState<PersonalityFilters>({ page: 1, limit: 100 });
+  const [searchParams] = useSearchParams();
+  
+  // Get profession from URL parameters
+  const professionFromUrl = searchParams.get('profession');
+  
+  const [filters, setFilters] = useState<PersonalityFilters>({ 
+    page: 1, 
+    limit: 100,
+    profession: professionFromUrl || undefined
+  });
   const [selectedPersonality, setSelectedPersonality] = useState(null);
+  
+  // Update filters when URL changes
+  useEffect(() => {
+    const profession = searchParams.get('profession');
+    if (profession !== filters.profession) {
+      setFilters(prev => ({ ...prev, profession: profession || undefined, page: 1 }));
+    }
+  }, [searchParams, filters.profession]);
   
   const { personalities, totalCount, loading, error } = usePersonalities(filters);
   const { personalities: featuredPersonalities } = usePersonalities({ 
@@ -205,6 +223,11 @@ export default function Personalities() {
                     {filters.search && (
                       <Badge variant="secondary">
                         Searching: "{filters.search}"
+                      </Badge>
+                    )}
+                    {filters.profession && (
+                      <Badge variant="secondary">
+                        Profession: "{filters.profession}"
                       </Badge>
                     )}
                   </div>
