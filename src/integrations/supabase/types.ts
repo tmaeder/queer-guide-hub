@@ -598,48 +598,6 @@ export type Database = {
           },
         ]
       }
-      cms_connectors: {
-        Row: {
-          config: Json
-          created_at: string
-          created_by: string | null
-          id: string
-          is_active: boolean
-          last_sync_at: string | null
-          mapping_profile: Json
-          name: string
-          next_sync_at: string | null
-          provider: string
-          sync_schedule: string | null
-        }
-        Insert: {
-          config?: Json
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          is_active?: boolean
-          last_sync_at?: string | null
-          mapping_profile?: Json
-          name: string
-          next_sync_at?: string | null
-          provider: string
-          sync_schedule?: string | null
-        }
-        Update: {
-          config?: Json
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          is_active?: boolean
-          last_sync_at?: string | null
-          mapping_profile?: Json
-          name?: string
-          next_sync_at?: string | null
-          provider?: string
-          sync_schedule?: string | null
-        }
-        Relationships: []
-      }
       cms_content: {
         Row: {
           content_data: Json
@@ -1030,59 +988,6 @@ export type Database = {
             columns: ["content_id"]
             isOneToOne: false
             referencedRelation: "cms_content"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cms_sync_jobs: {
-        Row: {
-          completed_at: string | null
-          connector_id: string
-          created_at: string
-          error_details: Json | null
-          id: string
-          job_type: string
-          records_created: number | null
-          records_failed: number | null
-          records_processed: number | null
-          records_updated: number | null
-          started_at: string | null
-          status: string
-        }
-        Insert: {
-          completed_at?: string | null
-          connector_id: string
-          created_at?: string
-          error_details?: Json | null
-          id?: string
-          job_type: string
-          records_created?: number | null
-          records_failed?: number | null
-          records_processed?: number | null
-          records_updated?: number | null
-          started_at?: string | null
-          status?: string
-        }
-        Update: {
-          completed_at?: string | null
-          connector_id?: string
-          created_at?: string
-          error_details?: Json | null
-          id?: string
-          job_type?: string
-          records_created?: number | null
-          records_failed?: number | null
-          records_processed?: number | null
-          records_updated?: number | null
-          started_at?: string | null
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cms_sync_jobs_connector_id_fkey"
-            columns: ["connector_id"]
-            isOneToOne: false
-            referencedRelation: "cms_connectors"
             referencedColumns: ["id"]
           },
         ]

@@ -12,7 +12,7 @@ import { useUniversalCMS } from '@/hooks/useUniversalCMS';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { CMSContentEditor } from './CMSContentEditor';
 import { CMSMediaManager } from './CMSMediaManager';
-import { CMSConnectorManager } from './CMSConnectorManager';
+
 import { CMSDuplicateManager } from './CMSDuplicateManager';
 import { UniversalContentDashboard } from './UniversalContentDashboard';
 import { UniversalContentEditor } from './UniversalContentEditor';
@@ -133,7 +133,7 @@ export function CMSDashboard() {
           <TabsTrigger value="universal">All Content</TabsTrigger>
           <TabsTrigger value="list">List View</TabsTrigger>
           <TabsTrigger value="library">Media Library</TabsTrigger>
-          <TabsTrigger value="connectors">Connectors</TabsTrigger>
+          
           <TabsTrigger value="duplicates">Duplicates</TabsTrigger>
           <TabsTrigger value="images">Image Optimizer</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -274,9 +274,6 @@ export function CMSDashboard() {
           <MediaLibrary />
         </TabsContent>
 
-        <TabsContent value="connectors">
-          <CMSConnectorManager />
-        </TabsContent>
 
         <TabsContent value="duplicates">
           <CMSDuplicateManager />
