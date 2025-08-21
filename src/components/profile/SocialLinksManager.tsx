@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SocialLinksList } from './social/SocialLinksList';
 import { PlatformSelector } from './social/PlatformSelector';
-import { POPULAR_PLATFORMS, PLATFORM_CONFIGS } from './social/platformConfigs';
+import { PLATFORM_CONFIGS } from './social/platformConfigs';
 
 interface SocialLink {
   platform: string;
@@ -27,7 +27,6 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
   const [socialLinks, setSocialLinks] = useState<Record<string, string>>(initialSocialLinks);
   const [customLinks, setCustomLinks] = useState<SocialLink[]>(
     Object.entries(initialSocialLinks)
-      .filter(([key]) => !POPULAR_PLATFORMS.some(p => p.platform.toLowerCase().replace(/\s/g, '') === key.toLowerCase()))
       .map(([platform, url]) => ({ platform, url: url as string }))
   );
   const [isSaving, setIsSaving] = useState(false);
@@ -75,37 +74,12 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
     }
 
     const platform = detectPlatformFromUrl(url);
-    const platformKey = platform.toLowerCase().replace(/\s/g, '');
-    const isPopularPlatform = POPULAR_PLATFORMS.some(p => p.platform === platform);
     
-    if (isPopularPlatform) {
-      // Extract username from URL
-      let username = '';
-      try {
-        const config = PLATFORM_CONFIGS.find(c => c.platform === platform);
-        if (config) {
-          const regexPattern = config.urlDetectionRegex
-            .replace(/^\(\?\i\)/, '')
-            .replace(/\\\\/g, '\\');
-          const regex = new RegExp(regexPattern, 'i');
-          const match = url.match(regex);
-          username = match?.[1] || '';
-        }
-      } catch (error) {
-        username = '';
-      }
-      
-      setSocialLinks(prev => ({
-        ...prev,
-        [platformKey]: username || url
-      }));
-    } else {
-      const newLink: SocialLink = {
-        platform,
-        url
-      };
-      setCustomLinks(prev => [...prev, newLink]);
-    }
+    const newLink: SocialLink = {
+      platform,
+      url
+    };
+    setCustomLinks(prev => [...prev, newLink]);
     
     setQuickAddUrl('');
     setDetectedPlatform('');
@@ -136,21 +110,11 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
   };
 
   const handlePlatformAdd = (platform: string, url: string) => {
-    const platformKey = platform.toLowerCase().replace(/\s/g, '');
-    const isPopularPlatform = POPULAR_PLATFORMS.some(p => p.platform === platform);
-    
-    if (isPopularPlatform) {
-      setSocialLinks(prev => ({
-        ...prev,
-        [platformKey]: url === 'username' ? '' : url
-      }));
-    } else {
-      const newLink: SocialLink = {
-        platform,
-        url: url === 'username' ? '' : url
-      };
-      setCustomLinks(prev => [...prev, newLink]);
-    }
+    const newLink: SocialLink = {
+      platform,
+      url: url === 'username' ? '' : url
+    };
+    setCustomLinks(prev => [...prev, newLink]);
     
     setShowPlatformSelector(false);
     toast({
@@ -251,9 +215,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
         )}
         
         <SocialLinksList
-          socialLinks={socialLinks}
           customLinks={customLinks}
-          onSocialLinkChange={handleSocialLinkChange}
           onCustomLinkChange={handleCustomLinkChange}
           onRemoveCustomLink={removeCustomLink}
         />
