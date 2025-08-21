@@ -463,8 +463,11 @@ Deno.serve(async (req) => {
       // Use search terms with fallback to generic terms for failed searches
       for (const searchTerm of searchTerms.slice(0, 3)) { // Limit to 3 search terms per location
         try {
-          // Try original search term first
+          // Try original search term first - Fix API key format and URL structure
           let searchUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=${encodeURIComponent(searchTerm)}&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
+          
+          console.log(`Foursquare API URL: ${searchUrl}`)
+          console.log(`API Key length: ${foursquareApiKey?.length || 0}`)
           
           let response = await fetch(searchUrl, {
             headers: {
@@ -496,7 +499,14 @@ Deno.serve(async (req) => {
           }
 
           if (!response.ok) {
-            console.error(`Foursquare API error for ${location} "${searchTerm}": ${response.status}`)
+            const errorText = await response.text()
+            console.error(`Foursquare API error for ${location} "${searchTerm}": ${response.status} - ${errorText}`)
+            
+            // If we get a 401, the API key is likely invalid
+            if (response.status === 401) {
+              throw new Error('Foursquare API key is invalid or expired. Please check your API key configuration.')
+            }
+            
             continue
           }
 
@@ -563,7 +573,7 @@ Deno.serve(async (req) => {
               // Enhanced tags from categories, features, and tastes
               const enhancedTags = [
                 'lgbt-friendly',
-                categoryName === 'Gay Bar' ? 'gay-bar' : 'lgbtq-organization',
+                venueCategoryName === 'Gay Bar' ? 'gay-bar' : 'lgbtq-organization',
                 ...(venue.categories?.map(cat => cat.short_name.toLowerCase().replace(/\s+/g, '-')) || []),
                 ...(Array.isArray(venue.features) ? venue.features.map(feature => feature.name.toLowerCase().replace(/\s+/g, '-')) : []),
                 ...(Array.isArray(venue.tastes) ? venue.tastes.map(taste => taste.toLowerCase().replace(/\s+/g, '-')) : [])
@@ -656,12 +666,12 @@ Deno.serve(async (req) => {
           // Reduced delay between category searches
           await new Promise(resolve => setTimeout(resolve, 200))
 
-        } catch (categoryError) {
-          console.error(`Error searching ${categoryName} in ${city.name}:`, categoryError)
+        } catch (searchError) {
+          console.error(`Error searching "${searchTerm}" in ${location}:`, searchError)
         }
       }
 
-      // Reduced delay between cities
+      // Reduced delay between locations
       await new Promise(resolve => setTimeout(resolve, 500))
     }
 

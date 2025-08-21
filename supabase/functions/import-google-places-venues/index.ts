@@ -228,7 +228,16 @@ serve(async (req) => {
     
     if (!testResponse.ok || testData.status !== 'OK') {
       console.error('API key test failed:', testData);
-      throw new Error(`Google Places API key invalid. Status: ${testData.status} - ${testData.error_message || 'Unknown error'}`);
+      let errorMessage = `Google Places API key invalid - ${testData.error_message || 'Unknown error'}`;
+      
+      // Provide specific guidance for common errors
+      if (testData.status === 'REQUEST_DENIED') {
+        errorMessage += '. Please ensure the API key has Google Places API enabled and billing is activated in Google Cloud Console.';
+      } else if (testData.status === 'OVER_QUERY_LIMIT') {
+        errorMessage += '. The API quota has been exceeded. Please check your billing and quota limits.';
+      }
+      
+      throw new Error(errorMessage);
     }
     
     console.log('Google Places API key test successful');
