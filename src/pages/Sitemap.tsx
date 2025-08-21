@@ -3,46 +3,7 @@ import { Link } from "react-router-dom";
 import { Search, Link2, Hash } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-const routes: { title: string; links: { label: string; to: string }[] }[] = [
-  {
-    title: "Explore",
-    links: [
-      { label: "Home", to: "/" },
-      { label: "Venues", to: "/venues" },
-      { label: "Events", to: "/events" },
-      { label: "Marketplace", to: "/marketplace" },
-      { label: "Directory", to: "/directory" },
-      { label: "Users", to: "/users" },
-      { label: "Ressources", to: "/ressources" },
-      
-      { label: "News", to: "/news" },
-      { label: "Travel", to: "/travel" },
-      { label: "Groups", to: "/groups" },
-      { label: "My Groups", to: "/my-groups" },
-      { label: "Feed", to: "/feed" },
-      { label: "Favorites", to: "/favorites" },
-      { label: "Search", to: "/search" },
-    ],
-  },
-  {
-    title: "About & Legal",
-    links: [
-      { label: "About Hub", to: "/about-hub" },
-      { label: "About", to: "/about" },
-      { label: "Contact", to: "/contact" },
-      { label: "Press", to: "/press" },
-      { label: "Blog", to: "/blog" },
-      { label: "Sustainability", to: "/sustainability" },
-      { label: "Legal Hub", to: "/legal" },
-      { label: "Terms of Service", to: "/terms" },
-      { label: "Privacy Policy", to: "/privacy" },
-      { label: "Cookie Policy", to: "/cookies" },
-      { label: "DMCA", to: "/dmca" },
-      { label: "Accessibility", to: "/accessibility" },
-    ],
-  },
-];
+import { useDynamicSitemap } from "@/hooks/useDynamicSitemap";
 
 function setMetaTag(name: string, content: string) {
   let tag = document.querySelector(`meta[name="${name}"]`);
@@ -71,6 +32,7 @@ function slugify(input: string) {
 export default function Sitemap() {
   const [query, setQuery] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
+  const { data: routes = [], isLoading, error } = useDynamicSitemap();
 
   useEffect(() => {
     document.title = "Sitemap | Queer Guide";
@@ -92,13 +54,13 @@ export default function Sitemap() {
         ),
       }))
       .filter((s) => s.links.length > 0);
-  }, [query]);
+  }, [query, routes]);
 
   const counts = useMemo(() => {
     const total = routes.reduce((acc, s) => acc + s.links.length, 0);
     const visible = filtered.reduce((acc, s) => acc + s.links.length, 0);
     return { total, visible };
-  }, [filtered]);
+  }, [routes, filtered]);
 
   const jsonLd = useMemo(
     () => ({
@@ -114,7 +76,7 @@ export default function Sitemap() {
         }))
       ),
     }),
-    []
+    [routes]
   );
 
   const handleCopySectionLink = async (id: string) => {
@@ -125,6 +87,24 @@ export default function Sitemap() {
       setTimeout(() => setCopied(null), 1500);
     } catch {}
   };
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <h1 className="text-3xl font-bold tracking-tight mb-4">Queer Guide Sitemap</h1>
+        <p className="text-muted-foreground">Loading dynamic sitemap...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container py-8">
+        <h1 className="text-3xl font-bold tracking-tight mb-4">Queer Guide Sitemap</h1>
+        <p className="text-muted-foreground">Failed to load sitemap. Please try again later.</p>
+      </div>
+    );
+  }
 
   return (
     <>
