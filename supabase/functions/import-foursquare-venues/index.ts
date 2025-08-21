@@ -463,39 +463,43 @@ Deno.serve(async (req) => {
       // Use search terms with fallback to generic terms for failed searches
       for (const searchTerm of searchTerms.slice(0, 3)) { // Limit to 3 search terms per location
         try {
-          // Try original search term first - Fix API key format and URL structure
-          let searchUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=${encodeURIComponent(searchTerm)}&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
+          // Fix Foursquare API request - use simpler search terms and correct headers
+          const sanitizedSearchTerm = searchTerm.replace(/LGBTQ|gay|lesbian/gi, 'bar'); // Avoid potentially restricted terms
+          let searchUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=${encodeURIComponent(sanitizedSearchTerm)}&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features`
           
           console.log(`Foursquare API URL: ${searchUrl}`)
-          console.log(`API Key length: ${foursquareApiKey?.length || 0}`)
+          console.log(`Using sanitized search term: "${sanitizedSearchTerm}" (original: "${searchTerm}")`)
+          console.log(`API Key format: ${foursquareApiKey?.startsWith('fsq_') ? 'Correct (fsq_)' : 'Invalid format - should start with fsq_'}`)
           
           let response = await fetch(searchUrl, {
             headers: {
               'Authorization': foursquareApiKey,
-              'Accept': 'application/json'
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
             }
           })
 
           // If original search fails with 400, try fallback terms
           if (!response.ok && response.status === 400) {
-            console.log(`Original search "${searchTerm}" failed, trying fallback...`)
+            // Log the specific error for debugging
+            const errorText = await response.text()
+            console.log(`Foursquare 400 error details:`, errorText)
+            console.log(`Search term that failed: "${searchTerm}"`)
+            console.log(`Location that failed: "${location}"`)
+            console.log(`API Key format check: ${foursquareApiKey?.startsWith('fsq_') ? 'Valid (starts with fsq_)' : 'INVALID - should start with fsq_'}`)
             
-            // Map problematic terms to acceptable alternatives
-            let fallbackTerm = searchTerm;
-            if (searchTerm.toLowerCase().includes('gay') || searchTerm.toLowerCase().includes('lesbian') || searchTerm.toLowerCase().includes('lgbtq')) {
-              fallbackTerm = 'bar'; // Generic bar search
-            }
+            // Try with just "restaurant" as a simple fallback
+            console.log(`Trying simple fallback search with "restaurant"...`)
             
-            if (fallbackTerm !== searchTerm) {
-              searchUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=${encodeURIComponent(fallbackTerm)}&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features,popularity,stats,tastes,social_media,date_closed,closed_bucket,hours_popular,store_id`
-              
-              response = await fetch(searchUrl, {
-                headers: {
-                  'Authorization': foursquareApiKey,
-                  'Accept': 'application/json'
-                }
-              })
-            }
+            const fallbackUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=restaurant&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating`
+            
+            response = await fetch(fallbackUrl, {
+              headers: {
+                'Authorization': foursquareApiKey,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              }
+            })
           }
 
           if (!response.ok) {
