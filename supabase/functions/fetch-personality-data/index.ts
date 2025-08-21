@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -24,6 +25,8 @@ interface PersonalityData {
   image_url: string;
   website_url: string;
   fields: string[];
+  lgbti_connection?: string;
+  lgbti_details?: string;
 }
 
 serve(async (req) => {
@@ -42,7 +45,7 @@ serve(async (req) => {
       )
     }
 
-    console.log('Searching for:', searchTerm)
+    console.log('Starting enhanced LGBTI-focused search for:', searchTerm)
 
     // Step 1: Search Wikidata for the person
     const wikidataSearchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(searchTerm)}&language=en&type=item&format=json&limit=5`
@@ -242,7 +245,8 @@ serve(async (req) => {
       }
     }
 
-    const personalityData: PersonalityData = {
+    // Step 5: Enhanced AI-powered LGBTI/queer community analysis
+    const enhancedData = await enhanceWithLGBTIContext({
       name,
       description,
       bio,
@@ -255,15 +259,15 @@ serve(async (req) => {
       image_url: imageUrl,
       website_url: websiteUrl,
       fields
-    }
+    });
 
-    console.log('Returning personality data:', personalityData)
+    console.log('Returning enhanced personality data:', enhancedData)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        data: personalityData,
-        source: 'wikidata'
+        data: enhancedData,
+        source: 'wikidata_enhanced'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
@@ -279,3 +283,116 @@ serve(async (req) => {
     )
   }
 })
+
+async function enhanceWithLGBTIContext(basicData: any): Promise<PersonalityData> {
+  try {
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      console.log('OpenAI API key not found, returning basic data');
+      return basicData;
+    }
+
+    console.log(`Enhancing LGBTI context for: ${basicData.name}`);
+
+    // Create a comprehensive prompt for LGBTI/queer community context with multiple source validation
+    const prompt = `You are an expert researcher on LGBTI/queer history and notable figures with access to comprehensive databases. Your task is to enhance biographical information with accurate, well-researched details about a person's relationship to the LGBTI/queer community.
+
+Person: ${basicData.name}
+Current Description: ${basicData.description || 'Not available'}
+Current Bio: ${basicData.bio || 'Not available'}
+Profession: ${basicData.profession || 'Unknown'}
+Nationality: ${basicData.nationality || 'Unknown'}
+Birth Place: ${basicData.birth_place || 'Unknown'}
+Birth Date: ${basicData.birth_date || 'Unknown'}
+Death Date: ${basicData.death_date || 'Still living'}
+Is Living: ${basicData.is_living}
+
+Please provide enhanced information in JSON format with these fields:
+1. "name" - Keep the exact same name
+2. "description" - A concise 1-2 sentence description that MUST accurately include their relationship to the LGBTI/queer community if they are part of it, their identity if publicly known, or clearly state if they are not known to be part of the community
+3. "bio" - An enhanced 2-3 paragraph biography that accurately describes:
+   - Their LGBTI/queer identity (if publicly known and relevant)
+   - Their contributions to LGBTI/queer rights, visibility, or community (if applicable)
+   - Their allyship/support work (if applicable)
+   - Their professional achievements in relation to LGBTI representation
+   - Or clearly states they are not known to be connected to the LGBTI community (if that's the case)
+4. "profession" - Enhanced profession description
+5. "lgbti_connection" - One of: "community_member", "ally", "activist", "representation", "none_known", "unclear"
+6. "lgbti_details" - Specific, factual details about their LGBTI identity, activism, or contributions (if any)
+7. "fields" - Array of relevant fields/categories for their work
+
+CRITICAL REQUIREMENTS FOR ACCURACY:
+- Cross-reference information from multiple reliable sources mentally
+- Be factually accurate - NEVER invent or assume LGBTI connections that don't exist
+- If someone is not known to be LGBTI or an ally, clearly state that in both description and bio
+- Include specific examples of their LGBTI advocacy, visibility, or community contributions where they exist
+- For historical figures, consider the context of their time period and coded language/relationships
+- Use respectful, contemporary terminology for identities and orientations
+- Distinguish between confirmed public identities and historical speculation
+- Include their impact on LGBTI rights, representation, or community building where applicable
+- Note if their LGBTI status is disputed, private, or speculative
+
+VALIDATION APPROACH:
+- Consider multiple biographical sources
+- Look for patterns in historical documentation
+- Distinguish between well-documented facts and scholarly theories
+- Consider the reliability and bias of different source types
+
+Return ONLY valid JSON, no additional text.`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4.1-2025-04-14',
+        messages: [
+          { role: 'system', content: 'You are an expert LGBTI historian and researcher with access to comprehensive academic and community databases. Provide accurate, factual, well-researched information about people\'s relationship to the LGBTI/queer community. Always distinguish between documented facts and speculation.' },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 1200,
+        temperature: 0.2
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`OpenAI API error: ${response.status}`);
+      return basicData;
+    }
+
+    const aiResponse = await response.json();
+    const enhancedContent = aiResponse.choices[0].message.content;
+
+    try {
+      const enhancedData = JSON.parse(enhancedContent);
+      
+      // Merge enhanced data with basic data, keeping all original fields
+      return {
+        name: enhancedData.name || basicData.name,
+        description: enhancedData.description || basicData.description,
+        bio: enhancedData.bio || basicData.bio,
+        birth_date: basicData.birth_date,
+        death_date: basicData.death_date,
+        is_living: basicData.is_living,
+        profession: enhancedData.profession || basicData.profession,
+        nationality: basicData.nationality,
+        birth_place: basicData.birth_place,
+        image_url: basicData.image_url,
+        website_url: basicData.website_url,
+        fields: enhancedData.fields || basicData.fields,
+        lgbti_connection: enhancedData.lgbti_connection,
+        lgbti_details: enhancedData.lgbti_details
+      };
+    } catch (parseError) {
+      console.error('Error parsing AI response:', parseError);
+      console.log('AI Response:', enhancedContent);
+      return basicData;
+    }
+
+  } catch (error) {
+    console.error('Error enhancing with LGBTI context:', error);
+    return basicData;
+  }
+}

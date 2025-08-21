@@ -189,6 +189,8 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
     // Add delay to respect rate limits
     await new Promise(resolve => setTimeout(resolve, 200));
 
+    console.log(`Starting enhanced LGBTI-focused data fetch for: ${searchTerm}`);
+
     // Search for the entity in Wikidata
     const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(searchTerm)}&language=en&format=json&limit=1`;
     const searchResponse = await fetch(searchUrl, {
@@ -339,17 +341,30 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
       nextConcerts = await fetchUpcomingConcerts(name);
     }
 
-    return {
+    // Enhanced AI-powered LGBTI/queer community description generation
+    const enhancedData = await enhanceWithLGBTIContext({
       name,
       description,
-      birth_date: formatDate(birthDate),
-      death_date: formatDate(deathDate),
-      is_living: !deathDate, // True if no death date
-      profession: occupation, // Map occupation data to profession field
+      bio,
+      profession: occupation,
       nationality,
       birth_place: birthPlace,
+      birth_date: formatDate(birthDate),
+      death_date: formatDate(deathDate),
+      is_living: !deathDate
+    });
+
+    return {
+      name: enhancedData.name,
+      description: enhancedData.description,
+      birth_date: enhancedData.birth_date,
+      death_date: enhancedData.death_date,
+      is_living: enhancedData.is_living,
+      profession: enhancedData.profession,
+      nationality: enhancedData.nationality,
+      birth_place: enhancedData.birth_place,
       image_url: imageUrl,
-      bio,
+      bio: enhancedData.bio,
       top_book: topBook,
       next_concerts: nextConcerts
     };
@@ -357,6 +372,97 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
   } catch (error) {
     console.error('Error fetching personality data:', error);
     return null;
+  }
+}
+
+async function enhanceWithLGBTIContext(basicData: any): Promise<any> {
+  try {
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      console.log('OpenAI API key not found, returning basic data');
+      return basicData;
+    }
+
+    console.log(`Enhancing LGBTI context for: ${basicData.name}`);
+
+    // Create a comprehensive prompt for LGBTI/queer community context
+    const prompt = `You are an expert researcher on LGBTI/queer history and notable figures. Your task is to enhance biographical information with accurate details about a person's relationship to the LGBTI/queer community.
+
+Person: ${basicData.name}
+Current Description: ${basicData.description || 'Not available'}
+Current Bio: ${basicData.bio || 'Not available'}
+Profession: ${basicData.profession || 'Unknown'}
+Nationality: ${basicData.nationality || 'Unknown'}
+Birth Place: ${basicData.birth_place || 'Unknown'}
+Birth Date: ${basicData.birth_date || 'Unknown'}
+Death Date: ${basicData.death_date || 'Still living'}
+Is Living: ${basicData.is_living}
+
+Please provide enhanced information in JSON format with these fields:
+1. "name" - Keep the exact same name
+2. "description" - A concise 1-2 sentence description that MUST include their relationship to the LGBTI/queer community if they are part of it, or clearly state if they are not known to be part of the community
+3. "bio" - An enhanced 2-3 paragraph biography that accurately describes their contributions to LGBTI/queer rights, visibility, or community (if applicable), or explains their allyship/support (if applicable), or clarifies they are not known to be connected to the LGBTI community (if that's the case)
+4. "profession" - Enhanced profession description
+5. "lgbti_connection" - One of: "community_member", "ally", "activist", "none_known", "unclear"
+6. "lgbti_details" - Specific details about their LGBTI identity, activism, or contributions (if any)
+
+CRITICAL REQUIREMENTS:
+- Be factually accurate - do not invent or assume LGBTI connections that don't exist
+- If someone is not known to be LGBTI or an ally, clearly state that
+- Include specific examples of their LGBTI advocacy, visibility, or community contributions where they exist
+- For historical figures, consider the context of their time period
+- Use respectful, contemporary language for identities and orientations
+- Cite their impact on LGBTI rights, representation, or community building where applicable
+
+Return ONLY valid JSON, no additional text.`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4.1-2025-04-14',
+        messages: [
+          { role: 'system', content: 'You are an expert LGBTI historian and researcher. Provide accurate, factual information about people\'s relationship to the LGBTI/queer community.' },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 1000,
+        temperature: 0.3
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`OpenAI API error: ${response.status}`);
+      return basicData;
+    }
+
+    const aiResponse = await response.json();
+    const enhancedContent = aiResponse.choices[0].message.content;
+
+    try {
+      const enhancedData = JSON.parse(enhancedContent);
+      
+      // Merge enhanced data with basic data, keeping all original fields
+      return {
+        ...basicData,
+        name: enhancedData.name || basicData.name,
+        description: enhancedData.description || basicData.description,
+        bio: enhancedData.bio || basicData.bio,
+        profession: enhancedData.profession || basicData.profession,
+        lgbti_connection: enhancedData.lgbti_connection,
+        lgbti_details: enhancedData.lgbti_details
+      };
+    } catch (parseError) {
+      console.error('Error parsing AI response:', parseError);
+      console.log('AI Response:', enhancedContent);
+      return basicData;
+    }
+
+  } catch (error) {
+    console.error('Error enhancing with LGBTI context:', error);
+    return basicData;
   }
 }
 
