@@ -122,8 +122,6 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
       work: 'not_out',
       public: 'not_out'
     },
-    family_acceptance_level: (profile as any)?.family_acceptance_level || '',
-    workplace_safety: (profile as any)?.workplace_safety || '',
     chosen_family_status: (profile as any)?.chosen_family_status || '',
     
     // Sexuality and relationships fields
@@ -258,8 +256,6 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
       chosen_name: formData.chosen_name,
       name_pronunciation: formData.name_pronunciation,
       coming_out_status: formData.coming_out_status,
-      family_acceptance_level: formData.family_acceptance_level,
-      workplace_safety: formData.workplace_safety,
       chosen_family_status: formData.chosen_family_status,
       
       // Sexuality and relationships fields
@@ -652,41 +648,6 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="family_acceptance_level">Family Acceptance</Label>
-                  <Select value={formData.family_acceptance_level} onValueChange={(value) => handleInputChange('family_acceptance_level', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="very_supportive">Very supportive</SelectItem>
-                      <SelectItem value="supportive">Supportive</SelectItem>
-                      <SelectItem value="neutral">Neutral</SelectItem>
-                      <SelectItem value="unsupportive">Unsupportive</SelectItem>
-                      <SelectItem value="very_unsupportive">Very unsupportive</SelectItem>
-                      <SelectItem value="no_contact">No contact</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="workplace_safety">Workplace Safety</Label>
-                  <Select value={formData.workplace_safety} onValueChange={(value) => handleInputChange('workplace_safety', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select safety level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="completely_out">Completely out & safe</SelectItem>
-                      <SelectItem value="partially_out">Partially out</SelectItem>
-                      <SelectItem value="not_out">Not out</SelectItem>
-                      <SelectItem value="unsafe_to_be_out">Unsafe to be out</SelectItem>
-                      <SelectItem value="not_applicable">Not applicable</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
