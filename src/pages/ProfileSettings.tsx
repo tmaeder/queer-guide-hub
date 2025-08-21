@@ -138,13 +138,6 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
     bdsm_role: (profile as any)?.bdsm_role || '',
     jealousy_comfort_level: (profile as any)?.jealousy_comfort_level || '',
     
-    // Health & Accessibility
-    neurodivergent_status: (profile as any)?.neurodivergent_status || '',
-    disability_status: (profile as any)?.disability_status || '',
-    mental_health_openness: (profile as any)?.mental_health_openness || '',
-    housing_situation: (profile as any)?.housing_situation || '',
-    financial_situation: (profile as any)?.financial_situation || '',
-    immigration_status: (profile as any)?.immigration_status || '',
     
     privacy_settings: {
       profile_visibility: (profile?.privacy_settings as any)?.profile_visibility || 'public',
@@ -272,13 +265,6 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
       bdsm_role: formData.bdsm_role,
       jealousy_comfort_level: formData.jealousy_comfort_level,
       
-      // Health & Accessibility
-      neurodivergent_status: formData.neurodivergent_status,
-      disability_status: formData.disability_status,
-      mental_health_openness: formData.mental_health_openness,
-      housing_situation: formData.housing_situation,
-      financial_situation: formData.financial_situation,
-      immigration_status: formData.immigration_status,
       
       privacy_settings: formData.privacy_settings,
       user_mode: formData.user_mode
@@ -357,7 +343,7 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
 
       {/* Tabbed Interface */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="basic" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Basic
@@ -369,10 +355,6 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
           <TabsTrigger value="relationships" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Relationships
-          </TabsTrigger>
-          <TabsTrigger value="health" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Health & Safety
           </TabsTrigger>
           <TabsTrigger value="privacy" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
@@ -727,93 +709,6 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
           </Card>
         </TabsContent>
 
-        {/* Health & Safety Tab */}
-        <TabsContent value="health" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Health & Accessibility</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="neurodivergent_status">Neurodivergent Status</Label>
-                  <Select value={formData.neurodivergent_status} onValueChange={(value) => handleInputChange('neurodivergent_status', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="yes">Yes</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                      <SelectItem value="self_diagnosed">Self-diagnosed</SelectItem>
-                      <SelectItem value="questioning">Questioning</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="disability_status">Disability Status</Label>
-                  <Select value={formData.disability_status} onValueChange={(value) => handleInputChange('disability_status', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="yes">Yes</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="mental_health_openness">Mental Health Openness</Label>
-                  <Select value={formData.mental_health_openness} onValueChange={(value) => handleInputChange('mental_health_openness', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="very_open">Very open</SelectItem>
-                      <SelectItem value="somewhat_open">Somewhat open</SelectItem>
-                      <SelectItem value="private">Private</SelectItem>
-                      <SelectItem value="prefer_not_to_discuss">Prefer not to discuss</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="housing_situation">Housing Situation</Label>
-                  <Select value={formData.housing_situation} onValueChange={(value) => handleInputChange('housing_situation', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select situation" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="stable_housing">Stable housing</SelectItem>
-                      <SelectItem value="temporary_housing">Temporary housing</SelectItem>
-                      <SelectItem value="looking_for_housing">Looking for housing</SelectItem>
-                      <SelectItem value="housing_insecure">Housing insecure</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="financial_situation">Financial Situation</Label>
-                  <Select value={formData.financial_situation} onValueChange={(value) => handleInputChange('financial_situation', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select situation" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="financially_stable">Financially stable</SelectItem>
-                      <SelectItem value="getting_by">Getting by</SelectItem>
-                      <SelectItem value="struggling">Struggling</SelectItem>
-                      <SelectItem value="in_crisis">In crisis</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         {/* Privacy Tab */}
         <TabsContent value="privacy" className="space-y-6">
