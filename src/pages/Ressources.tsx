@@ -236,12 +236,8 @@ export default function Ressources() {
             break;
             
           default:
-            // Group alphabetically for other categories
-            const firstChar = name.charAt(0).toUpperCase();
-            if (firstChar >= 'A' && firstChar <= 'F') subCategory = 'A-F';
-            else if (firstChar >= 'G' && firstChar <= 'L') subCategory = 'G-L';
-            else if (firstChar >= 'M' && firstChar <= 'R') subCategory = 'M-R';
-            else if (firstChar >= 'S' && firstChar <= 'Z') subCategory = 'S-Z';
+            // No alphabetical grouping - keep all in "Other" category
+            subCategory = 'Other';
             break;
         }
         
