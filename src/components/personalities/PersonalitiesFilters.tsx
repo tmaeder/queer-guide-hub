@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Filter, X, Star, CheckCircle } from "lucide-react";
+import { Search, Filter, X, Star, CheckCircle, Heart, Clock, Briefcase } from "lucide-react";
 import { PersonalityFilters } from "@/hooks/usePersonalities";
 
 interface PersonalitiesFiltersProps {
@@ -104,44 +104,99 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
   const hasActiveFilters = searchTerm || selectedFields.length > 0 || filters.is_living !== undefined || filters.profession;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Filter className="h-5 w-5" />
-          Filters
+    <Card className="sticky top-4">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Filter className="h-5 w-5 text-primary" />
+            Filters
+          </CardTitle>
           {hasActiveFilters && (
             <Button
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="ml-auto text-xs"
+              className="text-xs text-muted-foreground hover:text-destructive transition-colors"
             >
-              <X className="h-4 w-4 mr-1" />
-              Clear
+              <X className="h-3 w-3 mr-1" />
+              Clear All
             </Button>
           )}
-        </CardTitle>
+        </div>
+        {hasActiveFilters && (
+          <div className="text-xs text-muted-foreground animate-fade-in">
+            {Object.values({
+              search: searchTerm,
+              profession: filters.profession,
+              fields: selectedFields.length > 0 ? `${selectedFields.length} fields` : null,
+              status: filters.is_living !== undefined ? (filters.is_living ? 'Living' : 'Deceased') : null
+            }).filter(Boolean).length} active filters
+          </div>
+        )}
       </CardHeader>
       
       <CardContent className="space-y-6">
         {/* Search */}
-        <div className="space-y-2">
-          <Label htmlFor="search">Search</Label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="space-y-3">
+          <Label htmlFor="search" className="text-sm font-medium">Search</Label>
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
               id="search"
               placeholder="Search personalities..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10"
+              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
             />
+          </div>
+        </div>
+
+        {/* Quick Status Filters */}
+        <div className="space-y-3">
+          <Label className="text-sm font-medium">Quick Filters</Label>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={filters.is_living === true ? "default" : "outline"}
+              size="sm"
+              onClick={() => onFiltersChange({ 
+                ...filters, 
+                is_living: filters.is_living === true ? undefined : true 
+              })}
+              className="text-xs hover-scale"
+            >
+              <Heart className="h-3 w-3 mr-1" />
+              Living
+            </Button>
+            <Button
+              variant={filters.is_living === false ? "default" : "outline"}
+              size="sm"
+              onClick={() => onFiltersChange({ 
+                ...filters, 
+                is_living: filters.is_living === false ? undefined : false 
+              })}
+              className="text-xs hover-scale"
+            >
+              <Clock className="h-3 w-3 mr-1" />
+              Historical
+            </Button>
+            <Button
+              variant={filters.featured_only ? "default" : "outline"}
+              size="sm"
+              onClick={() => onFiltersChange({ 
+                ...filters, 
+                featured_only: filters.featured_only ? undefined : true 
+              })}
+              className="text-xs hover-scale"
+            >
+              <Star className="h-3 w-3 mr-1" />
+              Featured
+            </Button>
           </div>
         </div>
 
         {/* Profession Filter */}
         <div className="space-y-3">
-          <Label>Profession</Label>
+          <Label className="text-sm font-medium">Profession</Label>
           <Select
             value={filters.profession || 'all'}
             onValueChange={(value) => 
@@ -151,25 +206,26 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
               })
             }
           >
-            <SelectTrigger>
+            <SelectTrigger className="bg-background transition-all duration-200 hover:bg-muted/50">
               <SelectValue placeholder={loadingProfessions ? "Loading..." : "All Professions"} />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Professions</SelectItem>
+            <SelectContent className="bg-background border shadow-lg z-50">
+              <SelectItem value="all" className="hover:bg-muted/50">All Professions</SelectItem>
               {professions.map((profession) => (
-                <SelectItem key={profession} value={profession}>
+                <SelectItem key={profession} value={profession} className="hover:bg-muted/50">
                   {profession}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {filters.profession && (
-            <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+            <Badge variant="secondary" className="flex items-center gap-1 w-fit animate-scale-in">
+              <Briefcase className="h-3 w-3" />
               {filters.profession}
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-4 w-4 p-0 hover:bg-transparent"
+                className="h-4 w-4 p-0 hover:bg-destructive/20 hover:text-destructive transition-colors"
                 onClick={() => onFiltersChange({ ...filters, profession: undefined })}
               >
                 <X className="h-3 w-3" />
@@ -178,41 +234,18 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
           )}
         </div>
 
-        {/* Living Status */}
+        {/* Fields of Work */}
         <div className="space-y-3">
-          <Label>Status</Label>
-          <Select
-            value={filters.is_living === undefined ? 'all' : filters.is_living ? 'living' : 'deceased'}
-            onValueChange={(value) => 
-              onFiltersChange({ 
-                ...filters, 
-                is_living: value === 'all' ? undefined : value === 'living' 
-              })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Personalities</SelectItem>
-              <SelectItem value="living">Living</SelectItem>
-              <SelectItem value="deceased">Deceased</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Fields */}
-        <div className="space-y-3">
-          <Label>Fields of Work</Label>
+          <Label className="text-sm font-medium">Fields of Work</Label>
           {selectedFields.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
+            <div className="flex flex-wrap gap-2 mb-3 animate-fade-in">
               {selectedFields.map((field) => (
-                <Badge key={field} variant="secondary" className="flex items-center gap-1">
+                <Badge key={field} variant="secondary" className="flex items-center gap-1 animate-scale-in">
                   {field}
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-4 w-4 p-0 hover:bg-transparent"
+                    className="h-4 w-4 p-0 hover:bg-destructive/20 hover:text-destructive transition-colors"
                     onClick={() => handleFieldToggle(field)}
                   >
                     <X className="h-3 w-3" />
@@ -222,22 +255,25 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
             </div>
           )}
           
-          <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto">
-            {FIELD_OPTIONS.map((field) => (
-              <div key={field} className="flex items-center space-x-2">
-                <Checkbox
-                  id={field}
-                  checked={selectedFields.includes(field)}
-                  onCheckedChange={() => handleFieldToggle(field)}
-                />
-                <Label
-                  htmlFor={field}
-                  className="text-sm font-normal capitalize cursor-pointer"
-                >
-                  {field}
-                </Label>
-              </div>
-            ))}
+          <div className="max-h-48 overflow-y-auto border rounded-md">
+            <div className="grid grid-cols-1 gap-1 p-3">
+              {FIELD_OPTIONS.map((field) => (
+                <div key={field} className="flex items-center space-x-2 p-2 rounded hover:bg-muted/50 transition-colors">
+                  <Checkbox
+                    id={field}
+                    checked={selectedFields.includes(field)}
+                    onCheckedChange={() => handleFieldToggle(field)}
+                    className="transition-all duration-200"
+                  />
+                  <Label
+                    htmlFor={field}
+                    className="text-sm font-normal capitalize cursor-pointer flex-1"
+                  >
+                    {field}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </CardContent>
