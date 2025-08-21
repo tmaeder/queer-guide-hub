@@ -47,7 +47,8 @@ serve(async (req) => {
       wikipedia: sources.wikipedia !== false,
       openLibrary: sources.openLibrary !== false,
       bandsintown: sources.bandsintown !== false,
-      pexelsImages: sources.pexelsImages !== false
+      pexelsImages: sources.pexelsImages !== false,
+      openSanctions: sources.openSanctions !== false
     };
 
     console.log(`Processing ${names.length} personality names with sources:`, sourceConfig);
@@ -190,6 +191,12 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
     await new Promise(resolve => setTimeout(resolve, 200));
 
     console.log(`Starting enhanced LGBTI-focused data fetch for: ${searchTerm}`);
+
+    // Multi-source data collection including OpenSanctions
+    const sourceData = {
+      wikidata: null,
+      openSanctions: null
+    };
 
     // Search for the entity in Wikidata
     const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(searchTerm)}&language=en&format=json&limit=1`;
@@ -341,7 +348,12 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
       nextConcerts = await fetchUpcomingConcerts(name);
     }
 
-    // Enhanced AI-powered LGBTI/queer community description generation
+    // Fetch OpenSanctions data if enabled
+    if (sources.openSanctions) {
+      sourceData.openSanctions = await fetchOpenSanctionsData(name);
+    }
+
+    // Enhanced AI-powered LGBTI/queer community description generation with all source data
     const enhancedData = await enhanceWithLGBTIContext({
       name,
       description,
@@ -351,7 +363,8 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
       birth_place: birthPlace,
       birth_date: formatDate(birthDate),
       death_date: formatDate(deathDate),
-      is_living: !deathDate
+      is_living: !deathDate,
+      openSanctionsData: sourceData.openSanctions
     });
 
     return {
@@ -397,6 +410,7 @@ Birth Place: ${basicData.birth_place || 'Unknown'}
 Birth Date: ${basicData.birth_date || 'Unknown'}
 Death Date: ${basicData.death_date || 'Still living'}
 Is Living: ${basicData.is_living}
+OpenSanctions Data: ${basicData.openSanctionsData ? JSON.stringify(basicData.openSanctionsData, null, 2) : 'Not available'}
 
 Please provide enhanced information in JSON format with these fields:
 1. "name" - Keep the exact same name
@@ -413,6 +427,8 @@ CRITICAL REQUIREMENTS:
 - For historical figures, consider the context of their time period
 - Use respectful, contemporary language for identities and orientations
 - Cite their impact on LGBTI rights, representation, or community building where applicable
+- If OpenSanctions data is available, accurately reflect any sanctions, PEP status, or regulatory information
+- Be transparent about any compliance or regulatory concerns
 
 Return ONLY valid JSON, no additional text.`;
 
@@ -452,7 +468,9 @@ Return ONLY valid JSON, no additional text.`;
         bio: enhancedData.bio || basicData.bio,
         profession: enhancedData.profession || basicData.profession,
         lgbti_connection: enhancedData.lgbti_connection,
-        lgbti_details: enhancedData.lgbti_details
+        lgbti_details: enhancedData.lgbti_details,
+        sanctions_status: enhancedData.sanctions_status,
+        regulatory_notes: enhancedData.regulatory_notes
       };
     } catch (parseError) {
       console.error('Error parsing AI response:', parseError);
@@ -463,6 +481,76 @@ Return ONLY valid JSON, no additional text.`;
   } catch (error) {
     console.error('Error enhancing with LGBTI context:', error);
     return basicData;
+  }
+}
+
+async function fetchOpenSanctionsData(name: string): Promise<any | null> {
+  try {
+    console.log(`Fetching OpenSanctions data for: ${name}`);
+    
+    // Search OpenSanctions API
+    const searchUrl = `https://api.opensanctions.org/search/default?q=${encodeURIComponent(name)}&limit=5`;
+    
+    const response = await fetch(searchUrl, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
+      }
+    });
+
+    if (!response.ok) {
+      console.log(`OpenSanctions API returned ${response.status} for: ${name}`);
+      return null;
+    }
+
+    const data = await response.json();
+    
+    if (!data.results || data.results.length === 0) {
+      console.log(`No OpenSanctions results found for: ${name}`);
+      return null;
+    }
+
+    // Find the best match (exact name match or highest score)
+    let bestMatch = null;
+    let bestScore = 0;
+
+    for (const result of data.results) {
+      const resultName = result.properties?.name?.[0] || '';
+      const score = result.score || 0;
+      
+      // Prefer exact name matches
+      if (resultName.toLowerCase() === name.toLowerCase()) {
+        bestMatch = result;
+        break;
+      }
+      
+      // Otherwise, take the highest scoring result
+      if (score > bestScore) {
+        bestMatch = result;
+        bestScore = score;
+      }
+    }
+
+    if (!bestMatch) {
+      console.log(`No suitable OpenSanctions match found for: ${name}`);
+      return null;
+    }
+
+    console.log(`Found OpenSanctions match for ${name}: ${bestMatch.properties?.name?.[0] || 'Unknown'}`);
+    
+    return {
+      id: bestMatch.id,
+      schema: bestMatch.schema,
+      properties: bestMatch.properties,
+      datasets: bestMatch.datasets || [],
+      first_seen: bestMatch.first_seen,
+      last_seen: bestMatch.last_seen,
+      score: bestMatch.score
+    };
+
+  } catch (error) {
+    console.error(`Error fetching OpenSanctions data for ${name}:`, error);
+    return null;
   }
 }
 

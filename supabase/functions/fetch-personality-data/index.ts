@@ -27,6 +27,8 @@ interface PersonalityData {
   fields: string[];
   lgbti_connection?: string;
   lgbti_details?: string;
+  sanctions_status?: string;
+  regulatory_notes?: string;
 }
 
 serve(async (req) => {
@@ -245,7 +247,10 @@ serve(async (req) => {
       }
     }
 
-    // Step 5: Enhanced AI-powered LGBTI/queer community analysis
+    // Step 5: Fetch OpenSanctions data
+    const openSanctionsData = await fetchOpenSanctionsData(name);
+
+    // Step 6: Enhanced AI-powered LGBTI/queer community analysis
     const enhancedData = await enhanceWithLGBTIContext({
       name,
       description,
@@ -258,7 +263,8 @@ serve(async (req) => {
       birth_place: birthPlace,
       image_url: imageUrl,
       website_url: websiteUrl,
-      fields
+      fields,
+      openSanctionsData
     });
 
     console.log('Returning enhanced personality data:', enhancedData)
@@ -306,6 +312,7 @@ Birth Place: ${basicData.birth_place || 'Unknown'}
 Birth Date: ${basicData.birth_date || 'Unknown'}
 Death Date: ${basicData.death_date || 'Still living'}
 Is Living: ${basicData.is_living}
+OpenSanctions Data: ${basicData.openSanctionsData ? JSON.stringify(basicData.openSanctionsData, null, 2) : 'Not available'}
 
 Please provide enhanced information in JSON format with these fields:
 1. "name" - Keep the exact same name
@@ -320,6 +327,8 @@ Please provide enhanced information in JSON format with these fields:
 5. "lgbti_connection" - One of: "community_member", "ally", "activist", "representation", "none_known", "unclear"
 6. "lgbti_details" - Specific, factual details about their LGBTI identity, activism, or contributions (if any)
 7. "fields" - Array of relevant fields/categories for their work
+8. "sanctions_status" - Information about any sanctions, PEP status, or regulatory concerns from OpenSanctions (if applicable)
+9. "regulatory_notes" - Any relevant regulatory or compliance information
 
 CRITICAL REQUIREMENTS FOR ACCURACY:
 - Cross-reference information from multiple reliable sources mentally
@@ -331,6 +340,8 @@ CRITICAL REQUIREMENTS FOR ACCURACY:
 - Distinguish between confirmed public identities and historical speculation
 - Include their impact on LGBTI rights, representation, or community building where applicable
 - Note if their LGBTI status is disputed, private, or speculative
+- If OpenSanctions data is available, accurately reflect any sanctions, PEP status, or regulatory information
+- Be transparent about any compliance or regulatory concerns
 
 VALIDATION APPROACH:
 - Consider multiple biographical sources
@@ -383,7 +394,9 @@ Return ONLY valid JSON, no additional text.`;
         website_url: basicData.website_url,
         fields: enhancedData.fields || basicData.fields,
         lgbti_connection: enhancedData.lgbti_connection,
-        lgbti_details: enhancedData.lgbti_details
+        lgbti_details: enhancedData.lgbti_details,
+        sanctions_status: enhancedData.sanctions_status,
+        regulatory_notes: enhancedData.regulatory_notes
       };
     } catch (parseError) {
       console.error('Error parsing AI response:', parseError);
@@ -394,5 +407,75 @@ Return ONLY valid JSON, no additional text.`;
   } catch (error) {
     console.error('Error enhancing with LGBTI context:', error);
     return basicData;
+  }
+}
+
+async function fetchOpenSanctionsData(name: string): Promise<any | null> {
+  try {
+    console.log(`Fetching OpenSanctions data for: ${name}`);
+    
+    // Search OpenSanctions API
+    const searchUrl = `https://api.opensanctions.org/search/default?q=${encodeURIComponent(name)}&limit=5`;
+    
+    const response = await fetch(searchUrl, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
+      }
+    });
+
+    if (!response.ok) {
+      console.log(`OpenSanctions API returned ${response.status} for: ${name}`);
+      return null;
+    }
+
+    const data = await response.json();
+    
+    if (!data.results || data.results.length === 0) {
+      console.log(`No OpenSanctions results found for: ${name}`);
+      return null;
+    }
+
+    // Find the best match (exact name match or highest score)
+    let bestMatch = null;
+    let bestScore = 0;
+
+    for (const result of data.results) {
+      const resultName = result.properties?.name?.[0] || '';
+      const score = result.score || 0;
+      
+      // Prefer exact name matches
+      if (resultName.toLowerCase() === name.toLowerCase()) {
+        bestMatch = result;
+        break;
+      }
+      
+      // Otherwise, take the highest scoring result
+      if (score > bestScore) {
+        bestMatch = result;
+        bestScore = score;
+      }
+    }
+
+    if (!bestMatch) {
+      console.log(`No suitable OpenSanctions match found for: ${name}`);
+      return null;
+    }
+
+    console.log(`Found OpenSanctions match for ${name}: ${bestMatch.properties?.name?.[0] || 'Unknown'}`);
+    
+    return {
+      id: bestMatch.id,
+      schema: bestMatch.schema,
+      properties: bestMatch.properties,
+      datasets: bestMatch.datasets || [],
+      first_seen: bestMatch.first_seen,
+      last_seen: bestMatch.last_seen,
+      score: bestMatch.score
+    };
+
+  } catch (error) {
+    console.error(`Error fetching OpenSanctions data for ${name}:`, error);
+    return null;
   }
 }
