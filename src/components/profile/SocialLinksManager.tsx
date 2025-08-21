@@ -111,17 +111,89 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
     }));
   };
 
-  const addCustomLink = () => {
+  const validateUrl = async (url: string): Promise<boolean> => {
+    try {
+      const apiKey = 'AIzaSyAkSfSrwIQGzVciKbClNYpL9YHPbHOj_Og';
+      const response = await fetch(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client: { clientId: 'lovable-social-validator', clientVersion: '1.0.0' },
+          threatInfo: {
+            threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING'],
+            platformTypes: ['WINDOWS'],
+            threatEntryTypes: ['URL'],
+            threatEntries: [{ url: url }]
+          }
+        })
+      });
+      const data = await response.json();
+      return !data.matches || data.matches.length === 0;
+    } catch {
+      return true; // Allow if validation fails
+    }
+  };
+
+  const detectPlatform = (url: string): string => {
+    const domain = url.toLowerCase().replace(/^https?:\/\/(www\.)?/, '');
+    
+    const platformMap: Record<string, string> = {
+      'twitter.com': 'Twitter',
+      'x.com': 'Twitter',
+      'instagram.com': 'Instagram',
+      'facebook.com': 'Facebook',
+      'linkedin.com': 'LinkedIn',
+      'github.com': 'GitHub',
+      'youtube.com': 'YouTube',
+      'tiktok.com': 'TikTok',
+      'snapchat.com': 'Snapchat',
+      'pinterest.com': 'Pinterest',
+      'discord.gg': 'Discord',
+      'twitch.tv': 'Twitch',
+      'reddit.com': 'Reddit'
+    };
+
+    for (const [domain_key, platform] of Object.entries(platformMap)) {
+      if (domain.includes(domain_key)) return platform;
+    }
+    
+    return 'Website';
+  };
+
+  const addCustomLink = async () => {
     if (!newCustomPlatform.trim() || !newCustomUrl.trim()) return;
     
+    let url = newCustomUrl.trim();
+    if (!url.startsWith('http')) {
+      url = `https://${url}`;
+    }
+
+    const isValidUrl = await validateUrl(url);
+    if (!isValidUrl) {
+      toast({
+        title: "Invalid URL",
+        description: "The URL appears to be unsafe or invalid.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const detectedPlatform = detectPlatform(url);
+    const finalPlatform = newCustomPlatform.trim() || detectedPlatform;
+    
     const newLink: SocialLink = {
-      platform: newCustomPlatform.trim(),
-      url: newCustomUrl.trim()
+      platform: finalPlatform,
+      url: url
     };
     
     setCustomLinks(prev => [...prev, newLink]);
     setNewCustomPlatform('');
     setNewCustomUrl('');
+    
+    toast({
+      title: "Platform added",
+      description: `${finalPlatform} profile has been added successfully.`
+    });
   };
 
   const removeCustomLink = (index: number) => {
