@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload, Search, Grid3X3, List, Filter, TrendingUp, Sparkles, Eye, Clock, BarChart3 } from "lucide-react";
+import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload, Search, Grid3X3, List, Filter, TrendingUp, Sparkles, Eye, Clock, BarChart3, Briefcase } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -547,18 +547,9 @@ export default function Ressources() {
           </CardContent>
         </Card>
 
-        {/* Tabs */}
-        <Tabs defaultValue="tags" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-12 max-w-md mx-auto mb-8">
-            <TabsTrigger value="tags" className="text-base font-medium">
-              Tags & Categories
-            </TabsTrigger>
-            <TabsTrigger value="professions" className="text-base font-medium">
-              Professions
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="tags" className="space-y-6 animate-fade-in">
+        {/* Content */}
+        <div className="w-full">
+            <div className="space-y-6 animate-fade-in">
             {/* Categories Overview */}
             {viewMode === "overview" && (
               <Card className="mb-8">
@@ -600,6 +591,26 @@ export default function Ressources() {
                         </Card>
                       );
                     })}
+                    
+                    {/* Professions Category */}
+                    <Card 
+                      className="group cursor-pointer transition-all duration-200 hover:bg-accent/10"
+                      onClick={() => {
+                        navigate('/personalities');
+                      }}
+                    >
+                      <CardContent className="p-6 text-center">
+                        <div className="mb-4">
+                          <Briefcase className="h-12 w-12 mx-auto text-primary" />
+                        </div>
+                        <h3 className="font-semibold text-base mb-2 capitalize group-hover:text-primary transition-colors duration-200">
+                          Professions
+                        </h3>
+                        <Badge variant="secondary" className="text-sm px-3 py-1">
+                          {professions.length} professions
+                        </Badge>
+                      </CardContent>
+                    </Card>
                   </div>
                 </CardContent>
               </Card>
@@ -783,47 +794,8 @@ export default function Ressources() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-          
-          <TabsContent value="professions" className="space-y-6 animate-fade-in">
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
-              <CardHeader className="pb-6">
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <Users className="h-6 w-6 text-primary" />
-                  LGBTQ+ Personalities by Profession
-                </CardTitle>
-                <p className="text-muted-foreground text-base">
-                  Explore different professions represented by LGBTQ+ personalities in our directory
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {professions.map((profession, index) => (
-                    <Button 
-                      key={profession} 
-                      variant={selectedProfession === profession ? "default" : "outline"} 
-                      className="h-auto p-4 text-left justify-start transition-all duration-300 hover:scale-105 hover:shadow-lg group"
-                      style={{ animationDelay: `${index * 30}ms` }}
-                      onClick={() => {
-                        if (selectedProfession === profession) {
-                          setSelectedProfession("");
-                          navigate('/personalities');
-                        } else {
-                          setSelectedProfession(profession);
-                          navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
-                        }
-                      }}
-                    >
-                      <div className="truncate font-medium group-hover:text-primary transition-colors duration-200">
-                        {profession}
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            </div>
+        </div>
 
         {/* Admin Controls with enhanced design */}
         {viewMode === "overview" && (
