@@ -65,15 +65,95 @@ serve(async (req) => {
       )
     }
 
-    // If multiple results, return them for user selection
+    // If multiple results, return them with enhanced information for user selection
     if (wikidataData.search.length > 1) {
-      const candidates = wikidataData.search.slice(0, 5).map((result: WikidataSearchResult) => ({
-        id: result.id,
-        title: result.title,
-        description: result.description || 'No description available'
-      }));
+      const candidates = await Promise.all(
+        wikidataData.search.slice(0, 5).map(async (result: WikidataSearchResult) => {
+          try {
+            // Get basic entity data for each candidate
+            const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${result.id}&format=json&props=claims|labels|descriptions`;
+            const entityResponse = await fetch(entityUrl);
+            const entityData = await entityResponse.json();
+            const entity = entityData.entities[result.id];
+            
+            if (!entity) {
+              return {
+                id: result.id,
+                title: result.title,
+                description: result.description || 'No description available',
+                details: {}
+              };
+            }
 
-      console.log(`Found ${candidates.length} candidates for: ${searchTerm}`);
+            // Extract basic info for preview
+            let birthYear = '';
+            let deathYear = '';
+            let profession = '';
+            let nationality = '';
+
+            // Birth date (P569)
+            if (entity.claims?.P569?.[0]?.mainsnak?.datavalue?.value?.time) {
+              const birthDate = entity.claims.P569[0].mainsnak.datavalue.value.time;
+              birthYear = birthDate.substring(1, 5); // Extract year
+            }
+
+            // Death date (P570) 
+            if (entity.claims?.P570?.[0]?.mainsnak?.datavalue?.value?.time) {
+              const deathDate = entity.claims.P570[0].mainsnak.datavalue.value.time;
+              deathYear = deathDate.substring(1, 5); // Extract year
+            }
+
+            // Occupation (P106) - get first one
+            if (entity.claims?.P106?.[0]?.mainsnak?.datavalue?.value?.id) {
+              const occupationId = entity.claims.P106[0].mainsnak.datavalue.value.id;
+              try {
+                const occupationUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${occupationId}&format=json&props=labels`;
+                const occupationResponse = await fetch(occupationUrl);
+                const occupationData = await occupationResponse.json();
+                profession = occupationData.entities[occupationId]?.labels?.en?.value || '';
+              } catch (e) {
+                console.warn('Failed to fetch occupation for candidate:', e);
+              }
+            }
+
+            // Country (P27) - get first one
+            if (entity.claims?.P27?.[0]?.mainsnak?.datavalue?.value?.id) {
+              const countryId = entity.claims.P27[0].mainsnak.datavalue.value.id;
+              try {
+                const countryUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${countryId}&format=json&props=labels`;
+                const countryResponse = await fetch(countryUrl);
+                const countryData = await countryResponse.json();
+                nationality = countryData.entities[countryId]?.labels?.en?.value || '';
+              } catch (e) {
+                console.warn('Failed to fetch country for candidate:', e);
+              }
+            }
+
+            return {
+              id: result.id,
+              title: result.title,
+              description: result.description || 'No description available',
+              details: {
+                birthYear,
+                deathYear,
+                profession,
+                nationality,
+                isLiving: !deathYear
+              }
+            };
+          } catch (error) {
+            console.warn(`Failed to fetch details for candidate ${result.id}:`, error);
+            return {
+              id: result.id,
+              title: result.title,
+              description: result.description || 'No description available',
+              details: {}
+            };
+          }
+        })
+      );
+
+      console.log(`Found ${candidates.length} candidates with details for: ${searchTerm}`);
       
       return new Response(
         JSON.stringify({ 

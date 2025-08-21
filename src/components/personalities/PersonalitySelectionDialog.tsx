@@ -2,12 +2,20 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, User, Calendar, Briefcase, MapPin } from "lucide-react";
 
 interface Candidate {
   id: string;
   title: string;
   description: string;
+  details?: {
+    birthYear?: string;
+    deathYear?: string;
+    profession?: string;
+    nationality?: string;
+    isLiving?: boolean;
+  };
 }
 
 interface PersonalitySelectionDialogProps {
@@ -63,9 +71,44 @@ export function PersonalitySelectionDialog({
                   </div>
                   <div className="flex-1">
                     <CardTitle className="text-base">{candidate.title}</CardTitle>
-                    <CardDescription className="mt-1">
+                    <CardDescription className="mt-1 mb-3">
                       {candidate.description}
                     </CardDescription>
+                    
+                    {candidate.details && (
+                      <div className="flex flex-wrap gap-2">
+                        {candidate.details.profession && (
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <Briefcase className="h-3 w-3" />
+                            {candidate.details.profession}
+                          </Badge>
+                        )}
+                        
+                        {(candidate.details.birthYear || candidate.details.deathYear) && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {candidate.details.birthYear && candidate.details.deathYear
+                              ? `${candidate.details.birthYear}–${candidate.details.deathYear}`
+                              : candidate.details.birthYear
+                              ? `Born ${candidate.details.birthYear}`
+                              : candidate.details.deathYear
+                              ? `Died ${candidate.details.deathYear}`
+                              : ''
+                            }
+                            {candidate.details.isLiving && candidate.details.birthYear && (
+                              <span className="text-green-600">• Living</span>
+                            )}
+                          </Badge>
+                        )}
+                        
+                        {candidate.details.nationality && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {candidate.details.nationality}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center">
                     <div className={`w-4 h-4 rounded-full border-2 ${
