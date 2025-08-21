@@ -107,7 +107,6 @@ export default function Personalities() {
           </CardContent>
         </Card>
 
-        {/* Filters Section */}
         <div className="mb-8">
           <PersonalitiesFilters
             filters={filters}
