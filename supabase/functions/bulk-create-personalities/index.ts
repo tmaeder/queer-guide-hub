@@ -458,7 +458,9 @@ Return ONLY valid JSON, no additional text.`;
     const enhancedContent = aiResponse.choices[0].message.content;
 
     try {
-      const enhancedData = JSON.parse(enhancedContent);
+      // Remove potential markdown code blocks from AI response
+      const cleanedResponse = enhancedContent.replace(/^```json\s*|\s*```$/g, '').trim();
+      const enhancedData = JSON.parse(cleanedResponse);
       
       // Merge enhanced data with basic data, keeping all original fields
       return {
