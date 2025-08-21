@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Globe, Save, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SocialLinksList } from './social/SocialLinksList';
 import { PlatformSelector } from './social/PlatformSelector';
-import { POPULAR_PLATFORMS } from './social/platformConfigs';
+import { POPULAR_PLATFORMS, PLATFORM_CONFIGS } from './social/platformConfigs';
 
 interface SocialLink {
   platform: string;
@@ -31,6 +32,89 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
   );
   const [isSaving, setIsSaving] = useState(false);
   const [showPlatformSelector, setShowPlatformSelector] = useState(false);
+  const [quickAddUrl, setQuickAddUrl] = useState('');
+  const [detectedPlatform, setDetectedPlatform] = useState<string>('');
+
+  // Auto-detect platform when URL changes
+  useEffect(() => {
+    if (quickAddUrl.trim()) {
+      const detected = detectPlatformFromUrl(quickAddUrl);
+      setDetectedPlatform(detected);
+    } else {
+      setDetectedPlatform('');
+    }
+  }, [quickAddUrl]);
+
+  const detectPlatformFromUrl = (url: string): string => {
+    const cleanUrl = url.startsWith('http') ? url : `https://${url}`;
+    
+    for (const config of PLATFORM_CONFIGS) {
+      try {
+        const regexPattern = config.urlDetectionRegex
+          .replace(/^\(\?\i\)/, '')
+          .replace(/\\\\/g, '\\');
+        const regex = new RegExp(regexPattern, 'i');
+        
+        if (regex.test(cleanUrl)) {
+          return config.platform;
+        }
+      } catch (error) {
+        continue;
+      }
+    }
+    
+    return 'Custom Platform';
+  };
+
+  const handleQuickAdd = async () => {
+    if (!quickAddUrl.trim()) return;
+    
+    let url = quickAddUrl.trim();
+    if (!url.startsWith('http')) {
+      url = `https://${url}`;
+    }
+
+    const platform = detectPlatformFromUrl(url);
+    const platformKey = platform.toLowerCase().replace(/\s/g, '');
+    const isPopularPlatform = POPULAR_PLATFORMS.some(p => p.platform === platform);
+    
+    if (isPopularPlatform) {
+      // Extract username from URL
+      let username = '';
+      try {
+        const config = PLATFORM_CONFIGS.find(c => c.platform === platform);
+        if (config) {
+          const regexPattern = config.urlDetectionRegex
+            .replace(/^\(\?\i\)/, '')
+            .replace(/\\\\/g, '\\');
+          const regex = new RegExp(regexPattern, 'i');
+          const match = url.match(regex);
+          username = match?.[1] || '';
+        }
+      } catch (error) {
+        username = '';
+      }
+      
+      setSocialLinks(prev => ({
+        ...prev,
+        [platformKey]: username || url
+      }));
+    } else {
+      const newLink: SocialLink = {
+        platform,
+        url
+      };
+      setCustomLinks(prev => [...prev, newLink]);
+    }
+    
+    setQuickAddUrl('');
+    setDetectedPlatform('');
+    
+    toast({
+      title: "Platform added",
+      description: `${platform} profile has been added successfully.`
+    });
+  };
 
   const handleSocialLinkChange = (platform: string, value: string) => {
     setSocialLinks(prev => ({
@@ -133,6 +217,35 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Quick Add URL Input */}
+        <div className="p-4 border rounded-lg bg-card">
+          <div className="space-y-3">
+            <h3 className="text-lg font-medium">Add Social Profile</h3>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Paste any social media URL (e.g., https://twitter.com/username)"
+                value={quickAddUrl}
+                onChange={(e) => setQuickAddUrl(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleQuickAdd()}
+                className="flex-1"
+              />
+              <Button 
+                onClick={handleQuickAdd}
+                disabled={!quickAddUrl.trim()}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add
+              </Button>
+            </div>
+            {detectedPlatform && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Globe className="h-4 w-4" />
+                Detected: {detectedPlatform}
+              </div>
+            )}
+          </div>
+        </div>
+
         {showPlatformSelector && (
           <PlatformSelector onPlatformSelect={handlePlatformAdd} />
         )}
