@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { CommandGroup, CommandItem } from "@/components/ui/command";
-import { Search, MapPin, Calendar, Store, Newspaper, Users, Tag } from "lucide-react";
+import { Search, MapPin, Calendar, Store, Newspaper, Users, Tag, Briefcase } from "lucide-react";
 
 export const searchCategories = [
   { label: "All", value: "all", icon: Search },
@@ -10,6 +10,7 @@ export const searchCategories = [
   { label: "News", value: "news", icon: Newspaper },
   { label: "Community", value: "community", icon: Users },
   { label: "Ressources", value: "tags", icon: Tag },
+  { label: "Professions", value: "professions", icon: Briefcase },
 ];
 
 interface SearchCategoriesProps {
