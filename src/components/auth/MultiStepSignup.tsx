@@ -224,49 +224,67 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
+    <Card className="w-full">
+      <CardHeader className="space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Create Your Account</CardTitle>
+          <div className="space-y-2">
+            <CardTitle className="text-2xl">Create Your Account</CardTitle>
             <CardDescription>
               Step {currentStep} of {totalSteps}: {stepTitles[currentStep - 1]}
             </CardDescription>
           </div>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={onBack}
+            className="shrink-0"
           >
             Back to Login
           </Button>
         </div>
         
-        <div className="space-y-2">
-          <Progress value={progressPercentage} className="w-full" />
-          <div className="flex justify-between text-sm text-muted-foreground">
+        <div className="space-y-3">
+          <Progress value={progressPercentage} className="w-full h-2" />
+          <div className="flex justify-between text-sm">
             {stepTitles.map((title, index) => (
-              <span 
+              <div 
                 key={index}
-                className={currentStep > index ? 'text-primary' : ''}
+                className="flex flex-col items-center gap-1 text-center"
               >
-                {index + 1}
-              </span>
+                <span 
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                    currentStep > index 
+                      ? 'bg-primary text-primary-foreground' 
+                      : currentStep === index + 1
+                      ? 'bg-primary/20 text-primary border border-primary'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {index + 1}
+                </span>
+                <span className={`text-xs ${
+                  currentStep >= index + 1 ? 'text-foreground' : 'text-muted-foreground'
+                }`}>
+                  {title}
+                </span>
+              </div>
             ))}
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-8">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        {renderStep()}
+        <div className="min-h-[400px]">
+          {renderStep()}
+        </div>
 
-        <div className="flex justify-between">
+        <div className="flex justify-between pt-6 border-t">
           <Button
             variant="outline"
             onClick={prevStep}
