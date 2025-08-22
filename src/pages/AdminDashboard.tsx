@@ -1,36 +1,50 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAdminRoles } from "@/hooks/useAdminRoles";
-import { useAuth } from "@/hooks/useAuth";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { supabase } from '@/integrations/supabase/client';
 
 // Dashboard Components
-import { DashboardHeader } from "@/components/admin/dashboard/DashboardHeader";
-import { DashboardOverview } from "@/components/admin/dashboard/DashboardOverview";
-import { QuickActions } from "@/components/admin/dashboard/QuickActions";
-import { RecentActivity } from "@/components/admin/dashboard/RecentActivity";
+import { DashboardOverview } from '@/components/admin/dashboard/DashboardOverview';
+import { QuickActions } from '@/components/admin/dashboard/QuickActions';
+import { RecentActivity } from '@/components/admin/dashboard/RecentActivity';
 
 // Feature Components
-import { NewsModeration } from "@/components/admin/NewsModeration";
-import { SecurityMonitoringDashboard } from "@/components/admin/SecurityMonitoringDashboard";
-import { DataManagement } from "@/components/admin/dashboard/DataManagement";
-import { UmamiAnalyticsDashboard } from "@/components/analytics/UmamiAnalyticsDashboard";
-import { CrawlForm } from "@/components/admin/CrawlForm";
-import { CrawlJobsList } from "@/components/admin/CrawlJobsList";
+import { NewsModeration } from '@/components/admin/NewsModeration';
+import { SecurityMonitoringDashboard } from '@/components/admin/SecurityMonitoringDashboard';
+import { DataManagement } from '@/components/admin/dashboard/DataManagement';
+import { UmamiAnalyticsDashboard } from '@/components/analytics/UmamiAnalyticsDashboard';
+import { CrawlForm } from '@/components/admin/CrawlForm';
+import { CrawlJobsList } from '@/components/admin/CrawlJobsList';
 
 import { 
-  BarChart3, 
   Shield, 
-  Activity, 
-  Newspaper, 
-  Database,
-  MessageSquare,
-  Calendar,
-  ShoppingBag,
+  Calendar, 
+  MapPin, 
+  ShoppingBag, 
+  Building, 
+  MessageSquare, 
+  Star,
+  BarChart3,
+  TrendingUp,
+  Activity,
   Users,
-  Building
+  Newspaper,
+  Database,
+  Grid3X3,
+  List,
+  RefreshCw,
+  Settings,
+  Filter
 } from "lucide-react";
 
 interface DashboardStats {
@@ -369,93 +383,169 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-background">
-      <DashboardHeader
-        isAdmin={isAdmin}
-        isModerator={isModerator}
-        autoRefresh={autoRefresh}
-        onAutoRefreshChange={setAutoRefresh}
-        filterPeriod={filterPeriod}
-        onFilterPeriodChange={setFilterPeriod}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        onRefresh={handleRefresh}
-        lastUpdate={lastUpdate}
-      />
+    <div className="container mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="p-3 bg-primary rounded-md">
+            <Shield className="h-8 w-8 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+            <p className="text-muted-foreground">Monitor and manage your platform</p>
+          </div>
+        </div>
 
-      <div className="container mx-auto p-6">
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Security
-            </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center gap-2">
-              <Newspaper className="h-4 w-4" />
-              Content
-            </TabsTrigger>
-            <TabsTrigger value="data" className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              Data
-            </TabsTrigger>
-            <TabsTrigger value="crawling" className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              Crawling
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 text-sm">
+            <Badge variant={isAdmin ? "default" : "secondary"} className="font-medium">
+              {isAdmin ? "Administrator" : isModerator ? "Moderator" : "Staff"}
+            </Badge>
+            {lastUpdate && (
+              <span className="text-muted-foreground">
+                Last updated: {lastUpdate.toLocaleTimeString()}
+              </span>
+            )}
+          </div>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <DashboardOverview
-                  stats={stats}
-                  systemHealth={systemHealth}
-                  statsLoading={statsLoading}
-                />
-              </div>
-              <div className="space-y-6">
-                <QuickActions />
-                <RecentActivity 
-                  activities={recentActivity}
-                  loading={statsLoading}
-                  onRefresh={fetchRecentActivity}
-                />
-              </div>
+          <div className="flex items-center gap-3">
+            {/* Time Period Filter */}
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={filterPeriod} onValueChange={setFilterPeriod}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7d">Last 7 days</SelectItem>
+                  <SelectItem value="30d">Last 30 days</SelectItem>
+                  <SelectItem value="90d">Last 90 days</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </TabsContent>
 
-          <TabsContent value="analytics">
-            <UmamiAnalyticsDashboard />
-          </TabsContent>
-
-          <TabsContent value="security">
-            <SecurityMonitoringDashboard />
-          </TabsContent>
-
-          <TabsContent value="content">
-            <NewsModeration />
-          </TabsContent>
-
-          <TabsContent value="data" className="space-y-6">
-            <DataManagement />
-          </TabsContent>
-
-          <TabsContent value="crawling" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <CrawlForm />
-              <CrawlJobsList />
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 border rounded-lg p-1">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="h-7 w-7 p-0"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="h-7 w-7 p-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
             </div>
-          </TabsContent>
-        </Tabs>
+
+            {/* Auto Refresh Toggle */}
+            <div className="flex items-center gap-2">
+              <Switch
+                id="auto-refresh"
+                checked={autoRefresh}
+                onCheckedChange={setAutoRefresh}
+              />
+              <Label htmlFor="auto-refresh" className="text-sm">
+                Auto-refresh
+              </Label>
+            </div>
+
+            {/* Manual Refresh */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+
+            {/* Settings */}
+            <Button variant="outline" size="sm">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
+      
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Security
+          </TabsTrigger>
+          <TabsTrigger value="content" className="flex items-center gap-2">
+            <Newspaper className="h-4 w-4" />
+            Content
+          </TabsTrigger>
+          <TabsTrigger value="data" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Data
+          </TabsTrigger>
+          <TabsTrigger value="crawling" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Crawling
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <DashboardOverview
+                stats={stats}
+                systemHealth={systemHealth}
+                statsLoading={statsLoading}
+              />
+            </div>
+            <div className="space-y-6">
+              <QuickActions />
+              <RecentActivity 
+                activities={recentActivity}
+                loading={statsLoading}
+                onRefresh={fetchRecentActivity}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <UmamiAnalyticsDashboard />
+        </TabsContent>
+
+        <TabsContent value="security">
+          <SecurityMonitoringDashboard />
+        </TabsContent>
+
+        <TabsContent value="content">
+          <NewsModeration />
+        </TabsContent>
+
+        <TabsContent value="data" className="space-y-6">
+          <DataManagement />
+        </TabsContent>
+
+        <TabsContent value="crawling" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <CrawlForm />
+            <CrawlJobsList />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
