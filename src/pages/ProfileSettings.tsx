@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
+import { AvatarSettings } from '@/components/profile/AvatarSettings';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -184,6 +185,19 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
       }
     }));
     setHasUnsavedChanges(true);
+  };
+
+  const handleAvatarSave = async (avatarData: any) => {
+    // Update the local form data to reflect the avatar change
+    setFormData(prev => ({
+      ...prev,
+      avatar_url: avatarData.avatarUrl,
+      avatar_config: avatarData.avatarConfig,
+      avatar_type: avatarData.avatarType
+    }));
+    
+    // No need to call handleSave here as AvatarSettings handles its own saving
+    setHasUnsavedChanges(false);
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -367,37 +381,22 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
           {/* Profile Picture */}
           <Card>
             <CardHeader>
-              <CardTitle>Profile Picture</CardTitle>
+              <CardTitle>Profile Avatar</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Choose how you want to appear to other users. Upload your own photo, 
+                use our avatar builder, or connect your Gravatar account.
+              </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <AvatarDisplay 
-                  avatarUrl={profile?.avatar_url || undefined}
-                  avatarConfig={profile?.avatar_config}
-                  email={user?.email}
-                  size="lg"
-                  className="h-20 w-20"
-                />
-                
-                <div className="space-y-2">
-                  <Label htmlFor="avatar-upload" className="cursor-pointer">
-                    <Button variant="outline" className="cursor-pointer">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Change Picture
-                    </Button>
-                    <input
-                      id="avatar-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleAvatarUpload}
-                    />
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Recommended: Square image, at least 400×400px, max 2MB
-                  </p>
-                </div>
-              </div>
+            <CardContent>
+              <AvatarSettings
+                initialData={{
+                  avatarUrl: profile?.avatar_url,
+                  avatarConfig: profile?.avatar_config,
+                  avatarType: profile?.avatar_type as 'upload' | 'builder' | 'gravatar' | undefined,
+                  email: user?.email || ''
+                }}
+                onSave={handleAvatarSave}
+              />
             </CardContent>
           </Card>
 

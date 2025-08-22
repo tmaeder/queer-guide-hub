@@ -3982,6 +3982,7 @@ export type Database = {
           activism_involvement: string[] | null
           age_range: string | null
           avatar_config: Json | null
+          avatar_type: string | null
           avatar_url: string | null
           background_check: boolean | null
           bdsm_role: string | null
@@ -4120,6 +4121,7 @@ export type Database = {
           activism_involvement?: string[] | null
           age_range?: string | null
           avatar_config?: Json | null
+          avatar_type?: string | null
           avatar_url?: string | null
           background_check?: boolean | null
           bdsm_role?: string | null
@@ -4258,6 +4260,7 @@ export type Database = {
           activism_involvement?: string[] | null
           age_range?: string | null
           avatar_config?: Json | null
+          avatar_type?: string | null
           avatar_url?: string | null
           background_check?: boolean | null
           bdsm_role?: string | null
