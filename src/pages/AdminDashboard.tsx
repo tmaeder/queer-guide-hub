@@ -19,12 +19,8 @@ import { QuickActions } from '@/components/admin/dashboard/QuickActions';
 import { RecentActivity } from '@/components/admin/dashboard/RecentActivity';
 
 // Feature Components
-import { NewsModeration } from '@/components/admin/NewsModeration';
 import { SecurityMonitoringDashboard } from '@/components/admin/SecurityMonitoringDashboard';
-import { DataManagement } from '@/components/admin/dashboard/DataManagement';
 import { UmamiAnalyticsDashboard } from '@/components/analytics/UmamiAnalyticsDashboard';
-import { CrawlForm } from '@/components/admin/CrawlForm';
-import { CrawlJobsList } from '@/components/admin/CrawlJobsList';
 
 import { 
   Shield, 
@@ -38,8 +34,6 @@ import {
   TrendingUp,
   Activity,
   Users,
-  Newspaper,
-  Database,
   Grid3X3,
   List,
   RefreshCw,
@@ -476,7 +470,7 @@ export default function AdminDashboard() {
       </div>
       
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Overview
@@ -488,18 +482,6 @@ export default function AdminDashboard() {
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             Security
-          </TabsTrigger>
-          <TabsTrigger value="content" className="flex items-center gap-2">
-            <Newspaper className="h-4 w-4" />
-            Content
-          </TabsTrigger>
-          <TabsTrigger value="data" className="flex items-center gap-2">
-            <Database className="h-4 w-4" />
-            Data
-          </TabsTrigger>
-          <TabsTrigger value="crawling" className="flex items-center gap-2">
-            <Database className="h-4 w-4" />
-            Crawling
           </TabsTrigger>
         </TabsList>
 
@@ -529,21 +511,6 @@ export default function AdminDashboard() {
 
         <TabsContent value="security">
           <SecurityMonitoringDashboard />
-        </TabsContent>
-
-        <TabsContent value="content">
-          <NewsModeration />
-        </TabsContent>
-
-        <TabsContent value="data" className="space-y-6">
-          <DataManagement />
-        </TabsContent>
-
-        <TabsContent value="crawling" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <CrawlForm />
-            <CrawlJobsList />
-          </div>
         </TabsContent>
       </Tabs>
     </div>
