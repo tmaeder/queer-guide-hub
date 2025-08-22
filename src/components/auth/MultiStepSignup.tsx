@@ -46,6 +46,7 @@ export interface SignupData {
   matchNotifications: boolean;
   avatarUrl?: string;
   avatarConfig?: any;
+  avatarType?: 'upload' | 'builder' | 'gravatar';
 }
 
 const initialData: SignupData = {
@@ -71,6 +72,7 @@ const initialData: SignupData = {
   matchNotifications: true,
   avatarUrl: undefined,
   avatarConfig: undefined,
+  avatarType: undefined,
 };
 
 interface MultiStepSignupProps {
