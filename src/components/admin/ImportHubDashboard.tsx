@@ -120,102 +120,88 @@ export const ImportHubDashboard = () => {
   );
 
   return (
-    <div className="w-full min-h-screen bg-background">
+    <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="bg-card sticky top-0 z-40">
-        <div className="container mx-auto p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            {/* Title Section */}
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="p-3 bg-primary">
-                  <Database className="h-8 w-8 text-primary-foreground" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-success" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-foreground">
-                  Import Hub
-                </h1>
-                <p className="text-muted-foreground text-lg">
-                  Enterprise-grade data import with AI-powered validation
-                </p>
-              </div>
-            </div>
-            
-            {/* Statistics Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="bg-success">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <CheckCircle className="h-5 w-5 text-success-foreground" />
-                    <span className="text-2xl font-bold text-success-foreground">{statistics?.completed_jobs || 0}</span>
-                  </div>
-                  <p className="text-xs text-success-foreground">Completed Jobs</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-destructive">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <AlertTriangle className="h-5 w-5 text-destructive-foreground" />
-                    <span className="text-2xl font-bold text-destructive-foreground">{statistics?.failed_jobs || 0}</span>
-                  </div>
-                  <p className="text-xs text-destructive-foreground">Failed Jobs</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-warning">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Clock className="h-5 w-5 text-warning-foreground" />
-                    <span className="text-2xl font-bold text-warning-foreground">{statistics?.pending_jobs || 0}</span>
-                  </div>
-                  <p className="text-xs text-warning-foreground">Pending Jobs</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-primary">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Package className="h-5 w-5 text-primary-foreground" />
-                    <span className="text-2xl font-bold text-primary-foreground">{statistics?.total_records_processed?.toLocaleString() || 0}</span>
-                  </div>
-                  <p className="text-xs text-primary-foreground">Records Processed</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Controls */}
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={togglePolling}
-                className="gap-2"
-              >
-                {isPolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                {isPolling ? 'Pause' : 'Resume'}
-              </Button>
-                <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  loadJobs();
-                  loadStatistics();
-                }}
-                disabled={loading}
-                className="gap-2"
-              >
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-            </div>
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="p-3 bg-primary rounded-md">
+            <Database className="h-8 w-8 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Import Hub</h1>
+            <p className="text-muted-foreground">Enterprise-grade data import with AI-powered validation</p>
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto p-6">
+        {/* Statistics Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <span className="text-2xl font-bold">{statistics?.completed_jobs || 0}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Completed Jobs</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <span className="text-2xl font-bold">{statistics?.failed_jobs || 0}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Failed Jobs</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Clock className="h-5 w-5 text-yellow-600" />
+                <span className="text-2xl font-bold">{statistics?.pending_jobs || 0}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Pending Jobs</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Package className="h-5 w-5 text-blue-600" />
+                <span className="text-2xl font-bold">{statistics?.total_records_processed?.toLocaleString() || 0}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Records Processed</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={togglePolling}
+            className="gap-2"
+          >
+            {isPolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            {isPolling ? 'Pause' : 'Resume'}
+          </Button>
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              loadJobs();
+              loadStatistics();
+            }}
+            disabled={loading}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
+      </div>
         {/* Search and Filter Bar */}
         <Card className="mb-6 bg-card">
           <CardContent className="p-4">
@@ -600,6 +586,5 @@ export const ImportHubDashboard = () => {
           />
         )}
       </div>
-    </div>
-  );
-};
+    );
+  };
