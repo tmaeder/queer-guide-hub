@@ -180,10 +180,8 @@ export default function Auth() {
   // Default to multi-step signup for new users
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-6 py-12 max-w-4xl">
-        <div className="flex items-center justify-center min-h-[calc(100vh-6rem)]">
-          <MultiStepSignup onBack={handleBackToLogin} />
-        </div>
+      <div className="flex items-center justify-center min-h-screen px-6">
+        <MultiStepSignup onBack={handleBackToLogin} />
       </div>
     </div>
   );
