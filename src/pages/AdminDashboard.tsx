@@ -377,35 +377,40 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="p-3 bg-primary rounded-md">
-            <Shield className="h-8 w-8 text-primary-foreground" />
+    <div className="container mx-auto px-6 py-8 max-w-7xl">
+      {/* Header Section */}
+      <header className="mb-8 space-y-6">
+        {/* Title & Role */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-primary rounded-lg">
+              <Shield className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+              <p className="text-muted-foreground">Monitor and manage your platform</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Monitor and manage your platform</p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 text-sm">
+          
+          <div className="flex items-center gap-3">
             <Badge variant={isAdmin ? "default" : "secondary"} className="font-medium">
               {isAdmin ? "Administrator" : isModerator ? "Moderator" : "Staff"}
             </Badge>
             {lastUpdate && (
-              <span className="text-muted-foreground">
-                Last updated: {lastUpdate.toLocaleTimeString()}
+              <span className="text-sm text-muted-foreground">
+                Updated: {lastUpdate.toLocaleTimeString()}
               </span>
             )}
           </div>
+        </div>
 
-          <div className="flex items-center gap-3">
+        {/* Controls Bar */}
+        <div className="flex items-center justify-between p-4 bg-card rounded-lg border">
+          <div className="flex items-center gap-6">
             {/* Time Period Filter */}
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">Period:</span>
               <Select value={filterPeriod} onValueChange={setFilterPeriod}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -419,25 +424,30 @@ export default function AdminDashboard() {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 border rounded-lg p-1">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="h-7 w-7 p-0"
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-7 w-7 p-0"
-              >
-                <List className="h-4 w-4" />
-              </Button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground">View:</span>
+              <div className="flex items-center gap-1 border rounded-lg p-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="h-7 w-7 p-0"
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="h-7 w-7 p-0"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
+          </div>
 
+          <div className="flex items-center gap-4">
             {/* Auto Refresh Toggle */}
             <div className="flex items-center gap-2">
               <Switch
@@ -445,29 +455,29 @@ export default function AdminDashboard() {
                 checked={autoRefresh}
                 onCheckedChange={setAutoRefresh}
               />
-              <Label htmlFor="auto-refresh" className="text-sm">
+              <Label htmlFor="auto-refresh" className="text-sm font-medium">
                 Auto-refresh
               </Label>
             </div>
 
-            {/* Manual Refresh */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-
-            {/* Settings */}
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4" />
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                className="gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </Button>
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
       
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
