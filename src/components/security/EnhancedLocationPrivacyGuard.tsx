@@ -84,7 +84,7 @@ export function EnhancedLocationPrivacyGuard({
       setLocationSettings(updatedSettings);
 
       // Log privacy settings change
-      await supabase.rpc('log_enhanced_security_event', {
+      await supabase.rpc('log_security_event', {
         p_event_type: 'LOCATION_PRIVACY_SETTINGS_UPDATED',
         p_user_id: user.id,
         p_metadata: {
@@ -128,7 +128,7 @@ export function EnhancedLocationPrivacyGuard({
   const triggerLocationAnonymization = async () => {
     try {
       setLoading(true);
-      await supabase.rpc('anonymize_old_location_data');
+      await supabase.rpc('anonymize_location_data');
       
       // Refresh location data if needed
       window.location.reload();

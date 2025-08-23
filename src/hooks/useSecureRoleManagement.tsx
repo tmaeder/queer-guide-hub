@@ -24,7 +24,7 @@ export function useSecureRoleManagement() {
 
       // Log successful role assignment
       try {
-        await supabase.rpc('log_enhanced_security_event', {
+        await supabase.rpc('log_security_event', {
           p_event_type: 'ROLE_ASSIGNMENT_SUCCESS',
           p_user_id: null,
           p_metadata: {
@@ -49,7 +49,7 @@ export function useSecureRoleManagement() {
       
       // Log failed role assignment attempt
       try {
-        await supabase.rpc('log_enhanced_security_event', {
+        await supabase.rpc('log_security_event', {
           p_event_type: 'ROLE_ASSIGNMENT_FAILED',
           p_user_id: null,
           p_metadata: {

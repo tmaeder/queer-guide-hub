@@ -34,7 +34,7 @@ export function PrivacyGuard({
   if (isAdmin && adminJustification) {
     // Log admin access for audit trail
     if (logAccess) {
-      supabase.rpc('log_enhanced_security_event', {
+      supabase.rpc('log_security_event', {
         p_event_type: 'ADMIN_PRIVACY_OVERRIDE',
         p_user_id: user?.id || null,
         p_metadata: {

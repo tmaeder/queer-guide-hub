@@ -6067,9 +6067,9 @@ export type Database = {
           table_name: string
         }[]
       }
-      anonymize_old_location_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
+      anonymize_location_data: {
+        Args: { p_days_old?: number }
+        Returns: number
       }
       assign_user_role: {
         Args: { role_name: string; user_id: string }
@@ -6341,14 +6341,14 @@ export type Database = {
           table_schema: string
         }[]
       }
-      log_enhanced_security_event: {
+      log_security_event: {
         Args: {
           p_event_type: string
           p_metadata?: Json
           p_severity?: string
-          p_user_id: string
+          p_user_id?: string
         }
-        Returns: undefined
+        Returns: string
       }
       log_sensitive_data_access: {
         Args: {
@@ -6401,14 +6401,6 @@ export type Database = {
       secure_passkey_access: {
         Args: { p_operation: string; p_user_id: string }
         Returns: boolean
-      }
-      trigger_security_incident: {
-        Args: {
-          p_incident_type: string
-          p_metadata?: Json
-          p_severity?: string
-        }
-        Returns: string
       }
       validate_content_security: {
         Args: { content_text: string; content_type?: string }

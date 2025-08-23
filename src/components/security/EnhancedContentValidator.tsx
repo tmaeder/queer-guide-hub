@@ -60,7 +60,7 @@ export class EnhancedContentValidator {
 
   private static async logSecurityEvent(eventType: string, metadata: Record<string, any>, severity: string, userId?: string) {
     try {
-      await supabase.rpc('log_enhanced_security_event', {
+      await supabase.rpc('log_security_event', {
         p_event_type: eventType,
         p_user_id: userId || '',
         p_metadata: metadata,

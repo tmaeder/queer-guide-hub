@@ -111,7 +111,7 @@ export function EnhancedSecurityDashboard() {
 
   const triggerLocationAnonymization = async () => {
     try {
-      const { error } = await supabase.rpc('anonymize_old_location_data');
+      const { error } = await supabase.rpc('anonymize_location_data');
       if (error) throw error;
 
       toast({

@@ -29,7 +29,7 @@ export const PasskeyButton = ({
         if (error) {
           // Log security event for failed passkey enrollment
           if (user) {
-            await supabase.rpc('log_enhanced_security_event', {
+            await supabase.rpc('log_security_event', {
               p_event_type: 'PASSKEY_ENROLLMENT_FAILED',
               p_user_id: user.id,
               p_metadata: { error: error.message },
@@ -44,7 +44,7 @@ export const PasskeyButton = ({
         } else {
           // Log successful passkey enrollment
           if (user) {
-            await supabase.rpc('log_enhanced_security_event', {
+            await supabase.rpc('log_security_event', {
               p_event_type: 'PASSKEY_ENROLLMENT_SUCCESS',
               p_user_id: user.id,
               p_metadata: { timestamp: new Date().toISOString() },
@@ -60,7 +60,7 @@ export const PasskeyButton = ({
         const { error } = await signInWithPasskey();
         if (error) {
           // Log security event for failed passkey sign-in
-          await supabase.rpc('log_enhanced_security_event', {
+          await supabase.rpc('log_security_event', {
             p_event_type: 'PASSKEY_SIGNIN_FAILED',
             p_user_id: null,
             p_metadata: { error: error.message },

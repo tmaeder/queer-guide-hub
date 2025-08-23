@@ -152,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Log failed sign-in attempt
         try {
-          await supabase.rpc('log_enhanced_security_event', {
+          await supabase.rpc('log_security_event', {
             p_event_type: 'FAILED_SIGNIN_ATTEMPT',
             p_user_id: null,
             p_metadata: {
@@ -172,7 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Log successful sign-in
       if (data.user) {
         try {
-          await supabase.rpc('log_enhanced_security_event', {
+          await supabase.rpc('log_security_event', {
             p_event_type: 'SUCCESSFUL_SIGNIN',
             p_user_id: data.user.id,
             p_metadata: {

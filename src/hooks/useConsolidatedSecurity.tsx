@@ -87,13 +87,11 @@ export function useConsolidatedSecurity() {
     if (!user) return;
 
     try {
-      await supabase.functions.invoke('log-enhanced-security-event', {
-        body: {
-          eventType: action.type,
-          userId: user.id,
-          metadata: action.metadata || {},
-          severity: 'medium'
-        }
+      await supabase.rpc('log_security_event', {
+        p_event_type: action.type,
+        p_user_id: user.id,
+        p_metadata: action.metadata || {},
+        p_severity: 'medium'
       });
 
       // Refresh metrics after logging
@@ -109,10 +107,11 @@ export function useConsolidatedSecurity() {
     metadata?: Record<string, any>
   ) => {
     try {
-      await supabase.rpc('trigger_security_incident', {
-        p_incident_type: incidentType,
+      await supabase.rpc('log_security_event', {
+        p_event_type: incidentType,
         p_severity: severity,
-        p_metadata: metadata || {}
+        p_metadata: metadata || {},
+        p_user_id: user?.id
       });
 
       toast({
@@ -134,7 +133,7 @@ export function useConsolidatedSecurity() {
 
   const anonymizeLocationData = useCallback(async () => {
     return withLoading(async () => {
-      const { error } = await supabase.rpc('anonymize_old_location_data');
+      const { error } = await supabase.rpc('anonymize_location_data');
       if (error) throw error;
 
       await logSecurityAction({ 

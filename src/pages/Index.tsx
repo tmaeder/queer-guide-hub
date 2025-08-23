@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, CheckCircle, Sparkles, Globe, Search, BookOpen, Quote, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useStats } from '@/hooks/useStats';
+import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 
@@ -21,7 +21,7 @@ const Index = React.memo(() => {
   const {
     stats: realStats,
     loading
-  } = useStats();
+  } = useConsolidatedStats();
   const isMobile = useIsMobile();
   const features = [{
     icon: MapPin,
@@ -95,13 +95,13 @@ const Index = React.memo(() => {
     number: formatNumber(realStats.venues),
     label: 'Verified Venues'
   }, {
-    number: formatNumber(realStats.members),
+    number: formatNumber(realStats.profiles),
     label: 'Community Members'
   }, {
     number: formatNumber(realStats.cities),
     label: 'Cities Worldwide'
   }, {
-    number: formatNumber(realStats.weeklyEvents),
+    number: formatNumber(realStats.events),
     label: 'Weekly Events'
   }], [loading, realStats, formatNumber]);
   return <div className="min-h-screen">

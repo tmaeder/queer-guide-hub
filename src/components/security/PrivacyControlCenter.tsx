@@ -162,7 +162,7 @@ export function PrivacyControlCenter() {
       // Log security event for sensitive changes
       const setting = privacySettings.find(s => s.key === key);
       if (setting?.category === 'sensitive' || setting?.category === 'financial') {
-        await supabase.rpc('log_enhanced_security_event', {
+        await supabase.rpc('log_security_event', {
           p_event_type: 'PRIVACY_SETTING_CHANGED',
           p_user_id: user.id,
           p_metadata: {

@@ -3,7 +3,7 @@ import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
 import { EnhancedSecurityDashboard } from "@/components/security/EnhancedSecurityDashboard";
 import { AutomatedSecurityScheduler } from "@/components/security/AutomatedSecurityScheduler";
 import { PrivacyControlCenter } from "@/components/security/PrivacyControlCenter";
-import { useEnhancedSecurity } from '@/hooks/useEnhancedSecurity';
+import { useConsolidatedSecurity } from '@/hooks/useConsolidatedSecurity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,13 +21,13 @@ import {
 } from 'lucide-react';
 
 export default function AdminSecurityDashboard() {
-  const { 
-    securityMetrics, 
-    loading, 
+  const {
+    securityMetrics,
+    loading,
     anonymizeLocationData,
     triggerSecurityIncident,
-    refreshMetrics 
-  } = useEnhancedSecurity();
+    refreshMetrics
+  } = useConsolidatedSecurity();
 
   const handleEmergencyLockdown = () => {
     triggerSecurityIncident('EMERGENCY_LOCKDOWN', 'critical', {
@@ -51,30 +51,30 @@ export default function AdminSecurityDashboard() {
           </div>
         ) : securityMetrics ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-destructive">
-                {securityMetrics.critical_alerts_24h}
-              </div>
-              <div className="text-sm text-muted-foreground">Critical Alerts</div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-destructive">
+              {securityMetrics.criticalAlerts}
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-warning">
-                {securityMetrics.high_alerts_24h}
-              </div>
-              <div className="text-sm text-muted-foreground">High Alerts</div>
+            <div className="text-sm text-muted-foreground">Critical Alerts</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-warning">
+              {securityMetrics.highAlerts}
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">
-                {securityMetrics.failed_auth_attempts}
-              </div>
-              <div className="text-sm text-muted-foreground">Failed Auth</div>
+            <div className="text-sm text-muted-foreground">High Alerts</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold">
+              {securityMetrics.totalEvents}
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">
-                {securityMetrics.suspicious_activity_score}
-              </div>
-              <div className="text-sm text-muted-foreground">Risk Score</div>
+            <div className="text-sm text-muted-foreground">Total Events</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold">
+              {securityMetrics.suspiciousActivityScore}
             </div>
+            <div className="text-sm text-muted-foreground">Risk Score</div>
+          </div>
           </div>
         ) : (
           <div className="text-center text-muted-foreground">

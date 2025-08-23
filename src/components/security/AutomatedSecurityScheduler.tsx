@@ -119,7 +119,7 @@ export function AutomatedSecurityScheduler() {
       setLoading(true);
 
       if (taskName.includes('Location Data Anonymization')) {
-        const { error } = await supabase.rpc('anonymize_old_location_data');
+        const { error } = await supabase.rpc('anonymize_location_data');
         if (error) throw error;
       }
 
