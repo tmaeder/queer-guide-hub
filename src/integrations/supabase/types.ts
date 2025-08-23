@@ -6350,6 +6350,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_sensitive_data_access: {
+        Args: {
+          p_access_method?: string
+          p_data_type: string
+          p_target_user_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       match_content_embeddings: {
         Args: {
           match_count?: number

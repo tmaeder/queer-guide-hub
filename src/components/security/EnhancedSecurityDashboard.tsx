@@ -1,105 +1,109 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Shield, AlertTriangle, CheckCircle, Clock, Database, Lock, Eye } from 'lucide-react';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { Shield, AlertTriangle, CheckCircle, Activity, Users, MapPin, DollarSign } from 'lucide-react';
 
 interface SecurityMetric {
-  name: string;
-  status: 'secure' | 'warning' | 'critical';
-  value: string | number;
-  description: string;
-  lastChecked: string;
+  id: string;
+  event_type: string;
+  metadata: any;
+  details: any;
+  created_at: string;
+  user_id?: string;
+  ip_address?: unknown;
+  user_agent?: string;
 }
 
-interface SecurityAlert {
-  id: string;
-  type: string;
-  severity: 'critical' | 'high' | 'medium';
-  message: string;
-  timestamp: string;
-  resolved: boolean;
+interface SecurityStats {
+  criticalEvents: number;
+  highEvents: number;
+  mediumEvents: number;
+  totalEvents: number;
+  privacyUpdates: number;
+  locationAnonymizations: number;
+  adminDataAccess: number;
 }
 
 export function EnhancedSecurityDashboard() {
-  const { isAdmin } = useAdminRoles();
-  const [metrics, setMetrics] = useState<SecurityMetric[]>([]);
-  const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
+  const [securityEvents, setSecurityEvents] = useState<SecurityMetric[]>([]);
+  const [stats, setStats] = useState<SecurityStats>({
+    criticalEvents: 0,
+    highEvents: 0,
+    mediumEvents: 0,
+    totalEvents: 0,
+    privacyUpdates: 0,
+    locationAnonymizations: 0,
+    adminDataAccess: 0
+  });
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (isAdmin) {
-      loadSecurityData();
-      const interval = setInterval(loadSecurityData, 30000); // Refresh every 30s
-      return () => clearInterval(interval);
-    }
-  }, [isAdmin]);
+    fetchSecurityData();
+  }, []);
 
-  const loadSecurityData = async () => {
+  const fetchSecurityData = async () => {
     try {
-      // Load security metrics
-      const metricsData: SecurityMetric[] = [
-        {
-          name: 'RLS Policies Status',
-          status: 'secure',
-          value: 'Active',
-          description: 'Row Level Security policies are properly configured',
-          lastChecked: new Date().toISOString()
-        },
-        {
-          name: 'Profile Privacy Protection',
-          status: 'secure',
-          value: 'Enforced',
-          description: 'Profile data access is restricted to owners and authorized admins',
-          lastChecked: new Date().toISOString()
-        },
-        {
-          name: 'Location Data Anonymization',
-          status: 'secure',
-          value: 'Automated',
-          description: 'Location data older than 30 days is automatically anonymized',
-          lastChecked: new Date().toISOString()
-        },
-        {
-          name: 'Photo Privacy Controls',
-          status: 'secure',
-          value: 'Private by Default',
-          description: 'User photos are set to private by default with friend-only sharing',
-          lastChecked: new Date().toISOString()
-        },
-        {
-          name: 'Financial Data Security',
-          status: 'secure',
-          value: 'Encrypted',
-          description: 'Donation data is restricted to donors only',
-          lastChecked: new Date().toISOString()
-        }
-      ];
-
-      // Load security alerts from monitoring table
-      const { data: alertsData } = await supabase
-        .from('security_monitoring')
+      setLoading(true);
+      
+      // Fetch recent security events
+      const { data: events, error: eventsError } = await supabase
+        .from('security_events')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(50);
 
-      const formattedAlerts: SecurityAlert[] = (alertsData || []).map(alert => ({
-        id: alert.id,
-        type: alert.event_type,
-        severity: alert.severity as 'critical' | 'high' | 'medium',
-        message: (alert.metadata as any)?.message || `Security event: ${alert.event_type}`,
-        timestamp: alert.created_at,
-        resolved: false
-      }));
+      if (eventsError) throw eventsError;
 
-      setMetrics(metricsData);
-      setAlerts(formattedAlerts);
+      setSecurityEvents(events || []);
+
+      // Calculate stats - determine severity from event type
+      const eventStats = events?.reduce((acc, event) => {
+        acc.totalEvents++;
+        
+        // Determine severity from event type
+        let severity = 'medium';
+        if (event.event_type.includes('CRITICAL') || event.event_type.includes('SECURITY_INCIDENT')) {
+          severity = 'critical';
+          acc.criticalEvents++;
+        } else if (event.event_type.includes('ADMIN') || event.event_type.includes('ACCESS') || event.event_type.includes('FINANCIAL')) {
+          severity = 'high';
+          acc.highEvents++;
+        } else {
+          acc.mediumEvents++;
+        }
+
+        if (event.event_type === 'PRIVACY_SETTINGS_UPDATED') {
+          acc.privacyUpdates++;
+        } else if (event.event_type === 'LOCATION_DATA_ANONYMIZED') {
+          acc.locationAnonymizations++;
+        } else if (event.event_type.includes('ADMIN') && event.event_type.includes('ACCESS')) {
+          acc.adminDataAccess++;
+        }
+
+        return acc;
+      }, {
+        criticalEvents: 0,
+        highEvents: 0,
+        mediumEvents: 0,
+        totalEvents: 0,
+        privacyUpdates: 0,
+        locationAnonymizations: 0,
+        adminDataAccess: 0
+      }) || stats;
+
+      setStats(eventStats);
     } catch (error) {
-      console.error('Error loading security data:', error);
+      console.error('Error fetching security data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load security dashboard data.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -109,203 +113,194 @@ export function EnhancedSecurityDashboard() {
     try {
       const { error } = await supabase.rpc('anonymize_old_location_data');
       if (error) throw error;
-      
+
       toast({
-        title: "Location Anonymization Triggered",
-        description: "Old location data has been anonymized successfully"
+        title: "Success",
+        description: "Location data anonymization completed.",
+        variant: "default"
       });
-      
-      loadSecurityData();
+
+      // Refresh data
+      fetchSecurityData();
     } catch (error) {
+      console.error('Error anonymizing location data:', error);
       toast({
         title: "Error",
-        description: "Failed to trigger location anonymization",
+        description: "Failed to anonymize location data.",
         variant: "destructive"
       });
     }
   };
 
-  const getStatusIcon = (status: SecurityMetric['status']) => {
-    switch (status) {
-      case 'secure':
-        return <CheckCircle className="h-5 w-5 text-green-600" />;
-      case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-yellow-600" />;
-      case 'critical':
-        return <AlertTriangle className="h-5 w-5 text-red-600" />;
+  const getSeverityIcon = (event: SecurityMetric) => {
+    // Determine severity from event type
+    if (event.event_type.includes('CRITICAL') || event.event_type.includes('SECURITY_INCIDENT')) {
+      return <AlertTriangle className="h-4 w-4 text-destructive" />;
+    } else if (event.event_type.includes('ADMIN') || event.event_type.includes('ACCESS') || event.event_type.includes('FINANCIAL')) {
+      return <Shield className="h-4 w-4 text-secondary" />;
+    } else {
+      return <CheckCircle className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
-  const getSeverityBadge = (severity: SecurityAlert['severity']) => {
-    const variants = {
-      critical: 'destructive' as const,
-      high: 'secondary' as const,
-      medium: 'outline' as const
-    };
+  const getSeverityBadge = (event: SecurityMetric) => {
+    // Determine severity from event type
+    let severity = 'medium';
+    let variant: 'destructive' | 'secondary' | 'outline' = 'outline';
     
-    return <Badge variant={variants[severity]}>{severity.toUpperCase()}</Badge>;
-  };
+    if (event.event_type.includes('CRITICAL') || event.event_type.includes('SECURITY_INCIDENT')) {
+      severity = 'critical';
+      variant = 'destructive';
+    } else if (event.event_type.includes('ADMIN') || event.event_type.includes('ACCESS') || event.event_type.includes('FINANCIAL')) {
+      severity = 'high';  
+      variant = 'secondary';
+    }
 
-  if (!isAdmin) {
     return (
-      <Alert>
-        <Shield className="h-4 w-4" />
-        <AlertTitle>Access Denied</AlertTitle>
-        <AlertDescription>
-          Administrative privileges required to view security dashboard.
-        </AlertDescription>
-      </Alert>
+      <Badge variant={variant}>
+        {severity.toUpperCase()}
+      </Badge>
     );
-  }
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Shield className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Loading security status...</span>
+      <div className="flex items-center justify-center min-h-64">
+        <div className="animate-spin h-8 w-8 bg-primary" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Overall Security Status */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-6 w-6 text-green-600" />
-              <CardTitle>Security Status: Hardened</CardTitle>
-            </div>
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
-              All Critical Fixes Applied
-            </Badge>
-          </div>
-          <CardDescription>
-            All critical security vulnerabilities have been addressed and monitoring is active.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      {/* Security Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Critical Events</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive">{stats.criticalEvents}</div>
+            <p className="text-xs text-muted-foreground">Require immediate attention</p>
+          </CardContent>
+        </Card>
 
-      {/* Security Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {metrics.map((metric) => (
-          <Card key={metric.name}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{metric.name}</CardTitle>
-              {getStatusIcon(metric.status)}
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metric.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {metric.description}
-              </p>
-              <div className="flex items-center mt-2 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3 mr-1" />
-                Last checked: {new Date(metric.lastChecked).toLocaleTimeString()}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">High Priority</CardTitle>
+            <Shield className="h-4 w-4 text-secondary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.highEvents}</div>
+            <p className="text-xs text-muted-foreground">Security events</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Privacy Updates</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.privacyUpdates}</div>
+            <p className="text-xs text-muted-foreground">Settings changed</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Admin Access</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.adminDataAccess}</div>
+            <p className="text-xs text-muted-foreground">Sensitive data access</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Security Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Database className="h-5 w-5" />
-            <span>Security Actions</span>
-          </CardTitle>
+          <CardTitle>Security Actions</CardTitle>
           <CardDescription>
-            Manual security operations and maintenance tasks
+            Manage security policies and data protection measures
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div>
-              <h4 className="font-medium">Location Data Anonymization</h4>
-              <p className="text-sm text-muted-foreground">
-                Manually trigger anonymization of old location data (30+ days)
-              </p>
-            </div>
-            <Button onClick={triggerLocationAnonymization} variant="outline" size="sm">
-              <Eye className="h-4 w-4 mr-2" />
-              Anonymize Now
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button onClick={triggerLocationAnonymization} variant="outline">
+              <MapPin className="h-4 w-4 mr-2" />
+              Anonymize Location Data
+            </Button>
+            <Button onClick={fetchSecurityData} variant="outline">
+              <Activity className="h-4 w-4 mr-2" />
+              Refresh Data
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Security Alerts */}
-      {alerts.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5" />
-              <span>Recent Security Events</span>
-            </CardTitle>
-            <CardDescription>
-              Latest security monitoring alerts and events
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {alerts.map((alert) => (
-                <div key={alert.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      {getSeverityBadge(alert.severity)}
-                      <span className="font-medium">{alert.type}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{alert.message}</p>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {new Date(alert.timestamp).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Security Compliance Summary */}
+      {/* Recent Security Events */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Lock className="h-5 w-5" />
-            <span>Compliance Summary</span>
-          </CardTitle>
+          <CardTitle>Recent Security Events</CardTitle>
+          <CardDescription>
+            Latest security-related activities and alerts
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <h4 className="font-medium text-green-700">✅ Implemented Protections</h4>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Row Level Security (RLS) policies hardened</li>
-                <li>• Profile data access restricted to owners</li>
-                <li>• Location data automatically anonymized</li>
-                <li>• Photo privacy set to private by default</li>
-                <li>• Financial data encrypted and access controlled</li>
-                <li>• Admin access logging and justification required</li>
-                <li>• Real-time security monitoring active</li>
-              </ul>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-medium text-blue-700">🔒 Security Features</h4>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Enhanced authentication controls</li>
-                <li>• Granular privacy settings</li>
-                <li>• Automated data retention compliance</li>
-                <li>• Content sanitization and validation</li>
-                <li>• Rate limiting protection</li>
-                <li>• Security event audit trails</li>
-                <li>• Geographic anomaly detection</li>
-              </ul>
-            </div>
+          <div className="space-y-4">
+            {securityEvents.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No security events recorded
+              </div>
+            ) : (
+              securityEvents.map((event) => (
+                <div key={event.id} className="flex items-start space-x-4 p-4 border rounded-lg">
+                  <div className="flex-shrink-0">
+                    {getSeverityIcon(event)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">
+                        {event.event_type.replace(/_/g, ' ')}
+                      </p>
+                      {getSeverityBadge(event)}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(event.created_at).toLocaleString()}
+                    </p>
+                    {event.metadata && Object.keys(event.metadata).length > 0 && (
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        <details>
+                          <summary className="cursor-pointer">Event details</summary>
+                          <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-auto">
+                            {JSON.stringify(event.metadata, null, 2)}
+                          </pre>
+                        </details>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Security Status Alert */}
+      {stats.criticalEvents > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Critical Security Alert</AlertTitle>
+          <AlertDescription>
+            You have {stats.criticalEvents} critical security event(s) that require immediate attention.
+            Please review the events above and take appropriate action.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }
