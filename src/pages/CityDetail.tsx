@@ -323,7 +323,7 @@ export default function CityDetail() {
           )}
 
           {/* Enhanced Tabs */}
-          <Tabs defaultValue="overview" className="space-y-6">
+          <Tabs defaultValue="overview" className="w-full space-y-6">
             <TabsList className="grid w-full grid-cols-4 bg-muted/50">
               <TabsTrigger value="overview" className="text-sm">
                 <Info className="h-4 w-4 mr-2" />
