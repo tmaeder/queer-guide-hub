@@ -1,0 +1,8 @@
+# Cloudflare Pages SPA redirect
+/*    /index.html   200
+
+# API routes - redirect to Supabase edge functions if needed
+/api/*  https://your-project.supabase.co/functions/v1/:splat  200
+
+# Security redirects
+/admin/*  /admin/dashboard  200

@@ -1,68 +1,184 @@
-/*
-  Simple Service Worker for route caching
-  Caches specific SPA routes for faster reloads and provides a stale-while-revalidate strategy.
-*/
-const CACHE_VERSION = 'v1';
-const APP_SHELL_CACHE = `app-shell-${CACHE_VERSION}`;
-const PRECACHE_URLS = [
+// Service Worker optimized for Cloudflare Pages
+const CACHE_NAME = 'lovable-app-v1';
+const STATIC_CACHE = 'static-v1';
+const DYNAMIC_CACHE = 'dynamic-v1';
+
+// Assets to cache immediately
+const STATIC_ASSETS = [
   '/',
-  '/events',
-  '/directory',
-  '/travel',
-  '/venues',
-  '/marketplace',
-  '/tags',
+  '/index.html',
+  '/assets/css/index.css',
+  '/manifest.json'
 ];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(APP_SHELL_CACHE).then((cache) => cache.addAll(PRECACHE_URLS))
-  );
-  // Activate updated SW immediately
-  self.skipWaiting();
-});
+// Assets to cache on first request
+const CACHE_STRATEGIES = {
+  // Static assets - cache first
+  static: /\.(js|css|woff2?|png|jpg|jpeg|webp|avif|svg|ico)$/,
+  // API calls - network first with fallback
+  api: /\/api\//,
+  // Images - cache first with network fallback
+  images: /\.(png|jpg|jpeg|webp|avif|gif|svg)$/,
+  // HTML - network first
+  html: /\.html$|\/$/
+};
 
-self.addEventListener('activate', (event) => {
-  // Cleanup old caches
+self.addEventListener('install', event => {
   event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      await Promise.all(
-        keys
-          .filter((key) => key.startsWith('app-shell-') && key !== APP_SHELL_CACHE)
-          .map((key) => caches.delete(key))
-      );
-      await self.clients.claim();
-    })()
+    caches.open(STATIC_CACHE)
+      .then(cache => cache.addAll(STATIC_ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(cacheNames => {
+        return Promise.all(
+          cacheNames
+            .filter(cacheName => 
+              cacheName !== STATIC_CACHE && 
+              cacheName !== DYNAMIC_CACHE
+            )
+            .map(cacheName => caches.delete(cacheName))
+        );
+      })
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
   const { request } = event;
+  const url = new URL(request.url);
 
-  // Only handle navigations to specific routes
-  if (request.mode === 'navigate') {
-    const url = new URL(request.url);
-    if (PRECACHE_URLS.includes(url.pathname)) {
-      event.respondWith(staleWhileRevalidateForRoute(url.pathname, request));
-      return;
-    }
+  // Skip non-GET requests
+  if (request.method !== 'GET') return;
+
+  // Skip external domains except for specific CDNs
+  if (
+    url.origin !== location.origin && 
+    !url.hostname.includes('supabase.co') &&
+    !url.hostname.includes('fonts.gstatic.com') &&
+    !url.hostname.includes('cdn.jsdelivr.net')
+  ) {
+    return;
+  }
+
+  // Static assets - Cache First strategy
+  if (CACHE_STRATEGIES.static.test(url.pathname)) {
+    event.respondWith(
+      caches.match(request)
+        .then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          return fetch(request)
+            .then(response => {
+              if (response.status === 200) {
+                const responseClone = response.clone();
+                caches.open(STATIC_CACHE)
+                  .then(cache => cache.put(request, responseClone));
+              }
+              return response;
+            });
+        })
+        .catch(() => {
+          // Return offline fallback for static assets
+          if (request.destination === 'image') {
+            return new Response(
+              '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f3f4f6"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#6b7280">Image unavailable</text></svg>',
+              { headers: { 'Content-Type': 'image/svg+xml' } }
+            );
+          }
+        })
+    );
+    return;
+  }
+
+  // API calls - Network First strategy
+  if (CACHE_STRATEGIES.api.test(url.pathname)) {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(DYNAMIC_CACHE)
+              .then(cache => cache.put(request, responseClone));
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request)
+            .then(cachedResponse => {
+              return cachedResponse || new Response(
+                JSON.stringify({ error: 'Network unavailable' }), 
+                { 
+                  status: 503,
+                  headers: { 'Content-Type': 'application/json' }
+                }
+              );
+            });
+        })
+    );
+    return;
+  }
+
+  // HTML pages - Network First with cache fallback
+  if (CACHE_STRATEGIES.html.test(url.pathname) || url.pathname === '/') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(DYNAMIC_CACHE)
+              .then(cache => cache.put(request, responseClone));
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request)
+            .then(cachedResponse => {
+              return cachedResponse || caches.match('/index.html');
+            });
+        })
+    );
+    return;
+  }
+
+  // Default: try network first, fallback to cache
+  event.respondWith(
+    fetch(request)
+      .catch(() => caches.match(request))
+  );
+});
+
+// Handle background sync for Cloudflare compatibility
+self.addEventListener('sync', event => {
+  if (event.tag === 'background-sync') {
+    event.waitUntil(
+      // Handle any background sync tasks
+      Promise.resolve()
+    );
   }
 });
 
-async function staleWhileRevalidateForRoute(cacheKey, request) {
-  const cache = await caches.open(APP_SHELL_CACHE);
-  const cached = await cache.match(cacheKey);
+// Handle push notifications (if needed)
+self.addEventListener('push', event => {
+  if (!event.data) return;
 
-  const networkPromise = fetch(request)
-    .then((response) => {
-      if (response && response.ok) {
-        cache.put(cacheKey, response.clone());
-      }
-      return response;
-    })
-    .catch(() => undefined);
+  const options = {
+    body: event.data.text(),
+    icon: '/icon-192x192.png',
+    badge: '/icon-192x192.png',
+    vibrate: [100, 50, 100],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 1
+    }
+  };
 
-  // Return cached immediately if present, else wait for network
-  return cached || (await networkPromise) || new Response('Offline', { status: 503 });
-}
+  event.waitUntil(
+    self.registration.showNotification('Lovable App', options)
+  );
+});

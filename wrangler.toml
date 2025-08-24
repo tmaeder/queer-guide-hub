@@ -1,0 +1,92 @@
+name = "lovable-app"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "lovable-app"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "npm run build"
+cwd = "."
+
+[build.upload]
+format = "service-worker"
+
+[[build.upload.rules]]
+type = "ESModule"
+globs = ["**/*.js"]
+
+# Pages configuration
+pages_build_output_dir = "dist"
+
+# Environment variables for Cloudflare Pages
+[env.production.vars]
+NODE_ENV = "production"
+
+# Headers for Cloudflare Pages
+[[headers]]
+for = "/*"
+[headers.values]
+X-Frame-Options = "DENY"
+X-Content-Type-Options = "nosniff"
+X-XSS-Protection = "1; mode=block"
+Referrer-Policy = "strict-origin-when-cross-origin"
+Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+Permissions-Policy = "camera=(), microphone=(), geolocation=(self), payment=(self)"
+
+# Cache optimization for static assets
+[[headers]]
+for = "/assets/*"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+Cross-Origin-Resource-Policy = "cross-origin"
+
+[[headers]]
+for = "/*.js"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/*.css"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/*.woff2"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+Cross-Origin-Resource-Policy = "cross-origin"
+
+# HTML files should not be cached
+[[headers]]
+for = "/*.html"
+[headers.values]
+Cache-Control = "public, max-age=0, must-revalidate"
+
+# Images optimization
+[[headers]]
+for = "*.jpg"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "*.png" 
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "*.webp"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "*.avif"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+# Redirects for SPA routing
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200

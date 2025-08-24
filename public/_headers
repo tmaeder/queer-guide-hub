@@ -1,55 +1,86 @@
-# Cache static assets for 1 year (immutable files with hashes)
+# Cloudflare Pages Headers for Security and Performance
+
+# Static assets - long cache with immutable for Cloudflare optimization
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
-  Expires: Thu, 31 Dec 2025 23:59:59 GMT
+  Cross-Origin-Resource-Policy: cross-origin
+  CF-Polish: lossy
   Content-Encoding: gzip
 
-# Cache other static files for 1 week
+# JavaScript files - optimized for Cloudflare CDN
 /*.js
-  Cache-Control: public, max-age=604800
-  Expires: Thu, 13 Aug 2025 00:00:00 GMT
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: application/javascript
   Content-Encoding: gzip
 
+# CSS files with Cloudflare optimization  
 /*.css
-  Cache-Control: public, max-age=604800
-  Expires: Thu, 13 Aug 2025 00:00:00 GMT
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: text/css
   Content-Encoding: gzip
 
+# Font files - Cloudflare font optimization
 /*.woff2
-  Cache-Control: public, max-age=31536000
-  Expires: Thu, 31 Dec 2025 23:59:59 GMT
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+  Content-Type: font/woff2
 
 /*.woff
-  Cache-Control: public, max-age=31536000
-  Expires: Thu, 31 Dec 2025 23:59:59 GMT
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+  Content-Type: font/woff
+
+# Image files with Cloudflare Images optimization hints
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/jpeg
+  CF-Polish: lossy
+
+/*.jpeg
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/jpeg
+  CF-Polish: lossy
 
 /*.png
-  Cache-Control: public, max-age=604800
-  Expires: Thu, 13 Aug 2025 00:00:00 GMT
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/png
+  CF-Polish: lossy
 
-/*.jpg
-  Cache-Control: public, max-age=604800
-  Expires: Thu, 13 Aug 2025 00:00:00 GMT
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/webp
+
+/*.avif
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/avif
 
 /*.svg
-  Cache-Control: public, max-age=604800
-  Expires: Thu, 13 Aug 2025 00:00:00 GMT
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/svg+xml
   Content-Encoding: gzip
 
-# Cache manifest and service worker for short time
-/manifest.json
-  Cache-Control: public, max-age=3600
-  Expires: Wed, 06 Aug 2025 01:00:00 GMT
+# JSON files - Cloudflare API cache optimization
+/*.json
+  Cache-Control: public, max-age=300
+  Content-Type: application/json
+  Content-Encoding: gzip
 
+# Service worker and manifest
 /sw.js
-  Cache-Control: public, max-age=0
-  Expires: Wed, 06 Aug 2025 00:00:00 GMT
+  Cache-Control: public, max-age=0, must-revalidate
+  Content-Type: application/javascript
 
-# HTML should be revalidated
+/manifest.json
+  Cache-Control: public, max-age=86400
+  Content-Type: application/manifest+json
+
+# HTML files - no cache for SPA routing
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
+  Content-Type: text/html
   Content-Encoding: gzip
 
+# Root HTML with Cloudflare optimization and security headers
 /
   Cache-Control: public, max-age=0, must-revalidate
   Content-Encoding: gzip
@@ -57,18 +88,19 @@
   X-XSS-Protection: 1; mode=block
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://api.mapbox.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' https://api.mapbox.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com wss://*.supabase.co; frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
   Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=(self), usb=()
   Cross-Origin-Opener-Policy: same-origin
   X-Permitted-Cross-Domain-Policies: none
 
-# Enable gzip compression for compressible content
-/*.json
-  Content-Encoding: gzip
-
-/*.xml
-  Content-Encoding: gzip
-
-# Redirect sitemap.xml to dynamic generation
-/sitemap.xml https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/generate-sitemap 200!
+# Global headers for all files
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=(self)
+  Cross-Origin-Opener-Policy: same-origin
+  X-Permitted-Cross-Domain-Policies: none
