@@ -18,6 +18,7 @@ import { NewsCard } from "@/components/news/NewsCard";
 import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
 import { CurrentWeather } from "@/components/weather/CurrentWeather";
+import { PageLoading, InlineLoading } from "@/components/ui/loading";
 type CityWithCountry = {
   id: string;
   name: string;
@@ -184,11 +185,7 @@ export default function CityDetail() {
       </div>;
   };
   if (loading) {
-    return <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">Loading city details...</div>
-        </div>
-      </div>;
+    return <PageLoading text="Loading city details..." />;
   }
   if (!city) {
     return <div className="min-h-screen bg-background">
@@ -662,7 +659,7 @@ export default function CityDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {venuesLoading ? <div className="text-center py-8">Loading venues...</div> : venues.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {venuesLoading ? <InlineLoading text="Loading venues..." size="md" /> : venues.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {venues.map(venue => <VenueCard key={venue.id} venue={venue} />)}
                     </div> : <p className="text-muted-foreground text-center py-8">No venues available for this city.</p>}
                 </CardContent>
@@ -678,7 +675,7 @@ export default function CityDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {newsLoading ? <div className="text-center py-8">Loading news...</div> : articles.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {newsLoading ? <InlineLoading text="Loading news..." size="md" /> : articles.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {articles.slice(0, 6).map(article => <NewsCard key={article.id} article={article} />)}
                     </div> : <p className="text-muted-foreground text-center py-8">No news available for this city.</p>}
                 </CardContent>
@@ -694,7 +691,7 @@ export default function CityDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {eventsLoading ? <div className="text-center py-8">Loading events...</div> : events.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {eventsLoading ? <InlineLoading text="Loading events..." size="md" /> : events.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {events.map(event => <EventCard key={event.id} event={event} />)}
                     </div> : <p className="text-muted-foreground text-center py-8">No events available for this city.</p>}
                 </CardContent>
