@@ -39,9 +39,12 @@ export function CloudflareDashboard() {
     try {
       if (showRefreshToast) setRefreshing(true)
       
+      // First test if the API token is configured
+      const testResult = await cloudflareAPI.getZoneInfo()
+      
       const [analytics, zoneInfo, securitySettings, performanceSettings, threatAnalytics] = await Promise.allSettled([
         cloudflareAPI.getAnalytics(),
-        cloudflareAPI.getZoneInfo(),
+        Promise.resolve(testResult), // Use the already fetched zone info
         cloudflareAPI.getSecuritySettings(),
         cloudflareAPI.getPerformanceSettings(),
         cloudflareAPI.getThreatAnalytics()
@@ -61,11 +64,22 @@ export function CloudflareDashboard() {
           description: "Latest statistics have been loaded successfully."
         })
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching Cloudflare data:', error)
+      
+      let errorMessage = "Failed to fetch Cloudflare data."
+      
+      if (error.message?.includes('API token not configured')) {
+        errorMessage = "Cloudflare API token is not configured. Please set the CLOUDFLARE_API_TOKEN in your Supabase secrets."
+      } else if (error.message?.includes('Unauthorized')) {
+        errorMessage = "Invalid Cloudflare API token. Please check your token permissions."
+      } else if (error.message?.includes('Forbidden')) {
+        errorMessage = "Insufficient permissions. Your API token may not have access to this zone."
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to fetch Cloudflare data. Please check your API configuration.",
+        description: errorMessage,
         variant: "destructive"
       })
     } finally {
@@ -372,9 +386,32 @@ export function CloudflareDashboard() {
                 <div className="space-y-2">
                   <h4 className="font-medium">API Status</h4>
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">Connected</span>
+                    {stats.zoneInfo ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">Connected</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                        <span className="text-sm">Not Connected</span>
+                      </>
+                    )}
                   </div>
+                  {!stats.zoneInfo && (
+                    <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <h5 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Setup Required</h5>
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-3">
+                        To use the Cloudflare dashboard, you need to set your Cloudflare API token in Supabase secrets.
+                      </p>
+                      <ol className="text-sm text-yellow-700 dark:text-yellow-300 list-decimal list-inside space-y-1">
+                        <li>Go to Cloudflare Dashboard → My Profile → API Tokens</li>
+                        <li>Create a token with Zone:Read permissions for your zone</li>
+                        <li>Add it as CLOUDFLARE_API_TOKEN in Supabase secrets</li>
+                        <li>Refresh this page</li>
+                      </ol>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <h4 className="font-medium">Last Updated</h4>

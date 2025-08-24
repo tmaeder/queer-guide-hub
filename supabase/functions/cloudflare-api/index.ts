@@ -55,6 +55,7 @@ serve(async (req) => {
     // Verify user authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      console.log('Authentication failed:', authError)
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -69,6 +70,7 @@ serve(async (req) => {
       .single()
 
     if (!userRole || userRole.role !== 'admin') {
+      console.log('Access denied for user:', user.id, 'role:', userRole?.role)
       return new Response(
         JSON.stringify({ error: 'Access denied. Admin role required.' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -76,13 +78,29 @@ serve(async (req) => {
     }
 
     // Parse request body for action and params
-    const body = await req.json()
+    let body: any = {}
+    try {
+      const rawBody = await req.text()
+      if (rawBody) {
+        body = JSON.parse(rawBody)
+      }
+    } catch (e) {
+      console.error('Failed to parse request body:', e)
+      return new Response(
+        JSON.stringify({ error: 'Invalid request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const { action, params = {} } = body
     const config = getCloudflareConfig()
 
+    console.log('Processing Cloudflare API request:', action, 'for user:', user.id)
+
     if (!config.apiToken) {
+      console.error('Cloudflare API token not configured')
       return new Response(
-        JSON.stringify({ error: 'Cloudflare API token not configured' }),
+        JSON.stringify({ error: 'Cloudflare API token not configured. Please set CLOUDFLARE_API_TOKEN secret.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -201,7 +219,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Cloudflare API error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Unknown error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
