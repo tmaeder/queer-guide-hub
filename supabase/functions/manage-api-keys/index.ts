@@ -134,7 +134,7 @@ serve(async (req) => {
       }
 
       // Encrypt the API key
-      const encrypted_key = simpleEncrypt(key_value);
+      const encrypted_key = await secureEncrypt(key_value);
 
       const { data, error } = await supabase
         .from('admin_api_keys')
@@ -182,7 +182,7 @@ serve(async (req) => {
       if (key_name !== undefined) updateData.key_name = key_name;
       if (description !== undefined) updateData.description = description;
       if (is_active !== undefined) updateData.is_active = is_active;
-      if (key_value !== undefined) updateData.encrypted_key = simpleEncrypt(key_value);
+      if (key_value !== undefined) updateData.encrypted_key = await secureEncrypt(key_value);
 
       const { data, error } = await supabase
         .from('admin_api_keys')

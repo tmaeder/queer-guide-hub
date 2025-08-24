@@ -6,9 +6,55 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Simple decryption for demo purposes - in production use proper encryption
-function simpleDecrypt(encrypted: string): string {
-  return atob(encrypted); // Base64 decoding - replace with proper decryption
+// SECURITY FIX: Proper AES encryption for API keys
+async function secureEncrypt(text: string): Promise<string> {
+  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY') || 'default-dev-key-change-in-production';
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(masterKey.padEnd(32, '0').slice(0, 32)),
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt']
+  );
+  
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = new TextEncoder().encode(text);
+  
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    data
+  );
+  
+  // Combine IV and encrypted data
+  const combined = new Uint8Array(iv.length + encrypted.byteLength);
+  combined.set(iv);
+  combined.set(new Uint8Array(encrypted), iv.length);
+  
+  return btoa(String.fromCharCode(...combined));
+}
+
+async function secureDecrypt(encryptedText: string): Promise<string> {
+  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY') || 'default-dev-key-change-in-production';
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(masterKey.padEnd(32, '0').slice(0, 32)),
+    { name: 'AES-GCM' },
+    false,
+    ['decrypt']
+  );
+  
+  const combined = new Uint8Array(atob(encryptedText).split('').map(c => c.charCodeAt(0)));
+  const iv = combined.slice(0, 12);
+  const data = combined.slice(12);
+  
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    data
+  );
+  
+  return new TextDecoder().decode(decrypted);
 }
 
 serve(async (req) => {
@@ -63,7 +109,7 @@ serve(async (req) => {
       .eq('key_name', key_name);
 
     // Decrypt and return the API key
-    const decrypted_key = simpleDecrypt(keyData.encrypted_key);
+    const decrypted_key = await secureDecrypt(keyData.encrypted_key);
 
     return new Response(
       JSON.stringify({ api_key: decrypted_key }),
