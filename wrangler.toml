@@ -2,9 +2,15 @@ name = "lovable-app"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Cloudflare Account Configuration
+zone_id = "fe9b9da8a08af32e10bb3ba7fdb04440"
+account_id = "7aa3765cc5f50f2b681b782eb4a8d296"
+
 [env.production]
 name = "lovable-app"
 compatibility_date = "2024-01-01"
+zone_id = "fe9b9da8a08af32e10bb3ba7fdb04440"
+account_id = "7aa3765cc5f50f2b681b782eb4a8d296"
 
 [build]
 command = "npm run build"
@@ -23,6 +29,8 @@ pages_build_output_dir = "dist"
 # Environment variables for Cloudflare Pages
 [env.production.vars]
 NODE_ENV = "production"
+CLOUDFLARE_ZONE_ID = "fe9b9da8a08af32e10bb3ba7fdb04440"
+CLOUDFLARE_ACCOUNT_ID = "7aa3765cc5f50f2b681b782eb4a8d296"
 
 # Headers for Cloudflare Pages
 [[headers]]

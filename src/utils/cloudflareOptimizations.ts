@@ -101,15 +101,37 @@ export const cloudflareOptimizedFetch = async (
  * Get visitor's geolocation from Cloudflare headers (when available)
  */
 export const getCloudflareGeoData = () => {
-  // This would be available in Cloudflare Workers/Pages
-  // For now, return mock data for development
+  // In production, these headers are automatically added by Cloudflare
+  if (typeof window !== 'undefined') {
+    return {
+      country: (window as any).CF?.country || 'US',
+      region: (window as any).CF?.region || 'CA', 
+      city: (window as any).CF?.city || 'San Francisco',
+      timezone: (window as any).CF?.timezone || 'America/Los_Angeles',
+      latitude: (window as any).CF?.latitude || '37.7749',
+      longitude: (window as any).CF?.longitude || '-122.4194'
+    };
+  }
+  
+  // Fallback for development
   return {
     country: 'US',
     region: 'CA',
-    city: 'San Francisco',
+    city: 'San Francisco', 
     timezone: 'America/Los_Angeles',
     latitude: '37.7749',
     longitude: '-122.4194'
+  };
+};
+
+/**
+ * Get Cloudflare configuration for API calls
+ */
+export const getCloudflareConfig = () => {
+  return {
+    zoneId: 'fe9b9da8a08af32e10bb3ba7fdb04440',
+    accountId: '7aa3765cc5f50f2b681b782eb4a8d296',
+    apiEndpoint: 'https://api.cloudflare.com/client/v4'
   };
 };
 
