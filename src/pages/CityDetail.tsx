@@ -323,14 +323,10 @@ export default function CityDetail() {
 
           {/* Enhanced Tabs */}
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 bg-muted/50">
+            <TabsList className="grid w-full grid-cols-4 bg-muted/50">
               <TabsTrigger value="overview" className="text-sm">
                 <Info className="h-4 w-4 mr-2" />
                 Overview
-              </TabsTrigger>
-              <TabsTrigger value="culture" className="text-sm">
-                <Landmark className="h-4 w-4 mr-2" />
-                Culture
               </TabsTrigger>
               <TabsTrigger value="travel" className="text-sm">
                 <Plane className="h-4 w-4 mr-2" />
@@ -587,9 +583,8 @@ export default function CityDetail() {
                   </CardContent>
                 </Card>
               )}
-            </TabsContent>
-
-            <TabsContent value="culture">
+              
+              {/* Culture Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Notable Landmarks */}
                 {city.notable_landmarks && city.notable_landmarks.length > 0 && (
@@ -655,6 +650,7 @@ export default function CityDetail() {
                 </Card>
               )}
             </TabsContent>
+
 
             <TabsContent value="travel">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
