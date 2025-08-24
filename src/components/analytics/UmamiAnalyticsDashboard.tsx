@@ -110,6 +110,7 @@ export const UmamiAnalyticsDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'custom'>('7d');
   const [deviceFilter, setDeviceFilter] = useState<'all' | 'desktop' | 'mobile' | 'tablet'>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
@@ -135,6 +136,7 @@ export const UmamiAnalyticsDashboard = () => {
       } else {
         setLoading(true);
       }
+      setError(null);
 
       // Get current session for auth header
       const {
@@ -142,6 +144,7 @@ export const UmamiAnalyticsDashboard = () => {
           session
         }
       } = await supabase.auth.getSession();
+      
       const {
         data: analyticsData,
         error
@@ -156,15 +159,19 @@ export const UmamiAnalyticsDashboard = () => {
           Authorization: `Bearer ${session.access_token}`
         } : {}
       });
+      
       if (error) {
         console.error('Error fetching Umami stats:', error);
+        setError('Failed to load analytics data. Umami may not be configured yet.');
         return;
       }
+      
       if (analyticsData) {
         setStats(analyticsData);
       }
     } catch (error) {
       console.error('Error fetching Umami stats:', error);
+      setError('Analytics service unavailable. Please check your configuration.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -221,6 +228,43 @@ export const UmamiAnalyticsDashboard = () => {
               </CardHeader>
             </Card>)}
         </div>
+      </div>;
+  }
+
+  if (error) {
+    return <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-destructive/10 rounded-lg">
+                <Activity className="h-6 w-6 text-destructive" />
+              </div>
+              <div>
+                <CardTitle>Analytics Unavailable</CardTitle>
+                <CardDescription>{error}</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                To enable analytics tracking, you need to configure Umami analytics:
+              </p>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                <li>Set up an Umami instance or use Umami Cloud</li>
+                <li>Create a website tracking code</li>
+                <li>Add the tracking script to your site</li>
+                <li>Configure the database connection</li>
+              </ol>
+              <div className="flex gap-2 mt-4">
+                <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
+                  <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                  Retry
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>;
   }
   return <div className="space-y-6">
