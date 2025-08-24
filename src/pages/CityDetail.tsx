@@ -323,22 +323,10 @@ export default function CityDetail() {
 
           {/* Enhanced Tabs */}
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-8 bg-muted/50">
+            <TabsList className="grid w-full grid-cols-5 bg-muted/50">
               <TabsTrigger value="overview" className="text-sm">
                 <Info className="h-4 w-4 mr-2" />
                 Overview
-              </TabsTrigger>
-              <TabsTrigger value="demographics" className="text-sm">
-                <Users className="h-4 w-4 mr-2" />
-                Demographics
-              </TabsTrigger>
-              <TabsTrigger value="economy" className="text-sm">
-                <DollarSign className="h-4 w-4 mr-2" />
-                Economy
-              </TabsTrigger>
-              <TabsTrigger value="geography" className="text-sm">
-                <Mountain className="h-4 w-4 mr-2" />
-                Geography
               </TabsTrigger>
               <TabsTrigger value="culture" className="text-sm">
                 <Landmark className="h-4 w-4 mr-2" />
@@ -360,204 +348,379 @@ export default function CityDetail() {
 
             <TabsContent value="overview" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Info className="h-5 w-5 text-primary" />
-                        Basic Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {city.population && (
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">Population</span>
-                          </div>
-                          <span className="font-bold">{city.population.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {city.founded_year && (
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">Founded</span>
-                          </div>
-                          <span className="font-bold">{city.founded_year}</span>
-                        </div>
-                      )}
-                      {city.area_km2 && (
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                          <div className="flex items-center gap-2">
-                            <Mountain className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">Area</span>
-                          </div>
-                          <span className="font-bold">{city.area_km2} km²</span>
-                        </div>
-                      )}
-                      {city.elevation_m && (
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                          <div className="flex items-center gap-2">
-                            <Mountain className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">Elevation</span>
-                          </div>
-                          <span className="font-bold">{city.elevation_m} m</span>
-                        </div>
-                      )}
-                      {city.timezone && (
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">Timezone</span>
-                          </div>
-                          <span className="font-bold">{city.timezone}</span>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-              {/* Enhanced Climate & Geography Card */}
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover-scale bg-gradient-to-br from-card to-card/80">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-3 text-xl">
-                    <div className="p-2 rounded-lg bg-orange-500/10">
-                      <Thermometer className="h-5 w-5 text-orange-500" />
-                    </div>
-                    Climate & Geography
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {city.climate_type && (
-                    <div className="p-4 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border border-orange-200/50 dark:border-orange-800/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Thermometer className="h-4 w-4 text-orange-500" />
-                        <span className="text-sm font-medium">Climate Type</span>
-                      </div>
-                      <span className="font-bold text-orange-700 dark:text-orange-300">{city.climate_type}</span>
-                    </div>
-                  )}
-                  {city.latitude && city.longitude && (
-                    <div className="p-4 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Coordinates</span>
-                      </div>
-                      <span className="font-mono text-sm">
-                        {city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}
-                      </span>
-                    </div>
-                  )}
-                  {city.best_time_to_visit && (
-                    <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200/50 dark:border-green-800/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="h-4 w-4 text-green-500" />
-                        <span className="text-sm font-medium">Best Time to Visit</span>
-                      </div>
-                      <span className="font-bold text-green-700 dark:text-green-300">{city.best_time_to_visit}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Enhanced Administration Card */}
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover-scale bg-gradient-to-br from-card to-card/80">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-3 text-xl">
-                    <div className="p-2 rounded-lg bg-blue-500/10">
-                      <Building className="h-5 w-5 text-blue-500" />
-                    </div>
-                    Administration
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {city.mayor && (
-                    <div className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Mayor</span>
-                      </div>
-                      <span className="font-bold">{city.mayor}</span>
-                    </div>
-                  )}
-                  {city.local_language && (
-                    <div className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Globe className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Local Language</span>
-                      </div>
-                      <span className="font-bold">{city.local_language}</span>
-                    </div>
-                  )}
-                  {city.official_website && (
-                    <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Globe className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-medium">Official Website</span>
-                      </div>
-                      <a 
-                        href={city.official_website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:text-primary/80 flex items-center gap-2 font-medium transition-colors story-link"
-                      >
-                        Visit Website <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </div>
-                  )}
-                  {city.lgbt_friendly_rating && (
-                    <div className="p-4 rounded-lg bg-gradient-to-r from-rainbow-50 to-purple-50 dark:from-purple-950/30 dark:to-pink-950/30 border border-purple-200/50 dark:border-purple-800/50">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">LGBTQ+ Friendly</span>
+                {/* Basic Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Info className="h-5 w-5 text-primary" />
+                      Basic Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {city.population && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                         <div className="flex items-center gap-2">
-                          <div className="flex">
-                            {Array.from({ length: 5 }, (_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 transition-colors ${
-                                  i < city.lgbt_friendly_rating! 
-                                    ? 'fill-yellow-400 text-yellow-400' 
-                                    : 'text-muted-foreground'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm font-bold text-purple-700 dark:text-purple-300">
-                            {city.lgbt_friendly_rating}/5
-                          </span>
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Population</span>
+                        </div>
+                        <span className="font-bold">{city.population.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {city.founded_year && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Founded</span>
+                        </div>
+                        <span className="font-bold">{city.founded_year}</span>
+                      </div>
+                    )}
+                    {city.area_km2 && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <Mountain className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Area</span>
+                        </div>
+                        <span className="font-bold">{city.area_km2} km²</span>
+                      </div>
+                    )}
+                    {city.elevation_m && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <Mountain className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Elevation</span>
+                        </div>
+                        <span className="font-bold">{city.elevation_m} m</span>
+                      </div>
+                    )}
+                    {city.timezone && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Timezone</span>
+                        </div>
+                        <span className="font-bold">{city.timezone}</span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Climate & Geography */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Thermometer className="h-5 w-5 text-primary" />
+                      Climate & Geography
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {city.climate_type && (
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Thermometer className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Climate</span>
+                        </div>
+                        <span className="font-bold">{city.climate_type}</span>
+                      </div>
+                    )}
+                    {city.latitude && city.longitude && (
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Coordinates</span>
+                        </div>
+                        <span className="font-mono text-sm">{city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}</span>
+                      </div>
+                    )}
+                    {city.best_time_to_visit && (
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Best Time to Visit</span>
+                        </div>
+                        <span className="text-sm">{city.best_time_to_visit}</span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Contact Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Phone className="h-5 w-5 text-primary" />
+                      Contact & Codes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {city.postal_codes && city.postal_codes.length > 0 && (
+                      <div>
+                        <span className="text-sm font-medium mb-2 block">Postal Codes</span>
+                        <div className="flex flex-wrap gap-1">
+                          {city.postal_codes.slice(0, 3).map((code, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">{code}</Badge>
+                          ))}
+                          {city.postal_codes.length > 3 && (
+                            <Badge variant="outline" className="text-xs">+{city.postal_codes.length - 3} more</Badge>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                    )}
+                    {city.area_codes && city.area_codes.length > 0 && (
+                      <div>
+                        <span className="text-sm font-medium mb-2 block">Area Codes</span>
+                        <div className="flex flex-wrap gap-1">
+                          {city.area_codes.map((code, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              <Phone className="h-3 w-3 mr-1" />
+                              {code}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {city.major_airport_code && (
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Plane className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Major Airport</span>
+                        </div>
+                        <Badge variant="outline">{city.major_airport_code}</Badge>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
-            </TabsContent>
 
-            {/* Keep other tabs as they are */}
-            <TabsContent value="demographics">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-primary" />
-                    Demographics & Population
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {city.demographics && Object.keys(city.demographics).length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Demographics Section */}
+              {city.demographics && Object.keys(city.demographics).length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-primary" />
+                      Demographics & Population
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {Object.entries(city.demographics).map(([key, value]) => (
                         <div key={key} className="p-3 rounded-lg bg-muted/50">
-                          <span className="text-sm font-medium capitalize">{key.replace(/_/g, ' ')}</span>
-                          <p className="font-bold text-primary">{String(value)}</p>
+                          <span className="text-sm font-medium capitalize block mb-1">
+                            {key.replace(/_/g, ' ')}
+                          </span>
+                          <span className="font-bold">{String(value)}</span>
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <p className="text-muted-foreground text-center py-8">No demographic data available.</p>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Economy Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Economy Sectors */}
+                {city.economy_sectors && city.economy_sectors.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-primary" />
+                        Economy Sectors
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {city.economy_sectors.map((sector, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {sector}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Cost of Living */}
+                {city.cost_of_living && Object.keys(city.cost_of_living).length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-primary" />
+                        Cost of Living
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {Object.entries(city.cost_of_living).map(([key, value]) => (
+                          <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                            <span className="text-sm font-medium capitalize">
+                              {key.replace(/_/g, ' ')}
+                            </span>
+                            <span className="font-bold">{String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Universities */}
+              {city.universities && city.universities.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <GraduationCap className="h-5 w-5 text-primary" />
+                      Universities & Education
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {city.universities.map((university, index) => (
+                        <div key={index} className="p-3 rounded-lg bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <GraduationCap className="h-4 w-4 text-primary" />
+                            <span className="font-medium text-sm">{university}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
+
+            <TabsContent value="culture">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Notable Landmarks */}
+                {city.notable_landmarks && city.notable_landmarks.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Landmark className="h-5 w-5 text-primary" />
+                        Notable Landmarks
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid gap-3">
+                        {city.notable_landmarks.map((landmark, index) => (
+                          <div key={index} className="p-3 rounded-lg bg-muted/50">
+                            <div className="flex items-center gap-2">
+                              <Landmark className="h-4 w-4 text-primary" />
+                              <span className="font-medium">{landmark}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Sister Cities */}
+                {city.sister_cities && city.sister_cities.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Globe className="h-5 w-5 text-primary" />
+                        Sister Cities
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid gap-3">
+                        {city.sister_cities.map((sisterCity, index) => (
+                          <div key={index} className="p-3 rounded-lg bg-muted/50">
+                            <div className="flex items-center gap-2">
+                              <Globe className="h-4 w-4 text-primary" />
+                              <span className="font-medium">{sisterCity}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Local Customs */}
+              {city.local_customs && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Info className="h-5 w-5 text-primary" />
+                      Local Customs & Culture
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground leading-relaxed">{city.local_customs}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="travel">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Airport Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Plane className="h-5 w-5 text-primary" />
+                      Airports
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {city.major_airport_code && (
+                      <div className="p-3 rounded-lg bg-muted/50 mb-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Plane className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">Major Airport</span>
+                        </div>
+                        <span className="font-bold">{city.major_airport_code}</span>
+                      </div>
+                    )}
+                    {city.airport_codes && city.airport_codes.length > 0 && (
+                      <div>
+                        <span className="text-sm font-medium mb-3 block">All Airport Codes</span>
+                        <div className="flex flex-wrap gap-2">
+                          {city.airport_codes.map((code, index) => (
+                            <Badge key={index} variant="outline">
+                              <Plane className="h-3 w-3 mr-1" />
+                              {code}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Transportation */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bus className="h-5 w-5 text-primary" />
+                      Transportation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {city.transportation_info && Object.keys(city.transportation_info).length > 0 ? (
+                      <div className="space-y-3">
+                        {Object.entries(city.transportation_info).map(([key, value]) => (
+                          <div key={key} className="p-3 rounded-lg bg-muted/50">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Bus className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm font-medium capitalize">{key.replace(/_/g, ' ')}</span>
+                            </div>
+                            <span className="text-sm">{String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-center py-4">No transportation information available.</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
 
             <TabsContent value="venues">
               <Card>
