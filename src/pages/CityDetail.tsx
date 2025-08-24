@@ -274,7 +274,7 @@ export default function CityDetail() {
 
           {/* Enhanced Tabs */}
           <Tabs defaultValue="overview" className="w-full space-y-6">
-            <TabsList className="grid w-full grid-cols-4 bg-muted/50">
+            <TabsList className="grid w-full grid-cols-5 bg-muted/50">
               <TabsTrigger value="overview" className="text-sm">
                 <Info className="h-4 w-4 mr-2" />
                 Overview
@@ -290,6 +290,10 @@ export default function CityDetail() {
               <TabsTrigger value="venues" className="text-sm">
                 <Building className="h-4 w-4 mr-2" />
                 Venues
+              </TabsTrigger>
+              <TabsTrigger value="events" className="text-sm">
+                <Calendar className="h-4 w-4 mr-2" />
+                Events
               </TabsTrigger>
             </TabsList>
 
@@ -666,6 +670,22 @@ export default function CityDetail() {
                   {newsLoading ? <div className="text-center py-8">Loading news...</div> : articles.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {articles.slice(0, 6).map(article => <NewsCard key={article.id} article={article} />)}
                     </div> : <p className="text-muted-foreground text-center py-8">No news available for this city.</p>}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="events">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    Upcoming Events
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {eventsLoading ? <div className="text-center py-8">Loading events...</div> : events.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {events.map(event => <EventCard key={event.id} event={event} />)}
+                    </div> : <p className="text-muted-foreground text-center py-8">No events available for this city.</p>}
                 </CardContent>
               </Card>
             </TabsContent>
