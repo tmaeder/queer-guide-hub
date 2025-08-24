@@ -649,6 +649,48 @@ export default function CityDetail() {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Quick Stats */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Info className="h-5 w-5 text-primary" />
+                    Quick Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {city.population && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Population</span>
+                      <span className="font-bold">{city.population.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {city.countries?.currency && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Currency</span>
+                      <span className="font-bold">{city.countries.currency}</span>
+                    </div>
+                  )}
+                  {city.timezone && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Timezone</span>
+                      <span className="font-bold">{city.timezone}</span>
+                    </div>
+                  )}
+                  {city.major_airport_code && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Major Airport</span>
+                      <Badge variant="outline">{city.major_airport_code}</Badge>
+                    </div>
+                  )}
+                  {city.best_time_to_visit && (
+                    <div>
+                      <span className="text-sm text-muted-foreground block mb-1">Best Time to Visit</span>
+                      <p className="text-sm font-medium">{city.best_time_to_visit}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
 
@@ -770,36 +812,6 @@ export default function CityDetail() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Quick Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="h-5 w-5 text-primary" />
-                Quick Stats
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {city.population && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Population</span>
-                  <span className="font-bold">{city.population.toLocaleString()}</span>
-                </div>
-              )}
-              {city.countries?.currency && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Currency</span>
-                  <span className="font-bold">{city.countries.currency}</span>
-                </div>
-              )}
-              {city.timezone && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Timezone</span>
-                  <span className="font-bold">{city.timezone}</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Travel Info */}
           {(city.major_airport_code || city.best_time_to_visit) && (
             <Card>
