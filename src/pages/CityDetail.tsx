@@ -40,6 +40,7 @@ import CityHeroImages from "@/components/city/CityHeroImages";
 import { NewsCard } from "@/components/news/NewsCard";
 import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
+import { CurrentWeather } from "@/components/weather/CurrentWeather";
 
 type CityWithCountry = {
   id: string;
@@ -648,6 +649,15 @@ export default function CityDetail() {
                     <p className="text-muted-foreground leading-relaxed">{city.local_customs}</p>
                   </CardContent>
                 </Card>
+              )}
+
+              {/* Current Weather */}
+              {city.latitude && city.longitude && (
+                <CurrentWeather
+                  latitude={city.latitude}
+                  longitude={city.longitude}
+                  cityName={city.name}
+                />
               )}
 
               {/* Quick Stats */}
