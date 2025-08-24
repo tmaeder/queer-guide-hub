@@ -501,15 +501,15 @@ export default function AdminDashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-4 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-            <div className="lg:col-span-2 xl:col-span-3">
+          <div className="grid gap-6 lg:grid-cols-12 xl:gap-8">
+            <div className="lg:col-span-8 xl:col-span-9">
               <DashboardOverview
                 stats={stats}
                 systemHealth={systemHealth}
                 statsLoading={statsLoading}
               />
             </div>
-            <div className="space-y-6">
+            <div className="lg:col-span-4 xl:col-span-3 space-y-6">
               <QuickActions />
               <RecentActivity 
                 activities={recentActivity}
