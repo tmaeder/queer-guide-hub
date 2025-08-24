@@ -3,12 +3,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./i18n";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AccessibilityProvider } from "@/hooks/useAccessibility";
 import { CookieConsentProvider } from "@/hooks/useCookieConsent";
-import { useUmamiAnalytics } from "@/hooks/useUmamiAnalytics";
 import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker";
 import { CookieConsentBanner } from "@/components/privacy/CookieConsentBanner";
 import { Header } from "@/components/layout/Header";
@@ -16,6 +15,8 @@ import { Footer } from "@/components/layout/Footer";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 import { Skeleton } from "@/components/ui/skeleton";
 import Aurora from "@/components/ui/Aurora";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { createOptimizedQueryClient } from "@/utils/queryOptimizations";
 
 const Index = lazy(() => import("./pages/Index"));
 const Venues = lazy(() => import("./pages/Venues"));
@@ -89,15 +90,16 @@ const Favorites = lazy(() => import("./pages/Favorites"));
 
 const Sitemap = lazy(() => import("./pages/Sitemap"));
 
-const queryClient = new QueryClient();
+const queryClient = createOptimizedQueryClient();
 
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AccessibilityProvider>
-        <CookieConsentProvider>
-          <AuthProvider>
-            <TooltipProvider>
+      <ThemeProvider defaultTheme="system" storageKey="queer-guide-theme">
+        <AccessibilityProvider>
+          <CookieConsentProvider>
+            <AuthProvider>
+              <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -304,10 +306,11 @@ const App = () => {
               <CookieConsentBanner />
             </div>
           </BrowserRouter>
-            </TooltipProvider>
-          </AuthProvider>
-        </CookieConsentProvider>
-      </AccessibilityProvider>
+              </TooltipProvider>
+            </AuthProvider>
+          </CookieConsentProvider>
+        </AccessibilityProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
