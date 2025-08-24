@@ -75,8 +75,9 @@ serve(async (req) => {
       )
     }
 
-    const url = new URL(req.url)
-    const action = url.searchParams.get('action')
+    // Parse request body for action and params
+    const body = await req.json()
+    const { action, params = {} } = body
     const config = getCloudflareConfig()
 
     if (!config.apiToken) {
@@ -94,8 +95,8 @@ serve(async (req) => {
         break
 
       case 'analytics':
-        const since = url.searchParams.get('since') || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        const until = url.searchParams.get('until') || new Date().toISOString()
+        const since = params.since || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        const until = params.until || new Date().toISOString()
         result = await makeCloudflareRequest(
           `/zones/${config.zoneId}/analytics/dashboard?since=${since}&until=${until}`,
           config
@@ -154,8 +155,8 @@ serve(async (req) => {
         break
 
       case 'bandwidth-stats':
-        const bandwidthSince = url.searchParams.get('since') || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        const bandwidthUntil = url.searchParams.get('until') || new Date().toISOString()
+        const bandwidthSince = params.since || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+        const bandwidthUntil = params.until || new Date().toISOString()
         result = await makeCloudflareRequest(
           `/zones/${config.zoneId}/analytics/dashboard?since=${bandwidthSince}&until=${bandwidthUntil}&continuous=false`,
           config
@@ -163,8 +164,8 @@ serve(async (req) => {
         break
 
       case 'threat-analytics':
-        const threatSince = url.searchParams.get('since') || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        const threatUntil = url.searchParams.get('until') || new Date().toISOString()
+        const threatSince = params.since || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        const threatUntil = params.until || new Date().toISOString()
         result = await makeCloudflareRequest(
           `/zones/${config.zoneId}/firewall/events?since=${threatSince}&until=${threatUntil}`,
           config

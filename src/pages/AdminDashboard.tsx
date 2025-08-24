@@ -21,6 +21,7 @@ import { RecentActivity } from '@/components/admin/dashboard/RecentActivity';
 // Feature Components
 import { SecurityMonitoringDashboard } from '@/components/admin/SecurityMonitoringDashboard';
 import { UmamiAnalyticsDashboard } from '@/components/analytics/UmamiAnalyticsDashboard';
+import { CloudflareDashboard } from '@/components/admin/CloudflareDashboard';
 
 import { 
   Shield, 
@@ -480,7 +481,7 @@ export default function AdminDashboard() {
       </header>
       
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Overview
@@ -492,6 +493,10 @@ export default function AdminDashboard() {
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             Security
+          </TabsTrigger>
+          <TabsTrigger value="cloudflare" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Cloudflare
           </TabsTrigger>
         </TabsList>
 
@@ -521,6 +526,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="security">
           <SecurityMonitoringDashboard />
+        </TabsContent>
+
+        <TabsContent value="cloudflare">
+          <CloudflareDashboard />
         </TabsContent>
       </Tabs>
     </div>

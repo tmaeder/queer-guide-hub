@@ -91,10 +91,8 @@ export class CloudflareAPI {
     const searchParams = new URLSearchParams({ action, ...params })
     
     const { data, error } = await supabase.functions.invoke('cloudflare-api', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      method: 'POST',
+      body: { action, params }
     })
 
     if (error) throw error
