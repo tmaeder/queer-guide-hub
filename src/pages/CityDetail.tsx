@@ -221,7 +221,7 @@ export default function CityDetail() {
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
           <div className="flex-1">
             <div className="flex items-start gap-4 mb-4">
-              <div>
+              <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   {city.countries?.flag_emoji && <span className="text-4xl">{city.countries.flag_emoji}</span>}  
                   <h1 className="text-4xl font-bold">{city.name}</h1>
@@ -241,6 +241,17 @@ export default function CityDetail() {
                   {renderLGBTRating()}
                 </div>
               </div>
+              
+              {/* Current Weather in Header */}
+              {city.latitude && city.longitude && (
+                <div className="flex-shrink-0">
+                  <CurrentWeather 
+                    latitude={city.latitude} 
+                    longitude={city.longitude} 
+                    cityName={city.name}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
