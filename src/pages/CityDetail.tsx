@@ -259,9 +259,9 @@ export default function CityDetail() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="w-full">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6">
           {/* Description Card */}
           {city.description && <Card>
               <CardHeader>
@@ -671,9 +671,6 @@ export default function CityDetail() {
             </TabsContent>
           </Tabs>
         </div>
-
-        {/* Sidebar */}
-        
       </div>
     </div>;
 }
