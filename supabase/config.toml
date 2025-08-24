@@ -182,3 +182,6 @@ verify_jwt = true
 
 [functions.get-api-key]
 verify_jwt = false
+
+[functions.cloudflare-api]
+verify_jwt = true
