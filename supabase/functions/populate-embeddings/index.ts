@@ -49,7 +49,7 @@ serve(async (req) => {
         case 'venue': {
           const { data: venues } = await supabase
             .from('venues')
-            .select('id, name, description, address, city, country, venue_type, tags')
+            .select('id, name, description, address, city, country, category, tags')
             .limit(limit);
           data = venues;
           break;
@@ -152,11 +152,11 @@ serve(async (req) => {
             case 'venue':
               contentText = [
                 item.name, item.description, item.address, item.city, item.country,
-                item.venue_type ? `Type: ${item.venue_type}` : '',
+                item.category ? `Category: ${item.category}` : '',
                 item.tags?.length ? `Tags: ${item.tags.join(', ')}` : ''
               ].filter(Boolean).join('. ');
               metadata.city = item.city;
-              metadata.venue_type = item.venue_type;
+              metadata.category = item.category;
               metadata.tags = item.tags || [];
               break;
             case 'event':
