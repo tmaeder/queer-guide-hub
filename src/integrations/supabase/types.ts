@@ -6204,15 +6204,6 @@ export type Database = {
         Args: { p_schema_name: string; p_table_name: string }
         Returns: string
       }
-      get_algolia_sync_status: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          last_sync_at: string
-          sync_status: string
-          table_name: string
-          total_records: number
-        }[]
-      }
       get_entity_attributes: {
         Args: { entity_id_param: string; entity_type_param: string }
         Returns: {

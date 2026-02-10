@@ -7,7 +7,7 @@ import { SearchInputTyped } from "@/components/ui/search-input-typed";
 import { Command, CommandEmpty, CommandList, CommandSeparator, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Search, Filter, X, Clock, Zap, MapPin, Calendar, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, SlidersHorizontal, Tag, User } from "lucide-react";
-import { useAlgoliaSearch, AlgoliaSearchResult, AlgoliaSearchFilters } from "@/hooks/useAlgoliaSearch";
+import { useSearch, SearchResult, SearchFilters } from "@/hooks/useSearch";
 import { useSearchSuggestions, SearchSuggestion } from "@/hooks/useSearchSuggestions";
 import { SearchFiltersPanel } from "./SearchFiltersPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -43,7 +43,7 @@ export const UniversalSearchBar = () => {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<AlgoliaSearchFilters>({
+  const [filters, setFilters] = useState<SearchFilters>({
     types: []
   });
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -55,7 +55,7 @@ export const UniversalSearchBar = () => {
     results,
     suggestions: searchResults,
     loading
-  } = useAlgoliaSearch(query, filters);
+  } = useSearch(query, filters);
 
   const { suggestions, loading: suggestionsLoading } = useSearchSuggestions(query);
 
@@ -99,7 +99,7 @@ export const UniversalSearchBar = () => {
     navigate(`/search?${params}`);
     setIsOpen(false);
   };
-  const handleSelectResult = (result: AlgoliaSearchResult) => {
+  const handleSelectResult = (result: SearchResult) => {
     setQuery(result.title);
 
     // Navigate directly to specific content (never to directory/overview pages)
@@ -221,11 +221,11 @@ export const UniversalSearchBar = () => {
     setRecentSearches([]);
     localStorage.removeItem('recent-searches');
   };
-  const getResultIcon = (type: AlgoliaSearchResult['type']) => {
+  const getResultIcon = (type: SearchResult['type']) => {
     const Icon = contentTypeIcons[type];
     return <Icon className="h-4 w-4" />;
   };
-  const formatResultSubtitle = (result: AlgoliaSearchResult) => {
+  const formatResultSubtitle = (result: SearchResult) => {
     const parts = [];
     if (result.category) parts.push(result.category);
     if (result.location) parts.push(result.location);
@@ -370,7 +370,7 @@ export const UniversalSearchBar = () => {
               if (!acc[result.type]) acc[result.type] = [];
               acc[result.type].push(result);
               return acc;
-            }, {} as Record<string, AlgoliaSearchResult[]>)).map(([type, typeResults]) => <CommandGroup key={type} heading={contentTypeLabels[type as keyof typeof contentTypeLabels]}>
+            }, {} as Record<string, SearchResult[]>)).map(([type, typeResults]) => <CommandGroup key={type} heading={contentTypeLabels[type as keyof typeof contentTypeLabels]}>
                   {typeResults.map(result => <CommandItem key={`${result.type}-${result.objectID}`} onSelect={() => handleSelectResult(result)} className="cursor-pointer p-3">
                       <div className="flex items-start gap-3 w-full">
                         <div className="flex-shrink-0 mt-1">

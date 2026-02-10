@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { MapPin, Calendar, Star, Eye, Heart, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, Search, Filter, ArrowUpDown, Grid, List, TrendingUp, Clock, Sparkles } from 'lucide-react';
-import { useAlgoliaSearch, AlgoliaSearchResult, AlgoliaSearchFilters } from '@/hooks/useAlgoliaSearch';
+import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 
 const contentTypeIcons = {
@@ -41,18 +41,18 @@ export default function SearchResults() {
     setSearchQuery(query);
   }, [query]);
 
-  const [filters, setFilters] = useState<AlgoliaSearchFilters>({
+  const [filters, setFilters] = useState<SearchFilters>({
     types: initialTypes,
     location: initialLocation,
     categories: initialCategories.length > 0 ? initialCategories : undefined
   });
 
-  const { results, loading } = useAlgoliaSearch(query, {
+  const { results, loading } = useSearch(query, {
     ...filters,
     types: selectedTab === 'all' ? filters.types : [selectedTab]
   });
 
-  const handleFiltersChange = (newFilters: AlgoliaSearchFilters) => {
+  const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
     
     // Update URL parameters
@@ -90,7 +90,7 @@ export default function SearchResults() {
       if (!acc[result.type]) acc[result.type] = [];
       acc[result.type].push(result);
       return acc;
-    }, {} as Record<string, AlgoliaSearchResult[]>);
+    }, {} as Record<string, SearchResult[]>);
   };
 
   const formatResultDate = (dateString?: string) => {
@@ -98,7 +98,7 @@ export default function SearchResults() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const sortResults = (results: AlgoliaSearchResult[]) => {
+  const sortResults = (results: SearchResult[]) => {
     const sorted = [...results];
     switch (sortBy) {
       case 'newest':
@@ -129,7 +129,7 @@ export default function SearchResults() {
     setSearchParams(params);
   };
 
-  const renderResultCard = (result: AlgoliaSearchResult) => {
+  const renderResultCard = (result: SearchResult) => {
     const Icon = contentTypeIcons[result.type];
     
     if (viewMode === 'grid') {
@@ -305,7 +305,7 @@ export default function SearchResults() {
   const sortedResultsByType = Object.entries(resultsByType).reduce((acc, [type, typeResults]) => {
     acc[type] = sortResults(typeResults);
     return acc;
-  }, {} as Record<string, AlgoliaSearchResult[]>);
+  }, {} as Record<string, SearchResult[]>);
 
   // Generate tabs based on available result types
   const availableTabs = ['all', ...Object.keys(resultsByType)];

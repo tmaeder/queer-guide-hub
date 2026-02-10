@@ -8,14 +8,14 @@ import { Switch } from '@/components/ui/switch';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, BookOpen, Plane, Tag } from 'lucide-react';
-import { AlgoliaSearchFilters } from '@/hooks/useAlgoliaSearch';
+import { SearchFilters } from '@/hooks/useSearch';
 import { format } from 'date-fns';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 
 interface SearchFiltersPanelProps {
-  filters: AlgoliaSearchFilters;
-  onFiltersChange: (filters: AlgoliaSearchFilters) => void;
+  filters: SearchFilters;
+  onFiltersChange: (filters: SearchFilters) => void;
 }
 
 const contentTypes = [

@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
       throw new Error(`Search failed: ${error.message}`)
     }
 
-    // Transform results to match the existing algolia-search response format
+    // Transform results to the search response format
     const hits = (data || []).map((row: any) => ({
       objectID: row.id,
       id: row.id,

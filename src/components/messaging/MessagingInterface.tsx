@@ -6,25 +6,23 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Send, 
-  MoreVertical, 
-  Search, 
+import {
+  Send,
+  MoreVertical,
+  Search,
   Plus,
   MessageCircle,
   Smile,
   Check,
   CheckCheck,
   Clock,
-  Eye,
-  Image
+  Eye
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useMessaging, type Conversation, type Message, type TypingIndicator } from "@/hooks/useMessaging";
 import { useAuth } from "@/hooks/useAuth";
 import { UserModeBadge } from "@/components/profile/UserModeBadge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams } from "react-router-dom";
 
 interface MessageItemProps {
@@ -53,27 +51,6 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
 
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😠'];
 
-  // Check if message is a GIF
-  const isGifMessage = message.content.startsWith('[GIF:') && message.content.endsWith(']');
-  const gifUrl = isGifMessage ? message.content.slice(5, -1) : null;
-
-  const renderMessageContent = () => {
-    if (isGifMessage && gifUrl) {
-      return (
-        <div className="relative overflow-hidden rounded-lg max-w-64">
-          <img 
-            src={gifUrl} 
-            alt="GIF" 
-            className="w-full h-auto max-h-48 object-cover"
-            loading="lazy"
-          />
-        </div>
-      );
-    }
-    
-    return <p className="text-sm">{message.content}</p>;
-  };
-
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4 group animate-in slide-in-from-bottom-2 duration-300`}>
       <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'}`}>
@@ -93,13 +70,13 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
         
         <div className="relative">
           <div
-            className={`${isGifMessage ? 'p-2' : 'px-4 py-2'} rounded-2xl ${
+            className={`px-4 py-2 rounded-2xl ${
               isOwn
                 ? 'bg-primary text-primary-foreground rounded-br-md'
                 : 'bg-muted rounded-bl-md'
             } ${message.status === 'sending' ? 'opacity-60' : ''}`}
           >
-            {renderMessageContent()}
+            <p className="text-sm">{message.content}</p>
           </div>
           
           <div className="flex items-center justify-between mt-1">
@@ -294,10 +271,6 @@ interface MessageInputProps {
 const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: MessageInputProps) => {
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showGifPicker, setShowGifPicker] = useState(false);
-  const [gifSearchQuery, setGifSearchQuery] = useState("");
-  const [gifs, setGifs] = useState<any[]>([]);
-  const [loadingGifs, setLoadingGifs] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Common emojis for quick access
@@ -307,58 +280,11 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
     '😢', '😭', '😡', '😱', '🤯', '🥺', '😤', '🤮', '😷', '🤒'
   ];
 
-  // Search GIFs function using our Supabase Edge Function
-  const searchGifs = async (query: string) => {
-    if (!query.trim()) {
-      setGifs([]);
-      return;
-    }
-
-    setLoadingGifs(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('search-gifs', {
-        body: { 
-          query: query.trim(),
-          limit: 12,
-          rating: 'pg'
-        }
-      });
-
-      if (error) {
-        console.error('Error searching GIFs:', error);
-        setGifs([]);
-        return;
-      }
-
-      setGifs(data?.data || []);
-    } catch (error) {
-      console.error('Error searching GIFs:', error);
-      setGifs([]);
-    } finally {
-      setLoadingGifs(false);
-    }
-  };
-
   // Add emoji to message
   const addEmoji = (emoji: string) => {
     setMessage(prev => prev + emoji);
     setShowEmojiPicker(false);
     inputRef?.current?.focus();
-  };
-
-  // Add GIF to message
-  const addGif = (gifUrl: string) => {
-    const gifMessage = `[GIF: ${gifUrl}]`;
-    onSend(gifMessage);
-    setShowGifPicker(false);
-    setGifSearchQuery("");
-    setGifs([]);
-  };
-
-  // Handle GIF search
-  const handleGifSearch = (query: string) => {
-    setGifSearchQuery(query);
-    searchGifs(query);
   };
 
   // Sanitize message input to prevent XSS
@@ -458,63 +384,7 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
         </PopoverContent>
       </Popover>
 
-      {/* GIF Picker */}
-      <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
-        <PopoverTrigger asChild>
-          <Button 
-            type="button"
-            variant="ghost" 
-            size="sm"
-            className="rounded-full h-11 w-11 md:h-10 md:w-10 p-0"
-            disabled={disabled}
-          >
-            <Image className="h-5 w-5 md:h-4 md:w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80 md:w-96 p-4" side="top">
-          <div className="space-y-3">
-            <h4 className="font-medium text-sm">Search GIFs</h4>
-            <Input
-              placeholder="Search for GIFs..."
-              value={gifSearchQuery}
-              onChange={(e) => handleGifSearch(e.target.value)}
-              className="w-full"
-            />
-            
-            {loadingGifs && (
-              <div className="flex justify-center py-4">
-                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            )}
-            
-            {gifs.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                {gifs.map((gif) => (
-                  <button
-                    key={gif.id}
-                    onClick={() => addGif(gif.images.fixed_height.url)}
-                    className="relative overflow-hidden rounded-lg hover:opacity-80 transition-opacity min-h-[60px]"
-                  >
-                    <img 
-                      src={gif.images.fixed_height_small.url} 
-                      alt={gif.title}
-                      className="w-full h-20 object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-            
-            {gifSearchQuery && !loadingGifs && gifs.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No GIFs found. Try a different search term.
-              </p>
-            )}
-          </div>
-        </PopoverContent>
-      </Popover>
-      
-      <Button 
+      <Button
         type="submit" 
         disabled={disabled || !message.trim()}
         className="rounded-full h-11 w-11 md:h-10 md:w-10 p-0 transition-all hover:scale-105"

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useDebounce } from "./useDebounce";
 import { supabase } from "@/integrations/supabase/client";
 
-export interface AlgoliaSearchResult {
+export interface SearchResult {
   objectID: string;
   title: string;
   description?: string;
@@ -17,7 +17,7 @@ export interface AlgoliaSearchResult {
   _highlightResult?: any;
 }
 
-export interface AlgoliaSearchFilters {
+export interface SearchFilters {
   types?: string[];
   location?: string;
   categories?: string[];
@@ -28,10 +28,10 @@ export interface AlgoliaSearchFilters {
   verified?: boolean;
 }
 
-export const useAlgoliaSearch = (query: string, filters: AlgoliaSearchFilters = {}) => {
-  const [results, setResults] = useState<AlgoliaSearchResult[]>([]);
+export const useSearch = (query: string, filters: SearchFilters = {}) => {
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState<AlgoliaSearchResult[]>([]);
+  const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
 
   const debouncedQuery = useDebounce(query, 300);
 
