@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export interface UniversalContent {
   id: string;
@@ -345,25 +345,20 @@ export function useUniversalCMS() {
         limit = 50
       } = filters;
 
-      console.log('Fetching content with filters:', filters);
-
       let allContentData: UniversalContent[] = [];
       let totalContentCount = 0;
 
       const offset = (page - 1) * limit;
+      // Per-type limit when fetching all: show most recent items per type
+      const perTypeLimit = Math.max(20, Math.ceil(limit / 11));
 
       if (contentType === 'all' || !contentType) {
-        // For 'all' content, fetch from each table with higher limits to ensure we get data
+        // Fetch from each table with a reasonable per-type limit
         const contentTypes = ['events', 'venues', 'personalities', 'community_groups', 'community_posts', 'cms_content', 'tags', 'cities', 'countries', 'marketplace_listings', 'news_articles'];
-        
-        console.log('Fetching all content types with individual queries...');
-        
+
         const promises = contentTypes.map(async (type) => {
           try {
-            console.log(`Fetching ${type}...`);
-            const result = await fetchContentByType(type, 10000, 0, search, status); // High limit to get all content
-            console.log(`${type}: ${result.data.length} items`);
-            return result;
+            return await fetchContentByType(type, perTypeLimit, 0, search, status);
           } catch (error) {
             console.error(`Error fetching ${type}:`, error);
             return { data: [], totalCount: 0 };
@@ -373,8 +368,6 @@ export function useUniversalCMS() {
         const results = await Promise.all(promises);
         allContentData = results.flatMap(result => result.data);
         totalContentCount = results.reduce((sum, result) => sum + result.totalCount, 0);
-        
-        console.log(`Total items fetched: ${allContentData.length}, Total available: ${totalContentCount}`);
       } else {
         // Fetch specific content type with proper pagination
         const result = await fetchContentByType(contentType, limit, offset, search, status);
@@ -388,9 +381,7 @@ export function useUniversalCMS() {
       setAllContent(allContentData);
       setTotalCount(totalContentCount);
       setCurrentPage(page);
-      setHasNextPage(allContentData.length === limit);
-      
-      console.log(`Fetched ${allContentData.length} items, total: ${totalContentCount}`);
+      setHasNextPage(offset + allContentData.length < totalContentCount);
     } catch (err) {
       console.error('Error fetching content:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch content');

@@ -24,6 +24,7 @@ import {
   ChevronUp
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { validateNewsSource } from "@/utils/contentValidation";
 
 type NewsSource = Tables<'news_sources'>;
 
@@ -72,9 +73,28 @@ export function NewsSourcesManager() {
     }
   };
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Validate before submitting
+    const result = validateNewsSource(formData as Record<string, unknown>);
+    if (!result.isValid) {
+      const fieldErrors: Record<string, string> = {};
+      result.errors.forEach(err => {
+        fieldErrors[err.field] = err.message;
+      });
+      setValidationErrors(fieldErrors);
+      toast({
+        title: "Validation Error",
+        description: result.errors[0]?.message || "Please fix the highlighted fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    setValidationErrors({});
+
     try {
       if (editingSource) {
         const { error } = await supabase
@@ -307,9 +327,11 @@ export function NewsSourcesManager() {
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => { setFormData({...formData, name: e.target.value}); setValidationErrors(prev => ({...prev, name: ''})); }}
                     required
+                    aria-invalid={!!validationErrors.name}
                   />
+                  {validationErrors.name && <p className="text-xs text-destructive mt-1">{validationErrors.name}</p>}
                 </div>
                 
                 <div>
@@ -336,10 +358,12 @@ export function NewsSourcesManager() {
                 <Input
                   id="category"
                   value={formData.category}
-                  onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  onChange={(e) => { setFormData({...formData, category: e.target.value}); setValidationErrors(prev => ({...prev, category: ''})); }}
                   placeholder="e.g., LGBTQ+, General News, Politics"
                   required
+                  aria-invalid={!!validationErrors.category}
                 />
+                {validationErrors.category && <p className="text-xs text-destructive mt-1">{validationErrors.category}</p>}
               </div>
 
               <div>
@@ -348,10 +372,12 @@ export function NewsSourcesManager() {
                   id="url"
                   type="url"
                   value={formData.url}
-                  onChange={(e) => setFormData({...formData, url: e.target.value})}
+                  onChange={(e) => { setFormData({...formData, url: e.target.value}); setValidationErrors(prev => ({...prev, url: ''})); }}
                   placeholder="https://example.com/feed.xml or API endpoint"
                   required
+                  aria-invalid={!!validationErrors.url}
                 />
+                {validationErrors.url && <p className="text-xs text-destructive mt-1">{validationErrors.url}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -474,32 +500,36 @@ export function NewsSourcesManager() {
                             size="sm"
                             onClick={() => triggerFetch(source.id)}
                             disabled={!source.is_active}
+                            aria-label={`Fetch news from ${source.name}`}
                           >
-                            <Play className="h-3 w-3" />
+                            <Play className="h-3 w-3" aria-hidden="true" />
                           </Button>
-                          
+
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleKeywordsEdit(source)}
+                            aria-label={`Edit keywords for ${source.name}`}
                           >
-                            <Tags className="h-3 w-3" />
+                            <Tags className="h-3 w-3" aria-hidden="true" />
                           </Button>
-                          
+
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(source)}
+                            aria-label={`Edit ${source.name}`}
                           >
-                            <Edit2 className="h-3 w-3" />
+                            <Edit2 className="h-3 w-3" aria-hidden="true" />
                           </Button>
-                          
+
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleDelete(source.id)}
+                            aria-label={`Delete ${source.name}`}
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-3 w-3" aria-hidden="true" />
                           </Button>
 
                           <CollapsibleTrigger asChild>

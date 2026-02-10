@@ -150,7 +150,6 @@ export const useImportHub = () => {
     try {
       // Handle venue API imports specially
       if (type.startsWith('venues-') && !type.endsWith('-csv') && config.venueImportConfig) {
-        const { supabase } = await import('@/integrations/supabase/client');
         const provider = type.replace('venues-', '');
         const functionName = `import-${provider}-venues`;
         const { data, error } = await supabase.functions.invoke(functionName, {
@@ -210,7 +209,7 @@ export const useImportHub = () => {
         .from('import_audit_log')
         .insert({
           import_job_id: data.id,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: userId,
           action: 'job_created',
           details: {
             type,
@@ -326,14 +325,40 @@ export const useImportHub = () => {
     }
   }, [loadJobs, loadStatistics, toast]);
 
+  // Parse a single CSV line handling quoted fields (commas inside quotes)
+  const parseCSVLine = useCallback((line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"'; // escaped quote
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  }, []);
+
   // Parse CSV data for preview
   const parseCSVPreview = useCallback((csvData: string, maxRows: number = 10) => {
     const lines = csvData.split('\n').filter(line => line.trim());
     if (lines.length === 0) return { headers: [], rows: [] };
 
-    const headers = lines[0].split(',').map(h => h.trim().replace(/['"]/g, ''));
+    const headers = parseCSVLine(lines[0]);
     const rows = lines.slice(1, maxRows + 1).map(line => {
-      const values = line.split(',').map(v => v.trim().replace(/['"]/g, ''));
+      const values = parseCSVLine(line);
       const row: Record<string, string> = {};
       headers.forEach((header, index) => {
         row[header] = values[index] || '';
@@ -342,33 +367,62 @@ export const useImportHub = () => {
     });
 
     return { headers, rows };
-  }, []);
+  }, [parseCSVLine]);
 
   // Toggle polling
   const togglePolling = useCallback(() => {
     setIsPolling(!isPolling);
   }, [isPolling]);
 
-  // Auto-refresh
+  // Initial load
   useEffect(() => {
     loadJobs();
     loadStatistics();
-    
-    if (isPolling) {
-      const interval = setInterval(() => {
-        loadJobs();
-        loadStatistics();
-      }, 5000); // Poll every 5 seconds
-      return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-refresh polling
+  useEffect(() => {
+    if (!isPolling) return;
+
+    const interval = setInterval(() => {
+      loadJobs();
+      loadStatistics();
+    }, 5000); // Poll every 5 seconds
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPolling]);
+
+  // Get venue import stats by data source
+  const getVenueImportStats = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('venues')
+        .select('data_source')
+        .in('data_source', ['foursquare', 'google_places', 'tomtom', 'tripadvisor']);
+
+      if (error) throw error;
+
+      const stats = (data || []).reduce((acc: Record<string, number>, venue: any) => {
+        if (venue.data_source) {
+          acc[venue.data_source] = (acc[venue.data_source] || 0) + 1;
+        }
+        return acc;
+      }, {});
+
+      return stats;
+    } catch (error) {
+      console.error('Error fetching venue import stats:', error);
+      return {};
     }
-  }, [loadJobs, loadStatistics, isPolling]);
+  }, []);
 
   return {
     jobs,
     statistics,
     loading,
     isPolling,
-    
+
     // Actions
     createImportJob,
     validateImportData,
@@ -380,25 +434,4 @@ export const useImportHub = () => {
     refreshStatistics: loadStatistics,
     getVenueImportStats
   };
-};
-
-const getVenueImportStats = async () => {
-  try {
-    const { data, error } = await supabase
-      .from('venues')
-      .select('data_source')
-      .in('data_source', ['foursquare', 'google_places', 'tomtom', 'tripadvisor']);
-
-    if (error) throw error;
-
-    const stats = data.reduce((acc, venue) => {
-      acc[venue.data_source] = (acc[venue.data_source] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return stats;
-  } catch (error) {
-    console.error('Error fetching venue import stats:', error);
-    return {};
-  }
 };

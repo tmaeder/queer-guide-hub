@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -102,22 +102,22 @@ export const ImportHubDashboard = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Filter jobs based on search and status
-  const filteredJobs = jobs.filter(job => {
-    const matchesSearch = !searchQuery || 
+  // Filter jobs based on search and status (memoized)
+  const filteredJobs = useMemo(() => jobs.filter(job => {
+    const matchesSearch = !searchQuery ||
       job.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.file_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.id.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
-  });
+  }), [jobs, searchQuery, statusFilter]);
 
   // Get active jobs for the active tab
-  const activeJobs = filteredJobs.filter(job => 
+  const activeJobs = useMemo(() => filteredJobs.filter(job =>
     ['pending', 'validating', 'processing'].includes(job.status)
-  );
+  ), [filteredJobs]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -207,12 +207,13 @@ export const ImportHubDashboard = () => {
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 <Input
                   placeholder="Search jobs by type, filename, or ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-background"
+                  aria-label="Search import jobs"
                 />
               </div>
               <div className="flex gap-2">
@@ -327,8 +328,8 @@ export const ImportHubDashboard = () => {
                         </div>
                         
                          <div className="text-right">
-                           <Progress value={job.progress_percentage || 0} className="w-16 h-2 mb-1" />
-                           <span className="text-xs text-muted-foreground">{job.progress_percentage || 0}%</span>
+                           <Progress value={Math.min(100, Math.max(0, job.progress_percentage || 0))} className="w-16 h-2 mb-1" />
+                           <span className="text-xs text-muted-foreground">{Math.min(100, Math.max(0, job.progress_percentage || 0))}%</span>
                          </div>
                       </div>
                     ))}
@@ -416,9 +417,9 @@ export const ImportHubDashboard = () => {
                       <div className="space-y-4">
                          <div className="flex items-center justify-between text-sm">
                            <span className="font-medium">Overall Progress</span>
-                           <span className="font-bold">{job.progress_percentage || 0}%</span>
+                           <span className="font-bold">{Math.min(100, Math.max(0, job.progress_percentage || 0))}%</span>
                          </div>
-                         <Progress value={job.progress_percentage || 0} className="h-3" />
+                         <Progress value={Math.min(100, Math.max(0, job.progress_percentage || 0))} className="h-3" />
                         
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
                           <div className="text-center">

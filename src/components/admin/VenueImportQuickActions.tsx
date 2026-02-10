@@ -56,51 +56,33 @@ export const VenueImportQuickActions = () => {
     tripadvisor: { isRunning: false }
   });
 
-  // Update status based on actual edge function logs
+  const [venueStats, setVenueStats] = useState<Record<string, number>>({});
+
+  // Fetch real venue counts by data source
   useEffect(() => {
-    const updateStatusFromLogs = () => {
-      setImportStatuses(prev => ({
-        ...prev,
-        foursquare: {
-          isRunning: false,
-          lastResult: {
-            imported: 0,
-            updated: 0,
-            skipped: 0,
-            timestamp: new Date().toLocaleString(),
-            success: false,
-            error: "Foursquare API errors (400 status) for search terms"
-          }
-        },
-        'google-places': {
-          isRunning: false,
-          lastResult: {
-            imported: 0,
-            updated: 0,
-            skipped: 0,
-            timestamp: new Date().toLocaleString(),
-            success: false,
-            error: "Google Places API key invalid - billing must be enabled"
-          }
-        },
-        tomtom: {
-          isRunning: false,
-          lastResult: {
-            imported: 0,
-            updated: 15,
-            skipped: 0,
-            timestamp: new Date().toLocaleString(),
-            success: true
-          }
-        }
-      }));
+    const fetchVenueStats = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('venues')
+          .select('data_source');
+
+        if (error) throw error;
+
+        const stats = (data || []).reduce((acc: Record<string, number>, venue: any) => {
+          const source = venue.data_source || 'unknown';
+          acc[source] = (acc[source] || 0) + 1;
+          return acc;
+        }, {});
+        setVenueStats(stats);
+      } catch (error) {
+        console.error('Failed to fetch venue stats:', error);
+      }
     };
 
-    const timer = setTimeout(updateStatusFromLogs, 1000);
-    return () => clearTimeout(timer);
+    fetchVenueStats();
   }, []);
 
-  // Update providers with status information
+  // Provider configuration with real stats
   const getEnhancedProviders = (): VenueProvider[] => {
     return [
       {
@@ -110,8 +92,7 @@ export const VenueImportQuickActions = () => {
         description: 'Import venues from Foursquare with detailed business information',
         color: 'bg-blue-500',
         isLoading: loadingStates.foursquare,
-        lastImport: '2 hours ago',
-        totalVenues: 1234,
+        totalVenues: venueStats['foursquare'] || 0,
         status: importStatuses.foursquare
       },
       {
@@ -121,8 +102,7 @@ export const VenueImportQuickActions = () => {
         description: 'Import venues from Google Places with comprehensive location data',
         color: 'bg-green-500',
         isLoading: loadingStates['google-places'],
-        lastImport: '4 hours ago',
-        totalVenues: 2156,
+        totalVenues: venueStats['google_places'] || 0,
         status: importStatuses['google-places']
       },
       {
@@ -132,8 +112,7 @@ export const VenueImportQuickActions = () => {
         description: 'Import venues from TomTom with accurate mapping information',
         color: 'bg-orange-500',
         isLoading: loadingStates.tomtom,
-        lastImport: importStatuses.tomtom?.lastResult?.timestamp || '1 day ago',
-        totalVenues: 892,
+        totalVenues: venueStats['tomtom'] || 0,
         status: importStatuses.tomtom
       },
       {
@@ -143,8 +122,7 @@ export const VenueImportQuickActions = () => {
         description: 'Import venues from TripAdvisor with reviews and ratings',
         color: 'bg-purple-500',
         isLoading: loadingStates.tripadvisor,
-        lastImport: '3 days ago',
-        totalVenues: 567,
+        totalVenues: venueStats['tripadvisor'] || 0,
         status: importStatuses.tripadvisor
       }
     ];
@@ -245,7 +223,7 @@ export const VenueImportQuickActions = () => {
           <Card key={provider.id} className="relative overflow-hidden hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <div className={`p-2 rounded-lg ${provider.color} text-white`}>
+                <div className="p-2 rounded-lg text-white" style={{ backgroundColor: provider.id === 'foursquare' ? '#3b82f6' : provider.id === 'google-places' ? '#22c55e' : provider.id === 'tomtom' ? '#f97316' : '#a855f7' }}>
                   {provider.icon}
                 </div>
                 <div className="flex items-center gap-2">
