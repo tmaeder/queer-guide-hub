@@ -132,11 +132,18 @@ export default function Aurora(props: AuroraProps) {
     const ctn = ctnDom.current;
     if (!ctn) return;
 
-    const renderer = new Renderer({
-      alpha: true,
-      premultipliedAlpha: true,
-      antialias: true,
-    });
+    let renderer: Renderer;
+    try {
+      renderer = new Renderer({
+        alpha: true,
+        premultipliedAlpha: true,
+        antialias: true,
+      });
+    } catch {
+      // WebGL unavailable — gracefully degrade (no aurora background)
+      return;
+    }
+
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 0);
     gl.enable(gl.BLEND);
@@ -149,6 +156,7 @@ export default function Aurora(props: AuroraProps) {
       if (!ctn) return;
       const width = ctn.offsetWidth;
       const height = ctn.offsetHeight;
+      if (width === 0 || height === 0) return;
       renderer.setSize(width, height);
       if (program) {
         program.uniforms.uResolution.value = [width, height];
@@ -166,17 +174,24 @@ export default function Aurora(props: AuroraProps) {
       return [c.r, c.g, c.b];
     });
 
-    program = new Program(gl, {
-      vertex: VERT,
-      fragment: FRAG,
-      uniforms: {
-        uTime: { value: 0 },
-        uAmplitude: { value: amplitude },
-        uColorStops: { value: colorStopsArray },
-        uResolution: { value: [ctn.offsetWidth, ctn.offsetHeight] },
-        uBlend: { value: blend },
-      },
-    });
+    try {
+      program = new Program(gl, {
+        vertex: VERT,
+        fragment: FRAG,
+        uniforms: {
+          uTime: { value: 0 },
+          uAmplitude: { value: amplitude },
+          uColorStops: { value: colorStopsArray },
+          uResolution: { value: [ctn.offsetWidth, ctn.offsetHeight] },
+          uBlend: { value: blend },
+        },
+      });
+    } catch {
+      // Shader compilation failed — gracefully degrade
+      window.removeEventListener("resize", resize);
+      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      return;
+    }
 
     const mesh = new Mesh(gl, { geometry, program });
     ctn.appendChild(gl.canvas);
@@ -207,7 +222,11 @@ export default function Aurora(props: AuroraProps) {
       if (ctn && gl.canvas.parentNode === ctn) {
         ctn.removeChild(gl.canvas);
       }
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      try {
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+      } catch {
+        // Already lost context — ignore
+      }
     };
   }, [amplitude]);
 

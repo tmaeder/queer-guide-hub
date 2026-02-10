@@ -117,7 +117,16 @@
 
 /* Gradient text utility — works with the brand violet */
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-500;
+  color: hsl(var(--primary));
+  background: linear-gradient(to right, hsl(var(--primary)), #a855f7, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Gradient background — used across group/community components */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)), #a855f7);
 }
 
 /* Animation Utilities */

@@ -105,13 +105,15 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <div className="min-h-screen flex flex-col relative">
-               <div className="fixed inset-0 z-0">
-                 <Aurora
-                   colorStops={["#A855F7", "#EC4899", "#6366F1"]}
-                   blend={0.3}
-                   amplitude={1.0}
-                   speed={0.3}
-                 />
+               <div className="fixed inset-0 z-0 pointer-events-none">
+                 <Suspense fallback={null}>
+                   <Aurora
+                     colorStops={["#A855F7", "#EC4899", "#6366F1"]}
+                     blend={0.3}
+                     amplitude={1.0}
+                     speed={0.3}
+                   />
+                 </Suspense>
                </div>
               <AnalyticsTracker />
               <div className="relative z-10">
