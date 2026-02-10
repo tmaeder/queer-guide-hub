@@ -49,8 +49,8 @@ export default function EventDetail() {
     const fetchEvent = async () => {
       try {
         setLoading(true);
-        
-        // Fetch event details with venue and attendees
+
+        // Fetch event details with venue (public, works for anonymous users)
         const { data: eventData, error: eventError } = await supabase
           .from('events')
           .select(`
@@ -65,8 +65,19 @@ export default function EventDetail() {
               phone,
               website,
               email
-            ),
-            event_attendees (
+            )
+          `)
+          .eq('id', id)
+          .single();
+
+        if (eventError) throw eventError;
+
+        // Fetch attendees with profiles separately (requires authenticated user)
+        // The profiles table only allows authenticated access
+        if (user) {
+          const { data: attendeesData } = await supabase
+            .from('event_attendees')
+            .select(`
               id,
               status,
               user_id,
@@ -74,20 +85,18 @@ export default function EventDetail() {
                 display_name,
                 avatar_url
               )
-            )
-          `)
-          .eq('id', id)
-          .single();
+            `)
+            .eq('event_id', id);
 
-        if (eventError) throw eventError;
-        setEvent(eventData);
+          const fullEvent = { ...eventData, event_attendees: attendeesData || [] };
+          setEvent(fullEvent);
 
-        // Check user's attendance status
-        if (user) {
-          const userAttendee = eventData.event_attendees?.find(
+          const userAttendee = attendeesData?.find(
             (attendee: any) => attendee.user_id === user.id
           );
           setUserAttendance(userAttendee?.status || null);
+        } else {
+          setEvent({ ...eventData, event_attendees: [] });
         }
 
       } catch (error) {
@@ -129,44 +138,45 @@ export default function EventDetail() {
 
       // Refresh event data by re-fetching
       if (id) {
-        const fetchEvent = async () => {
-          try {
-            const { data: eventData, error: eventError } = await supabase
-              .from('events')
-              .select(`
-                *,
-                venues (
-                  id,
-                  name,
-                  address,
-                  city,
-                  state,
-                  country,
-                  phone,
-                  website,
-                  email
-                ),
-                event_attendees (
-                  id,
-                  status,
-                  user_id,
-                  profiles:user_id (
-                    display_name,
-                    avatar_url
-                  )
-                )
-              `)
-              .eq('id', id)
-              .single();
+        try {
+          const { data: eventData, error: eventError } = await supabase
+            .from('events')
+            .select(`
+              *,
+              venues (
+                id,
+                name,
+                address,
+                city,
+                state,
+                country,
+                phone,
+                website,
+                email
+              )
+            `)
+            .eq('id', id)
+            .single();
 
-            if (eventError) throw eventError;
-            setEvent(eventData);
-          } catch (error) {
-            console.error('Error refreshing event:', error);
-          }
-        };
-        
-        fetchEvent();
+          if (eventError) throw eventError;
+
+          const { data: attendeesData } = await supabase
+            .from('event_attendees')
+            .select(`
+              id,
+              status,
+              user_id,
+              profiles:user_id (
+                display_name,
+                avatar_url
+              )
+            `)
+            .eq('event_id', id);
+
+          setEvent({ ...eventData, event_attendees: attendeesData || [] });
+        } catch (error) {
+          console.error('Error refreshing event:', error);
+        }
       }
     } catch (error) {
       console.error('Error updating attendance:', error);
