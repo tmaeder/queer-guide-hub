@@ -1,7 +1,8 @@
 import React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEvents } from '@/hooks/useEvents';
+import { useMeta } from '@/hooks/useMeta';
 import { EventCard } from '@/components/events/EventCard';
 import { EventsCalendarView } from '@/components/events/EventsCalendarView';
 import { TagSelector } from '@/components/tags/TagSelector';
@@ -39,6 +40,21 @@ const Events = () => {
   const {
     toast
   } = useToast();
+
+  useMeta({
+    title: 'Events',
+    description: 'Discover and join LGBTQ+ community events — parties, meetups, pride marches, workshops, and more.',
+    canonicalPath: '/events',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'LGBTQ+ Events',
+      description: 'Discover and join LGBTQ+ community events worldwide.',
+      url: 'https://queer.guide/events',
+      isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
+    },
+  });
+
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid');
@@ -63,7 +79,10 @@ const Events = () => {
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
   // Get unique cities from events for auto-suggest
-  const availableCities = Array.from(new Set(events.map(event => event.city).filter(Boolean))).sort();
+  const availableCities = useMemo(
+    () => Array.from(new Set(events.map(event => event.city).filter(Boolean))).sort() as string[],
+    [events]
+  );
   const handleFiltersChange = async () => {
     const dateRange = startDate && endDate ? {
       start: startDate.toISOString(),
@@ -211,7 +230,7 @@ const Events = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-4xl font-bold text-foreground mb-2">
-                  Events Calendar
+                  Events
                 </h1>
                 <p className="text-lg text-muted-foreground">
                   Discover and join community events in your area

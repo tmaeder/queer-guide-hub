@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
+import { useMeta } from '@/hooks/useMeta';
 import { useAuth } from '@/hooks/useAuth';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { VenueFilters } from '@/components/venues/VenueFilters';
@@ -19,6 +20,20 @@ const Venues = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { venues, loading, error, hasMore, fetchVenues } = useVenues(false);
+
+  useMeta({
+    title: 'Venues',
+    description: 'Discover queer-friendly venues, businesses, and organizations worldwide. Find safe spaces near you.',
+    canonicalPath: '/venues',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Queer-Friendly Venues',
+      description: 'Discover queer-friendly venues, businesses, and organizations worldwide.',
+      url: 'https://queer.guide/venues',
+      isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
+    },
+  });
   const { events } = useEvents();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [currentFilters, setCurrentFilters] = useState<any>({});

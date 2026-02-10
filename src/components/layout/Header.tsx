@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck, Map, Smile, Handshake, Home, Leaf, UsersRound, Rss } from 'lucide-react';
+import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck, Map, Smile, Handshake, Home, Leaf, UsersRound, Rss, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -157,6 +157,17 @@ export function Header() {
 
           {/* Right side controls */}
           <div className="flex items-center gap-2">
+            {/* Submit a Space CTA */}
+            <Button
+              variant="default"
+              size="sm"
+              className="hidden sm:inline-flex gap-1.5 bg-primary text-primary-foreground font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              onClick={() => navigate('/admin/venues')}
+            >
+              <Plus className="h-4 w-4" />
+              Submit a Space
+            </Button>
+
             {/* Admin menu - only visible to admins */}
             <AdminMenu />
             
@@ -245,7 +256,18 @@ export function Header() {
                     </div>
                   </div>)}
 
-                {/* User actions for logged in users */}
+                {/* Submit a Space CTA (mobile) */}
+                <div className="pt-2 border-t sm:hidden">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full gap-1.5 bg-primary text-primary-foreground font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    onClick={() => handleMenuItemClick('/admin/venues')}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Submit a Space
+                  </Button>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

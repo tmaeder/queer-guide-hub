@@ -105,7 +105,10 @@ export function useVenues(autoFetch: boolean = true) {
       }
 
       if (options?.append) {
-        setVenues(prev => [...prev, ...processedVenues]);
+        setVenues(prev => {
+          const merged = [...prev, ...processedVenues];
+          return Array.from(new Map(merged.map(v => [v.id, v])).values());
+        });
       } else {
         setVenues(processedVenues);
       }

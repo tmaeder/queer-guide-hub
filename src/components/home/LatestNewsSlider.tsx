@@ -75,21 +75,7 @@ const LatestNewsSlider = React.memo(() => {
       </section>;
   }
   if (latestArticles.length === 0) {
-    return <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
-        <div className="container mx-auto">
-          <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
-            <h2 className={`font-bold mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
-              Latest News
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              No news articles available yet. Check back soon for updates!
-            </p>
-            <Button variant="outline" asChild>
-              <Link to="/news">Explore News Section</Link>
-            </Button>
-          </div>
-        </div>
-      </section>;
+    return null;
   }
   return <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
       <div className="container mx-auto">

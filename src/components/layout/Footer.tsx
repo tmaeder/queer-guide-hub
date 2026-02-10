@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronUp, FileText, Shield, Lock, Cookie, Copyright, Scale } from "lucide-react";
+import { ChevronUp, FileText, Shield, Lock, Cookie, Copyright, Scale, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -40,6 +40,16 @@ export function Footer() {
 
           {/* Quick Actions */}
           <div className="flex items-center gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              className="h-8 text-xs gap-1 bg-primary text-primary-foreground font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              onClick={() => navigate("/admin/venues")}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Submit a Space
+            </Button>
+            <Separator orientation="vertical" className="h-6" />
             <Button
               variant="ghost"
               size="sm"

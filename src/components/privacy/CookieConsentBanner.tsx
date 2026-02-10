@@ -14,7 +14,7 @@ export function CookieConsentBanner() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background/95 backdrop-blur border-t border-border">
+      <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 bg-background/95 backdrop-blur border-t border-border">
         <Card className="p-6 max-w-4xl mx-auto">
           <div className="flex items-start gap-4">
             <Cookie className="h-6 w-6 text-muted-foreground mt-1 flex-shrink-0" />

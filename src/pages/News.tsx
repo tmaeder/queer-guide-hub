@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNews } from "@/hooks/useNews";
+import { useMeta } from "@/hooks/useMeta";
 import { NewsCard } from "@/components/news/NewsCard";
 import { NewsFilters } from "@/components/news/NewsFilters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +50,20 @@ const sortOptions: SortOption[] = [{
   order: 'desc'
 }];
 export default function News() {
+  useMeta({
+    title: 'News',
+    description: 'Stay informed with the latest LGBTQ+ news and stories from around the world.',
+    canonicalPath: '/news',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'LGBTQ+ News',
+      description: 'Stay informed with the latest LGBTQ+ news and stories from around the world.',
+      url: 'https://queer.guide/news',
+      isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
+    },
+  });
+
   const {
     articles,
     sources,
@@ -159,7 +174,7 @@ export default function News() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
           <div className="space-y-2">
             <h1 className="text-4xl font-bold text-foreground">
-              LGBTQ+ News Hub
+              News
             </h1>
             <p className="text-lg text-muted-foreground">
               Stay informed with the latest news and stories from the LGBTQ+ community worldwide

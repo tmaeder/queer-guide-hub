@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
 import { useMarketplace } from '@/hooks/useMarketplace';
+import { useMeta } from '@/hooks/useMeta';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,21 @@ const Marketplace = () => {
   const {
     toast
   } = useToast();
+
+  useMeta({
+    title: 'Marketplace',
+    description: 'Browse queer-friendly businesses, services, and products in the LGBTQ+ marketplace.',
+    canonicalPath: '/marketplace',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'LGBTQ+ Marketplace',
+      description: 'Browse queer-friendly businesses, services, and products.',
+      url: 'https://queer.guide/marketplace',
+      isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
+    },
+  });
+
   const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState('all');

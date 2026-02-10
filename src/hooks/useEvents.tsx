@@ -115,7 +115,10 @@ export function useEvents(autoFetch: boolean = true) {
       }
       
       if (options?.append) {
-        setEvents(prev => [...prev, ...eventsData]);
+        setEvents(prev => {
+          const merged = [...prev, ...eventsData];
+          return Array.from(new Map(merged.map(e => [e.id, e])).values());
+        });
       } else {
         setEvents(eventsData);
       }

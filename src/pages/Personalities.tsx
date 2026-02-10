@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useMeta } from '@/hooks/useMeta';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,20 @@ import { Users, Plus } from "lucide-react";
 export default function Personalities() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+
+  useMeta({
+    title: 'Personalities',
+    description: 'Explore notable LGBTQ+ personalities — activists, artists, leaders, and historical figures.',
+    canonicalPath: '/personalities',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Notable LGBTQ+ Personalities',
+      description: 'Explore notable LGBTQ+ personalities — activists, artists, leaders, and historical figures.',
+      url: 'https://queer.guide/personalities',
+      isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
+    },
+  });
   
   // Get profession from URL parameters
   const professionFromUrl = searchParams.get('profession');
