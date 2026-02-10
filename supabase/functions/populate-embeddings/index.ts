@@ -81,7 +81,7 @@ serve(async (req) => {
         case 'marketplace': {
           const { data: marketplace } = await supabase
             .from('marketplace_listings')
-            .select('id, title, description, condition')
+            .select('id, title, description, category, price, location')
             .limit(limit);
           data = marketplace;
           break;
@@ -97,7 +97,7 @@ serve(async (req) => {
         case 'city': {
           const { data: cities } = await supabase
             .from('cities')
-            .select('id, name, description, country, population, lgbtq_friendliness_score, safety_score')
+            .select('id, name, description, country_id, population, lgbt_friendly_rating')
             .limit(limit);
           data = cities;
           break;
@@ -184,9 +184,12 @@ serve(async (req) => {
             case 'marketplace':
               contentText = [
                 item.title, item.description,
-                item.condition ? `Condition: ${item.condition}` : ''
+                item.category ? `Category: ${item.category}` : '',
+                item.price ? `Price: ${item.price}` : '',
+                item.location ? `Location: ${item.location}` : ''
               ].filter(Boolean).join('. ');
-              metadata.condition = item.condition;
+              metadata.category = item.category;
+              metadata.location = item.location;
               break;
             case 'personality':
               contentText = [
@@ -204,13 +207,12 @@ serve(async (req) => {
             case 'city':
               contentText = [
                 item.name, item.description,
-                item.country ? `Country: ${item.country}` : '',
+                item.country_id ? `Country ID: ${item.country_id}` : '',
                 item.population ? `Population: ${item.population}` : '',
-                item.lgbtq_friendliness_score ? `LGBTQ+ friendliness: ${item.lgbtq_friendliness_score}/10` : '',
-                item.safety_score ? `Safety score: ${item.safety_score}/10` : ''
+                item.lgbt_friendly_rating ? `LGBTQ+ friendliness: ${item.lgbt_friendly_rating}/10` : ''
               ].filter(Boolean).join('. ');
-              metadata.country = item.country;
-              metadata.lgbtq_friendliness_score = item.lgbtq_friendliness_score;
+              metadata.country_id = item.country_id;
+              metadata.lgbt_friendly_rating = item.lgbt_friendly_rating;
               break;
             case 'news':
               contentText = [
