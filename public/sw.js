@@ -54,7 +54,8 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
 
   // Skip external domains - don't cache Supabase API responses (auth data!)
-  if (url.origin !== location.origin && !url.hostname.includes('fonts.gstatic.com')) {
+  // Fonts are now self-hosted, so all font requests are same-origin
+  if (url.origin !== location.origin) {
     return;
   }
 

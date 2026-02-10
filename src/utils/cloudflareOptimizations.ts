@@ -74,7 +74,7 @@ export const getCloudflareGeoData = () => {
  */
 export const initCloudflareOptimizations = () => {
   // Add dns-prefetch for external domains used by the app
-  const domains = ['supabase.co', 'mapbox.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
+  const domains = ['supabase.co', 'mapbox.com'];
   domains.forEach(domain => {
     if (!document.querySelector(`link[rel="dns-prefetch"][href="https://${domain}"]`)) {
       const link = document.createElement('link');
