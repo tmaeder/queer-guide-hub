@@ -360,8 +360,8 @@ export default function GroupDetail() {
                   onStartConversation={(userId) => {
                     // TODO: Implement conversation starting
                     toast({
-                      title: "Feature coming soon",
-                      description: "Direct messaging will be available soon."
+                      title: "Not yet available",
+                      description: "Direct messaging is not yet available."
                     });
                   }}
                 />

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, CheckCircle, Sparkles, Globe, Search, BookOpen, Quote, Image as ImageIcon } from 'lucide-react';
+import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, CheckCircle, Sparkles, Globe, Search, BookOpen, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -59,19 +59,6 @@ const Index = React.memo(() => {
     description: 'Learn about rights, culture, and community topics',
     color: 'text-accent',
     link: '/resources'
-  }];
-  const testimonials = [{
-    quote: "Queer Guide helped me find my people when I moved cities. This app is literally life-changing!",
-    author: "Alex",
-    location: "Berlin, Germany"
-  }, {
-    quote: "Being featured on Queer Guide brought so much love to my queer-owned business. The community support hits different!",
-    author: "Sam",
-    location: "San Francisco, USA"
-  }, {
-    quote: "The events section keeps me plugged into the scene. It's giving main character energy and I'm here for it!",
-    author: "Jordan",
-    location: "Toronto, Canada"
   }];
   const formatNumber = (num: number) => {
     if (num >= 1000) {
@@ -173,30 +160,6 @@ const Index = React.memo(() => {
         <LatestNewsSlider />
       </React.Suspense>
 
-      {/* Testimonials */}
-      <section className="py-12 md:py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold font-montserrat text-center mb-10">
-            Voices from the Community
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-border/50 shadow-card">
-                <CardContent className="p-6 space-y-4">
-                  <Quote className="h-6 w-6 text-primary/40" aria-hidden="true" />
-                  <p className="text-sm leading-relaxed text-muted-foreground italic">
-                    "{testimonial.quote}"
-                  </p>
-                  <div className="pt-2 border-t border-border/50">
-                    <p className="text-sm font-semibold">{testimonial.author}</p>
-                    <p className="text-xs text-muted-foreground">{testimonial.location}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
     </div>;
 });
 

@@ -197,7 +197,7 @@
     "error": "Something went wrong",
     "success": "Success!",
     "tryAgain": "Try Again",
-    "comingSoon": "Coming Soon",
-    "underConstruction": "Under Construction"
+    "comingSoon": "Not Yet Available",
+    "underConstruction": "Under Development"
   }
 }

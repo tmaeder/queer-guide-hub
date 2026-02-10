@@ -1,49 +1,8 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, MapPin, Phone, Clock, MessageCircle, Shield, Bug } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-export default function Contact() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    category: "",
-    message: ""
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const {
-    toast
-  } = useToast();
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+import { Mail, MapPin, Clock, MessageCircle, Shield, Bug } from "lucide-react";
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast({
-      title: "Message sent!",
-      description: "We'll get back to you within 24 hours."
-    });
-    setFormData({
-      name: "",
-      email: "",
-      subject: "",
-      category: "",
-      message: ""
-    });
-    setIsSubmitting(false);
-  };
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+export default function Contact() {
   const contactMethods = [{
     icon: Mail,
     title: "Email Support",
@@ -96,59 +55,33 @@ export default function Contact() {
         </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-        {/* Contact Form */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Send us a message</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" type="text" value={formData.name} onChange={e => handleInputChange("name", e.target.value)} required />
+        {/* Contact Methods */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold mb-4">Reach Out</h2>
+          {contactMethods.map((method, index) => (
+            <Card key={index}>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <method.icon className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-1">{method.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-3">{method.description}</p>
+                    <div className="flex items-center justify-between">
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={`mailto:${method.contact}`}>
+                          <Mail className="h-4 w-4 mr-2" />
+                          {method.contact}
+                        </a>
+                      </Button>
+                      <span className="text-xs text-muted-foreground">
+                        Response: ~{method.responseTime}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" value={formData.email} onChange={e => handleInputChange("email", e.target.value)} required />
-                  </div>
                 </div>
-
-                <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select value={formData.category} onValueChange={value => handleInputChange("category", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="general">General Question</SelectItem>
-                      <SelectItem value="technical">Technical Support</SelectItem>
-                      <SelectItem value="safety">Safety Concern</SelectItem>
-                      <SelectItem value="business">Business Inquiry</SelectItem>
-                      <SelectItem value="partnership">Partnership</SelectItem>
-                      <SelectItem value="feedback">Feedback</SelectItem>
-                      <SelectItem value="bug">Bug Report</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="subject">Subject</Label>
-                  <Input id="subject" type="text" value={formData.subject} onChange={e => handleInputChange("subject", e.target.value)} required />
-                </div>
-
-                <div>
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea id="message" rows={6} value={formData.message} onChange={e => handleInputChange("message", e.target.value)} placeholder="Please provide as much detail as possible..." required />
-                </div>
-
-                <Button type="submit" disabled={isSubmitting} className="w-full">
-                  {isSubmitting ? "Sending..." : "Send Message"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Contact Information */}

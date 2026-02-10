@@ -154,7 +154,7 @@ export default function CountryDetail() {
           <h1 className="text-2xl font-bold">Country not found</h1>
           <p className="text-muted-foreground">The country you're looking for doesn't exist.</p>
           <Button asChild>
-            <Link to="/directory">
+            <Link to="/users">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Directory
             </Link>
@@ -176,7 +176,7 @@ export default function CountryDetail() {
           {/* Navigation */}
           <div className="mb-8">
             <Button variant="ghost" asChild className="mb-6 hover:bg-white/10">
-              <Link to="/directory">
+              <Link to="/users">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Directory
               </Link>
@@ -184,7 +184,7 @@ export default function CountryDetail() {
             
             {/* Breadcrumb */}
             <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-              <Link to="/directory" className="hover:text-primary transition-colors">
+              <Link to="/users" className="hover:text-primary transition-colors">
                 Directory
               </Link>
               <span>/</span>

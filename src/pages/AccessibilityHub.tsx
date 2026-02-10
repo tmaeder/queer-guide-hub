@@ -87,7 +87,7 @@ export default function AccessibilityHub() {
               <h4 className="font-medium">Need Help?</h4>
               <p className="text-sm text-muted-foreground">
                 If you're experiencing accessibility issues or need assistance, 
-                please contact our support team at accessibility@example.com
+                please contact our support team at accessibility@queer.guide
               </p>
             </div>
             <div className="space-y-2">

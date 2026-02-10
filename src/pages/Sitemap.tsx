@@ -117,10 +117,10 @@ export default function Sitemap() {
         <div className="container">
           <div className="flex items-center justify-between">
             <Link to="/" className="group -ml-2 font-bold">
-              Queer Guide <span className="text-muted-foreground group-hover:underline">v3 Alpha</span>
+              Queer Guide
             </Link>
             <a
-              href="https://github.com/jakejarvis/queer.guide"
+              href="https://github.com/tmaeder/queer-guide-hub"
               className="text-sm underline-offset-4 hover:underline"
             >
               GitHub

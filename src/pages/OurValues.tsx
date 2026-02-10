@@ -189,23 +189,13 @@ export default function OurValues() {
       <section className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-8">Values in Action</h2>
         <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">100%</div>
-              <p className="text-sm text-muted-foreground">Verified venue safety checks</p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">24hr</div>
-              <p className="text-sm text-muted-foreground">Response time for safety reports</p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">0%</div>
-              <p className="text-sm text-muted-foreground">Tolerance for discrimination</p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">50+</div>
-              <p className="text-sm text-muted-foreground">Community partnerships</p>
-            </div>
+          <div className="text-center max-w-2xl mx-auto space-y-4">
+            <div className="text-3xl font-bold text-primary mb-2">Zero Tolerance</div>
+            <p className="text-muted-foreground">
+              We maintain a strict zero-tolerance policy for discrimination, harassment,
+              and hate speech across our entire platform. Every report is reviewed, and
+              every community member deserves to feel safe and welcome.
+            </p>
           </div>
         </div>
       </section>

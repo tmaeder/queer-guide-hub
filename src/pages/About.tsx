@@ -1,7 +1,14 @@
-import { Heart, Users, MapPin, Calendar, ShoppingBag, MessageCircle } from "lucide-react";
+import { Heart, Users, MapPin, Calendar, ShoppingBag, MessageCircle, Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useConsolidatedStats } from "@/hooks/useConsolidatedStats";
 
 export default function About() {
+  const { stats, loading } = useConsolidatedStats();
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000) return `${Math.floor(num / 1000).toLocaleString()}K+`;
+    return num.toLocaleString();
+  };
   const features = [
     {
       icon: MapPin,
@@ -165,22 +172,35 @@ export default function About() {
             to the community, The Queer Guide is here for you. Together, we can build a more inclusive world.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-primary">10,000+</p>
-              <p className="text-sm text-muted-foreground">Community Members</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-primary">500+</p>
-              <p className="text-sm text-muted-foreground">Verified Venues</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-primary">1,000+</p>
-              <p className="text-sm text-muted-foreground">Events Listed</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-primary">50+</p>
-              <p className="text-sm text-muted-foreground">Cities Covered</p>
-            </div>
+            {loading ? (
+              <>
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="text-center">
+                    <p className="text-2xl font-bold text-primary">---</p>
+                    <p className="text-sm text-muted-foreground">Loading...</p>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">{formatNumber(stats.venues)}</p>
+                  <p className="text-sm text-muted-foreground">Verified Venues</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">{formatNumber(stats.events)}</p>
+                  <p className="text-sm text-muted-foreground">Events Listed</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">{formatNumber(stats.cities)}</p>
+                  <p className="text-sm text-muted-foreground">Cities Covered</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">{formatNumber(stats.countries)}</p>
+                  <p className="text-sm text-muted-foreground">Countries</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>

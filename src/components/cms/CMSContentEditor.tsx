@@ -360,7 +360,7 @@ export function CMSContentEditor({ contentId, onClose }: CMSContentEditorProps) 
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground">Media management interface coming soon...</p>
+                    <p className="text-muted-foreground">Media management is not yet available.</p>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -377,7 +377,7 @@ export function CMSContentEditor({ contentId, onClose }: CMSContentEditorProps) 
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground">Relationship management interface coming soon...</p>
+                    <p className="text-muted-foreground">Relationship management is not yet available.</p>
                   </CardContent>
                 </Card>
               </TabsContent>
