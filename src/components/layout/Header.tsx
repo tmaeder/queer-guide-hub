@@ -142,7 +142,7 @@ export function Header() {
     navigate(path);
     setMenuOpen(false);
   };
-  return <header className="bg-background/85 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20">
+  return <header className="bg-background/80 backdrop-blur-xl sticky top-0 z-50 border-b border-border/50 shadow-soft">
       <div className="container mx-auto px-4">
         {/* Main header */}
         <div className="h-16 flex items-center justify-between gap-2">
@@ -177,7 +177,7 @@ export function Header() {
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 p-4 bg-background/90 backdrop-blur-md border-white/20 z-50">
+                <DropdownMenuContent align="end" className="w-80 p-4 bg-popover/95 backdrop-blur-xl border-border/50 shadow-lg z-50">
                   {/* User mode */}
                   <div className="mb-4">
                     
@@ -233,7 +233,7 @@ export function Header() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72 max-h-[80vh] overflow-y-auto p-4 bg-background/90 backdrop-blur-md border-white/20 z-50">
+              <DropdownMenuContent align="end" className="w-72 max-h-[80vh] overflow-y-auto p-4 bg-popover/95 backdrop-blur-xl border-border/50 shadow-lg z-50">
                 {/* Main navigation */}
                 {navigationSections.map(section => <div key={section.title} className="mb-6">
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">{section.title}</h3>

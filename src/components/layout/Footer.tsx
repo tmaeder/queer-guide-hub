@@ -17,7 +17,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-background/80 backdrop-blur-sm border-t border-white/10 mt-auto">
+    <footer className="bg-background/80 backdrop-blur-sm border-t border-border/50 mt-auto">
       <div className="container mx-auto px-4 py-3">
         {/* Single Row Layout */}
         <div className="flex items-center justify-between gap-4 flex-wrap">

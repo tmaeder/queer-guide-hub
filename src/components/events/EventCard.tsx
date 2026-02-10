@@ -69,7 +69,7 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
   };
 
   return (
-    <Card className="group relative overflow-hidden bg-card hover:opacity-90 transition-opacity duration-500">
+    <Card className="group relative overflow-hidden bg-card shadow-card hover:shadow-card-hover border-border/50 transition-all duration-300 hover:-translate-y-0.5">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-primary/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       

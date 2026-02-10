@@ -119,25 +119,41 @@ const Index = React.memo(() => {
 
       {/* Features Grid */}
       <section>
-        <div className="container mx-auto px-4 py-20">
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div className="container mx-auto px-4 py-16 md:py-20">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
             {features.map((feature, index) => {
               const Icon = feature.icon as any;
               return (
                 <Link to={feature.link} key={index} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded-lg">
-                  <Card className="h-full transition-colors hover:bg-accent/10">
+                  <Card className="h-full shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-0.5 border-border/50">
                     <CardContent className="p-5">
                       <div className="flex flex-col items-center gap-2 text-center">
-                        <Icon className="h-8 w-8 md:h-10 md:w-10 text-foreground" aria-hidden="true" />
-                        <h3 className="text-base md:text-lg font-semibold">{feature.title}</h3>
-                        
+                        <div className="p-2.5 rounded-lg bg-primary/10">
+                          <Icon className="h-6 w-6 md:h-7 md:w-7 text-primary" aria-hidden="true" />
+                        </div>
+                        <h3 className="text-sm md:text-base font-semibold">{feature.title}</h3>
                       </div>
                     </CardContent>
                   </Card>
                 </Link>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Community Stats */}
+      <section className="py-12 md:py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center space-y-1">
+                <p className="text-3xl md:text-4xl font-bold font-montserrat gradient-text">
+                  {stat.number}
+                </p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -157,8 +173,30 @@ const Index = React.memo(() => {
         <LatestNewsSlider />
       </React.Suspense>
 
-      {/* Final CTA Section */}
-      
+      {/* Testimonials */}
+      <section className="py-12 md:py-20">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold font-montserrat text-center mb-10">
+            Voices from the Community
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="border-border/50 shadow-card">
+                <CardContent className="p-6 space-y-4">
+                  <Quote className="h-6 w-6 text-primary/40" aria-hidden="true" />
+                  <p className="text-sm leading-relaxed text-muted-foreground italic">
+                    "{testimonial.quote}"
+                  </p>
+                  <div className="pt-2 border-t border-border/50">
+                    <p className="text-sm font-semibold">{testimonial.author}</p>
+                    <p className="text-xs text-muted-foreground">{testimonial.location}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>;
 });
 

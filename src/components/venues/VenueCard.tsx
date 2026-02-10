@@ -45,7 +45,7 @@ export function VenueCard({
   };
   return (
     <Link to={`/venues/${venue.id}`} className="block">
-      <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+      <Card className="group overflow-hidden shadow-card hover:shadow-card-hover border-border/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer">
       {/* Venue Image */}
       {venue.images && venue.images.length > 0 ? (
         <div className="relative h-48 overflow-hidden">

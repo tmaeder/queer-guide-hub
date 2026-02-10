@@ -24,7 +24,7 @@ export default {
 				'sans': ['Noto Sans', 'system-ui', '-apple-system', 'sans-serif'],
 			},
 			colors: {
-				border: 'transparent',
+				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
@@ -72,15 +72,21 @@ export default {
 					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
 					accent: 'hsl(var(--sidebar-accent))',
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'transparent',
+					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
 			borderRadius: {
-				lg: 'var(--radius)',
+				lg: 'calc(var(--radius) + 2px)',
 				md: 'var(--radius)',
-				sm: 'var(--radius)',
+				sm: 'calc(var(--radius) - 2px)',
 				DEFAULT: 'var(--radius)'
+			},
+			boxShadow: {
+				'soft': '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)',
+				'card': '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
+				'card-hover': '0 10px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.06)',
+				'glow': '0 0 20px -5px hsl(var(--primary) / 0.2)',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -128,12 +134,8 @@ export default {
 				enter: 'fade-in 0.3s ease-out, scale-in 0.2s ease-out',
 				exit: 'fade-out 0.3s ease-out, scale-out 0.2s ease-out'
 			},
-			/* No shadows in flat design */
-			boxShadow: {
-				'none': 'none'
-			},
 			transitionTimingFunction: {
-				'smooth': 'var(--transition-smooth)'
+				'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)'
 			}
 		}
 	},

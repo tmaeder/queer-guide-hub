@@ -4,170 +4,151 @@
 
 @layer base {
   :root {
-    /* Light Mode - Dark text on light backgrounds */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    /* Light Mode — warm, approachable palette */
+    --background: 0 0% 99%;
+    --foreground: 240 10% 8%;
 
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover-foreground: 240 10% 8%;
 
-    /* Brand (strict monochrome) */
-    --primary: 0 0% 0%;
+    /* Brand — warm violet that nods to the pride palette */
+    --primary: 271 76% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
 
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 0%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
 
-    --accent: 0 0% 90%;
-    --accent-foreground: 0 0% 0%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 6% 10%;
 
-    --destructive: 0 0% 20%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 0 0% 30%;
+    --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --success: 0 0% 25%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
-    /* UI Elements - No borders in flat design */
-    --border: transparent;
-    --input: 0 0% 95%;
-    --ring: 0 0% 0%;
-    --radius: 4px;
+    /* UI elements — subtle borders for depth */
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 271 76% 53%;
+    --radius: 0.625rem;
 
-    /* Sidebar (monochrome) */
-    --sidebar-background: 0 0% 98% / 0.1;
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 0 0% 0%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 6% 10%;
+    --sidebar-primary: 271 76% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 90% / 0.2;
-    --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: transparent;
-    --sidebar-ring: 0 0% 0%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 6% 10%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 271 76% 53%;
 
-    /* Minimal transitions only */
-    --transition-smooth: opacity 0.15s ease;
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    /* Dark Mode - Bright text on dark backgrounds */
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
+    /* Dark Mode — rich, deep tones */
+    --background: 240 10% 4%;
+    --foreground: 0 0% 95%;
 
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 100%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 0%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 0%;
+    --primary: 271 91% 65%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 100%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 95%;
 
-    --destructive: 0 0% 80%;
-    --destructive-foreground: 0 0% 0%;
+    --destructive: 0 63% 56%;
+    --destructive-foreground: 0 0% 100%;
 
-    --warning: 0 0% 70%;
-    --warning-foreground: 0 0% 0%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
-    --success: 0 0% 75%;
-    --success-foreground: 0 0% 0%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
 
-    /* No borders in dark mode either */
-    --border: transparent;
-    --input: 0 0% 10%;
-    --ring: 0 0% 100%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 271 91% 65%;
 
-    --sidebar-background: 0 0% 5% / 0.1;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 15% / 0.2;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: transparent;
-    --sidebar-ring: 0 0% 100%;
+    --sidebar-background: 240 10% 6%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 271 91% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 271 91% 65%;
   }
 
   * {
     @apply border-border;
   }
 
-  /* Force all rectangular elements to have rounded corners */
-  button, input, textarea, select, 
-  .card, [class*="card"], 
-  .dialog, [class*="dialog"],
-  .popover, [class*="popover"],
-  .dropdown, [class*="dropdown"],
-  .badge, [class*="badge"],
-  .alert, [class*="alert"],
-  img:not([class*="rounded-full"]),
-  video:not([class*="rounded-full"]) {
-    border-radius: var(--radius) !important;
-  }
-  
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
-  }
-  
-  .gradient-text {
-    color: hsl(var(--foreground));
-  }
-  
-  /* All text uses only black/white/gray semantic tokens */
-  .text-success {
-    @apply text-foreground;
-  }
-  
-  .text-warning {
-    @apply text-foreground;
-  }
-  
-  .text-error {
-    @apply text-foreground;
-  }
-  
-  .text-info {
-    @apply text-foreground;
+    @apply font-bold tracking-tight;
   }
 }
 
+/* Gradient text utility — works with the brand violet */
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-500;
+}
+
 /* Animation Utilities */
-.hover-minimal { @apply transition-all duration-200 hover:bg-background/95 hover:backdrop-blur-md; }
-.hover-scale { @apply transition-transform duration-200 hover:scale-105 active:scale-95; }
+.hover-minimal {
+  @apply transition-all duration-200 hover:bg-accent;
+}
+.hover-scale {
+  @apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98];
+}
 
 /* Tailwind animations are available via animate- classes; keep a helper for fade-in */
-.animate-fade-in { animation: fade-in 0.2s ease-out; }
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
 /* Link underline animation */
-.story-link { position: relative; display: inline-block; }
+.story-link {
+  position: relative;
+  display: inline-block;
+}
 .story-link::after {
   content: "";
   position: absolute;
-  left: 0; bottom: 0; width: 100%; height: 2px;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
   background: hsl(var(--primary));
   transform: scaleX(0);
   transform-origin: bottom right;
@@ -179,7 +160,10 @@
 }
 
 /* Pulse utility */
-.pulse { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 /* Accessibility Classes */
 .font-size-small {
   font-size: 0.875rem;

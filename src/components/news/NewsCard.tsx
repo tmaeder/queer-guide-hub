@@ -74,9 +74,9 @@ export const NewsCard = ({
     };
     return colors[category] || 'hsl(var(--muted))';
   };
-  return <Card className="group hover:shadow-lg transition-all duration-300">
+  return <Card className="group shadow-card hover:shadow-card-hover border-border/50 transition-all duration-300 hover:-translate-y-0.5">
       <CardHeader className="space-y-3">
-        {article.image_url && <div className="relative overflow-hidden">
+        {article.image_url && <div className="relative overflow-hidden rounded-lg">
             <img src={article.image_url} alt={article.title} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105" />
             {article.is_featured && <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">
                 Featured
