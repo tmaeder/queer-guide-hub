@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Loader2, Shield } from 'lucide-react';
 
 interface UrlValidatorProps {
@@ -14,40 +13,31 @@ export function UrlValidator({ url, onValidate }: UrlValidatorProps) {
 
   const validateUrl = async (urlToValidate: string): Promise<boolean> => {
     try {
-      const apiKey = 'AIzaSyAkSfSrwIQGzVciKbClNYpL9YHPbHOj_Og';
-      const response = await fetch(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client: { clientId: 'queer-guide-validator', clientVersion: '1.0.0' },
-          threatInfo: {
-            threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING'],
-            platformTypes: ['WINDOWS'],
-            threatEntryTypes: ['URL'],
-            threatEntries: [{ url: urlToValidate }]
-          }
-        })
-      });
-      const data = await response.json();
-      return !data.matches || data.matches.length === 0;
+      // Basic client-side URL validation (no external API call with hardcoded keys)
+      const parsed = new URL(urlToValidate);
+      // Block known dangerous protocols
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        return false;
+      }
+      return true;
     } catch {
-      return true; // Allow if validation fails
+      return false;
     }
   };
 
   const handleValidation = async () => {
     if (!url.trim()) return;
-    
+
     setValidationState('validating');
     setValidationDetails('');
 
     try {
       const cleanUrl = url.startsWith('http') ? url : `https://${url}`;
       const isValid = await validateUrl(cleanUrl);
-      
+
       setValidationState(isValid ? 'valid' : 'invalid');
-      setValidationDetails(isValid ? 'URL is safe and accessible' : 'URL appears to be unsafe or invalid');
-      
+      setValidationDetails(isValid ? 'URL format is valid' : 'URL appears to be invalid');
+
       onValidate?.(cleanUrl, isValid);
     } catch (error) {
       setValidationState('invalid');
@@ -74,21 +64,21 @@ export function UrlValidator({ url, onValidate }: UrlValidatorProps) {
         )}
         Validate
       </Button>
-      
+
       {validationState === 'valid' && (
         <div className="flex items-center gap-1 text-green-600">
           <CheckCircle className="h-4 w-4" />
-          <span className="text-sm">Safe</span>
+          <span className="text-sm">Valid</span>
         </div>
       )}
-      
+
       {validationState === 'invalid' && (
         <div className="flex items-center gap-1 text-red-600">
           <XCircle className="h-4 w-4" />
-          <span className="text-sm">Unsafe</span>
+          <span className="text-sm">Invalid</span>
         </div>
       )}
-      
+
       {validationDetails && (
         <span className="text-xs text-muted-foreground">{validationDetails}</span>
       )}

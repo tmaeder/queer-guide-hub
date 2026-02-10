@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { calculateDistanceKm } from '@/utils/calculateDistance';
 
 type Event = Database['public']['Tables']['events']['Row'];
 type EventInsert = Database['public']['Tables']['events']['Insert'];
@@ -93,23 +94,11 @@ export function useOptimizedEvents(filters?: EventFilters) {
     
     // Client-side distance filtering for nearMe
     if (filters?.nearMe) {
-      const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-        const R = 6371; // Earth's radius in kilometers
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = 
-          Math.sin(dLat/2) * Math.sin(dLat/2) +
-          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-          Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-      };
-
       eventsData = eventsData
         .filter(event => event.latitude && event.longitude)
         .map(event => ({
           ...event,
-          distance: calculateDistance(
+          distance: calculateDistanceKm(
             filters.nearMe!.lat,
             filters.nearMe!.lng,
             event.latitude!,

@@ -32,7 +32,7 @@ export const useAlgoliaSearch = (query: string, filters: AlgoliaSearchFilters = 
   const [results, setResults] = useState<AlgoliaSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<AlgoliaSearchResult[]>([]);
-  
+
   const debouncedQuery = useDebounce(query, 300);
 
   const performSearch = async (searchQuery: string) => {
@@ -44,7 +44,7 @@ export const useAlgoliaSearch = (query: string, filters: AlgoliaSearchFilters = 
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('algolia-search', {
+      const { data, error } = await supabase.functions.invoke('search', {
         body: {
           query: searchQuery,
           filters,
@@ -59,7 +59,7 @@ export const useAlgoliaSearch = (query: string, filters: AlgoliaSearchFilters = 
       setResults(data.hits || []);
       setSuggestions(data.suggestions || []);
     } catch (error) {
-      console.error('Algolia search error:', error);
+      console.error('Search error:', error);
       setResults([]);
       setSuggestions([]);
     } finally {

@@ -96,10 +96,8 @@ export function useSecureMapbox() {
           }
         } catch {}
 
-        // Use your custom token as fallback
-        const customToken = 'pk.eyJ1IjoidG1hZWRlciIsImEiOiJjazh4Ym9wOTEwN3F4M21zN3FqdnM4MHE2In0.24RlCLiCNxxX-c6h_4rwWw';
-        setToken(customToken);
-        console.warn('Using custom Mapbox token fallback');
+        // No hardcoded fallback — map will show error state
+        console.warn('All Mapbox token sources exhausted');
         return;
       } finally {
         setLoading(false);

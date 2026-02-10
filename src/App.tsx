@@ -14,6 +14,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 const Aurora = lazy(() => import("@/components/ui/Aurora"));
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { createOptimizedQueryClient } from "@/utils/queryOptimizations";
@@ -118,6 +119,7 @@ const App = () => {
               </div>
               <main className="flex-1 relative z-10">
                 <div className="container mx-auto px-2 sm:px-4">
+                  <ErrorBoundary>
                   <Suspense fallback={
                     <div className="py-10">
                       <div className="grid gap-6 sm:grid-cols-2">
@@ -300,6 +302,7 @@ const App = () => {
                   <Route path="*" element={<NotFound />} />
                   </Routes>
                   </Suspense>
+                  </ErrorBoundary>
                 </div>
               </main>
               <div className="relative z-10">
