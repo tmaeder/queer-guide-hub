@@ -46,15 +46,27 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
   }, []);
   const mapToken = token || manualToken;
 
-  // Fetch approximate user location via IP
+  // Fetch approximate user location via IP (cached in sessionStorage)
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
+        // Check sessionStorage cache first
+        const cached = sessionStorage.getItem('ip_geo');
+        if (cached) {
+          const data = JSON.parse(cached);
+          if (!cancelled && data.latitude && data.longitude) {
+            setCenter([data.longitude, data.latitude]);
+            setZoom(9);
+            setIpLocated(true);
+          }
+          return;
+        }
         const res = await fetch('https://ipapi.co/json/');
         if (!res.ok) return;
         const data = await res.json();
         if (data && typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+          sessionStorage.setItem('ip_geo', JSON.stringify({ latitude: data.latitude, longitude: data.longitude }));
           if (!cancelled) {
             setCenter([data.longitude, data.latitude]);
             setZoom(9);

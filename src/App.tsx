@@ -14,7 +14,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 import { Skeleton } from "@/components/ui/skeleton";
-import Aurora from "@/components/ui/Aurora";
+const Aurora = lazy(() => import("@/components/ui/Aurora"));
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { createOptimizedQueryClient } from "@/utils/queryOptimizations";
 

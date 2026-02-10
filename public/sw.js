@@ -1,13 +1,13 @@
 // Service Worker optimized for Cloudflare Pages
-const CACHE_NAME = 'queer-guide-v2';
-const STATIC_CACHE = 'static-v1';
-const DYNAMIC_CACHE = 'dynamic-v1';
+const CACHE_NAME = 'queer-guide-v3';
+const STATIC_CACHE = 'static-v2';
+const DYNAMIC_CACHE = 'dynamic-v2';
 
-// Assets to cache immediately
+// Only cache the HTML shell and manifest - JS/CSS have hashed filenames
+// and are cached via Cache-Control: immutable headers
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/assets/css/index.css',
   '/manifest.json'
 ];
 
@@ -15,8 +15,6 @@ const STATIC_ASSETS = [
 const CACHE_STRATEGIES = {
   // Static assets - cache first
   static: /\.(js|css|woff2?|png|jpg|jpeg|webp|avif|svg|ico)$/,
-  // API calls - network first with fallback
-  api: /\/api\//,
   // Images - cache first with network fallback
   images: /\.(png|jpg|jpeg|webp|avif|gif|svg)$/,
   // HTML - network first
@@ -37,8 +35,8 @@ self.addEventListener('activate', event => {
       .then(cacheNames => {
         return Promise.all(
           cacheNames
-            .filter(cacheName => 
-              cacheName !== STATIC_CACHE && 
+            .filter(cacheName =>
+              cacheName !== STATIC_CACHE &&
               cacheName !== DYNAMIC_CACHE
             )
             .map(cacheName => caches.delete(cacheName))
@@ -55,13 +53,8 @@ self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (request.method !== 'GET') return;
 
-  // Skip external domains except for specific CDNs
-  if (
-    url.origin !== location.origin && 
-    !url.hostname.includes('supabase.co') &&
-    !url.hostname.includes('fonts.gstatic.com') &&
-    !url.hostname.includes('cdn.jsdelivr.net')
-  ) {
+  // Skip external domains - don't cache Supabase API responses (auth data!)
+  if (url.origin !== location.origin && !url.hostname.includes('fonts.gstatic.com')) {
     return;
   }
 
@@ -84,41 +77,13 @@ self.addEventListener('fetch', event => {
             });
         })
         .catch(() => {
-          // Return offline fallback for static assets
+          // Return offline fallback for images
           if (request.destination === 'image') {
             return new Response(
               '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f3f4f6"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#6b7280">Image unavailable</text></svg>',
               { headers: { 'Content-Type': 'image/svg+xml' } }
             );
           }
-        })
-    );
-    return;
-  }
-
-  // API calls - Network First strategy
-  if (CACHE_STRATEGIES.api.test(url.pathname)) {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE)
-              .then(cache => cache.put(request, responseClone));
-          }
-          return response;
-        })
-        .catch(() => {
-          return caches.match(request)
-            .then(cachedResponse => {
-              return cachedResponse || new Response(
-                JSON.stringify({ error: 'Network unavailable' }), 
-                { 
-                  status: 503,
-                  headers: { 'Content-Type': 'application/json' }
-                }
-              );
-            });
         })
     );
     return;
@@ -156,21 +121,18 @@ self.addEventListener('fetch', event => {
 // Handle background sync for Cloudflare compatibility
 self.addEventListener('sync', event => {
   if (event.tag === 'background-sync') {
-    event.waitUntil(
-      // Handle any background sync tasks
-      Promise.resolve()
-    );
+    event.waitUntil(Promise.resolve());
   }
 });
 
-// Handle push notifications (if needed)
+// Handle push notifications
 self.addEventListener('push', event => {
   if (!event.data) return;
 
   const options = {
     body: event.data.text(),
-    icon: '/icon-192x192.png',
-    badge: '/icon-192x192.png',
+    icon: '/icons/icon-512.png',
+    badge: '/icons/icon-512.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),

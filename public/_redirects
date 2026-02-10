@@ -9,8 +9,5 @@
 # API routes - proxy to Supabase edge functions
 /api/*  https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/:splat  200
 
-# Security redirects
-/admin/*  /admin/dashboard  200
-
 # Cloudflare Pages SPA catch-all (must be last)
 /*    /index.html   200

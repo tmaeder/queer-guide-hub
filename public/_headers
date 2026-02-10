@@ -1,106 +1,74 @@
 # Cloudflare Pages Headers for Security and Performance
 
-# Static assets - long cache with immutable for Cloudflare optimization
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
-  Cross-Origin-Resource-Policy: cross-origin
-  CF-Polish: lossy
-  Content-Encoding: gzip
-
-# JavaScript files - optimized for Cloudflare CDN
-/*.js
-  Cache-Control: public, max-age=31536000, immutable
-  Content-Type: application/javascript
-  Content-Encoding: gzip
-
-# CSS files with Cloudflare optimization  
-/*.css
-  Cache-Control: public, max-age=31536000, immutable
-  Content-Type: text/css
-  Content-Encoding: gzip
-
-# Font files - Cloudflare font optimization
-/*.woff2
-  Cache-Control: public, max-age=31536000, immutable
-  Cross-Origin-Resource-Policy: cross-origin
-  Content-Type: font/woff2
-
-/*.woff
-  Cache-Control: public, max-age=31536000, immutable
-  Cross-Origin-Resource-Policy: cross-origin
-  Content-Type: font/woff
-
-# Image files with Cloudflare Images optimization hints
-/*.jpg
-  Cache-Control: public, max-age=31536000, immutable
-  Content-Type: image/jpeg
-  CF-Polish: lossy
-
-/*.jpeg
-  Cache-Control: public, max-age=31536000, immutable
-  Content-Type: image/jpeg
-  CF-Polish: lossy
-
-/*.png
-  Cache-Control: public, max-age=31536000, immutable
-  Content-Type: image/png
-  CF-Polish: lossy
-
-/*.webp
-  Cache-Control: public, max-age=31536000, immutable
-  Content-Type: image/webp
-
-/*.avif
-  Cache-Control: public, max-age=31536000, immutable
-  Content-Type: image/avif
-
-/*.svg
-  Cache-Control: public, max-age=31536000, immutable
-  Content-Type: image/svg+xml
-  Content-Encoding: gzip
-
-# JSON files - Cloudflare API cache optimization
-/*.json
-  Cache-Control: public, max-age=300
-  Content-Type: application/json
-  Content-Encoding: gzip
-
-# Service worker and manifest
-/sw.js
-  Cache-Control: public, max-age=0, must-revalidate
-  Content-Type: application/javascript
-
-/manifest.json
-  Cache-Control: public, max-age=86400
-  Content-Type: application/manifest+json
-
-# HTML files - no cache for SPA routing
-/*.html
-  Cache-Control: public, max-age=0, must-revalidate
-  Content-Type: text/html
-  Content-Encoding: gzip
-
-# Root HTML with Cloudflare optimization and security headers
-/
-  Cache-Control: public, max-age=0, must-revalidate
-  Content-Encoding: gzip
-  X-Frame-Options: DENY
-  X-XSS-Protection: 1; mode=block
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
-  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://api.mapbox.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' https://api.mapbox.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com wss://*.supabase.co; frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
-  Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=(self), usb=()
-  Cross-Origin-Opener-Policy: same-origin
-  X-Permitted-Cross-Domain-Policies: none
-
-# Global headers for all files
+# Global security headers for ALL paths (must be first for widest match)
 /*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=(self)
+  Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=(self), usb=()
   Cross-Origin-Opener-Policy: same-origin
   X-Permitted-Cross-Domain-Policies: none
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://api.mapbox.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://widget.getyourguide.com; style-src 'self' 'unsafe-inline' https://api.mapbox.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://ipapi.co wss://*.supabase.co; frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+
+# Static assets - long cache with immutable
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+
+# JavaScript files
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+# CSS files
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+# Font files
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+
+# Image files
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.jpeg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.avif
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+# JSON files
+/*.json
+  Cache-Control: public, max-age=300
+
+# Service worker - never cache
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Manifest
+/manifest.json
+  Cache-Control: public, max-age=86400
+
+# HTML files - no cache for SPA routing
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Root HTML
+/
+  Cache-Control: public, max-age=0, must-revalidate

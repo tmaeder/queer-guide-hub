@@ -9,8 +9,8 @@ import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 
-import FrontPageVenueMap from '@/components/home/FrontPageVenueMap';
-import { VenueMapSearch } from '@/components/venues/VenueMapSearch';
+const FrontPageVenueMap = React.lazy(() => import('@/components/home/FrontPageVenueMap'));
+const VenueMapSearch = React.lazy(() => import('@/components/venues/VenueMapSearch').then(m => ({ default: m.VenueMapSearch })));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
 const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider'));
 const RegionalEventsCalendar = React.lazy(() => import('@/components/home/RegionalEventsCalendar'));
