@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Clock, MapPin, Users, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Eye, Star, Ticket, ExternalLink } from 'lucide-react';
 import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths } from 'date-fns';
 import { Database } from '@/integrations/supabase/types';
+import { formatEventTime } from '@/lib/event-time';
 type Event = Database['public']['Tables']['events']['Row'];
 interface EventsCalendarViewProps {
   events: Event[];
@@ -225,24 +226,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <Clock className="h-3 w-3 flex-shrink-0" />
-                              {(() => {
-                                const s = parseISO(event.start_date);
-                                const e = event.end_date ? parseISO(event.end_date) : null;
-                                const sUTC = `${String(s.getUTCHours()).padStart(2,'0')}:${String(s.getUTCMinutes()).padStart(2,'0')}`;
-                                const eUTC = e ? `${String(e.getUTCHours()).padStart(2,'0')}:${String(e.getUTCMinutes()).padStart(2,'0')}` : null;
-                                if (sUTC === '00:00' && eUTC === '23:59') return <span>All Day</span>;
-                                return (
-                                  <>
-                                    <span>{format(s, 'h:mm a')}</span>
-                                    {e && (
-                                      <>
-                                        <span>-</span>
-                                        <span>{format(e, 'h:mm a')}</span>
-                                      </>
-                                    )}
-                                  </>
-                                );
-                              })()}
+                              <span>{formatEventTime(event.start_date, event.end_date)}</span>
                             </div>
                             
                             {(event.venue_name || event.city) && (

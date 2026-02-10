@@ -6,6 +6,7 @@ import { Calendar, MapPin, Users, Clock, DollarSign, ExternalLink, Star, Ticket,
 import { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { formatEventTime } from '@/lib/event-time';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { cn } from '@/lib/utils';
 
@@ -53,21 +54,6 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
       return `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`;
     }
     return format(start, 'MMM d, yyyy');
-  };
-
-  const formatEventTime = (startDate: string, endDate?: string | null) => {
-    const start = new Date(startDate);
-    const end = endDate ? new Date(endDate) : null;
-
-    // Detect all-day events (start at midnight UTC, end at 23:59 UTC)
-    const startUTC = `${String(start.getUTCHours()).padStart(2,'0')}:${String(start.getUTCMinutes()).padStart(2,'0')}`;
-    const endUTC = end ? `${String(end.getUTCHours()).padStart(2,'0')}:${String(end.getUTCMinutes()).padStart(2,'0')}` : null;
-    if (startUTC === '00:00' && endUTC === '23:59') return 'All Day';
-
-    if (end) {
-      return `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`;
-    }
-    return format(start, 'h:mm a');
   };
 
   const getPriceDisplay = () => {

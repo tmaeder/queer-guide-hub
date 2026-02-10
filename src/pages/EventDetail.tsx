@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { useEvents } from '@/hooks/useEvents';
 import { useAuth } from '@/hooks/useAuth';
 import { Database } from '@/integrations/supabase/types';
+import { formatEventTime } from '@/lib/event-time';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
@@ -280,21 +281,6 @@ export default function EventDetail() {
       return `${format(start, 'EEEE, MMMM d')} - ${format(end, 'EEEE, MMMM d, yyyy')}`;
     }
     return format(start, 'EEEE, MMMM d, yyyy');
-  };
-
-  const formatEventTime = (startDate: string, endDate?: string | null) => {
-    const start = new Date(startDate);
-    const end = endDate ? new Date(endDate) : null;
-
-    // Detect all-day events (start at midnight UTC, end at 23:59 UTC)
-    const startUTC = `${String(start.getUTCHours()).padStart(2,'0')}:${String(start.getUTCMinutes()).padStart(2,'0')}`;
-    const endUTC = end ? `${String(end.getUTCHours()).padStart(2,'0')}:${String(end.getUTCMinutes()).padStart(2,'0')}` : null;
-    if (startUTC === '00:00' && endUTC === '23:59') return 'All Day';
-
-    if (end) {
-      return `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`;
-    }
-    return format(start, 'h:mm a');
   };
 
   const getPriceDisplay = () => {

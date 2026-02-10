@@ -82,6 +82,7 @@ export const GroupCard = ({
               size="sm"
               onClick={() => onManage(group)}
               className="opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-label="Manage group settings"
             >
               <Settings className="h-4 w-4" />
             </Button>

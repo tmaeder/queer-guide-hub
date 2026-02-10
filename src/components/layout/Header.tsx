@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane, Newspaper, CreditCard, Settings, Users, MessageSquare, FileText, LogOut, Accessibility, Tags, UserCheck, Map, Smile, Handshake, Home, Leaf, UsersRound, Rss } from 'lucide-react';
@@ -19,7 +19,13 @@ export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
+
+  const isActiveRoute = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
+  };
   const {
     user,
     signOut
@@ -232,7 +238,7 @@ export function Header() {
                 {navigationSections.map(section => <div key={section.title} className="mb-6">
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">{section.title}</h3>
                     <div className="grid grid-cols-3 gap-2 p-2">
-                      {section.items.map(item => <Button key={item.to} variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => handleMenuItemClick(item.to)}>
+                      {section.items.map(item => <Button key={item.to} variant={isActiveRoute(item.to) ? "default" : "ghost"} size="sm" className={`flex flex-col items-center p-3 h-auto gap-1 ${isActiveRoute(item.to) ? 'bg-primary/15 text-primary border border-primary/20' : ''}`} onClick={() => handleMenuItemClick(item.to)}>
                           <item.icon className="h-4 w-4" />
                           <span className="text-xs">{item.label}</span>
                         </Button>)}

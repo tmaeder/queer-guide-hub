@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +50,17 @@ export const UniversalSearchBar = () => {
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
+
+  // Reset search state when navigating away from search results
+  useEffect(() => {
+    if (!location.pathname.startsWith('/search')) {
+      setQuery("");
+      setIsOpen(false);
+      setShowFilters(false);
+    }
+  }, [location.pathname]);
   const {
     results,
     suggestions: searchResults,

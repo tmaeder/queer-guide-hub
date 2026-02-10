@@ -22,7 +22,7 @@ const Venues = () => {
   const { events } = useEvents();
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [currentFilters, setCurrentFilters] = useState<any>({});
-  const [sortBy, setSortBy] = useState<string>('random');
+  const [sortBy, setSortBy] = useState<string>('featured');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(1);
@@ -72,20 +72,20 @@ const Venues = () => {
   const sortedVenues = useMemo(() => {
     if (!venues || venues.length === 0) return [];
     
-    if (sortBy === 'random') {
-      // Randomize the order using Fisher-Yates shuffle
-      const shuffled = [...venues];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
+    if (sortBy === 'featured') {
+      // Featured venues first, then alphabetical by name
+      return [...venues].sort((a, b) => {
+        const aFeat = a.featured ? 1 : 0;
+        const bFeat = b.featured ? 1 : 0;
+        if (aFeat !== bFeat) return bFeat - aFeat;
+        return (a.name || '').localeCompare(b.name || '');
+      });
     }
-    
+
     // Regular sorting for other options
     return [...venues].sort((a, b) => {
       let aValue: any, bValue: any;
-      
+
       switch (sortBy) {
         case 'name':
           aValue = a.name?.toLowerCase() || '';
@@ -106,7 +106,7 @@ const Venues = () => {
         default:
           return 0;
       }
-      
+
       if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
       return 0;
@@ -210,7 +210,7 @@ const Venues = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="random">Random</SelectItem>
+                    <SelectItem value="featured">Featured</SelectItem>
                     <SelectItem value="name">Name</SelectItem>
                     <SelectItem value="category">Category</SelectItem>
                     <SelectItem value="city">City</SelectItem>

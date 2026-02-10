@@ -159,19 +159,19 @@ export function MarketplaceCard({
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-1">
             {listing.website && (
-              <Button size="sm" variant="ghost" className="h-7 w-7 p-0" asChild>
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0" aria-label="Visit website" asChild>
                 <a href={listing.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </Button>
             )}
             {listing.contact_phone && (
-              <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0" aria-label="Call phone number">
                 <Phone className="h-3 w-3" />
               </Button>
             )}
             {listing.contact_email && (
-              <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+              <Button size="sm" variant="ghost" className="h-7 w-7 p-0" aria-label="Send email">
                 <Mail className="h-3 w-3" />
               </Button>
             )}

@@ -87,13 +87,17 @@ export default function CountryDetail() {
     ).slice(0, 12);
   }, [localNews, country]);
 
-  const loading = countryLoading || citiesLoading || venuesLoading || cityVenuesLoading || eventsLoading || newsLoading;
+  // Only gate the full-page spinner on core country data — everything else loads progressively
+  const loading = countryLoading;
 
-  // Fetch weather data for header indicator
+  // Fetch weather data for header indicator (with timeout)
   useEffect(() => {
     const fetchWeatherData = async () => {
       if (!country?.latitude || !country?.longitude) return;
-      
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
       try {
         const { data, error } = await supabase.functions.invoke('get-weather-forecast', {
           body: {
@@ -108,6 +112,8 @@ export default function CountryDetail() {
         }
       } catch (error) {
         console.warn('Failed to fetch weather data for header:', error);
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
 
@@ -132,6 +138,14 @@ export default function CountryDetail() {
       </div>
     );
   }
+
+  // Helper: inline loading skeleton for tab sections
+  const SectionLoader = ({ label }: { label: string }) => (
+    <div className="flex flex-col items-center justify-center py-12 gap-3">
+      <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+      <p className="text-sm text-muted-foreground">Loading {label}...</p>
+    </div>
+  );
 
   if (!country) {
     return (
@@ -345,8 +359,10 @@ export default function CountryDetail() {
                     {cities.length} cities
                   </Badge>
                 </div>
-                
-                {cities.length > 0 ? (
+
+                {citiesLoading ? (
+                  <SectionLoader label="cities" />
+                ) : cities.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {cities.map((city) => (
                       <div key={city.id} className="group cursor-pointer transform transition-all duration-200 hover:scale-105">
@@ -387,8 +403,10 @@ export default function CountryDetail() {
                     {countryVenues.length} venues
                   </Badge>
                 </div>
-                
-                {countryVenues.length > 0 ? (
+
+                {(venuesLoading || cityVenuesLoading) ? (
+                  <SectionLoader label="venues" />
+                ) : countryVenues.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                      {countryVenues.map((venue) => (
                        <div key={venue.id} className="group transform transition-all duration-200 hover:scale-105">
@@ -426,8 +444,10 @@ export default function CountryDetail() {
                     {events.length} events
                   </Badge>
                 </div>
-                
-                {events.length > 0 ? (
+
+                {eventsLoading ? (
+                  <SectionLoader label="events" />
+                ) : events.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                      {events.map((event) => (
                        <div key={event.id} className="group transform transition-all duration-200 hover:scale-105">
@@ -511,8 +531,10 @@ export default function CountryDetail() {
                     {countryNews.length} articles
                   </Badge>
                 </div>
-                
-                {countryNews.length > 0 ? (
+
+                {newsLoading ? (
+                  <SectionLoader label="news" />
+                ) : countryNews.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                      {countryNews.map((article) => (
                        <div key={article.id} className="group transform transition-all duration-200 hover:scale-105">

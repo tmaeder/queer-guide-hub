@@ -8,6 +8,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Calendar, MapPin, Clock, ArrowRight, Navigation } from 'lucide-react';
 import { format, addDays, startOfWeek, endOfWeek } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { formatEventTime } from '@/lib/event-time';
 interface UserLocation {
   latitude: number;
   longitude: number;
@@ -136,11 +137,7 @@ const WeeklyEventsSlider = React.memo(() => {
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-4 w-4 flex-shrink-0" />
                         <span className="text-sm">
-                          {(() => {
-                            const s = new Date(event.start_date);
-                            const sUTC = `${String(s.getUTCHours()).padStart(2,'0')}:${String(s.getUTCMinutes()).padStart(2,'0')}`;
-                            return sUTC === '00:00' ? 'All Day' : format(s, 'h:mm a');
-                          })()}
+                          {formatEventTime(event.start_date, event.end_date)}
                         </span>
                       </div>
                       

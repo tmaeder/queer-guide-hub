@@ -1,77 +1,52 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, Mail, Github, Twitter, Instagram, Plane, MapPin, Calendar, Store, Info, Eye, Phone, Newspaper, Users, Globe, Tag, Shield, Lock, Cookie, Copyright, ChevronUp, FileText, Leaf } from "lucide-react";
+import { ChevronUp, FileText, Shield, Lock, Cookie, Copyright, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+
 export function Footer() {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
-  const legalLinks = [{
-    href: "/legal",
-    label: "Legal Hub",
-    icon: Shield
-  }];
-  const helpLinks = [{
-    href: "/about-hub",
-    label: "About Hub",
-    icon: Heart
-  }, {
-    href: "/contact",
-    label: "Contact",
-    icon: Phone
-  }, {
-    href: "/press",
-    label: "Press",
-    icon: Newspaper
-  }, {
-    href: "/blog",
-    label: "Blog",
-    icon: FileText
-  }];
-  const communityLinks = [{
-    href: "/places",
-    label: "Places",
-    icon: Plane
-  }, {
-    href: "/venues",
-    label: "Venues",
-    icon: MapPin
-  }, {
-    href: "/events",
-    label: "Events",
-    icon: Calendar
-  }, {
-    href: "/marketplace",
-    label: "Marketplace",
-    icon: Store
-  }];
-  const socialLinks = [{
-    href: "#",
-    icon: Twitter,
-    label: "Twitter"
-  }, {
-    href: "#",
-    icon: Instagram,
-    label: "Instagram"
-  }, {
-    href: "#",
-    icon: Github,
-    label: "GitHub"
-  }];
-  return <footer className="bg-background/80 backdrop-blur-sm border-t border-white/10 mt-auto">
+
+  const legalLinks = [
+    { href: "/legal", label: "Legal", icon: Shield },
+    { href: "/terms", label: "Terms", icon: Scale },
+    { href: "/privacy", label: "Privacy", icon: Lock },
+    { href: "/cookies", label: "Cookies", icon: Cookie },
+    { href: "/dmca", label: "DMCA", icon: Copyright },
+  ];
+
+  return (
+    <footer className="bg-background/80 backdrop-blur-sm border-t border-white/10 mt-auto">
       <div className="container mx-auto px-4 py-3">
         {/* Single Row Layout */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} Queer Guide. All rights reserved.
+            &copy; {currentYear} Queer Guide. All rights reserved.
           </p>
-          
+
+          {/* Legal Links */}
+          <nav aria-label="Legal" className="flex items-center gap-1 flex-wrap">
+            {legalLinks.map((link) => (
+              <Link
+                key={link.href}
+                to={link.href}
+                className="text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
           {/* Quick Actions */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" aria-label="Scroll to top" onClick={() => window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-          })}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              aria-label="Scroll to top"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
               <ChevronUp className="h-4 w-4" />
             </Button>
             <Separator orientation="vertical" className="h-6" />
@@ -80,16 +55,14 @@ export function Footer() {
               size="sm"
               aria-label="Sitemap"
               className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200"
-              onClick={() => navigate('/sitemap')}
+              onClick={() => navigate("/sitemap")}
             >
               <FileText className="h-4 w-4" />
             </Button>
             <ThemeToggle />
           </div>
         </div>
-
-        {/* Pride Flag Accent */}
-        
       </div>
-    </footer>;
+    </footer>
+  );
 }
