@@ -62,7 +62,7 @@ export default function ProfessionDetail() {
   }, [professionName]);
 
   const handleBack = () => {
-    navigate('/ressources');
+    navigate('/resources');
   };
 
   if (loading) {

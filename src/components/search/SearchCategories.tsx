@@ -9,7 +9,7 @@ export const searchCategories = [
   { label: "Market", value: "marketplace", icon: Store },
   { label: "News", value: "news", icon: Newspaper },
   { label: "Community", value: "community", icon: Users },
-  { label: "Ressources", value: "tags", icon: Tag },
+  { label: "Resources", value: "tags", icon: Tag },
   { label: "Professions", value: "professions", icon: Briefcase },
 ];
 

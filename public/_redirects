@@ -1,8 +1,16 @@
-# Cloudflare Pages SPA redirect
-/*    /index.html   200
+# Redirect old /ressources to /resources
+/ressources  /resources  301
+/ressources/*  /resources/:splat  301
 
-# API routes - redirect to Supabase edge functions if needed
-/api/*  https://your-project.supabase.co/functions/v1/:splat  200
+# Redirect old /tags to /resources
+/tags  /resources  301
+/tags/*  /resources/:splat  301
+
+# API routes - proxy to Supabase edge functions
+/api/*  https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/:splat  200
 
 # Security redirects
 /admin/*  /admin/dashboard  200
+
+# Cloudflare Pages SPA catch-all (must be last)
+/*    /index.html   200

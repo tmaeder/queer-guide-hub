@@ -1,5 +1,5 @@
 // Service Worker optimized for Cloudflare Pages
-const CACHE_NAME = 'lovable-app-v1';
+const CACHE_NAME = 'queer-guide-v2';
 const STATIC_CACHE = 'static-v1';
 const DYNAMIC_CACHE = 'dynamic-v1';
 
@@ -179,6 +179,6 @@ self.addEventListener('push', event => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('Lovable App', options)
+    self.registration.showNotification('Queer Guide', options)
   );
 });

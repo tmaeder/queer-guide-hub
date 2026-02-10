@@ -97,7 +97,7 @@ export const AdvancedSearchBar = () => {
     } else if (suggestion.type === 'marketplace') {
       navigate(`/marketplace/${suggestion.id}`);
     } else if (suggestion.type === 'tag') {
-      navigate(`/ressources/${suggestion.name}`);
+      navigate(`/resources/${suggestion.name}`);
     } else {
       handleSearch(displayName, suggestion.type);
     }

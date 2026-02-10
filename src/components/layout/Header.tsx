@@ -74,9 +74,9 @@ export function Header() {
       icon: Store,
       label: "Market"
     }, {
-      to: "/ressources",
+      to: "/resources",
       icon: Tags,
-      label: "Ressources"
+      label: "Resources"
     }, {
       to: "/news",
       icon: Newspaper,
@@ -95,7 +95,7 @@ export function Header() {
     }, {
       to: "/groups",
       icon: UsersRound,
-      label: "Crews"
+      label: "Groups"
     }, {
       to: "/users",
       icon: UserCheck,
@@ -142,7 +142,7 @@ export function Header() {
         <div className="h-16 flex items-center justify-between gap-2">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <img src="/lovable-uploads/7c630cce-a7c6-47f9-ace2-9af7d228022f.png" alt="Queer Guide Logo" className="h-8 w-8 dark:invert" />
+            <img src="/images/logo.png" alt="Queer Guide Logo" className="h-8 w-8 dark:invert" />
             <span className="sr-only">Queer Guide</span>
           </Link>
 

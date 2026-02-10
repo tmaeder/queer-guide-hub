@@ -55,10 +55,10 @@ const Index = React.memo(() => {
     link: '/groups'
   }, {
     icon: BookOpen,
-    title: 'Ressources',
+    title: 'Resources',
     description: 'Stay informed about rights, culture, and community wisdom',
     color: 'text-accent',
-    link: '/directory'
+    link: '/resources'
   }];
   const testimonials = [{
     quote: "Queer Guide helped me find my people when I moved cities. This app is literally life-changing!",

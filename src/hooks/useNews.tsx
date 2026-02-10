@@ -196,11 +196,11 @@ export const useNews = () => {
 
   useEffect(() => {
     const initializeData = async () => {
-      await fetchSources();
+      await Promise.all([fetchArticles(), fetchSources()]);
     };
 
     initializeData();
-  }, [fetchSources]);
+  }, [fetchArticles, fetchSources]);
 
   return {
     articles,

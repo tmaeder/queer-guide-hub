@@ -264,12 +264,12 @@ export default function Ressources() {
   const handleTagClick = (tag: any) => {
     setSelectedTag(tag);
     setViewMode("tag-detail");
-    navigate(`/ressources/${encodeURIComponent(tag.name)}`);
+    navigate(`/resources/${encodeURIComponent(tag.name)}`);
   };
   const handleBack = () => {
     if (viewMode === "tag-detail") {
       setViewMode(selectedSubcategory ? "subcategory" : selectedCategory ? "category" : "overview");
-      navigate('/ressources');
+      navigate('/resources');
     } else if (viewMode === "subcategory") {
       setViewMode("category");
       setSelectedSubcategory("");
@@ -448,7 +448,7 @@ export default function Ressources() {
     return <div className="container mx-auto p-6">
         <Card className="border-destructive">
           <CardContent className="p-6 text-center">
-            <p className="text-destructive">Error loading ressources: {error}</p>
+            <p className="text-destructive">Error loading resources: {error}</p>
           </CardContent>
         </Card>
       </div>;

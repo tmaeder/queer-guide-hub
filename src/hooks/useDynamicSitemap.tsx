@@ -33,7 +33,7 @@ export function useDynamicSitemap() {
         { label: "Personalities", to: "/personalities" },
         { label: "Places", to: "/places" },
         { label: "Videos", to: "/videos" },
-        { label: "Resources", to: "/ressources" },
+        { label: "Resources", to: "/resources" },
         { label: "Messages", to: "/messages" },
         { label: "Friends", to: "/friends" },
       ];

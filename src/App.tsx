@@ -27,7 +27,7 @@ const Marketplace = lazy(() => import("./pages/Marketplace"));
 const MarketplaceItemDetail = lazy(() => import("./pages/MarketplaceItemDetail"));
 
 const Places = lazy(() => import("./pages/Places"));
-const Ressources = lazy(() => import("./pages/Ressources"));
+const Resources = lazy(() => import("./pages/Ressources"));
 const UserDirectory = lazy(() => import("./pages/UserDirectory"));
 const Personalities = lazy(() => import("./pages/Personalities"));
 const PersonalityDetail = lazy(() => import("./pages/PersonalityDetail"));
@@ -141,11 +141,13 @@ const App = () => {
                   <Route path="/users" element={<UserDirectory />} />
                    <Route path="/personalities" element={<Personalities />} />
                    <Route path="/personalities/:id" element={<PersonalityDetail />} />
-                   <Route path="/ressources" element={<Ressources />} />
-                   <Route path="/ressources/:tagName" element={<Ressources />} />
+                   <Route path="/resources" element={<Resources />} />
+                   <Route path="/resources/:tagName" element={<Resources />} />
                    <Route path="/professions/:professionName" element={<ProfessionDetail />} />
-                   <Route path="/tags" element={<Navigate to="/ressources" replace />} />
-                   <Route path="/tags/:tagName" element={<Navigate to="/ressources" replace />} />
+                   <Route path="/ressources" element={<Navigate to="/resources" replace />} />
+                   <Route path="/ressources/:tagName" element={<Navigate to="/resources" replace />} />
+                   <Route path="/tags" element={<Navigate to="/resources" replace />} />
+                   <Route path="/tags/:tagName" element={<Navigate to="/resources" replace />} />
                    
                    <Route path="/about-hub" element={<AboutHub />} />
                    <Route path="/about" element={<About />} />

@@ -136,7 +136,11 @@ const WeeklyEventsSlider = React.memo(() => {
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-4 w-4 flex-shrink-0" />
                         <span className="text-sm">
-                          {format(new Date(event.start_date), 'h:mm a')}
+                          {(() => {
+                            const s = new Date(event.start_date);
+                            const sUTC = `${String(s.getUTCHours()).padStart(2,'0')}:${String(s.getUTCMinutes()).padStart(2,'0')}`;
+                            return sUTC === '00:00' ? 'All Day' : format(s, 'h:mm a');
+                          })()}
                         </span>
                       </div>
                       

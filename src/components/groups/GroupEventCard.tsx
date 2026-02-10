@@ -42,11 +42,18 @@ export function GroupEventCard({
   const formatEventDate = (startDate: string, endDate?: string) => {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : null;
-    
+
+    // Detect all-day events (start at midnight UTC, end at 23:59 UTC)
+    const startUTC = `${String(start.getUTCHours()).padStart(2,'0')}:${String(start.getUTCMinutes()).padStart(2,'0')}`;
+    const endUTC = end ? `${String(end.getUTCHours()).padStart(2,'0')}:${String(end.getUTCMinutes()).padStart(2,'0')}` : null;
+    const isAllDay = startUTC === '00:00' && endUTC === '23:59';
+
     if (end && start.toDateString() !== end.toDateString()) {
       return `${format(start, 'MMM d, yyyy')} - ${format(end, 'MMM d, yyyy')}`;
-    } else if (end) {
+    } else if (end && !isAllDay) {
       return `${format(start, 'MMM d, yyyy')} • ${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`;
+    } else if (isAllDay) {
+      return `${format(start, 'MMM d, yyyy')} • All Day`;
     }
     return format(start, 'MMM d, yyyy • h:mm a');
   };

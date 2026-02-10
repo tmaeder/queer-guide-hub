@@ -225,13 +225,24 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <Clock className="h-3 w-3 flex-shrink-0" />
-                              <span>{format(parseISO(event.start_date), 'h:mm a')}</span>
-                              {event.end_date && (
-                                <>
-                                  <span>-</span>
-                                  <span>{format(parseISO(event.end_date), 'h:mm a')}</span>
-                                </>
-                              )}
+                              {(() => {
+                                const s = parseISO(event.start_date);
+                                const e = event.end_date ? parseISO(event.end_date) : null;
+                                const sUTC = `${String(s.getUTCHours()).padStart(2,'0')}:${String(s.getUTCMinutes()).padStart(2,'0')}`;
+                                const eUTC = e ? `${String(e.getUTCHours()).padStart(2,'0')}:${String(e.getUTCMinutes()).padStart(2,'0')}` : null;
+                                if (sUTC === '00:00' && eUTC === '23:59') return <span>All Day</span>;
+                                return (
+                                  <>
+                                    <span>{format(s, 'h:mm a')}</span>
+                                    {e && (
+                                      <>
+                                        <span>-</span>
+                                        <span>{format(e, 'h:mm a')}</span>
+                                      </>
+                                    )}
+                                  </>
+                                );
+                              })()}
                             </div>
                             
                             {(event.venue_name || event.city) && (

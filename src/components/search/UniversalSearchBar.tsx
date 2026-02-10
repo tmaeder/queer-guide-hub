@@ -34,7 +34,7 @@ const contentTypeLabels = {
   location: "Locations",
   content: "Wiki",
   travel: "Travel",
-  ressource: "Ressources",
+  ressource: "Resources",
   personality: "Personalities",
   tag: "Tags",
   group: "Groups"
@@ -145,15 +145,15 @@ export const UniversalSearchBar = () => {
       case 'ressource':
         // Go to specific resource page using slug or ID
         if (result.metadata?.slug) {
-          navigate(`/ressources/${result.metadata.slug}`);
+          navigate(`/resources/${result.metadata.slug}`);
         } else {
-          navigate(`/ressources/${result.objectID}`);
+          navigate(`/resources/${result.objectID}`);
         }
         break;
       case 'tag':
         // For tags, navigate directly to the specific resource content about this tag
         const tagSlug = result.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '%20');
-        navigate(`/ressources/${tagSlug}`);
+        navigate(`/resources/${tagSlug}`);
         break;
       case 'travel':
         // Go to specific travel content
@@ -188,7 +188,7 @@ export const UniversalSearchBar = () => {
         // For tags, navigate directly to the specific resource content about this tag
         // Convert tag name to a URL-friendly slug and go to the resource page
         const tagSlug = suggestion.name.replace(/[^\w\s-]/g, '').replace(/\s+/g, '%20');
-        navigate(`/ressources/${tagSlug}`);
+        navigate(`/resources/${tagSlug}`);
         break;
       case 'user':
         navigate(`/user/${suggestion.id}`);

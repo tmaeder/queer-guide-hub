@@ -19,7 +19,7 @@ export function UrlValidator({ url, onValidate }: UrlValidatorProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          client: { clientId: 'lovable-social-validator', clientVersion: '1.0.0' },
+          client: { clientId: 'queer-guide-validator', clientVersion: '1.0.0' },
           threatInfo: {
             threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING'],
             platformTypes: ['WINDOWS'],

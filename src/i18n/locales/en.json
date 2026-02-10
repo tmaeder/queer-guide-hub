@@ -50,7 +50,7 @@
     "venues": "Places",
     "events": "Events",
     "marketplace": "Market",
-    "directory": "Ressources",
+    "directory": "Resources",
     "about": "Our Story",
     "contact": "Holla at Us",
     "login": "Join the Family",
@@ -65,7 +65,7 @@
     "subscribe": "Sign Me Up",
     "social": "Find Us Online",
     "community": "Community",
-    "resources": "Ressources",
+    "resources": "Resources",
     "legal": "Legal Stuff",
     "copyright": "© {{year}} Made with love and pride."
   },

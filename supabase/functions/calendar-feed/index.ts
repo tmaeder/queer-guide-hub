@@ -76,7 +76,7 @@ const generateICalendar = (events: Event[], userId: string): string => {
   const header = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Lovable//Favorites Calendar//EN',
+    'PRODID:-//Queer Guide//Favorites Calendar//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:My Favorite Events`,

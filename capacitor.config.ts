@@ -1,11 +1,11 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.637b2c375ce34dc7b7db4e56e05c682f',
-  appName: 'queer-guide-hub',
+  appId: 'guide.queer.app',
+  appName: 'Queer Guide',
   webDir: 'dist',
   server: {
-    url: 'https://637b2c37-5ce3-4dc7-b7db-4e56e05c682f.lovableproject.com?forceHideBadge=true',
+    url: 'https://queer.guide',
     cleartext: true
   },
   plugins: {
