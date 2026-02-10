@@ -10,6 +10,7 @@ const corsHeaders = {
 interface PopulateRequest {
   content_types?: string[];
   force_refresh?: boolean;
+  limit?: number;
 }
 
 serve(async (req) => {
@@ -18,8 +19,11 @@ serve(async (req) => {
   }
 
   try {
-    const { content_types = ['venue', 'event', 'tag', 'group', 'marketplace'], force_refresh = false } = 
-      await req.json() as PopulateRequest;
+    const {
+      content_types = ['venue', 'event', 'tag', 'group', 'marketplace', 'personality', 'city', 'news'],
+      force_refresh = false,
+      limit = 100
+    } = await req.json() as PopulateRequest;
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -33,55 +37,80 @@ serve(async (req) => {
 
     let totalProcessed = 0;
     let totalErrors = 0;
+    let totalSkipped = 0;
     let quotaExceeded = false;
 
     for (const contentType of content_types) {
       console.log(`Processing ${contentType} content...`);
-      
+
       let data;
-      
-      // Fetch data based on content type
+
       switch (contentType) {
-        case 'venue':
+        case 'venue': {
           const { data: venues } = await supabase
             .from('venues')
-            .select('*')
-            .limit(100);
+            .select('id, name, description, address, city, country, venue_type, tags')
+            .limit(limit);
           data = venues;
           break;
-          
-        case 'event':
+        }
+        case 'event': {
           const { data: events } = await supabase
             .from('events')
-            .select('*')
-            .limit(100);
+            .select('id, title, description, venue_name, city, country, event_type')
+            .limit(limit);
           data = events;
           break;
-          
-        case 'tag':
+        }
+        case 'tag': {
           const { data: tags } = await supabase
-            .from('tags')
-            .select('*')
-            .limit(100);
+            .from('unified_tags')
+            .select('id, name, description, category')
+            .limit(limit);
           data = tags;
           break;
-          
-        case 'group':
+        }
+        case 'group': {
           const { data: groups } = await supabase
             .from('community_groups')
-            .select('*')
-            .limit(100);
+            .select('id, name, description, tags')
+            .limit(limit);
           data = groups;
           break;
-          
-        case 'marketplace':
+        }
+        case 'marketplace': {
           const { data: marketplace } = await supabase
             .from('marketplace_listings')
-            .select('*')
-            .limit(100);
+            .select('id, title, description, condition')
+            .limit(limit);
           data = marketplace;
           break;
-          
+        }
+        case 'personality': {
+          const { data: personalities } = await supabase
+            .from('personalities')
+            .select('id, name, bio, nationality, birth_date, death_date, profession, lgbti_connection, tags')
+            .limit(limit);
+          data = personalities;
+          break;
+        }
+        case 'city': {
+          const { data: cities } = await supabase
+            .from('cities')
+            .select('id, name, description, country, population, lgbtq_friendliness_score, safety_score')
+            .limit(limit);
+          data = cities;
+          break;
+        }
+        case 'news': {
+          const { data: news } = await supabase
+            .from('news_articles')
+            .select('id, title, content, excerpt, author')
+            .order('published_at', { ascending: false })
+            .limit(limit);
+          data = news;
+          break;
+        }
         default:
           console.log(`Unknown content type: ${contentType}`);
           continue;
@@ -94,79 +123,102 @@ serve(async (req) => {
 
       console.log(`Found ${data.length} ${contentType} items`);
 
-      // Process each item
+      const itemIds = data.map(item => item.id);
+      let existingIds = new Set<string>();
+
+      if (!force_refresh) {
+        const { data: existing } = await supabase
+          .from('content_embeddings')
+          .select('content_id')
+          .eq('content_type', contentType)
+          .in('content_id', itemIds);
+
+        if (existing) {
+          existingIds = new Set(existing.map(e => e.content_id));
+        }
+      }
+
       for (const item of data) {
         try {
-          // Skip if embedding already exists and not force refresh
-          if (!force_refresh) {
-            const { data: existing } = await supabase
-              .from('content_embeddings')
-              .select('id')
-              .eq('content_type', contentType)
-              .eq('content_id', item.id)
-              .maybeSingle();
-
-            if (existing) {
-              console.log(`Embedding already exists for ${contentType} ${item.id}, skipping`);
-              continue;
-            }
+          if (!force_refresh && existingIds.has(item.id)) {
+            totalSkipped++;
+            continue;
           }
 
-          // Generate content text based on type
           let contentText = '';
           const metadata: any = {};
 
           switch (contentType) {
             case 'venue':
               contentText = [
-                item.name,
-                item.description,
-                item.address,
-                item.city,
+                item.name, item.description, item.address, item.city, item.country,
+                item.venue_type ? `Type: ${item.venue_type}` : '',
                 item.tags?.length ? `Tags: ${item.tags.join(', ')}` : ''
               ].filter(Boolean).join('. ');
               metadata.city = item.city;
               metadata.venue_type = item.venue_type;
               metadata.tags = item.tags || [];
               break;
-
             case 'event':
               contentText = [
-                item.title,
-                item.description,
-                item.venue_name,
-                item.city,
+                item.title, item.description, item.venue_name, item.city,
                 item.event_type ? `Type: ${item.event_type}` : ''
               ].filter(Boolean).join('. ');
               metadata.event_type = item.event_type;
               metadata.city = item.city;
               break;
-
             case 'tag':
               contentText = [
-                item.name,
-                item.description,
+                item.name, item.description,
                 item.category ? `Category: ${item.category}` : ''
               ].filter(Boolean).join('. ');
               metadata.category = item.category;
               break;
-
             case 'group':
               contentText = [
-                item.name,
-                item.description,
+                item.name, item.description,
                 item.tags?.length ? `Tags: ${item.tags.join(', ')}` : ''
               ].filter(Boolean).join('. ');
               metadata.tags = item.tags || [];
               break;
-
             case 'marketplace':
               contentText = [
-                item.title,
-                item.description,
+                item.title, item.description,
                 item.condition ? `Condition: ${item.condition}` : ''
               ].filter(Boolean).join('. ');
               metadata.condition = item.condition;
+              break;
+            case 'personality':
+              contentText = [
+                item.name, item.bio,
+                item.nationality ? `Nationality: ${item.nationality}` : '',
+                item.profession ? `Profession: ${item.profession}` : '',
+                item.lgbti_connection ? `LGBTI connection: ${item.lgbti_connection}` : '',
+                item.birth_date ? `Born: ${item.birth_date}` : '',
+                item.death_date ? `Died: ${item.death_date}` : '',
+                item.tags?.length ? `Tags: ${item.tags.join(', ')}` : ''
+              ].filter(Boolean).join('. ');
+              metadata.nationality = item.nationality;
+              metadata.tags = item.tags || [];
+              break;
+            case 'city':
+              contentText = [
+                item.name, item.description,
+                item.country ? `Country: ${item.country}` : '',
+                item.population ? `Population: ${item.population}` : '',
+                item.lgbtq_friendliness_score ? `LGBTQ+ friendliness: ${item.lgbtq_friendliness_score}/10` : '',
+                item.safety_score ? `Safety score: ${item.safety_score}/10` : ''
+              ].filter(Boolean).join('. ');
+              metadata.country = item.country;
+              metadata.lgbtq_friendliness_score = item.lgbtq_friendliness_score;
+              break;
+            case 'news':
+              contentText = [
+                item.title,
+                item.excerpt || item.content?.substring(0, 500),
+                item.author ? `By: ${item.author}` : ''
+              ].filter(Boolean).join('. ');
+              metadata.author = item.author;
               break;
           }
 
@@ -177,7 +229,6 @@ serve(async (req) => {
 
           let embedding;
 
-          // Try to generate embedding with OpenAI, fallback if quota exceeded
           if (openaiApiKey && !quotaExceeded) {
             try {
               const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
@@ -188,15 +239,13 @@ serve(async (req) => {
                 },
                 body: JSON.stringify({
                   model: 'text-embedding-3-small',
-                  input: contentText.trim(),
+                  input: contentText.trim().substring(0, 8000),
                 }),
               });
 
               if (!embeddingResponse.ok) {
                 const errorText = await embeddingResponse.text();
                 console.error(`OpenAI API error for ${contentType} ${item.id}:`, errorText);
-                
-                // Check if quota exceeded
                 if (embeddingResponse.status === 429 || errorText.includes('quota')) {
                   console.log('OpenAI quota exceeded, switching to fallback embeddings');
                   quotaExceeded = true;
@@ -214,11 +263,9 @@ serve(async (req) => {
               quotaExceeded = true;
             }
           } else {
-            // Use fallback embedding
             embedding = generateFallbackEmbedding(contentText);
           }
 
-          // Store embedding
           const { error: insertError } = await supabase
             .from('content_embeddings')
             .upsert({
@@ -236,12 +283,11 @@ serve(async (req) => {
             totalErrors++;
           } else {
             totalProcessed++;
-            console.log(`Processed ${contentType} ${item.id}`);
           }
 
-          // Rate limiting
-          await new Promise(resolve => setTimeout(resolve, 50));
-
+          if (openaiApiKey && !quotaExceeded) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
         } catch (itemError) {
           console.error(`Error processing ${contentType} ${item.id}:`, itemError);
           totalErrors++;
@@ -249,64 +295,47 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Embedding population complete. Processed: ${totalProcessed}, Errors: ${totalErrors}`);
+    console.log(`Embedding population complete. Processed: ${totalProcessed}, Skipped: ${totalSkipped}, Errors: ${totalErrors}`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Embedding population complete. Processed: ${totalProcessed}, Errors: ${totalErrors}`,
+      JSON.stringify({
+        success: true,
+        message: `Embedding population complete. Processed: ${totalProcessed}, Skipped: ${totalSkipped}, Errors: ${totalErrors}`,
         processed: totalProcessed,
+        skipped: totalSkipped,
         errors: totalErrors,
         quota_exceeded: quotaExceeded,
         fallback_used: quotaExceeded || !openaiApiKey
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
-
   } catch (error) {
     console.error('Error in populate-embeddings function:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        success: false 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
+      JSON.stringify({ error: error.message, success: false }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
 
-// Generate a deterministic fallback embedding based on content
 function generateFallbackEmbedding(contentText: string): number[] {
-  const dimension = 1536; // Same as text-embedding-3-small
+  const dimension = 1536;
   const embedding = new Array(dimension);
-  
-  // Create a simple hash-based embedding
   let hash = 0;
   for (let i = 0; i < contentText.length; i++) {
     const char = contentText.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    hash = hash & hash;
   }
-  
-  // Generate embedding values based on content hash and position
   for (let i = 0; i < dimension; i++) {
     const seed = (hash + i) * 0.001;
-    embedding[i] = Math.sin(seed) * 0.1; // Small values to simulate real embeddings
+    embedding[i] = Math.sin(seed) * 0.1;
   }
-  
-  // Normalize the embedding
   const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
   if (magnitude > 0) {
     for (let i = 0; i < dimension; i++) {
       embedding[i] /= magnitude;
     }
   }
-  
   return embedding;
 }
