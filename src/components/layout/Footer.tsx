@@ -29,10 +29,12 @@ export function Footer() {
     icon: FileText
   }];
   const communityLinks = [{
+    href: "/places",
+    label: "Places",
     icon: Plane
   }, {
     href: "/venues",
-    label: "Places",
+    label: "Venues",
     icon: MapPin
   }, {
     href: "/events",
@@ -40,7 +42,7 @@ export function Footer() {
     icon: Calendar
   }, {
     href: "/marketplace",
-    label: "Market",
+    label: "Marketplace",
     icon: Store
   }];
   const socialLinks = [{
@@ -66,7 +68,7 @@ export function Footer() {
           
           {/* Quick Actions */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" onClick={() => window.scrollTo({
+            <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200" aria-label="Scroll to top" onClick={() => window.scrollTo({
             top: 0,
             behavior: 'smooth'
           })}>

@@ -106,13 +106,14 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
             className="pl-9"
           />
         </div>
-        <Button onClick={handleSearch} className="bg-primary" size="icon">
+        <Button onClick={handleSearch} className="bg-primary" size="icon" aria-label="Search">
           <Search className="h-4 w-4" />
         </Button>
         <Button
           variant="outline"
           onClick={() => setShowAllFilters(!showAllFilters)}
           size="icon"
+          aria-label="Toggle filters"
         >
           <Filter className="h-4 w-4" />
         </Button>

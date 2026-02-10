@@ -145,11 +145,11 @@ export default function UserProfile() {
           Back
         </Button>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={handleShare}>
+          <Button variant="outline" size="icon" onClick={handleShare} aria-label="Share profile">
             <Share2 className="h-4 w-4" />
           </Button>
           {!isOwnProfile && (
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" aria-label="Report user">
               <Flag className="h-4 w-4" />
             </Button>
           )}

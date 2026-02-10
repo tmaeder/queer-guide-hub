@@ -448,7 +448,7 @@ export default function Ressources() {
     return <div className="container mx-auto p-6">
         <Card className="border-destructive">
           <CardContent className="p-6 text-center">
-            <p className="text-destructive">Error loading resources: {error}</p>
+            <p className="text-destructive">Something went wrong while loading resources. Please try again later.</p>
           </CardContent>
         </Card>
       </div>;

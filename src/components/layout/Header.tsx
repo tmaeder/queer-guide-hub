@@ -56,7 +56,7 @@ export function Header() {
     label: 'Building Community'
   }];
   const navigationSections = [{
-    title: "Explore the Scene",
+    title: "Explore",
     items: [{
       to: "/events",
       icon: Calendar,
@@ -68,11 +68,11 @@ export function Header() {
     }, {
       to: "/venues",
       icon: MapPin,
-      label: "Spaces"
+      label: "Venues"
     }, {
       to: "/marketplace",
       icon: Store,
-      label: "Market"
+      label: "Marketplace"
     }, {
       to: "/resources",
       icon: Tags,
@@ -99,33 +99,33 @@ export function Header() {
     }, {
       to: "/users",
       icon: UserCheck,
-      label: "Users"
+      label: "Members"
     }]
   }];
   const userMenuItems = [{
     to: "/favorites",
     icon: Heart,
-    label: "Faves"
+    label: "Favorites"
   }, {
     to: "/profile/settings",
     icon: Settings,
-    label: "My Vibe"
+    label: "Settings"
   }, {
     to: "/messages",
     icon: MessageSquare,
-    label: "DMs"
+    label: "Messages"
   }, {
     to: "/friends",
     icon: Users,
-    label: "Squad"
+    label: "Friends"
   }, {
     to: "/my-groups",
     icon: UsersRound,
-    label: "My Crews"
+    label: "My Groups"
   }, {
     to: "/accessibility",
     icon: Accessibility,
-    label: "Access"
+    label: "Accessibility"
   }];
   const handleModeChange = async (mode: string) => {
     await updateProfile({
@@ -213,17 +213,17 @@ export function Header() {
                   
                   <Button variant="ghost" size="sm" className="w-full justify-start text-destructive hover:text-destructive" onClick={signOut}>
                     <LogOut className="h-4 w-4 mr-2" />
-                    Peace Out
+                    Sign Out
                   </Button>
                 </DropdownMenuContent>
-              </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} size="icon">
+              </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} size="icon" aria-label="Sign in">
                 <User className="h-4 w-4" />
               </Button>}
 
             {/* Main menu */}
             <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" aria-label="Open navigation menu">
                   <Menu className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>

@@ -245,7 +245,7 @@ const [filtersOpen, setFiltersOpen] = useState(false);
 </ToggleGroup>
 </div>
 
-            <Button variant="outline" size="icon" onClick={() => setFiltersOpen(!filtersOpen)}>
+            <Button variant="outline" size="icon" aria-label="Toggle filters" onClick={() => setFiltersOpen(!filtersOpen)}>
               <Filter className="h-4 w-4" />
             </Button>
           </div>

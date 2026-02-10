@@ -271,6 +271,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             disabled={isDetectingLocation}
             size="icon"
             className="h-11 w-11"
+            aria-label="Find near me"
           >
             {isDetectingLocation ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -278,7 +279,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               <Navigation className="h-4 w-4" />
             )}
           </Button>
-          <Button onClick={handleSearch} className="bg-primary h-11 w-11" size="icon">
+          <Button onClick={handleSearch} className="bg-primary h-11 w-11" size="icon" aria-label="Search">
             <Search className="h-4 w-4" />
           </Button>
           <Button
@@ -286,6 +287,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             onClick={() => setShowAllFilters(!showAllFilters)}
             size="icon"
             className="h-11 w-11"
+            aria-label="Toggle filters"
           >
             <Filter className="h-4 w-4" />
           </Button>

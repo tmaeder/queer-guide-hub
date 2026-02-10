@@ -148,7 +148,7 @@ export default function News() {
     return <div className="container mx-auto px-4 py-8">
         <Card className="border-destructive/20">
           <CardContent className="pt-6">
-            <p className="text-destructive">Error loading news: {error}</p>
+            <p className="text-destructive">Something went wrong while loading news. Please try again later.</p>
           </CardContent>
         </Card>
       </div>;

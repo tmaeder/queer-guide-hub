@@ -29,11 +29,11 @@ const contentTypeLabels = {
   venue: "Venues",
   event: "Events",
   marketplace: "Marketplace",
-  user: "Users",
+  user: "Members",
   news: "News",
-  location: "Locations",
-  content: "Wiki",
-  travel: "Travel",
+  location: "Places",
+  content: "Resources",
+  travel: "Places",
   ressource: "Resources",
   personality: "Personalities",
   tag: "Tags",
@@ -135,11 +135,11 @@ export const UniversalSearchBar = () => {
         }
         break;
       case 'content':
-        // Go to specific content page using slug or ID
+        // Content items map to resources
         if (result.metadata?.slug) {
-          navigate(`/content/${result.metadata.slug}`);
+          navigate(`/resources/${result.metadata.slug}`);
         } else {
-          navigate(`/content/${result.objectID}`);
+          navigate(`/resources/${result.objectID}`);
         }
         break;
       case 'ressource':
@@ -156,8 +156,8 @@ export const UniversalSearchBar = () => {
         navigate(`/resources/${tagSlug}`);
         break;
       case 'travel':
-        // Go to specific travel content
-        navigate(`/travel/${result.objectID}`);
+        // Travel items map to places/cities
+        navigate(`/places`);
         break;
       default:
         // Last resort: search with direct flag to find specific content
@@ -279,7 +279,7 @@ export const UniversalSearchBar = () => {
                   autoComplete="off" 
                 />
                 
-                {query && <Button variant="ghost" size="sm" className={`absolute right-2 top-1/2 -translate-y-1/2 ${isMobile ? 'h-8 w-8' : 'h-6 w-6'} p-0 text-muted-foreground hover:text-foreground`} onClick={() => {
+                {query && <Button variant="ghost" size="sm" aria-label="Clear search" className={`absolute right-2 top-1/2 -translate-y-1/2 ${isMobile ? 'h-8 w-8' : 'h-6 w-6'} p-0 text-muted-foreground hover:text-foreground`} onClick={() => {
                   setQuery("");
                   inputRef.current?.focus();
                 }}>
@@ -287,7 +287,7 @@ export const UniversalSearchBar = () => {
                   </Button>}
               </div>
               
-              <Button variant="ghost" size="sm" className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} text-muted-foreground hover:text-foreground relative flex-shrink-0 ${activeFiltersCount > 0 ? 'text-primary' : ''}`} onClick={() => setShowFilters(!showFilters)}>
+              <Button variant="ghost" size="sm" aria-label="Search filters" className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} text-muted-foreground hover:text-foreground relative flex-shrink-0 ${activeFiltersCount > 0 ? 'text-primary' : ''}`} onClick={() => setShowFilters(!showFilters)}>
                 <SlidersHorizontal className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
                 {activeFiltersCount > 0 && <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center">
                     {activeFiltersCount}

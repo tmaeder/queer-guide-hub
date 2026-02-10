@@ -190,7 +190,7 @@ export default function Places() {
           <div className="text-destructive">
             <MapPin className="h-12 w-12 mx-auto" />
           </div>
-          <p className="text-destructive">Error loading places</p>
+          <p className="text-destructive">Something went wrong while loading places. Please try again later.</p>
         </div>
       </div>
     );

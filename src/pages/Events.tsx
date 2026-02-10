@@ -185,7 +185,7 @@ const Events = () => {
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <CardContent>
-              <p className="text-destructive mb-4">Error loading events: {error}</p>
+              <p className="text-destructive mb-4">Something went wrong while loading events. Please try again.</p>
               <Button onClick={() => fetchEvents()}>Try Again</Button>
             </CardContent>
           </Card>
@@ -219,11 +219,11 @@ const Events = () => {
               </div>
               <div className="flex items-center gap-4">
                 {/* View Toggle */}
-                <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
-                  <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')}>
+                <div className="flex items-center gap-1 p-1 bg-muted rounded-lg" role="group" aria-label="View mode">
+                  <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" aria-label="Grid view" onClick={() => setViewMode('grid')}>
                     <Grid className="h-4 w-4" />
                   </Button>
-                  <Button variant={viewMode === 'calendar' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('calendar')}>
+                  <Button variant={viewMode === 'calendar' ? 'default' : 'ghost'} size="icon" aria-label="Calendar view" onClick={() => setViewMode('calendar')}>
                     <CalendarIcon className="h-4 w-4" />
                   </Button>
                 </div>
@@ -244,13 +244,13 @@ const Events = () => {
               <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               <SearchInputTyped placeholders={["Search for events...", "Find parties near you...", "Discover LGBTQ+ meetups...", "Look for workshops...", "Search pride events...", "Find social gatherings..."]} value={search} onValueChange={setSearch} onKeyDown={e => e.key === 'Enter' && handleFiltersChange()} className="border-0 shadow-none p-0 h-auto bg-transparent focus-visible:ring-0 flex-1 min-w-0 w-full sm:min-w-[200px] md:min-w-[300px] lg:min-w-[400px]" typingSpeed={75} pauseDuration={1500} />
             </div>
-            <Button onClick={handleNearMe} variant={nearMe ? "default" : "outline"} disabled={locationLoading} size="icon">
+            <Button onClick={handleNearMe} variant={nearMe ? "default" : "outline"} disabled={locationLoading} size="icon" aria-label="Find events near me">
               {locationLoading ? <Loader className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
             </Button>
-            <Button onClick={handleFiltersChange} className="bg-primary" size="icon">
+            <Button onClick={handleFiltersChange} className="bg-primary" size="icon" aria-label="Search events">
               <Search className="h-4 w-4" />
             </Button>
-            <Button variant="outline" onClick={() => setShowFilters(!showFilters)} size="icon">
+            <Button variant="outline" onClick={() => setShowFilters(!showFilters)} size="icon" aria-label="Toggle filters">
               <Filter className="h-4 w-4" />
             </Button>
           </div>

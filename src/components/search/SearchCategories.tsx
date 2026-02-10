@@ -4,9 +4,9 @@ import { Search, MapPin, Calendar, Store, Newspaper, Users, Tag, Briefcase } fro
 
 export const searchCategories = [
   { label: "All", value: "all", icon: Search },
-  { label: "Places", value: "venues", icon: MapPin },
+  { label: "Venues", value: "venues", icon: MapPin },
   { label: "Events", value: "events", icon: Calendar },
-  { label: "Market", value: "marketplace", icon: Store },
+  { label: "Marketplace", value: "marketplace", icon: Store },
   { label: "News", value: "news", icon: Newspaper },
   { label: "Community", value: "community", icon: Users },
   { label: "Resources", value: "tags", icon: Tag },

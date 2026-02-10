@@ -151,7 +151,7 @@ const Venues = () => {
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <CardContent>
-              <p className="text-destructive mb-4">Error loading venues: {error}</p>
+              <p className="text-destructive mb-4">Something went wrong while loading venues. Please try again.</p>
               <Button onClick={() => fetchVenues()}>Try Again</Button>
             </CardContent>
           </Card>
@@ -167,7 +167,7 @@ const Venues = () => {
         <Card className="mb-8">
           <CardContent className="p-8 text-center">
             <h1 className="text-5xl font-bold text-foreground mb-4 animate-fade-in">
-              Spaces
+              Venues
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Discover queer-friendly venues, businesses, and organizations in your area

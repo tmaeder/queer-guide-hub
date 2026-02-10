@@ -89,7 +89,7 @@ const Marketplace = () => {
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <CardContent>
-              <p className="text-destructive mb-4">Error loading marketplace: {error}</p>
+              <p className="text-destructive mb-4">Something went wrong while loading the marketplace. Please try again.</p>
               <Button onClick={() => fetchListings()}>Try Again</Button>
             </CardContent>
           </Card>
