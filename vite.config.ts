@@ -1,7 +1,18 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import tsconfigPaths from "vite-tsconfig-paths";
+
+// Prevent Cloudflare Rocket Loader from mangling ES module script tags
+function cfRocketLoaderBypass(): Plugin {
+  return {
+    name: 'cf-rocket-loader-bypass',
+    enforce: 'post',
+    transformIndexHtml(html) {
+      return html.replace(/<script(?![^>]*data-cfasync)/g, '<script data-cfasync="false"');
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -12,6 +23,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tsconfigPaths({ root: './' }),
+    cfRocketLoaderBypass(),
   ].filter(Boolean),
   resolve: {
     alias: {
