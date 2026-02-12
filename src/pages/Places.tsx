@@ -177,7 +177,7 @@ export default function Places() {
       <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-            <Globe style={{ height: 48, width: 48, margin: '0 auto', color: 'var(--primary)', opacity: 0.6 }} />
+            <Globe style={{ height: 48, width: 48, margin: '0 auto', color: '#555555', opacity: 0.6 }} />
           </Box>
           <Typography sx={{ color: 'var(--muted-foreground)' }}>Loading places...</Typography>
         </Box>
@@ -201,16 +201,16 @@ export default function Places() {
   return (
     <Box sx={{ width: '100%', transition: 'opacity 300ms', opacity: isTransitioning ? 0.5 : 1 }}>
       {/* Hero Section */}
-      <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-        <Box sx={{ position: 'relative', mx: 'auto', maxWidth: 1280, px: 3, py: { xs: 6, lg: 10 } }}>
+      <Box sx={{ mx: 'auto', maxWidth: 1280, px: 3, pt: { xs: 3, lg: 5 }, pb: 2 }}>
+        <Box sx={{ bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider', p: { xs: 3, lg: 4 }, mb: 3 }}>
           {/* Navigation Header */}
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ mb: 3 }}>
             {viewMode !== "overview" && (
               <Box className="animate-fade-in">
                 <Button
                   variant="ghost"
                   onClick={handleBack}
-                  sx={{ mb: 2, '&:hover': { bgcolor: 'rgba(var(--accent), 0.5)' }, transition: 'all 200ms' }}
+                  sx={{ mb: 2, '&:hover': { bgcolor: 'action.hover' }, transition: 'all 200ms' }}
                 >
                   <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
                   Back
@@ -220,7 +220,7 @@ export default function Places() {
 
             {/* Dynamic Title */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Typography variant="h3" sx={{ fontSize: { xs: '2.25rem', lg: '3rem' }, fontWeight: 700, letterSpacing: '-0.025em', color: 'var(--foreground)' }}>
+              <Typography variant="h3" sx={{ fontSize: { xs: '2.25rem', lg: '3rem' }, fontWeight: 700, letterSpacing: '-0.025em', color: 'text.primary' }}>
                 {viewMode === "overview" && "Explore Places"}
                 {viewMode === "country" && selectedCountry && (
                   <>Explore {selectedCountry.name}</>
@@ -231,7 +231,7 @@ export default function Places() {
                 {viewMode === "search" && "Search Results"}
               </Typography>
 
-              <Typography sx={{ fontSize: '1.125rem', color: 'var(--muted-foreground)', maxWidth: 672 }}>
+              <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary', maxWidth: 672 }}>
                 {viewMode === "overview" && "Discover amazing places around the world. Find countries, cities, and locations that match your interests."}
                 {viewMode === "country" && selectedCountry && `Explore cities and regions in ${selectedCountry.name}. Find the perfect destination for your next adventure.`}
                 {viewMode === "city" && selectedCity && `Everything you need to know about ${selectedCity.name}. Weather, demographics, and local insights.`}
@@ -241,14 +241,12 @@ export default function Places() {
           </Box>
 
           {/* Enhanced Search */}
-          <Box sx={{ mb: 4 }}>
-            <PlacesSearch
-              onSearch={handleSearch}
-              onFiltersChange={handleFiltersChange}
-              onNearMeSearch={handleNearMeSearch}
-              placeholder="Search countries, cities, or regions..."
-            />
-          </Box>
+          <PlacesSearch
+            onSearch={handleSearch}
+            onFiltersChange={handleFiltersChange}
+            onNearMeSearch={handleNearMeSearch}
+            placeholder="Search countries, cities, or regions..."
+          />
         </Box>
       </Box>
 
@@ -359,8 +357,8 @@ export default function Places() {
                         <Box key={continent.id} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'rgba(var(--muted), 0.4)' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(var(--primary), 0.1)' }}>
-                                <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+                              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.06)' }}>
+                                <Globe style={{ height: 20, width: 20, color: '#333333' }} />
                               </Box>
                               <Box>
                                 <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>{continent.name}</Typography>
@@ -435,8 +433,8 @@ export default function Places() {
                       <Box key={continent.id} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'rgba(var(--muted), 0.4)' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(var(--primary), 0.1)' }}>
-                              <Building2 style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.06)' }}>
+                              <Building2 style={{ height: 20, width: 20, color: '#333333' }} />
                             </Box>
                             <Box>
                               <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>{continent.name}</Typography>

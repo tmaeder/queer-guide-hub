@@ -37,7 +37,7 @@ export default function Press() {
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 2 }}>
           <Newspaper style={{ width: 48, height: 48 }} color="var(--mui-palette-primary-main)" />
-          <Typography variant="h3" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #f472b6, #a78bfa, #60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Press & Media</Typography>
+          <Typography variant="h3" sx={{ fontWeight: 700, color: 'text.primary' }}>Press & Media</Typography>
         </Box>
         <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '48rem', mx: 'auto' }}>
           Resources for journalists, bloggers, and media professionals covering

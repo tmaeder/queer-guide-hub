@@ -125,7 +125,7 @@ export default function OurValues() {
         <Box sx={{ textAlign: 'center', mb: 8 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 3 }}>
             <Star style={{ width: 48, height: 48 }} color="var(--mui-palette-primary-main)" />
-            <Typography variant="h3" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #f472b6, #a78bfa, #60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Our Values</Typography>
+            <Typography variant="h3" sx={{ fontWeight: 700, color: 'text.primary' }}>Our Values</Typography>
           </Box>
           <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '48rem', mx: 'auto' }}>
             The principles that guide every decision we make and every feature we build.

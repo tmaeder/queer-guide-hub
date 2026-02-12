@@ -276,7 +276,7 @@ export default function CountryDetail() {
                 <Card sx={{ borderColor: 'divider', '&:hover': { borderColor: 'primary.main' }, transition: 'border-color 0.2s' }}>
                   <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2 }}>
                     <Box sx={{ p: 1, bgcolor: 'rgba(168, 85, 247, 0.1)', borderRadius: 2 }}>
-                      <Building2 style={{ height: 20, width: 20, color: '#9333ea' }} />
+                      <Building2 style={{ height: 20, width: 20, color: '#555555' }} />
                     </Box>
                     <Box>
                       <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Cities</Typography>

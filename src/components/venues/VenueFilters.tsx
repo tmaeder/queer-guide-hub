@@ -542,7 +542,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                 <Box sx={{ width: 8, height: 8, bgcolor: '#a855f7', borderRadius: '50%' }} />
+                 <Box sx={{ width: 8, height: 8, bgcolor: '#555555', borderRadius: '50%' }} />
                  Accessibility
                </Box>
              </Label>

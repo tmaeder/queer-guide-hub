@@ -42,7 +42,7 @@ export const GroupNotificationBell = () => {
       case 'new_announcement':
         return <Megaphone style={{ height: 16, width: 16, color: '#f97316' }} />;
       case 'new_poll':
-        return <BarChart3 style={{ height: 16, width: 16, color: '#a855f7' }} />;
+        return <BarChart3 style={{ height: 16, width: 16, color: '#555555' }} />;
       case 'post_liked':
         return <Heart style={{ height: 16, width: 16, color: '#ef4444' }} />;
       case 'new_post':

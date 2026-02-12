@@ -143,11 +143,11 @@ export const PlacesCard = ({
   const getIcon = () => {
     switch (type) {
       case "continent":
-        return <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
+        return <Globe style={{ height: 20, width: 20, color: '#333333' }} />;
       case "country":
-        return <MapPin style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
+        return <MapPin style={{ height: 20, width: 20, color: '#333333' }} />;
       case "city":
-        return <Building2 style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
+        return <Building2 style={{ height: 20, width: 20, color: '#333333' }} />;
       default:
         return null;
     }
@@ -176,7 +176,7 @@ export const PlacesCard = ({
           <Box sx={{ display: 'flex', gap: 1 }}>
             {city.is_capital && (
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', bgcolor: 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)' }}>
-                <Crown style={{ height: 12, width: 12, color: 'var(--primary)' }} />
+                <Crown style={{ height: 12, width: 12, color: '#333333' }} />
               </Box>
             )}
             {city.is_major_city && (

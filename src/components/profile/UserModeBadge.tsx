@@ -12,7 +12,7 @@ const modeConfig = {
   friends: { icon: Users, label: 'Making Friends', bgcolor: 'rgba(59, 130, 246, 0.1)', color: '#2563eb', borderColor: '#bfdbfe' },
   exploration: { icon: Map, label: 'Exploring', bgcolor: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', borderColor: '#bbf7d0' },
   fun: { icon: Smile, label: 'Here for Fun', bgcolor: 'rgba(234, 179, 8, 0.1)', color: '#ca8a04', borderColor: '#fef08a' },
-  networking: { icon: Handshake, label: 'Networking', bgcolor: 'rgba(168, 85, 247, 0.1)', color: '#9333ea', borderColor: '#e9d5ff' },
+  networking: { icon: Handshake, label: 'Networking', bgcolor: 'rgba(0, 0, 0, 0.06)', color: '#333333', borderColor: '#e5e5e5' },
   community: { icon: Home, label: 'Building Community', bgcolor: 'rgba(99, 102, 241, 0.1)', color: '#4f46e5', borderColor: '#c7d2fe' },
 };
 

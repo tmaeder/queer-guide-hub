@@ -229,9 +229,9 @@ export default function AdminPersonalities() {
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>Featured</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#9333ea' }}>{stats.featured}</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#333333' }}>{stats.featured}</Typography>
               </Box>
-              <Star style={{ height: 32, width: 32, color: '#9333ea' }} />
+              <Star style={{ height: 32, width: 32, color: '#555555' }} />
             </Box>
           </CardContent>
         </Card>

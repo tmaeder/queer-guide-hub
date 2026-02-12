@@ -97,8 +97,8 @@
   --popover: 0 0% 100%;
   --popover-foreground: 240 10% 8%;
 
-  /* Brand — warm violet that nods to the pride palette */
-  --primary: 271 76% 53%;
+  /* Brand — clean black/white */
+  --primary: 0 0% 13%;
   --primary-foreground: 0 0% 100%;
 
   --secondary: 240 5% 96%;
@@ -122,18 +122,18 @@
   /* UI elements — subtle borders for depth */
   --border: 240 6% 90%;
   --input: 240 6% 90%;
-  --ring: 271 76% 53%;
+  --ring: 0 0% 13%;
   --radius: 0.625rem;
 
   /* Sidebar */
   --sidebar-background: 0 0% 98%;
   --sidebar-foreground: 240 6% 10%;
-  --sidebar-primary: 271 76% 53%;
+  --sidebar-primary: 0 0% 13%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 240 5% 96%;
   --sidebar-accent-foreground: 240 6% 10%;
   --sidebar-border: 240 6% 90%;
-  --sidebar-ring: 271 76% 53%;
+  --sidebar-ring: 0 0% 13%;
 
   --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -149,7 +149,7 @@
   --popover: 240 10% 6%;
   --popover-foreground: 0 0% 95%;
 
-  --primary: 271 91% 65%;
+  --primary: 0 0% 100%;
   --primary-foreground: 0 0% 100%;
 
   --secondary: 240 4% 16%;
@@ -172,16 +172,16 @@
 
   --border: 240 4% 16%;
   --input: 240 4% 16%;
-  --ring: 271 91% 65%;
+  --ring: 0 0% 100%;
 
   --sidebar-background: 240 10% 6%;
   --sidebar-foreground: 0 0% 95%;
-  --sidebar-primary: 271 91% 65%;
-  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-primary: 0 0% 100%;
+  --sidebar-primary-foreground: 0 0% 7%;
   --sidebar-accent: 240 4% 16%;
   --sidebar-accent-foreground: 0 0% 95%;
   --sidebar-border: 240 4% 16%;
-  --sidebar-ring: 271 91% 65%;
+  --sidebar-ring: 0 0% 100%;
 }
 
 /* ── Base resets (replaces Tailwind @apply rules) ────────────────────── */
@@ -207,18 +207,15 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.025em;
 }
 
-/* ── Gradient text utility — works with the brand violet ─────────── */
+/* ── Gradient text utility — clean black ─────────── */
 .gradient-text {
-  color: hsl(var(--primary));
-  background: linear-gradient(to right, hsl(var(--primary)), #a855f7, #ec4899);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: hsl(var(--foreground));
+  -webkit-text-fill-color: hsl(var(--foreground));
 }
 
 /* Gradient background — used across group/community components */
 .bg-gradient-primary {
-  background: linear-gradient(135deg, hsl(var(--primary)), #a855f7);
+  background: hsl(var(--primary));
 }
 
 /* ── Animation Utilities ─────────────────────────────────────────── */

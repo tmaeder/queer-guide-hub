@@ -208,7 +208,7 @@ export const VenueImportQuickActions = () => {
       case 'foursquare': return '#3b82f6';
       case 'google-places': return '#22c55e';
       case 'tomtom': return '#f97316';
-      case 'tripadvisor': return '#a855f7';
+      case 'tripadvisor': return '#555555';
       default: return '#6b7280';
     }
   };
@@ -341,8 +341,8 @@ export const VenueImportQuickActions = () => {
               <Typography variant="body2" sx={{ color: '#ea580c' }}>Currently Importing</Typography>
             </Box>
             <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#faf5ff', borderRadius: 2 }}>
-              <Typography variant="h5" sx={{ color: '#9333ea' }}>4</Typography>
-              <Typography variant="body2" sx={{ color: '#9333ea' }}>Available Providers</Typography>
+              <Typography variant="h5" sx={{ color: '#333333' }}>4</Typography>
+              <Typography variant="body2" sx={{ color: '#333333' }}>Available Providers</Typography>
             </Box>
           </Box>
         </CardContent>

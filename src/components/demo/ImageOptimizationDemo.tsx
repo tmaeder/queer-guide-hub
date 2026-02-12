@@ -76,7 +76,7 @@ export function ImageOptimizationDemo() {
         </Card>
         <Card>
           <CardContent sx={{ p: 3, textAlign: 'center' }}>
-            <Globe style={{ height: 32, width: 32, margin: '0 auto 8px', color: '#a855f7' }} />
+            <Globe style={{ height: 32, width: 32, margin: '0 auto 8px', color: '#555555' }} />
             <h3 sx={{ fontWeight: 600 }}>Universal</h3>
             <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>JPEG/PNG fallback</p>
           </CardContent>

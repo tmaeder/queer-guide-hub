@@ -3,7 +3,7 @@ import { createTheme, type ThemeOptions } from '@mui/material/styles';
 // Convert HSL to hex for MUI palette
 // Light mode values from CSS custom properties
 const lightPalette = {
-  primary: { main: '#7c3aed', contrastText: '#ffffff' },       // hsl(271 76% 53%)
+  primary: { main: '#222222', contrastText: '#ffffff' },       // near-black
   secondary: { main: '#f4f4f5', contrastText: '#18181b' },     // hsl(240 5% 96%)
   error: { main: '#ef4444', contrastText: '#ffffff' },          // hsl(0 84% 60%)
   warning: { main: '#f59e0b', contrastText: '#ffffff' },        // hsl(38 92% 50%)
@@ -14,7 +14,7 @@ const lightPalette = {
 };
 
 const darkPalette = {
-  primary: { main: '#a78bfa', contrastText: '#ffffff' },        // hsl(271 91% 65%)
+  primary: { main: '#ffffff', contrastText: '#111111' },        // white on dark
   secondary: { main: '#27272a', contrastText: '#f2f2f2' },      // hsl(240 4% 16%)
   error: { main: '#dc2626', contrastText: '#ffffff' },          // hsl(0 63% 56%)
   warning: { main: '#f59e0b', contrastText: '#ffffff' },        // hsl(38 92% 50%)
@@ -211,7 +211,7 @@ const customShadows = [
   'none',
   '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',   // shadow-card
   '0 10px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.06)', // shadow-card-hover
-  '0 0 20px -5px rgba(124, 58, 237, 0.2)',                                  // shadow-glow
+  '0 0 20px -5px rgba(0, 0, 0, 0.15)',                                      // shadow-glow
   ...Array(21).fill('none'),
 ] as unknown as ThemeOptions['shadows'];
 

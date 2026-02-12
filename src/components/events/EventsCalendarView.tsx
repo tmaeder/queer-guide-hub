@@ -73,11 +73,11 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Enhanced Month Stats */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
-        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(var(--primary-rgb), 0.05), rgba(var(--primary-rgb), 0.1))', borderColor: 'primary.main', borderWidth: 1, borderStyle: 'solid', opacity: 0.2 }}>
+        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderColor: 'divider', borderWidth: 1, borderStyle: 'solid' }}>
           <CardContent sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ p: 1, bgcolor: 'primary.main', borderRadius: 2, opacity: 0.1, position: 'relative' }}>
-                <CalendarIcon style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+              <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}>
+                <CalendarIcon style={{ height: 20, width: 20, color: '#333333' }} />
               </Box>
               <Box>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{monthlyStats.totalEvents}</Typography>
@@ -101,11 +101,11 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
           </CardContent>
         </Card>
 
-        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(168, 85, 247, 0.05), rgba(168, 85, 247, 0.1))', borderColor: 'secondary.main', borderWidth: 1, borderStyle: 'solid', opacity: 0.2 }}>
+        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderColor: 'divider', borderWidth: 1, borderStyle: 'solid' }}>
           <CardContent sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'secondary.main', opacity: 0.1, position: 'relative' }}>
-                <Star style={{ height: 20, width: 20, color: '#9333ea' }} />
+              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover', position: 'relative' }}>
+                <Star style={{ height: 20, width: 20, color: '#555555' }} />
               </Box>
               <Box>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>{monthlyStats.eventTypes}</Typography>
@@ -121,11 +121,11 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
         {/* Calendar Section */}
         <Box>
           <Card sx={{ boxShadow: 3 }}>
-            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(var(--primary-rgb), 0.05), rgba(var(--primary-rgb), 0.1))', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <CardTitle sx={{ fontSize: '1.25rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <Box sx={{ p: 1, bgcolor: 'primary.main', borderRadius: 2, opacity: 0.1, position: 'relative' }}>
-                    <CalendarIcon style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+                  <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}>
+                    <CalendarIcon style={{ height: 20, width: 20, color: '#333333' }} />
                   </Box>
                   {format(currentMonth, 'MMMM yyyy')}
                 </CardTitle>
@@ -315,7 +315,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                           </Box>
 
                           {/* Hover Indicator */}
-                          <Box sx={{ position: 'absolute', inset: 0, borderRadius: 2, background: 'linear-gradient(to right, rgba(var(--primary-rgb), 0.05), rgba(var(--primary-rgb), 0.1))', opacity: 0, transition: 'opacity 0.2s', pointerEvents: 'none', '.MuiBox-root:hover > &': { opacity: 1 } }} />
+                          <Box sx={{ position: 'absolute', inset: 0, borderRadius: 2, background: 'linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', opacity: 0, transition: 'opacity 0.2s', pointerEvents: 'none', '.MuiBox-root:hover > &': { opacity: 1 } }} />
                         </Paper>
                       </Box>
                     ))}

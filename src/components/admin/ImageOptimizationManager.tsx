@@ -324,7 +324,7 @@ export function ImageOptimizationManager() {
                 <Card>
                   <CardContent sx={{ p: 3 }}>
                     <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <HardDrive style={{ height: 20, width: 20, color: '#a855f7' }} />
+                      <HardDrive style={{ height: 20, width: 20, color: '#555555' }} />
                       <div>
                         <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
                           {formatFileSize(images.reduce((sum, img) => sum + img.originalSize, 0))}

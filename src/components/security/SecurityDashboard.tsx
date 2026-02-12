@@ -173,7 +173,7 @@ export function SecurityDashboard() {
                 <Typography variant="body2" color="text.secondary">Admin Access</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{metrics.recentAdminAccess}</Typography>
               </Box>
-              <Lock style={{ height: 32, width: 32, color: '#a855f7' }} />
+              <Lock style={{ height: 32, width: 32, color: '#555555' }} />
             </Box>
           </CardContent>
         </Card>

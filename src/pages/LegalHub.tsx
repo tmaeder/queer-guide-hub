@@ -25,7 +25,7 @@ export default function LegalHub() {
   };
   return <Container maxWidth="md" sx={{ py: 4 }}>
       <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography variant="h3" sx={{ fontWeight: 700, mb: 2, background: 'linear-gradient(135deg, #f472b6, #a78bfa, #60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Legal Hub</Typography>
+        <Typography variant="h3" sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>Legal Hub</Typography>
         <Typography color="text.secondary" sx={{ fontSize: '1.125rem' }}>
           All legal information, policies, and terms in one place
         </Typography>
