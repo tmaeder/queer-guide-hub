@@ -13,6 +13,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useToast } from '@/hooks/use-toast';
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 interface EventType {
   id: string;
@@ -31,14 +34,14 @@ export default function AdminEventTypes() {
   const { user } = useAuth();
   const { isAdmin } = useAdminRoles();
   const { toast } = useToast();
-  
+
   const [eventTypes, setEventTypes] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<EventType | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -53,7 +56,7 @@ export default function AdminEventTypes() {
       navigate('/auth');
       return;
     }
-    
+
     if (!isAdmin) {
       toast({
         title: "Access Denied",
@@ -63,7 +66,7 @@ export default function AdminEventTypes() {
       navigate('/');
       return;
     }
-    
+
     fetchEventTypes();
   }, [user, isAdmin, navigate, toast]);
 
@@ -90,16 +93,16 @@ export default function AdminEventTypes() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingType) {
         const { error } = await supabase
           .from('event_types')
           .update(formData)
           .eq('id', editingType.id);
-        
+
         if (error) throw error;
-        
+
         toast({
           title: "Success",
           description: "Event type updated successfully"
@@ -108,15 +111,15 @@ export default function AdminEventTypes() {
         const { error } = await supabase
           .from('event_types')
           .insert([formData]);
-        
+
         if (error) throw error;
-        
+
         toast({
           title: "Success",
           description: "Event type created successfully"
         });
       }
-      
+
       setIsDialogOpen(false);
       resetForm();
       fetchEventTypes();
@@ -157,20 +160,20 @@ export default function AdminEventTypes() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this event type?')) return;
-    
+
     try {
       const { error } = await supabase
         .from('event_types')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Event type deleted successfully"
       });
-      
+
       fetchEventTypes();
     } catch (error: any) {
       console.error('Error deleting event type:', error);
@@ -193,38 +196,38 @@ export default function AdminEventTypes() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin h-32 w-32 bg-primary"></div>
-      </div>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <Box sx={{ height: 128, width: 128, bgcolor: 'primary.main', animation: 'spin 1s linear infinite' }} />
+      </Box>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+    <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button variant="outline" onClick={() => navigate('/admin')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold">Event Types Management</h1>
-        </div>
-        
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>Event Types Management</Typography>
+        </Box>
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
               Add Event Type
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent sx={{ maxWidth: 448 }}>
             <DialogHeader>
               <DialogTitle>
                 {editingType ? 'Edit Event Type' : 'Create New Event Type'}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box>
                 <Label htmlFor="name">Name *</Label>
                 <Input
                   id="name"
@@ -233,9 +236,9 @@ export default function AdminEventTypes() {
                   placeholder="Event type name"
                   required
                 />
-              </div>
-              
-              <div>
+              </Box>
+
+              <Box>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
@@ -244,9 +247,9 @@ export default function AdminEventTypes() {
                   placeholder="Description of the event type"
                   rows={3}
                 />
-              </div>
-              
-              <div>
+              </Box>
+
+              <Box>
                 <Label htmlFor="icon">Icon</Label>
                 <Input
                   id="icon"
@@ -254,9 +257,9 @@ export default function AdminEventTypes() {
                   onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                   placeholder="Lucide icon name (e.g., Calendar)"
                 />
-              </div>
-              
-              <div>
+              </Box>
+
+              <Box>
                 <Label htmlFor="color">Color</Label>
                 <Input
                   id="color"
@@ -264,9 +267,9 @@ export default function AdminEventTypes() {
                   value={formData.color}
                   onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                 />
-              </div>
-              
-              <div>
+              </Box>
+
+              <Box>
                 <Label htmlFor="sort_order">Sort Order</Label>
                 <Input
                   id="sort_order"
@@ -275,9 +278,9 @@ export default function AdminEventTypes() {
                   onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
                   placeholder="0"
                 />
-              </div>
-              
-              <div className="flex items-center space-x-2">
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <input
                   type="checkbox"
                   id="is_active"
@@ -285,26 +288,26 @@ export default function AdminEventTypes() {
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                 />
                 <Label htmlFor="is_active">Active</Label>
-              </div>
-              
-              <Button type="submit" className="w-full">
+              </Box>
+
+              <Button type="submit" style={{ width: '100%' }}>
                 {editingType ? 'Update Event Type' : 'Create Event Type'}
               </Button>
-            </form>
+            </Box>
           </DialogContent>
         </Dialog>
-      </div>
+      </Box>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-6">
+      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         <Input
           placeholder="Search event types..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          style={{ maxWidth: 384 }}
         />
         <Select value={statusFilter} onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger style={{ width: 160 }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -313,89 +316,93 @@ export default function AdminEventTypes() {
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </Box>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 3 }}>
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{eventTypes.length}</div>
-            <div className="text-sm text-muted-foreground">Total Event Types</div>
+          <CardContent sx={{ p: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{eventTypes.length}</Typography>
+            <Typography variant="body2" color="text.secondary">Total Event Types</Typography>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{eventTypes.filter(type => type.is_active).length}</div>
-            <div className="text-sm text-muted-foreground">Active</div>
+          <CardContent sx={{ p: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{eventTypes.filter(type => type.is_active).length}</Typography>
+            <Typography variant="body2" color="text.secondary">Active</Typography>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{eventTypes.filter(type => !type.is_active).length}</div>
-            <div className="text-sm text-muted-foreground">Inactive</div>
+          <CardContent sx={{ p: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{eventTypes.filter(type => !type.is_active).length}</Typography>
+            <Typography variant="body2" color="text.secondary">Inactive</Typography>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Event Types List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 2 }}>
         {filteredEventTypes.map((eventType) => (
-          <Card key={eventType.id} className="relative">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <div 
-                    className="w-4 h-4 rounded" 
-                    style={{ backgroundColor: eventType.color }}
-                  />
-                  {eventType.name}
+          <Card key={eventType.id} sx={{ position: 'relative' }}>
+            <CardHeader sx={{ pb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <CardTitle>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{ width: 16, height: 16, borderRadius: 1 }}
+                      style={{ backgroundColor: eventType.color }}
+                    />
+                    <Typography variant="subtitle1">{eventType.name}</Typography>
+                  </Box>
                 </CardTitle>
                 <Badge variant={eventType.is_active ? "default" : "secondary"}>
                   {eventType.is_active ? 'Active' : 'Inactive'}
                 </Badge>
-              </div>
+              </Box>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {eventType.description && (
-                <p className="text-sm text-muted-foreground">
-                  {eventType.description}
-                </p>
-              )}
-              {eventType.icon && (
-                <p className="text-sm">
-                  <span className="font-medium">Icon:</span> {eventType.icon}
-                </p>
-              )}
-              <p className="text-sm">
-                <span className="font-medium">Sort Order:</span> {eventType.sort_order}
-              </p>
-              
-              <div className="flex gap-2 pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleEdit(eventType)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleDelete(eventType.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+            <CardContent>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {eventType.description && (
+                  <Typography variant="body2" color="text.secondary">
+                    {eventType.description}
+                  </Typography>
+                )}
+                {eventType.icon && (
+                  <Typography variant="body2">
+                    <Box component="span" sx={{ fontWeight: 600 }}>Icon:</Box> {eventType.icon}
+                  </Typography>
+                )}
+                <Typography variant="body2">
+                  <Box component="span" sx={{ fontWeight: 600 }}>Sort Order:</Box> {eventType.sort_order}
+                </Typography>
+
+                <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(eventType)}
+                  >
+                    <Edit style={{ width: 16, height: 16 }} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(eventType.id)}
+                  >
+                    <Trash2 style={{ width: 16, height: 16 }} />
+                  </Button>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         ))}
-      </div>
+      </Box>
 
       {filteredEventTypes.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">No event types found matching your criteria.</p>
-        </div>
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography color="text.secondary">No event types found matching your criteria.</Typography>
+        </Box>
       )}
-    </div>
+    </Container>
   );
 }

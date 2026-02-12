@@ -1,56 +1,105 @@
 import * as React from "react"
-import * as AccordionPrimitive from "@radix-ui/react-accordion"
+import MuiAccordion from "@mui/material/Accordion"
+import MuiAccordionSummary from "@mui/material/AccordionSummary"
+import MuiAccordionDetails from "@mui/material/AccordionDetails"
 import { ChevronDown } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+type AccordionType = "single" | "multiple";
 
-const Accordion = AccordionPrimitive.Root
+interface AccordionProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'defaultValue'> {
+  type?: AccordionType;
+  collapsible?: boolean;
+  defaultValue?: string | string[];
+  value?: string | string[];
+  onValueChange?: (value: string | string[]) => void;
+}
 
-const AccordionItem = React.forwardRef<
-  React.ElementRef<typeof AccordionPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
->(({ className, ...props }, ref) => (
-  <AccordionPrimitive.Item
-    ref={ref}
-    className={cn("", className)}
-    {...props}
-  />
-))
+const AccordionContext = React.createContext<{
+  expanded: string[];
+  toggle: (value: string) => void;
+}>({ expanded: [], toggle: () => {} });
+
+const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
+  ({ type = "single", collapsible = false, defaultValue, value: controlledValue, onValueChange, className, children, style, ...props }, ref) => {
+    const initialValue = defaultValue ? (Array.isArray(defaultValue) ? defaultValue : [defaultValue]) : [];
+    const [internalExpanded, setInternalExpanded] = React.useState<string[]>(initialValue);
+    const isControlled = controlledValue !== undefined;
+    const expanded = isControlled ? (Array.isArray(controlledValue) ? controlledValue : [controlledValue]) : internalExpanded;
+
+    const toggle = (value: string) => {
+      let next: string[];
+      if (type === "single") {
+        next = expanded.includes(value) ? (collapsible ? [] : expanded) : [value];
+      } else {
+        next = expanded.includes(value) ? expanded.filter((v) => v !== value) : [...expanded, value];
+      }
+      if (!isControlled) setInternalExpanded(next);
+      onValueChange?.(type === "single" ? (next[0] || "") : next);
+    };
+
+    return (
+      <AccordionContext.Provider value={{ expanded, toggle }}>
+        <div ref={ref} className={className} style={style} {...props}>{children}</div>
+      </AccordionContext.Provider>
+    );
+  }
+);
+Accordion.displayName = "Accordion"
+
+interface AccordionItemProps extends React.HTMLAttributes<HTMLDivElement> {
+  value: string;
+  disabled?: boolean;
+}
+
+const AccordionItem = React.forwardRef<HTMLDivElement, AccordionItemProps>(
+  ({ value, disabled, className, children, style, ...props }, ref) => {
+    const { expanded, toggle } = React.useContext(AccordionContext);
+    const isExpanded = expanded.includes(value);
+    return (
+      <MuiAccordion
+        ref={ref}
+        expanded={isExpanded}
+        onChange={() => !disabled && toggle(value)}
+        disabled={disabled}
+        disableGutters
+        elevation={0}
+        className={className}
+        sx={{ bgcolor: 'transparent', '&:before': { display: 'none' }, borderBottom: 1, borderColor: 'divider', ...((style as any) || {}) }}
+      >
+        {children}
+      </MuiAccordion>
+    );
+  }
+);
 AccordionItem.displayName = "AccordionItem"
 
-const AccordionTrigger = React.forwardRef<
-  React.ElementRef<typeof AccordionPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <AccordionPrimitive.Header className="flex">
-    <AccordionPrimitive.Trigger
-      ref={ref}
-      className={cn(
-        "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180",
-        className
-      )}
-      {...props}
+const AccordionTrigger = React.forwardRef<HTMLButtonElement, React.HTMLAttributes<HTMLButtonElement>>(
+  ({ className, children, style, ...props }, ref) => (
+    <MuiAccordionSummary
+      ref={ref as any}
+      expandIcon={<ChevronDown style={{ width: 16, height: 16 }} />}
+      className={className}
+      sx={{
+        px: 0,
+        fontWeight: 500,
+        '&:hover': { textDecoration: 'underline' },
+        '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': { transform: 'rotate(180deg)' },
+      }}
+      {...(props as any)}
     >
       {children}
-      <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
-    </AccordionPrimitive.Trigger>
-  </AccordionPrimitive.Header>
-))
-AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName
+    </MuiAccordionSummary>
+  )
+);
+AccordionTrigger.displayName = "AccordionTrigger"
 
-const AccordionContent = React.forwardRef<
-  React.ElementRef<typeof AccordionPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <AccordionPrimitive.Content
-    ref={ref}
-    className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
-    {...props}
-  >
-    <div className={cn("pb-4 pt-0", className)}>{children}</div>
-  </AccordionPrimitive.Content>
-))
-
-AccordionContent.displayName = AccordionPrimitive.Content.displayName
+const AccordionContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, children, style, ...props }, ref) => (
+    <MuiAccordionDetails ref={ref} className={className} sx={{ px: 0, pb: 2, fontSize: '0.875rem' }} style={style} {...(props as any)}>
+      {children}
+    </MuiAccordionDetails>
+  )
+);
+AccordionContent.displayName = "AccordionContent"
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }

@@ -95,12 +95,12 @@ export function SecurityMonitoringDashboard() {
 
   const getEventIcon = (eventType: string) => {
     if (eventType.includes('ROLE') || eventType.includes('ESCALATION')) {
-      return <Users className="h-4 w-4" />;
+      return <Users style={{ height: 16, width: 16 }} />;
     }
     if (eventType.includes('RATE_LIMIT') || eventType.includes('XSS')) {
-      return <AlertTriangle className="h-4 w-4" />;
+      return <AlertTriangle style={{ height: 16, width: 16 }} />;
     }
-    return <Activity className="h-4 w-4" />;
+    return <Activity style={{ height: 16, width: 16 }} />;
   };
 
   const criticalEvents = recentEvents.filter(e => 
@@ -114,15 +114,15 @@ export function SecurityMonitoringDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Shield className="h-6 w-6" />
-        <h2 className="text-2xl font-bold">Security Monitoring Dashboard</h2>
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Shield style={{ height: 24, width: 24 }} />
+        <h2 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Security Monitoring Dashboard</h2>
       </div>
 
       {criticalEvents.length > 0 && (
         <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangle style={{ height: 16, width: 16 }} />
           <AlertDescription>
             {criticalEvents.length} critical security event(s) detected. Review immediately.
           </AlertDescription>
@@ -130,48 +130,48 @@ export function SecurityMonitoringDashboard() {
       )}
 
       {/* System Statistics Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-muted rounded-lg">
-              <Activity className="h-4 w-4 text-foreground" />
+      <div sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(3, 1fr)' } }}>
+        <Card sx={{ p: 2 }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2 }}>
+              <Activity style={{ height: 16, width: 16, color: 'var(--foreground)' }} />
             </div>
             <div>
-              <p className="text-sm font-medium">Total Security Events</p>
-              <p className="text-2xl font-bold">{recentEvents.length}</p>
-              <p className="text-xs text-muted-foreground">Last 50 events</p>
+              <p sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Total Security Events</p>
+              <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{recentEvents.length}</p>
+              <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Last 50 events</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-destructive/10 rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
+        <Card sx={{ p: 2 }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div sx={{ p: 1, bgcolor: 'rgba(var(--destructive-rgb), 0.1)', borderRadius: 2 }}>
+              <AlertTriangle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
             </div>
             <div>
-              <p className="text-sm font-medium">Failed Login Attempts</p>
-              <p className="text-2xl font-bold">{systemStats?.totalFailedLogins || 0}</p>
-              <p className="text-xs text-muted-foreground">Total recorded</p>
+              <p sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Failed Login Attempts</p>
+              <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{systemStats?.totalFailedLogins || 0}</p>
+              <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Total recorded</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-success/10 rounded-lg">
-              <Shield className="h-4 w-4 text-success" />
+        <Card sx={{ p: 2 }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div sx={{ p: 1, bgcolor: 'rgba(var(--success-rgb), 0.1)', borderRadius: 2 }}>
+              <Shield style={{ height: 16, width: 16, color: 'var(--success)' }} />
             </div>
             <div>
-              <p className="text-sm font-medium">CAPTCHA Verifications</p>
-              <p className="text-2xl font-bold">{systemStats?.totalCaptchaVerifications || 0}</p>
-              <p className="text-xs text-muted-foreground">Total completed</p>
+              <p sx={{ fontSize: '0.875rem', fontWeight: 500 }}>CAPTCHA Verifications</p>
+              <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{systemStats?.totalCaptchaVerifications || 0}</p>
+              <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Total completed</p>
             </div>
           </div>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div sx={{ display: 'grid', gap: 3, gridTemplateColumns: { md: 'repeat(3, 1fr)' } }}>
         <Card>
           <CardHeader>
             <CardTitle>Recent Security Events</CardTitle>
@@ -180,30 +180,30 @@ export function SecurityMonitoringDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 384, overflowY: 'auto' }}>
               {recentEvents.slice(0, 10).map((event) => (
-                <div key={event.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <div className="mt-1">
+                <div key={event.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                  <div sx={{ mt: 0.5 }}>
                     {getEventIcon(event.event_type)}
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">
+                  <div sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
                         {event.event_type.replace(/_/g, ' ')}
                       </span>
                       <Badge variant={getSeverityColor(event.details?.severity || 'info')}>
                         {event.details?.severity || 'info'}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
                     </p>
                     {event.details && Object.keys(event.details).length > 0 && (
-                      <details className="text-xs">
-                        <summary className="cursor-pointer text-muted-foreground">
+                      <details sx={{ fontSize: '0.75rem' }}>
+                        <summary sx={{ cursor: 'pointer', color: 'text.secondary' }}>
                           View details
                         </summary>
-                        <pre className="mt-1 text-xs bg-muted p-2 rounded overflow-x-auto">
+                        <pre sx={{ mt: 0.5, fontSize: '0.75rem', bgcolor: 'action.hover', p: 1, borderRadius: 1, overflowX: 'auto' }}>
                           {JSON.stringify(event.details, null, 2)}
                         </pre>
                       </details>
@@ -212,7 +212,7 @@ export function SecurityMonitoringDashboard() {
                 </div>
               ))}
               {recentEvents.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">
+                <p sx={{ color: 'text.secondary', textAlign: 'center', py: 2 }}>
                   No recent security events
                 </p>
               )}
@@ -228,30 +228,30 @@ export function SecurityMonitoringDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 384, overflowY: 'auto' }}>
               {auditLogs.map((log: any) => (
-                <div key={log.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <Users className="h-4 w-4 mt-1" />
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">
+                <div key={log.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                  <Users style={{ height: 16, width: 16, marginTop: 4 }} />
+                  <div sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
                         Role {log.action_type}: {log.role_changed}
                       </span>
                       <Badge variant="outline">
                         {log.action_type}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       Admin: {log.admin_user_id} → Target: {log.target_user_id}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
                     </p>
                   </div>
                 </div>
               ))}
               {auditLogs.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">
+                <p sx={{ color: 'text.secondary', textAlign: 'center', py: 2 }}>
                   No recent role changes
                 </p>
               )}
@@ -267,30 +267,30 @@ export function SecurityMonitoringDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 384, overflowY: 'auto' }}>
               {recentFailedLogins.map((attempt: any) => (
-                <div key={attempt.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <AlertTriangle className="h-4 w-4 mt-1 text-destructive" />
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">
+                <div key={attempt.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                  <AlertTriangle style={{ height: 16, width: 16, marginTop: 4, color: 'var(--destructive)' }} />
+                  <div sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
                         {attempt.attempt_type.toUpperCase()} Failed
                       </span>
                       <Badge variant="destructive">
                         Failed
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       IP: {attempt.ip_address}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       {formatDistanceToNow(new Date(attempt.created_at), { addSuffix: true })}
                     </p>
                   </div>
                 </div>
               ))}
               {recentFailedLogins.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">
+                <p sx={{ color: 'text.secondary', textAlign: 'center', py: 2 }}>
                   No recent failed login attempts
                 </p>
               )}

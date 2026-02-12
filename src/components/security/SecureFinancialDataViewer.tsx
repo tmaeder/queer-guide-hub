@@ -11,6 +11,8 @@ import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Lock, Eye, DollarSign } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface FinancialData {
   id: string;
@@ -133,19 +135,21 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
   // If user is owner, show data directly
   if (isOwner && accessGranted) {
     return (
-      <div className="space-y-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Alert>
-          <DollarSign className="h-4 w-4" />
+          <DollarSign style={{ height: 16, width: 16 }} />
           <AlertDescription>
             You're viewing your own financial data. This information is encrypted and protected.
           </AlertDescription>
         </Alert>
-        
+
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Financial Data
+            <CardTitle>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Shield style={{ height: 20, width: 20 }} />
+                Financial Data
+              </Box>
             </CardTitle>
             <CardDescription>
               Your donation history and financial transactions
@@ -153,51 +157,51 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin h-6 w-6 bg-primary" />
-              </div>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
+                <Box sx={{ animation: 'spin 1s linear infinite', height: 24, width: 24, bgcolor: 'primary.main' }} />
+              </Box>
             ) : financialData.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
+              <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
                 No financial data found
-              </p>
+              </Typography>
             ) : (
-              <div className="space-y-4">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {financialData.map((item) => (
-                  <div key={item.id} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-medium">
+                  <Box key={item.id} sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500 }}>
                           {item.donor_name || 'Anonymous'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
                           {new Date(item.created_at).toLocaleDateString()}
-                        </p>
-                        <p className="text-sm">Status: {item.status}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">
+                        </Typography>
+                        <Typography variant="body2">Status: {item.status}</Typography>
+                      </Box>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="body2" color="text.secondary">
                           Amount: [Encrypted]
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             )}
           </CardContent>
         </Card>
 
         {children}
-      </div>
+      </Box>
     );
   }
 
   // If admin, show access request dialog
   if (isAdmin && !accessGranted) {
     return (
-      <div className="space-y-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Alert>
-          <Lock className="h-4 w-4" />
+          <Lock style={{ height: 16, width: 16 }} />
           <AlertDescription>
             This financial data is protected. Admin access requires justification and will be audited.
           </AlertDescription>
@@ -213,8 +217,8 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
           <CardContent>
             <Dialog open={showAccessDialog} onOpenChange={setShowAccessDialog}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="w-full">
-                  <Shield className="h-4 w-4 mr-2" />
+                <Button variant="outline" sx={{ width: '100%' }}>
+                  <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
                   Request Admin Access
                 </Button>
               </DialogTrigger>
@@ -222,64 +226,66 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
                 <DialogHeader>
                   <DialogTitle>Admin Financial Data Access</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <Alert>
-                    <Shield className="h-4 w-4" />
+                    <Shield style={{ height: 16, width: 16 }} />
                     <AlertDescription>
                       This action will be logged and audited. Provide a detailed justification for accessing this sensitive financial data.
                     </AlertDescription>
                   </Alert>
-                  
-                  <div>
+
+                  <Box>
                     <Label htmlFor="justification">Access Justification</Label>
                     <Textarea
                       id="justification"
                       value={justification}
                       onChange={(e) => setJustification(e.target.value)}
                       placeholder="Provide a detailed reason for accessing this financial data (minimum 20 characters required)..."
-                      className="min-h-24"
+                      style={{ minHeight: '96px' }}
                     />
-                  </div>
+                  </Box>
 
-                  <div className="flex justify-end gap-2">
-                    <Button 
-                      variant="outline" 
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                    <Button
+                      variant="outline"
                       onClick={() => setShowAccessDialog(false)}
                     >
                       Cancel
                     </Button>
-                    <Button 
+                    <Button
                       onClick={requestFinancialAccess}
                       disabled={loading || justification.trim().length < 20}
                     >
                       {loading ? "Processing..." : "Request Access"}
                     </Button>
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </DialogContent>
             </Dialog>
           </CardContent>
         </Card>
-      </div>
+      </Box>
     );
   }
 
   // If admin with granted access, show the financial data
   if (isAdmin && accessGranted) {
     return (
-      <div className="space-y-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Alert>
-          <Eye className="h-4 w-4" />
+          <Eye style={{ height: 16, width: 16 }} />
           <AlertDescription>
             Administrative access granted. This session is being monitored and logged.
           </AlertDescription>
         </Alert>
-        
+
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Financial Data (Admin View)
+            <CardTitle>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Shield style={{ height: 20, width: 20 }} />
+                Financial Data (Admin View)
+              </Box>
             </CardTitle>
             <CardDescription>
               User financial information - access logged for audit
@@ -287,75 +293,79 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin h-6 w-6 bg-primary" />
-              </div>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
+                <Box sx={{ animation: 'spin 1s linear infinite', height: 24, width: 24, bgcolor: 'primary.main' }} />
+              </Box>
             ) : financialData.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
+              <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
                 No financial data found for this user
-              </p>
+              </Typography>
             ) : (
-              <div className="space-y-4">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {financialData.map((item) => (
-                  <div key={item.id} className="p-4 border rounded-lg bg-muted/50">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-medium">
+                  <Box key={item.id} sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: 2, bgcolor: 'action.hover' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500 }}>
                           {item.donor_name || 'Anonymous Donation'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
                           {new Date(item.created_at).toLocaleDateString()}
-                        </p>
-                        <p className="text-sm">Status: {item.status}</p>
+                        </Typography>
+                        <Typography variant="body2">Status: {item.status}</Typography>
                         {item.email && (
-                          <p className="text-sm">Email: {item.email}</p>
+                          <Typography variant="body2">Email: {item.email}</Typography>
                         )}
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">
+                      </Box>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="body2" color="text.secondary">
                           Amount: [Encrypted - Admin View]
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             )}
           </CardContent>
         </Card>
 
         {children}
-      </div>
+      </Box>
     );
   }
 
   // Default: Show locked state for non-admins
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Alert>
-        <Lock className="h-4 w-4" />
+        <Lock style={{ height: 16, width: 16 }} />
         <AlertDescription>
           This financial information is private and protected.
         </AlertDescription>
       </Alert>
-      
+
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" />
-            Protected Financial Data
+          <CardTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Lock style={{ height: 20, width: 20 }} />
+              Protected Financial Data
+            </Box>
           </CardTitle>
           <CardDescription>
             Access to this information is restricted
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-center py-12">
-          <Lock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">
-            This financial data is protected and not accessible.
-          </p>
+        <CardContent>
+          <Box sx={{ textAlign: 'center', py: 6 }}>
+            <Lock style={{ height: 48, width: 48, margin: '0 auto', marginBottom: 16, color: 'var(--muted-foreground)' }} />
+            <Typography color="text.secondary">
+              This financial data is protected and not accessible.
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

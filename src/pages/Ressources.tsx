@@ -3,6 +3,9 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useCentralizedTags } from "@/hooks/useCentralizedTags";
 import { DirectorySearch } from "@/components/directory/DirectorySearch";
 import { supabase } from "@/integrations/supabase/client";
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -129,7 +132,7 @@ export default function Ressources() {
     if (!allTags || !Array.isArray(allTags)) return [];
     if (!Array.isArray(searchResults)) return [];
     if (!tagUsageCounts || typeof tagUsageCounts !== 'object') return [];
-    
+
     let filtered = viewMode === "search" ? searchResults : allTags;
 
     // Filter by category
@@ -163,16 +166,16 @@ export default function Ressources() {
   // Define subcategories for better organization
   const subcategories = useMemo(() => {
     const subCats: Record<string, Record<string, string[]>> = {};
-    
+
     categories.forEach(category => {
       const categoryTags = allTags.filter(tag => tag.category === category);
       subCats[category] = {};
-      
+
       // Create semantic subcategories based on tag names
       categoryTags.forEach(tag => {
         const name = tag.name.toLowerCase();
         let subCategory = 'Other';
-        
+
         // Define subcategory rules based on category
         switch (category) {
           case 'Identity':
@@ -186,7 +189,7 @@ export default function Ressources() {
               subCategory = 'Relationship Style';
             }
             break;
-            
+
           case 'Health':
             if (name.includes('mental') || name.includes('therapy') || name.includes('depression') || name.includes('anxiety') || name.includes('counseling')) {
               subCategory = 'Mental Health';
@@ -196,7 +199,7 @@ export default function Ressources() {
               subCategory = 'Medical Care';
             }
             break;
-            
+
           case 'Events':
             if (name.includes('pride') || name.includes('parade') || name.includes('march') || name.includes('rally')) {
               subCategory = 'Pride & Activism';
@@ -208,7 +211,7 @@ export default function Ressources() {
               subCategory = 'Support Groups';
             }
             break;
-            
+
           case 'Venues':
             if (name.includes('bar') || name.includes('club') || name.includes('pub') || name.includes('nightlife')) {
               subCategory = 'Nightlife';
@@ -222,7 +225,7 @@ export default function Ressources() {
               subCategory = 'Accommodation';
             }
             break;
-            
+
           case 'Community':
             if (name.includes('advocacy') || name.includes('activism') || name.includes('rights') || name.includes('political')) {
               subCategory = 'Advocacy & Rights';
@@ -234,20 +237,20 @@ export default function Ressources() {
               subCategory = 'Seniors';
             }
             break;
-            
+
           default:
             // No alphabetical grouping - keep all in "Other" category
             subCategory = 'Other';
             break;
         }
-        
+
         if (!subCats[category][subCategory]) {
           subCats[category][subCategory] = [];
         }
         subCats[category][subCategory].push(tag.name);
       });
     });
-    
+
     return subCats;
   }, [allTags, categories]);
   const handleSearch = async (query: string) => {
@@ -425,355 +428,378 @@ export default function Ressources() {
     }
   };
   if (loading) {
-    return <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <Skeleton className="h-12 w-full" />
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {Array.from({
-          length: 12
-        }).map((_, i) => <Card key={i} className="overflow-hidden">
-              <Skeleton className="aspect-[4/3] w-full" />
-              <div className="p-3 space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-3 w-16" />
-              </div>
-            </Card>)}
-        </div>
-      </div>;
+    return <Container maxWidth="lg" sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Skeleton style={{ height: 32, width: 192 }} />
+            <Skeleton style={{ height: 40, width: 128 }} />
+          </Box>
+          <Skeleton style={{ height: 48, width: '100%' }} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)', lg: 'repeat(6, 1fr)' }, gap: 2 }}>
+            {Array.from({
+            length: 12
+          }).map((_, i) => <Card key={i} style={{ overflow: 'hidden' }}>
+                <Skeleton style={{ aspectRatio: '4/3', width: '100%' }} />
+                <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Skeleton style={{ height: 16, width: '100%' }} />
+                  <Skeleton style={{ height: 12, width: 64 }} />
+                </Box>
+              </Card>)}
+          </Box>
+        </Box>
+      </Container>;
   }
   if (error) {
-    return <div className="container mx-auto p-6">
-        <Card className="border-destructive">
-          <CardContent className="p-6 text-center">
-            <p className="text-destructive">Something went wrong while loading resources. Please try again later.</p>
+    return <Container maxWidth="lg" sx={{ p: 3 }}>
+        <Card style={{ borderColor: 'var(--destructive)' }}>
+          <CardContent sx={{ p: 3, textAlign: 'center' }}>
+            <Typography color="error">Something went wrong while loading resources. Please try again later.</Typography>
           </CardContent>
         </Card>
-      </div>;
+      </Container>;
   }
 
   // Render Tag Detail View
   if (viewMode === "tag-detail" && selectedTag) {
-    return <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={handleBack} className="shrink-0">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded-full shrink-0" style={{
-            backgroundColor: selectedTag.color
-          }} />
-            <h1 className="text-3xl font-bold">#{selectedTag.name}</h1>
-            <Badge variant="secondary">
-              {tagUsageCounts[selectedTag.name] || 0} uses
-            </Badge>
-          </div>
-        </div>
+    return <Container maxWidth="lg" sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button variant="outline" onClick={handleBack} style={{ flexShrink: 0 }}>
+              <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+              Back
+            </Button>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0 }} style={{ backgroundColor: selectedTag.color }} />
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>#{selectedTag.name}</Typography>
+              <Badge variant="secondary">
+                {tagUsageCounts[selectedTag.name] || 0} uses
+              </Badge>
+            </Box>
+          </Box>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {selectedTag.image_url && <Card className="overflow-hidden">
-                <div className="aspect-video">
-                  <img src={selectedTag.image_url} alt={`${selectedTag.name} themed image`} className="w-full h-full object-cover" />
-                </div>
-              </Card>}
-            
-            {selectedTag.description && <Card>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {selectedTag.image_url && <Card style={{ overflow: 'hidden' }}>
+                  <Box sx={{ aspectRatio: '16/9' }}>
+                    <Box
+                      component="img"
+                      src={selectedTag.image_url}
+                      alt={`${selectedTag.name} themed image`}
+                      sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </Box>
+                </Card>}
+
+              {selectedTag.description && <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Eye style={{ width: 20, height: 20 }} />
+                        Description
+                      </Box>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Typography color="text.secondary">{selectedTag.description}</Typography>
+                  </CardContent>
+                </Card>}
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Eye className="h-5 w-5" />
-                    Description
+                  <CardTitle>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <BarChart3 style={{ width: 20, height: 20 }} />
+                      Usage Statistics
+                    </Box>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">{selectedTag.description}</p>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography variant="body2">Total Usage</Typography>
+                      <Badge variant="outline">{tagUsageCounts[selectedTag.name] || 0}</Badge>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography variant="body2">Category</Typography>
+                      <Badge variant="secondary">{selectedTag.category || 'Uncategorized'}</Badge>
+                    </Box>
+                    {selectedTag.created_at && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography variant="body2">Created</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(selectedTag.created_at).toLocaleDateString()}
+                        </Typography>
+                      </Box>}
+                  </Box>
                 </CardContent>
-              </Card>}
-          </div>
-
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Usage Statistics
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Total Usage</span>
-                  <Badge variant="outline">{tagUsageCounts[selectedTag.name] || 0}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Category</span>
-                  <Badge variant="secondary">{selectedTag.category || 'Uncategorized'}</Badge>
-                </div>
-                {selectedTag.created_at && <div className="flex items-center justify-between">
-                    <span className="text-sm">Created</span>
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(selectedTag.created_at).toLocaleDateString()}
-                    </span>
-                  </div>}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>;
+              </Card>
+            </Box>
+          </Box>
+        </Box>
+      </Container>;
   }
-  return <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+  return <Box sx={{ minHeight: '100vh' }}>
+      <Container maxWidth="xl" sx={{ px: 2, py: 4 }}>
         {/* Header */}
-        <Card className="mb-8">
-          <CardContent className="p-8 text-center">
-            <h1 className="text-5xl font-bold text-foreground mb-4 animate-fade-in">
+        <Card sx={{ mb: 4 }}>
+          <CardContent sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="h3" sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }} className="animate-fade-in">
               Resources
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: '42rem', mx: 'auto' }}>
               Discover and explore LGBTQ+ community tags, resources, and professions
-            </p>
-            <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
               <Badge variant="outline">
                 {allTags.length} Total Tags
               </Badge>
               <Badge variant="outline">
                 {categories.length} Categories
               </Badge>
-            </div>
+            </Box>
           </CardContent>
         </Card>
 
         {/* Content */}
-        <div className="w-full">
-            <div className="space-y-6 animate-fade-in">
+        <Box sx={{ width: '100%' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} className="animate-fade-in">
             {/* Categories Overview */}
             {viewMode === "overview" && (
-              <Card className="mb-8">
+              <Card sx={{ mb: 4 }}>
                 <CardHeader>
-                  <CardTitle className="text-2xl flex items-center gap-2">
-                    <Grid3X3 className="h-6 w-6 text-primary" />
-                    Browse by Category
+                  <CardTitle>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Grid3X3 style={{ width: 24, height: 24 }} sx={{ color: 'primary.main' }} />
+                      <Typography variant="h5" component="span">Browse by Category</Typography>
+                    </Box>
                   </CardTitle>
-                  <p className="text-muted-foreground text-base">
+                  <Typography color="text.secondary">
                     Explore tags organized by different categories
-                  </p>
+                  </Typography>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
                     {categories.map((category, index) => {
                       const Icon = getCategoryIcon(category);
                       const categoryTags = allTags.filter(tag => tag.category === category);
                       return (
-                        <Card 
-                          key={category} 
-                          className="group cursor-pointer transition-all duration-200 hover:bg-accent/10"
+                        <Card
+                          key={category}
+                          sx={{ cursor: 'pointer', transition: 'all 0.2s', '&:hover': { bgcolor: 'rgba(var(--accent-rgb), 0.1)' } }}
                           onClick={() => {
                             setFilterCategory(category);
                             setViewMode("category");
                             setSelectedCategory(category);
                           }}
                         >
-                          <CardContent className="p-6 text-center">
-                            <div className="mb-4">
-                              <Icon className="h-12 w-12 mx-auto text-primary" />
-                            </div>
-                            <h3 className="font-semibold text-base mb-2 capitalize group-hover:text-primary transition-colors duration-200">
+                          <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                            <Box sx={{ mb: 2 }}>
+                              <Icon style={{ width: 48, height: 48, margin: '0 auto' }} sx={{ color: 'primary.main' }} />
+                            </Box>
+                            <Typography sx={{ fontWeight: 600, fontSize: '1rem', mb: 1, textTransform: 'capitalize', transition: 'color 0.2s' }}>
                               {category}
-                            </h3>
-                            <Badge variant="secondary" className="text-sm px-3 py-1">
+                            </Typography>
+                            <Badge variant="secondary">
                               {categoryTags.length} tags
                             </Badge>
                           </CardContent>
                         </Card>
                       );
                     })}
-                    
+
                     {/* Professions Category */}
-                    <Card 
-                      className="group cursor-pointer transition-all duration-200 hover:bg-accent/10"
+                    <Card
+                      sx={{ cursor: 'pointer', transition: 'all 0.2s', '&:hover': { bgcolor: 'rgba(var(--accent-rgb), 0.1)' } }}
                       onClick={() => {
                         setViewMode("professions");
                       }}
                     >
-                      <CardContent className="p-6 text-center">
-                        <div className="mb-4">
-                          <Briefcase className="h-12 w-12 mx-auto text-primary" />
-                        </div>
-                        <h3 className="font-semibold text-base mb-2 capitalize group-hover:text-primary transition-colors duration-200">
+                      <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                        <Box sx={{ mb: 2 }}>
+                          <Briefcase style={{ width: 48, height: 48, margin: '0 auto' }} sx={{ color: 'primary.main' }} />
+                        </Box>
+                        <Typography sx={{ fontWeight: 600, fontSize: '1rem', mb: 1, textTransform: 'capitalize', transition: 'color 0.2s' }}>
                           Professions
-                        </h3>
-                        <Badge variant="secondary" className="text-sm px-3 py-1">
+                        </Typography>
+                        <Badge variant="secondary">
                           {professions.length} professions
                         </Badge>
                       </CardContent>
                     </Card>
-                  </div>
+                  </Box>
                 </CardContent>
               </Card>
             )}
 
             {/* Category View with Subcategories */}
             {viewMode === "category" && selectedCategory && (
-              <Card className="mb-8">
+              <Card sx={{ mb: 4 }}>
                 <CardHeader>
-                  <div className="flex items-center gap-4">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button variant="outline" onClick={handleBack}>
-                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
                       Back
                     </Button>
-                    <div>
-                      <CardTitle className="text-2xl flex items-center gap-2 capitalize">
-                        {(() => {
-                          const IconComponent = getCategoryIcon(selectedCategory);
-                          return <IconComponent className="h-6 w-6 text-primary" />;
-                        })()}
-                        {selectedCategory} Subcategories
+                    <Box>
+                      <CardTitle>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, textTransform: 'capitalize' }}>
+                          {(() => {
+                            const IconComponent = getCategoryIcon(selectedCategory);
+                            return <IconComponent style={{ width: 24, height: 24 }} sx={{ color: 'primary.main' }} />;
+                          })()}
+                          <Typography variant="h5" component="span">{selectedCategory} Subcategories</Typography>
+                        </Box>
                       </CardTitle>
-                      <p className="text-muted-foreground text-base">
+                      <Typography color="text.secondary">
                         Browse subcategories within {selectedCategory}
-                      </p>
-                    </div>
-                  </div>
+                      </Typography>
+                    </Box>
+                  </Box>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
                     {Object.entries(subcategories[selectedCategory] || {}).map(([subCategory, tagNames]) => (
-                      <Card 
+                      <Card
                         key={subCategory}
-                        className="group cursor-pointer transition-all duration-200 hover:bg-accent/10 hover:shadow-lg"
+                        sx={{ cursor: 'pointer', transition: 'all 0.2s', '&:hover': { bgcolor: 'rgba(var(--accent-rgb), 0.1)', boxShadow: 6 } }}
                         onClick={() => {
                           setSelectedSubcategory(subCategory);
                           setViewMode("subcategory");
                         }}
                       >
-                        <CardContent className="p-6">
-                          <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors duration-200">
+                        <CardContent sx={{ p: 3 }}>
+                          <Typography sx={{ fontWeight: 600, fontSize: '1.125rem', mb: 1, transition: 'color 0.2s' }}>
                             {subCategory}
-                          </h3>
-                          <div className="space-y-2">
-                            <Badge variant="secondary" className="text-sm px-3 py-1">
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <Badge variant="secondary">
                               {tagNames.length} tags
                             </Badge>
-                            <p className="text-xs text-muted-foreground line-clamp-2">
+                            <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                               {tagNames.slice(0, 3).join(", ")}
                               {tagNames.length > 3 && ` and ${tagNames.length - 3} more...`}
-                            </p>
-                          </div>
+                            </Typography>
+                          </Box>
                         </CardContent>
                       </Card>
                     ))}
-                  </div>
+                  </Box>
                 </CardContent>
               </Card>
             )}
 
             {/* Subcategory View */}
             {viewMode === "subcategory" && selectedCategory && selectedSubcategory && (
-              <Card className="mb-8">
+              <Card sx={{ mb: 4 }}>
                 <CardHeader>
-                  <div className="flex items-center gap-4">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button variant="outline" onClick={handleBack}>
-                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
                       Back
                     </Button>
-                    <div>
-                      <CardTitle className="text-2xl flex items-center gap-2">
-                        <Tag className="h-6 w-6 text-primary" />
-                        {selectedSubcategory}
+                    <Box>
+                      <CardTitle>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Tag style={{ width: 24, height: 24 }} sx={{ color: 'primary.main' }} />
+                          <Typography variant="h5" component="span">{selectedSubcategory}</Typography>
+                        </Box>
                       </CardTitle>
-                      <p className="text-muted-foreground text-base">
-                        Tags in {selectedCategory} → {selectedSubcategory}
-                      </p>
-                    </div>
-                  </div>
+                      <Typography color="text.secondary">
+                        Tags in {selectedCategory} &rarr; {selectedSubcategory}
+                      </Typography>
+                    </Box>
+                  </Box>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
                     {(subcategories[selectedCategory]?.[selectedSubcategory] || []).map((tagName) => {
                       const tag = allTags.find(t => t.name === tagName);
                       if (!tag) return null;
-                      
+
                       return (
-                        <Card 
-                          key={tag.id} 
-                          className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 border-2 hover:border-primary/20 overflow-hidden bg-gradient-to-br from-card to-muted/10"
+                        <Card
+                          key={tag.id}
+                          sx={{ cursor: 'pointer', transition: 'all 0.3s', '&:hover': { boxShadow: 6, transform: 'scale(1.05)' } }}
+                          style={{ overflow: 'hidden' }}
                           onClick={() => handleTagClick(tag)}
                         >
-                          <div className="aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50 relative">
+                          <Box sx={{ aspectRatio: '4/3', width: '100%', overflow: 'hidden', position: 'relative' }}>
                             {tag.image_url ? (
-                              <img 
-                                src={tag.image_url} 
-                                alt={`${tag.name} themed image`} 
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                                onError={e => {
+                              <Box
+                                component="img"
+                                src={tag.image_url}
+                                alt={`${tag.name} themed image`}
+                                sx={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.2s' }}
+                                onError={(e: any) => {
                                   e.currentTarget.src = '/placeholder.svg';
-                                }} 
+                                }}
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted via-muted/80 to-muted/60">
-                                <Tag className="h-12 w-12 text-muted-foreground/60 transition-transform duration-300 group-hover:scale-125" />
-                              </div>
+                              <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover' }}>
+                                <Tag style={{ width: 48, height: 48, opacity: 0.6 }} sx={{ color: 'text.secondary', transition: 'transform 0.3s' }} />
+                              </Box>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          </div>
-                          <CardContent className="p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div 
-                                className="w-4 h-4 rounded-full shrink-0 ring-2 ring-white/20 transition-transform duration-200 group-hover:scale-125" 
+                            <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.2), transparent)', opacity: 0, transition: 'opacity 0.2s' }} />
+                          </Box>
+                          <CardContent sx={{ p: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                              <Box
+                                sx={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0, transition: 'transform 0.2s' }}
                                 style={{ backgroundColor: tag.color }}
                               />
-                              <span className="text-sm font-semibold truncate group-hover:text-primary transition-colors duration-200">
+                              <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.2s' }}>
                                 {tag.name}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-muted-foreground font-medium">
+                              </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                                 {selectedSubcategory}
-                              </span>
+                              </Typography>
                               {tagUsageCounts[tag.name] > 0 && (
-                                <Badge variant="outline" className="text-xs px-2 py-1 group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-200">
+                                <Badge variant="outline" sx={{ transition: 'color 0.2s, background-color 0.2s' }}>
                                   {tagUsageCounts[tag.name]} uses
                                 </Badge>
                               )}
-                            </div>
+                            </Box>
                           </CardContent>
                         </Card>
                       );
                     })}
-                  </div>
+                  </Box>
                 </CardContent>
               </Card>
             )}
 
             {/* Professions View */}
             {viewMode === "professions" && (
-              <Card className="mb-8">
+              <Card sx={{ mb: 4 }}>
                 <CardHeader>
-                  <div className="flex items-center gap-4">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button variant="outline" onClick={handleBack}>
-                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
                       Back
                     </Button>
-                    <div>
-                      <CardTitle className="text-2xl flex items-center gap-2">
-                        <Briefcase className="h-6 w-6 text-primary" />
-                        LGBTQ+ Personalities by Profession
+                    <Box>
+                      <CardTitle>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Briefcase style={{ width: 24, height: 24 }} sx={{ color: 'primary.main' }} />
+                          <Typography variant="h5" component="span">LGBTQ+ Personalities by Profession</Typography>
+                        </Box>
                       </CardTitle>
-                      <p className="text-muted-foreground text-base">
+                      <Typography color="text.secondary">
                         Explore different professions represented by LGBTQ+ personalities in our directory
-                      </p>
-                    </div>
-                  </div>
+                      </Typography>
+                    </Box>
+                  </Box>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 2 }}>
                     {professions.map((profession, index) => (
-                      <Button 
-                        key={profession} 
-                        variant={selectedProfession === profession ? "default" : "outline"} 
-                        className="h-auto p-4 text-left justify-start transition-all duration-300 hover:scale-105 hover:shadow-lg group"
+                      <Button
+                        key={profession}
+                        variant={selectedProfession === profession ? "default" : "outline"}
+                        sx={{ height: 'auto', p: 2, textAlign: 'left', justifyContent: 'flex-start', transition: 'all 0.3s', '&:hover': { transform: 'scale(1.05)', boxShadow: 6 } }}
                         style={{ animationDelay: `${index * 30}ms` }}
                         onClick={() => {
                           if (selectedProfession === profession) {
@@ -785,48 +811,48 @@ export default function Ressources() {
                           }
                         }}
                       >
-                        <div className="truncate font-medium group-hover:text-primary transition-colors duration-200">
+                        <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500, transition: 'color 0.2s' }}>
                           {profession}
-                        </div>
+                        </Box>
                       </Button>
                     ))}
-                  </div>
+                  </Box>
                 </CardContent>
               </Card>
             )}
 
             {/* Search and Filters */}
-            <Card className="mb-8">
-              <CardContent className="p-6">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input 
-                      placeholder="Search tags, categories, descriptions..." 
-                      value={searchQuery} 
-                      onChange={e => handleSearch(e.target.value)} 
-                      className="pl-12 h-12 text-base" 
+            <Card sx={{ mb: 4 }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+                  <Box sx={{ position: 'relative', flex: 1 }}>
+                    <Search style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 20, height: 20, color: 'var(--muted-foreground)' }} />
+                    <Input
+                      placeholder="Search tags, categories, descriptions..."
+                      value={searchQuery}
+                      onChange={e => handleSearch(e.target.value)}
+                      sx={{ pl: 6, height: 48, fontSize: '1rem' }}
                     />
-                  </div>
-                  <div className="flex gap-3">
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1.5 }}>
                     <Select value={filterCategory} onValueChange={setFilterCategory}>
-                      <SelectTrigger className="w-48 h-12">
-                        <Filter className="h-4 w-4 mr-2" />
+                      <SelectTrigger sx={{ width: 192, height: 48 }}>
+                        <Filter style={{ width: 16, height: 16, marginRight: 8 }} />
                         <SelectValue placeholder="Filter by category" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
                         {categories.map(category => (
-                          <SelectItem key={category} value={category} className="capitalize">
+                          <SelectItem key={category} value={category} sx={{ textTransform: 'capitalize' }}>
                             {category}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    
+
                     <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                      <SelectTrigger className="w-48 h-12">
-                        <TrendingUp className="h-4 w-4 mr-2" />
+                      <SelectTrigger sx={{ width: 192, height: 48 }}>
+                        <TrendingUp style={{ width: 16, height: 16, marginRight: 8 }} />
                         <SelectValue placeholder="Sort by" />
                       </SelectTrigger>
                       <SelectContent>
@@ -836,173 +862,181 @@ export default function Ressources() {
                         <SelectItem value="recent">Recent</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
-            </div>
-        </div>
+            </Box>
+        </Box>
 
         {/* Admin Controls with enhanced design */}
         {viewMode === "overview" && (
-          <Card className="border-0 shadow-lg bg-gradient-to-r from-card to-muted/20 backdrop-blur-sm">
+          <Card sx={{ border: 0, boxShadow: 3 }}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Brain className="h-6 w-6 text-primary" />
-                Admin Controls
+              <CardTitle>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Brain style={{ width: 24, height: 24 }} sx={{ color: 'primary.main' }} />
+                  <Typography variant="h6" component="span">Admin Controls</Typography>
+                </Box>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-3">
-                <Button 
-                  onClick={storeTagImages} 
-                  disabled={processingImages} 
-                  variant="outline" 
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                <Button
+                  onClick={storeTagImages}
+                  disabled={processingImages}
+                  variant="outline"
                   size="lg"
-                  className="hover-scale transition-all duration-200"
+                  sx={{ transition: 'all 0.2s' }}
                 >
-                  <Upload className="h-4 w-4 mr-2" />
+                  <Upload style={{ width: 16, height: 16, marginRight: 8 }} />
                   {processingImages ? 'Processing...' : 'Reimport All Images'}
                 </Button>
-                <Button 
-                  onClick={categorizeAllTags} 
-                  disabled={categorizingTags} 
-                  variant="outline" 
+                <Button
+                  onClick={categorizeAllTags}
+                  disabled={categorizingTags}
+                  variant="outline"
                   size="lg"
-                  className="hover-scale transition-all duration-200"
+                  sx={{ transition: 'all 0.2s' }}
                 >
-                  <Brain className="h-4 w-4 mr-2" />
+                  <Brain style={{ width: 16, height: 16, marginRight: 8 }} />
                   {categorizingTags ? 'Categorizing...' : 'AI Auto-Categorize'}
                 </Button>
-              </div>
+              </Box>
             </CardContent>
           </Card>
         )}
 
         {/* Enhanced Results Info */}
         {(viewMode === "search" || (viewMode === "overview" && (searchQuery || filterCategory !== "all"))) && (
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-semibold">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
                 {viewMode === "search" ? "Search Results" : filterCategory !== "all" ? `${filterCategory} Tags` : "All Tags"}
-              </h2>
-              <Badge variant="secondary" className="px-3 py-1 text-sm">
+              </Typography>
+              <Badge variant="secondary">
                 {filteredAndSortedTags.length} tags
               </Badge>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {/* Enhanced Tags Display */}
-        <div className={displayMode === "grid" ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6" : "space-y-3"}>
+        <Box sx={displayMode === "grid" ? { display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 3 } : { display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {filteredAndSortedTags.map((tag, index) => (
-            <Card 
-              key={`${tag.id}-${index}`} 
-              className={`group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 border-2 hover:border-primary/20 ${displayMode === "list" ? "flex items-center p-4" : "overflow-hidden bg-gradient-to-br from-card to-muted/10"}`} 
-              style={{ animationDelay: `${index * 20}ms` }}
+            <Card
+              key={`${tag.id}-${index}`}
+              sx={{ cursor: 'pointer', transition: 'all 0.3s', '&:hover': { boxShadow: 10, transform: 'scale(1.05) translateY(-8px)' } }}
+              style={{
+                animationDelay: `${index * 20}ms`,
+                overflow: displayMode === "grid" ? 'hidden' : undefined,
+                ...(displayMode === "list" ? { display: 'flex', alignItems: 'center', padding: 16 } : {})
+              }}
               onClick={() => handleTagClick(tag)}
             >
               {displayMode === "grid" ? (
                 <>
-                  <div className="aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50 relative">
+                  <Box sx={{ aspectRatio: '4/3', width: '100%', overflow: 'hidden', position: 'relative' }}>
                     {tag.image_url ? (
-                      <img 
-                        src={tag.image_url} 
-                        alt={`${tag.name} themed image`} 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                        onError={e => {
+                      <Box
+                        component="img"
+                        src={tag.image_url}
+                        alt={`${tag.name} themed image`}
+                        sx={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.2s' }}
+                        onError={(e: any) => {
                           e.currentTarget.src = '/placeholder.svg';
-                        }} 
+                        }}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted via-muted/80 to-muted/60">
-                        <Tag className="h-12 w-12 text-muted-foreground/60 transition-transform duration-300 group-hover:scale-125" />
-                      </div>
+                      <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover' }}>
+                        <Tag style={{ width: 48, height: 48, opacity: 0.6 }} sx={{ color: 'text.secondary', transition: 'transform 0.3s' }} />
+                      </Box>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div 
-                        className="w-4 h-4 rounded-full shrink-0 ring-2 ring-white/20 transition-transform duration-200 group-hover:scale-125" 
+                    <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.2), transparent)', opacity: 0, transition: 'opacity 0.2s' }} />
+                  </Box>
+                  <CardContent sx={{ p: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                      <Box
+                        sx={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0, transition: 'transform 0.2s' }}
                         style={{ backgroundColor: tag.color }}
                       />
-                      <span className="text-sm font-semibold truncate group-hover:text-primary transition-colors duration-200">
+                      <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.2s' }}>
                         {tag.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground capitalize font-medium">
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
                         {tag.category || 'Uncategorized'}
-                      </span>
+                      </Typography>
                       {tagUsageCounts[tag.name] > 0 && (
-                        <Badge variant="outline" className="text-xs px-2 py-1 group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-200">
+                        <Badge variant="outline" sx={{ transition: 'color 0.2s, background-color 0.2s' }}>
                           {tagUsageCounts[tag.name]} uses
                         </Badge>
                       )}
-                    </div>
+                    </Box>
                   </CardContent>
                 </>
               ) : (
-                <div className="flex items-center gap-4 w-full">
-                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 shrink-0 transition-transform duration-300 group-hover:scale-110">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                  <Box sx={{ width: 80, height: 80, borderRadius: 2, overflow: 'hidden', flexShrink: 0, transition: 'transform 0.2s', bgcolor: 'action.hover' }}>
                     {tag.image_url ? (
-                      <img 
-                        src={tag.image_url} 
-                        alt={`${tag.name} themed image`} 
-                        className="w-full h-full object-cover" 
+                      <Box
+                        component="img"
+                        src={tag.image_url}
+                        alt={`${tag.name} themed image`}
+                        sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Tag className="h-8 w-8 text-muted-foreground/60" />
-                      </div>
+                      <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Tag style={{ width: 32, height: 32, opacity: 0.6, color: 'var(--muted-foreground)' }} />
+                      </Box>
                     )}
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-4 h-4 rounded-full shrink-0 ring-2 ring-white/20" 
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box
+                        sx={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0 }}
                         style={{ backgroundColor: tag.color }}
                       />
-                      <span className="font-semibold truncate text-base group-hover:text-primary transition-colors duration-200">
+                      <Typography sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '1rem', transition: 'color 0.2s' }}>
                         {tag.name}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground truncate">
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {tag.description || tag.category || 'No description'}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-2 shrink-0">
-                    <Badge variant="outline" className="text-xs capitalize">
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flexShrink: 0 }}>
+                    <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
                       {tag.category || 'Uncategorized'}
                     </Badge>
                     {tagUsageCounts[tag.name] > 0 && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary">
                         {tagUsageCounts[tag.name]} uses
                       </Badge>
                     )}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               )}
             </Card>
           ))}
-        </div>
+        </Box>
 
         {filteredAndSortedTags.length === 0 && (
-          <Card className="border-2 border-dashed border-muted-foreground/20">
-            <CardContent className="p-16 text-center">
-              <div className="mx-auto mb-6 w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center">
-                <Tag className="h-10 w-10 text-muted-foreground/50" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-3 text-muted-foreground">No tags found</h3>
-              <p className="text-muted-foreground text-base max-w-md mx-auto">
-                {viewMode === "search" 
-                  ? "Try adjusting your search terms or filters to find what you're looking for" 
+          <Card style={{ borderWidth: 2, borderStyle: 'dashed' }}>
+            <CardContent sx={{ p: 8, textAlign: 'center' }}>
+              <Box sx={{ mx: 'auto', mb: 3, width: 80, height: 80, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Tag style={{ width: 40, height: 40, opacity: 0.5, color: 'var(--muted-foreground)' }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1.5 }} color="text.secondary">No tags found</Typography>
+              <Typography color="text.secondary" sx={{ maxWidth: '28rem', mx: 'auto' }}>
+                {viewMode === "search"
+                  ? "Try adjusting your search terms or filters to find what you're looking for"
                   : "No tags are available yet. Check back later or contact support if this seems incorrect"}
-              </p>
+              </Typography>
             </CardContent>
           </Card>
         )}
-      </div>
-    </div>;
+      </Container>
+    </Box>;
 }

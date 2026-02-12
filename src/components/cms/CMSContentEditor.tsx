@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { ArrowLeft, Save, Eye, Settings, Link, Image } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -75,7 +77,7 @@ export function CMSContentEditor({ contentId, onClose }: CMSContentEditorProps) 
 
   const loadContent = async () => {
     if (!contentId) return;
-    
+
     setLoading(true);
     try {
       const data = await getContentById(contentId);
@@ -129,7 +131,7 @@ export function CMSContentEditor({ contentId, onClose }: CMSContentEditorProps) 
     const currentTitle = watchedValues.title || {};
     const newTitle = { ...currentTitle, [selectedLanguage]: value };
     setValue('title', newTitle);
-    
+
     // Auto-generate slug from English title
     if (selectedLanguage === 'en' && !contentId) {
       setValue('slug', generateSlug(value));
@@ -172,195 +174,205 @@ export function CMSContentEditor({ contentId, onClose }: CMSContentEditorProps) 
   const currentMetaDescription = watchedValues.meta_description?.[selectedLanguage] || '';
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <Box sx={{ maxWidth: 1152, mx: 'auto' }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button variant="ghost" onClick={onClose}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
             Back to Dashboard
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
               {contentId ? 'Edit Content' : 'Create New Content'}
-            </h1>
-            <p className="text-muted-foreground">
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
               {contentId ? 'Update your content' : 'Create and publish new content'}
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="capitalize">
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Badge variant="outline" style={{ textTransform: 'capitalize' }}>
             {watchedValues.workflow_state}
           </Badge>
-          <Badge variant="outline" className="capitalize">
+          <Badge variant="outline" style={{ textTransform: 'capitalize' }}>
             {watchedValues.visibility_level}
           </Badge>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr 1fr' }, gap: 3 }}>
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <Tabs defaultValue="content" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+          <Box sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Tabs defaultValue="content" style={{ width: '100%' }}>
+              <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
                 <TabsTrigger value="content">Content</TabsTrigger>
                 <TabsTrigger value="seo">SEO</TabsTrigger>
                 <TabsTrigger value="media">Media</TabsTrigger>
                 <TabsTrigger value="relationships">Links</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="content" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Basic Information</CardTitle>
-                    <CardDescription>
-                      Core content details and localization
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Language Selector */}
-                    <div>
-                      <Label htmlFor="language">Language</Label>
-                      <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="es">Spanish</SelectItem>
-                          <SelectItem value="fr">French</SelectItem>
-                          <SelectItem value="de">German</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+              <TabsContent value="content">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Basic Information</CardTitle>
+                      <CardDescription>
+                        Core content details and localization
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {/* Language Selector */}
+                        <Box>
+                          <Label htmlFor="language">Language</Label>
+                          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="en">English</SelectItem>
+                              <SelectItem value="es">Spanish</SelectItem>
+                              <SelectItem value="fr">French</SelectItem>
+                              <SelectItem value="de">German</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </Box>
 
-                    {/* Title */}
-                    <div>
-                      <Label htmlFor="title">
-                        Title ({selectedLanguage.toUpperCase()})
-                      </Label>
-                      <Input
-                        id="title"
-                        value={currentTitle}
-                        onChange={(e) => handleTitleChange(e.target.value)}
-                        placeholder="Enter content title"
-                      />
-                    </div>
+                        {/* Title */}
+                        <Box>
+                          <Label htmlFor="title">
+                            Title ({selectedLanguage.toUpperCase()})
+                          </Label>
+                          <Input
+                            id="title"
+                            value={currentTitle}
+                            onChange={(e) => handleTitleChange(e.target.value)}
+                            placeholder="Enter content title"
+                          />
+                        </Box>
 
-                    {/* Description */}
-                    <div>
-                      <Label htmlFor="description">
-                        Description ({selectedLanguage.toUpperCase()})
-                      </Label>
-                      <Textarea
-                        id="description"
-                        value={currentDescription}
-                        onChange={(e) => handleDescriptionChange(e.target.value)}
-                        placeholder="Enter content description"
-                        rows={4}
-                      />
-                    </div>
+                        {/* Description */}
+                        <Box>
+                          <Label htmlFor="description">
+                            Description ({selectedLanguage.toUpperCase()})
+                          </Label>
+                          <Textarea
+                            id="description"
+                            value={currentDescription}
+                            onChange={(e) => handleDescriptionChange(e.target.value)}
+                            placeholder="Enter content description"
+                            rows={4}
+                          />
+                        </Box>
 
-                    {/* Content Data (JSON Editor would go here in production) */}
-                    <div>
-                      <Label htmlFor="content_data">Content Data (JSON)</Label>
-                      <Textarea
-                        {...register('content_data')}
-                        placeholder='{"key": "value"}'
-                        rows={6}
-                        onChange={(e) => {
-                          try {
-                            const parsed = JSON.parse(e.target.value || '{}');
-                            setValue('content_data', parsed);
-                          } catch {
-                            // Invalid JSON, let user continue typing
-                          }
-                        }}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+                        {/* Content Data */}
+                        <Box>
+                          <Label htmlFor="content_data">Content Data (JSON)</Label>
+                          <Textarea
+                            {...register('content_data')}
+                            placeholder='{"key": "value"}'
+                            rows={6}
+                            onChange={(e) => {
+                              try {
+                                const parsed = JSON.parse(e.target.value || '{}');
+                                setValue('content_data', parsed);
+                              } catch {
+                                // Invalid JSON, let user continue typing
+                              }
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Box>
               </TabsContent>
 
-              <TabsContent value="seo" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>SEO & Metadata</CardTitle>
-                    <CardDescription>
-                      Optimize your content for search engines
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label htmlFor="meta_title">
-                        Meta Title ({selectedLanguage.toUpperCase()})
-                      </Label>
-                      <Input
-                        id="meta_title"
-                        value={currentMetaTitle}
-                        onChange={(e) => handleMetaTitleChange(e.target.value)}
-                        placeholder="SEO optimized title"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {currentMetaTitle.length}/60 characters
-                      </p>
-                    </div>
+              <TabsContent value="seo">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>SEO & Metadata</CardTitle>
+                      <CardDescription>
+                        Optimize your content for search engines
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box>
+                          <Label htmlFor="meta_title">
+                            Meta Title ({selectedLanguage.toUpperCase()})
+                          </Label>
+                          <Input
+                            id="meta_title"
+                            value={currentMetaTitle}
+                            onChange={(e) => handleMetaTitleChange(e.target.value)}
+                            placeholder="SEO optimized title"
+                          />
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                            {currentMetaTitle.length}/60 characters
+                          </Typography>
+                        </Box>
 
-                    <div>
-                      <Label htmlFor="meta_description">
-                        Meta Description ({selectedLanguage.toUpperCase()})
-                      </Label>
-                      <Textarea
-                        id="meta_description"
-                        value={currentMetaDescription}
-                        onChange={(e) => handleMetaDescriptionChange(e.target.value)}
-                        placeholder="SEO optimized description"
-                        rows={3}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {currentMetaDescription.length}/160 characters
-                      </p>
-                    </div>
+                        <Box>
+                          <Label htmlFor="meta_description">
+                            Meta Description ({selectedLanguage.toUpperCase()})
+                          </Label>
+                          <Textarea
+                            id="meta_description"
+                            value={currentMetaDescription}
+                            onChange={(e) => handleMetaDescriptionChange(e.target.value)}
+                            placeholder="SEO optimized description"
+                            rows={3}
+                          />
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                            {currentMetaDescription.length}/160 characters
+                          </Typography>
+                        </Box>
 
-                    <div>
-                      <Label htmlFor="tags">Tags</Label>
-                      <div className="flex gap-2 mb-2">
-                        <Input
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          placeholder="Add tag..."
-                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                        />
-                        <Button type="button" onClick={addTag}>Add</Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {(watchedValues.tags || []).map((tag) => (
-                          <Badge key={tag} variant="secondary" className="cursor-pointer" onClick={() => removeTag(tag)}>
-                            {tag} ×
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                        <Box>
+                          <Label htmlFor="tags">Tags</Label>
+                          <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                            <Input
+                              value={tagInput}
+                              onChange={(e) => setTagInput(e.target.value)}
+                              placeholder="Add tag..."
+                              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                            />
+                            <Button type="button" onClick={addTag}>Add</Button>
+                          </Box>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {(watchedValues.tags || []).map((tag) => (
+                              <Badge key={tag} variant="secondary" style={{ cursor: 'pointer' }} onClick={() => removeTag(tag)}>
+                                {tag} x
+                              </Badge>
+                            ))}
+                          </Box>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Box>
               </TabsContent>
 
               <TabsContent value="media">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Image className="h-5 w-5" />
-                      Media Management
+                    <CardTitle>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Image style={{ height: 20, width: 20 }} />
+                        Media Management
+                      </Box>
                     </CardTitle>
                     <CardDescription>
                       Manage images and files for this content
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground">Media management is not yet available.</p>
+                    <Typography variant="body2" color="text.secondary">Media management is not yet available.</Typography>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -368,126 +380,134 @@ export function CMSContentEditor({ contentId, onClose }: CMSContentEditorProps) 
               <TabsContent value="relationships">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Link className="h-5 w-5" />
-                      Content Relationships
+                    <CardTitle>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Link style={{ height: 20, width: 20 }} />
+                        Content Relationships
+                      </Box>
                     </CardTitle>
                     <CardDescription>
                       Link this content to other content items
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground">Relationship management is not yet available.</p>
+                    <Typography variant="body2" color="text.secondary">Relationship management is not yet available.</Typography>
                   </CardContent>
                 </Card>
               </TabsContent>
             </Tabs>
-          </div>
+          </Box>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Publishing Options */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Publishing
+                <CardTitle>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Settings style={{ height: 20, width: 20 }} />
+                    Publishing
+                  </Box>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="content_type">Content Type</Label>
-                  <Select 
-                    value={watchedValues.content_type} 
-                    onValueChange={(value) => setValue('content_type', value as Database['public']['Enums']['cms_content_type'])}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="event">Event</SelectItem>
-                      <SelectItem value="space">Space</SelectItem>
-                      <SelectItem value="place">Place</SelectItem>
-                      <SelectItem value="market">Market</SelectItem>
-                      <SelectItem value="resource">Resource</SelectItem>
-                      <SelectItem value="community">Community</SelectItem>
-                      <SelectItem value="news">News</SelectItem>
-                      <SelectItem value="page">Page</SelectItem>
-                      <SelectItem value="personality">Personality</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <CardContent>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box>
+                    <Label htmlFor="content_type">Content Type</Label>
+                    <Select
+                      value={watchedValues.content_type}
+                      onValueChange={(value) => setValue('content_type', value as Database['public']['Enums']['cms_content_type'])}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="event">Event</SelectItem>
+                        <SelectItem value="space">Space</SelectItem>
+                        <SelectItem value="place">Place</SelectItem>
+                        <SelectItem value="market">Market</SelectItem>
+                        <SelectItem value="resource">Resource</SelectItem>
+                        <SelectItem value="community">Community</SelectItem>
+                        <SelectItem value="news">News</SelectItem>
+                        <SelectItem value="page">Page</SelectItem>
+                        <SelectItem value="personality">Personality</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Box>
 
-                <div>
-                  <Label htmlFor="slug">URL Slug</Label>
-                  <Input
-                    {...register('slug', { required: 'Slug is required' })}
-                    placeholder="url-friendly-slug"
-                  />
-                  {errors.slug && (
-                    <p className="text-xs text-destructive mt-1">{errors.slug.message}</p>
-                  )}
-                </div>
+                  <Box>
+                    <Label htmlFor="slug">URL Slug</Label>
+                    <Input
+                      {...register('slug', { required: 'Slug is required' })}
+                      placeholder="url-friendly-slug"
+                    />
+                    {errors.slug && (
+                      <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                        {errors.slug.message}
+                      </Typography>
+                    )}
+                  </Box>
 
-                <div>
-                  <Label htmlFor="workflow_state">Status</Label>
-                  <Select 
-                    value={watchedValues.workflow_state} 
-                    onValueChange={(value) => setValue('workflow_state', value as Database['public']['Enums']['cms_workflow_state'])}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="review">Review</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <Box>
+                    <Label htmlFor="workflow_state">Status</Label>
+                    <Select
+                      value={watchedValues.workflow_state}
+                      onValueChange={(value) => setValue('workflow_state', value as Database['public']['Enums']['cms_workflow_state'])}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="review">Review</SelectItem>
+                        <SelectItem value="published">Published</SelectItem>
+                        <SelectItem value="archived">Archived</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Box>
 
-                <div>
-                  <Label htmlFor="visibility_level">Visibility</Label>
-                  <Select 
-                    value={watchedValues.visibility_level} 
-                    onValueChange={(value) => setValue('visibility_level', value as Database['public']['Enums']['cms_visibility_level'])}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="private">Private</SelectItem>
-                      <SelectItem value="restricted">Restricted</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <Box>
+                    <Label htmlFor="visibility_level">Visibility</Label>
+                    <Select
+                      value={watchedValues.visibility_level}
+                      onValueChange={(value) => setValue('visibility_level', value as Database['public']['Enums']['cms_visibility_level'])}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="public">Public</SelectItem>
+                        <SelectItem value="private">Private</SelectItem>
+                        <SelectItem value="restricted">Restricted</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Box>
 
-                <div>
-                  <Label htmlFor="featured_weight">Featured Weight</Label>
-                  <Input
-                    type="number"
-                    {...register('featured_weight', { valueAsNumber: true })}
-                    placeholder="0"
-                    min="0"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Higher numbers appear first in featured content
-                  </p>
-                </div>
+                  <Box>
+                    <Label htmlFor="featured_weight">Featured Weight</Label>
+                    <Input
+                      type="number"
+                      {...register('featured_weight', { valueAsNumber: true })}
+                      placeholder="0"
+                      min="0"
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                      Higher numbers appear first in featured content
+                    </Typography>
+                  </Box>
 
-                <Separator />
+                  <Separator />
 
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={loading} className="flex-1">
-                    <Save className="h-4 w-4 mr-2" />
-                    {loading ? 'Saving...' : 'Save'}
-                  </Button>
-                  <Button type="button" variant="outline">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </div>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button type="submit" disabled={loading} style={{ flex: 1 }}>
+                      <Save style={{ height: 16, width: 16, marginRight: 8 }} />
+                      {loading ? 'Saving...' : 'Save'}
+                    </Button>
+                    <Button type="button" variant="outline">
+                      <Eye style={{ height: 16, width: 16 }} />
+                    </Button>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
 
@@ -497,30 +517,30 @@ export function CMSContentEditor({ contentId, onClose }: CMSContentEditorProps) 
                 <CardTitle>Preview</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2">
                     <strong>Title:</strong> {currentTitle || 'Untitled'}
-                  </div>
-                  <div>
+                  </Typography>
+                  <Typography variant="body2">
                     <strong>Type:</strong> {watchedValues.content_type?.replace('_', ' ')}
-                  </div>
-                  <div>
+                  </Typography>
+                  <Typography variant="body2">
                     <strong>Status:</strong> {watchedValues.workflow_state}
-                  </div>
-                  <div>
+                  </Typography>
+                  <Typography variant="body2">
                     <strong>Visibility:</strong> {watchedValues.visibility_level}
-                  </div>
+                  </Typography>
                   {watchedValues.tags && watchedValues.tags.length > 0 && (
-                    <div>
+                    <Typography variant="body2">
                       <strong>Tags:</strong> {watchedValues.tags.join(', ')}
-                    </div>
+                    </Typography>
                   )}
-                </div>
+                </Box>
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </form>
-    </div>
+    </Box>
   );
 }

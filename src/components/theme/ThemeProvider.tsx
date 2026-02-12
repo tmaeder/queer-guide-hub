@@ -1,4 +1,7 @@
 import * as React from "react";
+import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import { createAppTheme } from "@/theme/muiTheme";
 
 type Theme = "dark" | "light" | "system";
 
@@ -26,41 +29,55 @@ export function ThemeProvider({
   storageKey = "ui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = React.useState<Theme>(
+  const [theme, setThemeState] = React.useState<Theme>(
     () => (typeof window !== 'undefined' && localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
 
+  const [systemMode, setSystemMode] = React.useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    return "light";
+  });
+
+  // Listen for system theme changes
+  React.useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e: MediaQueryListEvent) => {
+      setSystemMode(e.matches ? "dark" : "light");
+    };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  // Resolve "system" to actual light/dark
+  const resolvedMode = theme === "system" ? systemMode : theme;
+
+  // Keep HTML class in sync for CSS custom properties (coexistence with Tailwind during migration)
   React.useEffect(() => {
     const root = window.document.documentElement;
-
     root.classList.remove("light", "dark");
+    root.classList.add(resolvedMode);
+  }, [resolvedMode]);
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
+  const muiTheme = React.useMemo(() => createAppTheme(resolvedMode), [resolvedMode]);
 
-      root.classList.add(systemTheme);
-      return;
-    }
-
-    root.classList.add(theme);
-  }, [theme]);
-
-  const value = {
+  const value = React.useMemo(() => ({
     theme,
-    setTheme: (theme: Theme) => {
+    setTheme: (newTheme: Theme) => {
       if (typeof window !== 'undefined') {
-        localStorage.setItem(storageKey, theme);
+        localStorage.setItem(storageKey, newTheme);
       }
-      setTheme(theme);
+      setThemeState(newTheme);
     },
-  };
+  }), [theme, storageKey]);
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
-      {children}
+      <MuiThemeProvider theme={muiTheme}>
+        <CssBaseline />
+        {children}
+      </MuiThemeProvider>
     </ThemeProviderContext.Provider>
   );
 }

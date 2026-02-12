@@ -405,26 +405,26 @@ export const ImportJobCreator = () => {
   const typeConfig = importType ? IMPORT_TYPES[importType as keyof typeof IMPORT_TYPES] : null;
 
   return (
-    <div className="space-y-6">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Upload style={{ height: 20, width: 20 }} />
             Create New Import Job
           </CardTitle>
           <CardDescription>
             Configure and start a new data import with advanced validation and duplicate handling
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Import Type Selection */}
-          <div className="space-y-3">
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Label>Import Type</Label>
             <Select value={importType} onValueChange={setImportType}>
               <SelectTrigger>
                 <SelectValue placeholder="Select what type of data you want to import" />
               </SelectTrigger>
-              <SelectContent className="max-h-96">
+              <SelectContent sx={{ maxHeight: 384 }}>
                 {Object.entries(IMPORT_TYPES).map(([key, config]) => {
                   const iconMap: Record<string, any> = {
                     MapPin, Calendar, Users, Building, Globe, Shield, Tag, ShoppingCart, BookOpen, Newspaper
@@ -433,11 +433,11 @@ export const ImportJobCreator = () => {
                   
                   return (
                     <SelectItem key={key} value={key}>
-                      <div className="flex items-center gap-3 py-1">
-                        {IconComponent && <IconComponent className="h-4 w-4 text-muted-foreground" />}
+                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.5 }}>
+                        {IconComponent && <IconComponent style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />}
                         <div>
-                          <div className="font-medium">{config.label}</div>
-                          <div className="text-sm text-muted-foreground">{config.description}</div>
+                          <div sx={{ fontWeight: 500 }}>{config.label}</div>
+                          <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{config.description}</div>
                         </div>
                       </div>
                     </SelectItem>
@@ -448,9 +448,9 @@ export const ImportJobCreator = () => {
             
             {typeConfig && (
               <Alert>
-                <Info className="h-4 w-4" />
+                <Info style={{ height: 16, width: 16 }} />
                 <AlertDescription>
-                  <div className="space-y-2">
+                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <div>
                       <strong>Required fields:</strong> {typeConfig.requiredFields.join(', ')}
                     </div>
@@ -465,26 +465,26 @@ export const ImportJobCreator = () => {
 
           {/* Source Type */}
           {!isVenueApiImport && (
-            <div className="space-y-3">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Label>Data Source</Label>
               <Tabs value={sourceType} onValueChange={(value) => setSourceType(value as any)}>
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="csv" className="gap-2">
-                    <FileText className="h-4 w-4" />
+                <TabsList sx={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                  <TabsTrigger value="csv" sx={{ gap: 1 }}>
+                    <FileText style={{ height: 16, width: 16 }} />
                     CSV File
                   </TabsTrigger>
-                <TabsTrigger value="api" className="gap-2">
-                  <Database className="h-4 w-4" />
+                <TabsTrigger value="api" sx={{ gap: 1 }}>
+                  <Database style={{ height: 16, width: 16 }} />
                   API Import
                 </TabsTrigger>
-                <TabsTrigger value="web_scraping" className="gap-2">
-                  <Globe className="h-4 w-4" />
+                <TabsTrigger value="web_scraping" sx={{ gap: 1 }}>
+                  <Globe style={{ height: 16, width: 16 }} />
                   Web Scraping
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="csv" className="space-y-4">
-                <div className="space-y-2">
+              <TabsContent value="csv" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="csv-file">CSV File (Max 50MB)</Label>
                   <Input
                     id="csv-file"
@@ -495,7 +495,7 @@ export const ImportJobCreator = () => {
                     disabled={loading}
                   />
                   {fileName && (
-                    <div className="text-sm text-muted-foreground">
+                    <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Selected file: {fileName}
                     </div>
                   )}
@@ -504,8 +504,8 @@ export const ImportJobCreator = () => {
                 {csvPreview && (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Eye className="h-4 w-4" />
+                      <CardTitle sx={{ fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Eye style={{ height: 16, width: 16 }} />
                         Data Preview
                       </CardTitle>
                       <CardDescription>
@@ -513,12 +513,12 @@ export const ImportJobCreator = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="w-full border-collapse border border-border">
+                      <div sx={{ overflowX: 'auto' }}>
+                        <table sx={{ width: '100%', borderCollapse: 'collapse', border: 1, borderColor: 'divider' }}>
                           <thead>
-                            <tr className="bg-muted">
+                            <tr sx={{ bgcolor: 'action.hover' }}>
                               {csvPreview.headers.map((header, index) => (
-                                <th key={index} className="border border-border p-2 text-left font-medium">
+                                <th key={index} sx={{ border: 1, borderColor: 'divider', p: 1, textAlign: 'left', fontWeight: 500 }}>
                                   {header}
                                 </th>
                               ))}
@@ -526,9 +526,9 @@ export const ImportJobCreator = () => {
                           </thead>
                           <tbody>
                             {csvPreview.rows.map((row, index) => (
-                              <tr key={index} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/50'}>
+                              <tr key={index} style={{ backgroundColor: index % 2 === 0 ? 'var(--background)' : 'rgba(var(--muted-rgb), 0.5)' }}>
                                 {csvPreview.headers.map((header, colIndex) => (
-                                  <td key={colIndex} className="border border-border p-2 text-sm">
+                                  <td key={colIndex} sx={{ border: 1, borderColor: 'divider', p: 1, fontSize: '0.875rem' }}>
                                     {row[header] || '-'}
                                   </td>
                                 ))}
@@ -542,8 +542,8 @@ export const ImportJobCreator = () => {
                 )}
               </TabsContent>
 
-              <TabsContent value="api" className="space-y-4">
-                <div className="space-y-2">
+              <TabsContent value="api" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="api-endpoint">API Endpoint URL</Label>
                   <Input
                     id="api-endpoint"
@@ -555,16 +555,16 @@ export const ImportJobCreator = () => {
                 </div>
                 
                 <Alert>
-                  <Info className="h-4 w-4" />
+                  <Info style={{ height: 16, width: 16 }} />
                   <AlertDescription>
                     API imports will fetch data from the provided endpoint. Ensure the API returns data in a compatible format.
                   </AlertDescription>
                 </Alert>
               </TabsContent>
 
-              <TabsContent value="web_scraping" className="space-y-4">
+              <TabsContent value="web_scraping" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Alert>
-                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTriangle style={{ height: 16, width: 16 }} />
                   <AlertDescription>
                     Web scraping functionality is currently in development. Please use CSV or API import for now.
                   </AlertDescription>
@@ -575,7 +575,7 @@ export const ImportJobCreator = () => {
           )}
 
           {/* Duplicate Handling */}
-          <div className="space-y-3">
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Label>Duplicate Handling Strategy</Label>
             <Select value={duplicateStrategy} onValueChange={(value) => setDuplicateStrategy(value as any)}>
               <SelectTrigger>
@@ -585,8 +585,8 @@ export const ImportJobCreator = () => {
                 {Object.entries(DUPLICATE_STRATEGIES).map(([key, config]) => (
                   <SelectItem key={key} value={key}>
                     <div>
-                      <div className="font-medium">{config.label}</div>
-                      <div className="text-sm text-muted-foreground">{config.description}</div>
+                      <div sx={{ fontWeight: 500 }}>{config.label}</div>
+                      <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{config.description}</div>
                     </div>
                   </SelectItem>
                 ))}
@@ -596,29 +596,29 @@ export const ImportJobCreator = () => {
 
           {/* Unique Key Fields */}
           {csvPreview && (
-            <div className="space-y-3">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Label>Unique Key Fields</Label>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
+              <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                   Select fields that uniquely identify records for duplicate detection
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {uniqueKeyFields.map((field) => (
-                    <Badge key={field} variant="secondary" className="gap-1">
+                    <Badge key={field} variant="secondary" sx={{ gap: 0.5 }}>
                       {field}
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-auto p-0 hover:bg-transparent"
+                        sx={{ height: 'auto', p: 0, '&:hover': { bgcolor: 'transparent' } }}
                         onClick={() => removeUniqueKeyField(field)}
                       >
-                        <X className="h-3 w-3" />
+                        <X style={{ height: 12, width: 12 }} />
                       </Button>
                     </Badge>
                   ))}
                 </div>
                 <Select onValueChange={addUniqueKeyField}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger sx={{ width: 192 }}>
                     <SelectValue placeholder="Add field" />
                   </SelectTrigger>
                   <SelectContent>
@@ -638,24 +638,24 @@ export const ImportJobCreator = () => {
           {/* Advanced Configuration */}
           <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
             <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full gap-2">
-                <Settings className="h-4 w-4" />
+              <Button variant="outline" sx={{ width: '100%', gap: 1 }}>
+                <Settings style={{ height: 16, width: 16 }} />
                 Advanced Configuration
                 {showAdvanced ? ' (Hide)' : ' (Show)'}
               </Button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-4 mt-4">
+            <CollapsibleContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
               {/* Validation Rules */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Validation Rules</CardTitle>
+                  <CardTitle sx={{ fontSize: '1.125rem' }}>Validation Rules</CardTitle>
                   <CardDescription>
                     Configure data validation rules for better import quality
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Alert>
-                    <Info className="h-4 w-4" />
+                    <Info style={{ height: 16, width: 16 }} />
                     <AlertDescription>
                       Validation rules will be applied during the pre-flight check phase
                     </AlertDescription>
@@ -666,14 +666,14 @@ export const ImportJobCreator = () => {
               {/* Data Filters */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Data Filters</CardTitle>
+                  <CardTitle sx={{ fontSize: '1.125rem' }}>Data Filters</CardTitle>
                   <CardDescription>
                     Apply filters to import only specific records
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Alert>
-                    <Info className="h-4 w-4" />
+                    <Info style={{ height: 16, width: 16 }} />
                     <AlertDescription>
                       Filters will be applied before validation and import
                     </AlertDescription>
@@ -686,27 +686,27 @@ export const ImportJobCreator = () => {
           {/* Venue API Import Notice */}
           {isVenueApiImport && (
             <Alert>
-              <Info className="h-4 w-4" />
+              <Info style={{ height: 16, width: 16 }} />
               <AlertDescription>
                 This import type will open a specialized configuration dialog for {getVenueProvider()} venue imports with customizable search terms and locations.
               </AlertDescription>
             </Alert>
           )}
 
-          <div className="flex items-center justify-between pt-6">
+          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 3 }}>
             <Button
               onClick={createImport}
               disabled={loading}
-              className="gap-2"
+              sx={{ gap: 1 }}
             >
               {loading ? (
                 <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <RefreshCw style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
                   Creating Import...
                 </>
               ) : (
                 <>
-                  <CheckCircle className="h-4 w-4" />
+                  <CheckCircle style={{ height: 16, width: 16 }} />
                   {isVenueApiImport ? 'Configure Import' : 'Create Import Job'}
                 </>
               )}

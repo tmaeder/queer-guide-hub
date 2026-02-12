@@ -1,5 +1,8 @@
 import { Heart, Target, Globe, Users, Lightbulb, Shield } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
 
 export default function OurVision() {
   const visionPillars = [
@@ -49,170 +52,170 @@ export default function OurVision() {
   ];
 
   return (
-    <div className="w-full p-6">
+    <Box sx={{ p: 3 }}>
       {/* Hero Section */}
-      <div className="text-center mb-16">
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <Target className="h-12 w-12 text-primary" />
-          <h1 className="text-4xl font-bold gradient-text">Our Vision</h1>
-        </div>
-        <p className="text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-          To create a world where every LGBTQ+ person can live authentically, 
+      <Box sx={{ textAlign: 'center', mb: 8 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 3 }}>
+          <Target style={{ width: 48, height: 48 }} color="var(--mui-palette-primary-main)" />
+          <Typography variant="h3" sx={{ fontWeight: 700, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Our Vision</Typography>
+        </Box>
+        <Typography variant="h5" color="text.secondary" sx={{ maxWidth: '56rem', mx: 'auto', lineHeight: 1.8 }}>
+          To create a world where every LGBTQ+ person can live authentically,
           find their community, and access safe spaces without fear or hesitation.
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
       {/* Vision Statement */}
-      <section className="mb-16">
-        <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-8 mb-8">
-          <h2 className="text-3xl font-bold text-center mb-6">The Future We're Building</h2>
-          <div className="prose prose-lg max-w-none text-center">
-            <p className="text-lg leading-relaxed">
-              We envision a future where geography, culture, and circumstance don't determine 
-              whether an LGBTQ+ person can find acceptance, support, and community. Through 
-              technology, verification, and genuine human connection, we're building bridges 
+      <Box component="section" sx={{ mb: 8 }}>
+        <Box sx={{ background: 'linear-gradient(to right, rgba(var(--mui-palette-primary-mainChannel) / 0.1), rgba(var(--mui-palette-secondary-mainChannel) / 0.1))', borderRadius: 2, p: 4, mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 3 }}>The Future We're Building</Typography>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="subtitle1" sx={{ lineHeight: 1.8 }}>
+              We envision a future where geography, culture, and circumstance don't determine
+              whether an LGBTQ+ person can find acceptance, support, and community. Through
+              technology, verification, and genuine human connection, we're building bridges
               that span continents and connect hearts.
-            </p>
-          </div>
-        </div>
-      </section>
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Vision Pillars */}
-      <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">Our Vision Pillars</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <Box component="section" sx={{ mb: 8 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>Our Vision Pillars</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
           {visionPillars.map((pillar, index) => (
-            <Card key={index} className="h-full">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <pillar.icon className="h-8 w-8 text-primary" />
-                  <h3 className="text-xl font-semibold">{pillar.title}</h3>
-                </div>
-                <p className="text-muted-foreground">{pillar.description}</p>
+            <Card key={index} style={{ height: '100%' }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                  <pillar.icon style={{ width: 32, height: 32 }} color="var(--mui-palette-primary-main)" />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>{pillar.title}</Typography>
+                </Box>
+                <Typography color="text.secondary">{pillar.description}</Typography>
               </CardContent>
             </Card>
           ))}
-        </div>
-      </section>
+        </Box>
+      </Box>
 
       {/* The Problem We're Solving */}
-      <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">The Challenge</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Box component="section" sx={{ mb: 8 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>The Challenge</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
           <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-primary mb-2">73</div>
-              <p className="text-sm text-muted-foreground">Countries where being LGBTQ+ is criminalized</p>
+            <CardContent sx={{ p: 3, textAlign: 'center' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }} color="primary">73</Typography>
+              <Typography variant="body2" color="text.secondary">Countries where being LGBTQ+ is criminalized</Typography>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-primary mb-2">40%</div>
-              <p className="text-sm text-muted-foreground">of LGBTQ+ youth have seriously considered suicide</p>
+            <CardContent sx={{ p: 3, textAlign: 'center' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }} color="primary">40%</Typography>
+              <Typography variant="body2" color="text.secondary">of LGBTQ+ youth have seriously considered suicide</Typography>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-primary mb-2">1 in 4</div>
-              <p className="text-sm text-muted-foreground">LGBTQ+ individuals experience discrimination</p>
+            <CardContent sx={{ p: 3, textAlign: 'center' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }} color="primary">1 in 4</Typography>
+              <Typography variant="body2" color="text.secondary">LGBTQ+ individuals experience discrimination</Typography>
             </CardContent>
           </Card>
-        </div>
-        <p className="text-center text-muted-foreground mt-6 max-w-3xl mx-auto">
-          These statistics drive our mission. Every safe space we verify, every connection we facilitate, 
+        </Box>
+        <Typography color="text.secondary" sx={{ textAlign: 'center', mt: 3, maxWidth: '48rem', mx: 'auto' }}>
+          These statistics drive our mission. Every safe space we verify, every connection we facilitate,
           and every community we strengthen helps change these numbers for the better.
-        </p>
-      </section>
+        </Typography>
+      </Box>
 
       {/* Our Impact Vision */}
-      <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">The Impact We Envision</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Box component="section" sx={{ mb: 8 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>The Impact We Envision</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' }, gap: 3 }}>
           <Card>
-            <CardContent className="p-6 text-center">
-              <Heart className="h-8 w-8 text-primary mx-auto mb-3" />
-              <h4 className="font-semibold mb-2">Reduced Isolation</h4>
-              <p className="text-sm text-muted-foreground">
+            <CardContent sx={{ p: 3, textAlign: 'center' }}>
+              <Heart style={{ width: 32, height: 32, margin: '0 auto 12px' }} color="var(--mui-palette-primary-main)" />
+              <Typography sx={{ fontWeight: 600, mb: 1 }}>Reduced Isolation</Typography>
+              <Typography variant="body2" color="text.secondary">
                 No LGBTQ+ person should feel alone or unable to find their community
-              </p>
+              </Typography>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6 text-center">
-              <Shield className="h-8 w-8 text-primary mx-auto mb-3" />
-              <h4 className="font-semibold mb-2">Increased Safety</h4>
-              <p className="text-sm text-muted-foreground">
+            <CardContent sx={{ p: 3, textAlign: 'center' }}>
+              <Shield style={{ width: 32, height: 32, margin: '0 auto 12px' }} color="var(--mui-palette-primary-main)" />
+              <Typography sx={{ fontWeight: 600, mb: 1 }}>Increased Safety</Typography>
+              <Typography variant="body2" color="text.secondary">
                 Verified safe spaces and real community feedback ensure safer experiences
-              </p>
+              </Typography>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6 text-center">
-              <Users className="h-8 w-8 text-primary mx-auto mb-3" />
-              <h4 className="font-semibold mb-2">Stronger Businesses</h4>
-              <p className="text-sm text-muted-foreground">
+            <CardContent sx={{ p: 3, textAlign: 'center' }}>
+              <Users style={{ width: 32, height: 32, margin: '0 auto 12px' }} color="var(--mui-palette-primary-main)" />
+              <Typography sx={{ fontWeight: 600, mb: 1 }}>Stronger Businesses</Typography>
+              <Typography variant="body2" color="text.secondary">
                 LGBTQ+ owned businesses thrive through increased visibility and support
-              </p>
+              </Typography>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6 text-center">
-              <Globe className="h-8 w-8 text-primary mx-auto mb-3" />
-              <h4 className="font-semibold mb-2">Global Awareness</h4>
-              <p className="text-sm text-muted-foreground">
+            <CardContent sx={{ p: 3, textAlign: 'center' }}>
+              <Globe style={{ width: 32, height: 32, margin: '0 auto 12px' }} color="var(--mui-palette-primary-main)" />
+              <Typography sx={{ fontWeight: 600, mb: 1 }}>Global Awareness</Typography>
+              <Typography variant="body2" color="text.secondary">
                 Raising awareness about LGBTQ+ issues and promoting acceptance worldwide
-              </p>
+              </Typography>
             </CardContent>
           </Card>
-        </div>
-      </section>
+        </Box>
+      </Box>
 
       {/* Roadmap */}
-      <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">Our Journey Forward</h2>
-        <div className="space-y-6">
+      <Box component="section" sx={{ mb: 8 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>Our Journey Forward</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {milestones.map((milestone, index) => (
-            <div key={index} className="flex items-start gap-4">
-              <div className="bg-primary text-primary-foreground rounded-full w-16 h-16 flex items-center justify-center font-bold text-sm flex-shrink-0">
+            <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <Box sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', borderRadius: '50%', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.875rem', flexShrink: 0 }}>
                 {milestone.year}
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold mb-2">{milestone.title}</h3>
-                <p className="text-muted-foreground">{milestone.description}</p>
-              </div>
-            </div>
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>{milestone.title}</Typography>
+                <Typography color="text.secondary">{milestone.description}</Typography>
+              </Box>
+            </Box>
           ))}
-        </div>
-      </section>
+        </Box>
+      </Box>
 
       {/* Call to Action */}
-      <section className="text-center bg-card rounded-lg p-8">
-        <h2 className="text-3xl font-bold mb-4">Join Our Vision</h2>
-        <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-          This vision becomes reality through community participation. Every venue you add, 
+      <Paper component="section" sx={{ textAlign: 'center', p: 4, borderRadius: 2 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>Join Our Vision</Typography>
+        <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3, maxWidth: '42rem', mx: 'auto' }}>
+          This vision becomes reality through community participation. Every venue you add,
           every event you share, and every connection you make brings us closer to our goal.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center' }}>
           <Card>
-            <CardContent className="p-4 text-center">
-              <h4 className="font-semibold mb-1">Be a Pioneer</h4>
-              <p className="text-sm text-muted-foreground">Help us map safe spaces in your area</p>
+            <CardContent sx={{ p: 2, textAlign: 'center' }}>
+              <Typography sx={{ fontWeight: 600, mb: 0.5 }}>Be a Pioneer</Typography>
+              <Typography variant="body2" color="text.secondary">Help us map safe spaces in your area</Typography>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <h4 className="font-semibold mb-1">Spread the Word</h4>
-              <p className="text-sm text-muted-foreground">Share our mission with your networks</p>
+            <CardContent sx={{ p: 2, textAlign: 'center' }}>
+              <Typography sx={{ fontWeight: 600, mb: 0.5 }}>Spread the Word</Typography>
+              <Typography variant="body2" color="text.secondary">Share our mission with your networks</Typography>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <h4 className="font-semibold mb-1">Give Feedback</h4>
-              <p className="text-sm text-muted-foreground">Help us improve and grow together</p>
+            <CardContent sx={{ p: 2, textAlign: 'center' }}>
+              <Typography sx={{ fontWeight: 600, mb: 0.5 }}>Give Feedback</Typography>
+              <Typography variant="body2" color="text.secondary">Help us improve and grow together</Typography>
             </CardContent>
           </Card>
-        </div>
-      </section>
-    </div>
+        </Box>
+      </Paper>
+    </Box>
   );
 }

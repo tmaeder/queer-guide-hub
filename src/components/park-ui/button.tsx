@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { cn } from '@/lib/utils'
+import Box from '@mui/material/Box'
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
@@ -28,14 +28,81 @@ const buttonVariants = cva(
 )
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className'>,
+    VariantProps<typeof buttonVariants> {
+  sx?: any;
+}
+
+const getVariantStyles = (variant: ButtonProps['variant']) => {
+  switch (variant) {
+    case 'outline':
+      return {
+        border: '1px solid #f59e0b',
+        bgcolor: 'transparent',
+        color: '#f59e0b',
+        '&:hover': { bgcolor: '#fef3c7' }
+      };
+    case 'ghost':
+      return {
+        color: '#f59e0b',
+        '&:hover': { bgcolor: '#fef3c7' }
+      };
+    case 'subtle':
+      return {
+        bgcolor: '#fef3c7',
+        color: '#92400e',
+        '&:hover': { bgcolor: '#fde68a' }
+      };
+    default: // solid
+      return {
+        bgcolor: '#f59e0b',
+        color: 'white',
+        boxShadow: 1,
+        '&:hover': { bgcolor: '#d97706' }
+      };
+  }
+};
+
+const getSizeStyles = (size: ButtonProps['size']) => {
+  switch (size) {
+    case 'xs':
+      return { height: 28, px: 1, fontSize: '0.75rem' };
+    case 'sm':
+      return { height: 32, px: 1.5, fontSize: '0.875rem' };
+    case 'lg':
+      return { height: 40, px: 3 };
+    case 'xl':
+      return { height: 44, px: 4, fontSize: '1rem' };
+    default: // md
+      return { height: 36, px: 2 };
+  }
+};
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, ...props }, ref) => {
+  ({ sx, variant = 'solid', size = 'md', ...props }, ref) => {
     return (
-      <button
-        className={cn(buttonVariants({ variant, size, className }))}
+      <Box
+        component="button"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 1,
+          fontSize: '0.875rem',
+          fontWeight: 500,
+          transition: 'colors 0.2s',
+          '&:focus-visible': {
+            outline: 'none',
+            boxShadow: '0 0 0 1px var(--ring)'
+          },
+          '&:disabled': {
+            pointerEvents: 'none',
+            opacity: 0.5
+          },
+          ...getVariantStyles(variant),
+          ...getSizeStyles(size),
+          ...sx
+        }}
         ref={ref}
         {...props}
       />
@@ -45,11 +112,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button'
 
 export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, size = 'md', ...props }, ref) => {
-    const sizeMap = { xs: 'h-7 w-7', sm: 'h-8 w-8', md: 'h-9 w-9', lg: 'h-10 w-10', xl: 'h-11 w-11' }
+  ({ sx, size = 'md', ...props }, ref) => {
+    const sizeMap = { xs: 28, sm: 32, md: 36, lg: 40, xl: 44 };
     return (
       <Button
-        className={cn(sizeMap[size], 'p-0', className)}
+        sx={{
+          height: sizeMap[size || 'md'],
+          width: sizeMap[size || 'md'],
+          p: 0,
+          ...sx
+        }}
         size={size}
         ref={ref}
         {...props}

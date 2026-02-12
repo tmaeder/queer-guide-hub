@@ -2,6 +2,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Trash2, ExternalLink } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface SocialLink {
   platform: string;
@@ -35,62 +37,62 @@ export function SocialLinksList({
   };
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Social Links */}
       {customLinks.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Social Links</h3>
-          <div className="space-y-3">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 500 }}>Social Links</Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {customLinks.map((link, index) => (
-              <div key={index} className="p-4 border rounded-lg bg-card">
-                <div className="flex items-start gap-3">
-                  <div className="flex-1 space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
+              <Box key={index} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1.5 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                         <Label>Platform</Label>
-                        <Input 
-                          value={link.platform} 
+                        <Input
+                          value={link.platform}
                           onChange={(e) => onCustomLinkChange(index, 'platform', e.target.value)}
                           placeholder="Platform name"
                         />
-                      </div>
-                      <div className="space-y-1">
+                      </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                         <Label>URL</Label>
-                        <div className="flex">
-                          <Input 
-                            value={link.url} 
+                        <Box sx={{ display: 'flex' }}>
+                          <Input
+                            value={link.url}
                             onChange={(e) => onCustomLinkChange(index, 'url', e.target.value)}
                             placeholder="https://platform.com/username"
-                            className="flex-1"
+                            sx={{ flex: 1 }}
                           />
                           {link.url && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="ml-2"
+                              sx={{ ml: 1 }}
                               onClick={() => window.open(link.url, '_blank')}
                             >
-                              <ExternalLink className="h-4 w-4" />
+                              <ExternalLink style={{ height: 16, width: 16 }} />
                             </Button>
                           )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onRemoveCustomLink(index)}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    sx={{ color: 'error.main', '&:hover': { color: 'error.main', bgcolor: 'error.light' } }}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 style={{ height: 16, width: 16 }} />
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
             ))}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

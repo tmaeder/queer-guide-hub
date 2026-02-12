@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCityImages } from "@/hooks/useCityImages";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface PlacesCardProps {
   type: "continent" | "country" | "city";
@@ -141,11 +143,11 @@ export const PlacesCard = ({
   const getIcon = () => {
     switch (type) {
       case "continent":
-        return <Globe className="h-5 w-5 text-primary" />;
+        return <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
       case "country":
-        return <MapPin className="h-5 w-5 text-primary" />;
+        return <MapPin style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
       case "city":
-        return <Building2 className="h-5 w-5 text-primary" />;
+        return <Building2 style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
       default:
         return null;
     }
@@ -155,35 +157,35 @@ export const PlacesCard = ({
     if (type === "country" && data) {
       const country = data as Country;
       return (
-        <div className="space-y-1">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {country.capital && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Crown className="h-4 w-4" />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+              <Crown style={{ height: 16, width: 16 }} />
               <span>{country.capital}</span>
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
       );
     }
 
     if (type === "city" && data) {
       const city = data as City;
       return (
-        <div className="space-y-1">
-          {city.countries && <p className="text-sm text-muted-foreground">{city.countries.name}</p>}
-          <div className="flex gap-2">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          {city.countries && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>{city.countries.name}</Typography>}
+          <Box sx={{ display: 'flex', gap: 1 }}>
             {city.is_capital && (
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
-                <Crown className="h-3 w-3 text-primary" />
-              </div>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', bgcolor: 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)' }}>
+                <Crown style={{ height: 12, width: 12, color: 'var(--primary)' }} />
+              </Box>
             )}
             {city.is_major_city && (
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-secondary/10">
-                <Building2 className="h-3 w-3 text-secondary-foreground" />
-              </div>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', bgcolor: 'rgba(var(--secondary-rgb, 107, 114, 128), 0.1)' }}>
+                <Building2 style={{ height: 12, width: 12, color: 'var(--secondary-foreground)' }} />
+              </Box>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
       );
     }
 
@@ -193,72 +195,72 @@ export const PlacesCard = ({
   const getStats = () => {
     if (data?.population) {
       return (
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Users className="h-4 w-4" />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+          <Users style={{ height: 16, width: 16 }} />
           <span>{formatPopulation(data.population)}</span>
-        </div>
+        </Box>
       );
     }
     return null;
   };
 
   const cardContent = (
-    <Card className={`cursor-pointer transition-all hover:shadow-md hover:scale-105 ${onClick ? "hover:bg-accent/50" : ""}`}>
+    <Card style={{ cursor: 'pointer', transition: 'all 0.2s', ...(onClick ? {} : {}) }}>
       {/* Country Image */}
       {type === "country" && (
-        <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
+        <Box sx={{ aspectRatio: '4/3', width: '100%', overflow: 'hidden', borderTopLeftRadius: 8, borderTopRightRadius: 8, bgcolor: 'action.hover' }}>
           {imageLoading ? (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="animate-pulse bg-muted-foreground/20 w-full h-full"></div>
-            </div>
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', bgcolor: 'rgba(var(--muted-foreground-rgb, 107, 114, 128), 0.2)', width: '100%', height: '100%' }} />
+            </Box>
           ) : (
             <img
               src={countryImage || `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`}
               alt={`${name} landscape`}
-              className="w-full h-full object-cover"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => {
                 // Fallback to default image if Pexels image fails to load
                 e.currentTarget.src = `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`;
               }}
             />
           )}
-        </div>
+        </Box>
       )}
-      
+
       {/* City Image */}
       {type === "city" && (
-        <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
+        <Box sx={{ aspectRatio: '4/3', width: '100%', overflow: 'hidden', borderTopLeftRadius: 8, borderTopRightRadius: 8, bgcolor: 'action.hover' }}>
           {cityImageLoading ? (
-            <div className="w-full h-full flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Loader2 style={{ height: 24, width: 24, animation: 'spin 1s linear infinite', color: 'var(--muted-foreground)' }} />
+            </Box>
           ) : cityImageUrl && !cityImageError ? (
             <img
               src={cityImageUrl}
               alt={`${name} cityscape`}
-              className="w-full h-full object-cover"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={() => setCityImageError(true)}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
-            </div>
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ImageIcon style={{ height: 32, width: 32, color: 'var(--muted-foreground)' }} />
+            </Box>
           )}
-        </div>
+        </Box>
       )}
 
-      <CardHeader className={type === "country" || type === "city" ? "pb-2 pt-3 px-3" : "pb-3"}>
-        <CardTitle className={`flex items-center justify-between ${type === "country" || type === "city" ? "text-sm" : ""}`}>
-          <div className="flex items-center gap-2">
+      <CardHeader style={type === "country" || type === "city" ? { paddingBottom: 8, paddingTop: 12, paddingLeft: 12, paddingRight: 12 } : { paddingBottom: 12 }}>
+        <CardTitle style={type === "country" || type === "city" ? { fontSize: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } : { display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {type !== "country" && type !== "city" && getIcon()}
-            <span className={type === "country" || type === "city" ? "text-sm font-medium" : "text-lg"}>{name}</span>
-          </div>
+            <span style={type === "country" || type === "city" ? { fontSize: '0.875rem', fontWeight: 500 } : { fontSize: '1.125rem' }}>{name}</span>
+          </Box>
           {type !== "country" && type !== "city" && getStats()}
         </CardTitle>
       </CardHeader>
 
       {getSubtitle() && (
-        <CardContent className="pt-0">
+        <CardContent style={{ paddingTop: 0 }}>
           {getSubtitle()}
         </CardContent>
       )}
@@ -268,7 +270,7 @@ export const PlacesCard = ({
   // Wrap with Link for cities and countries, otherwise use onClick
   if (type === "city" && data?.id) {
     return (
-      <Link to={`/city/${data.id}`} className="block">
+      <Link to={`/city/${data.id}`} style={{ display: 'block' }}>
         {cardContent}
       </Link>
     );
@@ -276,7 +278,7 @@ export const PlacesCard = ({
 
   if (type === "country" && data?.id) {
     return (
-      <Link to={`/country/${data.id}`} className="block">
+      <Link to={`/country/${data.id}`} style={{ display: 'block' }}>
         {cardContent}
       </Link>
     );

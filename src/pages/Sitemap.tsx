@@ -4,6 +4,10 @@ import { Search, Link2, Hash } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useDynamicSitemap } from "@/hooks/useDynamicSitemap";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Container from "@mui/material/Container";
 
 function setMetaTag(name: string, content: string) {
   let tag = document.querySelector(`meta[name="${name}"]`);
@@ -90,19 +94,19 @@ export default function Sitemap() {
 
   if (isLoading) {
     return (
-      <div className="container py-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-4">Queer Guide Sitemap</h1>
-        <p className="text-muted-foreground">Loading dynamic sitemap...</p>
-      </div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.025em', mb: 2 }}>Queer Guide Sitemap</Typography>
+        <Typography color="text.secondary">Loading dynamic sitemap...</Typography>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="container py-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-4">Queer Guide Sitemap</h1>
-        <p className="text-muted-foreground">Failed to load sitemap. Please try again later.</p>
-      </div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.025em', mb: 2 }}>Queer Guide Sitemap</Typography>
+        <Typography color="text.secondary">Failed to load sitemap. Please try again later.</Typography>
+      </Container>
     );
   }
 
@@ -113,180 +117,208 @@ export default function Sitemap() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <header className="py-8">
-        <div className="container">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="group -ml-2 font-bold">
+      <Box component="header" sx={{ py: 4 }}>
+        <Container maxWidth="lg">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Link to="/" style={{ marginLeft: -8, fontWeight: 700 }}>
               Queer Guide
             </Link>
-            <a
+            <Typography
+              component="a"
               href="https://github.com/tmaeder/queer-guide-hub"
-              className="text-sm underline-offset-4 hover:underline"
+              variant="body2"
+              sx={{ textUnderlineOffset: '4px', '&:hover': { textDecoration: 'underline' } }}
             >
               GitHub
-            </a>
-          </div>
-        </div>
-        <h1 className="text-3xl font-bold tracking-tight">Queer Guide Sitemap</h1>
-        <p className="text-muted-foreground mt-2">
-          Quickly jump to any main section. {" "}
-          <span aria-live="polite">Showing {counts.visible} of {counts.total} links</span>
-        </p>
+            </Typography>
+          </Box>
+        </Container>
+        <Container maxWidth="lg">
+          <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.025em' }}>Queer Guide Sitemap</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>
+            Quickly jump to any main section. {" "}
+            <Typography component="span" aria-live="polite">Showing {counts.visible} of {counts.total} links</Typography>
+          </Typography>
 
-        <div className="mt-4">
-          <div className="relative max-w-xl">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden />
-            <Input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Filter pages by name or path"
-              aria-label="Filter sitemap links"
-              className="pl-9"
-            />
-            {query && (
-              <Button
-                variant="secondary"
-                className="absolute right-1 top-1/2 -translate-y-1/2"
-                onClick={() => setQuery("")}
-                aria-label="Clear filter"
-              >
-                Clear
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
+          <Box sx={{ mt: 2 }}>
+            <Box sx={{ position: 'relative', maxWidth: '36rem' }}>
+              <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--mui-palette-text-secondary)' }} aria-hidden />
+              <Input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Filter pages by name or path"
+                aria-label="Filter sitemap links"
+                sx={{ pl: 4.5 }}
+              />
+              {query && (
+                <Button
+                  variant="secondary"
+                  style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)' }}
+                  onClick={() => setQuery("")}
+                  aria-label="Clear filter"
+                >
+                  Clear
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </Container>
+      </Box>
 
-      <main className="grid gap-6 md:grid-cols-[240px,1fr]">
-        <aside className="md:sticky md:top-24">
-          <nav aria-label="Section jump navigation" className="border rounded-lg p-3 bg-card">
-            <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
-              <Hash className="h-4 w-4" /> Sections
-            </h2>
-            <ul className="space-y-1 text-sm">
+      <Container maxWidth="lg">
+        <Box component="main" sx={{ display: 'grid', gap: 3, gridTemplateColumns: { md: '240px 1fr' } }}>
+          <Box component="aside" sx={{ position: { md: 'sticky' }, top: { md: 96 } }}>
+            <Paper component="nav" aria-label="Section jump navigation" sx={{ p: 1.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Hash style={{ width: 16, height: 16 }} /> Sections
+              </Typography>
+              <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                {filtered.map((section) => {
+                  const id = slugify(section.title);
+                  return (
+                    <li key={section.title}>
+                      <Typography
+                        component="a"
+                        href={`#${id}`}
+                        variant="body2"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderRadius: 1,
+                          px: 1,
+                          py: 0.5,
+                          '&:hover': { bgcolor: 'action.hover' },
+                          '&:focus-visible': { outline: 'none', boxShadow: (theme) => `0 0 0 2px ${theme.palette.primary.main}` },
+                        }}
+                      >
+                        <span>{section.title}</span>
+                        <Typography component="span" color="text.secondary">{section.links.length}</Typography>
+                      </Typography>
+                    </li>
+                  );
+                })}
+              </Box>
+            </Paper>
+          </Box>
+
+          <Box component="section" aria-label="Sitemap" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { sm: '1fr 1fr' } }}>
               {filtered.map((section) => {
                 const id = slugify(section.title);
                 return (
-                  <li key={section.title}>
-                    <a
-                      href={`#${id}`}
-                      className="flex items-center justify-between rounded-md px-2 py-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      <span>{section.title}</span>
-                      <span className="text-muted-foreground">{section.links.length}</span>
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-        </aside>
+                  <Paper component="article" key={section.title} id={id} sx={{ p: 2 }}>
+                    <Box component="header" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, mb: 1.5 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        <Typography
+                          component="a"
+                          href={`#${id}`}
+                          sx={{ textUnderlineOffset: '4px', '&:hover': { textDecoration: 'underline' } }}
+                        >
+                          {section.title}
+                        </Typography>
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleCopySectionLink(id)}
+                          aria-label={`Copy link to ${section.title}`}
+                        >
+                          <Link2 style={{ width: 16, height: 16 }} />
+                        </Button>
+                        <Typography variant="body2" color="text.secondary">{section.links.length}</Typography>
+                      </Box>
+                    </Box>
 
-        <section aria-label="Sitemap" className="space-y-6">
-          <div className="grid gap-6 sm:grid-cols-2">
-            {filtered.map((section) => {
-              const id = slugify(section.title);
-              return (
-                <article key={section.title} id={id} className="border rounded-lg p-4 bg-card">
-                  <header className="flex items-center justify-between gap-3 mb-3">
-                    <h2 className="text-xl font-semibold">
-                      <a href={`#${id}`} className="hover:underline underline-offset-4">
-                        {section.title}
-                      </a>
-                    </h2>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleCopySectionLink(id)}
-                        aria-label={`Copy link to ${section.title}`}
-                      >
-                        <Link2 className="h-4 w-4" />
-                      </Button>
-                      <span className="text-sm text-muted-foreground">{section.links.length}</span>
-                    </div>
-                  </header>
+                    {copied === id && (
+                      <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }} role="status">Copied section link</Typography>
+                    )}
 
-                  {copied === id && (
-                    <p className="text-xs text-muted-foreground mb-2" role="status">Copied section link</p>
-                  )}
+                    {/* Hierarchical list rendering: indent items under their hubs */}
+                    <Box component="ul" sx={{ listStyleType: 'disc', pl: 2.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {(() => {
+                        const aboutChildren = new Set(["About", "Contact", "Press", "Blog", "Sustainability"]);
+                        const legalChildren = new Set(["Terms of Service", "Privacy Policy", "Cookie Policy", "DMCA"]);
+                        const links = section.links;
+                        const childrenByHub: Record<string, { label: string; to: string }[]> = {
+                          "About Hub": links.filter((l) => aboutChildren.has(l.label)),
+                          "Legal Hub": links.filter((l) => legalChildren.has(l.label)),
+                        };
+                        const rootLinks = links.filter(
+                          (l) => !(aboutChildren.has(l.label) || legalChildren.has(l.label))
+                        );
 
-                  {/* Hierarchical list rendering: indent items under their hubs */}
-                  <ul className="space-y-2 list-disc pl-5">
-                    {(() => {
-                      const aboutChildren = new Set(["About", "Contact", "Press", "Blog", "Sustainability"]);
-                      const legalChildren = new Set(["Terms of Service", "Privacy Policy", "Cookie Policy", "DMCA"]);
-                      const links = section.links;
-                      const childrenByHub: Record<string, { label: string; to: string }[]> = {
-                        "About Hub": links.filter((l) => aboutChildren.has(l.label)),
-                        "Legal Hub": links.filter((l) => legalChildren.has(l.label)),
-                      };
-                      const rootLinks = links.filter(
-                        (l) => !(aboutChildren.has(l.label) || legalChildren.has(l.label))
-                      );
-
-                      return rootLinks.map((link) => {
-                        const children = childrenByHub[link.label as keyof typeof childrenByHub] || [];
-                        if (children.length === 0) {
+                        return rootLinks.map((link) => {
+                          const children = childrenByHub[link.label as keyof typeof childrenByHub] || [];
+                          if (children.length === 0) {
+                            return (
+                              <li key={link.to}>
+                                <Link
+                                  to={link.to}
+                                  style={{ display: 'block', borderRadius: 4 }}
+                                  aria-label={`${link.label} page in ${section.title}`}
+                                  aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
+                                >
+                                  <Typography component="span" sx={{ fontWeight: 500 }}>{link.label}</Typography>
+                                  <Typography component="span" id={`${id}-${slugify(link.label)}-subtitle`} variant="caption" color="text.secondary" sx={{ display: 'block' }}>Page &bull; {link.to}</Typography>
+                                  <Typography component="span" sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>In section {section.title}</Typography>
+                                </Link>
+                              </li>
+                            );
+                          }
                           return (
                             <li key={link.to}>
                               <Link
                                 to={link.to}
-                                className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded block"
-                                aria-label={`${link.label} page in ${section.title}`}
+                                style={{ display: 'block', borderRadius: 4 }}
+                                aria-label={`${link.label} hub in ${section.title}`}
                                 aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                               >
-                                <span className="font-medium">{link.label}</span>
-                                <span id={`${id}-${slugify(link.label)}-subtitle`} className="block text-xs text-muted-foreground">Page • {link.to}</span>
-                                <span className="sr-only">In section {section.title}</span>
+                                <Typography component="span" sx={{ fontWeight: 500 }}>{link.label}</Typography>
+                                <Typography component="span" id={`${id}-${slugify(link.label)}-subtitle`} variant="caption" color="text.secondary" sx={{ display: 'block' }}>Hub &bull; {link.to}</Typography>
+                                <Typography component="span" sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>In section {section.title}</Typography>
                               </Link>
+                              <Box component="ul" sx={{ mt: 1, listStyleType: 'disc', pl: 2.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                {children.map((cl) => (
+                                  <li key={cl.to}>
+                                    <Link
+                                      to={cl.to}
+                                      style={{ display: 'block', borderRadius: 4 }}
+                                      aria-label={`${cl.label} page under ${link.label} in ${section.title}`}
+                                      aria-describedby={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`}
+                                    >
+                                      <Typography component="span" sx={{ fontWeight: 500 }}>{cl.label}</Typography>
+                                      <Typography component="span" id={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`} variant="caption" color="text.secondary" sx={{ display: 'block' }}>Under {link.label} &bull; {cl.to}</Typography>
+                                      <Typography component="span" sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>In section {section.title}</Typography>
+                                    </Link>
+                                  </li>
+                                ))}
+                              </Box>
                             </li>
                           );
-                        }
-                        return (
-                          <li key={link.to}>
-                            <Link
-                              to={link.to}
-                              className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded block"
-                              aria-label={`${link.label} hub in ${section.title}`}
-                              aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
-                            >
-                              <span className="font-medium">{link.label}</span>
-                              <span id={`${id}-${slugify(link.label)}-subtitle`} className="block text-xs text-muted-foreground">Hub • {link.to}</span>
-                              <span className="sr-only">In section {section.title}</span>
-                            </Link>
-                            <ul className="mt-2 list-disc pl-5 space-y-1">
-                              {children.map((cl) => (
-                                <li key={cl.to}>
-                                  <Link
-                                    to={cl.to}
-                                    className="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded block"
-                                    aria-label={`${cl.label} page under ${link.label} in ${section.title}`}
-                                    aria-describedby={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`}
-                                  >
-                                    <span className="font-medium">{cl.label}</span>
-                                    <span id={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`} className="block text-xs text-muted-foreground">Under {link.label} • {cl.to}</span>
-                                    <span className="sr-only">In section {section.title}</span>
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          </li>
-                        );
-                      });
-                    })()}
-                  </ul>
-                </article>
-              );
-            })}
-          </div>
+                        });
+                      })()}
+                    </Box>
+                  </Paper>
+                );
+              })}
+            </Box>
 
-          <div className="pt-2">
-            <a href="#top" className="text-sm underline-offset-4 hover:underline">Back to top</a>
-          </div>
-        </section>
-      </main>
+            <Box sx={{ pt: 1 }}>
+              <Typography
+                component="a"
+                href="#top"
+                variant="body2"
+                sx={{ textUnderlineOffset: '4px', '&:hover': { textDecoration: 'underline' } }}
+              >
+                Back to top
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Container>
     </>
   );
 }

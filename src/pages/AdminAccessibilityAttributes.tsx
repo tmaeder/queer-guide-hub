@@ -11,6 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 type AccessibilityAttribute = {
   id: string;
@@ -78,7 +81,7 @@ export default function AdminAccessibilityAttributes() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingAttribute) {
         const { error } = await supabase
@@ -139,7 +142,7 @@ export default function AdminAccessibilityAttributes() {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Accessibility attribute deleted successfully",
@@ -172,14 +175,14 @@ export default function AdminAccessibilityAttributes() {
                          attribute.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || attribute.category === selectedCategory;
     const matchesActive = !showActiveOnly || attribute.is_active;
-    
+
     return matchesSearch && matchesCategory && matchesActive;
   });
 
   const getCategoryBadgeColor = (category: string): "default" | "destructive" | "secondary" | "outline" => {
     const colors = {
       general: "default",
-      mobility: "secondary", 
+      mobility: "secondary",
       visual: "outline",
       hearing: "destructive",
       sensory: "secondary"
@@ -188,28 +191,32 @@ export default function AdminAccessibilityAttributes() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-96">Loading...</div>;
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 384 }}>
+        Loading...
+      </Box>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Accessibility Attributes</h1>
+    <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>Accessibility Attributes</Typography>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
               Add Attribute
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent sx={{ maxWidth: 448 }}>
             <DialogHeader>
               <DialogTitle>
                 {editingAttribute ? "Edit Accessibility Attribute" : "Add Accessibility Attribute"}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box>
                 <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
@@ -217,8 +224,8 @@ export default function AdminAccessibilityAttributes() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                 />
-              </div>
-              <div>
+              </Box>
+              <Box>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
@@ -226,8 +233,8 @@ export default function AdminAccessibilityAttributes() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
                 />
-              </div>
-              <div>
+              </Box>
+              <Box>
                 <Label htmlFor="icon">Icon</Label>
                 <Input
                   id="icon"
@@ -235,8 +242,8 @@ export default function AdminAccessibilityAttributes() {
                   onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                   placeholder="e.g., wheelchair, car, audio"
                 />
-              </div>
-              <div>
+              </Box>
+              <Box>
                 <Label htmlFor="category">Category</Label>
                 <Select
                   value={formData.category}
@@ -253,8 +260,8 @@ export default function AdminAccessibilityAttributes() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div>
+              </Box>
+              <Box>
                 <Label htmlFor="sort_order">Sort Order</Label>
                 <Input
                   id="sort_order"
@@ -262,45 +269,45 @@ export default function AdminAccessibilityAttributes() {
                   value={formData.sort_order}
                   onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
                 />
-              </div>
-              <div className="flex items-center space-x-2">
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Switch
                   id="is_active"
                   checked={formData.is_active}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                 />
                 <Label htmlFor="is_active">Active</Label>
-              </div>
-              <div className="flex justify-end space-x-2 pt-4">
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit">
                   {editingAttribute ? "Update" : "Create"}
                 </Button>
-              </div>
-            </form>
+              </Box>
+            </Box>
           </DialogContent>
         </Dialog>
-      </div>
+      </Box>
 
       {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex-1 min-w-64">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+      <Card sx={{ mb: 3 }}>
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+            <Box sx={{ flex: 1, minWidth: 256 }}>
+              <Box sx={{ position: 'relative' }}>
+                <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--muted-foreground)' }} />
                 <Input
                   placeholder="Search attributes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  style={{ paddingLeft: 40 }}
                 />
-              </div>
-            </div>
+              </Box>
+            </Box>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger style={{ width: 192 }}>
                 <SelectValue placeholder="Filter by category" />
               </SelectTrigger>
               <SelectContent>
@@ -312,75 +319,77 @@ export default function AdminAccessibilityAttributes() {
                 ))}
               </SelectContent>
             </Select>
-            <div className="flex items-center space-x-2">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Switch
                 id="active-only"
                 checked={showActiveOnly}
                 onCheckedChange={setShowActiveOnly}
               />
               <Label htmlFor="active-only">Active only</Label>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Attributes Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 3 }}>
         {filteredAttributes.map((attribute) => (
-          <Card key={attribute.id} className={!attribute.is_active ? "opacity-60" : ""}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{attribute.name}</CardTitle>
+          <Card key={attribute.id} sx={{ opacity: !attribute.is_active ? 0.6 : 1 }}>
+            <CardHeader sx={{ pb: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <CardTitle>
+                  <Typography variant="subtitle1">{attribute.name}</Typography>
+                </CardTitle>
                 <Badge variant={getCategoryBadgeColor(attribute.category)}>
                   {attribute.category}
                 </Badge>
-              </div>
+              </Box>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {attribute.description && (
-                  <p className="text-sm text-muted-foreground">{attribute.description}</p>
+                  <Typography variant="body2" color="text.secondary">{attribute.description}</Typography>
                 )}
                 {attribute.icon && (
-                  <p className="text-sm">
-                    <span className="font-medium">Icon:</span> {attribute.icon}
-                  </p>
+                  <Typography variant="body2">
+                    <Box component="span" sx={{ fontWeight: 600 }}>Icon:</Box> {attribute.icon}
+                  </Typography>
                 )}
-                <div className="flex items-center justify-between text-sm">
-                  <span>Order: {attribute.sort_order}</span>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography variant="body2">Order: {attribute.sort_order}</Typography>
                   <Badge variant={attribute.is_active ? "default" : "secondary"}>
                     {attribute.is_active ? "Active" : "Inactive"}
                   </Badge>
-                </div>
-                <div className="flex justify-end space-x-2 pt-2">
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 1 }}>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleEdit(attribute)}
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit style={{ width: 16, height: 16 }} />
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleDelete(attribute.id)}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 style={{ width: 16, height: 16 }} />
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         ))}
-      </div>
+      </Box>
 
       {filteredAttributes.length === 0 && (
         <Card>
-          <CardContent className="p-12 text-center">
-            <p className="text-muted-foreground">No accessibility attributes found matching your criteria.</p>
+          <CardContent sx={{ p: 6, textAlign: 'center' }}>
+            <Typography color="text.secondary">No accessibility attributes found matching your criteria.</Typography>
           </CardContent>
         </Card>
       )}
-    </div>
+    </Container>
   );
 }

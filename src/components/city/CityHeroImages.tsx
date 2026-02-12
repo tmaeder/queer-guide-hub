@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface CityImage {
   id: string;
@@ -27,7 +29,7 @@ export default function CityHeroImages({ cityName, countryName, className = "" }
   const fetchCityImages = async () => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await supabase.functions.invoke('get-pexels-images', {
         body: {
           query: `${cityName} ${countryName || ''} city skyline architecture landmarks downtown`,
@@ -56,46 +58,66 @@ export default function CityHeroImages({ cityName, countryName, className = "" }
   }
 
   return (
-    <div className={`relative h-80 rounded-2xl overflow-hidden ${className}`}>
+    <Box sx={{ position: 'relative', height: 320, borderRadius: 4, overflow: 'hidden' }} className={className}>
       {/* Main image as background with enhanced styling */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 hover:scale-105"
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          transition: 'transform 0.7s',
+          '&:hover': { transform: 'scale(1.05)' }
+        }}
         style={{ backgroundImage: `url(${images[0]?.url})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
-      </div>
-      
+        <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent, rgba(0,0,0,0.2))' }} />
+      </Box>
+
       {/* Enhanced thumbnail images overlay */}
       {images.length > 1 && (
-        <div className="absolute bottom-6 right-6 flex gap-3">
+        <Box sx={{ position: 'absolute', bottom: 24, right: 24, display: 'flex', gap: 1.5 }}>
           {images.slice(1).map((image, index) => (
-            <div
+            <Box
               key={image.id}
-              className="w-16 h-16 rounded-xl border-2 border-white/70 overflow-hidden bg-cover bg-center shadow-lg hover:scale-110 transition-all duration-300 cursor-pointer"
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: 3,
+                border: '2px solid rgba(255,255,255,0.7)',
+                overflow: 'hidden',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                boxShadow: 3,
+                cursor: 'pointer',
+                transition: 'all 0.3s',
+                '&:hover': { transform: 'scale(1.1)' }
+              }}
               style={{ backgroundImage: `url(${image.thumbnail})` }}
             />
           ))}
-        </div>
+        </Box>
       )}
-      
+
       {/* Enhanced photographer credit */}
-      <div className="absolute bottom-3 left-4 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm">
-        <span className="text-xs text-white/90 font-medium">
+      <Box sx={{ position: 'absolute', bottom: 12, left: 16, px: 1.5, py: 0.5, borderRadius: '9999px', bgcolor: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)' }}>
+        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 500 }}>
           Photo by{' '}
-          <a 
+          <Box
+            component="a"
             href={images[0]?.photographer_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-white hover:text-white/70 transition-colors story-link"
+            sx={{ color: 'white', '&:hover': { color: 'rgba(255,255,255,0.7)' }, transition: 'color 0.2s' }}
           >
             {images[0]?.photographer}
-          </a>
-        </span>
-      </div>
+          </Box>
+        </Typography>
+      </Box>
 
       {/* Decorative overlay elements */}
-      <div className="absolute top-4 left-4 w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm animate-pulse" />
-      <div className="absolute top-8 right-8 w-12 h-12 rounded-full bg-white/5 backdrop-blur-sm animate-pulse" style={{ animationDelay: '1s' }} />
-    </div>
+      <Box sx={{ position: 'absolute', top: 16, left: 16, width: 80, height: 80, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)' , animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
+      <Box sx={{ position: 'absolute', top: 32, right: 32, width: 48, height: 48, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(4px)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', animationDelay: '1s' }} />
+    </Box>
   );
 }

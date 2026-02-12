@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Calendar, 
+import {
+  ArrowLeft,
+  MapPin,
+  Calendar,
   Check,
   Shield,
   User,
@@ -25,6 +25,9 @@ import { SecureProfileViewer } from '@/components/profile/SecureProfileViewer';
 import { useSecurePublicProfile } from '@/hooks/useSecurePublicProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -33,10 +36,10 @@ export default function UserProfile() {
   const { toast } = useToast();
 
   // Use the new secure profile hook
-  const { 
-    profile, 
-    loading: isLoading, 
-    error, 
+  const {
+    profile,
+    loading: isLoading,
+    error,
     isOwnProfile,
     canViewSensitiveField
   } = useSecurePublicProfile(userId);
@@ -76,31 +79,31 @@ export default function UserProfile() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-muted rounded w-1/4"></div>
-          <div className="h-64 bg-muted rounded"></div>
-          <div className="h-32 bg-muted rounded"></div>
-        </div>
-      </div>
+      <Container maxWidth="lg" sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, animation: 'pulse 2s infinite' }}>
+          <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '25%' }} />
+          <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }} />
+          <Box sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }} />
+        </Box>
+      </Container>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center py-12">
-          <User className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">Profile not found</h3>
-          <p className="text-muted-foreground mb-4">
+      <Container maxWidth="lg" sx={{ p: 3 }}>
+        <Box sx={{ textAlign: 'center', py: 6 }}>
+          <User style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+          <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>Profile not found</Typography>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
             This user profile doesn't exist or has been removed.
-          </p>
+          </Typography>
           <Button onClick={() => navigate('/users')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Directory
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Container>
     );
   }
 
@@ -120,173 +123,185 @@ export default function UserProfile() {
   // Check if profile is private and user doesn't have access
   if (getProfileVisibility() === 'private' && !isOwnProfile) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center py-12">
-          <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">Private Profile</h3>
-          <p className="text-muted-foreground mb-4">
+      <Container maxWidth="lg" sx={{ p: 3 }}>
+        <Box sx={{ textAlign: 'center', py: 6 }}>
+          <Shield style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+          <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>Private Profile</Typography>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
             This user has set their profile to private.
-          </p>
+          </Typography>
           <Button onClick={() => navigate('/users')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Directory
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Container>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={handleShare} aria-label="Share profile">
-            <Share2 className="h-4 w-4" />
+    <Container maxWidth="lg" sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            Back
           </Button>
-          {!isOwnProfile && (
-            <Button variant="outline" size="icon" aria-label="Report user">
-              <Flag className="h-4 w-4" />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button variant="outline" size="icon" onClick={handleShare} aria-label="Share profile">
+              <Share2 style={{ width: 16, height: 16 }} />
             </Button>
-          )}
-        </div>
-      </div>
+            {!isOwnProfile && (
+              <Button variant="outline" size="icon" aria-label="Report user">
+                <Flag style={{ width: 16, height: 16 }} />
+              </Button>
+            )}
+          </Box>
+        </Box>
 
-      {/* Profile Header */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="flex flex-col items-center text-center md:text-left">
-              <Avatar className="h-32 w-32 mb-4">
-                <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="text-2xl">
-                  {profile.display_name?.charAt(0)?.toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-              {(profile as any)?.verified_identity && (
-                <Badge variant="secondary" className="mb-2">
-                  <Check className="h-3 w-3 mr-1" />
-                  Verified
-                </Badge>
-              )}
-            </div>
+        {/* Profile Header */}
+        <Card>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'flex-start' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: { xs: 'center', md: 'left' } }}>
+                <Avatar style={{ width: 128, height: 128, marginBottom: 16 }}>
+                  <AvatarImage src={profile.avatar_url || undefined} />
+                  <AvatarFallback style={{ fontSize: '1.5rem' }}>
+                    {profile.display_name?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                {(profile as any)?.verified_identity && (
+                  <Badge variant="secondary" sx={{ mb: 1 }}>
+                    <Check style={{ width: 12, height: 12, marginRight: 4 }} />
+                    Verified
+                  </Badge>
+                )}
+              </Box>
 
-            <div className="flex-1 space-y-4">
-              <div>
-                <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
-                  <h1 className="text-3xl font-bold">
-                    {profile.display_name || "Anonymous User"}
-                  </h1>
-                  {(profile as any)?.user_mode && (
-                    <UserModeBadge mode={(profile as any).user_mode} size="lg" />
-                  )}
-                </div>
-                
-                <div className="flex flex-wrap gap-3 text-muted-foreground mb-3">
-                  {profile.pronouns && <span>{profile.pronouns}</span>}
-                  {(profile as any)?.age_range && (
-                    <>
-                      {profile.pronouns && <span>•</span>}
-                      <span>{(profile as any).age_range}</span>
-                    </>
-                  )}
-                  {profile.location && (
-                    <>
-                      <span>•</span>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {profile.location}
-                      </div>
-                    </>
-                  )}
-                </div>
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { md: 'center' }, gap: 1.5, mb: 1 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                      {profile.display_name || "Anonymous User"}
+                    </Typography>
+                    {(profile as any)?.user_mode && (
+                      <UserModeBadge mode={(profile as any).user_mode} size="lg" />
+                    )}
+                  </Box>
 
-                {profile.bio && (
-                  <p className="text-muted-foreground mb-4 max-w-2xl">
-                    {profile.bio}
-                  </p>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, color: 'text.secondary', mb: 1.5 }}>
+                    {profile.pronouns && <Typography variant="body2">{profile.pronouns}</Typography>}
+                    {(profile as any)?.age_range && (
+                      <>
+                        {profile.pronouns && <Typography variant="body2">&#8226;</Typography>}
+                        <Typography variant="body2">{(profile as any).age_range}</Typography>
+                      </>
+                    )}
+                    {profile.location && (
+                      <>
+                        <Typography variant="body2">&#8226;</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <MapPin style={{ width: 16, height: 16 }} />
+                          <Typography variant="body2">{profile.location}</Typography>
+                        </Box>
+                      </>
+                    )}
+                  </Box>
+
+                  {profile.bio && (
+                    <Typography color="text.secondary" sx={{ mb: 2, maxWidth: '42rem' }}>
+                      {profile.bio}
+                    </Typography>
+                  )}
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Calendar style={{ width: 16, height: 16 }} />
+                    <Typography variant="body2" color="text.secondary">Joined {formatDate(profile.created_at)}</Typography>
+                  </Box>
+                </Box>
+
+                {!isOwnProfile && (
+                  <Box sx={{ display: 'flex', gap: 1.5 }}>
+                    <StartConversationButton
+                      userId={profile.user_id}
+                      userName={profile.display_name || "User"}
+                      variant="default"
+                    />
+                    <UserRelationshipActions targetUserId={profile.user_id} />
+                  </Box>
                 )}
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span>Joined {formatDate(profile.created_at)}</span>
-                </div>
-              </div>
+                {isOwnProfile && (
+                  <Button onClick={() => navigate('/profile/settings')}>
+                    Edit Profile
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
 
-              {!isOwnProfile && (
-                <div className="flex gap-3">
-                  <StartConversationButton
-                    userId={profile.user_id}
-                    userName={profile.display_name || "User"}
-                    variant="default"
-                  />
-                  <UserRelationshipActions targetUserId={profile.user_id} />
-                </div>
-              )}
+        {/* Profile Content */}
+        <Tabs defaultValue="about" style={{ width: '100%' }}>
+          <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(5, 1fr)' }}>
+            <TabsTrigger value="about">About</TabsTrigger>
+            <TabsTrigger value="posts">Posts</TabsTrigger>
+            <TabsTrigger value="photos">Photos</TabsTrigger>
+            <TabsTrigger value="identity">Identity</TabsTrigger>
+            <TabsTrigger value="contact">Contact</TabsTrigger>
+          </TabsList>
 
-              {isOwnProfile && (
-                <Button onClick={() => navigate('/profile/settings')}>
-                  Edit Profile
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          <TabsContent value="about">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <SecureProfileViewer
+                profile={profile}
+                isOwnProfile={isOwnProfile}
+              />
+            </Box>
+          </TabsContent>
 
-      {/* Profile Content */}
-      <Tabs defaultValue="about" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="about">About</TabsTrigger>
-          <TabsTrigger value="posts">Posts</TabsTrigger>
-          <TabsTrigger value="photos">Photos</TabsTrigger>
-          <TabsTrigger value="identity">Identity</TabsTrigger>
-          <TabsTrigger value="contact">Contact</TabsTrigger>
-        </TabsList>
+          <TabsContent value="posts">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <UserPostsList userId={userId!} isOwnProfile={isOwnProfile} />
+            </Box>
+          </TabsContent>
 
-        <TabsContent value="about" className="space-y-6">
-          <SecureProfileViewer 
-            profile={profile}
-            isOwnProfile={isOwnProfile}
-          />
-        </TabsContent>
+          <TabsContent value="photos">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <PhotoGallery userId={profile.user_id} isOwnProfile={isOwnProfile} />
+            </Box>
+          </TabsContent>
 
-        <TabsContent value="posts" className="space-y-6">
-          <UserPostsList userId={userId!} isOwnProfile={isOwnProfile} />
-        </TabsContent>
+          <TabsContent value="identity">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {/* Identity information is now handled securely in SecureProfileViewer */}
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Shield style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>Protected Information</Typography>
+                <Typography color="text.secondary" sx={{ maxWidth: '28rem', mx: 'auto' }}>
+                  Identity and personal details are protected by privacy settings.
+                  Only information you've chosen to make public will be visible to others.
+                </Typography>
+              </Box>
+            </Box>
+          </TabsContent>
 
-        <TabsContent value="photos" className="space-y-6">
-          <PhotoGallery userId={profile.user_id} isOwnProfile={isOwnProfile} />
-        </TabsContent>
-
-        <TabsContent value="identity" className="space-y-6">
-          {/* Identity information is now handled securely in SecureProfileViewer */}
-          <div className="text-center py-8">
-            <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Protected Information</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Identity and personal details are protected by privacy settings. 
-              Only information you've chosen to make public will be visible to others.
-            </p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="contact" className="space-y-6">
-          {/* Contact information is now handled securely in SecureProfileViewer */}
-          <div className="text-center py-8">
-            <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Contact Privacy</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Contact details are protected. Only users who have made their contact information 
-              public will have it displayed here.
-            </p>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="contact">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {/* Contact information is now handled securely in SecureProfileViewer */}
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Shield style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>Contact Privacy</Typography>
+                <Typography color="text.secondary" sx={{ maxWidth: '28rem', mx: 'auto' }}>
+                  Contact details are protected. Only users who have made their contact information
+                  public will have it displayed here.
+                </Typography>
+              </Box>
+            </Box>
+          </TabsContent>
+        </Tabs>
+      </Box>
+    </Container>
   );
 }

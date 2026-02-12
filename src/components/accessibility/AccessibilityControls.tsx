@@ -5,17 +5,19 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAccessibility } from '@/hooks/useAccessibility';
 import { RefreshCw, Eye, Volume2, Keyboard, MousePointer, Palette } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export function AccessibilityControls() {
   const { settings, updateSetting, resetToDefaults } = useAccessibility();
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Font Size Control */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Eye style={{ height: 20, width: 20 }} />
             Text Size
           </CardTitle>
           <CardDescription>
@@ -23,7 +25,7 @@ export function AccessibilityControls() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor="font-size">Font Size</Label>
             <Select
               value={settings.fontSize}
@@ -39,57 +41,57 @@ export function AccessibilityControls() {
                 <SelectItem value="extra-large">Extra Large</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Visual Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Palette style={{ height: 20, width: 20 }} />
             Visual Settings
           </CardTitle>
           <CardDescription>
             Customize visual appearance for better accessibility
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               <Label htmlFor="high-contrast">High Contrast Mode</Label>
-              <p className="text-sm text-muted-foreground">
+              <Typography variant="body2" color="text.secondary">
                 Increases contrast for better visibility
-              </p>
-            </div>
+              </Typography>
+            </Box>
             <Switch
               id="high-contrast"
               checked={settings.highContrast}
               onCheckedChange={(checked) => updateSetting('highContrast', checked)}
             />
-          </div>
+          </Box>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               <Label htmlFor="focus-indicators">Enhanced Focus Indicators</Label>
-              <p className="text-sm text-muted-foreground">
+              <Typography variant="body2" color="text.secondary">
                 More visible focus outlines for keyboard navigation
-              </p>
-            </div>
+              </Typography>
+            </Box>
             <Switch
               id="focus-indicators"
               checked={settings.focusIndicators}
               onCheckedChange={(checked) => updateSetting('focusIndicators', checked)}
             />
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Motion Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MousePointer className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <MousePointer style={{ height: 20, width: 20 }} />
             Motion & Animation
           </CardTitle>
           <CardDescription>
@@ -97,27 +99,27 @@ export function AccessibilityControls() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               <Label htmlFor="reduce-motion">Reduce Motion</Label>
-              <p className="text-sm text-muted-foreground">
+              <Typography variant="body2" color="text.secondary">
                 Minimizes animations that may cause discomfort
-              </p>
-            </div>
+              </Typography>
+            </Box>
             <Switch
               id="reduce-motion"
               checked={settings.reduceMotion}
               onCheckedChange={(checked) => updateSetting('reduceMotion', checked)}
             />
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Screen Reader Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Volume2 className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Volume2 style={{ height: 20, width: 20 }} />
             Screen Reader Support
           </CardTitle>
           <CardDescription>
@@ -125,54 +127,54 @@ export function AccessibilityControls() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               <Label htmlFor="screen-reader">Screen Reader Optimized</Label>
-              <p className="text-sm text-muted-foreground">
+              <Typography variant="body2" color="text.secondary">
                 Enhances compatibility with screen reading software
-              </p>
-            </div>
+              </Typography>
+            </Box>
             <Switch
               id="screen-reader"
               checked={settings.screenReaderOptimized}
               onCheckedChange={(checked) => updateSetting('screenReaderOptimized', checked)}
             />
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Keyboard Navigation Info */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Keyboard className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Keyboard style={{ height: 20, width: 20 }} />
             Keyboard Navigation
           </CardTitle>
           <CardDescription>
             Learn about keyboard shortcuts and navigation
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div>
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5, fontSize: '0.875rem' }}>
+            <Box>
               <strong>Tab:</strong> Navigate forward
-            </div>
-            <div>
+            </Box>
+            <Box>
               <strong>Shift + Tab:</strong> Navigate backward
-            </div>
-            <div>
+            </Box>
+            <Box>
               <strong>Enter/Space:</strong> Activate buttons
-            </div>
-            <div>
+            </Box>
+            <Box>
               <strong>Escape:</strong> Close dialogs/menus
-            </div>
-            <div>
+            </Box>
+            <Box>
               <strong>Arrow keys:</strong> Navigate lists/menus
-            </div>
-            <div>
+            </Box>
+            <Box>
               <strong>Home/End:</strong> Go to first/last item
-            </div>
-          </div>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
@@ -185,16 +187,16 @@ export function AccessibilityControls() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={resetToDefaults}
-            className="flex items-center gap-2"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw style={{ height: 16, width: 16 }} />
             Reset to Defaults
           </Button>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

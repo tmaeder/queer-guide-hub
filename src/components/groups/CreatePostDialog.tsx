@@ -8,18 +8,20 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { 
-  MessageSquare, 
-  Megaphone, 
-  BarChart3, 
-  Plus, 
-  X, 
+import {
+  MessageSquare,
+  Megaphone,
+  BarChart3,
+  Plus,
+  X,
   Pin,
   AtSign,
   Search
 } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface GroupMember {
   user_id: string;
@@ -56,7 +58,7 @@ export const CreatePostDialog = ({
   const [isPinned, setIsPinned] = useState(false);
   const [mentions, setMentions] = useState<Array<{ user_id: string; username: string }>>([]);
   const [showMentions, setShowMentions] = useState(false);
-  
+
   // Poll specific states
   const [pollQuestion, setPollQuestion] = useState('');
   const [pollOptions, setPollOptions] = useState(['', '']);
@@ -122,7 +124,7 @@ export const CreatePostDialog = ({
       user_id: member.user_id,
       username: member.profiles.display_name
     };
-    
+
     if (!mentions.find(m => m.user_id === member.user_id)) {
       setMentions([...mentions, mention]);
       setContent(content + `@${member.profiles.display_name} `);
@@ -141,139 +143,152 @@ export const CreatePostDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-primary hover:opacity-90">
-          <MessageSquare className="h-4 w-4 mr-2" />
+        <Button sx={{ background: 'linear-gradient(to right, var(--gradient-primary))', '&:hover': { opacity: 0.9 } }}>
+          <MessageSquare style={{ height: 16, width: 16, marginRight: 8 }} />
           New Post
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent sx={{ maxWidth: '42rem', maxHeight: '90vh', overflowY: 'auto' }}>
         <DialogHeader>
           <DialogTitle>Create New Post</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Tabs value={postType} onValueChange={(value: any) => setPostType(value)}>
-            <TabsList className="grid grid-cols-3">
-              <TabsTrigger value="text" className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
-                Post
+            <TabsList sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+              <TabsTrigger value="text">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <MessageSquare style={{ height: 16, width: 16 }} />
+                  Post
+                </Box>
               </TabsTrigger>
-              
+
               {canCreateAnnouncement && (
-                <TabsTrigger value="announcement" className="flex items-center gap-2">
-                  <Megaphone className="h-4 w-4" />
-                  Announcement
+                <TabsTrigger value="announcement">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Megaphone style={{ height: 16, width: 16 }} />
+                    Announcement
+                  </Box>
                 </TabsTrigger>
               )}
-              
-              <TabsTrigger value="poll" className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Poll
+
+              <TabsTrigger value="poll">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <BarChart3 style={{ height: 16, width: 16 }} />
+                  Poll
+                </Box>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="text" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="content">What's on your mind?</Label>
-                <Textarea
-                  id="content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Share your thoughts with the group..."
-                  rows={4}
-                />
-              </div>
+            <TabsContent value="text">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Label htmlFor="content">What's on your mind?</Label>
+                  <Textarea
+                    id="content"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Share your thoughts with the group..."
+                    rows={4}
+                  />
+                </Box>
+              </Box>
             </TabsContent>
 
-            <TabsContent value="announcement" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="announcement-content">Announcement</Label>
-                <Textarea
-                  id="announcement-content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Make an important announcement to the group..."
-                  rows={4}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Announcements are highlighted and appear at the top of the group feed.
-                </p>
-              </div>
+            <TabsContent value="announcement">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Label htmlFor="announcement-content">Announcement</Label>
+                  <Textarea
+                    id="announcement-content"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Make an important announcement to the group..."
+                    rows={4}
+                  />
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    Announcements are highlighted and appear at the top of the group feed.
+                  </Typography>
+                </Box>
+              </Box>
             </TabsContent>
 
-            <TabsContent value="poll" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="poll-question">Poll Question</Label>
-                <Input
-                  id="poll-question"
-                  value={pollQuestion}
-                  onChange={(e) => setPollQuestion(e.target.value)}
-                  placeholder="What would you like to ask the group?"
-                />
-              </div>
+            <TabsContent value="poll">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Label htmlFor="poll-question">Poll Question</Label>
+                  <Input
+                    id="poll-question"
+                    value={pollQuestion}
+                    onChange={(e) => setPollQuestion(e.target.value)}
+                    placeholder="What would you like to ask the group?"
+                  />
+                </Box>
 
-              <div className="space-y-3">
-                <Label>Poll Options</Label>
-                {pollOptions.map((option, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Input
-                      value={option}
-                      onChange={(e) => updatePollOption(index, e.target.value)}
-                      placeholder={`Option ${index + 1}`}
-                    />
-                    {pollOptions.length > 2 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removePollOption(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                
-                {pollOptions.length < 6 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={addPollOption}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Option
-                  </Button>
-                )}
-              </div>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <Label>Poll Options</Label>
+                  {pollOptions.map((option, index) => (
+                    <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Input
+                        value={option}
+                        onChange={(e) => updatePollOption(index, e.target.value)}
+                        placeholder={`Option ${index + 1}`}
+                      />
+                      {pollOptions.length > 2 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removePollOption(index)}
+                        >
+                          <X style={{ height: 16, width: 16 }} />
+                        </Button>
+                      )}
+                    </Box>
+                  ))}
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="multiple-choice"
-                  checked={allowMultipleChoice}
-                  onCheckedChange={setAllowMultipleChoice}
-                />
-                <Label htmlFor="multiple-choice" className="text-sm">
-                  Allow multiple selections
-                </Label>
-              </div>
+                  {pollOptions.length < 6 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={addPollOption}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Plus style={{ height: 16, width: 16 }} />
+                        Add Option
+                      </Box>
+                    </Button>
+                  )}
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Switch
+                    id="multiple-choice"
+                    checked={allowMultipleChoice}
+                    onCheckedChange={setAllowMultipleChoice}
+                  />
+                  <Label htmlFor="multiple-choice">
+                    Allow multiple selections
+                  </Label>
+                </Box>
+              </Box>
             </TabsContent>
           </Tabs>
 
           {/* Mentions Section */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Label>Mentions</Label>
-              
+
               <Popover open={showMentions} onOpenChange={setShowMentions}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
-                    <AtSign className="h-4 w-4 mr-2" />
+                    <AtSign style={{ height: 16, width: 16, marginRight: 8 }} />
                     Mention Someone
                   </Button>
                 </PopoverTrigger>
-                
-                <PopoverContent className="w-80 p-0" align="end">
+
+                <PopoverContent sx={{ width: 320, p: 0 }} align="end">
                   <Command>
                     <CommandInput placeholder="Search group members..." />
                     <CommandEmpty>No members found.</CommandEmpty>
@@ -285,12 +300,12 @@ export const CreatePostDialog = ({
                             value={member.profiles.display_name}
                             onSelect={() => handleMentionSelect(member)}
                           >
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: 'primary.main', opacity: 0.1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 {member.profiles.display_name.charAt(0)}
-                              </div>
+                              </Box>
                               <span>{member.profiles.display_name}</span>
-                            </div>
+                            </Box>
                           </CommandItem>
                         ))}
                       </CommandGroup>
@@ -298,55 +313,59 @@ export const CreatePostDialog = ({
                   </Command>
                 </PopoverContent>
               </Popover>
-            </div>
+            </Box>
 
             {mentions.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {mentions.map((mention) => (
-                  <Badge key={mention.user_id} variant="secondary" className="flex items-center gap-1">
-                    @{mention.username}
-                    <button
-                      onClick={() => removeMention(mention.user_id)}
-                      className="ml-1 hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
+                  <Badge key={mention.user_id} variant="secondary">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      @{mention.username}
+                      <button
+                        onClick={() => removeMention(mention.user_id)}
+                        style={{ marginLeft: 4 }}
+                      >
+                        <X style={{ height: 12, width: 12 }} />
+                      </button>
+                    </Box>
                   </Badge>
                 ))}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
 
           {/* Post Options */}
           {canPin && (
             <>
               <Separator />
-              <div className="flex items-center space-x-2">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Switch
                   id="pin-post"
                   checked={isPinned}
                   onCheckedChange={setIsPinned}
                 />
-                <Label htmlFor="pin-post" className="flex items-center gap-2">
-                  <Pin className="h-4 w-4" />
-                  Pin this post to the top
+                <Label htmlFor="pin-post">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Pin style={{ height: 16, width: 16 }} />
+                    Pin this post to the top
+                  </Box>
                 </Label>
-              </div>
+              </Box>
             </>
           )}
 
-          <div className="flex justify-end gap-2 pt-4">
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={isCreating || (!content.trim() && postType !== 'poll')}
             >
               {isCreating ? 'Creating...' : 'Create Post'}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </DialogContent>
     </Dialog>
   );

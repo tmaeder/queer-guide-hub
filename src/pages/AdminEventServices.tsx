@@ -13,6 +13,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useToast } from '@/hooks/use-toast';
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 interface EventService {
   id: string;
@@ -31,7 +34,7 @@ export default function AdminEventServices() {
   const { user } = useAuth();
   const { isAdmin } = useAdminRoles();
   const { toast } = useToast();
-  
+
   const [services, setServices] = useState<EventService[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -39,7 +42,7 @@ export default function AdminEventServices() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -56,7 +59,7 @@ export default function AdminEventServices() {
       navigate('/auth');
       return;
     }
-    
+
     if (!isAdmin) {
       toast({
         title: "Access Denied",
@@ -66,7 +69,7 @@ export default function AdminEventServices() {
       navigate('/');
       return;
     }
-    
+
     fetchServices();
   }, [user, isAdmin, navigate, toast]);
 
@@ -93,16 +96,16 @@ export default function AdminEventServices() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingService) {
         const { error } = await supabase
           .from('event_services')
           .update(formData)
           .eq('id', editingService.id);
-        
+
         if (error) throw error;
-        
+
         toast({
           title: "Success",
           description: "Event service updated successfully"
@@ -111,15 +114,15 @@ export default function AdminEventServices() {
         const { error } = await supabase
           .from('event_services')
           .insert([formData]);
-        
+
         if (error) throw error;
-        
+
         toast({
           title: "Success",
           description: "Event service created successfully"
         });
       }
-      
+
       setIsDialogOpen(false);
       resetForm();
       fetchServices();
@@ -160,20 +163,20 @@ export default function AdminEventServices() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this event service?')) return;
-    
+
     try {
       const { error } = await supabase
         .from('event_services')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Event service deleted successfully"
       });
-      
+
       fetchServices();
     } catch (error: any) {
       console.error('Error deleting event service:', error);
@@ -197,37 +200,37 @@ export default function AdminEventServices() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin h-32 w-32 bg-primary"></div>
-      </div>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <Box sx={{ height: 128, width: 128, bgcolor: 'primary.main', animation: 'spin 1s linear infinite' }} />
+      </Box>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+    <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button variant="outline" onClick={() => navigate('/admin')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold">Event Services Management</h1>
-        </div>
-        
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>Event Services Management</Typography>
+        </Box>
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
               Add Event Service
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent sx={{ maxWidth: 448 }}>
             <DialogHeader>
               <DialogTitle>
                 {editingService ? 'Edit Event Service' : 'Create New Event Service'}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div>
                 <Label htmlFor="name">Name *</Label>
                 <Input
@@ -238,7 +241,7 @@ export default function AdminEventServices() {
                   required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -249,7 +252,7 @@ export default function AdminEventServices() {
                   rows={3}
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="icon">Icon</Label>
                 <Input
@@ -259,7 +262,7 @@ export default function AdminEventServices() {
                   placeholder="Lucide icon name (e.g., Calendar)"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="category">Category</Label>
                 <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
@@ -275,7 +278,7 @@ export default function AdminEventServices() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <Label htmlFor="sort_order">Sort Order</Label>
                 <Input
@@ -286,8 +289,8 @@ export default function AdminEventServices() {
                   placeholder="0"
                 />
               </div>
-              
-              <div className="flex items-center space-x-2">
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <input
                   type="checkbox"
                   id="is_active"
@@ -295,26 +298,26 @@ export default function AdminEventServices() {
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                 />
                 <Label htmlFor="is_active">Active</Label>
-              </div>
-              
-              <Button type="submit" className="w-full">
+              </Box>
+
+              <Button type="submit" style={{ width: '100%' }}>
                 {editingService ? 'Update Event Service' : 'Create Event Service'}
               </Button>
-            </form>
+            </Box>
           </DialogContent>
         </Dialog>
-      </div>
+      </Box>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-6">
+      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         <Input
           placeholder="Search services..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          style={{ maxWidth: 384 }}
         />
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger style={{ width: 192 }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -327,7 +330,7 @@ export default function AdminEventServices() {
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger style={{ width: 160 }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -336,92 +339,96 @@ export default function AdminEventServices() {
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </Box>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2, mb: 3 }}>
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{services.length}</div>
-            <div className="text-sm text-muted-foreground">Total Services</div>
+          <CardContent sx={{ p: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{services.length}</Typography>
+            <Typography variant="body2" color="text.secondary">Total Services</Typography>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{services.filter(s => s.is_active).length}</div>
-            <div className="text-sm text-muted-foreground">Active</div>
+          <CardContent sx={{ p: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{services.filter(s => s.is_active).length}</Typography>
+            <Typography variant="body2" color="text.secondary">Active</Typography>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{new Set(services.map(s => s.category)).size}</div>
-            <div className="text-sm text-muted-foreground">Categories</div>
+          <CardContent sx={{ p: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{new Set(services.map(s => s.category)).size}</Typography>
+            <Typography variant="body2" color="text.secondary">Categories</Typography>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{services.filter(s => !s.is_active).length}</div>
-            <div className="text-sm text-muted-foreground">Inactive</div>
+          <CardContent sx={{ p: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{services.filter(s => !s.is_active).length}</Typography>
+            <Typography variant="body2" color="text.secondary">Inactive</Typography>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Services List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 2 }}>
         {filteredServices.map((service) => (
-          <Card key={service.id} className="relative">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{service.name}</CardTitle>
+          <Card key={service.id} sx={{ position: 'relative' }}>
+            <CardHeader sx={{ pb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <CardTitle>
+                  <Typography variant="subtitle1">{service.name}</Typography>
+                </CardTitle>
                 <Badge variant={service.is_active ? "default" : "secondary"}>
                   {service.is_active ? 'Active' : 'Inactive'}
                 </Badge>
-              </div>
+              </Box>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {service.description && (
-                <p className="text-sm text-muted-foreground">
-                  {service.description}
-                </p>
-              )}
-              {service.category && (
-                <Badge variant="outline">{service.category}</Badge>
-              )}
-              {service.icon && (
-                <p className="text-sm">
-                  <span className="font-medium">Icon:</span> {service.icon}
-                </p>
-              )}
-              <p className="text-sm">
-                <span className="font-medium">Sort Order:</span> {service.sort_order}
-              </p>
-              
-              <div className="flex gap-2 pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleEdit(service)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleDelete(service.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+            <CardContent>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {service.description && (
+                  <Typography variant="body2" color="text.secondary">
+                    {service.description}
+                  </Typography>
+                )}
+                {service.category && (
+                  <Badge variant="outline">{service.category}</Badge>
+                )}
+                {service.icon && (
+                  <Typography variant="body2">
+                    <Box component="span" sx={{ fontWeight: 600 }}>Icon:</Box> {service.icon}
+                  </Typography>
+                )}
+                <Typography variant="body2">
+                  <Box component="span" sx={{ fontWeight: 600 }}>Sort Order:</Box> {service.sort_order}
+                </Typography>
+
+                <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(service)}
+                  >
+                    <Edit style={{ width: 16, height: 16 }} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(service.id)}
+                  >
+                    <Trash2 style={{ width: 16, height: 16 }} />
+                  </Button>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         ))}
-      </div>
+      </Box>
 
       {filteredServices.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">No services found matching your criteria.</p>
-        </div>
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography color="text.secondary">No services found matching your criteria.</Typography>
+        </Box>
       )}
-    </div>
+    </Container>
   );
 }

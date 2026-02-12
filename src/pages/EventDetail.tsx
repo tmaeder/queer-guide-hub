@@ -12,6 +12,9 @@ import { formatEventTime } from '@/lib/event-time';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -51,7 +54,6 @@ export default function EventDetail() {
       try {
         setLoading(true);
 
-        // Fetch event details with venue (public, works for anonymous users)
         const { data: eventData, error: eventError } = await supabase
           .from('events')
           .select(`
@@ -73,8 +75,6 @@ export default function EventDetail() {
 
         if (eventError) throw eventError;
 
-        // Fetch attendees with profiles separately (requires authenticated user)
-        // The profiles table only allows authenticated access
         if (user) {
           const { data: attendeesData } = await supabase
             .from('event_attendees')
@@ -137,7 +137,6 @@ export default function EventDetail() {
         description: `You're now marked as ${status.replace('_', ' ')} for this event`,
       });
 
-      // Refresh event data by re-fetching
       if (id) {
         try {
           const { data: eventData, error: eventError } = await supabase
@@ -199,7 +198,6 @@ export default function EventDetail() {
 
       if (error) throw error;
 
-      // Create a blob from the calendar data and trigger download
       const blob = new Blob([data], { type: 'text/calendar' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -226,57 +224,57 @@ export default function EventDetail() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded w-1/3 mb-6"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <div className="h-64 bg-muted rounded"></div>
-              <div className="h-48 bg-muted rounded"></div>
-            </div>
-            <div className="space-y-6">
-              <div className="h-32 bg-muted rounded"></div>
-              <div className="h-48 bg-muted rounded"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+          <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%', mb: 3 }} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }} />
+              <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }} />
+              <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
+            </Box>
+          </Box>
+        </Box>
+      </Container>
     );
   }
 
   if (!event) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold mb-4">Event Not Found</h1>
-        <p className="text-muted-foreground mb-6">The event you're looking for doesn't exist.</p>
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Event Not Found</Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>The event you're looking for doesn't exist.</Typography>
         <Link to="/events">
           <Button>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Events
           </Button>
         </Link>
-      </div>
+      </Container>
     );
   }
 
   const attendeesGoing = event.event_attendees?.filter(a => a.status === 'going') || [];
   const attendeesInterested = event.event_attendees?.filter(a => a.status === 'interested') || [];
 
-  const getEventTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      party: 'bg-primary/10 text-primary',
-      workshop: 'bg-accent/10 text-accent',
-      meetup: 'bg-secondary/10 text-secondary',
-      pride: 'bg-primary text-primary-foreground',
-      rally: 'bg-destructive/10 text-destructive',
+  const getEventTypeSx = (type: string) => {
+    const colors: Record<string, object> = {
+      party: { bgcolor: 'rgba(var(--primary-rgb), 0.1)', color: 'primary.main' },
+      workshop: { bgcolor: 'rgba(var(--accent-rgb), 0.1)', color: 'secondary.main' },
+      meetup: { bgcolor: 'rgba(var(--secondary-rgb), 0.1)', color: 'text.secondary' },
+      pride: { bgcolor: 'primary.main', color: 'primary.contrastText' },
+      rally: { bgcolor: 'rgba(var(--destructive-rgb), 0.1)', color: 'error.main' },
     };
-    return colors[type] || 'bg-muted/10 text-muted-foreground';
+    return colors[type] || { bgcolor: 'action.hover', color: 'text.secondary' };
   };
 
   const formatEventDate = (startDate: string, endDate?: string | null) => {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : null;
-    
+
     if (end && format(start, 'yyyy-MM-dd') !== format(end, 'yyyy-MM-dd')) {
       return `${format(start, 'EEEE, MMMM d')} - ${format(end, 'EEEE, MMMM d, yyyy')}`;
     }
@@ -296,144 +294,149 @@ export default function EventDetail() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
-      <div className="mb-8">
-        <Link to="/events" className="inline-flex items-center text-muted-foreground hover:text-primary mb-6">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Events
+      <Box sx={{ mb: 4 }}>
+        <Link to="/events" style={{ display: 'inline-flex', alignItems: 'center', color: 'inherit', textDecoration: 'none', marginBottom: 24 }}>
+          <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>Back to Events</Typography>
         </Link>
-        
+
         {/* Hero Section */}
         {event.images && event.images.length > 0 && (
-          <div className="relative mb-8">
-            <div className="aspect-[21/9] rounded-2xl overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20">
-              <img
+          <Box sx={{ position: 'relative', mb: 4 }}>
+            <Box sx={{ aspectRatio: '21/9', borderRadius: 4, overflow: 'hidden', background: 'linear-gradient(to right, var(--primary-alpha-20, rgba(0,0,0,0.05)), var(--accent-alpha-20, rgba(0,0,0,0.05)))' }}>
+              <Box
+                component="img"
                 src={event.images[0]}
                 alt={event.title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
+                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
                 }}
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-          <div className="flex-1">
-            <div className="flex items-start gap-4 mb-4">
-              <div>
-                <h1 className="text-4xl font-bold mb-2">{event.title}</h1>
-                <div className="flex items-center gap-3 mb-4">
-                  <Badge className={getEventTypeColor(event.event_type)} variant="secondary">
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: { lg: 'flex-start' }, justifyContent: { lg: 'space-between' }, gap: 3 }}>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+              <Box>
+                <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>{event.title}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                  <Badge sx={getEventTypeSx(event.event_type)} variant="secondary">
                     {event.event_type}
                   </Badge>
-                  <Badge variant="outline" className={`${event.is_free ? 'border-success text-success' : 'border-primary text-primary'} font-medium`}>
+                  <Badge variant="outline" style={{ fontWeight: 500, borderColor: event.is_free ? 'var(--success)' : 'var(--primary)', color: event.is_free ? 'var(--success)' : 'var(--primary)' }}>
                     {getPriceDisplay()}
                   </Badge>
                   {event.featured && (
-                    <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground">✨ Featured</Badge>
+                    <Badge style={{ background: 'linear-gradient(to right, var(--primary), var(--accent))', color: 'var(--primary-foreground)' }}>Featured</Badge>
                   )}
                   {event.age_restriction && (
                     <Badge variant="outline">
                       {event.age_restriction}
                     </Badge>
                   )}
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="flex items-center gap-3 p-4 bg-muted/50">
-                <Calendar className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Date</p>
-                  <p className="font-medium">{formatEventDate(event.start_date, event.end_date)}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-muted/50">
-                <Clock className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Time</p>
-                  <p className="font-medium">{formatEventTime(event.start_date, event.end_date)}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-muted/50">
-                <MapPin className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Location</p>
+                </Box>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, bgcolor: 'action.hover' }}>
+                <Calendar style={{ width: 20, height: 20, color: 'var(--primary)' }} />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Date</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>{formatEventDate(event.start_date, event.end_date)}</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, bgcolor: 'action.hover' }}>
+                <Clock style={{ width: 20, height: 20, color: 'var(--primary)' }} />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Time</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>{formatEventTime(event.start_date, event.end_date)}</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, bgcolor: 'action.hover' }}>
+                <MapPin style={{ width: 20, height: 20, color: 'var(--primary)' }} />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Location</Typography>
                   {event.venues?.id ? (
-                    <Link 
-                      to={`/venues/${event.venues.id}`} 
-                      className="font-medium text-primary hover:underline"
+                    <Link
+                      to={`/venues/${event.venues.id}`}
+                      style={{ textDecoration: 'none' }}
                     >
-                      {event.venues.name}
+                      <Typography variant="body2" color="primary" sx={{ fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}>
+                        {event.venues.name}
+                      </Typography>
                     </Link>
                   ) : (
-                    <p className="font-medium">{event.venue_name || 'Location TBA'}</p>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>{event.venue_name || 'Location TBA'}</Typography>
                   )}
-                   <p className="text-sm text-muted-foreground">
-                     <Link 
-                       to={`/cities/${event.city?.toLowerCase().replace(/\s+/g, '-')}`} 
-                       className="text-primary hover:underline"
-                     >
-                       {event.city}
-                     </Link>
-                     {event.state && `, ${event.state}`}
-                   </p>
-                </div>
-              </div>
-            </div>
-          </div>
+                  <Typography variant="body2" color="text.secondary">
+                    <Link
+                      to={`/cities/${event.city?.toLowerCase().replace(/\s+/g, '-')}`}
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                      <Typography component="span" variant="body2" color="primary" sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                        {event.city}
+                      </Typography>
+                    </Link>
+                    {event.state && `, ${event.state}`}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
 
-          <div className="flex flex-col gap-3 lg:min-w-[200px]">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: { lg: 200 } }}>
             {event.ticket_url && (
-              <Button size="lg" className="w-full" asChild>
+              <Button size="lg" style={{ width: '100%' }} asChild>
                 <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-2" />
+                  <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
                   Get Tickets
                 </a>
               </Button>
             )}
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleExportToCalendar} className="flex-1">
-                <Download className="h-4 w-4" />
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button variant="outline" size="sm" onClick={handleExportToCalendar} style={{ flex: 1 }}>
+                <Download style={{ width: 16, height: 16 }} />
               </Button>
-              <Button variant="outline" size="sm" className="flex-1">
-                <Share2 className="h-4 w-4" />
+              <Button variant="outline" size="sm" style={{ flex: 1 }}>
+                <Share2 style={{ width: 16, height: 16 }} />
               </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Attendance Actions */}
           {user && (
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex gap-3">
-                  <Button 
+              <CardContent style={{ paddingTop: 24 }}>
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
+                  <Button
                     variant={userAttendance === 'going' ? 'default' : 'outline'}
                     onClick={() => handleAttendanceUpdate('going')}
-                    className="flex-1"
+                    style={{ flex: 1 }}
                   >
-                    <Users className="h-4 w-4 mr-2" />
-                    Going {userAttendance === 'going' && '✓'}
+                    <Users style={{ width: 16, height: 16, marginRight: 8 }} />
+                    Going {userAttendance === 'going' && '\u2713'}
                   </Button>
-                  <Button 
+                  <Button
                     variant={userAttendance === 'interested' ? 'default' : 'outline'}
                     onClick={() => handleAttendanceUpdate('interested')}
-                    className="flex-1"
+                    style={{ flex: 1 }}
                   >
-                    <Users className="h-4 w-4 mr-2" />
-                    Interested {userAttendance === 'interested' && '✓'}
+                    <Users style={{ width: 16, height: 16, marginRight: 8 }} />
+                    Interested {userAttendance === 'interested' && '\u2713'}
                   </Button>
-                </div>
+                </Box>
               </CardContent>
             </Card>
           )}
@@ -445,25 +448,25 @@ export default function EventDetail() {
                 <CardTitle>Event Photos</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                   {event.images.map((imageUrl, index) => (
-                    <div key={index} className="aspect-video rounded-lg overflow-hidden bg-muted">
-                      <img
+                    <Box key={index} sx={{ aspectRatio: '16/9', borderRadius: 2, overflow: 'hidden', bgcolor: 'action.hover' }}>
+                      <Box
+                        component="img"
                         src={imageUrl}
                         alt={`${event.title} - Image ${index + 1}`}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                        onError={(e) => {
+                        sx={{ width: '100%', height: '100%', objectFit: 'cover', '&:hover': { transform: 'scale(1.05)' }, transition: 'transform 300ms', cursor: 'pointer' }}
+                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder.svg';
                         }}
                         onClick={() => {
-                          // Open image in new tab for full view
                           window.open(imageUrl, '_blank');
                         }}
                       />
-                    </div>
+                    </Box>
                   ))}
-                </div>
+                </Box>
               </CardContent>
             </Card>
           )}
@@ -475,7 +478,7 @@ export default function EventDetail() {
                 <CardTitle>About This Event</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">{event.description}</p>
+                <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>{event.description}</Typography>
               </CardContent>
             </Card>
           )}
@@ -486,20 +489,20 @@ export default function EventDetail() {
               <CardHeader>
                 <CardTitle>Venue</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">{event.venues.name}</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
+              <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <Box>
+                  <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>{event.venues.name}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
                     {event.venues.address}<br />
                     {event.venues.city}, {event.venues.state} {event.venues.country}
-                  </p>
-                </div>
-                
-                <div className="flex gap-3">
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
                   {event.venues.phone && (
                     <Button variant="outline" size="sm" asChild>
                       <a href={`tel:${event.venues.phone}`}>
-                        <Phone className="h-4 w-4 mr-2" />
+                        <Phone style={{ width: 16, height: 16, marginRight: 8 }} />
                         Call
                       </a>
                     </Button>
@@ -507,7 +510,7 @@ export default function EventDetail() {
                   {event.venues.website && (
                     <Button variant="outline" size="sm" asChild>
                       <a href={event.venues.website} target="_blank" rel="noopener noreferrer">
-                        <Globe className="h-4 w-4 mr-2" />
+                        <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
                         Website
                       </a>
                     </Button>
@@ -517,12 +520,12 @@ export default function EventDetail() {
                       View Venue Details
                     </Button>
                   </Link>
-                </div>
+                </Box>
               </CardContent>
             </Card>
           )}
 
-          {/* Attendees - Only shown to logged in users */}
+          {/* Attendees */}
           {user && (
             <Card>
               <CardHeader>
@@ -532,121 +535,120 @@ export default function EventDetail() {
               </CardHeader>
               <CardContent>
                 {attendeesGoing.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="font-medium mb-2 text-sm">Going</h4>
-                    <div className="flex flex-wrap gap-2">
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Going</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {attendeesGoing.slice(0, 12).map((attendee) => (
-                        <div key={attendee.id} className="flex items-center gap-2 bg-muted/30 rounded-full px-3 py-1">
-                          <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-xs text-primary-foreground">
+                        <Box key={attendee.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'action.hover', borderRadius: '9999px', px: 1.5, py: 0.5 }}>
+                          <Box sx={{ width: 24, height: 24, bgcolor: 'primary.main', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'primary.contrastText' }}>
                             {attendee.profiles?.display_name?.[0] || 'U'}
-                          </div>
-                          <span className="text-xs">{attendee.profiles?.display_name || 'Anonymous'}</span>
-                        </div>
+                          </Box>
+                          <Typography variant="caption">{attendee.profiles?.display_name || 'Anonymous'}</Typography>
+                        </Box>
                       ))}
                       {attendeesGoing.length > 12 && (
-                        <div className="text-xs text-muted-foreground px-3 py-1">
+                        <Typography variant="caption" color="text.secondary" sx={{ px: 1.5, py: 0.5 }}>
                           +{attendeesGoing.length - 12} more
-                        </div>
+                        </Typography>
                       )}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
 
                 {attendeesInterested.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2 text-sm">Interested</h4>
-                    <div className="flex flex-wrap gap-2">
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Interested</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {attendeesInterested.slice(0, 8).map((attendee) => (
-                        <div key={attendee.id} className="flex items-center gap-2 bg-muted/20 rounded-full px-3 py-1">
-                          <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center text-xs">
+                        <Box key={attendee.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'action.hover', borderRadius: '9999px', px: 1.5, py: 0.5 }}>
+                          <Box sx={{ width: 24, height: 24, bgcolor: 'action.hover', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
                             {attendee.profiles?.display_name?.[0] || 'U'}
-                          </div>
-                          <span className="text-xs">{attendee.profiles?.display_name || 'Anonymous'}</span>
-                        </div>
+                          </Box>
+                          <Typography variant="caption">{attendee.profiles?.display_name || 'Anonymous'}</Typography>
+                        </Box>
                       ))}
                       {attendeesInterested.length > 8 && (
-                        <div className="text-xs text-muted-foreground px-3 py-1">
+                        <Typography variant="caption" color="text.secondary" sx={{ px: 1.5, py: 0.5 }}>
                           +{attendeesInterested.length - 8} more
-                        </div>
+                        </Typography>
                       )}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
 
                 {attendeesGoing.length === 0 && attendeesInterested.length === 0 && (
-                  <p className="text-muted-foreground text-center py-4">No attendees yet. Be the first!</p>
+                  <Typography color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>No attendees yet. Be the first!</Typography>
                 )}
               </CardContent>
             </Card>
           )}
-        </div>
+        </Box>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Event Details */}
           <Card>
             <CardHeader>
               <CardTitle>Event Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-3">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{getPriceDisplay()}</span>
-              </div>
-              
+            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <DollarSign style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>{getPriceDisplay()}</Typography>
+              </Box>
+
               {event.max_attendees && (
-                <div className="flex items-center gap-3">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Max {event.max_attendees} attendees</span>
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Users style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="body2">Max {event.max_attendees} attendees</Typography>
+                </Box>
               )}
 
               {event.organizer_name && (
-                <div>
-                  <h4 className="font-medium text-sm mb-1">Organizer</h4>
-                  <button 
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Organizer</Typography>
+                  <Box
+                    component="button"
                     onClick={() => navigate(`/events?organizer=${encodeURIComponent(event.organizer_name!)}`)}
-                    className="text-sm text-primary hover:underline text-left"
+                    sx={{ fontSize: 14, color: 'primary.main', '&:hover': { textDecoration: 'underline' }, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', p: 0 }}
                   >
                     {event.organizer_name}
-                  </button>
+                  </Box>
                   {event.organizer_contact && (
-                    <p className="text-xs text-muted-foreground">{event.organizer_contact}</p>
+                    <Typography variant="caption" color="text.secondary">{event.organizer_contact}</Typography>
                   )}
-                </div>
+                </Box>
               )}
             </CardContent>
           </Card>
-
-          {/* Tags - will be implemented with unified tag system */}
 
           {/* Links */}
           <Card>
             <CardHeader>
               <CardTitle>Links</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {event.website && (
-                <Button variant="outline" size="sm" className="w-full justify-start" asChild>
+                <Button variant="outline" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} asChild>
                   <a href={event.website} target="_blank" rel="noopener noreferrer">
-                    <Globe className="h-4 w-4 mr-2" />
+                    <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
                     Event Website
                   </a>
                 </Button>
               )}
-              
+
               {event.ticket_url && (
-                <Button variant="outline" size="sm" className="w-full justify-start" asChild>
+                <Button variant="outline" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} asChild>
                   <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
+                    <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
                     Get Tickets
                   </a>
                 </Button>
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Container>
   );
 }

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Eye, EyeOff, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useSecurityValidation } from '@/hooks/useSecurityValidation';
-import { cn } from '@/lib/utils';
 
 interface SecurePasswordFieldProps {
   value: string;
@@ -63,21 +64,33 @@ export function SecurePasswordField({
   };
 
   const getValidationIcon = () => {
-    if (isValidating) return <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />;
+    if (isValidating) return (
+      <Box
+        sx={{
+          height: 16,
+          width: 16,
+          border: 2,
+          borderColor: 'primary.main',
+          borderTopColor: 'transparent',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }}
+      />
+    );
     if (!validation) return null;
-    if (validation.is_valid) return <CheckCircle className="h-4 w-4 text-success" />;
-    return <AlertTriangle className="h-4 w-4 text-destructive" />;
+    if (validation.is_valid) return <CheckCircle style={{ height: 16, width: 16, color: 'var(--success)' }} />;
+    return <AlertTriangle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />;
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
-      <Label htmlFor="password" className="flex items-center gap-2">
-        <Shield className="h-4 w-4" />
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} className={className}>
+      <Label htmlFor="password" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Shield style={{ height: 16, width: 16 }} />
         {label}
-        {required && <span className="text-destructive">*</span>}
+        {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
       </Label>
-      
-      <div className="relative">
+
+      <Box sx={{ position: 'relative' }}>
         <Input
           id="password"
           type={showPassword ? 'text' : 'password'}
@@ -86,67 +99,70 @@ export function SecurePasswordField({
           placeholder={placeholder}
           autoComplete={autoComplete}
           required={required}
-          className={cn(
-            "pr-20",
-            validation && !validation.is_valid && "border-destructive focus:border-destructive"
-          )}
+          style={{
+            paddingRight: 80,
+            ...(validation && !validation.is_valid ? { borderColor: 'var(--destructive)' } : {}),
+          }}
         />
-        
-        <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-3">
+
+        <Box sx={{ position: 'absolute', inset: 'auto 0 auto auto', top: 0, bottom: 0, display: 'flex', alignItems: 'center', gap: 0.5, pr: 1.5 }}>
           {getValidationIcon()}
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="h-auto p-1"
+            style={{ height: 'auto', padding: 4 }}
             onClick={() => setShowPassword(!showPassword)}
           >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showPassword ? <EyeOff style={{ height: 16, width: 16 }} /> : <Eye style={{ height: 16, width: 16 }} />}
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {showStrengthMeter && validation && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Password Strength</span>
-            <span className={cn(
-              "font-medium",
-              validation.strength_level === 'strong' && "text-success",
-              validation.strength_level === 'medium' && "text-warning",
-              validation.strength_level === 'weak' && "text-destructive"
-            )}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>Password Strength</Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 500,
+                ...(validation.strength_level === 'strong' && { color: 'var(--success)' }),
+                ...(validation.strength_level === 'medium' && { color: 'var(--warning)' }),
+                ...(validation.strength_level === 'weak' && { color: 'error.main' }),
+              }}
+            >
               {validation.strength_level?.charAt(0).toUpperCase() + validation.strength_level?.slice(1)}
-            </span>
-          </div>
-          
-          <Progress 
+            </Typography>
+          </Box>
+
+          <Progress
             value={getStrengthPercentage(validation.strength_score || 0)}
-            className="h-2"
             style={{
+              height: 8,
               background: 'hsl(var(--muted))',
             }}
           />
-        </div>
+        </Box>
       )}
 
       {validation && validation.errors && validation.errors.length > 0 && (
-        <div className="space-y-1">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {validation.errors.map((error: string, index: number) => (
-            <p key={index} className="text-xs text-destructive flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3" />
+            <Typography key={index} variant="body2" sx={{ fontSize: '0.75rem', color: 'error.main', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <AlertTriangle style={{ height: 12, width: 12 }} />
               {error}
-            </p>
+            </Typography>
           ))}
-        </div>
+        </Box>
       )}
 
       {validation && validation.is_valid && (
-        <p className="text-xs text-success flex items-center gap-1">
-          <CheckCircle className="h-3 w-3" />
+        <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <CheckCircle style={{ height: 12, width: 12 }} />
           Password meets security requirements
-        </p>
+        </Typography>
       )}
-    </div>
+    </Box>
   );
 }

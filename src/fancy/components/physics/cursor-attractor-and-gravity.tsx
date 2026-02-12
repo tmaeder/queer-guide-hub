@@ -153,7 +153,7 @@ const Gravity: React.FC<GravityProps> = ({
   }, [attractorPoint, attractorStrength, cursorStrength, cursorFieldRadius, mousePosition]);
 
   return (
-    <div ref={containerRef} className={`relative overflow-hidden ${className}`}>
+    <div ref={containerRef} style={{ position: 'relative', overflow: 'hidden' }} className={className}>
       {children}
     </div>
   );

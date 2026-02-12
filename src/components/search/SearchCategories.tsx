@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { Search, MapPin, Calendar, Store, Newspaper, Users, Tag, Briefcase } from "lucide-react";
+import Box from '@mui/material/Box';
 
 export const searchCategories = [
   { label: "All", value: "all", icon: Search },
@@ -19,10 +20,10 @@ interface SearchCategoriesProps {
   onSelectCategory: (category: string) => void;
 }
 
-export function SearchCategories({ 
-  selectedCategory, 
-  query, 
-  onSelectCategory 
+export function SearchCategories({
+  selectedCategory,
+  query,
+  onSelectCategory
 }: SearchCategoriesProps) {
   return (
     <CommandGroup heading="Search in">
@@ -32,12 +33,12 @@ export function SearchCategories({
           <CommandItem
             key={category.value}
             onSelect={() => onSelectCategory(category.value)}
-            className="cursor-pointer"
+            style={{ cursor: 'pointer' }}
           >
-            <Icon className="h-4 w-4 mr-2" />
+            <Box component={Icon} sx={{ height: 16, width: 16, mr: 1 }} />
             {category.label}
             {selectedCategory === category.value && (
-              <Badge variant="outline" className="ml-auto text-xs">
+              <Badge variant="outline" style={{ marginLeft: 'auto', fontSize: '0.75rem' }}>
                 Selected
               </Badge>
             )}

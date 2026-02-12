@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface PhotoPrivacyManagerProps {
   photoId: string;
@@ -18,9 +20,9 @@ interface PhotoPrivacyManagerProps {
  * PhotoPrivacyManager - Granular photo privacy controls
  * Default-private with explicit consent for sharing
  */
-export function PhotoPrivacyManager({ 
-  photoId, 
-  currentVisibility, 
+export function PhotoPrivacyManager({
+  photoId,
+  currentVisibility,
   onVisibilityChange,
   isOwner,
   enhancedSecurity = true
@@ -34,21 +36,21 @@ export function PhotoPrivacyManager({
       label: 'Private',
       description: 'Only you can see this photo',
       icon: Lock,
-      color: 'text-primary'
+      color: 'primary.main'
     },
     {
       value: 'friends',
       label: 'Friends Only',
       description: 'Only your friends can see this photo',
       icon: Users,
-      color: 'text-secondary'
+      color: 'text.secondary'
     },
     {
       value: 'public',
       label: 'Public',
       description: 'Anyone can see this photo',
       icon: Globe,
-      color: 'text-warning'
+      color: 'warning.main'
     }
   ] as const;
 
@@ -67,7 +69,7 @@ export function PhotoPrivacyManager({
     setIsChanging(true);
     try {
       await onVisibilityChange(newVisibility);
-      
+
       toast({
         title: "Privacy Settings Updated",
         description: `Photo visibility changed to ${newVisibility}`,
@@ -86,41 +88,41 @@ export function PhotoPrivacyManager({
 
   if (!isOwner) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        {currentOption?.icon && <currentOption.icon className="h-4 w-4" />}
-        <span>{currentOption?.label}</span>
-      </div>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'text.secondary' }}>
+        {currentOption?.icon && <currentOption.icon style={{ height: 16, width: 16 }} />}
+        <Typography component="span" variant="body2">{currentOption?.label}</Typography>
+      </Box>
     );
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <Shield className="h-4 w-4" />
+    <Card sx={{ width: '100%' }}>
+      <CardHeader sx={{ pb: 1.5 }}>
+        <CardTitle style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Shield style={{ height: 16, width: 16 }} />
           Photo Privacy Settings
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Alert>
-          <Eye className="h-4 w-4" />
+          <Eye style={{ height: 16, width: 16 }} />
           <AlertDescription>
             Photos are private by default. Choose who can see this photo.
           </AlertDescription>
         </Alert>
 
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {currentOption?.icon && (
-              <currentOption.icon className={`h-5 w-5 ${currentOption.color}`} />
+              <currentOption.icon style={{ height: 20, width: 20 }} />
             )}
-            <div className="flex-1">
-              <div className="font-medium">{currentOption?.label}</div>
-              <div className="text-sm text-muted-foreground">
+            <Box sx={{ flex: 1 }}>
+              <Typography sx={{ fontWeight: 500 }}>{currentOption?.label}</Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 {currentOption?.description}
-              </div>
-            </div>
-          </div>
+              </Typography>
+            </Box>
+          </Box>
 
           <Select
             value={currentVisibility}
@@ -133,19 +135,19 @@ export function PhotoPrivacyManager({
             <SelectContent>
               {visibilityOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  <div className="flex items-center gap-2">
-                    <option.icon className={`h-4 w-4 ${option.color}`} />
-                    <span>{option.label}</span>
-                  </div>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <option.icon style={{ height: 16, width: 16 }} />
+                    <Typography component="span" variant="body2">{option.label}</Typography>
+                  </Box>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </Box>
 
         {currentVisibility === 'public' && (
-          <Alert className="border-warning">
-            <Globe className="h-4 w-4" />
+          <Alert style={{ borderColor: 'var(--warning)' }}>
+            <Globe style={{ height: 16, width: 16 }} />
             <AlertDescription>
               <strong>Public photos</strong> can be seen by anyone and may be indexed by search engines.
             </AlertDescription>

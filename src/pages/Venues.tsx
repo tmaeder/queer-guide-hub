@@ -13,6 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MapPin, Plus, Loader, Grid, Map, SortAsc, SortDesc, Filter } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
@@ -86,7 +89,7 @@ const Venues = () => {
   // Sort venues based on current sort settings
   const sortedVenues = useMemo(() => {
     if (!venues || venues.length === 0) return [];
-    
+
     if (sortBy === 'featured') {
       // Featured venues first, then alphabetical by name
       return [...venues].sort((a, b) => {
@@ -162,37 +165,37 @@ const Venues = () => {
   }, [page, loading, hasMore, currentFilters, autoLoadedCount]);
   if (error) {
     return (
-      <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-8">
-          <Card className="p-8 text-center">
-            <CardContent>
-              <p className="text-destructive mb-4">Something went wrong while loading venues. Please try again.</p>
+      <Box sx={{ minHeight: '100vh' }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Card>
+            <CardContent sx={{ p: 4, textAlign: 'center' }}>
+              <Typography color="error" sx={{ mb: 2 }}>Something went wrong while loading venues. Please try again.</Typography>
               <Button onClick={() => fetchVenues()}>Try Again</Button>
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <Box sx={{ minHeight: '100vh' }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
-        <Card className="mb-8">
-          <CardContent className="p-8 text-center">
-            <h1 className="text-5xl font-bold text-foreground mb-4 animate-fade-in">
+        <Card sx={{ mb: 4 }}>
+          <CardContent sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="h3" sx={{ fontWeight: 700, mb: 2, '@keyframes fadeIn': { from: { opacity: 0 }, to: { opacity: 1 } }, animation: 'fadeIn 0.5s ease-in' }}>
               Venues
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: '42rem', mx: 'auto' }}>
               Discover queer-friendly venues, businesses, and organizations in your area
-            </p>
+            </Typography>
             {user && (
-              <Button 
-                className="bg-primary hover:opacity-90 gap-2 px-6 py-3 text-lg hover-scale"
+              <Button
+                style={{ display: 'inline-flex', gap: 8, paddingLeft: 24, paddingRight: 24, paddingTop: 12, paddingBottom: 12, fontSize: '1.125rem' }}
                 onClick={() => navigate('/admin/venues')}
               >
-                <Plus className="h-5 w-5" />
+                <Plus style={{ width: 20, height: 20 }} />
                 Add Your Business
               </Button>
             )}
@@ -200,28 +203,30 @@ const Venues = () => {
         </Card>
 
         {/* Filters Section */}
-        <div className="mb-8">
+        <Box sx={{ mb: 4 }}>
           <VenueFilters onFiltersChange={handleFiltersChange} />
-        </div>
+        </Box>
 
         {/* Results Header with Sorting */}
         {!loading && venues.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 p-4 bg-card rounded-lg border">
-            <div className="flex items-center gap-4">
-              <p className="text-muted-foreground font-medium">
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', gap: 2, mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography color="text.secondary" sx={{ fontWeight: 500 }}>
                 Found {venues.length} result{venues.length !== 1 ? 's' : ''}
-              </p>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Filter className="h-4 w-4" />
-                {Object.keys(currentFilters).length > 0 && `${Object.keys(currentFilters).length} filter${Object.keys(currentFilters).length !== 1 ? 's' : ''} applied`}
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Sort by:</span>
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Filter style={{ width: 16, height: 16 }} />
+                <Typography variant="body2" color="text.secondary">
+                  {Object.keys(currentFilters).length > 0 && `${Object.keys(currentFilters).length} filter${Object.keys(currentFilters).length !== 1 ? 's' : ''} applied`}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">Sort by:</Typography>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger style={{ width: 128 }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -236,113 +241,115 @@ const Venues = () => {
                   variant="outline"
                   size="sm"
                   onClick={toggleSortOrder}
-                  className="px-2"
+                  style={{ paddingLeft: 8, paddingRight: 8 }}
                 >
-                  {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+                  {sortOrder === 'asc' ? <SortAsc style={{ width: 16, height: 16 }} /> : <SortDesc style={{ width: 16, height: 16 }} />}
                 </Button>
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
         )}
 
         {/* Content Tabs */}
-        <Tabs value={viewMode === 'grid' ? 'grid' : 'map'} onValueChange={(value) => setViewMode(value as 'grid' | 'list')} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8 max-w-md mx-auto">
-            <TabsTrigger value="grid" className="flex items-center gap-2">
-              <Grid className="h-4 w-4" />
+        <Tabs value={viewMode === 'grid' ? 'grid' : 'map'} onValueChange={(value) => setViewMode(value as 'grid' | 'list')}>
+          <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr', marginBottom: 32, maxWidth: 448, marginLeft: 'auto', marginRight: 'auto' }}>
+            <TabsTrigger value="grid" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Grid style={{ width: 16, height: 16 }} />
               Grid View
             </TabsTrigger>
-            <TabsTrigger value="map" className="flex items-center gap-2">
-              <Map className="h-4 w-4" />
+            <TabsTrigger value="map" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Map style={{ width: 16, height: 16 }} />
               Map View
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="grid" className="space-y-8">
-            {/* Loading State */}
-            {loading && (
-              <div className="flex flex-col items-center justify-center py-20">
-                <Loader className="h-12 w-12 animate-spin text-primary mb-4" />
-                <span className="text-lg text-muted-foreground">Finding amazing places for you...</span>
-              </div>
-            )}
+          <TabsContent value="grid">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {/* Loading State */}
+              {loading && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10 }}>
+                  <Loader style={{ width: 48, height: 48, color: 'var(--primary)', marginBottom: 16, animation: 'spin 1s linear infinite' }} />
+                  <Typography variant="subtitle1" color="text.secondary">Finding amazing places for you...</Typography>
+                </Box>
+              )}
 
-            {/* Empty State */}
-            {!loading && venues.length === 0 && (
-              <Card className="p-12 text-center animate-fade-in">
-                <CardContent>
-                  <MapPin className="h-16 w-16 mx-auto mb-6 text-muted-foreground" />
-                  <h3 className="text-2xl font-semibold mb-3">No venues found</h3>
-                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    We couldn't find any venues matching your criteria. Try adjusting your filters or be the first to add a venue in this area!
-                  </p>
-                  {user && (
-                    <Button 
-                      className="bg-primary hover:opacity-90 px-6 py-3"
-                      onClick={() => navigate('/admin/venues')}
+              {/* Empty State */}
+              {!loading && venues.length === 0 && (
+                <Card>
+                  <CardContent sx={{ p: 6, textAlign: 'center' }}>
+                    <MapPin style={{ width: 64, height: 64, margin: '0 auto 24px', color: 'var(--muted-foreground)' }} />
+                    <Typography variant="h5" sx={{ fontWeight: 600, mb: 1.5 }}>No venues found</Typography>
+                    <Typography color="text.secondary" sx={{ mb: 3, maxWidth: '28rem', mx: 'auto' }}>
+                      We couldn't find any venues matching your criteria. Try adjusting your filters or be the first to add a venue in this area!
+                    </Typography>
+                    {user && (
+                      <Button
+                        style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 12, paddingBottom: 12 }}
+                        onClick={() => navigate('/admin/venues')}
+                      >
+                        Add the First Venue
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Venues Grid */}
+              {!loading && venues.length > 0 && (
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
+                  {sortedVenues.map((venue, index) => (
+                    <Box
+                      key={venue.id}
+                      sx={{ '&:hover': { transform: 'scale(1.02)' }, transition: 'transform 200ms' }}
                     >
-                      Add the First Venue
+                      <VenueCard
+                        venue={venue}
+                        events={events}
+                        onViewDetails={handleViewDetails}
+                        onAmenityClick={handleAmenityClick}
+                        onServiceClick={handleServiceClick}
+                        onTagClick={handleTagClick}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              )}
+
+              {/* Infinite scroll sentinel and manual load control */}
+              {!loading && venues.length > 0 && (
+                <Box sx={{ textAlign: 'center', mt: 8 }}>
+                  {hasMore && autoLoadedCount >= 50 && (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      style={{ paddingLeft: 32, paddingRight: 32, paddingTop: 12, paddingBottom: 12 }}
+                      onClick={async () => {
+                        setAutoLoadedCount(0);
+                        const nextPage = page + 1;
+                        setPage(nextPage);
+                        await fetchVenues(currentFilters, { page: nextPage, pageSize: PAGE_SIZE, append: true });
+                      }}
+                    >
+                      Load More Results
                     </Button>
                   )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Venues Grid */}
-            {!loading && venues.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
-                {sortedVenues.map((venue, index) => (
-                  <div 
-                    key={venue.id}
-                    className="animate-fade-in hover-scale"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <VenueCard
-                      venue={venue}
-                      events={events}
-                      onViewDetails={handleViewDetails}
-                      onAmenityClick={handleAmenityClick}
-                      onServiceClick={handleServiceClick}
-                      onTagClick={handleTagClick}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Infinite scroll sentinel and manual load control */}
-            {!loading && venues.length > 0 && (
-              <div className="text-center mt-16">
-                {hasMore && autoLoadedCount >= 50 && (
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="px-8 py-3 hover-scale"
-                    onClick={async () => {
-                      setAutoLoadedCount(0);
-                      const nextPage = page + 1;
-                      setPage(nextPage);
-                      await fetchVenues(currentFilters, { page: nextPage, pageSize: PAGE_SIZE, append: true });
-                    }}
-                  >
-                    Load More Results
-                  </Button>
-                )}
-                {/* Sentinel always rendered to continue observing */}
-                <div ref={sentinelRef} className="h-1" />
-              </div>
-            )}
-
+                  {/* Sentinel always rendered to continue observing */}
+                  <Box ref={sentinelRef} sx={{ height: '1px' }} />
+                </Box>
+              )}
+            </Box>
           </TabsContent>
 
-          <TabsContent value="map" className="space-y-6">
-            <div className="h-[700px] w-full rounded-lg overflow-hidden border">
-              <VenueMapSearch filters={currentFilters} />
-            </div>
+          <TabsContent value="map">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ height: 700, width: '100%', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
+                <VenueMapSearch filters={currentFilters} />
+              </Box>
+            </Box>
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 };
 

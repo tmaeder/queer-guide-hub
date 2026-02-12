@@ -93,21 +93,21 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
   };
 
   return (
-    <div className="space-y-4 p-4 bg-card">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, bgcolor: 'background.paper' }}>
       {/* Search Bar */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div sx={{ display: 'flex', gap: 1 }}>
+        <div sx={{ position: 'relative', flex: 1 }}>
+          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           <Input
             placeholder="Search products and services..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-9"
+            sx={{ pl: 4.5 }}
           />
         </div>
-        <Button onClick={handleSearch} className="bg-primary" size="icon" aria-label="Search">
-          <Search className="h-4 w-4" />
+        <Button onClick={handleSearch} sx={{ bgcolor: 'primary.main' }} size="icon" aria-label="Search">
+          <Search style={{ height: 16, width: 16 }} />
         </Button>
         <Button
           variant="outline"
@@ -115,15 +115,15 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
           size="icon"
           aria-label="Toggle filters"
         >
-          <Filter className="h-4 w-4" />
+          <Filter style={{ height: 16, width: 16 }} />
         </Button>
       </div>
 
       {/* Extended Filters */}
       {showAllFilters && (
-        <div className="space-y-4 pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
+        <div sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+          <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="category">Category</Label>
               <Select value={category} onValueChange={handleCategoryChange}>
                 <SelectTrigger>
@@ -140,7 +140,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="subcategory">Subcategory</Label>
               <Select value={subcategory} onValueChange={setSubcategory} disabled={!category}>
                 <SelectTrigger>
@@ -157,7 +157,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="businessType">Business Type</Label>
               <Select value={businessType} onValueChange={setBusinessType}>
                 <SelectTrigger>
@@ -175,8 +175,8 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
+          <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
@@ -186,7 +186,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
               />
             </div>
 
-            <div className="space-y-2">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="minPrice">Min Price</Label>
               <Input
                 id="minPrice"
@@ -197,7 +197,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
               />
             </div>
 
-            <div className="space-y-2">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="maxPrice">Max Price</Label>
               <Input
                 id="maxPrice"
@@ -216,18 +216,18 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
             placeholder="Select marketplace tags..."
             maxTags={10}
             categories={['business', 'commerce', 'product', 'service', 'identity']}
-            className="space-y-2"
+            sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
           />
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            <Button onClick={handleSearch} className="bg-primary gap-2">
-              <Sliders className="h-4 w-4" />
+          <div sx={{ display: 'flex', gap: 1, pt: 1 }}>
+            <Button onClick={handleSearch} sx={{ bgcolor: 'primary.main', gap: 1 }}>
+              <Sliders style={{ height: 16, width: 16 }} />
               Apply Filters
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters} className="gap-2">
-                <X className="h-4 w-4" />
+              <Button variant="outline" onClick={clearFilters} sx={{ gap: 1 }}>
+                <X style={{ height: 16, width: 16 }} />
                 Clear All
               </Button>
             )}
@@ -237,49 +237,49 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
 
       {/* Active Filters Display */}
       {hasActiveFilters && !showAllFilters && (
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
+        <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+          <span sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Active filters:</span>
           {search && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 0.5 }}>
               Search: {search}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setSearch('')} />
+              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setSearch('')} />
             </Badge>
           )}
           {category && category !== 'all' && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 0.5 }}>
               {category}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setCategory('')} />
+              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setCategory('')} />
             </Badge>
           )}
           {subcategory && subcategory !== 'all' && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 0.5 }}>
               {subcategory}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setSubcategory('')} />
+              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setSubcategory('')} />
             </Badge>
           )}
           {location && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 0.5 }}>
               Location: {location}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setLocation('')} />
+              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setLocation('')} />
             </Badge>
           )}
           {businessType && businessType !== 'all' && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 0.5 }}>
               {businessType}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setBusinessType('')} />
+              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setBusinessType('')} />
             </Badge>
           )}
           {(minPrice || maxPrice) && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 0.5 }}>
               Price: ${minPrice || '0'} - ${maxPrice || '∞'}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => { setMinPrice(''); setMaxPrice(''); }} />
+              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => { setMinPrice(''); setMaxPrice(''); }} />
             </Badge>
           )}
            {selectedTags.map((tag) => (
-             <Badge key={tag} variant="secondary" className="gap-1">
+             <Badge key={tag} variant="secondary" sx={{ gap: 0.5 }}>
                {tag}
                <X
-                 className="h-3 w-3 cursor-pointer"
+                 style={{ height: 12, width: 12, cursor: 'pointer' }}
                  onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
                />
              </Badge>

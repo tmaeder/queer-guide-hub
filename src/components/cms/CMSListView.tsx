@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { 
-  Edit, 
-  Eye, 
-  Trash2, 
-  ExternalLink, 
+import {
+  Edit,
+  Eye,
+  Trash2,
+  ExternalLink,
   Calendar,
   User,
   Tag,
@@ -14,6 +14,8 @@ import {
   ArrowUp,
   ArrowDown
 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +27,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { CMSAdvancedFilters } from './CMSAdvancedFilters';
 import { useCMSFilters } from '@/hooks/useCMSFilters';
 
@@ -51,7 +52,7 @@ export function CMSListView({
   onViewModeChange
 }: CMSListViewProps) {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  
+
   const {
     filters,
     updateFilter,
@@ -69,17 +70,17 @@ export function CMSListView({
 
   const getSortIcon = (column: string) => {
     if (filters.sortBy !== column) {
-      return <ArrowUpDown className="h-4 w-4" />;
+      return <ArrowUpDown style={{ height: 16, width: 16 }} />;
     }
-    return filters.sortOrder === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
+    return filters.sortOrder === 'asc' ? <ArrowUp style={{ height: 16, width: 16 }} /> : <ArrowDown style={{ height: 16, width: 16 }} />;
   };
 
   const SortableHeader = ({ column, children }: { column: string; children: React.ReactNode }) => (
-    <TableHead className="cursor-pointer select-none" onClick={() => updateSort(column)}>
-      <div className="flex items-center gap-2 hover:text-foreground">
+    <TableHead style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => updateSort(column)}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, '&:hover': { color: 'text.primary' } }}>
         {children}
         {getSortIcon(column)}
-      </div>
+      </Box>
     </TableHead>
   );
 
@@ -99,40 +100,40 @@ export function CMSListView({
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string): React.CSSProperties => {
     switch (status?.toLowerCase()) {
       case 'active':
       case 'published':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return { backgroundColor: '#dcfce7', color: '#166534', borderColor: '#bbf7d0' };
       case 'draft':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return { backgroundColor: '#f3f4f6', color: '#1f2937', borderColor: '#e5e7eb' };
       case 'inactive':
       case 'archived':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return { backgroundColor: '#fee2e2', color: '#991b1b', borderColor: '#fecaca' };
       case 'pending':
       case 'review':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return { backgroundColor: '#fef9c3', color: '#854d0e', borderColor: '#fef08a' };
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return { backgroundColor: '#f3f4f6', color: '#1f2937', borderColor: '#e5e7eb' };
     }
   };
 
   const getContentTypeIcon = (type: string) => {
     switch (type) {
       case 'events':
-        return <Calendar className="h-4 w-4" />;
+        return <Calendar style={{ height: 16, width: 16 }} />;
       case 'venues':
-        return <ExternalLink className="h-4 w-4" />;
+        return <ExternalLink style={{ height: 16, width: 16 }} />;
       case 'personalities':
-        return <User className="h-4 w-4" />;
+        return <User style={{ height: 16, width: 16 }} />;
       default:
-        return <Tag className="h-4 w-4" />;
+        return <Tag style={{ height: 16, width: 16 }} />;
     }
   };
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <CMSAdvancedFilters
           filters={filters}
           onFilterChange={updateFilter}
@@ -142,17 +143,19 @@ export function CMSListView({
           totalRecords={0}
         />
         <Card>
-          <CardContent className="p-8 text-center">
-            <div className="animate-pulse">Loading content...</div>
+          <CardContent>
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+              <Box sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s infinite' }}>Loading content...</Box>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="space-y-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <CMSAdvancedFilters
           filters={filters}
           onFilterChange={updateFilter}
@@ -162,17 +165,19 @@ export function CMSListView({
           totalRecords={0}
         />
         <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-destructive mb-4">{error}</p>
-            <Button onClick={onRefresh}>Retry</Button>
+          <CardContent>
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+              <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>
+              <Button onClick={onRefresh}>Retry</Button>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Advanced Filters */}
       <CMSAdvancedFilters
         filters={filters}
@@ -184,37 +189,37 @@ export function CMSListView({
       />
 
       {/* View Mode Toggle & Bulk Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {selectedItems.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body2" color="text.secondary">
                 {selectedItems.length} selected
-              </span>
+              </Typography>
               <Button variant="outline" size="sm">
                 Bulk Actions
               </Button>
-            </div>
+            </Box>
           )}
-        </div>
-        
-        <div className="flex items-center gap-2">
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
             onClick={() => onViewModeChange('grid')}
           >
-            <Grid3X3 className="h-4 w-4" />
+            <Grid3X3 style={{ height: 16, width: 16 }} />
           </Button>
           <Button
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => onViewModeChange('list')}
           >
-            <List className="h-4 w-4" />
+            <List style={{ height: 16, width: 16 }} />
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Content Table */}
       <Card>
@@ -223,15 +228,17 @@ export function CMSListView({
         </CardHeader>
         <CardContent>
           {filteredData.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No content found matching your criteria.
-            </div>
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography color="text.secondary">
+                No content found matching your criteria.
+              </Typography>
+            </Box>
           ) : (
-            <div className="overflow-auto">
+            <Box sx={{ overflow: 'auto' }}>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">
+                    <TableHead style={{ width: 48 }}>
                       <Checkbox
                         checked={selectedItems.length === filteredData.length && filteredData.length > 0}
                         onCheckedChange={handleSelectAll}
@@ -242,17 +249,14 @@ export function CMSListView({
                     <SortableHeader column="status">Status</SortableHeader>
                     <SortableHeader column="updated_at">Updated</SortableHeader>
                     <SortableHeader column="created_at">Created</SortableHeader>
-                    <TableHead className="w-24">Actions</TableHead>
+                    <TableHead style={{ width: 96 }}>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredData.map((item) => (
-                    <TableRow 
+                    <TableRow
                       key={`${item.content_type}-${item.id}`}
-                      className={cn(
-                        "hover:bg-muted/50",
-                        selectedItems.includes(item.id) && "bg-muted/30"
-                      )}
+                      style={selectedItems.includes(item.id) ? { backgroundColor: 'rgba(0,0,0,0.03)' } : undefined}
                     >
                       <TableCell>
                         <Checkbox
@@ -260,55 +264,70 @@ export function CMSListView({
                           onCheckedChange={(checked) => handleSelectItem(item.id, !!checked)}
                         />
                       </TableCell>
-                      
+
                       <TableCell>
-                        <div className="flex items-center gap-3">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           {item.image_url && (
-                            <Avatar className="h-8 w-8">
+                            <Avatar style={{ height: 32, width: 32 }}>
                               <AvatarImage src={item.image_url} alt={item.title} />
                               <AvatarFallback>
                                 {getContentTypeIcon(item.content_type)}
                               </AvatarFallback>
                             </Avatar>
                           )}
-                          <div>
-                            <button
+                          <Box>
+                            <Box
+                              component="button"
                               onClick={() => onEdit(item)}
-                              className="font-medium line-clamp-1 max-w-xs text-left hover:text-primary transition-colors cursor-pointer underline-offset-4 hover:underline"
+                              sx={{
+                                fontWeight: 500,
+                                overflow: 'hidden',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 1,
+                                WebkitBoxOrient: 'vertical',
+                                maxWidth: 320,
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                                textDecorationOffset: '4px',
+                                background: 'none',
+                                border: 'none',
+                                p: 0,
+                                font: 'inherit',
+                              }}
                             >
                               {item.title || 'Untitled'}
-                            </button>
+                            </Box>
                             {item.description && (
-                              <div className="text-sm text-muted-foreground line-clamp-1 max-w-xs">
+                              <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', maxWidth: 320 }}>
                                 {item.description}
-                              </div>
+                              </Typography>
                             )}
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
                       </TableCell>
-                      
+
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           {getContentTypeIcon(item.content_type)}
-                          <span className="capitalize text-sm">
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
                             {item.content_type.replace('_', ' ')}
-                          </span>
-                        </div>
+                          </Typography>
+                        </Box>
                       </TableCell>
-                      
+
                       <TableCell>
                         <Select
                           value={item.status || item.workflow_state || 'unknown'}
                           onValueChange={(newStatus) => {
-                            // Update the item status directly
                             const updatedItem = { ...item, status: newStatus, workflow_state: newStatus };
                             onEdit(updatedItem);
                           }}
                         >
-                          <SelectTrigger className="w-32 h-8">
+                          <SelectTrigger style={{ width: 128, height: 32 }}>
                             <SelectValue>
-                              <Badge 
-                                className={getStatusColor(item.status || item.workflow_state || 'unknown')}
+                              <Badge
+                                style={getStatusStyle(item.status || item.workflow_state || 'unknown')}
                                 variant="outline"
                               >
                                 {item.status || item.workflow_state || 'unknown'}
@@ -317,41 +336,31 @@ export function CMSListView({
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="draft">
-                              <Badge className={getStatusColor('draft')} variant="outline">
-                                draft
-                              </Badge>
+                              <Badge style={getStatusStyle('draft')} variant="outline">draft</Badge>
                             </SelectItem>
                             <SelectItem value="published">
-                              <Badge className={getStatusColor('published')} variant="outline">
-                                published
-                              </Badge>
+                              <Badge style={getStatusStyle('published')} variant="outline">published</Badge>
                             </SelectItem>
                             <SelectItem value="archived">
-                              <Badge className={getStatusColor('archived')} variant="outline">
-                                archived
-                              </Badge>
+                              <Badge style={getStatusStyle('archived')} variant="outline">archived</Badge>
                             </SelectItem>
                             <SelectItem value="pending">
-                              <Badge className={getStatusColor('pending')} variant="outline">
-                                pending
-                              </Badge>
+                              <Badge style={getStatusStyle('pending')} variant="outline">pending</Badge>
                             </SelectItem>
                             <SelectItem value="review">
-                              <Badge className={getStatusColor('review')} variant="outline">
-                                review
-                              </Badge>
+                              <Badge style={getStatusStyle('review')} variant="outline">review</Badge>
                             </SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      
+
                       <TableCell>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger>
-                              <time className="text-sm text-muted-foreground">
+                              <Typography variant="body2" color="text.secondary" component="time">
                                 {format(new Date(item.updated_at), 'MMM dd, yy')}
-                              </time>
+                              </Typography>
                             </TooltipTrigger>
                             <TooltipContent>
                               {format(new Date(item.updated_at), 'PPP p')}
@@ -359,14 +368,14 @@ export function CMSListView({
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
-                      
+
                       <TableCell>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger>
-                              <time className="text-sm text-muted-foreground">
+                              <Typography variant="body2" color="text.secondary" component="time">
                                 {format(new Date(item.created_at), 'MMM dd, yy')}
-                              </time>
+                              </Typography>
                             </TooltipTrigger>
                             <TooltipContent>
                               {format(new Date(item.created_at), 'PPP p')}
@@ -374,67 +383,67 @@ export function CMSListView({
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
-                      
+
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => onEdit(item)}
-                            className="h-8 px-2"
+                            style={{ height: 32, paddingLeft: 8, paddingRight: 8 }}
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit style={{ height: 16, width: 16 }} />
                           </Button>
-                          
+
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" style={{ height: 32, width: 32, padding: 0 }}>
+                                <MoreHorizontal style={{ height: 16, width: 16 }} />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-background border shadow-md">
+                            <DropdownMenuContent align="end" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
                               <DropdownMenuItem onClick={() => onEdit(item)}>
-                                <Edit className="mr-2 h-4 w-4" />
+                                <Edit style={{ marginRight: 8, height: 16, width: 16 }} />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem disabled>
-                                <Eye className="mr-2 h-4 w-4" />
+                                <Eye style={{ marginRight: 8, height: 16, width: 16 }} />
                                 Preview
                               </DropdownMenuItem>
                               {onDelete && (item.content_type === 'cms_content' || item.content_type === 'community_posts') && (
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={() => onDelete(item.id)}
-                                  className="text-destructive"
+                                  style={{ color: 'var(--destructive)' }}
                                 >
-                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  <Trash2 style={{ marginRight: 8, height: 16, width: 16 }} />
                                   Delete
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </div>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
+            </Box>
           )}
         </CardContent>
       </Card>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" color="text.secondary">
               Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalResults)} of {totalResults} results
-            </span>
+            </Typography>
             <Select
               value={pageSize.toString()}
               onValueChange={(value) => updateFilter('pageSize', parseInt(value))}
             >
-              <SelectTrigger className="w-20 h-8">
+              <SelectTrigger style={{ width: 80, height: 32 }}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -445,21 +454,18 @@ export function CMSListView({
                 <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
-            <span>per page</span>
-          </div>
+            <Typography variant="body2" color="text.secondary">per page</Typography>
+          </Box>
 
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
+                <PaginationPrevious
                   onClick={() => currentPage > 1 && updateFilter('page', currentPage - 1)}
-                  className={cn(
-                    currentPage <= 1 && "pointer-events-none opacity-50"
-                  )}
+                  style={currentPage <= 1 ? { pointerEvents: 'none', opacity: 0.5 } : undefined}
                 />
               </PaginationItem>
-              
-              {/* Page numbers */}
+
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let pageNum;
                 if (totalPages <= 5) {
@@ -471,38 +477,36 @@ export function CMSListView({
                 } else {
                   pageNum = currentPage - 2 + i;
                 }
-                
+
                 return (
                   <PaginationItem key={pageNum}>
                     <PaginationLink
                       onClick={() => updateFilter('page', pageNum)}
                       isActive={currentPage === pageNum}
-                      className="cursor-pointer"
+                      style={{ cursor: 'pointer' }}
                     >
                       {pageNum}
                     </PaginationLink>
                   </PaginationItem>
                 );
               })}
-              
+
               {totalPages > 5 && currentPage < totalPages - 2 && (
                 <PaginationItem>
                   <PaginationEllipsis />
                 </PaginationItem>
               )}
-              
+
               <PaginationItem>
-                <PaginationNext 
+                <PaginationNext
                   onClick={() => currentPage < totalPages && updateFilter('page', currentPage + 1)}
-                  className={cn(
-                    currentPage >= totalPages && "pointer-events-none opacity-50"
-                  )}
+                  style={currentPage >= totalPages ? { pointerEvents: 'none', opacity: 0.5 } : undefined}
                 />
               </PaginationItem>
             </PaginationContent>
           </Pagination>
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

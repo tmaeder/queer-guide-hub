@@ -12,6 +12,8 @@ import { SearchFilters } from '@/hooks/useSearch';
 import { format } from 'date-fns';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface SearchFiltersPanelProps {
   filters: SearchFilters;
@@ -102,33 +104,33 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
   };
 
   return (
-    <div className="p-4 border-b space-y-4">
+    <div sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 2 }}>
       {/* Content Types */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">Content Types</Label>
+      <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Content Types</Label>
           {(filters.types && filters.types.length > 0) && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 text-xs"
+              sx={{ height: 24, fontSize: '0.75rem' }}
               onClick={() => onFiltersChange({ ...filters, types: [] })}
             >
               Clear
             </Button>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {contentTypes.map((type) => {
             const IconComponent = type.icon;
             return (
               <Badge
                 key={type.id}
                 variant={(filters.types && filters.types.includes(type.id)) ? "default" : "outline"}
-                className="cursor-pointer hover:bg-primary/80"
+                sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'rgba(var(--primary-rgb), 0.8)' } }}
                 onClick={() => toggleContentType(type.id)}
               >
-                <IconComponent className="h-3 w-3 mr-1" />
+                <IconComponent style={{ height: 12, width: 12, marginRight: 4 }} />
                 {type.label}
               </Badge>
             );
@@ -137,26 +139,26 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
       </div>
 
       {/* Location Filter */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium flex items-center gap-1">
-          <MapPin className="h-3 w-3" />
+      <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <MapPin style={{ height: 12, width: 12 }} />
           Location
         </Label>
-        <div className="relative">
+        <div sx={{ position: 'relative' }}>
           <Input
             placeholder="Enter city, state, or country..."
             value={filters.location || ''}
             onChange={(e) => updateLocation(e.target.value)}
-            className="text-sm"
+            sx={{ fontSize: '0.875rem' }}
           />
           {filters.location && (
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-1 top-1 h-6 w-6 p-0"
+              sx={{ position: 'absolute', right: 4, top: 4, height: 24, width: 24, p: 0 }}
               onClick={() => updateLocation('')}
             >
-              <X className="h-3 w-3" />
+              <X style={{ height: 12, width: 12 }} />
             </Button>
           )}
         </div>
@@ -164,14 +166,14 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
 
       {/* Quick Categories */}
       {getRelevantCategories().length > 0 && (
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Popular Categories</Label>
-          <div className="flex flex-wrap gap-1">
+        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Popular Categories</Label>
+          <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {getRelevantCategories().map((category) => (
               <Badge
                 key={category}
                 variant={filters.categories?.includes(category) ? "default" : "secondary"}
-                className="cursor-pointer text-xs"
+                sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
                 onClick={() => 
                   filters.categories?.includes(category) 
                     ? removeCategory(category)
@@ -186,14 +188,14 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
       )}
 
       {/* Advanced Filters Toggle */}
-      <div className="flex items-center justify-between pt-2">
+      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs"
+          sx={{ fontSize: '0.75rem' }}
           onClick={() => setShowAdvanced(!showAdvanced)}
         >
-          <Filter className="h-3 w-3 mr-1" />
+          <Filter style={{ height: 12, width: 12, marginRight: 4 }} />
           {showAdvanced ? 'Hide' : 'Show'} Advanced Filters
         </Button>
         
@@ -201,7 +203,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
           <Button
             variant="ghost"
             size="sm"
-            className="text-xs text-destructive"
+            sx={{ fontSize: '0.75rem', color: 'error.main' }}
             onClick={clearAllFilters}
           >
             Clear All
@@ -211,11 +213,11 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div className="space-y-4 pt-2 border-t">
+        <div sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, borderTop: 1, borderColor: 'divider' }}>
           {/* Date Range */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-1">
-              <CalendarIcon className="h-3 w-3" />
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <CalendarIcon style={{ height: 12, width: 12 }} />
               Date Range
             </Label>
             <DatePickerWithRange
@@ -234,20 +236,20 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
           </div>
 
           {/* Price Range */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-1">
-              <DollarSign className="h-3 w-3" />
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <DollarSign style={{ height: 12, width: 12 }} />
               Price Range
             </Label>
-            <div className="px-2">
+            <div sx={{ px: 1 }}>
               <Slider
                 value={filters.priceRange || [0, 1000]}
                 onValueChange={updatePriceRange}
                 max={1000}
                 step={10}
-                className="w-full"
+                sx={{ width: '100%' }}
               />
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <div sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>
                 <span>${filters.priceRange?.[0] || 0}</span>
                 <span>${filters.priceRange?.[1] || 1000}</span>
               </div>
@@ -255,29 +257,29 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
           </div>
 
           {/* Rating Filter */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-1">
-              <Star className="h-3 w-3" />
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Star style={{ height: 12, width: 12 }} />
               Minimum Rating
             </Label>
-            <div className="flex gap-1">
+            <div sx={{ display: 'flex', gap: 0.5 }}>
               {[1, 2, 3, 4, 5].map((rating) => (
                 <Button
                   key={rating}
                   variant={filters.rating === rating ? "default" : "outline"}
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  sx={{ height: 32, width: 32, p: 0 }}
                   onClick={() => updateRating(rating)}
                 >
-                  <Star className="h-3 w-3" />
+                  <Star style={{ height: 12, width: 12 }} />
                 </Button>
               ))}
             </div>
           </div>
 
           {/* Featured/Verified Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Switch
                 id="featured"
                 checked={filters.featured || false}
@@ -285,10 +287,10 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                   onFiltersChange({ ...filters, featured: checked })
                 }
               />
-              <Label htmlFor="featured" className="text-sm">Featured only</Label>
+              <Label htmlFor="featured" sx={{ fontSize: '0.875rem' }}>Featured only</Label>
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Switch
                 id="verified"
                 checked={filters.verified || false}
@@ -296,7 +298,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                   onFiltersChange({ ...filters, verified: checked })
                 }
               />
-              <Label htmlFor="verified" className="text-sm">Verified only</Label>
+              <Label htmlFor="verified" sx={{ fontSize: '0.875rem' }}>Verified only</Label>
             </div>
           </div>
         </div>

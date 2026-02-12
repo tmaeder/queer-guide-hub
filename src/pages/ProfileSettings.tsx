@@ -17,7 +17,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { User, Camera, Save, ArrowLeft, Loader2, CheckCircle, AlertCircle, Heart, Users, Lock, Globe, Settings, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +26,8 @@ import OptimizedErrorBoundary, { DataErrorFallback } from '@/components/error/Op
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
 import { SocialLinksManager } from '@/components/profile/SocialLinksManager';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export default function ProfileSettings() {
   const navigate = useNavigate();
@@ -42,13 +43,13 @@ export default function ProfileSettings() {
 
   return (
     <OptimizedErrorBoundary fallback={DataErrorFallback}>
-      <ProfileSettingsWrapper 
-        updateProfile={updateProfile} 
-        uploadAvatar={uploadAvatar} 
-        toast={toast} 
-        navigate={navigate} 
-        hasPasskey={hasPasskey} 
-        user={user} 
+      <ProfileSettingsWrapper
+        updateProfile={updateProfile}
+        uploadAvatar={uploadAvatar}
+        toast={toast}
+        navigate={navigate}
+        hasPasskey={hasPasskey}
+        user={user}
       />
     </OptimizedErrorBoundary>
   );
@@ -70,8 +71,8 @@ function ProfileSettingsWrapper({ updateProfile, uploadAvatar, toast, navigate, 
 
   if (isError || profileError) {
     return (
-      <DataErrorFallback 
-        error={profileError} 
+      <DataErrorFallback
+        error={profileError}
         errors={errors}
         resetErrorBoundary={() => window.location.reload()}
       />
@@ -79,14 +80,14 @@ function ProfileSettingsWrapper({ updateProfile, uploadAvatar, toast, navigate, 
   }
 
   return (
-    <ProfileSettingsContent 
-      profile={profile} 
-      updateProfile={updateProfile} 
-      uploadAvatar={uploadAvatar} 
-      toast={toast} 
-      navigate={navigate} 
-      hasPasskey={hasPasskey} 
-      user={user} 
+    <ProfileSettingsContent
+      profile={profile}
+      updateProfile={updateProfile}
+      uploadAvatar={uploadAvatar}
+      toast={toast}
+      navigate={navigate}
+      hasPasskey={hasPasskey}
+      user={user}
     />
   );
 }
@@ -96,7 +97,7 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
   const [isUpdating, setIsUpdating] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
-  
+
   const [formData, setFormData] = useState({
     display_name: profile?.display_name || '',
     first_name: (profile as any)?.first_name || '',
@@ -113,18 +114,18 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
     relationship_status: (profile as any)?.relationship_status || '',
     occupation: (profile as any)?.occupation || '',
     education: (profile as any)?.education || '',
-    
+
     // New LGBTQ+ specific fields
     chosen_name: (profile as any)?.chosen_name || '',
     name_pronunciation: (profile as any)?.name_pronunciation || '',
     coming_out_status: (profile as any)?.coming_out_status || {
       family: 'not_out',
-      friends: 'not_out', 
+      friends: 'not_out',
       work: 'not_out',
       public: 'not_out'
     },
     chosen_family_status: (profile as any)?.chosen_family_status || '',
-    
+
     // Sexuality and relationships fields
     romantic_orientation: (profile as any)?.romantic_orientation || '',
     relationship_style: (profile as any)?.relationship_style || '',
@@ -138,8 +139,8 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
     kink_experience_level: (profile as any)?.kink_experience_level || '',
     bdsm_role: (profile as any)?.bdsm_role || '',
     jealousy_comfort_level: (profile as any)?.jealousy_comfort_level || '',
-    
-    
+
+
     privacy_settings: {
       profile_visibility: (profile?.privacy_settings as any)?.profile_visibility || 'public',
       email_visible: (profile?.privacy_settings as any)?.email_visible || false,
@@ -155,14 +156,14 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
       formData.location, formData.pronouns, formData.gender_identity, formData.sexual_orientation,
       formData.age_range, formData.occupation, formData.education
     ];
-    
+
     let completed = 0;
     const totalFields = fields.length;
-    
+
     fields.forEach(field => {
       if (field && field.trim()) completed++;
     });
-    
+
     return Math.round((completed / totalFields) * 100);
   }, [formData]);
 
@@ -195,7 +196,7 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
       avatar_config: avatarData.avatarConfig,
       avatar_type: avatarData.avatarType
     }));
-    
+
     // No need to call handleSave here as AvatarSettings handles its own saving
     setHasUnsavedChanges(false);
   };
@@ -241,7 +242,7 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
 
   const handleSave = useCallback(async (silent = false) => {
     setIsUpdating(true);
-    
+
     const updates = {
       display_name: formData.display_name,
       first_name: formData.first_name,
@@ -258,13 +259,13 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
       relationship_status: formData.relationship_status,
       occupation: formData.occupation,
       education: formData.education,
-      
+
       // New LGBTQ+ specific fields
       chosen_name: formData.chosen_name,
       name_pronunciation: formData.name_pronunciation,
       coming_out_status: formData.coming_out_status,
       chosen_family_status: formData.chosen_family_status,
-      
+
       // Sexuality and relationships fields
       romantic_orientation: formData.romantic_orientation,
       relationship_style: formData.relationship_style,
@@ -278,14 +279,14 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
       kink_experience_level: formData.kink_experience_level,
       bdsm_role: formData.bdsm_role,
       jealousy_comfort_level: formData.jealousy_comfort_level,
-      
-      
+
+
       privacy_settings: formData.privacy_settings,
       user_mode: formData.user_mode
     };
 
     const { error } = await updateProfile(updates);
-    
+
     if (error) {
       if (!silent) {
         toast({
@@ -303,7 +304,7 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
         });
       }
     }
-    
+
     setIsUpdating(false);
   }, [formData, updateProfile, toast]);
 
@@ -320,512 +321,539 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
 
 
   return (
-    <div className="w-full p-6 space-y-6">
+    <Box sx={{ width: '100%', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header with Progress */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button variant="outline" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back
           </Button>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold">Profile Settings</h1>
-            <p className="text-muted-foreground">Manage your account information and privacy settings</p>
-          </div>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>Profile Settings</Typography>
+            <Typography color="text.secondary">Manage your account information and privacy settings</Typography>
+          </Box>
           {hasUnsavedChanges && (
-            <Alert className="w-auto">
-              <AlertCircle className="h-4 w-4" />
+            <Alert style={{ width: 'auto' }}>
+              <AlertCircle style={{ width: 16, height: 16 }} />
               <AlertDescription>You have unsaved changes</AlertDescription>
             </Alert>
           )}
-        </div>
+        </Box>
 
         {/* Profile Completion Progress */}
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Profile Completion</span>
-              <span className="text-sm text-muted-foreground">{profileCompletion}%</span>
-            </div>
-            <Progress value={profileCompletion} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-2">
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Profile Completion</Typography>
+              <Typography variant="body2" color="text.secondary">{profileCompletion}%</Typography>
+            </Box>
+            <Progress value={profileCompletion} style={{ height: 8 }} />
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
               Complete your profile to connect better with the community
-            </p>
+            </Typography>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Tabbed Interface */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="basic" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Basic
+      <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
+        <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+          <TabsTrigger value="basic">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <User style={{ width: 16, height: 16 }} />
+              Basic
+            </Box>
           </TabsTrigger>
-          <TabsTrigger value="identity" className="flex items-center gap-2">
-            <Heart className="h-4 w-4" />
-            Identity
+          <TabsTrigger value="identity">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Heart style={{ width: 16, height: 16 }} />
+              Identity
+            </Box>
           </TabsTrigger>
-          <TabsTrigger value="relationships" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Relationships
+          <TabsTrigger value="relationships">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Users style={{ width: 16, height: 16 }} />
+              Relationships
+            </Box>
           </TabsTrigger>
-          <TabsTrigger value="privacy" className="flex items-center gap-2">
-            <Lock className="h-4 w-4" />
-            Privacy
+          <TabsTrigger value="privacy">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Lock style={{ width: 16, height: 16 }} />
+              Privacy
+            </Box>
           </TabsTrigger>
         </TabsList>
 
         {/* Basic Information Tab */}
-        <TabsContent value="basic" className="space-y-6">
-          {/* Profile Picture */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Avatar</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Choose how you want to appear to other users. Upload your own photo, 
-                use our avatar builder, or connect your Gravatar account.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <AvatarSettings
-                initialData={{
-                  avatarUrl: profile?.avatar_url,
-                  avatarConfig: profile?.avatar_config,
-                  avatarType: profile?.avatar_type as 'upload' | 'builder' | 'gravatar' | undefined,
-                  email: user?.email || ''
-                }}
-                onSave={handleAvatarSave}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name</Label>
-                  <Input
-                    id="first_name"
-                    value={formData.first_name}
-                    onChange={(e) => handleInputChange('first_name', e.target.value)}
-                    placeholder="Your first name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name</Label>
-                  <Input
-                    id="last_name"
-                    value={formData.last_name}
-                    onChange={(e) => handleInputChange('last_name', e.target.value)}
-                    placeholder="Your last name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="display_name">Display Name</Label>
-                  <Input
-                    id="display_name"
-                    value={formData.display_name}
-                    onChange={(e) => handleInputChange('display_name', e.target.value)}
-                    placeholder="How you'd like to be called"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="chosen_name">Chosen Name</Label>
-                  <Input
-                    id="chosen_name"
-                    value={formData.chosen_name}
-                    onChange={(e) => handleInputChange('chosen_name', e.target.value)}
-                    placeholder="Name you'd like to be called"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pronouns">Pronouns</Label>
-                  <Input
-                    id="pronouns"
-                    value={formData.pronouns || ''}
-                    onChange={(e) => handleInputChange('pronouns', e.target.value)}
-                    placeholder="e.g., they/them, she/her, he/him"
-                    className="pointer-events-auto"
-                    tabIndex={0}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  value={formData.bio}
-                  onChange={(e) => handleInputChange('bio', e.target.value)}
-                  placeholder="Tell us about yourself..."
-                  rows={3}
+        <TabsContent value="basic">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Profile Picture */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Avatar</CardTitle>
+                <Typography variant="body2" color="text.secondary">
+                  Choose how you want to appear to other users. Upload your own photo,
+                  use our avatar builder, or connect your Gravatar account.
+                </Typography>
+              </CardHeader>
+              <CardContent>
+                <AvatarSettings
+                  initialData={{
+                    avatarUrl: profile?.avatar_url,
+                    avatarConfig: profile?.avatar_config,
+                    avatarType: profile?.avatar_type as 'upload' | 'builder' | 'gravatar' | undefined,
+                    email: user?.email || ''
+                  }}
+                  onSave={handleAvatarSave}
                 />
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2 relative">
-                  <Label htmlFor="location">Location</Label>
-                  <LocationAutocomplete
-                    value={formData.location}
-                    onChange={(value) => handleInputChange('location', value)}
-                    placeholder="Search for your city, country"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Date of Birth</Label>
-                  <div className="space-y-1">
-                    <div className="flex gap-2">
+            {/* Basic Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Basic Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="first_name">First Name</Label>
                       <Input
-                        id="date_of_birth"
-                        type="date"
-                        value={formData.date_of_birth || ''}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value) {
-                            const selectedDate = new Date(value);
-                            const today = new Date();
-                            const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-                            
-                            if (selectedDate <= eighteenYearsAgo && selectedDate >= new Date("1900-01-01")) {
-                              handleInputChange('date_of_birth', value);
-                            }
-                          } else {
-                            handleInputChange('date_of_birth', '');
-                          }
-                        }}
-                        max={(() => {
-                          const today = new Date();
-                          const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-                          return eighteenYearsAgo.toISOString().split('T')[0];
-                        })()}
-                        min="1900-01-01"
-                        className="flex-1"
-                        placeholder="YYYY-MM-DD"
+                        id="first_name"
+                        value={formData.first_name}
+                        onChange={(e) => handleInputChange('first_name', e.target.value)}
+                        placeholder="Your first name"
                       />
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-10 w-10 shrink-0"
-                            type="button"
-                          >
-                            <CalendarIcon className="h-4 w-4" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <div className="p-3 border-b">
-                            <p className="text-sm font-medium">Select Date of Birth</p>
-                            <p className="text-xs text-muted-foreground">
-                              You must be at least 18 years old
-                            </p>
-                          </div>
-                          <Calendar
-                            mode="single"
-                            selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
-                            onSelect={(date) => handleInputChange('date_of_birth', date ? date.toISOString().split('T')[0] : '')}
-                            disabled={(date) => {
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="last_name">Last Name</Label>
+                      <Input
+                        id="last_name"
+                        value={formData.last_name}
+                        onChange={(e) => handleInputChange('last_name', e.target.value)}
+                        placeholder="Your last name"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="display_name">Display Name</Label>
+                      <Input
+                        id="display_name"
+                        value={formData.display_name}
+                        onChange={(e) => handleInputChange('display_name', e.target.value)}
+                        placeholder="How you'd like to be called"
+                      />
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="chosen_name">Chosen Name</Label>
+                      <Input
+                        id="chosen_name"
+                        value={formData.chosen_name}
+                        onChange={(e) => handleInputChange('chosen_name', e.target.value)}
+                        placeholder="Name you'd like to be called"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="pronouns">Pronouns</Label>
+                      <Input
+                        id="pronouns"
+                        value={formData.pronouns || ''}
+                        onChange={(e) => handleInputChange('pronouns', e.target.value)}
+                        placeholder="e.g., they/them, she/her, he/him"
+                        style={{ pointerEvents: 'auto' }}
+                        tabIndex={0}
+                      />
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={formData.bio}
+                      onChange={(e) => handleInputChange('bio', e.target.value)}
+                      placeholder="Tell us about yourself..."
+                      rows={3}
+                    />
+                  </Box>
+
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative' }}>
+                      <Label htmlFor="location">Location</Label>
+                      <LocationAutocomplete
+                        value={formData.location}
+                        onChange={(value) => handleInputChange('location', value)}
+                        placeholder="Search for your city, country"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="date_of_birth">Date of Birth</Label>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Input
+                            id="date_of_birth"
+                            type="date"
+                            value={formData.date_of_birth || ''}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value) {
+                                const selectedDate = new Date(value);
+                                const today = new Date();
+                                const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+
+                                if (selectedDate <= eighteenYearsAgo && selectedDate >= new Date("1900-01-01")) {
+                                  handleInputChange('date_of_birth', value);
+                                }
+                              } else {
+                                handleInputChange('date_of_birth', '');
+                              }
+                            }}
+                            max={(() => {
                               const today = new Date();
                               const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-                              return date > eighteenYearsAgo || date < new Date("1900-01-01");
-                            }}
-                            initialFocus
-                            className="p-3 pointer-events-auto"
-                            defaultMonth={new Date(2000, 0)}
+                              return eighteenYearsAgo.toISOString().split('T')[0];
+                            })()}
+                            min="1900-01-01"
+                            style={{ flex: 1 }}
+                            placeholder="YYYY-MM-DD"
                           />
-                          {formData.date_of_birth && (
-                            <div className="p-3 border-t">
+                          <Popover>
+                            <PopoverTrigger asChild>
                               <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleInputChange('date_of_birth', '')}
-                                className="w-full text-muted-foreground hover:text-foreground"
+                                variant="outline"
+                                size="icon"
+                                style={{ height: 40, width: 40, flexShrink: 0 }}
+                                type="button"
                               >
-                                Clear date
+                                <CalendarIcon style={{ width: 16, height: 16 }} />
                               </Button>
-                            </div>
-                          )}
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Type directly or use the calendar. You must be at least 18 years old.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                            </PopoverTrigger>
+                            <PopoverContent style={{ width: 'auto', padding: 0 }} align="start">
+                              <Box sx={{ p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>Select Date of Birth</Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  You must be at least 18 years old
+                                </Typography>
+                              </Box>
+                              <Calendar
+                                mode="single"
+                                selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
+                                onSelect={(date) => handleInputChange('date_of_birth', date ? date.toISOString().split('T')[0] : '')}
+                                disabled={(date) => {
+                                  const today = new Date();
+                                  const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+                                  return date > eighteenYearsAgo || date < new Date("1900-01-01");
+                                }}
+                                initialFocus
+                                style={{ padding: 12, pointerEvents: 'auto' }}
+                                defaultMonth={new Date(2000, 0)}
+                              />
+                              {formData.date_of_birth && (
+                                <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider' }}>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleInputChange('date_of_birth', '')}
+                                    style={{ width: '100%' }}
+                                  >
+                                    <Typography variant="body2" color="text.secondary">Clear date</Typography>
+                                  </Button>
+                                </Box>
+                              )}
+                            </PopoverContent>
+                          </Popover>
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Type directly or use the calendar. You must be at least 18 years old.
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
 
-          {/* Social Media Links */}
-          <SocialLinksManager 
-            initialSocialLinks={profile?.social_links || {}}
-            onUpdate={(socialLinks) => {
-              // Update the profile context if needed
-              console.log('Social links updated:', socialLinks);
-            }}
-          />
+            {/* Social Media Links */}
+            <SocialLinksManager
+              initialSocialLinks={profile?.social_links || {}}
+              onUpdate={(socialLinks) => {
+                // Update the profile context if needed
+                console.log('Social links updated:', socialLinks);
+              }}
+            />
+          </Box>
         </TabsContent>
 
         {/* Identity Tab */}
-        <TabsContent value="identity" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>LGBTQ+ Identity</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="gender_identity">Gender Identity</Label>
-                  <Select value={formData.gender_identity} onValueChange={(value) => handleInputChange('gender_identity', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your gender identity" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="woman">Woman</SelectItem>
-                      <SelectItem value="man">Man</SelectItem>
-                      <SelectItem value="non_binary">Non-binary</SelectItem>
-                      <SelectItem value="genderfluid">Genderfluid</SelectItem>
-                      <SelectItem value="agender">Agender</SelectItem>
-                      <SelectItem value="bigender">Bigender</SelectItem>
-                      <SelectItem value="genderqueer">Genderqueer</SelectItem>
-                      <SelectItem value="demigender">Demigender</SelectItem>
-                      <SelectItem value="transgender_woman">Transgender woman</SelectItem>
-                      <SelectItem value="transgender_man">Transgender man</SelectItem>
-                      <SelectItem value="questioning">Questioning</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sexual_orientation">Sexual Orientation</Label>
-                  <Select value={formData.sexual_orientation} onValueChange={(value) => handleInputChange('sexual_orientation', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your orientation" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="straight">Straight</SelectItem>
-                      <SelectItem value="gay">Gay</SelectItem>
-                      <SelectItem value="lesbian">Lesbian</SelectItem>
-                      <SelectItem value="bisexual">Bisexual</SelectItem>
-                      <SelectItem value="pansexual">Pansexual</SelectItem>
-                      <SelectItem value="asexual">Asexual</SelectItem>
-                      <SelectItem value="demisexual">Demisexual</SelectItem>
-                      <SelectItem value="queer">Queer</SelectItem>
-                      <SelectItem value="questioning">Questioning</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-            </CardContent>
-          </Card>
+        <TabsContent value="identity">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle>LGBTQ+ Identity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="gender_identity">Gender Identity</Label>
+                      <Select value={formData.gender_identity} onValueChange={(value) => handleInputChange('gender_identity', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your gender identity" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="woman">Woman</SelectItem>
+                          <SelectItem value="man">Man</SelectItem>
+                          <SelectItem value="non_binary">Non-binary</SelectItem>
+                          <SelectItem value="genderfluid">Genderfluid</SelectItem>
+                          <SelectItem value="agender">Agender</SelectItem>
+                          <SelectItem value="bigender">Bigender</SelectItem>
+                          <SelectItem value="genderqueer">Genderqueer</SelectItem>
+                          <SelectItem value="demigender">Demigender</SelectItem>
+                          <SelectItem value="transgender_woman">Transgender woman</SelectItem>
+                          <SelectItem value="transgender_man">Transgender man</SelectItem>
+                          <SelectItem value="questioning">Questioning</SelectItem>
+                          <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="sexual_orientation">Sexual Orientation</Label>
+                      <Select value={formData.sexual_orientation} onValueChange={(value) => handleInputChange('sexual_orientation', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your orientation" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="straight">Straight</SelectItem>
+                          <SelectItem value="gay">Gay</SelectItem>
+                          <SelectItem value="lesbian">Lesbian</SelectItem>
+                          <SelectItem value="bisexual">Bisexual</SelectItem>
+                          <SelectItem value="pansexual">Pansexual</SelectItem>
+                          <SelectItem value="asexual">Asexual</SelectItem>
+                          <SelectItem value="demisexual">Demisexual</SelectItem>
+                          <SelectItem value="queer">Queer</SelectItem>
+                          <SelectItem value="questioning">Questioning</SelectItem>
+                          <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Box>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
         </TabsContent>
 
         {/* Relationships Tab */}
-        <TabsContent value="relationships" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sexuality & Romance</CardTitle>
-              <p className="text-sm text-muted-foreground">Share what you're comfortable with about your romantic and sexual preferences</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="romantic_orientation">Romantic Orientation</Label>
-                  <Input
-                    id="romantic_orientation"
-                    value={formData.romantic_orientation}
-                    onChange={(e) => handleInputChange('romantic_orientation', e.target.value)}
-                    placeholder="e.g., panromantic, biromantic, aromantic"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="current_relationship_status">Current Status</Label>
-                  <Select value={formData.current_relationship_status} onValueChange={(value) => handleInputChange('current_relationship_status', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="single">Single</SelectItem>
-                      <SelectItem value="taken">Taken</SelectItem>
-                      <SelectItem value="its_complicated">It's complicated</SelectItem>
-                      <SelectItem value="open_to_explore">Open to explore</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+        <TabsContent value="relationships">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Sexuality & Romance</CardTitle>
+                <Typography variant="body2" color="text.secondary">Share what you're comfortable with about your romantic and sexual preferences</Typography>
+              </CardHeader>
+              <CardContent>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="romantic_orientation">Romantic Orientation</Label>
+                      <Input
+                        id="romantic_orientation"
+                        value={formData.romantic_orientation}
+                        onChange={(e) => handleInputChange('romantic_orientation', e.target.value)}
+                        placeholder="e.g., panromantic, biromantic, aromantic"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="current_relationship_status">Current Status</Label>
+                      <Select value={formData.current_relationship_status} onValueChange={(value) => handleInputChange('current_relationship_status', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="single">Single</SelectItem>
+                          <SelectItem value="taken">Taken</SelectItem>
+                          <SelectItem value="its_complicated">It's complicated</SelectItem>
+                          <SelectItem value="open_to_explore">Open to explore</SelectItem>
+                          <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Box>
+                  </Box>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="relationship_style">Relationship Style</Label>
-                  <Select value={formData.relationship_style} onValueChange={(value) => handleInputChange('relationship_style', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select style" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="monogamous">Monogamous</SelectItem>
-                      <SelectItem value="polyamorous">Polyamorous</SelectItem>
-                      <SelectItem value="relationship_anarchist">Relationship anarchist</SelectItem>
-                      <SelectItem value="open_relationship">Open relationship</SelectItem>
-                      <SelectItem value="swinging">Swinging</SelectItem>
-                      <SelectItem value="exploring">Exploring</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="kink_experience_level">Kink Experience</Label>
-                  <Select value={formData.kink_experience_level} onValueChange={(value) => handleInputChange('kink_experience_level', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select experience level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No experience</SelectItem>
-                      <SelectItem value="curious">Curious</SelectItem>
-                      <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
-                      <SelectItem value="expert">Expert</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="relationship_style">Relationship Style</Label>
+                      <Select value={formData.relationship_style} onValueChange={(value) => handleInputChange('relationship_style', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select style" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="monogamous">Monogamous</SelectItem>
+                          <SelectItem value="polyamorous">Polyamorous</SelectItem>
+                          <SelectItem value="relationship_anarchist">Relationship anarchist</SelectItem>
+                          <SelectItem value="open_relationship">Open relationship</SelectItem>
+                          <SelectItem value="swinging">Swinging</SelectItem>
+                          <SelectItem value="exploring">Exploring</SelectItem>
+                          <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="kink_experience_level">Kink Experience</Label>
+                      <Select value={formData.kink_experience_level} onValueChange={(value) => handleInputChange('kink_experience_level', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select experience level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No experience</SelectItem>
+                          <SelectItem value="curious">Curious</SelectItem>
+                          <SelectItem value="beginner">Beginner</SelectItem>
+                          <SelectItem value="intermediate">Intermediate</SelectItem>
+                          <SelectItem value="advanced">Advanced</SelectItem>
+                          <SelectItem value="expert">Expert</SelectItem>
+                          <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Box>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
         </TabsContent>
 
 
         {/* Privacy Tab */}
-        <TabsContent value="privacy" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Privacy Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="profile_visibility" className="text-sm font-medium">
-                      Profile Visibility
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Who can see your profile
-                    </p>
-                  </div>
-                  <Select 
-                    value={formData.privacy_settings.profile_visibility} 
-                    onValueChange={(value) => handlePrivacyChange('profile_visibility', value)}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="friends">Friends</SelectItem>
-                      <SelectItem value="private">Private</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+        <TabsContent value="privacy">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Privacy Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Label htmlFor="profile_visibility">
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>Profile Visibility</Typography>
+                        </Label>
+                        <Typography variant="caption" color="text.secondary">
+                          Who can see your profile
+                        </Typography>
+                      </Box>
+                      <Select
+                        value={formData.privacy_settings.profile_visibility}
+                        onValueChange={(value) => handlePrivacyChange('profile_visibility', value)}
+                      >
+                        <SelectTrigger style={{ width: 128 }}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="public">Public</SelectItem>
+                          <SelectItem value="friends">Friends</SelectItem>
+                          <SelectItem value="private">Private</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Box>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="email_visible" className="text-sm font-medium">
-                      Show Email
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Display your email on your profile
-                    </p>
-                  </div>
-                  <Switch
-                    id="email_visible"
-                    checked={formData.privacy_settings.email_visible}
-                    onCheckedChange={(checked) => handlePrivacyChange('email_visible', checked)}
-                  />
-                </div>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Label htmlFor="email_visible">
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>Show Email</Typography>
+                        </Label>
+                        <Typography variant="caption" color="text.secondary">
+                          Display your email on your profile
+                        </Typography>
+                      </Box>
+                      <Switch
+                        id="email_visible"
+                        checked={formData.privacy_settings.email_visible}
+                        onCheckedChange={(checked) => handlePrivacyChange('email_visible', checked)}
+                      />
+                    </Box>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="phone_visible" className="text-sm font-medium">
-                      Show Phone
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Display your phone number on your profile
-                    </p>
-                  </div>
-                  <Switch
-                    id="phone_visible"
-                    checked={formData.privacy_settings.phone_visible}
-                    onCheckedChange={(checked) => handlePrivacyChange('phone_visible', checked)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Label htmlFor="phone_visible">
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>Show Phone</Typography>
+                        </Label>
+                        <Typography variant="caption" color="text.secondary">
+                          Display your phone number on your profile
+                        </Typography>
+                      </Box>
+                      <Switch
+                        id="phone_visible"
+                        checked={formData.privacy_settings.phone_visible}
+                        onCheckedChange={(checked) => handlePrivacyChange('phone_visible', checked)}
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
 
-          {/* Security Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">Passkey Authentication</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {hasPasskey 
-                      ? "Passkey is enabled for secure login" 
-                      : "Add a passkey for enhanced security"
-                    }
-                  </p>
-                </div>
-                <PasskeyButton mode="enroll" />
-              </div>
-            </CardContent>
-          </Card>
+            {/* Security Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Security Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box>
+                      <Label>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Passkey Authentication</Typography>
+                      </Label>
+                      <Typography variant="caption" color="text.secondary">
+                        {hasPasskey
+                          ? "Passkey is enabled for secure login"
+                          : "Add a passkey for enhanced security"
+                        }
+                      </Typography>
+                    </Box>
+                    <PasskeyButton mode="enroll" />
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
         </TabsContent>
       </Tabs>
 
       {/* Save Button */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {hasUnsavedChanges && (
-            <Badge variant="outline" className="text-orange-600">
-              <AlertCircle className="h-3 w-3 mr-1" />
+            <Badge variant="outline" style={{ color: '#ea580c' }}>
+              <AlertCircle style={{ width: 12, height: 12, marginRight: 4 }} />
               Unsaved changes
             </Badge>
           )}
-          <span className="text-sm text-muted-foreground">
+          <Typography variant="body2" color="text.secondary">
             Changes are automatically saved
-          </span>
-        </div>
+          </Typography>
+        </Box>
         <Button onClick={() => handleSave()} disabled={isUpdating}>
           {isUpdating ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
               Saving...
             </>
           ) : (
             <>
-              <Save className="h-4 w-4 mr-2" />
+              <Save style={{ width: 16, height: 16, marginRight: 8 }} />
               Save Changes
             </>
           )}
         </Button>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

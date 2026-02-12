@@ -73,9 +73,9 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
 
   const getVisibilityIcon = () => {
     switch (post.visibility) {
-      case 'friends': return <Users className="h-3 w-3" />;
-      case 'private': return <Lock className="h-3 w-3" />;
-      default: return <Globe className="h-3 w-3" />;
+      case 'friends': return <Users style={{ height: 12, width: 12 }} />;
+      case 'private': return <Lock style={{ height: 12, width: 12 }} />;
+      default: return <Globe style={{ height: 12, width: 12 }} />;
     }
   };
 
@@ -119,18 +119,18 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
     );
 
     const contentElement = (
-      <div className="space-y-4">
+      <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <ContentSanitizer 
           content={content} 
-          className="whitespace-pre-wrap"
+          sx={{ whiteSpace: 'pre-wrap' }}
           allowedTags={['span', 'br', 'strong', 'em', 'u', 'a', 'p']}
         />
         
         {/* Display tags as badges */}
         {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {post.tags.map((tag, index) => (
-              <Badge key={index} variant="secondary" className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground">
+              <Badge key={index} variant="secondary" sx={{ fontSize: '0.75rem', cursor: 'pointer', '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText' } }}>
                 #{tag}
               </Badge>
             ))}
@@ -139,13 +139,13 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         
         {/* Images */}
         {post.images && post.images.length > 0 && (
-          <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
+          <div sx={{ display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
             {post.images.slice(0, 4).map((image, index) => (
-              <div key={index} className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+              <div key={index} sx={{ position: 'relative', aspectRatio: '16/9', bgcolor: 'action.hover', borderRadius: 2, overflow: 'hidden' }}>
                 <img 
                   src={image} 
                   alt="Post image" 
-                  className="w-full h-full object-cover"
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
@@ -154,7 +154,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               </div>
             ))}
             {post.images.length > 4 && (
-              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
+              <div sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.secondary' }}>
                 +{post.images.length - 4} more
               </div>
             )}
@@ -163,23 +163,23 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         
         {/* Link Preview */}
         {post.post_type === 'link' && post.link_url && (
-          <Card className="border">
-            <CardContent className="p-4">
-              <a href={post.link_url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/50 -m-4 p-4 rounded transition-colors">
-                <div className="flex items-start gap-3">
-                  <ExternalLink className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
+          <Card sx={{ border: 1, borderColor: 'divider' }}>
+            <CardContent sx={{ p: 2 }}>
+              <a href={post.link_url} target="_blank" rel="noopener noreferrer" sx={{ display: 'block', m: -2, p: 2, borderRadius: 1, transition: 'background-color 0.2s', '&:hover': { bgcolor: 'action.hover' } }}>
+                <div sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                  <ExternalLink style={{ height: 20, width: 20, color: 'var(--muted-foreground)', marginTop: 4, flexShrink: 0 }} />
+                  <div sx={{ minWidth: 0, flex: 1 }}>
                     {post.link_title && (
-                      <h4 className="font-medium text-foreground line-clamp-2 mb-1">
+                      <h4 sx={{ fontWeight: 500, color: 'text.primary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 0.5 }}>
                         {post.link_title}
                       </h4>
                     )}
                     {post.link_description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-1">
+                      <p sx={{ fontSize: '0.875rem', color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 0.5 }}>
                         {post.link_description}
                       </p>
                     )}
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p sx={{ fontSize: '0.75rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {new URL(post.link_url).hostname}
                     </p>
                   </div>
@@ -191,23 +191,23 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         
         {/* Poll */}
         {post.post_type === 'poll' && post.poll_options && (
-          <Card className="border">
-            <CardContent className="p-4 space-y-3">
-              <h4 className="font-medium">Poll</h4>
-            <div className="space-y-2">
+          <Card sx={{ border: 1, borderColor: 'divider' }}>
+            <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <h4 sx={{ fontWeight: 500 }}>Poll</h4>
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {(post.poll_options as any)?.options?.map((option: string, index: number) => (
                 <Button 
                   key={index} 
                   variant="outline" 
-                  className="w-full justify-start text-left h-auto py-3"
+                  sx={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', height: 'auto', py: 1.5 }}
                   disabled
                 >
-                  <span className="w-6 h-6 rounded-full border-2 border-muted-foreground mr-3 flex-shrink-0"></span>
+                  <span sx={{ width: 24, height: 24, borderRadius: '50%', border: 2, borderColor: 'text.secondary', mr: 1.5, flexShrink: 0 }}></span>
                   {option}
                 </Button>
               )) || []}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                 Voting not yet implemented
               </p>
             </CardContent>
@@ -221,10 +221,10 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
 
   return (
     <Card>
-      <CardHeader className="pb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
+      <CardHeader sx={{ pb: 2 }}>
+        <div sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Avatar style={{ height: 40, width: 40 }}>
               <AvatarImage src={post.profiles?.avatar_url || undefined} />
               <AvatarFallback>
                 {post.profiles?.display_name?.charAt(0)?.toUpperCase() || 'U'}
@@ -233,21 +233,21 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
             <div>
               <Link 
                 to={`/user/${post.user_id}`}
-                className="font-medium hover:underline"
+                sx={{ fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}
               >
                 {post.profiles?.display_name || 'Unknown User'}
               </Link>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'text.secondary' }}>
                 <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
                 <span>•</span>
-                <div className="flex items-center gap-1">
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   {getVisibilityIcon()}
                   <span>{getVisibilityLabel()}</span>
                 </div>
                 {post.post_type !== 'text' && (
                   <>
                     <span>•</span>
-                    <Badge variant="outline" className="text-xs capitalize">
+                    <Badge variant="outline" sx={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>
                       {post.post_type}
                     </Badge>
                   </>
@@ -259,22 +259,22 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
           {(isOwnPost || user) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="More options">
-                  <MoreHorizontal className="h-4 w-4" />
+                <Button variant="ghost" size="icon" style={{ height: 32, width: 32 }} aria-label="More options">
+                  <MoreHorizontal style={{ height: 16, width: 16 }} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {isOwnPost && (
                   <>
                     <DropdownMenuItem>
-                      <Edit className="h-4 w-4 mr-2" />
+                      <Edit style={{ height: 16, width: 16, marginRight: 8 }} />
                       Edit Post
                     </DropdownMenuItem>
                     <DropdownMenuItem 
-                      className="text-destructive"
+                      sx={{ color: 'error.main' }}
                       onClick={() => setShowDeleteDialog(true)}
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
                       Delete Post
                     </DropdownMenuItem>
                   </>
@@ -290,20 +290,20 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {renderPostContent()}
         
         {/* Actions */}
-        <div className="flex items-center justify-between pt-4 border-t">
-          <div className="flex items-center gap-6">
+        <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleLikeToggle}
               disabled={isLiking || !user}
-              className={post.user_liked ? 'text-red-500 hover:text-red-600' : ''}
+              style={post.user_liked ? { color: '#ef4444' } : {}}
             >
-              <Heart className={`h-4 w-4 mr-1 ${post.user_liked ? 'fill-current' : ''}`} />
+              <Heart style={{ height: 16, width: 16, marginRight: 4, ...(post.user_liked ? { fill: 'currentColor' } : {}) }} />
               <span>{post.likes_count || 0}</span>
             </Button>
             
@@ -313,20 +313,20 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               onClick={() => setShowComments(!showComments)}
               disabled={!user}
             >
-              <MessageCircle className="h-4 w-4 mr-1" />
+              <MessageCircle style={{ height: 16, width: 16, marginRight: 4 }} />
               <span>{post.comments_count || 0}</span>
-              {showComments ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
+              {showComments ? <ChevronUp style={{ height: 16, width: 16, marginLeft: 4 }} /> : <ChevronDown style={{ height: 16, width: 16, marginLeft: 4 }} />}
             </Button>
           </div>
           
           <Button variant="ghost" size="sm" onClick={handleShare}>
-            <Share2 className="h-4 w-4" />
+            <Share2 style={{ height: 16, width: 16 }} />
           </Button>
         </div>
         
         {/* Comments Section */}
         {showComments && user && (
-          <div className="pt-4 border-t">
+          <div sx={{ pt: 2, borderTop: 1, borderColor: 'divider' }}>
             <CommentsSection postId={post.id} />
           </div>
         )}
@@ -348,7 +348,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 onDelete?.(post.id);
                 setShowDeleteDialog(false);
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              sx={{ bgcolor: 'error.main', color: 'error.contrastText', '&:hover': { bgcolor: 'error.dark' } }}
             >
               Delete
             </AlertDialogAction>

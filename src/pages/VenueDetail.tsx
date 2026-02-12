@@ -12,6 +12,9 @@ import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -34,7 +37,7 @@ export default function VenueDetail() {
     const fetchVenue = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch venue details
         const { data: venueData, error: venueError } = await supabase
           .from('venues')
@@ -73,40 +76,40 @@ export default function VenueDetail() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded w-1/3 mb-6"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <div className="h-64 bg-muted rounded"></div>
-              <div className="h-48 bg-muted rounded"></div>
-            </div>
-            <div className="space-y-6">
-              <div className="h-32 bg-muted rounded"></div>
-              <div className="h-48 bg-muted rounded"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+          <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%', mb: 3 }} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }} />
+              <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }} />
+              <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
+            </Box>
+          </Box>
+        </Box>
+      </Container>
     );
   }
 
   if (!venue) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold mb-4">Venue Not Found</h1>
-        <p className="text-muted-foreground mb-6">The venue you're looking for doesn't exist.</p>
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Venue Not Found</Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>The venue you're looking for doesn't exist.</Typography>
         <Link to="/venues">
           <Button>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Venues
           </Button>
         </Link>
-      </div>
+      </Container>
     );
   }
 
-  const averageRating = reviews.length 
+  const averageRating = reviews.length
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
 
@@ -115,81 +118,70 @@ export default function VenueDetail() {
     return '$'.repeat(range);
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      bar: 'bg-primary/10 text-primary',
-      restaurant: 'bg-accent/10 text-accent',
-      cafe: 'bg-secondary/10 text-secondary',
-      club: 'bg-destructive/10 text-destructive',
-      hotel: 'bg-muted-foreground/10 text-muted-foreground',
-    };
-    return colors[category] || 'bg-muted/10 text-muted-foreground';
-  };
-
   const formatHours = (hours: any) => {
     if (!hours || typeof hours !== 'object') return 'Hours not available';
-    
+
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+
     return days.map((day, index) => (
-      <div key={day} className="flex justify-between text-sm">
-        <span className="font-medium">{dayNames[index]}</span>
-        <span className="text-muted-foreground">
+      <Box key={day} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>{dayNames[index]}</Typography>
+        <Typography variant="body2" color="text.secondary">
           {hours[day] || 'Closed'}
-        </span>
-      </div>
+        </Typography>
+      </Box>
     ));
   };
 
   return (
-    <div className="w-full px-4 py-8">
+    <Box sx={{ width: '100%', px: 2, py: 4 }}>
       {/* Header */}
-      <div className="mb-6">
-        <Link to="/venues" className="inline-flex items-center text-muted-foreground hover:text-primary mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Venues
+      <Box sx={{ mb: 3 }}>
+        <Link to="/venues" style={{ display: 'inline-flex', alignItems: 'center', color: 'inherit', textDecoration: 'none', marginBottom: 16 }}>
+          <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>Back to Venues</Typography>
         </Link>
-        
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">{venue.name}</h1>
+
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { md: 'flex-start' }, justifyContent: { md: 'space-between' }, gap: 2 }}>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>{venue.name}</Typography>
               {venue.verified && (
                 <Badge variant="secondary">Verified</Badge>
               )}
               {venue.featured && (
-                <Badge className="bg-accent/10 text-accent">Featured</Badge>
+                <Badge style={{ backgroundColor: 'rgba(var(--accent), 0.1)', color: 'var(--accent)' }}>Featured</Badge>
               )}
-            </div>
-            
-            <div className="flex items-center gap-4 text-muted-foreground mb-3">
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                <span>{venue.address}, {venue.city}, {venue.state} {venue.postal_code}</span>
-              </div>
-              {venue.price_range && (
-                <span className="font-medium text-accent">
-                  {getPriceRange(venue.price_range)}
-                </span>
-              )}
-            </div>
+            </Box>
 
-            <div className="flex items-center gap-3">
-              <Badge className={getCategoryColor(venue.category)}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <MapPin style={{ width: 16, height: 16 }} />
+                <Typography variant="body2" color="text.secondary">{venue.address}, {venue.city}, {venue.state} {venue.postal_code}</Typography>
+              </Box>
+              {venue.price_range && (
+                <Typography variant="body2" sx={{ fontWeight: 500, color: 'accent' }}>
+                  {getPriceRange(venue.price_range)}
+                </Typography>
+              )}
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Badge variant="secondary">
                 {venue.category}
               </Badge>
               {averageRating > 0 && (
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-current text-accent" />
-                  <span className="font-medium">{averageRating.toFixed(1)}</span>
-                  <span className="text-muted-foreground">({reviews.length} reviews)</span>
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Star style={{ width: 16, height: 16, fill: 'currentColor', color: 'var(--accent)' }} />
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>{averageRating.toFixed(1)}</Typography>
+                  <Typography variant="body2" color="text.secondary">({reviews.length} reviews)</Typography>
+                </Box>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className="flex gap-2">
+          <Box sx={{ display: 'flex', gap: 1 }}>
             <VenueCheckInButton
               venueId={venue.id}
               venueName={venue.name}
@@ -199,23 +191,23 @@ export default function VenueDetail() {
             />
             {venue.phone && (
               <Button variant="outline" size="sm">
-                <Phone className="h-4 w-4 mr-2" />
+                <Phone style={{ width: 16, height: 16, marginRight: 8 }} />
                 Call
               </Button>
             )}
             {venue.website && (
               <Button variant="outline" size="sm">
-                <Globe className="h-4 w-4 mr-2" />
+                <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
                 Website
               </Button>
             )}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Description */}
           {venue.description && (
             <Card>
@@ -223,7 +215,7 @@ export default function VenueDetail() {
                 <CardTitle>About</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">{venue.description}</p>
+                <Typography color="text.secondary">{venue.description}</Typography>
               </CardContent>
             </Card>
           )}
@@ -235,25 +227,25 @@ export default function VenueDetail() {
                 <CardTitle>Photos</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 2 }}>
                   {venue.images.map((imageUrl, index) => (
-                    <div key={index} className="aspect-square rounded-lg overflow-hidden bg-muted">
-                      <img
+                    <Box key={index} sx={{ aspectRatio: '1/1', borderRadius: 2, overflow: 'hidden', bgcolor: 'action.hover' }}>
+                      <Box
+                        component="img"
                         src={imageUrl}
                         alt={`${venue.name} - Image ${index + 1}`}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                        onError={(e) => {
+                        sx={{ width: '100%', height: '100%', objectFit: 'cover', '&:hover': { transform: 'scale(1.05)' }, transition: 'transform 300ms', cursor: 'pointer' }}
+                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder.svg';
                         }}
                         onClick={() => {
-                          // Open image in new tab for full view
                           window.open(imageUrl, '_blank');
                         }}
                       />
-                    </div>
+                    </Box>
                   ))}
-                </div>
+                </Box>
               </CardContent>
             </Card>
           )}
@@ -265,24 +257,24 @@ export default function VenueDetail() {
                 <CardTitle>Amenities</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 1.5 }}>
                   {venue.amenities.map((amenity, index) => (
-                    <button 
-                      key={index} 
-                      className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors cursor-pointer"
+                    <Box
+                      component="button"
+                      key={index}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, borderRadius: 1, '&:hover': { bgcolor: 'action.hover' }, transition: 'background-color 200ms', cursor: 'pointer', border: 'none', background: 'none', textAlign: 'left' }}
                       onClick={() => {
                         navigator.clipboard.writeText(amenity);
-                        // You could add a toast notification here
                       }}
                       title={`Click to copy "${amenity}" to clipboard`}
                     >
-                      {amenity === 'wifi' && <Wifi className="h-4 w-4 text-primary" />}
-                      {amenity === 'parking' && <Car className="h-4 w-4 text-primary" />}
-                      {amenity === 'wheelchair-accessible' && <Accessibility className="h-4 w-4 text-primary" />}
-                      <span className="text-sm capitalize">{amenity.replace('-', ' ')}</span>
-                    </button>
+                      {amenity === 'wifi' && <Wifi style={{ width: 16, height: 16, color: 'var(--primary)' }} />}
+                      {amenity === 'parking' && <Car style={{ width: 16, height: 16, color: 'var(--primary)' }} />}
+                      {amenity === 'wheelchair-accessible' && <Accessibility style={{ width: 16, height: 16, color: 'var(--primary)' }} />}
+                      <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{amenity.replace('-', ' ')}</Typography>
+                    </Box>
                   ))}
-                </div>
+                </Box>
               </CardContent>
             </Card>
           )}
@@ -294,8 +286,8 @@ export default function VenueDetail() {
                 <CardTitle>Upcoming Events</CardTitle>
               </CardHeader>
               <CardContent>
-                <VenueEvents 
-                  venueId={venue.id} 
+                <VenueEvents
+                  venueId={venue.id}
                   venueName={venue.name}
                   events={venueEvents}
                   compact={false}
@@ -311,91 +303,108 @@ export default function VenueDetail() {
             </CardHeader>
             <CardContent>
               {reviews.length > 0 ? (
-                <div className="space-y-4">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {reviews.slice(0, 5).map((review) => (
-                    <div key={review.id} className="border-b pb-4 last:border-b-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                    <Box key={review.id} sx={{ borderBottom: 1, borderColor: 'divider', pb: 2, '&:last-child': { borderBottom: 0 } }}>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{ width: 32, height: 32, bgcolor: 'action.hover', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             {review.profiles?.display_name?.[0] || 'U'}
-                          </div>
-                          <div>
-                            <p className="font-medium">{review.profiles?.display_name || 'Anonymous'}</p>
-                            <div className="flex items-center gap-1">
+                          </Box>
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>{review.profiles?.display_name || 'Anonymous'}</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`h-3 w-3 ${
-                                    i < review.rating ? 'fill-current text-accent' : 'text-muted'
-                                  }`}
+                                  style={{
+                                    width: 12,
+                                    height: 12,
+                                    fill: i < review.rating ? 'currentColor' : 'none',
+                                    color: i < review.rating ? 'var(--accent)' : 'var(--muted)',
+                                  }}
                                 />
                               ))}
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
+                            </Box>
+                          </Box>
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
                           {new Date(review.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
+                        </Typography>
+                      </Box>
                       {review.title && (
-                        <h4 className="font-medium mb-1">{review.title}</h4>
+                        <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>{review.title}</Typography>
                       )}
                       {review.content && (
-                        <p className="text-sm text-muted-foreground">{review.content}</p>
+                        <Typography variant="body2" color="text.secondary">{review.content}</Typography>
                       )}
-                    </div>
+                    </Box>
                   ))}
-                </div>
+                </Box>
               ) : (
-                <p className="text-muted-foreground text-center py-4">No reviews yet</p>
+                <Typography color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>No reviews yet</Typography>
               )}
             </CardContent>
           </Card>
-        </div>
+        </Box>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Recent Check-ins */}
-          <VenueRecentCheckins 
-            venueId={venue.id} 
+          <VenueRecentCheckins
+            venueId={venue.id}
             refreshTrigger={checkinRefresh}
           />
-          
+
           {/* Contact Info */}
           <Card>
             <CardHeader>
               <CardTitle>Contact Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {venue.phone && (
-                <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{venue.phone}</span>
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Phone style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="body2">{venue.phone}</Typography>
+                </Box>
               )}
               {venue.email && (
-                <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{venue.email}</span>
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Mail style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="body2">{venue.email}</Typography>
+                </Box>
               )}
               {venue.website && (
-                <div className="flex items-center gap-3">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <a href={venue.website} target="_blank" rel="noopener noreferrer" 
-                     className="text-sm text-primary hover:underline">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Globe style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                  <Typography
+                    component="a"
+                    href={venue.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="body2"
+                    color="primary"
+                    sx={{ '&:hover': { textDecoration: 'underline' } }}
+                  >
                     Website
-                  </a>
-                </div>
+                  </Typography>
+                </Box>
               )}
               {venue.instagram && (
-                <div className="flex items-center gap-3">
-                  <Instagram className="h-4 w-4 text-muted-foreground" />
-                  <a href={`https://instagram.com/${venue.instagram}`} target="_blank" rel="noopener noreferrer"
-                     className="text-sm text-primary hover:underline">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Instagram style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                  <Typography
+                    component="a"
+                    href={`https://instagram.com/${venue.instagram}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="body2"
+                    color="primary"
+                    sx={{ '&:hover': { textDecoration: 'underline' } }}
+                  >
                     @{venue.instagram}
-                  </a>
-                </div>
+                  </Typography>
+                </Box>
               )}
             </CardContent>
           </Card>
@@ -404,12 +413,14 @@ export default function VenueDetail() {
           {venue.hours && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Hours
+                <CardTitle>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Clock style={{ width: 16, height: 16 }} />
+                    Hours
+                  </Box>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {formatHours(venue.hours)}
               </CardContent>
             </Card>
@@ -422,18 +433,18 @@ export default function VenueDetail() {
                 <CardTitle>Tags</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {venue.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
+                    <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
                       {tag}
                     </Badge>
                   ))}
-                </div>
+                </Box>
               </CardContent>
             </Card>
           )}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

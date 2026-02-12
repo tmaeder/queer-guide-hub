@@ -8,14 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { 
+import {
   Table,
   TableBody,
   TableCell,
@@ -26,6 +26,9 @@ import {
 import { Plus, Edit, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { Tables } from "@/integrations/supabase/types";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 type VenueCategory = Tables<'venue_categories'>;
 
@@ -63,7 +66,7 @@ export default function AdminVenueCategories() {
         .from('venue_categories')
         .select('*')
         .order('sort_order', { ascending: true });
-      
+
       if (error) throw error;
       return data as VenueCategory[];
     }
@@ -75,7 +78,7 @@ export default function AdminVenueCategories() {
       const { error } = await supabase
         .from('venue_categories')
         .insert([data]);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -96,7 +99,7 @@ export default function AdminVenueCategories() {
         .from('venue_categories')
         .update(data)
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -118,7 +121,7 @@ export default function AdminVenueCategories() {
         .from('venue_categories')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -132,7 +135,7 @@ export default function AdminVenueCategories() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (editingCategory) {
       updateCategoryMutation.mutate({ id: editingCategory.id, data: formData });
     } else {
@@ -182,40 +185,40 @@ export default function AdminVenueCategories() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading categories...</div>
-        </div>
-      </div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+          <Typography variant="subtitle1">Loading categories...</Typography>
+        </Box>
+      </Container>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Venue Categories</h1>
-          <p className="text-muted-foreground">Manage venue categories and organization types</p>
-        </div>
-        
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>Venue Categories</Typography>
+          <Typography color="text.secondary">Manage venue categories and organization types</Typography>
+        </Box>
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm} className="gap-2">
-              <Plus className="h-4 w-4" />
+            <Button onClick={resetForm} style={{ display: 'flex', gap: 8 }}>
+              <Plus style={{ width: 16, height: 16 }} />
               Add Category
             </Button>
           </DialogTrigger>
-          
-          <DialogContent className="max-w-2xl">
+
+          <DialogContent style={{ maxWidth: 672 }}>
             <DialogHeader>
               <DialogTitle>
                 {editingCategory ? 'Edit Category' : 'Add New Category'}
               </DialogTitle>
             </DialogHeader>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
@@ -223,9 +226,9 @@ export default function AdminVenueCategories() {
                     onChange={(e) => handleNameChange(e.target.value)}
                     required
                   />
-                </div>
-                
-                <div className="space-y-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="slug">Slug *</Label>
                   <Input
                     id="slug"
@@ -233,10 +236,10 @@ export default function AdminVenueCategories() {
                     onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
                     required
                   />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
@@ -244,10 +247,10 @@ export default function AdminVenueCategories() {
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   rows={3}
                 />
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
+              </Box>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="icon">Icon</Label>
                   <Input
                     id="icon"
@@ -255,9 +258,9 @@ export default function AdminVenueCategories() {
                     onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
                     placeholder="Lucide icon name"
                   />
-                </div>
-                
-                <div className="space-y-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="color">Color</Label>
                   <Input
                     id="color"
@@ -265,9 +268,9 @@ export default function AdminVenueCategories() {
                     value={formData.color}
                     onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
                   />
-                </div>
-                
-                <div className="space-y-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="sort_order">Sort Order</Label>
                   <Input
                     id="sort_order"
@@ -275,39 +278,39 @@ export default function AdminVenueCategories() {
                     value={formData.sort_order}
                     onChange={(e) => setFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
                   />
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Switch
                   id="is_active"
                   checked={formData.is_active}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
                 />
                 <Label htmlFor="is_active">Active</Label>
-              </div>
-              
-              <div className="flex justify-end gap-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+              </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  <X className="h-4 w-4 mr-2" />
+                  <X style={{ width: 16, height: 16, marginRight: 8 }} />
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save style={{ width: 16, height: 16, marginRight: 8 }} />
                   {editingCategory ? 'Update' : 'Create'}
                 </Button>
-              </div>
-            </form>
+              </Box>
+            </Box>
           </DialogContent>
         </Dialog>
-      </div>
+      </Box>
 
       <Card>
         <CardHeader>
@@ -322,23 +325,23 @@ export default function AdminVenueCategories() {
                 <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Sort Order</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead style={{ textAlign: 'right' }}>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {categories.map((category) => (
                 <TableRow key={category.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-4 h-4 rounded" 
+                  <TableCell style={{ fontWeight: 500 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ width: 16, height: 16, borderRadius: 1 }}
                         style={{ backgroundColor: category.color }}
                       />
                       {category.name}
-                    </div>
+                    </Box>
                   </TableCell>
-                  <TableCell className="font-mono text-sm">{category.slug}</TableCell>
-                  <TableCell className="max-w-xs truncate">
+                  <TableCell style={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>{category.slug}</TableCell>
+                  <TableCell style={{ maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {category.description}
                   </TableCell>
                   <TableCell>
@@ -347,31 +350,33 @@ export default function AdminVenueCategories() {
                     </Badge>
                   </TableCell>
                   <TableCell>{category.sort_order}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                  <TableCell style={{ textAlign: 'right' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(category)}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit style={{ width: 16, height: 16 }} />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(category.id)}
-                        className="text-destructive hover:text-destructive"
+                        style={{ color: 'var(--destructive)' }}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 style={{ width: 16, height: 16 }} />
                       </Button>
-                    </div>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
               {categories.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No categories found. Create your first category to get started.
+                  <TableCell colSpan={6} style={{ textAlign: 'center', padding: '32px 0' }}>
+                    <Typography color="text.secondary">
+                      No categories found. Create your first category to get started.
+                    </Typography>
                   </TableCell>
                 </TableRow>
               )}
@@ -379,6 +384,6 @@ export default function AdminVenueCategories() {
           </Table>
         </CardContent>
       </Card>
-    </div>
+    </Container>
   );
 }

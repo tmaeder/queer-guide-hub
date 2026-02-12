@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useImportHub, ImportJob } from '@/hooks/useImportHub';
-import { 
-  Upload, Database, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, 
+import {
+  Upload, Database, TrendingUp, TrendingDown, AlertTriangle, CheckCircle,
   Clock, RefreshCw, Eye, Download, X, Play, Pause,
   FileText, Search, BarChart3, Activity, Zap, Package, MapPin, Rss, Key
 } from 'lucide-react';
@@ -38,16 +40,16 @@ export const ImportHubDashboard = () => {
   const getStatusIcon = (status: ImportJob['status']) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-success" />;
+        return <CheckCircle style={{ height: 16, width: 16, color: 'var(--success)' }} />;
       case 'failed':
-        return <AlertTriangle className="h-4 w-4 text-destructive" />;
+        return <AlertTriangle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />;
       case 'processing':
       case 'validating':
-        return <RefreshCw className="h-4 w-4 text-primary animate-spin" />;
+        return <RefreshCw style={{ height: 16, width: 16, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />;
       case 'cancelled':
-        return <X className="h-4 w-4 text-muted-foreground" />;
+        return <X style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />;
       default:
-        return <Clock className="h-4 w-4 text-warning" />;
+        return <Clock style={{ height: 16, width: 16, color: 'var(--warning)' }} />;
     }
   };
 
@@ -89,8 +91,8 @@ export const ImportHubDashboard = () => {
       completed_at: job.completed_at
     };
 
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], { 
-      type: 'application/json' 
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], {
+      type: 'application/json'
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -120,74 +122,74 @@ export const ImportHubDashboard = () => {
   ), [filteredJobs]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4 }}>
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="p-3 bg-primary rounded-md">
-            <Database className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Import Hub</h1>
-            <p className="text-muted-foreground">Enterprise-grade data import with AI-powered validation</p>
-          </div>
-        </div>
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <Box sx={{ p: 1.5, bgcolor: 'primary.main', borderRadius: 1.5 }}>
+            <Database style={{ height: 32, width: 32, color: 'var(--primary-foreground)' }} />
+          </Box>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: 'var(--foreground)' }}>Import Hub</Typography>
+            <Typography sx={{ color: 'var(--muted-foreground)' }}>Enterprise-grade data import with AI-powered validation</Typography>
+          </Box>
+        </Box>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-2xl font-bold">{statistics?.completed_jobs || 0}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Completed Jobs</p>
+            <CardContent sx={{ p: 2, textAlign: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
+                <CheckCircle style={{ height: 20, width: 20, color: '#16a34a' }} />
+                <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{statistics?.completed_jobs || 0}</Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Completed Jobs</Typography>
             </CardContent>
           </Card>
-          
+
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-                <span className="text-2xl font-bold">{statistics?.failed_jobs || 0}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Failed Jobs</p>
+            <CardContent sx={{ p: 2, textAlign: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
+                <AlertTriangle style={{ height: 20, width: 20, color: '#dc2626' }} />
+                <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{statistics?.failed_jobs || 0}</Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Failed Jobs</Typography>
             </CardContent>
           </Card>
-          
+
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Clock className="h-5 w-5 text-yellow-600" />
-                <span className="text-2xl font-bold">{statistics?.pending_jobs || 0}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Pending Jobs</p>
+            <CardContent sx={{ p: 2, textAlign: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
+                <Clock style={{ height: 20, width: 20, color: '#ca8a04' }} />
+                <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{statistics?.pending_jobs || 0}</Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Pending Jobs</Typography>
             </CardContent>
           </Card>
-          
+
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Package className="h-5 w-5 text-blue-600" />
-                <span className="text-2xl font-bold">{statistics?.total_records_processed?.toLocaleString() || 0}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Records Processed</p>
+            <CardContent sx={{ p: 2, textAlign: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
+                <Package style={{ height: 20, width: 20, color: '#2563eb' }} />
+                <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{statistics?.total_records_processed?.toLocaleString() || 0}</Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Records Processed</Typography>
             </CardContent>
           </Card>
-        </div>
+        </Box>
 
         {/* Controls */}
-        <div className="flex items-center gap-3">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Button
             variant="outline"
             size="sm"
             onClick={togglePolling}
-            className="gap-2"
+            style={{ display: 'flex', gap: 8 }}
           >
-            {isPolling ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            {isPolling ? <Pause style={{ height: 16, width: 16 }} /> : <Play style={{ height: 16, width: 16 }} />}
             {isPolling ? 'Pause' : 'Resume'}
           </Button>
-          <Button 
+          <Button
             variant="outline"
             size="sm"
             onClick={() => {
@@ -195,28 +197,28 @@ export const ImportHubDashboard = () => {
               loadStatistics();
             }}
             disabled={loading}
-            className="gap-2"
+            style={{ display: 'flex', gap: 8 }}
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw style={{ height: 16, width: 16, ...(loading ? { animation: 'spin 1s linear infinite' } : {}) }} />
             Refresh
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
         {/* Search and Filter Bar */}
-        <Card className="mb-6 bg-card">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        <Card style={{ marginBottom: 24, backgroundColor: 'var(--card)' }}>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, alignItems: 'center' }}>
+              <Box sx={{ position: 'relative', flex: 1 }}>
+                <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} aria-hidden="true" />
                 <Input
                   placeholder="Search jobs by type, filename, or ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-background"
+                  style={{ paddingLeft: 40, backgroundColor: 'var(--background)' }}
                   aria-label="Search import jobs"
                 />
-              </div>
-              <div className="flex gap-2">
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
                   variant={statusFilter === 'all' ? 'default' : 'outline'}
                   size="sm"
@@ -252,151 +254,151 @@ export const ImportHubDashboard = () => {
                 >
                   Failed
                 </Button>
-              </div>
-            </div>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 bg-card">
-            <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-background">
-              <BarChart3 className="h-4 w-4" />
+        <Tabs value={activeTab} onValueChange={setActiveTab} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'var(--card)' }}>
+            <TabsTrigger value="overview" style={{ display: 'flex', gap: 8 }}>
+              <BarChart3 style={{ height: 16, width: 16 }} />
               Analytics
             </TabsTrigger>
-            <TabsTrigger value="venues" className="gap-2 data-[state=active]:bg-background">
-              <MapPin className="h-4 w-4" />
+            <TabsTrigger value="venues" style={{ display: 'flex', gap: 8 }}>
+              <MapPin style={{ height: 16, width: 16 }} />
               Venues
             </TabsTrigger>
-            <TabsTrigger value="news" className="gap-2 data-[state=active]:bg-background">
-              <Rss className="h-4 w-4" />
+            <TabsTrigger value="news" style={{ display: 'flex', gap: 8 }}>
+              <Rss style={{ height: 16, width: 16 }} />
               News Sources
             </TabsTrigger>
-            <TabsTrigger value="api-keys" className="gap-2 data-[state=active]:bg-background">
-              <Key className="h-4 w-4" />
+            <TabsTrigger value="api-keys" style={{ display: 'flex', gap: 8 }}>
+              <Key style={{ height: 16, width: 16 }} />
               API Keys
             </TabsTrigger>
-            <TabsTrigger value="active" className="gap-2 data-[state=active]:bg-background">
-              <Activity className="h-4 w-4" />
+            <TabsTrigger value="active" style={{ display: 'flex', gap: 8 }}>
+              <Activity style={{ height: 16, width: 16 }} />
               Active ({activeJobs.length})
             </TabsTrigger>
-            <TabsTrigger value="create" className="gap-2 data-[state=active]:bg-background">
-              <Zap className="h-4 w-4" />
+            <TabsTrigger value="create" style={{ display: 'flex', gap: 8 }}>
+              <Zap style={{ height: 16, width: 16 }} />
               Create Import
             </TabsTrigger>
-            <TabsTrigger value="history" className="gap-2 data-[state=active]:bg-background">
-              <FileText className="h-4 w-4" />
+            <TabsTrigger value="history" style={{ display: 'flex', gap: 8 }}>
+              <FileText style={{ height: 16, width: 16 }} />
               History ({filteredJobs.length})
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
+                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Activity style={{ height: 20, width: 20 }} />
                   Recent Activity
                 </CardTitle>
                 <CardDescription>Latest import jobs overview</CardDescription>
               </CardHeader>
               <CardContent>
                 {jobs.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="font-medium">No import jobs yet</p>
-                    <p className="text-sm">Create your first import to get started</p>
-                  </div>
+                  <Box sx={{ textAlign: 'center', py: 4, color: 'var(--muted-foreground)' }}>
+                    <Package style={{ height: 48, width: 48, margin: '0 auto 16px', opacity: 0.5 }} />
+                    <Typography sx={{ fontWeight: 500 }}>No import jobs yet</Typography>
+                    <Typography variant="body2">Create your first import to get started</Typography>
+                  </Box>
                 ) : (
-                  <div className="space-y-3">
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                     {jobs.slice(0, 5).map((job) => (
-                      <div
+                      <Box
                         key={job.id}
-                        className="flex items-center justify-between p-3 bg-card hover:bg-muted cursor-pointer transition-colors"
+                        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, bgcolor: 'var(--card)', cursor: 'pointer', transition: 'background-color 0.2s', '&:hover': { bgcolor: 'var(--muted)' } }}
                         onClick={() => setShowValidation(job.id)}
                       >
-                        <div className="flex items-center gap-3">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           {getStatusIcon(job.status)}
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm">{job.type}</span>
+                          <Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography component="span" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{job.type}</Typography>
                               {getStatusBadge(job.status)}
-                            </div>
-                             <p className="text-xs text-muted-foreground">
+                            </Box>
+                             <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
                                {job.processed_records || 0}/{job.total_records || 0} records • {new Date(job.created_at).toLocaleDateString()}
-                             </p>
-                          </div>
-                        </div>
-                        
-                         <div className="text-right">
-                           <Progress value={Math.min(100, Math.max(0, job.progress_percentage || 0))} className="w-16 h-2 mb-1" />
-                           <span className="text-xs text-muted-foreground">{Math.min(100, Math.max(0, job.progress_percentage || 0))}%</span>
-                         </div>
-                      </div>
+                             </Typography>
+                          </Box>
+                        </Box>
+
+                         <Box sx={{ textAlign: 'right' }}>
+                           <Progress value={Math.min(100, Math.max(0, job.progress_percentage || 0))} style={{ width: 64, height: 8, marginBottom: 4 }} />
+                           <Typography component="span" variant="caption" sx={{ color: 'var(--muted-foreground)' }}>{Math.min(100, Math.max(0, job.progress_percentage || 0))}%</Typography>
+                         </Box>
+                      </Box>
                     ))}
-                  </div>
+                  </Box>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="venues" className="space-y-6">
+          <TabsContent value="venues" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <VenueImportQuickActions />
           </TabsContent>
 
-          <TabsContent value="news" className="space-y-6">
+          <TabsContent value="news" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <NewsSourcesManager />
           </TabsContent>
 
-          <TabsContent value="api-keys" className="space-y-6">
+          <TabsContent value="api-keys" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <ApiKeysManager />
           </TabsContent>
 
-          <TabsContent value="active" className="space-y-6">
+          <TabsContent value="active" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {activeJobs.length === 0 ? (
               <Card>
-                <CardContent className="p-12 text-center">
-                  <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
-                    <Activity className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">No Active Jobs</h3>
-                  <p className="text-muted-foreground mb-4">
+                <CardContent sx={{ p: 6, textAlign: 'center' }}>
+                  <Box sx={{ mx: 'auto', width: 96, height: 96, bgcolor: 'var(--muted)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                    <Activity style={{ height: 48, width: 48, color: 'var(--muted-foreground)' }} />
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No Active Jobs</Typography>
+                  <Typography sx={{ color: 'var(--muted-foreground)', mb: 2 }}>
                     All import jobs have completed. Start a new import to see active jobs here.
-                  </p>
-                  <Button onClick={() => setActiveTab('create')} className="gap-2">
-                    <Upload className="h-4 w-4" />
+                  </Typography>
+                  <Button onClick={() => setActiveTab('create')} style={{ display: 'flex', gap: 8 }}>
+                    <Upload style={{ height: 16, width: 16 }} />
                     Create New Import
                   </Button>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                  {activeJobs.map((job) => (
-                   <Card key={job.id} className="bg-card">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
+                   <Card key={job.id} style={{ backgroundColor: 'var(--card)' }}>
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           {getStatusIcon(job.status)}
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-lg">{job.type}</span>
+                          <Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography component="span" sx={{ fontWeight: 600, fontSize: '1.125rem' }}>{job.type}</Typography>
                               {getStatusBadge(job.status)}
-                            </div>
+                            </Box>
                             {job.file_name && (
-                              <p className="text-xs text-muted-foreground">
+                              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
                                 File: {job.file_name}
-                              </p>
+                              </Typography>
                             )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setShowValidation(job.id)}
-                            className="gap-2"
+                            style={{ display: 'flex', gap: 8 }}
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye style={{ height: 16, width: 16 }} />
                             Details
                           </Button>
                           {['pending', 'validating', 'processing'].includes(job.status) && (
@@ -404,128 +406,128 @@ export const ImportHubDashboard = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => cancelImportJob(job.id)}
-                              className="gap-2 text-destructive hover:text-destructive"
+                              style={{ display: 'flex', gap: 8, color: 'var(--destructive)' }}
                             >
-                              <X className="h-4 w-4" />
+                              <X style={{ height: 16, width: 16 }} />
                               Cancel
                             </Button>
                           )}
-                        </div>
-                      </div>
-                      
+                        </Box>
+                      </Box>
+
                       {/* Progress Display */}
-                      <div className="space-y-4">
-                         <div className="flex items-center justify-between text-sm">
-                           <span className="font-medium">Overall Progress</span>
-                           <span className="font-bold">{Math.min(100, Math.max(0, job.progress_percentage || 0))}%</span>
-                         </div>
-                         <Progress value={Math.min(100, Math.max(0, job.progress_percentage || 0))} className="h-3" />
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-primary">{job.total_records}</div>
-                            <div className="text-xs text-muted-foreground">Total Records</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-blue-600">{job.processed_records}</div>
-                            <div className="text-xs text-muted-foreground">Processed</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-success">{job.successful_records}</div>
-                            <div className="text-xs text-muted-foreground">Successful</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-destructive">{job.failed_records}</div>
-                            <div className="text-xs text-muted-foreground">Failed</div>
-                          </div>
-                        </div>
-                        
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                           <Typography component="span" sx={{ fontWeight: 500 }}>Overall Progress</Typography>
+                           <Typography component="span" sx={{ fontWeight: 700 }}>{Math.min(100, Math.max(0, job.progress_percentage || 0))}%</Typography>
+                         </Box>
+                         <Progress value={Math.min(100, Math.max(0, job.progress_percentage || 0))} style={{ height: 12 }} />
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, pt: 2 }}>
+                          <Box sx={{ textAlign: 'center' }}>
+                            <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color: 'primary.main' }}>{job.total_records}</Typography>
+                            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Total Records</Typography>
+                          </Box>
+                          <Box sx={{ textAlign: 'center' }}>
+                            <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color: '#2563eb' }}>{job.processed_records}</Typography>
+                            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Processed</Typography>
+                          </Box>
+                          <Box sx={{ textAlign: 'center' }}>
+                            <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--success)' }}>{job.successful_records}</Typography>
+                            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Successful</Typography>
+                          </Box>
+                          <Box sx={{ textAlign: 'center' }}>
+                            <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--destructive)' }}>{job.failed_records}</Typography>
+                            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Failed</Typography>
+                          </Box>
+                        </Box>
+
                         {job.duplicate_records > 0 && (
                           <Alert>
-                            <AlertTriangle className="h-4 w-4" />
+                            <AlertTriangle style={{ height: 16, width: 16 }} />
                             <AlertDescription>
                               Found {job.duplicate_records} duplicate records using {job.duplicate_strategy} strategy
                             </AlertDescription>
                           </Alert>
                         )}
-                      </div>
+                      </Box>
                     </CardContent>
                   </Card>
                 ))}
-              </div>
+              </Box>
             )}
           </TabsContent>
 
-          <TabsContent value="create" className="space-y-6">
+          <TabsContent value="create" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <ImportJobCreator />
           </TabsContent>
 
-          <TabsContent value="history" className="space-y-6">
+          <TabsContent value="history" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
+                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <FileText style={{ height: 20, width: 20 }} />
                   Import History
                 </CardTitle>
                 <CardDescription>Complete history of all import jobs</CardDescription>
               </CardHeader>
               <CardContent>
                 {filteredJobs.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
-                      <Search className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">No jobs found</h3>
-                    <p className="text-muted-foreground mb-4">
-                      {searchQuery || statusFilter !== 'all' 
+                  <Box sx={{ textAlign: 'center', py: 6 }}>
+                    <Box sx={{ mx: 'auto', width: 96, height: 96, bgcolor: 'var(--muted)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                      <Search style={{ height: 48, width: 48, color: 'var(--muted-foreground)' }} />
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No jobs found</Typography>
+                    <Typography sx={{ color: 'var(--muted-foreground)', mb: 2 }}>
+                      {searchQuery || statusFilter !== 'all'
                         ? 'Try adjusting your search criteria or filters'
                         : 'No import jobs have been created yet'
                       }
-                    </p>
+                    </Typography>
                     {!searchQuery && statusFilter === 'all' && (
-                      <Button onClick={() => setActiveTab('create')} className="gap-2">
-                        <Upload className="h-4 w-4" />
+                      <Button onClick={() => setActiveTab('create')} style={{ display: 'flex', gap: 8 }}>
+                        <Upload style={{ height: 16, width: 16 }} />
                         Create First Import
                       </Button>
                     )}
-                  </div>
+                  </Box>
                 ) : (
-                  <div className="space-y-4">
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {filteredJobs.map((job) => (
-                      <Card key={job.id} className="bg-card hover:bg-muted transition-colors">
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-4">
+                      <Card key={job.id} style={{ backgroundColor: 'var(--card)', transition: 'background-color 0.2s' }}>
+                        <CardContent sx={{ p: 3 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                               {getStatusIcon(job.status)}
-                              <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-semibold text-lg">{job.type}</span>
+                              <Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                  <Typography component="span" sx={{ fontWeight: 600, fontSize: '1.125rem' }}>{job.type}</Typography>
                                   {getStatusBadge(job.status)}
                                   {job.source_type && (
-                                    <Badge variant="outline" className="text-xs">
+                                    <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
                                       {job.source_type}
                                     </Badge>
                                   )}
-                                </div>
-                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                  <span>Created: {new Date(job.created_at).toLocaleString()}</span>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                                  <Typography component="span" variant="body2" color="text.secondary">Created: {new Date(job.created_at).toLocaleString()}</Typography>
                                   {job.completed_at && (
-                                    <span>Completed: {new Date(job.completed_at).toLocaleString()}</span>
+                                    <Typography component="span" variant="body2" color="text.secondary">Completed: {new Date(job.completed_at).toLocaleString()}</Typography>
                                   )}
-                                  {job.file_name && <span>File: {job.file_name}</span>}
-                                  {job.file_size && <span>Size: {formatFileSize(job.file_size)}</span>}
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-2">
+                                  {job.file_name && <Typography component="span" variant="body2" color="text.secondary">File: {job.file_name}</Typography>}
+                                  {job.file_size && <Typography component="span" variant="body2" color="text.secondary">Size: {formatFileSize(job.file_size)}</Typography>}
+                                </Box>
+                              </Box>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setShowValidation(job.id)}
-                                className="gap-2"
+                                style={{ display: 'flex', gap: 8 }}
                               >
-                                <Eye className="h-4 w-4" />
+                                <Eye style={{ height: 16, width: 16 }} />
                                 View Report
                               </Button>
                               {job.status === 'completed' && (
@@ -533,46 +535,46 @@ export const ImportHubDashboard = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => exportValidationReport(job)}
-                                  className="gap-2"
+                                  style={{ display: 'flex', gap: 8 }}
                                 >
-                                  <Download className="h-4 w-4" />
+                                  <Download style={{ height: 16, width: 16 }} />
                                   Export
                                 </Button>
                               )}
-                            </div>
-                          </div>
-                          
+                            </Box>
+                          </Box>
+
                            {/* Statistics Grid */}
-                           <div className="grid grid-cols-3 md:grid-cols-6 gap-4 pt-4 text-center">
-                            <div>
-                              <div className="text-lg font-bold text-primary">{job.total_records}</div>
-                              <div className="text-xs text-muted-foreground">Total</div>
-                            </div>
-                            <div>
-                              <div className="text-lg font-bold text-success">{job.successful_records}</div>
-                              <div className="text-xs text-muted-foreground">Success</div>
-                            </div>
-                            <div>
-                              <div className="text-lg font-bold text-destructive">{job.failed_records}</div>
-                              <div className="text-xs text-muted-foreground">Failed</div>
-                            </div>
-                            <div>
-                              <div className="text-lg font-bold text-warning">{job.duplicate_records}</div>
-                              <div className="text-xs text-muted-foreground">Duplicates</div>
-                            </div>
-                            <div>
-                              <div className="text-lg font-bold">{job.duplicate_strategy || 'N/A'}</div>
-                              <div className="text-xs text-muted-foreground">Strategy</div>
-                            </div>
-                            <div>
-                              <div className="text-lg font-bold">{job.progress_percentage}%</div>
-                              <div className="text-xs text-muted-foreground">Progress</div>
-                            </div>
-                          </div>
+                           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', md: 'repeat(6, 1fr)' }, gap: 2, pt: 2, textAlign: 'center' }}>
+                            <Box>
+                              <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color: 'primary.main' }}>{job.total_records}</Typography>
+                              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Total</Typography>
+                            </Box>
+                            <Box>
+                              <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--success)' }}>{job.successful_records}</Typography>
+                              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Success</Typography>
+                            </Box>
+                            <Box>
+                              <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--destructive)' }}>{job.failed_records}</Typography>
+                              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Failed</Typography>
+                            </Box>
+                            <Box>
+                              <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--warning)' }}>{job.duplicate_records}</Typography>
+                              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Duplicates</Typography>
+                            </Box>
+                            <Box>
+                              <Typography sx={{ fontSize: '1.125rem', fontWeight: 700 }}>{job.duplicate_strategy || 'N/A'}</Typography>
+                              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Strategy</Typography>
+                            </Box>
+                            <Box>
+                              <Typography sx={{ fontSize: '1.125rem', fontWeight: 700 }}>{job.progress_percentage}%</Typography>
+                              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Progress</Typography>
+                            </Box>
+                          </Box>
                         </CardContent>
                       </Card>
                     ))}
-                  </div>
+                  </Box>
                 )}
               </CardContent>
             </Card>
@@ -586,6 +588,6 @@ export const ImportHubDashboard = () => {
             onClose={() => setShowValidation(null)}
           />
         )}
-      </div>
+      </Box>
     );
   };

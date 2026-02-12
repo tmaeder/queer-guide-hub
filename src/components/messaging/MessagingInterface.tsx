@@ -34,13 +34,13 @@ interface MessageItemProps {
 const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
   switch (status) {
     case 'sending':
-      return <Clock className="h-3 w-3 text-muted-foreground" />;
+      return <Clock style={{ height: 12, width: 12, color: 'var(--muted-foreground)' }} />;
     case 'sent':
-      return <Check className="h-3 w-3 text-muted-foreground" />;
+      return <Check style={{ height: 12, width: 12, color: 'var(--muted-foreground)' }} />;
     case 'delivered':
-      return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
+      return <CheckCheck style={{ height: 12, width: 12, color: 'var(--muted-foreground)' }} />;
     case 'read':
-      return <Eye className="h-3 w-3 text-primary" />;
+      return <Eye style={{ height: 12, width: 12, color: 'var(--primary)' }} />;
     default:
       return null;
   }
@@ -52,36 +52,42 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😠'];
 
   return (
-    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4 group animate-in slide-in-from-bottom-2 duration-300`}>
-      <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'}`}>
+    <div style={{ display: 'flex', justifyContent: isOwn ? 'flex-end' : 'flex-start', marginBottom: 16 }} sx={{ animation: 'slideInFromBottom 0.3s ease-out' }}>
+      <div style={{ maxWidth: '70%', order: isOwn ? 2 : 1 }}>
         {!isOwn && (
-          <div className="flex items-center gap-2 mb-1">
-            <Avatar className="h-6 w-6">
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <Avatar style={{ height: 24, width: 24 }}>
               <AvatarImage src={message.sender?.avatar_url || ''} />
               <AvatarFallback>
                 {message.sender?.display_name?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
-            <span className="text-xs text-muted-foreground">
+            <span sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
               {message.sender?.display_name || 'Unknown User'}
             </span>
           </div>
         )}
         
-        <div className="relative">
+        <div sx={{ position: 'relative' }}>
           <div
-            className={`px-4 py-2 rounded-2xl ${
-              isOwn
-                ? 'bg-primary text-primary-foreground rounded-br-md'
-                : 'bg-muted rounded-bl-md'
-            } ${message.status === 'sending' ? 'opacity-60' : ''}`}
+            style={{
+              paddingLeft: 16,
+              paddingRight: 16,
+              paddingTop: 8,
+              paddingBottom: 8,
+              borderRadius: 16,
+              ...(isOwn
+                ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderBottomRightRadius: 6 }
+                : { backgroundColor: 'var(--muted)', borderBottomLeftRadius: 6 }),
+              ...(message.status === 'sending' ? { opacity: 0.6 } : {})
+            }}
           >
-            <p className="text-sm">{message.content}</p>
+            <p sx={{ fontSize: '0.875rem' }}>{message.content}</p>
           </div>
           
-          <div className="flex items-center justify-between mt-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <span sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                 {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
               </span>
               
@@ -91,22 +97,36 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ height: 24, width: 24, padding: 0, opacity: 0, transition: 'opacity 0.2s' }}
+              sx={{ transition: 'opacity 0.2s' }}
               onClick={() => setShowReactions(!showReactions)}
             >
-              <Smile className="h-3 w-3" />
+              <Smile style={{ height: 12, width: 12 }} />
             </Button>
           </div>
 
           {showReactions && (
-            <div className="absolute top-full mt-1 bg-popover border rounded-lg p-2 shadow-md z-10 animate-in fade-in duration-200">
-              <div className="flex gap-1">
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                marginTop: 4,
+                backgroundColor: 'var(--popover)',
+                border: '1px solid var(--border)',
+                borderRadius: 8,
+                padding: 8,
+                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                zIndex: 10
+              }}
+              sx={{ animation: 'fadeIn 0.2s ease-out' }}
+            >
+              <div sx={{ display: 'flex', gap: 0.5 }}>
                 {commonEmojis.map(emoji => (
                   <Button
                     key={emoji}
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 hover:bg-muted transition-colors"
+                    sx={{ height: 32, width: 32, p: 0, transition: 'background-color 0.2s', '&:hover': { bgcolor: 'action.hover' } }}
                     onClick={() => {
                       onReaction(message.id, emoji);
                       setShowReactions(false);
@@ -120,9 +140,9 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
           )}
           
           {message.reactions && message.reactions.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
               {message.reactions.map(reaction => (
-                <Badge key={reaction.id} variant="secondary" className="text-xs animate-in zoom-in duration-200">
+                <Badge key={reaction.id} variant="secondary" sx={{ fontSize: '0.75rem', animation: 'zoomIn 0.2s ease-out' }}>
                   {reaction.emoji} 1
                 </Badge>
               ))}
@@ -145,17 +165,30 @@ const TypingIndicator = ({ typingUsers }: TypingIndicatorProps) => {
   const verb = typingUsers.length === 1 ? 'is' : 'are';
   
   return (
-    <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground animate-in slide-in-from-bottom-2 duration-300">
-      <Avatar className="h-6 w-6">
-        <AvatarFallback className="text-xs">
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        paddingLeft: 16,
+        paddingRight: 16,
+        paddingTop: 8,
+        paddingBottom: 8,
+        fontSize: '0.875rem',
+        color: 'var(--muted-foreground)'
+      }}
+      sx={{ animation: 'slideInFromBottom 0.3s ease-out' }}
+    >
+      <Avatar style={{ height: 24, width: 24 }}>
+        <AvatarFallback sx={{ fontSize: '0.75rem' }}>
           {typingUsers[0]?.display_name?.charAt(0) || 'U'}
         </AvatarFallback>
       </Avatar>
       <span>{names} {verb} typing</span>
-      <div className="flex gap-1">
-        <div className="w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-        <div className="w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-        <div className="w-1 h-1 bg-primary rounded-full animate-bounce"></div>
+      <div sx={{ display: 'flex', gap: 0.5 }}>
+        <div sx={{ width: 4, height: 4, bgcolor: 'primary.main', borderRadius: '50%', animation: 'bounce 1s infinite', animationDelay: '-0.3s' }}></div>
+        <div sx={{ width: 4, height: 4, bgcolor: 'primary.main', borderRadius: '50%', animation: 'bounce 1s infinite', animationDelay: '-0.15s' }}></div>
+        <div sx={{ width: 4, height: 4, bgcolor: 'primary.main', borderRadius: '50%', animation: 'bounce 1s infinite' }}></div>
       </div>
     </div>
   );
@@ -208,17 +241,15 @@ const ConversationList = ({
   };
 
   return (
-    <div className="space-y-2">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       {conversations.map(conversation => (
         <Card
           key={conversation.id}
-          className={`cursor-pointer transition-all duration-200 hover:bg-muted/50 hover:shadow-sm ${
-            selectedConversation === conversation.id ? 'ring-2 ring-primary border-primary' : ''
-          }`}
+          style={{ cursor: 'pointer', transition: 'all 0.2s', ...(selectedConversation === conversation.id ? { boxShadow: '0 0 0 2px hsl(var(--primary))', borderColor: 'hsl(var(--primary))' } : {}) }}
           onClick={() => onSelectConversation(conversation.id)}
         >
-          <CardContent className="p-3 md:p-4">
-            <div className="flex items-center gap-3 min-h-[48px]">
+          <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 48 }}>
               <Avatar>
                 <AvatarImage src={getConversationAvatar(conversation) || ''} />
                 <AvatarFallback>
@@ -226,10 +257,10 @@ const ConversationList = ({
                 </AvatarFallback>
               </Avatar>
               
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-medium truncate">
+              <div sx={{ flex: 1, minWidth: 0 }}>
+                <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <h4 sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {getConversationTitle(conversation)}
                     </h4>
                     {getOtherParticipant(conversation)?.profile?.user_mode && (
@@ -240,14 +271,14 @@ const ConversationList = ({
                     )}
                   </div>
                   {conversation.last_message_at && (
-                    <span className="text-xs text-muted-foreground">
+                    <span sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       {formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })}
                     </span>
                   )}
                 </div>
                 
                 {conversation.last_message && (
-                  <p className="text-sm text-muted-foreground truncate">
+                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {conversation.last_message.content}
                   </p>
                 )}
@@ -339,7 +370,17 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-3 md:p-4 border-t bg-background/50 backdrop-blur">
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        display: 'flex',
+        gap: 8,
+        padding: 12,
+        borderTop: '1px solid var(--border)',
+        backgroundColor: 'color-mix(in srgb, var(--background) 50%, transparent)',
+        backdropFilter: 'blur(8px)'
+      }}
+    >
       <Input
         ref={inputRef}
         value={message}
@@ -347,7 +388,7 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
         onKeyDown={handleKeyDown}
         placeholder="Type a message..."
         disabled={disabled}
-        className="flex-1 rounded-full border-muted-foreground/20 focus:border-primary transition-colors h-11 md:h-10"
+        style={{ flex: 1, borderRadius: 9999, height: 44, transition: 'border-color 0.2s' }}
         maxLength={2000}
       />
       
@@ -358,25 +399,25 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
             type="button"
             variant="ghost" 
             size="sm"
-            className="rounded-full h-11 w-11 md:h-10 md:w-10 p-0"
+            sx={{ borderRadius: '50%', height: { xs: 44, md: 40 }, width: { xs: 44, md: 40 }, p: 0 }}
             disabled={disabled}
           >
-            <Smile className="h-5 w-5 md:h-4 md:w-4" />
+            <Smile style={{ height: 20, width: 20 }} />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-4" side="top">
-          <div className="space-y-3">
-            <h4 className="font-medium text-sm">Choose an emoji</h4>
-            <div className="grid grid-cols-8 md:grid-cols-10 gap-1">
+        <PopoverContent sx={{ width: 320, p: 2 }} side="top">
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <h4 sx={{ fontWeight: 500, fontSize: '0.875rem' }}>Choose an emoji</h4>
+            <div sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(8, 1fr)', md: 'repeat(10, 1fr)' }, gap: 0.5 }}>
               {commonEmojis.map((emoji, index) => (
                 <Button
                   key={index}
                   variant="ghost"
                   size="sm"
-                  className="h-10 w-10 md:h-8 md:w-8 p-0 hover:bg-muted transition-colors"
+                  sx={{ height: { xs: 40, md: 32 }, width: { xs: 40, md: 32 }, p: 0, transition: 'background-color 0.2s', '&:hover': { bgcolor: 'action.hover' } }}
                   onClick={() => addEmoji(emoji)}
                 >
-                  <span className="text-lg">{emoji}</span>
+                  <span sx={{ fontSize: '1.125rem' }}>{emoji}</span>
                 </Button>
               ))}
             </div>
@@ -387,10 +428,10 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
       <Button
         type="submit" 
         disabled={disabled || !message.trim()}
-        className="rounded-full h-11 w-11 md:h-10 md:w-10 p-0 transition-all hover:scale-105"
+        sx={{ borderRadius: '50%', height: { xs: 44, md: 40 }, width: { xs: 44, md: 40 }, p: 0, transition: 'all 0.2s', '&:hover': { transform: 'scale(1.05)' } }}
         size="sm"
       >
-        <Send className="h-5 w-5 md:h-4 md:w-4" />
+        <Send style={{ height: 20, width: 20 }} />
       </Button>
     </form>
   );
@@ -494,45 +535,70 @@ export const MessagingInterface = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading messages...</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 384 }}>
+        <div sx={{ textAlign: 'center' }}>
+          <div sx={{ width: 32, height: 32, border: 4, borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', mx: 'auto', mb: 2 }}></div>
+          <p style={{ color: 'var(--muted-foreground)' }}>Loading messages...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] md:h-[600px] overflow-hidden rounded-lg border bg-background">
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: 'calc(100vh - 200px)',
+        overflow: 'hidden',
+        borderRadius: 8,
+        border: '1px solid var(--border)',
+        backgroundColor: 'var(--background)'
+      }}
+      sx={{ flexDirection: { xs: 'column', md: 'row' }, height: { md: 600 } }}
+    >
       {/* Conversation List - Full width on mobile, 1/3 on desktop */}
-      <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r bg-background/50 flex-col`}>
-        <div className="p-3 md:p-4 border-b">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
-            <h2 className="font-semibold text-lg md:text-base">Messages</h2>
-            <Button size="sm" variant="outline" className="rounded-full h-9 md:h-8">
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">New</span>
+      <div
+        style={{
+          width: '100%',
+          borderRight: '1px solid var(--border)',
+          backgroundColor: 'color-mix(in srgb, var(--background) 50%, transparent)',
+          flexDirection: 'column'
+        }}
+        sx={{
+          display: { xs: selectedConversation ? 'none' : 'flex', md: 'flex' },
+          width: { md: '33.333%' }
+        }}
+      >
+        <div sx={{ p: { xs: 1.5, md: 2 }, borderBottom: 1, borderColor: 'divider' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}
+            sx={{ mb: { md: 2 } }}
+          >
+            <h2 sx={{ fontWeight: 600, fontSize: { xs: '1.125rem', md: '1rem' } }}>Messages</h2>
+            <Button size="sm" variant="outline" sx={{ borderRadius: '50%', height: { xs: 36, md: 32 } }}>
+              <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
+              <span sx={{ display: { xs: 'none', sm: 'inline' } }}>New</span>
             </Button>
           </div>
           
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div sx={{ position: 'relative' }}>
+            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
             <Input
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-muted-foreground/20 h-11 md:h-10"
+              sx={{ pl: 5, borderRadius: '50px', borderColor: 'rgba(var(--muted-foreground-rgb), 0.2)', height: { xs: 44, md: 40 } }}
             />
           </div>
         </div>
         
-        <ScrollArea className="flex-1">
-          <div className="p-3 md:p-4">
+        <ScrollArea sx={{ flex: 1 }}>
+          <div sx={{ p: { xs: 1.5, md: 2 } }}>
             {filteredConversations.length === 0 ? (
-              <div className="text-center py-8">
-                <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No conversations yet</p>
+              <div sx={{ textAlign: 'center', py: 4 }}>
+                <MessageCircle style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+                <p style={{ color: 'var(--muted-foreground)' }}>No conversations yet</p>
               </div>
             ) : (
               <ConversationList
@@ -547,27 +613,30 @@ export const MessagingInterface = () => {
       </div>
 
       {/* Chat Area - Full width on mobile when conversation selected */}
-      <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
+      <div
+        style={{ flex: 1, flexDirection: 'column' }}
+        sx={{ display: { xs: selectedConversation ? 'flex' : 'none', md: 'flex' } }}
+      >
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <div className="p-3 md:p-4 border-b bg-background/50 backdrop-blur">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            <div sx={{ p: { xs: 1.5, md: 2 }, borderBottom: 1, borderColor: 'divider', bgcolor: 'rgba(var(--background-rgb), 0.5)', backdropFilter: 'blur(8px)' }}>
+              <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   {/* Back button for mobile */}
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="md:hidden h-9 w-9 p-0"
+                    sx={{ display: { md: 'none' }, height: 36, width: 36, p: 0 }}
                     onClick={() => setSelectedConversation(null)}
                   >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg style={{ height: 20, width: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </Button>
                   
-                  <div className="relative">
-                    <Avatar className="h-10 w-10">
+                  <div sx={{ position: 'relative' }}>
+                    <Avatar style={{ height: 40, width: 40 }}>
                       <AvatarImage src={
                         conversations.find(c => c.id === selectedConversation)?.participants
                           ?.find(p => p.user_id !== user?.id)?.profile?.avatar_url || ''
@@ -577,30 +646,30 @@ export const MessagingInterface = () => {
                           ?.find(p => p.user_id !== user?.id)?.profile?.display_name?.charAt(0) || 'C'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
+                    <div style={{ position: 'absolute', bottom: -2, right: -2, width: 12, height: 12, backgroundColor: '#22c55e', border: '2px solid var(--background)', borderRadius: '50%' }}></div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-medium truncate">
+                  <div sx={{ minWidth: 0, flex: 1 }}>
+                    <h3 sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {conversations.find(c => c.id === selectedConversation)?.participants
                         ?.find(p => p.user_id !== user?.id)?.profile?.display_name || 'Unknown User'}
                     </h3>
-                    <p className="text-sm text-green-600">Online</p>
+                    <p sx={{ fontSize: '0.875rem', color: '#16a34a' }}>Online</p>
                   </div>
                 </div>
                 
-                <Button variant="ghost" size="sm" className="rounded-full h-9 w-9 p-0">
-                  <MoreVertical className="h-4 w-4" />
+                <Button variant="ghost" size="sm" sx={{ borderRadius: '50%', height: 36, width: 36, p: 0 }}>
+                  <MoreVertical style={{ height: 16, width: 16 }} />
                 </Button>
               </div>
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 bg-gradient-to-b from-background/50 to-background">
-              <div className="p-3 md:p-4">
+            <ScrollArea style={{ flex: 1, background: 'linear-gradient(to bottom, color-mix(in srgb, var(--background) 50%, transparent), var(--background))' }}>
+              <div sx={{ p: { xs: 1.5, md: 2 } }}>
                 {currentMessages.length === 0 ? (
-                  <div className="text-center py-8">
-                    <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
+                  <div sx={{ textAlign: 'center', py: 4 }}>
+                    <MessageCircle style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+                    <p style={{ color: 'var(--muted-foreground)' }}>No messages yet. Start the conversation!</p>
                   </div>
                 ) : (
                   <div>
@@ -630,11 +699,11 @@ export const MessagingInterface = () => {
             />
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-background/50 to-background">
-            <div className="text-center px-4">
-              <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Select a conversation</h3>
-              <p className="text-muted-foreground text-sm md:text-base">Choose a conversation from the list to start messaging</p>
+          <div sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom, rgba(var(--background-rgb), 0.5), var(--background))' }}>
+            <div sx={{ textAlign: 'center', px: 2 }}>
+              <MessageCircle style={{ height: 64, width: 64, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+              <h3 sx={{ fontSize: '1.125rem', fontWeight: 500, mb: 1 }}>Select a conversation</h3>
+              <p sx={{ color: 'text.secondary', fontSize: { xs: '0.875rem', md: '1rem' } }}>Choose a conversation from the list to start messaging</p>
             </div>
           </div>
         )}

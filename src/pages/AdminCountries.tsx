@@ -13,6 +13,9 @@ import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 
 export default function AdminCountries() {
   const { isAdmin, isModerator } = useAdminRoles();
@@ -202,70 +205,70 @@ export default function AdminCountries() {
   };
 
   return (
-    <div className="w-full p-6">
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Countries Management</h1>
-            <p className="text-muted-foreground">
+    <Box sx={{ width: '100%', p: 3 }}>
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Countries Management</Typography>
+            <Typography variant="body2" color="text.secondary">
               Manage countries, their information, and geographical data
-            </p>
-          </div>
+            </Typography>
+          </Box>
           {(isAdmin || isModerator) && (
             <Button onClick={() => handleAddCountry()}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
               Add Country
             </Button>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 3, mb: 4 }}>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Countries</CardTitle>
-            <Globe className="h-4 w-4 text-muted-foreground" />
+          <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Total Countries</CardTitle>
+            <Globe style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{countries.length}</div>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{countries.length}</Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Population</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Total Population</CardTitle>
+            <Users style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
               {formatNumber(countries.reduce((sum, country) => sum + (country.population || 0), 0))}
-            </div>
+            </Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total GDP</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Total GDP</CardTitle>
+            <BarChart3 style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
               {formatCurrency(countries.reduce((sum, country) => sum + (country.gdp || 0), 0))}
-            </div>
+            </Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Continents</CardTitle>
-            <Globe className="h-4 w-4 text-muted-foreground" />
+          <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Continents</CardTitle>
+            <Globe style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{continents.length}</div>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{continents.length}</Typography>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Countries Management */}
       <Card>
@@ -277,18 +280,18 @@ export default function AdminCountries() {
         </CardHeader>
         <CardContent>
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 3 }}>
+            <Box sx={{ position: 'relative', flex: 1 }}>
+              <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
               <Input
                 placeholder="Search countries by name, code, or capital..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                style={{ paddingLeft: 40 }}
               />
-            </div>
+            </Box>
             <Select value={continentFilter} onValueChange={setContinentFilter}>
-              <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectTrigger style={{ width: '100%', maxWidth: 200 }}>
                 <SelectValue placeholder="Filter by continent" />
               </SelectTrigger>
               <SelectContent>
@@ -298,16 +301,16 @@ export default function AdminCountries() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
 
           {/* Countries Table */}
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading countries...</p>
-            </div>
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Box sx={{ height: 32, width: 32, border: 4, borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%', mx: 'auto', mb: 2, animation: 'spin 1s linear infinite' }} />
+              <Typography variant="body2" color="text.secondary">Loading countries...</Typography>
+            </Box>
           ) : (
-            <div className="rounded-md border">
+            <Box sx={{ borderRadius: 1, border: 1, borderColor: 'divider' }}>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -325,10 +328,10 @@ export default function AdminCountries() {
                   {filteredCountries.map((country) => (
                     <TableRow key={country.id}>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{country.name}</div>
-                          <div className="text-sm text-muted-foreground">{country.code}</div>
-                        </div>
+                        <Box>
+                          <Box sx={{ fontWeight: 500 }}>{country.name}</Box>
+                          <Typography variant="body2" color="text.secondary">{country.code}</Typography>
+                        </Box>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{country.continent}</Badge>
@@ -340,33 +343,33 @@ export default function AdminCountries() {
                       <TableCell>{country.currency || 'N/A'}</TableCell>
                       {(isAdmin || isModerator) && (
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Button 
-                              variant="ghost" 
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button
+                              variant="ghost"
                               size="sm"
                               onClick={() => handleEditCountry(country.id)}
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit style={{ height: 16, width: 16 }} />
                             </Button>
                             {isAdmin && (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="text-destructive">
-                                    <Trash2 className="h-4 w-4" />
+                                  <Button variant="ghost" size="sm" style={{ color: 'var(--destructive)' }}>
+                                    <Trash2 style={{ height: 16, width: 16 }} />
                                   </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Delete Country</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      Are you sure you want to delete {country.name}? 
+                                      Are you sure you want to delete {country.name}?
                                       This action cannot be undone and will affect all related data.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction 
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    <AlertDialogAction
+                                      style={{ backgroundColor: 'var(--destructive)', color: 'var(--destructive-foreground)' }}
                                       onClick={() => handleDeleteCountry(country.id, country.name)}
                                     >
                                       Delete
@@ -375,37 +378,37 @@ export default function AdminCountries() {
                                 </AlertDialogContent>
                               </AlertDialog>
                             )}
-                          </div>
+                          </Box>
                         </TableCell>
                       )}
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
+            </Box>
           )}
 
           {!loading && filteredCountries.length === 0 && (
-            <div className="text-center py-8">
-              <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No countries found matching your criteria.</p>
-            </div>
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Globe style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+              <Typography variant="body2" color="text.secondary">No countries found matching your criteria.</Typography>
+            </Box>
           )}
         </CardContent>
       </Card>
 
       {/* Edit Country Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent style={{ maxWidth: 672 }}>
           <DialogHeader>
             <DialogTitle>Edit Country</DialogTitle>
             <DialogDescription>
               Update the information for {editingCountry?.name}
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div className="space-y-2">
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, py: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="name">Country Name</Label>
               <Input
                 id="name"
@@ -413,9 +416,9 @@ export default function AdminCountries() {
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 placeholder="Enter country name"
               />
-            </div>
-            
-            <div className="space-y-2">
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="code">Country Code</Label>
               <Input
                 id="code"
@@ -424,9 +427,9 @@ export default function AdminCountries() {
                 placeholder="e.g., US, GB, DE"
                 maxLength={3}
               />
-            </div>
-            
-            <div className="space-y-2">
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="capital">Capital City</Label>
               <Input
                 id="capital"
@@ -434,9 +437,9 @@ export default function AdminCountries() {
                 onChange={(e) => handleInputChange('capital', e.target.value)}
                 placeholder="Enter capital city"
               />
-            </div>
-            
-            <div className="space-y-2">
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="currency">Currency</Label>
               <Input
                 id="currency"
@@ -444,9 +447,9 @@ export default function AdminCountries() {
                 onChange={(e) => handleInputChange('currency', e.target.value)}
                 placeholder="e.g., USD, EUR, GBP"
               />
-            </div>
-            
-            <div className="space-y-2">
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="population">Population</Label>
               <Input
                 id="population"
@@ -455,9 +458,9 @@ export default function AdminCountries() {
                 onChange={(e) => handleInputChange('population', e.target.value)}
                 placeholder="Enter population"
               />
-            </div>
-            
-            <div className="space-y-2">
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="area">Area (km²)</Label>
               <Input
                 id="area"
@@ -466,9 +469,9 @@ export default function AdminCountries() {
                 onChange={(e) => handleInputChange('area_km2', e.target.value)}
                 placeholder="Enter area in km²"
               />
-            </div>
-            
-            <div className="space-y-2 md:col-span-2">
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, gridColumn: { md: 'span 2' } }}>
               <Label htmlFor="gdp">GDP (USD)</Label>
               <Input
                 id="gdp"
@@ -477,8 +480,8 @@ export default function AdminCountries() {
                 onChange={(e) => handleInputChange('gdp_usd', e.target.value)}
                 placeholder="Enter GDP in USD"
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
@@ -490,6 +493,6 @@ export default function AdminCountries() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </Box>
   );
 }

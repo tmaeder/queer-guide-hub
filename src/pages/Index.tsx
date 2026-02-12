@@ -7,6 +7,9 @@ import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, Check
 import { useAuth } from '@/hooks/useAuth';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 
 
 const FrontPageVenueMap = React.lazy(() => import('@/components/home/FrontPageVenueMap'));
@@ -27,37 +30,37 @@ const Index = React.memo(() => {
     icon: MapPin,
     title: 'Venues',
     description: 'Find verified queer-friendly venues where you can be yourself',
-    color: 'text-primary',
+    color: 'primary.main',
     link: '/venues'
   }, {
     icon: Calendar,
     title: 'Events',
     description: 'Discover local and virtual gatherings in your area',
-    color: 'text-foreground',
+    color: 'text.primary',
     link: '/events'
   }, {
     icon: Store,
     title: 'Marketplace',
     description: 'Support queer-owned businesses and creators',
-    color: 'text-accent',
+    color: 'secondary.main',
     link: '/marketplace'
   }, {
     icon: Plane,
     title: 'Places',
     description: 'Explore queer-friendly cities and countries worldwide',
-    color: 'text-primary',
+    color: 'primary.main',
     link: '/places'
   }, {
     icon: Users,
     title: 'Community',
     description: 'Connect with like-minded people and join groups',
-    color: 'text-foreground',
+    color: 'text.primary',
     link: '/groups'
   }, {
     icon: BookOpen,
     title: 'Resources',
     description: 'Learn about rights, culture, and community topics',
-    color: 'text-accent',
+    color: 'secondary.main',
     link: '/resources'
   }];
   const formatNumber = (num: number) => {
@@ -91,59 +94,100 @@ const Index = React.memo(() => {
     number: formatNumber(realStats.events),
     label: 'Weekly Events'
   }], [loading, realStats, formatNumber]);
-  return <div className="min-h-screen">
+  return (
+    <Box sx={{ minHeight: '100vh' }}>
       {/* Find Venues & Restrooms Near You */}
-      <section>
-        <div className="container mx-auto px-4 py-8 md:py-12">
+      <Box component="section">
+        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
           <VenueMapSearch />
-        </div>
-      </section>
+        </Container>
+      </Box>
 
       {/* Hero Section */}
-      <section>
+      <Box component="section">
         <FrontPageVenueMap fullWidth heightClass="h-[60vh]" />
-      </section>
+      </Box>
 
       {/* Features Grid */}
-      <section>
-        <div className="container mx-auto px-4 py-16 md:py-20">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+      <Box component="section">
+        <Container maxWidth="lg" sx={{ py: { xs: 8, md: 10 } }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+                lg: 'repeat(6, 1fr)',
+              },
+              gap: { xs: 2, md: 3 },
+            }}
+          >
             {features.map((feature, index) => {
               const Icon = feature.icon as any;
               return (
-                <Link to={feature.link} key={index} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded-lg">
-                  <Card className="h-full shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-0.5 border-border/50">
-                    <CardContent className="p-5">
-                      <div className="flex flex-col items-center gap-2 text-center">
-                        <div className="p-2.5 rounded-lg bg-primary/10">
-                          <Icon className="h-6 w-6 md:h-7 md:w-7 text-primary" aria-hidden="true" />
-                        </div>
-                        <h3 className="text-sm md:text-base font-semibold">{feature.title}</h3>
-                      </div>
+                <Link to={feature.link} key={index} style={{ textDecoration: 'none', display: 'block' }}>
+                  <Card style={{ height: '100%' }}>
+                    <CardContent style={{ padding: 20 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, textAlign: 'center' }}>
+                        <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: 'primary.main', opacity: 0.1, position: 'relative' }}>
+                          <Box sx={{ bgcolor: 'transparent', p: 1.25, borderRadius: 2 }}>
+                            <Icon
+                              style={{ width: 24, height: 24 }}
+                              aria-hidden="true"
+                            />
+                          </Box>
+                        </Box>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: { xs: '0.875rem', md: '1rem' },
+                          }}
+                        >
+                          {feature.title}
+                        </Typography>
+                      </Box>
                     </CardContent>
                   </Card>
                 </Link>
               );
             })}
-          </div>
-        </div>
-      </section>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Community Stats */}
-      <section className="py-12 md:py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+      <Box component="section" sx={{ py: { xs: 6, md: 8 } }}>
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+              gap: { xs: 2, md: 4 },
+            }}
+          >
             {stats.map((stat, index) => (
-              <div key={index} className="text-center space-y-1">
-                <p className="text-3xl md:text-4xl font-bold font-montserrat gradient-text">
+              <Box key={index} sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 700,
+                    fontFamily: 'Montserrat, sans-serif',
+                    fontSize: { xs: '1.875rem', md: '2.25rem' },
+                    backgroundImage: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
                   {stat.number}
-                </p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-              </div>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
+              </Box>
             ))}
-          </div>
-        </div>
-      </section>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Weekly Events Near You */}
       <React.Suspense fallback={<SliderSkeleton title="This Week Near You" />}>
@@ -160,7 +204,8 @@ const Index = React.memo(() => {
         <LatestNewsSlider />
       </React.Suspense>
 
-    </div>;
+    </Box>
+  );
 });
 
 // Enhanced skeleton component for lazy-loaded sliders
@@ -170,53 +215,193 @@ const SliderSkeleton = ({
   title: string;
 }) => {
   const isMobile = useIsMobile();
-  return <section className={`bg-muted/5 ${isMobile ? 'py-12' : 'py-20'} px-4`}>
-      <div className="container mx-auto">
-        <div className={`${isMobile ? 'mb-8' : 'mb-12'}`}>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <div className={`h-10 bg-muted rounded-lg animate-pulse ${isMobile ? 'w-56' : 'w-80'} mb-4`}></div>
-              <div className={`h-6 bg-muted rounded-lg animate-pulse ${isMobile ? 'w-80' : 'w-96'}`}></div>
-            </div>
-            <div className={`h-10 bg-muted rounded-lg animate-pulse ${isMobile ? 'w-24' : 'w-32'}`}></div>
-          </div>
-        </div>
-        
-        <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+  return (
+    <Box
+      component="section"
+      sx={{
+        bgcolor: 'action.hover',
+        py: isMobile ? 6 : 10,
+        px: 2,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box sx={{ mb: isMobile ? 4 : 6 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+            <Box>
+              <Box
+                sx={{
+                  height: 40,
+                  bgcolor: 'action.disabledBackground',
+                  borderRadius: 2,
+                  width: isMobile ? 224 : 320,
+                  mb: 2,
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                  '@keyframes pulse': {
+                    '0%, 100%': { opacity: 1 },
+                    '50%': { opacity: 0.5 },
+                  },
+                }}
+              />
+              <Box
+                sx={{
+                  height: 24,
+                  bgcolor: 'action.disabledBackground',
+                  borderRadius: 2,
+                  width: isMobile ? 320 : 384,
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                }}
+              />
+            </Box>
+            <Box
+              sx={{
+                height: 40,
+                bgcolor: 'action.disabledBackground',
+                borderRadius: 2,
+                width: isMobile ? 96 : 128,
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              }}
+            />
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 3,
+            gridTemplateColumns: isMobile ? '1fr' : { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+          }}
+        >
           {Array.from({
-          length: isMobile ? 2 : 3
-        }).map((_, i) => <Card key={i} className="h-80 bg-card/50 animate-pulse">
-              <CardContent className="p-8">
-                <div className="space-y-6">
-                  <div className="flex items-start justify-between">
-                    <div className="h-6 bg-muted rounded-lg w-20 animate-pulse"></div>
-                    <div className="h-6 bg-muted rounded-lg w-16 animate-pulse"></div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="h-7 bg-muted rounded-lg animate-pulse"></div>
-                    <div className="h-7 bg-muted rounded-lg w-3/4 animate-pulse"></div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 bg-muted rounded-lg animate-pulse"></div>
-                      <div className="h-4 bg-muted rounded-lg w-24 animate-pulse"></div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 bg-muted rounded-lg animate-pulse"></div>
-                      <div className="h-4 bg-muted rounded-lg w-32 animate-pulse"></div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted rounded-lg animate-pulse"></div>
-                    <div className="h-4 bg-muted rounded-lg w-5/6 animate-pulse"></div>
-                    <div className="h-4 bg-muted rounded-lg w-2/3 animate-pulse"></div>
-                  </div>
-                  <div className="h-10 bg-muted rounded-lg animate-pulse mt-auto"></div>
-                </div>
+            length: isMobile ? 2 : 3
+          }).map((_, i) => (
+            <Card key={i} style={{ height: 320, opacity: 0.5 }}>
+              <CardContent style={{ padding: 32 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <Box
+                      sx={{
+                        height: 24,
+                        bgcolor: 'action.disabledBackground',
+                        borderRadius: 2,
+                        width: 80,
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        height: 24,
+                        bgcolor: 'action.disabledBackground',
+                        borderRadius: 2,
+                        width: 64,
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        height: 28,
+                        bgcolor: 'action.disabledBackground',
+                        borderRadius: 2,
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        height: 28,
+                        bgcolor: 'action.disabledBackground',
+                        borderRadius: 2,
+                        width: '75%',
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{
+                          height: 16,
+                          width: 16,
+                          bgcolor: 'action.disabledBackground',
+                          borderRadius: 2,
+                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          height: 16,
+                          bgcolor: 'action.disabledBackground',
+                          borderRadius: 2,
+                          width: 96,
+                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{
+                          height: 16,
+                          width: 16,
+                          bgcolor: 'action.disabledBackground',
+                          borderRadius: 2,
+                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          height: 16,
+                          bgcolor: 'action.disabledBackground',
+                          borderRadius: 2,
+                          width: 128,
+                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box
+                      sx={{
+                        height: 16,
+                        bgcolor: 'action.disabledBackground',
+                        borderRadius: 2,
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        height: 16,
+                        bgcolor: 'action.disabledBackground',
+                        borderRadius: 2,
+                        width: '83%',
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        height: 16,
+                        bgcolor: 'action.disabledBackground',
+                        borderRadius: 2,
+                        width: '66%',
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      height: 40,
+                      bgcolor: 'action.disabledBackground',
+                      borderRadius: 2,
+                      mt: 'auto',
+                      animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }}
+                  />
+                </Box>
               </CardContent>
-            </Card>)}
-        </div>
-      </div>
-    </section>;
+            </Card>
+          ))}
+        </Box>
+      </Container>
+    </Box>
+  );
 };
 export default Index;

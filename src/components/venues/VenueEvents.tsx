@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Users } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
@@ -18,9 +21,9 @@ interface VenueEventsProps {
 export function VenueEvents({ venueId, venueName, events, compact = false }: VenueEventsProps) {
   // Filter events for this venue
   const venueEvents = events.filter(event => event.venue_id === venueId);
-  
+
   // Get upcoming events only
-  const upcomingEvents = venueEvents.filter(event => 
+  const upcomingEvents = venueEvents.filter(event =>
     new Date(event.start_date) > new Date()
   ).slice(0, compact ? 3 : 10);
 
@@ -40,75 +43,77 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
 
   if (compact) {
     return (
-      <div className="space-y-2">
-        <h4 className="text-sm font-medium text-muted-foreground">Upcoming Events</h4>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Typography variant="body2" sx={{ fontWeight: 500 }} color="text.secondary">Upcoming Events</Typography>
         {upcomingEvents.map((event) => (
-          <div key={event.id} className="flex items-center justify-between text-xs p-2 rounded bg-muted/30">
-            <div className="flex-1">
-              <p className="font-medium truncate">{event.title}</p>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="h-3 w-3" />
-                <span>{formatEventDate(event.start_date)}</span>
-                <Clock className="h-3 w-3" />
-                <span>{formatEventTime(event.start_date)}</span>
-              </div>
-            </div>
-            <Badge variant="outline" className="text-xs">
+          <Box key={event.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1, borderRadius: 1, bgcolor: 'action.hover' }}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                <Calendar style={{ width: 12, height: 12 }} />
+                <Typography variant="caption">{formatEventDate(event.start_date)}</Typography>
+                <Clock style={{ width: 12, height: 12 }} />
+                <Typography variant="caption">{formatEventTime(event.start_date)}</Typography>
+              </Box>
+            </Box>
+            <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
               {event.event_type}
             </Badge>
-          </div>
+          </Box>
         ))}
         {venueEvents.length > 3 && (
-          <p className="text-xs text-muted-foreground text-center">
+          <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
             +{venueEvents.length - 3} more events
-          </p>
+          </Typography>
         )}
-      </div>
+      </Box>
     );
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Upcoming Events at {venueName}</CardTitle>
+        <CardTitle sx={{ fontSize: '1.125rem' }}>Upcoming Events at {venueName}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {upcomingEvents.map((event) => (
-          <div key={event.id} className="flex items-center justify-between p-3 rounded border hover:bg-muted/50 transition-colors">
-            <div className="flex-1">
-              <h4 className="font-medium">{event.title}</h4>
-              <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>{formatEventDate(event.start_date)}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  <span>{formatEventTime(event.start_date)}</span>
-                </div>
-                {event.max_attendees && (
-                  <div className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    <span>Max {event.max_attendees}</span>
-                  </div>
+      <CardContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {upcomingEvents.map((event) => (
+            <Box key={event.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 1, border: 1, borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' }, transition: 'background-color 0.2s' }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>{event.title}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5, color: 'text.secondary' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Calendar style={{ width: 12, height: 12 }} />
+                    <Typography variant="body2">{formatEventDate(event.start_date)}</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Clock style={{ width: 12, height: 12 }} />
+                    <Typography variant="body2">{formatEventTime(event.start_date)}</Typography>
+                  </Box>
+                  {event.max_attendees && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Users style={{ width: 12, height: 12 }} />
+                      <Typography variant="body2">Max {event.max_attendees}</Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Badge variant="outline">{event.event_type}</Badge>
+                {event.is_free ? (
+                  <Badge variant="outline">Free</Badge>
+                ) : (
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {event.price_min ? `$${event.price_min}` : 'Price TBA'}
+                  </Typography>
                 )}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">{event.event_type}</Badge>
-              {event.is_free ? (
-                <Badge variant="outline" className="text-accent">Free</Badge>
-              ) : (
-                <span className="text-sm font-medium">
-                  {event.price_min ? `$${event.price_min}` : 'Price TBA'}
-                </span>
-              )}
-              <Button size="sm" variant="outline">
-                Details
-              </Button>
-            </div>
-          </div>
-        ))}
+                <Button size="sm" variant="outline">
+                  Details
+                </Button>
+              </Box>
+            </Box>
+          ))}
+        </Box>
       </CardContent>
     </Card>
   );

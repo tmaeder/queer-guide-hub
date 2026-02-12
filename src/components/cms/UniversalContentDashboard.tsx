@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Box, Typography } from '@mui/material';
 import { useUniversalCMS, type ContentFilters } from '@/hooks/useUniversalCMS';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,23 +19,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export function UniversalContentDashboard() {
-  const { 
-    allContent, 
-    contentStats, 
-    loading, 
-    error, 
+  const {
+    allContent,
+    contentStats,
+    loading,
+    error,
     totalCount,
     currentPage,
     hasNextPage,
-    fetchAllContent, 
-    deleteUniversalContent 
+    fetchAllContent,
+    deleteUniversalContent
   } = useUniversalCMS();
-  
+
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedContent, setSelectedContent] = useState<any>(null);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  
+
   // Filters state
   const [filters, setFilters] = useState<ContentFilters>({
     contentType: 'all',
@@ -43,7 +44,7 @@ export function UniversalContentDashboard() {
     page: 1,
     limit: 50
   });
-  
+
   const [searchInput, setSearchInput] = useState('');
 
   // Debounced search effect
@@ -99,15 +100,15 @@ export function UniversalContentDashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-64" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Skeleton sx={{ height: 32, width: 256 }} />
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-24" />
+            <Skeleton key={i} sx={{ height: 96 }} />
           ))}
-        </div>
-        <Skeleton className="h-96" />
-      </div>
+        </Box>
+        <Skeleton sx={{ height: 384 }} />
+      </Box>
     );
   }
 
@@ -115,12 +116,12 @@ export function UniversalContentDashboard() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-destructive">Error</CardTitle>
+          <CardTitle sx={{ color: 'error.main' }}>Error</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>{error}</p>
-          <Button onClick={handleRefresh} className="mt-4">
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Typography>{error}</Typography>
+          <Button onClick={handleRefresh} sx={{ mt: 2 }}>
+            <RefreshCw sx={{ height: 16, width: 16, mr: 1 }} />
             Retry
           </Button>
         </CardContent>
@@ -129,83 +130,83 @@ export function UniversalContentDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Universal Content Management</h1>
-          <p className="text-muted-foreground">Manage all content across the platform</p>
-        </div>
-        <div className="flex gap-2">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="h3" sx={{ fontWeight: 'bold' }}>Universal Content Management</Typography>
+          <Typography sx={{ color: 'text.secondary' }}>Manage all content across the platform</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button onClick={() => setIsCreatorOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus sx={{ height: 16, width: 16, mr: 1 }} />
             Create Content
           </Button>
           <Button onClick={handleRefresh} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw sx={{ height: 16, width: 16, mr: 1 }} />
             Refresh
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="overview">
-            <BarChart3 className="h-4 w-4 mr-2" />
+            <BarChart3 sx={{ height: 16, width: 16, mr: 1 }} />
             Overview
           </TabsTrigger>
           <TabsTrigger value="content-list">
-            <Database className="h-4 w-4 mr-2" />
+            <Database sx={{ height: 16, width: 16, mr: 1 }} />
             Content List
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <TabsContent value="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' } }}>
             {contentStats.map((stat) => (
-              <Card 
+              <Card
                 key={stat.content_type}
-                className="cursor-pointer hover:shadow-md transition-shadow"
+                sx={{ cursor: 'pointer', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 6 } }}
                 onClick={() => handleContentTypeFilter(stat.content_type)}
               >
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium capitalize">
+                <CardHeader sx={{ pb: 1.5 }}>
+                  <CardTitle sx={{ fontSize: 14, fontWeight: 'medium', textTransform: 'capitalize' }}>
                     {stat.content_type.replace('_', ' ')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stat.count.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{stat.count.toLocaleString()}</Typography>
+                  <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
                     Click to view all
-                  </p>
+                  </Typography>
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </Box>
         </TabsContent>
 
-        <TabsContent value="content-list" className="space-y-6">
+        <TabsContent value="content-list" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
+              <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Filter sx={{ height: 20, width: 20 }} />
                 Filters & Search
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-4 items-center">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <Box sx={{ flex: 1, position: 'relative' }}>
+                  <Search sx={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'text.secondary', height: 16, width: 16 }} />
                   <Input
                     placeholder="Search content..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    className="pl-9"
+                    sx={{ pl: 4.5 }}
                   />
-                </div>
-                
-                <div className="flex gap-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 1 }}>
                   <Select value={filters.contentType} onValueChange={(value) => handleFilterChange('contentType', value)}>
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger sx={{ width: 192 }}>
                       <SelectValue placeholder="Content Type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -225,7 +226,7 @@ export function UniversalContentDashboard() {
                   </Select>
 
                   <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger sx={{ width: 128 }}>
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -235,8 +236,8 @@ export function UniversalContentDashboard() {
                       <SelectItem value="published">Published</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
 
@@ -246,9 +247,9 @@ export function UniversalContentDashboard() {
             </CardHeader>
             <CardContent>
               {allContent.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
                   No content found matching your criteria.
-                </div>
+                </Box>
               ) : (
                 <Table>
                   <TableHeader>
@@ -264,88 +265,88 @@ export function UniversalContentDashboard() {
                     {allContent.map((content) => (
                       <TableRow key={`${content.content_type}-${content.id}`}>
                         <TableCell>
-                          <div>
-                            <div className="font-medium">{content.title}</div>
+                          <Box>
+                            <Typography sx={{ fontWeight: 'medium' }}>{content.title}</Typography>
                             {content.description && (
-                              <div className="text-sm text-muted-foreground truncate max-w-xs">
+                              <Typography sx={{ fontSize: 14, color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 300 }}>
                                 {content.description}
-                              </div>
+                              </Typography>
                             )}
-                          </div>
+                          </Box>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="capitalize">
+                          <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
                             {content.content_type.replace('_', ' ')}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge 
-                            className={`${getStatusColor(content.status || 'unknown', content.content_type)} text-white`}
+                          <Badge
+                            sx={{ bgcolor: getStatusColor(content.status || 'unknown', content.content_type), color: 'white' }}
                           >
                             {content.status || 'unknown'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell sx={{ fontSize: 14 }}>
                           {formatDistanceToNow(new Date(content.updated_at), { addSuffix: true })}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
+                          <Box sx={{ display: 'flex', gap: 1 }}>
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button 
-                                  variant="outline" 
+                                <Button
+                                  variant="outline"
                                   size="sm"
                                   onClick={() => setSelectedContent(content)}
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <Eye sx={{ height: 16, width: 16 }} />
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="max-w-4xl max-h-[80vh]">
+                              <DialogContent sx={{ maxWidth: 896, maxHeight: '80vh' }}>
                                 <DialogHeader>
                                   <DialogTitle>{content.title}</DialogTitle>
                                 </DialogHeader>
-                                <ScrollArea className="h-[60vh]">
-                                  <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <h4 className="font-semibold">Content Type</h4>
-                                        <p className="capitalize">{content.content_type.replace('_', ' ')}</p>
-                                      </div>
-                                      <div>
-                                        <h4 className="font-semibold">Status</h4>
-                                        <Badge className={`${getStatusColor(content.status || 'unknown', content.content_type)} text-white`}>
+                                <ScrollArea sx={{ height: '60vh' }}>
+                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
+                                      <Box>
+                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Content Type</Typography>
+                                        <Typography sx={{ textTransform: 'capitalize' }}>{content.content_type.replace('_', ' ')}</Typography>
+                                      </Box>
+                                      <Box>
+                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Status</Typography>
+                                        <Badge sx={{ bgcolor: getStatusColor(content.status || 'unknown', content.content_type), color: 'white' }}>
                                           {content.status || 'unknown'}
                                         </Badge>
-                                      </div>
-                                    </div>
-                                    
+                                      </Box>
+                                    </Box>
+
                                     {content.description && (
-                                      <div>
-                                        <h4 className="font-semibold">Description</h4>
-                                        <p>{content.description}</p>
-                                      </div>
+                                      <Box>
+                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Description</Typography>
+                                        <Typography>{content.description}</Typography>
+                                      </Box>
                                     )}
 
                                     {content.metadata && (
-                                      <div>
-                                        <h4 className="font-semibold">Metadata</h4>
-                                        <pre className="bg-muted p-4 rounded text-sm overflow-auto">
+                                      <Box>
+                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Metadata</Typography>
+                                        <Box component="pre" sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1, fontSize: 14, overflow: 'auto' }}>
                                           {JSON.stringify(content.metadata, null, 2)}
-                                        </pre>
-                                      </div>
+                                        </Box>
+                                      </Box>
                                     )}
 
-                                    <div>
-                                      <h4 className="font-semibold">Raw Data</h4>
-                                      <pre className="bg-muted p-4 rounded text-sm overflow-auto">
+                                    <Box>
+                                      <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Raw Data</Typography>
+                                      <Box component="pre" sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1, fontSize: 14, overflow: 'auto' }}>
                                         {JSON.stringify(content.raw_data, null, 2)}
-                                      </pre>
-                                    </div>
-                                  </div>
+                                      </Box>
+                                    </Box>
+                                  </Box>
                                 </ScrollArea>
                               </DialogContent>
                             </Dialog>
-                            
+
                             <Button
                               variant="outline"
                               size="sm"
@@ -354,19 +355,19 @@ export function UniversalContentDashboard() {
                                 setIsEditorOpen(true);
                               }}
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit sx={{ height: 16, width: 16 }} />
                             </Button>
-                            
+
                             {(content.content_type === 'cms_content' || content.content_type === 'community_posts') && (
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 onClick={() => handleDelete(content.content_type, content.id)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 sx={{ height: 16, width: 16 }} />
                               </Button>
                             )}
-                          </div>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -376,13 +377,13 @@ export function UniversalContentDashboard() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="mt-6 flex justify-center">
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
                   <Pagination>
                     <PaginationContent>
                       {currentPage > 1 && (
                         <PaginationItem>
-                          <PaginationPrevious 
-                            href="#" 
+                          <PaginationPrevious
+                            href="#"
                             onClick={(e) => {
                               e.preventDefault();
                               handlePageChange(currentPage - 1);
@@ -390,14 +391,14 @@ export function UniversalContentDashboard() {
                           />
                         </PaginationItem>
                       )}
-                      
+
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         const pageNum = Math.max(1, currentPage - 2) + i;
                         if (pageNum > totalPages) return null;
-                        
+
                         return (
                           <PaginationItem key={pageNum}>
-                            <PaginationLink 
+                            <PaginationLink
                               href="#"
                               isActive={pageNum === currentPage}
                               onClick={(e) => {
@@ -410,10 +411,10 @@ export function UniversalContentDashboard() {
                           </PaginationItem>
                         );
                       })}
-                      
+
                       {currentPage < totalPages && (
                         <PaginationItem>
-                          <PaginationNext 
+                          <PaginationNext
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
@@ -424,15 +425,15 @@ export function UniversalContentDashboard() {
                       )}
                     </PaginationContent>
                   </Pagination>
-                </div>
+                </Box>
               )}
 
               {/* Results info */}
-              <div className="mt-4 text-sm text-muted-foreground text-center">
+              <Box sx={{ mt: 2, fontSize: 14, color: 'text.secondary', textAlign: 'center' }}>
                 Showing {allContent.length} of {totalCount} results
                 {filters.contentType !== 'all' && ` in ${filters.contentType}`}
                 {filters.search && ` matching "${filters.search}"`}
-              </div>
+              </Box>
             </CardContent>
           </Card>
         </TabsContent>
@@ -440,24 +441,24 @@ export function UniversalContentDashboard() {
 
       {/* Simple modals - removing for now to fix build errors */}
       {isCreatorOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background p-6 rounded-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Create Content</h3>
-            <p className="text-muted-foreground mb-4">Content creation will be implemented in the next iteration.</p>
+        <Box sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 2, maxWidth: 448, width: '100%', mx: 2 }}>
+            <Typography variant="h3" sx={{ fontWeight: 'semibold', mb: 2 }}>Create Content</Typography>
+            <Typography sx={{ color: 'text.secondary', mb: 2 }}>Content creation will be implemented in the next iteration.</Typography>
             <Button onClick={() => setIsCreatorOpen(false)}>Close</Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
-      
+
       {isEditorOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background p-6 rounded-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Edit Content</h3>
-            <p className="text-muted-foreground mb-4">Content editing will be implemented in the next iteration.</p>
+        <Box sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 2, maxWidth: 448, width: '100%', mx: 2 }}>
+            <Typography variant="h3" sx={{ fontWeight: 'semibold', mb: 2 }}>Edit Content</Typography>
+            <Typography sx={{ color: 'text.secondary', mb: 2 }}>Content editing will be implemented in the next iteration.</Typography>
             <Button onClick={() => setIsEditorOpen(false)}>Close</Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

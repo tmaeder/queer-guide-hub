@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, Shield, X, Bell, Clock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface SecurityAlert {
   id: string;
@@ -86,11 +88,11 @@ export function SecurityAlertSystem() {
     return type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const getSeverityColor = (severity: string) => {
+  const getSeveritySx = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-destructive text-destructive-foreground';
-      case 'high': return 'bg-warning text-warning-foreground';
-      default: return 'bg-secondary text-secondary-foreground';
+      case 'critical': return { bgcolor: 'error.main', color: 'error.contrastText' };
+      case 'high': return { bgcolor: 'warning.main', color: 'warning.contrastText' };
+      default: return { bgcolor: 'grey.200', color: 'text.secondary' };
     }
   };
 
@@ -112,63 +114,63 @@ export function SecurityAlertSystem() {
   if (visibleAlerts.length === 0) return null;
 
   return (
-    <div className="space-y-2">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       {visibleAlerts.map((alert) => (
-        <Card key={alert.id} className="border-l-4 border-l-destructive">
-          <CardContent className="p-3">
-            <Alert className="border-none p-0 bg-transparent">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-2">
+        <Card key={alert.id} sx={{ borderLeft: 4, borderColor: 'error.main' }}>
+          <CardContent sx={{ p: 1.5 }}>
+            <Alert sx={{ border: 'none', p: 0, bgcolor: 'transparent' }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                   {alert.severity === 'critical' ? (
-                    <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
+                    <AlertTriangle style={{ width: 16, height: 16, marginTop: 2, color: 'var(--destructive)' }} />
                   ) : (
-                    <Shield className="h-4 w-4 text-warning mt-0.5" />
+                    <Shield style={{ width: 16, height: 16, marginTop: 2, color: 'var(--warning)' }} />
                   )}
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">
+                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography component="span" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
                         {formatEventType(alert.event_type)}
-                      </span>
-                      <Badge className={getSeverityColor(alert.severity)} variant="secondary">
+                      </Typography>
+                      <Badge sx={getSeveritySx(alert.severity)} variant="secondary">
                         {alert.severity}
                       </Badge>
-                    </div>
-                    
-                    <div className="text-xs text-muted-foreground flex items-center gap-2">
-                      <Clock className="h-3 w-3" />
+                    </Box>
+
+                    <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Clock style={{ width: 12, height: 12 }} />
                       {getTimeAgo(alert.created_at)}
-                    </div>
-                    
+                    </Box>
+
                     {alert.metadata?.justification && (
-                      <div className="text-xs text-muted-foreground">
+                      <Typography variant="caption" color="text.secondary">
                         Reason: {alert.metadata.justification}
-                      </div>
+                      </Typography>
                     )}
-                  </div>
-                </div>
-                
+                  </Box>
+                </Box>
+
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => dismissAlert(alert.id)}
-                  className="h-6 w-6 p-0"
+                  sx={{ height: 24, width: 24, p: 0 }}
                 >
-                  <X className="h-3 w-3" />
+                  <X style={{ width: 12, height: 12 }} />
                 </Button>
-              </div>
+              </Box>
             </Alert>
           </CardContent>
         </Card>
       ))}
-      
+
       {visibleAlerts.length > 0 && (
-        <div className="flex justify-center">
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <Button variant="outline" size="sm" onClick={fetchRecentAlerts}>
-            <Bell className="h-3 w-3 mr-1" />
+            <Bell style={{ width: 12, height: 12, marginRight: 4 }} />
             Refresh Alerts
           </Button>
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

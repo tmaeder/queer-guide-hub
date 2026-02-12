@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -58,67 +60,65 @@ export function TagCategorizer() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Tag className="h-5 w-5" />
+        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Tag style={{ width: 20, height: 20 }} />
           Tag Categorization
         </CardTitle>
         <CardDescription>
           Automatically categorize all uncategorized tags using AI
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {progress && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span>Progress</span>
-              <span>{progress.categorized} / {progress.total}</span>
-            </div>
-            <Progress 
-              value={(progress.categorized / progress.total) * 100} 
-              className="w-full"
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="body2">Progress</Typography>
+              <Typography variant="body2">{progress.categorized} / {progress.total}</Typography>
+            </Box>
+            <Progress
+              value={(progress.categorized / progress.total) * 100}
+              sx={{ width: '100%' }}
             />
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              {progress.message}
-            </div>
-          </div>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircle style={{ width: 16, height: 16, color: '#22c55e' }} />
+              <Typography variant="body2" color="text.secondary">{progress.message}</Typography>
+            </Box>
+          </Box>
         )}
 
-        <div className="flex items-center gap-4">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button
             onClick={handleCategorizeAll}
             disabled={isRunning}
-            className="flex items-center gap-2"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
           >
             {isRunning ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
                 Categorizing...
               </>
             ) : (
               <>
-                <Tag className="h-4 w-4" />
+                <Tag style={{ width: 16, height: 16 }} />
                 Categorize All Tags
               </>
             )}
           </Button>
 
           {isRunning && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <AlertCircle className="h-4 w-4" />
-              This may take several minutes for large tag sets
-            </div>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <AlertCircle style={{ width: 16, height: 16 }} />
+              <Typography variant="body2" color="text.secondary">This may take several minutes for large tag sets</Typography>
+            </Box>
           )}
-        </div>
+        </Box>
 
-        <div className="text-sm text-muted-foreground">
-          <p>
-            This will analyze all uncategorized tags and assign them to appropriate categories using AI.
-            Tags will be categorized into: Consent, Genders, Sexual Orientations, Romantic Orientations,
-            Relationships, Roles, Gay Culture, Kink Activities, Sexual Activities, Philia, Toys & Equipment,
-            Play Spaces, Events, Holidays, Sexual Health, Mental Health, Scene Safety, and Safety Resources.
-          </p>
-        </div>
+        <Typography variant="body2" color="text.secondary">
+          This will analyze all uncategorized tags and assign them to appropriate categories using AI.
+          Tags will be categorized into: Consent, Genders, Sexual Orientations, Romantic Orientations,
+          Relationships, Roles, Gay Culture, Kink Activities, Sexual Activities, Philia, Toys & Equipment,
+          Play Spaces, Events, Holidays, Sexual Health, Mental Health, Scene Safety, and Safety Resources.
+        </Typography>
       </CardContent>
     </Card>
   );

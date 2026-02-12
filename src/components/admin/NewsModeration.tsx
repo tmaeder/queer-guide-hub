@@ -220,23 +220,23 @@ export function NewsModeration() {
 
 
   return (
-    <div className="space-y-6">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header & Stats */}
-      <div className="flex items-center justify-between">
+      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="text-2xl font-bold">News Moderation</h2>
-          <p className="text-muted-foreground">Manage and moderate news articles</p>
+          <h2 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>News Moderation</h2>
+          <p style={{ color: 'var(--muted-foreground)' }}>Manage and moderate news articles</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button onClick={triggerNewsFetch}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
             Fetch Latest News
           </Button>
           
           {cronStatus && (
-            <div className="flex items-center gap-2 text-sm">
-              <div className={`w-2 h-2 rounded-lg ${cronStatus.status === 'active' ? 'bg-success' : 'bg-destructive'}`}></div>
-              <span className="text-muted-foreground">
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
+              <div style={{ width: 8, height: 8, borderRadius: 8, backgroundColor: cronStatus.status === 'active' ? 'var(--success)' : 'var(--destructive)' }}></div>
+              <span style={{ color: 'var(--muted-foreground)' }}>
                 Auto-fetch: {cronStatus.status} (Last: {new Date(cronStatus.last_run).toLocaleString()})
               </span>
             </div>
@@ -244,29 +244,29 @@ export function NewsModeration() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Articles</CardTitle>
+          <CardHeader sx={{ pb: 1.5 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Total Articles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.total}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Featured Articles</CardTitle>
+          <CardHeader sx={{ pb: 1.5 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Featured Articles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.featured}</div>
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.featured}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Latest Articles</CardTitle>
+          <CardHeader sx={{ pb: 1.5 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Latest Articles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{articles.length}</div>
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{articles.length}</div>
           </CardContent>
         </Card>
       </div>
@@ -274,22 +274,22 @@ export function NewsModeration() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Filter style={{ height: 16, width: 16 }} />
             Filters
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
             <div>
               <Label>Search</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <div sx={{ position: 'relative' }}>
+                <Search style={{ position: 'absolute', left: 12, top: 12, height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Input
                   placeholder="Search articles..."
                   value={filters.search}
                   onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                  className="pl-9"
+                  sx={{ pl: 4.5 }}
                 />
               </div>
             </div>
@@ -317,25 +317,25 @@ export function NewsModeration() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8">Loading articles...</div>
+            <div sx={{ textAlign: 'center', py: 4 }}>Loading articles...</div>
           ) : articles.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No articles found</div>
+            <div sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>No articles found</div>
           ) : (
-            <div className="space-y-4">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {articles.map((article) => (
-                <div key={article.id} className="border rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold line-clamp-1">{article.title}</h3>
+                <div key={article.id} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}>
+                  <div sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <div sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <h3 sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{article.title}</h3>
                         {article.is_featured && <Badge>Featured</Badge>}
                       </div>
                       
-                      <p className="text-sm text-muted-foreground line-clamp-2">
+                      <p sx={{ fontSize: '0.875rem', color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {article.excerpt}
                       </p>
                       
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <div sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
                         <span>By {article.author || 'Unknown'}</span>
                         <span>•</span>
                         <span>{article.news_sources?.name}</span>
@@ -346,13 +346,13 @@ export function NewsModeration() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 ml-4">
+                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setSelectedArticle(article)}
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye style={{ height: 16, width: 16 }} />
                       </Button>
                       
                       <Button
@@ -368,7 +368,7 @@ export function NewsModeration() {
                         size="sm"
                         onClick={() => window.open(article.url, '_blank')}
                       >
-                        <ExternalLink className="h-4 w-4" />
+                        <ExternalLink style={{ height: 16, width: 16 }} />
                       </Button>
                     </div>
                   </div>
@@ -381,13 +381,13 @@ export function NewsModeration() {
 
       {/* Article Detail Dialog */}
       <Dialog open={!!selectedArticle} onOpenChange={() => setSelectedArticle(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent sx={{ maxWidth: 896, maxHeight: '80vh', overflowY: 'auto' }}>
           <DialogHeader>
             <DialogTitle>Article Details</DialogTitle>
           </DialogHeader>
           
           {selectedArticle && (
-            <div className="space-y-6">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <div>
                 <Label>Title</Label>
                 <Input 
@@ -407,8 +407,8 @@ export function NewsModeration() {
 
               <div>
                 <Label>Content Preview</Label>
-                <div className="border rounded-lg p-4 max-h-60 overflow-y-auto bg-muted/50">
-                  <p className="text-sm whitespace-pre-wrap">
+                <div sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2, maxHeight: 240, overflowY: 'auto', bgcolor: 'action.hover' }}>
+                  <p sx={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
                     {selectedArticle.content.substring(0, 1000)}
                     {selectedArticle.content.length > 1000 && '...'}
                   </p>
@@ -421,7 +421,7 @@ export function NewsModeration() {
                   <img 
                     src={selectedArticle.image_url} 
                     alt={selectedArticle.title}
-                    className="w-full max-w-md rounded-lg border"
+                    sx={{ width: '100%', maxWidth: 448, borderRadius: 2, border: 1, borderColor: 'divider' }}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
@@ -429,8 +429,8 @@ export function NewsModeration() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-4 border-t">
-                <div className="flex items-center gap-2">
+              <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Button
                     variant={selectedArticle.is_featured ? "default" : "outline"}
                     onClick={() => {
@@ -446,12 +446,12 @@ export function NewsModeration() {
                     variant="outline"
                     onClick={() => window.open(selectedArticle.url, '_blank')}
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
+                    <ExternalLink style={{ height: 16, width: 16, marginRight: 8 }} />
                     View Original
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Button
                     onClick={() => {
                       updateArticle(selectedArticle.id, {
@@ -460,7 +460,7 @@ export function NewsModeration() {
                       });
                     }}
                   >
-                    <Check className="h-4 w-4 mr-2" />
+                    <Check style={{ height: 16, width: 16, marginRight: 8 }} />
                     Save Changes
                   </Button>
                   
@@ -472,7 +472,7 @@ export function NewsModeration() {
                       }
                     }}
                   >
-                    <X className="h-4 w-4 mr-2" />
+                    <X style={{ height: 16, width: 16, marginRight: 8 }} />
                     Delete
                   </Button>
                 </div>

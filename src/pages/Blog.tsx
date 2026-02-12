@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Calendar, User, Search, Heart, ArrowRight, Tag } from "lucide-react";
 import { format } from "date-fns";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 export default function Blog() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,60 +18,60 @@ export default function Blog() {
   const categories = ["All Posts", "Community", "Travel", "Business", "Events", "Resources"];
 
   return (
-    <div className="w-full p-6">
+    <Box sx={{ p: 3 }}>
       {/* Hero Section */}
-      <div className="text-center mb-12">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <BookOpen className="h-12 w-12 text-primary" />
-          <h1 className="text-4xl font-bold gradient-text">The Queer Guide Blog</h1>
-        </div>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Stories, insights, and resources from the LGBTQ+ community. 
+      <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 2 }}>
+          <BookOpen style={{ width: 48, height: 48 }} color="var(--mui-palette-primary-main)" />
+          <Typography variant="h3" sx={{ fontWeight: 700, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>The Queer Guide Blog</Typography>
+        </Box>
+        <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '42rem', mx: 'auto' }}>
+          Stories, insights, and resources from the LGBTQ+ community.
           Learn, connect, and stay informed with our latest articles.
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
       {/* Search and Navigation */}
-      <div className="mb-12">
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Box sx={{ mb: 6 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box sx={{ position: 'relative', width: { xs: '100%', md: '24rem' } }}>
+            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--mui-palette-text-secondary)' }} />
             <Input
               placeholder="Search articles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              style={{ paddingLeft: 40 }}
             />
-          </div>
-          <Button className="gap-2">
-            <Heart className="h-4 w-4" />
+          </Box>
+          <Button style={{ display: 'flex', gap: 8 }}>
+            <Heart style={{ width: 16, height: 16 }} />
             Subscribe to Updates
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '3fr 1fr' }, gap: 4 }}>
         {/* Main Content */}
-        <div className="lg:col-span-3">
+        <Box>
           {/* No Featured Post - Empty state */}
           {blogPosts.length === 0 && (
-            <section className="mb-12">
-              <Card className="p-12 text-center">
-                <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-2xl font-semibold mb-2">No Blog Posts Yet</h3>
-                <p className="text-muted-foreground">
+            <Box component="section" sx={{ mb: 6 }}>
+              <Card style={{ padding: 48, textAlign: 'center' }}>
+                <BookOpen style={{ width: 64, height: 64, margin: '0 auto 16px', color: 'var(--mui-palette-text-secondary)' }} />
+                <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>No Blog Posts Yet</Typography>
+                <Typography color="text.secondary">
                   Blog content will appear here once articles are published.
-                </p>
+                </Typography>
               </Card>
-            </section>
+            </Box>
           )}
 
           {/* Articles by Category */}
-          <section>
-            <Tabs defaultValue="All Posts" className="w-full">
-              <TabsList className="grid w-full grid-cols-6 mb-8">
+          <Box component="section">
+            <Tabs defaultValue="All Posts" style={{ width: '100%' }}>
+              <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(6, 1fr)', marginBottom: 32 }}>
                 {categories.map((category) => (
-                  <TabsTrigger key={category} value={category} className="text-xs">
+                  <TabsTrigger key={category} value={category} style={{ fontSize: '0.75rem' }}>
                     {category === "All Posts" ? "All" : category}
                   </TabsTrigger>
                 ))}
@@ -77,150 +79,150 @@ export default function Blog() {
 
               <TabsContent value="All Posts">
                 {blogPosts.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                     {blogPosts.map((post) => (
-                      <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                        <div className="h-48 bg-gradient-primary"></div>
-                        <CardContent className="p-6">
+                      <Card key={post.id} style={{ overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
+                        <Box sx={{ height: 192, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))' }}></Box>
+                        <CardContent sx={{ p: 3 }}>
                           <Badge variant="secondary">{post.category}</Badge>
-                          <h3 className="text-lg font-semibold mt-3 mb-2">{post.title}</h3>
-                          <p className="text-muted-foreground text-sm mb-4">{post.excerpt}</p>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              {post.author}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {post.publishDate}
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm" className="gap-2">
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 1.5, mb: 1 }}>{post.title}</Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{post.excerpt}</Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <User style={{ width: 12, height: 12 }} />
+                              <Typography variant="caption" color="text.secondary">{post.author}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Calendar style={{ width: 12, height: 12 }} />
+                              <Typography variant="caption" color="text.secondary">{post.publishDate}</Typography>
+                            </Box>
+                          </Box>
+                          <Button variant="outline" size="sm" style={{ display: 'flex', gap: 8 }}>
                             Read Article
-                            <ArrowRight className="h-3 w-3" />
+                            <ArrowRight style={{ width: 12, height: 12 }} />
                           </Button>
                         </CardContent>
                       </Card>
                     ))}
-                  </div>
+                  </Box>
                 ) : (
-                  <div className="text-center py-12">
-                    <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No blog posts available yet.</p>
-                  </div>
+                  <Box sx={{ textAlign: 'center', py: 6 }}>
+                    <BookOpen style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--mui-palette-text-secondary)' }} />
+                    <Typography color="text.secondary">No blog posts available yet.</Typography>
+                  </Box>
                 )}
               </TabsContent>
 
               {categories.slice(1).map((category) => (
                 <TabsContent key={category} value={category}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                     {blogPosts.filter(post => post.category === category).map((post) => (
-                      <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                        <div className="h-48 bg-gradient-primary"></div>
-                        <CardContent className="p-6">
+                      <Card key={post.id} style={{ overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
+                        <Box sx={{ height: 192, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))' }}></Box>
+                        <CardContent sx={{ p: 3 }}>
                           <Badge variant="secondary">{post.category}</Badge>
-                          <h3 className="text-lg font-semibold mt-3 mb-2">{post.title}</h3>
-                          <p className="text-muted-foreground text-sm mb-4">{post.excerpt}</p>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              {post.author}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {post.publishDate}
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm" className="gap-2">
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 1.5, mb: 1 }}>{post.title}</Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{post.excerpt}</Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <User style={{ width: 12, height: 12 }} />
+                              <Typography variant="caption" color="text.secondary">{post.author}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Calendar style={{ width: 12, height: 12 }} />
+                              <Typography variant="caption" color="text.secondary">{post.publishDate}</Typography>
+                            </Box>
+                          </Box>
+                          <Button variant="outline" size="sm" style={{ display: 'flex', gap: 8 }}>
                             Read Article
-                            <ArrowRight className="h-3 w-3" />
+                            <ArrowRight style={{ width: 12, height: 12 }} />
                           </Button>
                         </CardContent>
                       </Card>
                     ))}
-                  </div>
+                  </Box>
                 </TabsContent>
               ))}
             </Tabs>
-          </section>
-        </div>
+          </Box>
+        </Box>
 
         {/* Sidebar */}
-        <div className="space-y-8">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {/* Newsletter Signup */}
           <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold mb-3">Stay Updated</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+            <CardContent sx={{ p: 3 }}>
+              <Typography sx={{ fontWeight: 600, mb: 1.5 }}>Stay Updated</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Get our latest articles and community updates delivered to your inbox.
-              </p>
-              <div className="space-y-3">
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <Input placeholder="Your email address" type="email" />
-                <Button className="w-full gap-2">
-                  <Heart className="h-4 w-4" />
+                <Button style={{ width: '100%', display: 'flex', gap: 8 }}>
+                  <Heart style={{ width: 16, height: 16 }} />
                   Subscribe
                 </Button>
-              </div>
+              </Box>
             </CardContent>
           </Card>
 
           {/* Popular Posts */}
           <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold mb-4">Popular Articles</h3>
+            <CardContent sx={{ p: 3 }}>
+              <Typography sx={{ fontWeight: 600, mb: 2 }}>Popular Articles</Typography>
               {blogPosts.length > 0 ? (
-                <div className="space-y-4">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {blogPosts.slice(0, 3).map((post) => (
-                    <div key={post.id} className="flex gap-3">
-                      <div className="w-16 h-16 bg-gradient-primary rounded flex-shrink-0"></div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm leading-tight mb-1">{post.title}</h4>
-                        <p className="text-xs text-muted-foreground">
+                    <Box key={post.id} sx={{ display: 'flex', gap: 1.5 }}>
+                      <Box sx={{ width: 64, height: 64, flexShrink: 0, borderRadius: 1, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))' }}></Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.4, mb: 0.5 }}>{post.title}</Typography>
+                        <Typography variant="caption" color="text.secondary">
                           {post.publishDate}
-                        </p>
-                      </div>
-                    </div>
+                        </Typography>
+                      </Box>
+                    </Box>
                   ))}
-                </div>
+                </Box>
               ) : (
-                <p className="text-sm text-muted-foreground">No popular articles yet.</p>
+                <Typography variant="body2" color="text.secondary">No popular articles yet.</Typography>
               )}
             </CardContent>
           </Card>
 
           {/* Categories */}
           <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold mb-4">Categories</h3>
-              <div className="space-y-2">
+            <CardContent sx={{ p: 3 }}>
+              <Typography sx={{ fontWeight: 600, mb: 2 }}>Categories</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {categories.slice(1).map((category) => (
-                  <div key={category} className="flex items-center justify-between">
-                    <span className="text-sm">{category}</span>
-                    <Badge variant="secondary" className="text-xs">
+                  <Box key={category} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Typography variant="body2">{category}</Typography>
+                    <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
                       0
                     </Badge>
-                  </div>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             </CardContent>
           </Card>
 
           {/* Tags */}
           <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold mb-4">Popular Tags</h3>
-              <div className="flex flex-wrap gap-2">
+            <CardContent sx={{ p: 3 }}>
+              <Typography sx={{ fontWeight: 600, mb: 2 }}>Popular Tags</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {["Safety", "Pride", "Travel", "Business", "Community", "Youth", "Technology", "Events"].map((tag) => (
-                  <Button key={tag} variant="outline" size="sm" className="gap-1">
-                    <Tag className="h-3 w-3" />
+                  <Button key={tag} variant="outline" size="sm" style={{ display: 'flex', gap: 4 }}>
+                    <Tag style={{ width: 12, height: 12 }} />
                     {tag}
                   </Button>
                 ))}
-              </div>
+              </Box>
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Heart, Users, Map, Smile, Handshake, Home } from 'lucide-react';
+import Box from '@mui/material/Box';
 
 interface UserModeBadgeProps {
   mode: string;
@@ -7,32 +8,44 @@ interface UserModeBadgeProps {
 }
 
 const modeConfig = {
-  dating: { icon: Heart, label: 'Looking for Love', color: 'bg-pink-500/10 text-pink-600 border-pink-200' },
-  friends: { icon: Users, label: 'Making Friends', color: 'bg-blue-500/10 text-blue-600 border-blue-200' },
-  exploration: { icon: Map, label: 'Exploring', color: 'bg-green-500/10 text-green-600 border-green-200' },
-  fun: { icon: Smile, label: 'Here for Fun', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-200' },
-  networking: { icon: Handshake, label: 'Networking', color: 'bg-purple-500/10 text-purple-600 border-purple-200' },
-  community: { icon: Home, label: 'Building Community', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200' },
+  dating: { icon: Heart, label: 'Looking for Love', bgcolor: 'rgba(236, 72, 153, 0.1)', color: '#db2777', borderColor: '#fbcfe8' },
+  friends: { icon: Users, label: 'Making Friends', bgcolor: 'rgba(59, 130, 246, 0.1)', color: '#2563eb', borderColor: '#bfdbfe' },
+  exploration: { icon: Map, label: 'Exploring', bgcolor: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', borderColor: '#bbf7d0' },
+  fun: { icon: Smile, label: 'Here for Fun', bgcolor: 'rgba(234, 179, 8, 0.1)', color: '#ca8a04', borderColor: '#fef08a' },
+  networking: { icon: Handshake, label: 'Networking', bgcolor: 'rgba(168, 85, 247, 0.1)', color: '#9333ea', borderColor: '#e9d5ff' },
+  community: { icon: Home, label: 'Building Community', bgcolor: 'rgba(99, 102, 241, 0.1)', color: '#4f46e5', borderColor: '#c7d2fe' },
+};
+
+const sizeStyles = {
+  sm: { fontSize: '0.75rem', px: 0.75, py: 0.25 },
+  md: { fontSize: '0.875rem', px: 1, py: 0.5 },
+  lg: { fontSize: '1rem', px: 1.5, py: 0.75 },
 };
 
 export function UserModeBadge({ mode, size = 'md' }: UserModeBadgeProps) {
   const config = modeConfig[mode as keyof typeof modeConfig];
-  
+
   if (!config) return null;
 
-  const sizeClasses = {
-    sm: 'text-xs px-1.5 py-0.5',
-    md: 'text-sm px-2 py-1',
-    lg: 'text-base px-3 py-1.5'
-  };
+  const sizeStyle = sizeStyles[size];
 
   return (
-    <Badge 
-      variant="outline" 
-      className={`${config.color} ${sizeClasses[size]} font-medium flex items-center gap-1`}
+    <Box
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.5,
+        fontWeight: 500,
+        borderRadius: 9999,
+        border: 1,
+        borderColor: config.borderColor,
+        bgcolor: config.bgcolor,
+        color: config.color,
+        ...sizeStyle,
+      }}
     >
-      <config.icon className="h-3 w-3" />
+      <config.icon style={{ width: 12, height: 12 }} />
       <span>{config.label}</span>
-    </Badge>
+    </Box>
   );
 }

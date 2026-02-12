@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertTriangle, Clock, RefreshCw, X, Pause } from 'lucide-react';
 import { ImportJob } from '@/hooks/useImportHub';
@@ -16,58 +17,67 @@ export const ImportStatusBadge = ({ status, showIcon = true, size = 'default' }:
           variant: 'default' as const,
           icon: CheckCircle,
           label: 'Completed',
-          className: 'bg-muted text-foreground hover:opacity-80'
+          sx: { bgcolor: 'grey.100', color: 'text.primary', '&:hover': { opacity: 0.8 } }
         };
       case 'failed':
         return {
           variant: 'destructive' as const,
           icon: AlertTriangle,
           label: 'Failed',
-          className: 'bg-destructive text-destructive-foreground hover:opacity-80'
+          sx: { bgcolor: 'error.main', color: 'error.contrastText', '&:hover': { opacity: 0.8 } }
         };
       case 'processing':
         return {
           variant: 'secondary' as const,
           icon: RefreshCw,
           label: 'Processing',
-          className: 'bg-secondary text-secondary-foreground hover:opacity-80'
+          sx: { bgcolor: 'grey.200', color: 'text.primary', '&:hover': { opacity: 0.8 } }
         };
       case 'validating':
         return {
           variant: 'secondary' as const,
           icon: RefreshCw,
           label: 'Validating',
-          className: 'bg-accent text-accent-foreground hover:opacity-80'
+          sx: { bgcolor: 'action.selected', color: 'text.primary', '&:hover': { opacity: 0.8 } }
         };
       case 'cancelled':
         return {
           variant: 'outline' as const,
           icon: X,
           label: 'Cancelled',
-          className: 'bg-muted/50 text-muted-foreground hover:opacity-80'
+          sx: { bgcolor: 'action.disabledBackground', color: 'text.secondary', '&:hover': { opacity: 0.8 } }
         };
       default:
         return {
           variant: 'outline' as const,
           icon: Clock,
           label: 'Pending',
-          className: 'bg-warning text-warning-foreground hover:opacity-80'
+          sx: { bgcolor: 'warning.main', color: 'warning.contrastText', '&:hover': { opacity: 0.8 } }
         };
     }
   };
 
   const config = getStatusConfig(status);
   const IconComponent = config.icon;
-  const iconSize = size === 'sm' ? 'h-3 w-3' : size === 'lg' ? 'h-5 w-5' : 'h-4 w-4';
+  const iconSizePx = size === 'sm' ? 12 : size === 'lg' ? 20 : 16;
 
   return (
-    <Badge 
-      variant={config.variant} 
-      className={`${config.className} ${size === 'sm' ? 'text-xs px-2 py-0.5' : size === 'lg' ? 'text-sm px-3 py-1' : ''} ${showIcon ? 'gap-1' : ''}`}
+    <Badge
+      variant={config.variant}
+      sx={{
+        ...config.sx,
+        ...(size === 'sm' && { fontSize: '0.75rem', px: 1, py: 0.25 }),
+        ...(size === 'lg' && { fontSize: '0.875rem', px: 1.5, py: 0.5 }),
+        ...(showIcon && { gap: 0.5 }),
+      }}
     >
       {showIcon && (
-        <IconComponent 
-          className={`${iconSize} ${status === 'processing' || status === 'validating' ? 'animate-spin' : ''}`} 
+        <IconComponent
+          style={{
+            width: iconSizePx,
+            height: iconSizePx,
+            ...(status === 'processing' || status === 'validating' ? { animation: 'spin 1s linear infinite' } : {})
+          }}
         />
       )}
       {config.label}

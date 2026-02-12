@@ -10,6 +10,8 @@ import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export default function AdminUsers() {
   const { isAdmin } = useAdminRoles();
@@ -24,7 +26,7 @@ export default function AdminUsers() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch all profiles first
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
@@ -48,7 +50,7 @@ export default function AdminUsers() {
               .single();
 
             const userRole = roleData?.role || 'user';
-            
+
             return {
               id: profile.user_id,
               email: profile.display_name || `user-${profile.user_id.slice(0, 8)}`,
@@ -77,7 +79,7 @@ export default function AdminUsers() {
   }, []);
 
   if (loading) {
-    return <div className="p-6">Loading users...</div>;
+    return <Box sx={{ p: 3 }}>Loading users...</Box>;
   }
 
   // No fallback data - only show real users
@@ -102,62 +104,62 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="w-full p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">User Management</h1>
-        <p className="text-muted-foreground">
+    <Box sx={{ width: '100%', p: 3 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>User Management</Typography>
+        <Typography variant="body2" color="text.secondary">
           Manage user accounts, roles, and permissions
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 3, mb: 4 }}>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+            <CardTitle style={{ fontSize: 14, fontWeight: 500 }}>Total Users</CardTitle>
+            <Users style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>{users.length}</Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+          <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+            <CardTitle style={{ fontSize: 14, fontWeight: 500 }}>Active Users</CardTitle>
+            <Eye style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
               {users.filter(u => u.status === 'active').length}
-            </div>
+            </Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Administrators</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+          <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+            <CardTitle style={{ fontSize: 14, fontWeight: 500 }}>Administrators</CardTitle>
+            <Shield style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
               {users.filter(u => u.role === 'admin').length}
-            </div>
+            </Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Moderators</CardTitle>
-            <UserPlus className="h-4 w-4 text-muted-foreground" />
+          <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+            <CardTitle style={{ fontSize: 14, fontWeight: 500 }}>Moderators</CardTitle>
+            <UserPlus style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
               {users.filter(u => u.role === 'moderator').length}
-            </div>
+            </Typography>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* User Management */}
       <Card>
@@ -169,18 +171,18 @@ export default function AdminUsers() {
         </CardHeader>
         <CardContent>
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 3 }}>
+            <Box sx={{ position: 'relative', flex: 1 }}>
+              <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--muted-foreground)' }} />
               <Input
                 placeholder="Search users by email or name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                style={{ paddingLeft: 40 }}
               />
-            </div>
+            </Box>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectTrigger style={{ width: 180 }}>
                 <SelectValue placeholder="Filter by role" />
               </SelectTrigger>
               <SelectContent>
@@ -190,10 +192,10 @@ export default function AdminUsers() {
                 <SelectItem value="user">User</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </Box>
 
           {/* Users Table */}
-          <div className="rounded-md border">
+          <Box sx={{ borderRadius: 1, border: 1, borderColor: 'divider' }}>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -210,11 +212,11 @@ export default function AdminUsers() {
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{user.displayName}</div>
-                        <div className="text-sm text-muted-foreground">{user.email}</div>
-                        <div className="text-xs text-muted-foreground">Mode: {user.userMode}</div>
-                      </div>
+                      <Box>
+                        <Box sx={{ fontWeight: 500 }}>{user.displayName}</Box>
+                        <Typography variant="body2" color="text.secondary">{user.email}</Typography>
+                        <Typography variant="caption" color="text.secondary">Mode: {user.userMode}</Typography>
+                      </Box>
                     </TableCell>
                     <TableCell>
                       <Badge variant={getRoleBadgeVariant(user.role)}>
@@ -227,7 +229,7 @@ export default function AdminUsers() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm">{user.location}</span>
+                      <Typography variant="body2">{user.location}</Typography>
                     </TableCell>
                     <TableCell>{user.joinDate}</TableCell>
                     <TableCell>{user.lastActive}</TableCell>
@@ -235,8 +237,8 @@ export default function AdminUsers() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
+                            <Button variant="ghost" style={{ height: 32, width: 32, padding: 0 }}>
+                              <MoreHorizontal style={{ height: 16, width: 16 }} />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -245,8 +247,8 @@ export default function AdminUsers() {
                             <DropdownMenuItem>Send Message</DropdownMenuItem>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <DropdownMenuItem 
-                                  className="text-destructive focus:text-destructive"
+                                <DropdownMenuItem
+                                  sx={{ color: 'error.main', '&:focus': { color: 'error.main' } }}
                                   onSelect={(e) => e.preventDefault()}
                                 >
                                   Suspend User
@@ -256,13 +258,13 @@ export default function AdminUsers() {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Suspend User</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to suspend {user.displayName}? 
+                                    Are you sure you want to suspend {user.displayName}?
                                     This will prevent them from accessing the platform.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  <AlertDialogAction sx={{ bgcolor: 'error.main', color: 'error.contrastText', '&:hover': { bgcolor: 'error.dark' } }}>
                                     Suspend
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -276,16 +278,16 @@ export default function AdminUsers() {
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </Box>
 
           {filteredUsers.length === 0 && (
-            <div className="text-center py-8">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No users found matching your criteria.</p>
-            </div>
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Users style={{ width: 48, height: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+              <Typography variant="body2" color="text.secondary">No users found matching your criteria.</Typography>
+            </Box>
           )}
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

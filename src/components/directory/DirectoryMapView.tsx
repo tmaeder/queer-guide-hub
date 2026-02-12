@@ -209,66 +209,66 @@ export function DirectoryMapView({
   return (
     <div className={className}>
       <Card>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Geographic Map View</h3>
+        <CardContent sx={{ p: 3 }}>
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+              <h3 sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Geographic Map View</h3>
             </div>
             
             
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-600"></div>
-                <span className="text-sm">Countries</span>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#dc2626' }}></div>
+                <span sx={{ fontSize: '0.875rem' }}>Countries</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                <span className="text-sm">Capital Cities</span>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#f59e0b' }}></div>
+                <span sx={{ fontSize: '0.875rem' }}>Capital Cities</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                <span className="text-sm">Major Cities</span>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#3b82f6' }}></div>
+                <span sx={{ fontSize: '0.875rem' }}>Major Cities</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-                <span className="text-sm">Other Cities</span>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#6b7280' }}></div>
+                <span sx={{ fontSize: '0.875rem' }}>Other Cities</span>
               </div>
               
-              <div className="flex items-center gap-3 ml-auto">
-                <span className="text-sm font-medium">Countries</span>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 'auto' }}>
+                <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Countries</span>
                 <Switch 
                   checked={showCities}
                   onCheckedChange={setShowCities}
                 />
-                <span className="text-sm font-medium">Cities</span>
+                <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Cities</span>
               </div>
             </div>
 
             {loading && (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                <span className="text-sm text-muted-foreground">Loading map data...</span>
+              <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
+                <Loader2 style={{ height: 20, width: 20, animation: 'spin 1s linear infinite', marginRight: 8 }} />
+                <span sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Loading map data...</span>
               </div>
             )}
 
             {!activeToken ? (
-              <div className="h-[600px] w-full rounded-lg border bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                  <Globe className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-muted-foreground">Map is unavailable right now.</p>
+              <div sx={{ height: 600, width: '100%', borderRadius: 2, border: 1, borderColor: 'divider', bgcolor: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div sx={{ textAlign: 'center' }}>
+                  <Globe style={{ height: 48, width: 48, color: '#9ca3af', margin: '0 auto 16px' }} />
+                  <p style={{ color: 'var(--muted-foreground)' }}>Map is unavailable right now.</p>
                 </div>
               </div>
             ) : (
-              <div className="h-[600px] w-full rounded-lg overflow-hidden border">
-                <div ref={mapContainer} className="w-full h-full" />
+              <div sx={{ height: 600, width: '100%', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
+                <div ref={mapContainer} sx={{ width: '100%', height: '100%' }} />
               </div>
             )}
 
             {selectedItem && (
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold">
+              <div sx={{ mt: 2 }}>
+                <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <h4 sx={{ fontWeight: 600 }}>
                     Selected {isCity(selectedItem) ? 'City' : 'Country'}
                   </h4>
                   <Button 
@@ -279,7 +279,7 @@ export function DirectoryMapView({
                     ✕
                   </Button>
                 </div>
-                <div className="max-w-md">
+                <div sx={{ maxWidth: 448 }}>
                   <DirectoryCard
                     type={isCity(selectedItem) ? 'city' : 'country'}
                     name={selectedItem.name}

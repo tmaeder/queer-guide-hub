@@ -6,8 +6,13 @@ import { Database } from '@/integrations/supabase/types';
 import { VenueEvents } from './VenueEvents';
 import { Link } from 'react-router-dom';
 import { FavoriteButton } from '@/components/ui/favorite-button';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
+
 interface VenueCardProps {
   venue: Venue & {
     venue_reviews?: Array<{
@@ -20,6 +25,7 @@ interface VenueCardProps {
   onServiceClick?: (service: string) => void;
   onTagClick?: (tag: string) => void;
 }
+
 export function VenueCard({
   venue,
   events = [],
@@ -29,10 +35,12 @@ export function VenueCard({
   onTagClick
 }: VenueCardProps) {
   const averageRating = venue.venue_reviews?.length ? venue.venue_reviews.reduce((sum, review) => sum + review.rating, 0) / venue.venue_reviews.length : 0;
+
   const getPriceRange = (range: number | null) => {
     if (!range) return '';
     return '$'.repeat(range);
   };
+
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       bar: 'bg-primary/10 text-primary',
@@ -43,69 +51,101 @@ export function VenueCard({
     };
     return colors[category] || 'bg-muted/10 text-muted-foreground';
   };
+
   return (
-    <Link to={`/venues/${venue.id}`} className="block">
-      <Card className="group overflow-hidden shadow-card hover:shadow-card-hover border-border/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+    <Link to={`/venues/${venue.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+      <Paper
+        elevation={2}
+        sx={{
+          overflow: 'hidden',
+          transition: 'all 0.3s',
+          cursor: 'pointer',
+          '&:hover': {
+            boxShadow: 8,
+            transform: 'translateY(-4px)'
+          }
+        }}
+      >
       {/* Venue Image */}
       {venue.images && venue.images.length > 0 ? (
-        <div className="relative h-48 overflow-hidden">
-          <img 
-            src={venue.images[0]} 
-            alt={venue.name} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-            onError={e => {
+        <Box sx={{ position: 'relative', height: 192, overflow: 'hidden' }}>
+          <Box
+            component="img"
+            src={venue.images[0]}
+            alt={venue.name}
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transition: 'transform 0.3s',
+              '&:hover': { transform: 'scale(1.05)' }
+            }}
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
-            }} 
+            }}
           />
-        </div>
+        </Box>
       ) : (
-        <div className="h-48 bg-muted flex items-center justify-center">
-          <MapPin className="h-8 w-8 text-muted-foreground" />
-        </div>
+        <Box sx={{ height: 192, bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <MapPin style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
+        </Box>
       )}
-      
-      <CardContent className="p-4">
-        <div className="space-y-3">
+
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {/* Title and Category */}
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                fontWeight: 600,
+                lineHeight: 1.2,
+                transition: 'color 0.2s',
+                '&:hover': { color: 'primary.main' }
+              }}
+            >
               {venue.name}
-            </h3>
-            <Badge variant="secondary" className="text-xs">
+            </Typography>
+            <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
               {venue.category}
             </Badge>
-          </div>
-          
+          </Box>
+
           {/* Location */}
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="h-4 w-4" />
-            <span className="text-sm">{venue.city}, {venue.state}</span>
-          </div>
-          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+            <MapPin style={{ width: 16, height: 16 }} />
+            <Typography variant="body2">{venue.city}, {venue.state}</Typography>
+          </Box>
+
           {/* Tags (max 2) */}
           {venue.tags && venue.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
               {venue.tags.slice(0, 2).map((tag, index) => (
-                <Badge 
-                  key={index} 
-                  variant="outline" 
-                  className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors" 
+                <Badge
+                  key={index}
+                  variant="outline"
+                  sx={{
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText' }
+                  }}
                   onClick={() => onTagClick?.(tag)}
                 >
                   {tag}
                 </Badge>
               ))}
-            </div>
+            </Box>
           )}
-          
+
           {/* Actions */}
-          <div className="flex items-center justify-between pt-2">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
             <FavoriteButton itemId={venue.id} type="venue" />
-          </div>
-        </div>
-      </CardContent>
-      </Card>
+          </Box>
+        </Box>
+      </Box>
+      </Paper>
     </Link>
   );
 }

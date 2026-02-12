@@ -131,29 +131,29 @@ export const ApiKeysManager = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="text-3xl font-bold text-foreground">API Keys Management</h2>
-          <p className="text-muted-foreground">
+          <h2 sx={{ fontSize: '1.875rem', fontWeight: 700, color: 'text.primary' }}>API Keys Management</h2>
+          <p style={{ color: 'var(--muted-foreground)' }}>
             Securely manage API keys for external services
           </p>
         </div>
-        <div className="flex gap-2">
+        <div sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outline"
             onClick={refreshKeys}
             disabled={loading}
             size="sm"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw style={{ height: 16, width: 16, marginRight: 8, ...(loading ? { animation: 'spin 1s linear infinite' } : {}) }} />
             Refresh
           </Button>
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
                 Add API Key
               </Button>
             </DialogTrigger>
@@ -165,7 +165,7 @@ export const ApiKeysManager = () => {
                     Store an API key securely for use in import operations
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
+                <div sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 2 }}>
                   <div>
                     <Label htmlFor="service">Service</Label>
                     <Select
@@ -252,56 +252,56 @@ export const ApiKeysManager = () => {
       {/* API Keys List */}
       {loading ? (
         <Card>
-          <CardContent className="p-8 text-center">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">Loading API keys...</p>
+          <CardContent sx={{ p: 4, textAlign: 'center' }}>
+            <RefreshCw style={{ height: 32, width: 32, animation: 'spin 1s linear infinite', margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+            <p style={{ color: 'var(--muted-foreground)' }}>Loading API keys...</p>
           </CardContent>
         </Card>
       ) : keys.length === 0 ? (
         <Card>
-          <CardContent className="p-12 text-center">
-            <Key className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">No API Keys</h3>
-            <p className="text-muted-foreground mb-4">
+          <CardContent sx={{ p: 6, textAlign: 'center' }}>
+            <Key style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+            <h3 sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No API Keys</h3>
+            <p sx={{ color: 'text.secondary', mb: 2 }}>
               Add your first API key to enable external service integrations
             </p>
             <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
               Add API Key
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div sx={{ display: 'grid', gap: 2 }}>
           {keys.map((key) => (
             <Card key={key.id}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary">
-                      <Key className="h-4 w-4 text-primary-foreground" />
+              <CardHeader sx={{ pb: 1.5 }}>
+                <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <div sx={{ p: 1, bgcolor: 'primary.main' }}>
+                      <Key style={{ height: 16, width: 16, color: 'var(--primary-foreground)' }} />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{key.service_name}</CardTitle>
+                      <CardTitle sx={{ fontSize: '1.125rem' }}>{key.service_name}</CardTitle>
                       <CardDescription>{key.key_name}</CardDescription>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Badge variant={key.is_active ? "default" : "secondary"}>
                       {key.is_active ? "Active" : "Inactive"}
                     </Badge>
-                    <div className="flex gap-1">
+                    <div sx={{ display: 'flex', gap: 0.5 }}>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => startEdit(key)}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit style={{ height: 16, width: 16 }} />
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 style={{ height: 16, width: 16 }} />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -315,7 +315,7 @@ export const ApiKeysManager = () => {
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => deleteApiKey(key.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              sx={{ bgcolor: 'error.main', color: 'error.contrastText', '&:hover': { bgcolor: 'error.dark' } }}
                             >
                               Delete
                             </AlertDialogAction>
@@ -328,18 +328,18 @@ export const ApiKeysManager = () => {
               </CardHeader>
               <CardContent>
                 {key.description && (
-                  <p className="text-sm text-muted-foreground mb-3">{key.description}</p>
+                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5 }}>{key.description}</p>
                 )}
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, fontSize: '0.875rem' }}>
                   <div>
-                    <span className="font-medium">Created:</span> {formatDate(key.created_at)}
+                    <span sx={{ fontWeight: 500 }}>Created:</span> {formatDate(key.created_at)}
                   </div>
                   <div>
-                    <span className="font-medium">Updated:</span> {formatDate(key.updated_at)}
+                    <span sx={{ fontWeight: 500 }}>Updated:</span> {formatDate(key.updated_at)}
                   </div>
                   {key.last_used_at && (
-                    <div className="col-span-2">
-                      <span className="font-medium">Last Used:</span> {formatDate(key.last_used_at)}
+                    <div sx={{ gridColumn: 'span 2' }}>
+                      <span sx={{ fontWeight: 500 }}>Last Used:</span> {formatDate(key.last_used_at)}
                     </div>
                   )}
                 </div>
@@ -359,8 +359,8 @@ export const ApiKeysManager = () => {
                 Update the API key details. Leave the key value empty to keep the current key.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="flex items-center space-x-2">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 2 }}>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Switch
                   checked={editForm.is_active}
                   onCheckedChange={(checked) => setEditForm(prev => ({ ...prev, is_active: checked }))}

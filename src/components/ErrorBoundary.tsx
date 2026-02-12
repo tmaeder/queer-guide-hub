@@ -1,6 +1,8 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface Props {
   children: ReactNode;
@@ -37,24 +39,24 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-[50vh] flex items-center justify-center p-8">
-          <div className="max-w-md text-center space-y-4">
-            <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
-            <h2 className="text-xl font-semibold">Something went wrong</h2>
-            <p className="text-muted-foreground text-sm">
+        <Box sx={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
+          <Box sx={{ maxWidth: 448, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <AlertTriangle style={{ height: 48, width: 48, color: 'var(--destructive)', margin: '0 auto' }} />
+            <Typography variant="h6">Something went wrong</Typography>
+            <Typography variant="body2" color="text.secondary">
               An unexpected error occurred. Please try refreshing the page.
-            </p>
-            <div className="flex gap-3 justify-center">
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
               <Button onClick={this.handleRetry} variant="outline" size="sm">
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
                 Try Again
               </Button>
               <Button onClick={() => window.location.href = '/'} size="sm">
                 Go Home
               </Button>
-            </div>
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Box>
       );
     }
 

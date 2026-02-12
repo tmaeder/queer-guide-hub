@@ -11,18 +11,21 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import MultiStepSignup from '@/components/auth/MultiStepSignup';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 
 
 export default function Auth() {
   const navigate = useNavigate();
   const { signIn, user } = useAuth();
   const { toast } = useToast();
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showMultiStepSignup, setShowMultiStepSignup] = useState(true);
-  
+
 
   // Login form state
   const [loginData, setLoginData] = useState({
@@ -78,109 +81,118 @@ export default function Auth() {
   // Show login form when user clicks "Back to Login"
   if (!showMultiStepSignup) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-6 py-12 max-w-md">
-          <div className="flex items-center justify-center min-h-[calc(100vh-6rem)]">
-            <Card className="w-full">
-              <CardHeader className="text-center space-y-4">
-                <div className="flex items-center justify-center gap-2">
-                  <Heart className="h-8 w-8 text-primary fill-current" />
-                  <h1 className="text-2xl font-bold gradient-text">The Queer Guide</h1>
-                </div>
-                <div className="space-y-2">
-                  <CardTitle className="text-2xl">Welcome Back</CardTitle>
-                  <CardDescription>
-                    Sign in to your account to continue
-                  </CardDescription>
-                </div>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Container maxWidth="sm" sx={{ px: 3, py: 6 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 6rem)' }}>
+            <Card sx={{ width: '100%' }}>
+              <CardHeader sx={{ textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    <Heart style={{ width: 32, height: 32, fill: 'currentcolor' }} color="var(--mui-palette-primary-main)" />
+                    <Typography variant="h5" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #f472b6, #a78bfa, #60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>The Queer Guide</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <CardTitle>
+                      <Typography variant="h5">Welcome Back</Typography>
+                    </CardTitle>
+                    <CardDescription>
+                      Sign in to your account to continue
+                    </CardDescription>
+                  </Box>
+                </Box>
               </CardHeader>
-              
-              <CardContent className="space-y-6">
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
 
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                      disabled={isLoading}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        value={loginData.password}
-                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                        disabled={isLoading}
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                        onClick={() => setShowPassword(!showPassword)}
-                        disabled={isLoading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <CardContent>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  <form onSubmit={handleLogin}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={loginData.email}
+                          onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                          disabled={isLoading}
+                          required
+                        />
+                      </Box>
+
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Label htmlFor="password">Password</Label>
+                        <Box sx={{ position: 'relative' }}>
+                          <Input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            value={loginData.password}
+                            onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                            disabled={isLoading}
+                            required
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            sx={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', height: 32, width: 32, p: 0 }}
+                            onClick={() => setShowPassword(!showPassword)}
+                            disabled={isLoading}
+                          >
+                            {showPassword ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
+                          </Button>
+                        </Box>
+                      </Box>
+
+                      <Button type="submit" sx={{ width: '100%' }} disabled={isLoading}>
+                        {isLoading && <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />}
+                        Sign In
                       </Button>
-                    </div>
-                  </div>
 
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Sign In
-                  </Button>
-                  
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
-                        Or continue with
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <PasskeyButton mode="signin" className="w-full" />
-                </form>
+                      <Box sx={{ position: 'relative' }}>
+                        <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center' }}>
+                          <Box component="span" sx={{ width: '100%', borderTop: 1, borderColor: 'divider' }} />
+                        </Box>
+                        <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                          <Typography variant="caption" sx={{ bgcolor: 'background.paper', px: 1, color: 'text.secondary', textTransform: 'uppercase' }}>
+                            Or continue with
+                          </Typography>
+                        </Box>
+                      </Box>
 
-                <div className="text-center pt-4 border-t">
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowMultiStepSignup(true)}
-                    className="text-sm text-muted-foreground hover:text-primary"
-                  >
-                    Don't have an account? Create one with our guided signup
-                  </Button>
-                </div>
+                      <PasskeyButton mode="signin" style={{ width: '100%' }} />
+                    </Box>
+                  </form>
+
+                  <Box sx={{ textAlign: 'center', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setShowMultiStepSignup(true)}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        Don't have an account? Create one with our guided signup
+                      </Typography>
+                    </Button>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Container>
+      </Box>
     );
   }
 
   // Default to multi-step signup for new users
   return (
-    <div className="min-h-screen bg-background">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <MultiStepSignup onBack={handleBackToLogin} />
-    </div>
+    </Box>
   );
 }

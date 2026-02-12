@@ -7,6 +7,9 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useVenueCheckins } from '@/hooks/useVenueCheckins';
 import { useAuth } from '@/hooks/useAuth';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 
 interface VenueCheckInButtonProps {
   venueId: string;
@@ -16,12 +19,12 @@ interface VenueCheckInButtonProps {
   onCheckInSuccess?: () => void;
 }
 
-export function VenueCheckInButton({ 
-  venueId, 
-  venueName, 
-  venueLatitude, 
+export function VenueCheckInButton({
+  venueId,
+  venueName,
+  venueLatitude,
   venueLongitude,
-  onCheckInSuccess 
+  onCheckInSuccess
 }: VenueCheckInButtonProps) {
   const { checkInAtVenue, loading, MAX_CHECKIN_DISTANCE_METERS } = useVenueCheckins();
   const { user } = useAuth();
@@ -54,36 +57,36 @@ export function VenueCheckInButton({
         <Button
           onClick={() => setShowPrivacyDialog(true)}
           disabled={loading}
-          className="flex items-center gap-2"
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
           variant="default"
         >
-          <Shield className="w-4 h-4" />
+          <Shield style={{ width: 16, height: 16 }} />
           Check In Securely
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent sx={{ maxWidth: { sm: '28rem' } }}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5" />
+          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Shield style={{ width: 20, height: 20 }} />
             Privacy-Protected Check-In
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-6">
-          <div className="bg-accent/50 p-4 rounded-lg border">
-            <div className="flex items-start gap-3">
-              <Shield className="w-5 h-5 text-primary mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Enhanced Privacy Protection</p>
-                <p className="text-xs text-muted-foreground">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Paper sx={{ p: 2, bgcolor: 'action.hover', border: 1, borderColor: 'divider' }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <Shield style={{ width: 20, height: 20, marginTop: 2 }} />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Enhanced Privacy Protection</Typography>
+                <Typography variant="caption" color="text.secondary">
                   Your location is automatically anonymized after 24 hours. Choose your privacy settings below.
-                </p>
-              </div>
-            </div>
-          </div>
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="public-check-in" className="text-sm font-medium">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Label htmlFor="public-check-in" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
                 Make check-in visible to others
               </Label>
               <Switch
@@ -91,11 +94,11 @@ export function VenueCheckInButton({
                 checked={isPublic}
                 onCheckedChange={setIsPublic}
               />
-            </div>
+            </Box>
 
             {isPublic && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Location visibility</Label>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Location visibility</Label>
                 <Select value={locationVisibility} onValueChange={(value: 'private' | 'friends' | 'public') => setLocationVisibility(value)}>
                   <SelectTrigger>
                     <SelectValue />
@@ -106,40 +109,40 @@ export function VenueCheckInButton({
                     <SelectItem value="public">Public (Very approximate)</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  {locationVisibility === 'friends' 
+                <Typography variant="caption" color="text.secondary">
+                  {locationVisibility === 'friends'
                     ? 'Friends see your location within ~100m accuracy'
                     : locationVisibility === 'public'
                     ? 'Public users see your location within ~1km accuracy'
                     : 'Only you can see your exact location'
                   }
-                </p>
-              </div>
+                </Typography>
+              </Box>
             )}
-          </div>
+          </Box>
 
-          <div className="flex gap-3">
-            <Button 
-              variant="outline" 
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Button
+              variant="outline"
               onClick={() => setShowPrivacyDialog(false)}
-              className="flex-1"
+              style={{ flex: 1 }}
             >
               Cancel
             </Button>
             <Button
               onClick={handleCheckIn}
               disabled={loading}
-              className="flex items-center gap-2 flex-1"
+              style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}
             >
               {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 style={{ width: 16, height: 16 }} />
               ) : (
-                <MapPin className="w-4 h-4" />
+                <MapPin style={{ width: 16, height: 16 }} />
               )}
               {loading ? 'Checking in...' : 'Check In'}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </DialogContent>
     </Dialog>
   );

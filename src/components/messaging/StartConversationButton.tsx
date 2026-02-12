@@ -5,21 +5,22 @@ import { useMessaging } from "@/hooks/useMessaging";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import Box from '@mui/material/Box';
 
 interface StartConversationButtonProps {
   userId: string;
   userName?: string;
   variant?: "default" | "outline" | "ghost";
   size?: "default" | "sm" | "lg";
-  className?: string;
+  sx?: object;
 }
 
-export const StartConversationButton = ({ 
-  userId, 
+export const StartConversationButton = ({
+  userId,
   userName,
   variant = "outline",
   size = "sm",
-  className = ""
+  sx = {}
 }: StartConversationButtonProps) => {
   const { user } = useAuth();
   const { startConversation } = useMessaging();
@@ -33,13 +34,13 @@ export const StartConversationButton = ({
     setLoading(true);
     try {
       const conversationId = await startConversation(userId);
-      
+
       if (conversationId) {
         toast({
           title: "Success",
           description: `Started conversation with ${userName || 'user'}`
         });
-        
+
         // Navigate to messages page with the conversation selected
         navigate(`/messages?conversation=${conversationId}`);
       }
@@ -56,15 +57,16 @@ export const StartConversationButton = ({
   }
 
   return (
-    <Button
-      variant={variant}
-      size={size}
-      onClick={handleStartConversation}
-      disabled={loading}
-      className={className}
-    >
-      <MessageCircle className="h-4 w-4 mr-2" />
-      {loading ? "Sliding into DMs..." : "Send DM"}
-    </Button>
+    <Box sx={sx}>
+      <Button
+        variant={variant}
+        size={size}
+        onClick={handleStartConversation}
+        disabled={loading}
+      >
+        <MessageCircle style={{ width: 16, height: 16, marginRight: 8 }} />
+        {loading ? "Sliding into DMs..." : "Send DM"}
+      </Button>
+    </Box>
   );
 };

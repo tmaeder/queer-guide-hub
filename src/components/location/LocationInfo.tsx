@@ -107,28 +107,28 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
 
   if (loading) {
     return (
-      <div className={`space-y-6 ${className}`}>
+      <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <Card>
           <CardHeader>
-            <Skeleton className="h-6 w-48" />
+            <Skeleton sx={{ height: 24, width: 192 }} />
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Skeleton sx={{ height: 16, width: '100%' }} />
+              <Skeleton sx={{ height: 16, width: '100%' }} />
+              <Skeleton sx={{ height: 16, width: '75%' }} />
             </div>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader>
-            <Skeleton className="h-6 w-32" />
+            <Skeleton sx={{ height: 24, width: 128 }} />
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
               {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="aspect-video" />
+                <Skeleton key={i} sx={{ aspectRatio: '16/9' }} />
               ))}
             </div>
           </CardContent>
@@ -138,41 +138,41 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Wikipedia Information */}
       {wikipediaInfo && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5" />
+            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Globe style={{ height: 20, width: 20 }} />
               About {name}
               <Badge variant="secondary">{type}</Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {wikipediaInfo.description && (
-              <p className="text-lg font-medium text-muted-foreground">
+              <p style={{ fontSize: '1.125rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>
                 {wikipediaInfo.description}
               </p>
             )}
             
-            <div className="prose prose-sm max-w-none">
+            <div className="prose" style={{ fontSize: '0.875rem', maxWidth: 'none' }}>
               <p>{wikipediaInfo.content}</p>
             </div>
             
-            <div className="flex items-center justify-between pt-4">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem' }}>
               <a
                 href={wikipediaInfo.pageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--primary)' }}
               >
-                <ExternalLink className="h-4 w-4" />
+                <ExternalLink style={{ height: 16, width: 16 }} />
                 Read more on Wikipedia
               </a>
               
               {wikipediaInfo.coordinates && (
-                <span className="text-xs text-muted-foreground">
+                <span sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                   {wikipediaInfo.coordinates.lat.toFixed(4)}°, {wikipediaInfo.coordinates.lon.toFixed(4)}°
                 </span>
               )}
@@ -185,53 +185,67 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
       {images.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5" />
+            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ImageIcon style={{ height: 20, width: 20 }} />
               Photo Gallery
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '1rem' }}>
               {images.map((image, index) => (
                 <div 
                   key={image.id} 
-                  className="group relative cursor-pointer overflow-hidden rounded-lg border border-muted/50 hover:border-primary/50 transition-all duration-300"
+                  /* group removed */
+                  style={{ position: 'relative', cursor: 'pointer', overflow: 'hidden', borderRadius: '0.5rem', border: '1px solid var(--muted)', transition: 'all 0.3s' }}
                   onClick={() => openModal(index)}
                 >
-                  <div className="relative aspect-video overflow-hidden">
+                  <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
                     <img
                       src={image.thumbnail}
                       alt={image.alt || `Photo of ${name}`}
-                      className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
+                      sx={{ transition: 'transform 0.2s' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.5s' }}
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div
+                      sx={{ transition: 'opacity 0.2s' }}
+                      style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent, transparent)', opacity: 0, transition: 'opacity 0.3s' }}
+                    />
                   </div>
                   
-                  <div className="absolute bottom-0 left-0 right-0 p-3 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <p className="text-xs font-medium truncate">
+                  <div
+                    sx={{ transition: 'transform 0.2s' }}
+                    style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0.75rem', color: 'white', transform: 'translateY(100%)', transition: 'transform 0.3s' }}
+                  >
+                    <p sx={{ fontSize: '0.75rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       Photo by {image.photographer}
                     </p>
                   </div>
                   
                   {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="bg-background/90 backdrop-blur-sm rounded-full p-2 transform scale-0 group-hover:scale-100 transition-transform duration-300">
-                      <ImageIcon className="h-5 w-5 text-primary" />
+                  <div
+                    sx={{ transition: 'opacity 0.2s' }}
+                    style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(var(--primary-rgb), 0.1)', opacity: 0, transition: 'opacity 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <div
+                      sx={{ transition: 'transform 0.2s' }}
+                      style={{ backgroundColor: 'rgba(var(--background-rgb), 0.9)', backdropFilter: 'blur(4px)', borderRadius: '9999px', padding: '0.5rem', transform: 'scale(0)', transition: 'transform 0.3s' }}
+                    >
+                      <ImageIcon style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                     </div>
                   </div>
                 </div>
               ))}
             </div>
             
-            <div className="mt-6 pt-4 border-t border-muted/30">
-              <p className="text-xs text-muted-foreground text-center">
+            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--muted)' }}>
+              <p sx={{ fontSize: '0.75rem', color: 'text.secondary', textAlign: 'center' }}>
                 Photos provided by{' '}
                 <a
                   href="https://www.pexels.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary hover:underline transition-colors"
+                  sx={{ color: 'primary.main', '&:hover': { textDecoration: 'underline' }, transition: 'color 0.2s' }}
                 >
                   Pexels
                 </a>
@@ -240,17 +254,17 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
             
             {/* Enhanced Photo Modal */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-              <DialogContent className="max-w-5xl p-0 bg-black/95 border-none">
+              <DialogContent sx={{ maxWidth: 1024, p: 0, bgcolor: 'rgba(0,0,0,0.95)', border: 'none' }}>
                 {selectedImage && (
-                  <div className="relative">
+                  <div sx={{ position: 'relative' }}>
                     {/* Close button */}
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute top-4 right-4 z-10 text-white hover:bg-white/20"
+                      style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, color: 'white' }}
                       onClick={closeModal}
                     >
-                      <X className="h-6 w-6" />
+                      <X style={{ height: 24, width: 24 }} />
                     </Button>
                     
                     {/* Navigation buttons */}
@@ -259,48 +273,49 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
+                          style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10, color: 'white' }}
                           onClick={() => navigateImage('prev')}
                         >
-                          <ChevronLeft className="h-8 w-8" />
+                          <ChevronLeft style={{ height: 32, width: 32 }} />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
+                          style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10, color: 'white' }}
                           onClick={() => navigateImage('next')}
                         >
-                          <ChevronRight className="h-8 w-8" />
+                          <ChevronRight style={{ height: 32, width: 32 }} />
                         </Button>
                       </>
                     )}
                     
                     {/* Main image */}
-                    <div className="relative">
+                    <div sx={{ position: 'relative' }}>
                       <img
                         src={selectedImage.url}
                         alt={selectedImage.alt || `Photo of ${name}`}
-                        className="w-full max-h-[80vh] object-contain animate-fade-in"
+                        className="animate-fade-in"
+                        style={{ width: '100%', maxHeight: '80vh', objectFit: 'contain' }}
                       />
                       
                       {/* Image info overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                        <div className="text-white space-y-2">
-                          <p className="text-sm opacity-80">
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)', padding: '1.5rem' }}>
+                        <div sx={{ color: 'white', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <p sx={{ fontSize: '0.875rem', opacity: 0.8 }}>
                             {selectedImageIndex !== null && `${selectedImageIndex + 1} of ${images.length}`}
                           </p>
-                          <div className="flex items-center justify-between">
+                          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div>
-                              <p className="font-medium">Photo by {selectedImage.photographer}</p>
-                              <p className="text-sm opacity-80">{selectedImage.alt || `Photo of ${name}`}</p>
+                              <p sx={{ fontWeight: 500 }}>Photo by {selectedImage.photographer}</p>
+                              <p sx={{ fontSize: '0.875rem', opacity: 0.8 }}>{selectedImage.alt || `Photo of ${name}`}</p>
                             </div>
                             <a
                               href={selectedImage.photographer_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '0.375rem 0.75rem', borderRadius: '9999px', color: 'inherit', textDecoration: 'none', transition: 'background-color 0.2s' }}
                             >
-                              <ExternalLink className="h-4 w-4" />
+                              <ExternalLink style={{ height: 16, width: 16 }} />
                               View Profile
                             </a>
                           </div>
@@ -317,8 +332,8 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
 
       {error && (
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">{error}</p>
+          <CardContent sx={{ pt: 3 }}>
+            <p sx={{ textAlign: 'center', color: 'text.secondary' }}>{error}</p>
           </CardContent>
         </Card>
       )}

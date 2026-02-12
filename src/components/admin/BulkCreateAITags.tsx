@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,7 +52,7 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
 
       if (termsList.length === 0) {
         toast({
-          title: "Error", 
+          title: "Error",
           description: "No valid terms found",
           variant: "destructive",
         });
@@ -66,7 +68,7 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
       }
 
       setResults(data.results);
-      
+
       toast({
         title: "Bulk Creation Complete",
         description: `Created ${data.summary.created} tags, ${data.summary.exists} already existed, ${data.summary.errors} errors`,
@@ -91,11 +93,11 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'created':
-        return <CheckCircle className="h-4 w-4 text-success" />;
+        return <CheckCircle style={{ width: 16, height: 16, color: 'var(--success)' }} />;
       case 'exists':
-        return <AlertCircle className="h-4 w-4 text-warning" />;
+        return <AlertCircle style={{ width: 16, height: 16, color: 'var(--warning)' }} />;
       case 'error':
-        return <XCircle className="h-4 w-4 text-destructive" />;
+        return <XCircle style={{ width: 16, height: 16, color: 'var(--destructive)' }} />;
       default:
         return null;
     }
@@ -104,7 +106,7 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'created':
-        return <Badge variant="default" className="bg-success text-success-foreground">Created</Badge>;
+        return <Badge variant="default" sx={{ bgcolor: 'success.main', color: 'success.contrastText' }}>Created</Badge>;
       case 'exists':
         return <Badge variant="secondary">Already Exists</Badge>;
       case 'error':
@@ -117,106 +119,106 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <Sparkles className="h-4 w-4" />
+        <Button variant="outline" sx={{ gap: 1 }}>
+          <Sparkles style={{ width: 16, height: 16 }} />
           AI Bulk Create
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+      <DialogContent sx={{ maxWidth: 672, maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
+          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Sparkles style={{ width: 20, height: 20 }} />
             AI-Powered Bulk Tag Creation
           </DialogTitle>
         </DialogHeader>
-        
-        <div className="flex flex-col gap-4 flex-1 overflow-hidden">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, overflow: 'hidden' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
               Enter terms (one per line)
-            </label>
+            </Typography>
             <Textarea
-              placeholder="pride&#10;rainbow flag&#10;coming out&#10;drag show&#10;queer history"
+              placeholder={"pride\nrainbow flag\ncoming out\ndrag show\nqueer history"}
               value={terms}
               onChange={(e) => setTerms(e.target.value)}
-              className="min-h-32 resize-none"
+              style={{ minHeight: 128, resize: 'none' }}
               disabled={isLoading}
             />
-            <p className="text-xs text-muted-foreground">
+            <Typography variant="caption" color="text.secondary">
               Each term will be automatically categorized and enhanced with AI-generated descriptions using Wikipedia and OpenAI.
-            </p>
-          </div>
+            </Typography>
+          </Box>
 
           {results.length > 0 && (
-            <div className="flex-1 overflow-hidden">
-              <h3 className="font-medium mb-2">Results:</h3>
-              <div className="border rounded-md overflow-auto max-h-64">
-                <div className="space-y-2 p-3">
+            <Box sx={{ flex: 1, overflow: 'hidden' }}>
+              <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Results:</Typography>
+              <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1, overflow: 'auto', maxHeight: 256 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1.5 }}>
                   {results.map((result, index) => (
-                    <div key={index} className="flex items-start justify-between gap-3 p-2 bg-muted/50 rounded">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                    <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           {getStatusIcon(result.status)}
-                          <span className="font-medium truncate">{result.term}</span>
+                          <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{result.term}</Typography>
                           {getStatusBadge(result.status)}
-                        </div>
+                        </Box>
                         {result.category && (
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
                             Category: {result.category}
-                          </div>
+                          </Typography>
                         )}
                         {result.image_url && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            <img src={result.image_url} alt={result.term} className="w-16 h-12 object-cover rounded mt-1" />
-                          </div>
+                          <Box sx={{ mt: 0.5 }}>
+                            <img src={result.image_url} alt={result.term} style={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 4, marginTop: 4 }} />
+                          </Box>
                         )}
                         {result.description && (
-                          <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                             {result.description}
-                          </div>
+                          </Typography>
                         )}
                         {result.wikipedia_url && (
                           <a
                             href={result.wikipedia_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline mt-1 inline-flex items-center gap-1"
+                            style={{ fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4 }}
                           >
-                            <ExternalLink className="h-3 w-3" />
+                            <ExternalLink style={{ width: 12, height: 12 }} />
                             Wikipedia
                           </a>
                         )}
                         {result.error && (
-                          <div className="text-xs text-destructive mt-1">
+                          <Typography variant="caption" color="error.main" sx={{ mt: 0.5 }}>
                             Error: {result.error}
-                          </div>
+                          </Typography>
                         )}
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
                   ))}
-                </div>
-              </div>
-            </div>
+                </Box>
+              </Box>
+            </Box>
           )}
 
-          <div className="flex justify-end gap-2 pt-2 border-t">
-            <Button 
-              variant="outline" 
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
+            <Button
+              variant="outline"
               onClick={() => setOpen(false)}
               disabled={isLoading}
             >
               {results.length > 0 ? 'Close' : 'Cancel'}
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmit}
               disabled={isLoading || !terms.trim()}
-              className="gap-2"
+              sx={{ gap: 1 }}
             >
-              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isLoading && <Loader2 style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />}
               Create Tags with AI
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </DialogContent>
     </Dialog>
   );

@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/park-ui/theme-provider';
 import { CredentialSecurityGuard } from '@/components/security/CredentialSecurityGuard';
 import { Toaster } from '@/components/ui/toaster';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
+import Box from '@mui/material/Box';
 
 const queryClient = createOptimizedQueryClient();
 
@@ -20,9 +21,9 @@ function App({ children }: { children: React.ReactNode }) {
         <ThemeProvider defaultTheme="light" storageKey="queer-guide-park-ui-theme">
           <AuthProvider>
             <CredentialSecurityGuard>
-              <div className="min-h-screen bg-background text-foreground">
+              <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
                 {children}
-              </div>
+              </Box>
               <Toaster />
             </CredentialSecurityGuard>
           </AuthProvider>

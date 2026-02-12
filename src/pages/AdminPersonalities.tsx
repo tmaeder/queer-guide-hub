@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,16 +20,16 @@ import { toast } from "@/hooks/use-toast";
 import { PersonalitiesCsvImport } from "@/components/personalities/PersonalitiesCsvImport";
 import { AdultModelsCsvImport } from "@/components/personalities/AdultModelsCsvImport";
 import { BulkCreatePersonalities } from "@/components/personalities/BulkCreatePersonalities";
-import { 
-  Users, 
-  Search, 
-  MoreVertical, 
-  Edit, 
-  Trash2, 
-  Check, 
-  X, 
-  AlertCircle, 
-  Star, 
+import {
+  Users,
+  Search,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Check,
+  X,
+  AlertCircle,
+  Star,
   Eye,
   Calendar,
   MapPin,
@@ -42,7 +45,7 @@ export default function AdminPersonalities() {
   const [selectedPersonality, setSelectedPersonality] = useState<any>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  
+
   const { personalities, loading, updatePersonality, refetchPersonalities } = usePersonalities({
     ...filters,
     search: searchTerm
@@ -50,17 +53,17 @@ export default function AdminPersonalities() {
 
   if (!isAdmin) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
         <Card>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-              <p className="text-muted-foreground">You don't have permission to access this page.</p>
-            </div>
+          <CardContent sx={{ py: 6 }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <AlertCircle style={{ height: 48, width: 48, margin: '0 auto', color: 'var(--destructive)', marginBottom: 16 }} />
+              <Typography variant="h6" sx={{ mb: 1 }}>Access Denied</Typography>
+              <Typography color="text.secondary">You don't have permission to access this page.</Typography>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     );
   }
 
@@ -115,9 +118,9 @@ export default function AdminPersonalities() {
   const getVerificationBadge = (status: string) => {
     switch (status) {
       case 'verified':
-        return <Badge className="bg-green-100 text-green-800"><Check className="h-3 w-3 mr-1" />Verified</Badge>;
+        return <Badge sx={{ bgcolor: '#dcfce7', color: '#166534' }}><Check style={{ height: 12, width: 12, marginRight: 4 }} />Verified</Badge>;
       case 'disputed':
-        return <Badge className="bg-yellow-100 text-yellow-800"><AlertCircle className="h-3 w-3 mr-1" />Disputed</Badge>;
+        return <Badge sx={{ bgcolor: '#fef9c3', color: '#854d0e' }}><AlertCircle style={{ height: 12, width: 12, marginRight: 4 }} />Disputed</Badge>;
       default:
         return <Badge variant="secondary">Pending</Badge>;
     }
@@ -126,11 +129,11 @@ export default function AdminPersonalities() {
   const getVisibilityBadge = (visibility: string) => {
     switch (visibility) {
       case 'public':
-        return <Badge className="bg-blue-100 text-blue-800">Public</Badge>;
+        return <Badge sx={{ bgcolor: '#dbeafe', color: '#1e40af' }}>Public</Badge>;
       case 'private':
-        return <Badge className="bg-gray-100 text-gray-800">Private</Badge>;
+        return <Badge sx={{ bgcolor: '#f3f4f6', color: '#1f2937' }}>Private</Badge>;
       default:
-        return <Badge className="bg-orange-100 text-orange-800">Draft</Badge>;
+        return <Badge sx={{ bgcolor: '#ffedd5', color: '#9a3412' }}>Draft</Badge>;
     }
   };
 
@@ -164,113 +167,113 @@ export default function AdminPersonalities() {
     const verified = personalities.filter(p => p.verification_status === 'verified').length;
     const featured = personalities.filter(p => p.is_featured).length;
     const publicPersonalities = personalities.filter(p => p.visibility === 'public').length;
-    
+
     return { total: totalPersonalities, verified, featured, public: publicPersonalities };
   };
 
   const stats = getStats();
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <Container maxWidth="lg" sx={{ px: 2, py: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Personalities Management</h1>
-          <p className="text-muted-foreground mt-1">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="h4">Personalities Management</Typography>
+          <Typography color="text.secondary" sx={{ mt: 0.5 }}>
             Manage and moderate LGBTQ+ personalities in the directory
-          </p>
-        </div>
-        <div className="flex gap-2">
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <PersonalitiesCsvImport onImportComplete={refetchPersonalities} />
           <AdultModelsCsvImport onImportComplete={refetchPersonalities} />
-          <Button onClick={exportPersonalities} variant="outline" className="gap-2">
-            <Download className="h-4 w-4" />
+          <Button onClick={exportPersonalities} variant="outline" sx={{ gap: 1 }}>
+            <Download style={{ height: 16, width: 16 }} />
             Export CSV
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Bulk Import Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
         <BulkCreatePersonalities />
-      </div>
+      </Box>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 3 }}>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Personalities</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
-              </div>
-              <Users className="h-8 w-8 text-muted-foreground" />
-            </div>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>Total Personalities</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>{stats.total}</Typography>
+              </Box>
+              <Users style={{ height: 32, width: 32, color: 'var(--muted-foreground)' }} />
+            </Box>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Verified</p>
-                <p className="text-2xl font-bold text-green-600">{stats.verified}</p>
-              </div>
-              <Check className="h-8 w-8 text-green-600" />
-            </div>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>Verified</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: 'success.main' }}>{stats.verified}</Typography>
+              </Box>
+              <Check style={{ height: 32, width: 32, color: '#16a34a' }} />
+            </Box>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Featured</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.featured}</p>
-              </div>
-              <Star className="h-8 w-8 text-purple-600" />
-            </div>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>Featured</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#9333ea' }}>{stats.featured}</Typography>
+              </Box>
+              <Star style={{ height: 32, width: 32, color: '#9333ea' }} />
+            </Box>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Public</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.public}</p>
-              </div>
-              <Eye className="h-8 w-8 text-blue-600" />
-            </div>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>Public</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>{stats.public}</Typography>
+              </Box>
+              <Eye style={{ height: 32, width: 32, color: '#2563eb' }} />
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Filter style={{ height: 20, width: 20 }} />
             Filters
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2 }}>
+            <Box sx={{ position: 'relative' }}>
+              <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
               <Input
                 placeholder="Search personalities..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                sx={{ pl: 5 }}
               />
-            </div>
+            </Box>
 
             <Select
               value={filters.verification_status || 'all'}
-              onValueChange={(value) => setFilters(prev => ({ 
-                ...prev, 
-                verification_status: value === 'all' ? undefined : value 
+              onValueChange={(value) => setFilters(prev => ({
+                ...prev,
+                verification_status: value === 'all' ? undefined : value
               }))}
             >
               <SelectTrigger>
@@ -286,9 +289,9 @@ export default function AdminPersonalities() {
 
             <Select
               value={filters.featured_only ? 'featured' : 'all'}
-              onValueChange={(value) => setFilters(prev => ({ 
-                ...prev, 
-                featured_only: value === 'featured' || undefined 
+              onValueChange={(value) => setFilters(prev => ({
+                ...prev,
+                featured_only: value === 'featured' || undefined
               }))}
             >
               <SelectTrigger>
@@ -302,9 +305,9 @@ export default function AdminPersonalities() {
 
             <Select
               value={filters.is_living === undefined ? 'all' : filters.is_living ? 'living' : 'deceased'}
-              onValueChange={(value) => setFilters(prev => ({ 
-                ...prev, 
-                is_living: value === 'all' ? undefined : value === 'living' 
+              onValueChange={(value) => setFilters(prev => ({
+                ...prev,
+                is_living: value === 'all' ? undefined : value === 'living'
               }))}
             >
               <SelectTrigger>
@@ -316,19 +319,19 @@ export default function AdminPersonalities() {
                 <SelectItem value="deceased">Deceased</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Personalities Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span>Personalities ({personalities.length})</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <Box sx={{ overflowX: 'auto' }}>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -338,7 +341,7 @@ export default function AdminPersonalities() {
                   <TableHead>Verification</TableHead>
                   <TableHead>Views</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead sx={{ textAlign: 'right' }}>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -346,135 +349,137 @@ export default function AdminPersonalities() {
                   Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell colSpan={7}>
-                        <div className="flex items-center space-x-3">
-                          <div className="h-10 w-10 bg-muted rounded-full animate-pulse" />
-                          <div className="space-y-2">
-                            <div className="h-4 w-32 bg-muted rounded animate-pulse" />
-                            <div className="h-3 w-24 bg-muted rounded animate-pulse" />
-                          </div>
-                        </div>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{ height: 40, width: 40, bgcolor: 'action.hover', borderRadius: '50%', animation: 'pulse 2s infinite' }} />
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <Box sx={{ height: 16, width: 128, bgcolor: 'action.hover', borderRadius: 1, animation: 'pulse 2s infinite' }} />
+                            <Box sx={{ height: 12, width: 96, bgcolor: 'action.hover', borderRadius: 1, animation: 'pulse 2s infinite' }} />
+                          </Box>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : personalities.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">No personalities found</p>
+                    <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4 }}>
+                      <Users style={{ height: 48, width: 48, margin: '0 auto', color: 'var(--muted-foreground)', marginBottom: 16 }} />
+                      <Typography color="text.secondary">No personalities found</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
                   personalities.map((personality) => (
                     <TableRow key={personality.id}>
                       <TableCell>
-                        <div className="flex items-center space-x-3">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           <Avatar>
                             <AvatarImage src={personality.image_url} alt={personality.name} />
                             <AvatarFallback>
                               {personality.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <div>
-                            <div className="font-medium">{personality.name}</div>
+                          <Box>
+                            <Box sx={{ fontWeight: 500 }}>{personality.name}</Box>
                             {personality.pronouns && (
-                              <div className="text-sm text-muted-foreground">{personality.pronouns}</div>
+                              <Typography variant="body2" color="text.secondary">{personality.pronouns}</Typography>
                             )}
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
                       </TableCell>
 
                       <TableCell>
-                        <div className="space-y-1">
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                           {personality.profession && (
-                            <div className="text-sm font-medium">{personality.profession}</div>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>{personality.profession}</Typography>
                           )}
                           {personality.nationality && (
-                            <div className="flex items-center text-sm text-muted-foreground">
-                              <MapPin className="h-3 w-3 mr-1" />
-                              {personality.nationality}
-                            </div>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <MapPin style={{ height: 12, width: 12, marginRight: 4 }} />
+                              <Typography variant="body2" color="text.secondary">{personality.nationality}</Typography>
+                            </Box>
                           )}
                           {personality.birth_date && (
-                            <div className="flex items-center text-sm text-muted-foreground">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              {new Date(personality.birth_date).getFullYear()}
-                              {!personality.is_living && personality.death_date && 
-                                ` - ${new Date(personality.death_date).getFullYear()}`
-                              }
-                            </div>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Calendar style={{ height: 12, width: 12, marginRight: 4 }} />
+                              <Typography variant="body2" color="text.secondary">
+                                {new Date(personality.birth_date).getFullYear()}
+                                {!personality.is_living && personality.death_date &&
+                                  ` - ${new Date(personality.death_date).getFullYear()}`
+                                }
+                              </Typography>
+                            </Box>
                           )}
-                        </div>
+                        </Box>
                       </TableCell>
 
                       <TableCell>
-                        <div className="space-y-2">
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                           {getVisibilityBadge(personality.visibility)}
                           {personality.is_featured && (
-                            <Badge className="bg-purple-100 text-purple-800">
-                              <Star className="h-3 w-3 mr-1" />
+                            <Badge sx={{ bgcolor: '#f3e8ff', color: '#6b21a8' }}>
+                              <Star style={{ height: 12, width: 12, marginRight: 4 }} />
                               Featured
                             </Badge>
                           )}
-                        </div>
+                        </Box>
                       </TableCell>
 
                       <TableCell>{getVerificationBadge(personality.verification_status)}</TableCell>
 
                       <TableCell>
-                        <div className="flex items-center text-sm">
-                          <Eye className="h-3 w-3 mr-1" />
-                          {personality.view_count}
-                        </div>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Eye style={{ height: 12, width: 12, marginRight: 4 }} />
+                          <Typography variant="body2">{personality.view_count}</Typography>
+                        </Box>
                       </TableCell>
 
                       <TableCell>
-                        <div className="text-sm text-muted-foreground">
+                        <Typography variant="body2" color="text.secondary">
                           {new Date(personality.created_at).toLocaleDateString()}
-                        </div>
+                        </Typography>
                       </TableCell>
 
-                      <TableCell className="text-right">
+                      <TableCell sx={{ textAlign: 'right' }}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
+                            <Button variant="ghost" sx={{ height: 32, width: 32, p: 0 }}>
+                              <MoreVertical style={{ height: 16, width: 16 }} />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-56">
+                          <DropdownMenuContent align="end" sx={{ width: 224 }}>
                             <DropdownMenuItem
                               onClick={() => {
                                 setSelectedPersonality(personality);
                                 setEditDialogOpen(true);
                               }}
                             >
-                              <Edit className="h-4 w-4 mr-2" />
+                              <Edit style={{ height: 16, width: 16, marginRight: 8 }} />
                               Edit Details
                             </DropdownMenuItem>
-                            
+
                             <DropdownMenuItem
                               onClick={() => handleVerificationChange(
-                                personality.id, 
+                                personality.id,
                                 personality.verification_status === 'verified' ? 'pending' : 'verified'
                               )}
                             >
-                              <Check className="h-4 w-4 mr-2" />
+                              <Check style={{ height: 16, width: 16, marginRight: 8 }} />
                               {personality.verification_status === 'verified' ? 'Unverify' : 'Verify'}
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
                               onClick={() => handleFeaturedToggle(personality.id, !personality.is_featured)}
                             >
-                              <Star className="h-4 w-4 mr-2" />
+                              <Star style={{ height: 16, width: 16, marginRight: 8 }} />
                               {personality.is_featured ? 'Unfeature' : 'Feature'}
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
                               onClick={() => handleVisibilityChange(
-                                personality.id, 
+                                personality.id,
                                 personality.visibility === 'public' ? 'private' : 'public'
                               )}
                             >
-                              <Eye className="h-4 w-4 mr-2" />
+                              <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
                               Make {personality.visibility === 'public' ? 'Private' : 'Public'}
                             </DropdownMenuItem>
 
@@ -482,7 +487,7 @@ export default function AdminPersonalities() {
                               <DropdownMenuItem
                                 onClick={() => window.open(personality.website_url, '_blank')}
                               >
-                                <ExternalLink className="h-4 w-4 mr-2" />
+                                <ExternalLink style={{ height: 16, width: 16, marginRight: 8 }} />
                                 Visit Website
                               </DropdownMenuItem>
                             )}
@@ -492,9 +497,9 @@ export default function AdminPersonalities() {
                                 setSelectedPersonality(personality);
                                 setDeleteDialogOpen(true);
                               }}
-                              className="text-destructive"
+                              sx={{ color: 'error.main' }}
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
+                              <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -505,24 +510,24 @@ export default function AdminPersonalities() {
                 )}
               </TableBody>
             </Table>
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent sx={{ maxWidth: 672 }}>
           <DialogHeader>
             <DialogTitle>Edit Personality</DialogTitle>
           </DialogHeader>
           {selectedPersonality && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Box>
                   <Label>Verification Status</Label>
                   <Select
                     value={selectedPersonality.verification_status}
-                    onValueChange={(value) => 
+                    onValueChange={(value) =>
                       handleVerificationChange(selectedPersonality.id, value as any)
                     }
                   >
@@ -535,13 +540,13 @@ export default function AdminPersonalities() {
                       <SelectItem value="disputed">Disputed</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </Box>
 
-                <div>
+                <Box>
                   <Label>Visibility</Label>
                   <Select
                     value={selectedPersonality.visibility}
-                    onValueChange={(value) => 
+                    onValueChange={(value) =>
                       handleVisibilityChange(selectedPersonality.id, value as any)
                     }
                   >
@@ -554,10 +559,10 @@ export default function AdminPersonalities() {
                       <SelectItem value="draft">Draft</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
+                </Box>
+              </Box>
 
-              <div className="flex items-center space-x-2">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <input
                   type="checkbox"
                   id="featured"
@@ -565,11 +570,11 @@ export default function AdminPersonalities() {
                   onChange={(e) => handleFeaturedToggle(selectedPersonality.id, e.target.checked)}
                 />
                 <Label htmlFor="featured">Featured Personality</Label>
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </Container>
   );
 }

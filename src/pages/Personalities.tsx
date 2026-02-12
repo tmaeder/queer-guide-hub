@@ -11,6 +11,9 @@ import { usePersonalities, PersonalityFilters } from "@/hooks/usePersonalities";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Plus } from "lucide-react";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 
 export default function Personalities() {
   const { user } = useAuth();
@@ -29,17 +32,17 @@ export default function Personalities() {
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
     },
   });
-  
+
   // Get profession from URL parameters
   const professionFromUrl = searchParams.get('profession');
-  
-  const [filters, setFilters] = useState<PersonalityFilters>({ 
-    page: 1, 
+
+  const [filters, setFilters] = useState<PersonalityFilters>({
+    page: 1,
     limit: 100,
     profession: professionFromUrl || undefined
   });
   const [selectedPersonality, setSelectedPersonality] = useState(null);
-  
+
   // Update filters when URL changes
   useEffect(() => {
     const profession = searchParams.get('profession');
@@ -47,13 +50,13 @@ export default function Personalities() {
       setFilters(prev => ({ ...prev, profession: profession || undefined, page: 1 }));
     }
   }, [searchParams, filters.profession]);
-  
+
   const { personalities, totalCount, loading, error } = usePersonalities(filters);
 
   // Randomize the order of personalities on each render
   const randomizedPersonalities = useMemo(() => {
     if (!personalities || personalities.length === 0) return [];
-    
+
     const shuffled = [...personalities];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -76,66 +79,66 @@ export default function Personalities() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
           {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-80 w-full" />
+            <Skeleton key={i} style={{ height: 320, width: '100%' }} />
           ))}
-        </div>
-      </div>
+        </Box>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
         <Card>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Error Loading Personalities</h3>
-              <p className="text-muted-foreground">{error}</p>
-            </div>
+          <CardContent style={{ paddingTop: 48, paddingBottom: 48 }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Users style={{ height: 48, width: 48, margin: '0 auto 16px auto', display: 'block', color: 'var(--muted-foreground)' }} />
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Error Loading Personalities</Typography>
+              <Typography sx={{ color: 'var(--muted-foreground)' }}>{error}</Typography>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8">
+    <Box sx={{ minHeight: '100vh' }}>
+      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
         {/* Header */}
-        <Card className="mb-8">
-          <CardContent className="p-8 text-center">
-            <h1 className="text-5xl font-bold text-foreground mb-4">
+        <Card style={{ marginBottom: 32 }}>
+          <CardContent style={{ padding: 32, textAlign: 'center' }}>
+            <Typography variant="h2" sx={{ fontSize: '3rem', fontWeight: 700, color: 'var(--foreground)', mb: 2 }}>
               Personalities
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            </Typography>
+            <Typography sx={{ fontSize: '1.25rem', color: 'var(--muted-foreground)', maxWidth: 672, mx: 'auto' }}>
               Discover inspiring LGBTQ+ personalities who have made significant contributions to society
-            </p>
+            </Typography>
             {user && (
-              <div className="mt-6">
+              <Box sx={{ mt: 3 }}>
                 <AddPersonalityDialog onSuccess={() => window.location.reload()} />
-              </div>
+              </Box>
             )}
           </CardContent>
         </Card>
 
-        <div className="mb-8">
+        <Box sx={{ mb: 4 }}>
           <PersonalitiesFilters
             filters={filters}
             onFiltersChange={handleFiltersChange}
           />
-        </div>
+        </Box>
 
         {/* Results */}
         {!loading && personalities.length > 0 && (
-          <div className="flex items-center justify-between mb-6 p-4 bg-card rounded-lg border">
-            <div className="flex items-center gap-4">
-              <p className="text-muted-foreground font-medium">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'var(--card)', borderRadius: 2, border: '1px solid var(--border)' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>
                 Found {personalities.length} result{personalities.length !== 1 ? 's' : ''}
-              </p>
+              </Typography>
               {filters.search && (
                 <Badge variant="secondary">
                   Searching: "{filters.search}"
@@ -146,24 +149,24 @@ export default function Personalities() {
                   Profession: "{filters.profession}"
                 </Badge>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {randomizedPersonalities.length === 0 ? (
           <Card>
-            <CardContent className="py-12">
-              <div className="text-center">
-                <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No personalities found</h3>
-                <p className="text-muted-foreground">
+            <CardContent style={{ paddingTop: 48, paddingBottom: 48 }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Users style={{ height: 48, width: 48, margin: '0 auto 16px auto', display: 'block', color: 'var(--muted-foreground)' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No personalities found</Typography>
+                <Typography sx={{ color: 'var(--muted-foreground)' }}>
                   Try adjusting your search criteria or filters.
-                </p>
-              </div>
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
             {randomizedPersonalities.map((personality) => (
               <PersonalityCard
                 key={personality.id}
@@ -171,9 +174,9 @@ export default function Personalities() {
                 onClick={() => handlePersonalityClick(personality)}
               />
             ))}
-          </div>
+          </Box>
         )}
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }

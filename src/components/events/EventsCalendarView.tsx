@@ -10,6 +10,10 @@ import { Clock, MapPin, Users, Calendar as CalendarIcon, ChevronLeft, ChevronRig
 import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths } from 'date-fns';
 import { Database } from '@/integrations/supabase/types';
 import { formatEventTime } from '@/lib/event-time';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+
 type Event = Database['public']['Tables']['events']['Row'];
 interface EventsCalendarViewProps {
   events: Event[];
@@ -66,95 +70,93 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
     setCurrentMonth(prev => direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1));
   };
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Enhanced Month Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <CalendarIcon className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-primary">{monthlyStats.totalEvents}</p>
-                <p className="text-sm text-muted-foreground">Total Events</p>
-              </div>
-            </div>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
+        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(var(--primary-rgb), 0.05), rgba(var(--primary-rgb), 0.1))', borderColor: 'primary.main', borderWidth: 1, borderStyle: 'solid', opacity: 0.2 }}>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ p: 1, bgcolor: 'primary.main', borderRadius: 2, opacity: 0.1, position: 'relative' }}>
+                <CalendarIcon style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+              </Box>
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{monthlyStats.totalEvents}</Typography>
+                <Typography variant="body2" color="text.secondary">Total Events</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
-        
-        <Card className="bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg">
-                <Ticket className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-green-600">{monthlyStats.freeEvents}</p>
-                <p className="text-sm text-muted-foreground">Free Events</p>
-              </div>
-            </div>
+
+        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.1))', borderColor: 'success.main', borderWidth: 1, borderStyle: 'solid', opacity: 0.2 }}>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ p: 1, bgcolor: 'success.main', borderRadius: 2, opacity: 0.1, position: 'relative' }}>
+                <Ticket style={{ height: 20, width: 20, color: '#16a34a' }} />
+              </Box>
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>{monthlyStats.freeEvents}</Typography>
+                <Typography variant="body2" color="text.secondary">Free Events</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
-        
-        <Card className="bg-gradient-to-br from-purple-500/5 to-purple-500/10 border-purple-500/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-500/10 rounded-lg">
-                <Star className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-purple-600">{monthlyStats.eventTypes}</p>
-                <p className="text-sm text-muted-foreground">Categories</p>
-              </div>
-            </div>
+
+        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(168, 85, 247, 0.05), rgba(168, 85, 247, 0.1))', borderColor: 'secondary.main', borderWidth: 1, borderStyle: 'solid', opacity: 0.2 }}>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'secondary.main', opacity: 0.1, position: 'relative' }}>
+                <Star style={{ height: 20, width: 20, color: '#9333ea' }} />
+              </Box>
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>{monthlyStats.eventTypes}</Typography>
+                <Typography variant="body2" color="text.secondary">Categories</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Main Calendar Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
         {/* Calendar Section */}
-        <div className="lg:col-span-2">
-          <Card className="shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-t-lg">
-              <div className="flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-xl font-bold flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <CalendarIcon className="h-5 w-5 text-primary" />
-                  </div>
+        <Box>
+          <Card sx={{ boxShadow: 3 }}>
+            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(var(--primary-rgb), 0.05), rgba(var(--primary-rgb), 0.1))', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <CardTitle sx={{ fontSize: '1.25rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <Box sx={{ p: 1, bgcolor: 'primary.main', borderRadius: 2, opacity: 0.1, position: 'relative' }}>
+                    <CalendarIcon style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+                  </Box>
                   {format(currentMonth, 'MMMM yyyy')}
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="hover:bg-primary/10 hover:text-primary transition-colors"
-                    aria-label="Previous month" 
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Previous month"
                     onClick={() => navigateMonth('prev')}
                   >
-                    <ChevronLeft className="h-5 w-5" />
+                    <ChevronLeft style={{ height: 20, width: 20 }} />
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="hover:bg-primary/10 hover:text-primary transition-colors"
-                    aria-label="Next month" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Next month"
                     onClick={() => navigateMonth('next')}
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <ChevronRight style={{ height: 20, width: 20 }} />
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent sx={{ p: 3 }}>
               <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={handleDateSelect}
                 month={currentMonth}
                 onMonthChange={setCurrentMonth}
-                className="rounded-lg border-0 w-full"
+                style={{ borderRadius: 8, border: 'none', width: '100%' }}
                 modifiers={{
                   hasEvents: datesWithEvents
                 }}
@@ -168,152 +170,162 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
               />
             </CardContent>
           </Card>
-        </div>
+        </Box>
 
         {/* Events Section */}
-        <div className="lg:col-span-1">
-          <Card className="shadow-lg h-full">
-            <CardHeader className="bg-gradient-to-r from-secondary/5 to-secondary/10 rounded-t-lg">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+        <Box>
+          <Card sx={{ boxShadow: 3, height: '100%' }}>
+            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(var(--secondary-rgb), 0.05), rgba(var(--secondary-rgb), 0.1))', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+              <CardTitle sx={{ fontSize: '1.125rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ width: 12, height: 12, bgcolor: 'primary.main', borderRadius: '50%', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
                 {format(selectedDate, 'MMM d, yyyy')}
               </CardTitle>
               {eventsForSelectedDate.length > 0 && (
-                <p className="text-sm text-muted-foreground">
+                <Typography variant="body2" color="text.secondary">
                   {eventsForSelectedDate.length} event{eventsForSelectedDate.length !== 1 ? 's' : ''} found
-                </p>
+                </Typography>
               )}
             </CardHeader>
-            <CardContent className="p-4">
+            <CardContent sx={{ p: 2 }}>
               {eventsForSelectedDate.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
-                    <CalendarIcon className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <p className="text-sm text-muted-foreground font-medium">No events scheduled</p>
-                  <p className="text-xs text-muted-foreground mt-1">Select another date to explore</p>
-                </div>
+                <Box sx={{ textAlign: 'center', py: 6 }}>
+                  <Box sx={{ mx: 'auto', width: 48, height: 48, bgcolor: 'action.hover', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                    <CalendarIcon style={{ height: 24, width: 24, color: 'var(--muted-foreground)' }} />
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>No events scheduled</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>Select another date to explore</Typography>
+                </Box>
               ) : (
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="space-y-4">
+                <ScrollArea style={{ height: 400, paddingRight: 16 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {eventsForSelectedDate.map((event) => (
-                      <div key={event.id} className="group relative">
-                        <div className="rounded-lg border-2 border-transparent bg-gradient-to-br from-card to-card/50 p-4 shadow-sm transition-all duration-200 hover:border-primary/20 hover:shadow-md hover:scale-[1.02]">
+                      <Box key={event.id} sx={{ position: 'relative' }}>
+                        <Paper sx={{ p: 2, transition: 'all 0.2s', border: 2, borderColor: 'transparent', '&:hover': { borderColor: 'primary.main', boxShadow: 3, transform: 'scale(1.02)' } }}>
                           {/* Event Header */}
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            <h3 
-                              className="font-semibold text-sm leading-tight cursor-pointer hover:text-primary transition-colors line-clamp-2"
+                          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5, mb: 1.5 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                '&:hover': { color: 'primary.main' },
+                                transition: 'color 0.2s',
+                                overflow: 'hidden',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical'
+                              }}
                               onClick={() => onEventSelect?.(event)}
                             >
                               {event.title}
-                            </h3>
-                            <div className="flex gap-1 flex-shrink-0">
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
                               {event.is_free && (
-                                <Badge variant="secondary" className="text-xs px-2 py-1">
+                                <Badge variant="secondary" style={{ fontSize: '0.75rem', paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4 }}>
                                   Free
                                 </Badge>
                               )}
                               {event.featured && (
-                                <Badge variant="default" className="text-xs px-2 py-1">
-                                  <Star className="h-3 w-3 mr-1" />
+                                <Badge variant="default" style={{ fontSize: '0.75rem', paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4 }}>
+                                  <Star style={{ height: 12, width: 12, marginRight: 4 }} />
                                   Featured
                                 </Badge>
                               )}
-                            </div>
-                          </div>
+                            </Box>
+                          </Box>
 
                           {/* Event Details */}
-                          <div className="space-y-2 mb-4">
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3 flex-shrink-0" />
-                              <span>{formatEventTime(event.start_date, event.end_date)}</span>
-                            </div>
-                            
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                              <Clock style={{ height: 12, width: 12, flexShrink: 0 }} />
+                              <Typography variant="caption">{formatEventTime(event.start_date, event.end_date)}</Typography>
+                            </Box>
+
                             {(event.venue_name || event.city) && (
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <MapPin className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate">
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                                <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} />
+                                <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                   {event.venue_name && `${event.venue_name}, `}
                                   {event.city}
-                                </span>
-                              </div>
+                                </Typography>
+                              </Box>
                             )}
 
                             {event.event_type && (
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-xs">
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
                                   {event.event_type}
                                 </Badge>
-                              </div>
+                              </Box>
                             )}
-                          </div>
+                          </Box>
 
                           {/* Action Buttons */}
-                          <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="flex-1 hover:bg-primary hover:text-primary-foreground transition-colors"
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              style={{ flex: 1 }}
                               onClick={() => onEventSelect?.(event)}
                             >
-                              <Eye className="h-3 w-3 mr-1" />
+                              <Eye style={{ height: 12, width: 12, marginRight: 4 }} />
                               View
                             </Button>
-                            
+
                             {onAttendanceUpdate && (
                               <>
                                 <Popover>
                                   <PopoverTrigger asChild>
-                                    <Button size="sm" variant="default" className="flex-1">
-                                      <Users className="h-3 w-3 mr-1" />
+                                    <Button size="sm" variant="default" style={{ flex: 1 }}>
+                                      <Users style={{ height: 12, width: 12, marginRight: 4 }} />
                                       Attend
                                     </Button>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-48 p-2" align="center">
-                                    <div className="space-y-2">
-                                      <Button 
-                                        size="sm" 
-                                        variant="default" 
-                                        className="w-full"
+                                  <PopoverContent style={{ width: 192, padding: 8 }} align="center">
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                      <Button
+                                        size="sm"
+                                        variant="default"
+                                        style={{ width: '100%' }}
                                         onClick={() => onAttendanceUpdate(event.id, 'going')}
                                       >
                                         I'm Going
                                       </Button>
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        className="w-full"
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        style={{ width: '100%' }}
                                         onClick={() => onAttendanceUpdate(event.id, 'interested')}
                                       >
                                         Interested
                                       </Button>
-                                      <Button 
-                                        size="sm" 
-                                        variant="ghost" 
-                                        className="w-full text-muted-foreground"
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        style={{ width: '100%', color: 'var(--muted-foreground)' }}
                                         onClick={() => onAttendanceUpdate(event.id, 'not_going')}
                                       >
                                         Not Going
                                       </Button>
-                                    </div>
+                                    </Box>
                                   </PopoverContent>
                                 </Popover>
                               </>
                             )}
-                          </div>
+                          </Box>
 
                           {/* Hover Indicator */}
-                          <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
-                        </div>
-                      </div>
+                          <Box sx={{ position: 'absolute', inset: 0, borderRadius: 2, background: 'linear-gradient(to right, rgba(var(--primary-rgb), 0.05), rgba(var(--primary-rgb), 0.1))', opacity: 0, transition: 'opacity 0.2s', pointerEvents: 'none', '.MuiBox-root:hover > &': { opacity: 1 } }} />
+                        </Paper>
+                      </Box>
                     ))}
-                  </div>
+                  </Box>
                 </ScrollArea>
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 };

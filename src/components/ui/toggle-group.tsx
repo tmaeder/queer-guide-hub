@@ -1,59 +1,81 @@
 import * as React from "react"
-import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
-import { type VariantProps } from "class-variance-authority"
+import MuiToggleButtonGroup from "@mui/material/ToggleButtonGroup"
+import MuiToggleButton from "@mui/material/ToggleButton"
 
-import { cn } from "@/lib/utils"
-import { toggleVariants } from "@/components/ui/toggle"
+type ToggleGroupVariant = "default" | "outline";
+type ToggleGroupSize = "default" | "sm" | "lg";
 
-const ToggleGroupContext = React.createContext<
-  VariantProps<typeof toggleVariants>
->({
-  size: "default",
-  variant: "default",
-})
+interface ToggleGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+  type?: "single" | "multiple";
+  value?: string | string[];
+  defaultValue?: string | string[];
+  onValueChange?: (value: string | string[]) => void;
+  variant?: ToggleGroupVariant;
+  size?: ToggleGroupSize;
+}
 
-const ToggleGroup = React.forwardRef<
-  React.ElementRef<typeof ToggleGroupPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
-    VariantProps<typeof toggleVariants>
->(({ className, variant, size, children, ...props }, ref) => (
-  <ToggleGroupPrimitive.Root
-    ref={ref}
-    className={cn("flex items-center justify-center gap-1", className)}
-    {...props}
-  >
-    <ToggleGroupContext.Provider value={{ variant, size }}>
-      {children}
-    </ToggleGroupContext.Provider>
-  </ToggleGroupPrimitive.Root>
-))
+const ToggleGroupContext = React.createContext<{
+  variant?: ToggleGroupVariant;
+  size?: ToggleGroupSize;
+}>({ variant: "default", size: "default" });
 
-ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName
+const ToggleGroup = React.forwardRef<HTMLDivElement, ToggleGroupProps>(
+  ({ className, type = "single", value, defaultValue, onValueChange, variant = "default", size = "default", children, style, ...props }, ref) => {
+    const exclusive = type === "single";
+    return (
+      <ToggleGroupContext.Provider value={{ variant, size }}>
+        <MuiToggleButtonGroup
+          ref={ref as any}
+          exclusive={exclusive}
+          value={value ?? defaultValue}
+          onChange={(_, newValue) => { if (newValue !== null) onValueChange?.(newValue); }}
+          className={className}
+          style={style}
+          sx={{ gap: 0.5, '& .MuiToggleButtonGroup-grouped': { border: 0, borderRadius: '10px !important' } }}
+          {...(props as any)}
+        >
+          {children}
+        </MuiToggleButtonGroup>
+      </ToggleGroupContext.Provider>
+    );
+  }
+);
+ToggleGroup.displayName = "ToggleGroup"
 
-const ToggleGroupItem = React.forwardRef<
-  React.ElementRef<typeof ToggleGroupPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
-    VariantProps<typeof toggleVariants>
->(({ className, children, variant, size, ...props }, ref) => {
-  const context = React.useContext(ToggleGroupContext)
+interface ToggleGroupItemProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'value'> {
+  value: string;
+  variant?: ToggleGroupVariant;
+  size?: ToggleGroupSize;
+}
 
-  return (
-    <ToggleGroupPrimitive.Item
-      ref={ref}
-      className={cn(
-        toggleVariants({
-          variant: context.variant || variant,
-          size: context.size || size,
-        }),
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </ToggleGroupPrimitive.Item>
-  )
-})
-
-ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName
+const ToggleGroupItem = React.forwardRef<HTMLButtonElement, ToggleGroupItemProps>(
+  ({ className, value, children, variant, size, style, ...props }, ref) => {
+    const context = React.useContext(ToggleGroupContext);
+    const finalVariant = variant || context.variant || "default";
+    const finalSize = size || context.size || "default";
+    const muiSize = finalSize === "sm" ? "small" : finalSize === "lg" ? "large" : "medium";
+    return (
+      <MuiToggleButton
+        ref={ref}
+        value={value}
+        size={muiSize}
+        className={className}
+        style={style}
+        sx={{
+          textTransform: 'none',
+          border: finalVariant === "outline" ? 1 : 0,
+          borderColor: 'divider',
+          color: 'text.secondary',
+          '&.Mui-selected': { bgcolor: 'action.selected', color: 'text.primary' },
+          '&:hover': { bgcolor: 'action.hover' },
+        }}
+        {...(props as any)}
+      >
+        {children}
+      </MuiToggleButton>
+    );
+  }
+);
+ToggleGroupItem.displayName = "ToggleGroupItem"
 
 export { ToggleGroup, ToggleGroupItem }

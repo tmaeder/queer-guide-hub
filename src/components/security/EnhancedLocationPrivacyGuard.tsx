@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { MapPin, Lock, AlertTriangle, Clock } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface LocationPrivacyGuardProps {
   children: React.ReactNode;
@@ -64,11 +66,11 @@ export function EnhancedLocationPrivacyGuard({
 
   const updateLocationSettings = async (newSettings: Partial<typeof locationSettings>) => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       const updatedSettings = { ...locationSettings, ...newSettings };
-      
+
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -119,7 +121,7 @@ export function EnhancedLocationPrivacyGuard({
       latitude: shouldShowPrecise && !isAnonymized ? locationData.latitude : null,
       longitude: shouldShowPrecise && !isAnonymized ? locationData.longitude : null,
       venue_name: isAnonymized ? 'Location (Anonymized)' : locationData.venue_name,
-      address: isAnonymized || !shouldShowPrecise 
+      address: isAnonymized || !shouldShowPrecise
         ? locationData.address?.split(',').slice(-2).join(',') // City, Country only
         : locationData.address
     };
@@ -129,7 +131,7 @@ export function EnhancedLocationPrivacyGuard({
     try {
       setLoading(true);
       await supabase.rpc('anonymize_location_data');
-      
+
       // Refresh location data if needed
       window.location.reload();
     } catch (err) {
@@ -143,10 +145,10 @@ export function EnhancedLocationPrivacyGuard({
   const isAnonymized = isLocationAnonymized();
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {showWarning && locationData && (
         <Alert>
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangle style={{ height: 16, width: 16 }} />
           <AlertDescription>
             Location data privacy controls are active. Precise location information
             may be hidden or anonymized based on your privacy settings and data age.
@@ -155,14 +157,14 @@ export function EnhancedLocationPrivacyGuard({
       )}
 
       {isAnonymized && (
-        <Card className="border-warning">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-warning">
-              <Clock className="h-4 w-4" />
-              <span className="text-sm">
+        <Card>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'warning.main' }}>
+              <Clock style={{ height: 16, width: 16 }} />
+              <Typography variant="body2">
                 This location data has been automatically anonymized for privacy protection.
-              </span>
-            </div>
+              </Typography>
+            </Box>
           </CardContent>
         </Card>
       )}
@@ -170,87 +172,91 @@ export function EnhancedLocationPrivacyGuard({
       {user && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <MapPin className="h-4 w-4" />
-              Location Privacy Controls
+            <CardTitle>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
+                <MapPin style={{ height: 16, width: 16 }} />
+                Location Privacy Controls
+              </Box>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label htmlFor="precise-location">Share Precise Location</Label>
-                <p className="text-xs text-muted-foreground">
-                  Allow sharing exact coordinates and full addresses
-                </p>
-              </div>
-              <Switch
-                id="precise-location"
-                checked={locationSettings.location_precise}
-                onCheckedChange={(checked) => 
-                  updateLocationSettings({ location_precise: checked })
-                }
-                disabled={loading}
-              />
-            </div>
+          <CardContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Label htmlFor="precise-location">Share Precise Location</Label>
+                  <Typography variant="caption" color="text.secondary">
+                    Allow sharing exact coordinates and full addresses
+                  </Typography>
+                </Box>
+                <Switch
+                  id="precise-location"
+                  checked={locationSettings.location_precise}
+                  onCheckedChange={(checked) =>
+                    updateLocationSettings({ location_precise: checked })
+                  }
+                  disabled={loading}
+                />
+              </Box>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label htmlFor="region-only">Region Only</Label>
-                <p className="text-xs text-muted-foreground">
-                  Share only city/region, not specific addresses
-                </p>
-              </div>
-              <Switch
-                id="region-only"
-                checked={locationSettings.location_region_only}
-                onCheckedChange={(checked) => 
-                  updateLocationSettings({ location_region_only: checked })
-                }
-                disabled={loading}
-              />
-            </div>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Label htmlFor="region-only">Region Only</Label>
+                  <Typography variant="caption" color="text.secondary">
+                    Share only city/region, not specific addresses
+                  </Typography>
+                </Box>
+                <Switch
+                  id="region-only"
+                  checked={locationSettings.location_region_only}
+                  onCheckedChange={(checked) =>
+                    updateLocationSettings({ location_region_only: checked })
+                  }
+                  disabled={loading}
+                />
+              </Box>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label htmlFor="auto-anonymize">Auto-Anonymize Old Data</Label>
-                <p className="text-xs text-muted-foreground">
-                  Automatically anonymize location data older than 30 days
-                </p>
-              </div>
-              <Switch
-                id="auto-anonymize"
-                checked={locationSettings.auto_anonymize}
-                onCheckedChange={(checked) => 
-                  updateLocationSettings({ auto_anonymize: checked })
-                }
-                disabled={loading}
-              />
-            </div>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Label htmlFor="auto-anonymize">Auto-Anonymize Old Data</Label>
+                  <Typography variant="caption" color="text.secondary">
+                    Automatically anonymize location data older than 30 days
+                  </Typography>
+                </Box>
+                <Switch
+                  id="auto-anonymize"
+                  checked={locationSettings.auto_anonymize}
+                  onCheckedChange={(checked) =>
+                    updateLocationSettings({ auto_anonymize: checked })
+                  }
+                  disabled={loading}
+                />
+              </Box>
 
-            <Button 
-              onClick={triggerLocationAnonymization}
-              variant="outline" 
-              size="sm"
-              disabled={loading}
-              className="w-full"
-            >
-              <Lock className="h-3 w-3 mr-2" />
-              Anonymize All Old Location Data Now
-            </Button>
+              <Button
+                onClick={triggerLocationAnonymization}
+                variant="outline"
+                size="sm"
+                disabled={loading}
+                style={{ width: '100%' }}
+              >
+                <Lock style={{ height: 12, width: 12, marginRight: 8 }} />
+                Anonymize All Old Location Data Now
+              </Button>
+            </Box>
           </CardContent>
         </Card>
       )}
 
       {!allowPreciseLocation && (
-        <div className="text-xs text-muted-foreground flex items-center gap-1">
-          <Lock className="h-3 w-3" />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.75rem', color: 'text.secondary' }}>
+          <Lock style={{ height: 12, width: 12 }} />
           Precise location hidden for privacy
-        </div>
+        </Box>
       )}
 
       {React.cloneElement(children as React.ReactElement, {
         location: privacyLocation
       })}
-    </div>
+    </Box>
   );
 }

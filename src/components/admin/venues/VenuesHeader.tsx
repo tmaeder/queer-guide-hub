@@ -9,6 +9,8 @@ import {
 import { VenuesCsvImport } from "@/components/venues/VenuesCsvImport";
 import { VenueImportDialog } from "./VenueImportDialog";
 import { useState } from "react";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface VenuesHeaderProps {
   onBack: () => void;
@@ -24,9 +26,9 @@ interface VenuesHeaderProps {
   isImportingGooglePlaces: boolean;
 }
 
-export function VenuesHeader({ 
-  onBack, 
-  onAddVenue, 
+export function VenuesHeader({
+  onBack,
+  onAddVenue,
   onFoursquareImport,
   onTripAdvisorImport,
   onTomTomImport,
@@ -60,28 +62,28 @@ export function VenuesHeader({
     setImportDialog({ open: false, provider: null });
   };
   return (
-    <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={onBack} className="shrink-0">
-          <ArrowLeft className="h-4 w-4 mr-2" />
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, '@media (min-width: 900px)': { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' } }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Button variant="outline" onClick={onBack} style={{ flexShrink: 0 }}>
+          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
           Back to Dashboard
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Venues Management</h1>
-          <p className="text-muted-foreground">Manage venues and locations</p>
-        </div>
-      </div>
-      
-      <div className="flex flex-col gap-2 md:flex-row">
-        <div className="flex gap-2">
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.025em', fontSize: '1.875rem' }}>Venues Management</Typography>
+          <Typography sx={{ color: 'text.secondary' }}>Manage venues and locations</Typography>
+        </Box>
+      </Box>
+
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, '@media (min-width: 900px)': { flexDirection: 'row' } }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="secondary"
             size="sm"
             disabled={isImporting}
-            className="text-xs"
+            style={{ fontSize: '0.75rem' }}
             onClick={() => setImportDialog({ open: true, provider: 'foursquare' })}
           >
-            <Search className="h-3 w-3 mr-1" />
+            <Search style={{ height: 12, width: 12, marginRight: 4 }} />
             {isImporting ? "Importing..." : "Foursquare"}
           </Button>
 
@@ -89,10 +91,10 @@ export function VenuesHeader({
             variant="secondary"
             size="sm"
             disabled={isImportingTripAdvisor}
-            className="text-xs"
+            style={{ fontSize: '0.75rem' }}
             onClick={() => setImportDialog({ open: true, provider: 'tripadvisor' })}
           >
-            <Search className="h-3 w-3 mr-1" />
+            <Search style={{ height: 12, width: 12, marginRight: 4 }} />
             {isImportingTripAdvisor ? "Importing..." : "TripAdvisor"}
           </Button>
 
@@ -100,10 +102,10 @@ export function VenuesHeader({
             variant="secondary"
             size="sm"
             disabled={isImportingTomTom}
-            className="text-xs"
+            style={{ fontSize: '0.75rem' }}
             onClick={() => setImportDialog({ open: true, provider: 'tomtom' })}
           >
-            <Search className="h-3 w-3 mr-1" />
+            <Search style={{ height: 12, width: 12, marginRight: 4 }} />
             {isImportingTomTom ? "Importing..." : "TomTom"}
           </Button>
 
@@ -111,22 +113,22 @@ export function VenuesHeader({
             variant="secondary"
             size="sm"
             disabled={isImportingGooglePlaces}
-            className="text-xs"
+            style={{ fontSize: '0.75rem' }}
             onClick={() => setImportDialog({ open: true, provider: 'google-places' })}
           >
-            <Search className="h-3 w-3 mr-1" />
+            <Search style={{ height: 12, width: 12, marginRight: 4 }} />
             {isImportingGooglePlaces ? "Importing..." : "Google Places"}
           </Button>
-        </div>
-        
-        <div className="flex gap-2">
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <VenuesCsvImport onImportComplete={onImportComplete} />
           <Button onClick={onAddVenue}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
             Add Venue
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {importDialog.provider && (
         <VenueImportDialog
@@ -142,6 +144,6 @@ export function VenuesHeader({
           }
         />
       )}
-    </div>
+    </Box>
   );
 }

@@ -5,7 +5,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Shield, CheckCircle, Clock } from 'lucide-react';
 import { useSecurityValidation } from '@/hooks/useSecurityValidation';
-import { cn } from '@/lib/utils';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface SecureContentEditorProps {
   value: string;
@@ -74,74 +75,84 @@ export function SecureContentEditor({
 
   const status = getValidationStatus();
 
-  return (
-    <div className={cn("space-y-2", className)}>
-      <div className="flex items-center justify-between">
-        <Label htmlFor="content" className="flex items-center gap-2">
-          <Shield className="h-4 w-4" />
-          {label}
-          {required && <span className="text-destructive">*</span>}
-        </Label>
-        
-        {status && (
-          <div className="flex items-center gap-1">
-            <status.icon className={cn("h-4 w-4", status.color)} />
-            <span className={cn("text-sm", status.color)}>{status.text}</span>
-          </div>
-        )}
-      </div>
+  const getStatusColor = (color: string) => {
+    switch (color) {
+      case 'text-muted-foreground': return 'var(--muted-foreground)';
+      case 'text-success': return 'var(--success, #22c55e)';
+      case 'text-destructive': return 'var(--destructive)';
+      case 'text-warning': return 'var(--warning, #eab308)';
+      default: return undefined;
+    }
+  };
 
-      <div className="relative">
+  return (
+    <Box className={className} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Label htmlFor="content" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Shield style={{ height: 16, width: 16 }} />
+          {label}
+          {required && <Typography component="span" sx={{ color: 'error.main' }}>*</Typography>}
+        </Label>
+
+        {status && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <status.icon style={{ height: 16, width: 16, color: getStatusColor(status.color) }} />
+            <Typography component="span" sx={{ fontSize: '0.875rem', color: getStatusColor(status.color) }}>{status.text}</Typography>
+          </Box>
+        )}
+      </Box>
+
+      <Box sx={{ position: 'relative' }}>
         <Textarea
           id="content"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           required={required}
-          className={cn(
-            "min-h-[100px] resize-vertical",
-            validation && !validation.is_valid && "border-destructive focus:border-destructive",
-            isOverLimit && "border-destructive focus:border-destructive"
-          )}
+          style={{
+            minHeight: 100,
+            resize: 'vertical',
+            ...((validation && !validation.is_valid) || isOverLimit ? { borderColor: 'var(--destructive)' } : {})
+          }}
         />
-        
-        <div className="absolute bottom-2 right-2 flex items-center gap-2">
+
+        <Box sx={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Badge variant={isOverLimit ? "destructive" : isNearLimit ? "secondary" : "outline"}>
             {currentLength}/{limit}
           </Badge>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {validation && validation.errors && validation.errors.length > 0 && (
         <Alert variant={validation.security_level === 'high' ? 'destructive' : 'default'}>
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangle style={{ height: 16, width: 16 }} />
           <AlertDescription>
-            <ul className="list-disc list-inside space-y-1">
+            <Box component="ul" sx={{ listStyleType: 'disc', listStylePosition: 'inside', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               {validation.errors.map((error: string, index: number) => (
                 <li key={index}>{error}</li>
               ))}
-            </ul>
+            </Box>
           </AlertDescription>
         </Alert>
       )}
 
       {isOverLimit && (
         <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangle style={{ height: 16, width: 16 }} />
           <AlertDescription>
             Content exceeds the maximum length of {limit} characters for {contentType} content.
           </AlertDescription>
         </Alert>
       )}
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>Content is automatically scanned for security issues</span>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+        <Typography component="span" sx={{ fontSize: 'inherit', color: 'inherit' }}>Content is automatically scanned for security issues</Typography>
         {validation && (
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
             Security Level: {validation.security_level || 'unknown'}
           </Badge>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

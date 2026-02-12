@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Eye, Trash2, Upload, Plus, X, MapPin, Clock, Users, Tag, Globe, Calendar, User, Building, Star } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -115,251 +117,251 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       case 'events':
         return {
           basic: [
-            { key: 'name', label: 'Event Name', type: 'text', required: true, icon: <Calendar className="h-4 w-4" /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'event_type', label: 'Event Type', type: 'text', icon: <Tag className="h-4 w-4" /> },
-            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'cancelled'], icon: <Star className="h-4 w-4" /> }
+            { key: 'name', label: 'Event Name', type: 'text', required: true, icon: <Calendar style={{ height: 16, width: 16 }} /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'event_type', label: 'Event Type', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'cancelled'], icon: <Star style={{ height: 16, width: 16 }} /> }
           ],
           datetime: [
-            { key: 'start_date', label: 'Start Date', type: 'datetime', icon: <Clock className="h-4 w-4" /> },
-            { key: 'end_date', label: 'End Date', type: 'datetime', icon: <Clock className="h-4 w-4" /> },
-            { key: 'is_recurring', label: 'Recurring Event', type: 'boolean', icon: <Clock className="h-4 w-4" /> }
+            { key: 'start_date', label: 'Start Date', type: 'datetime', icon: <Clock style={{ height: 16, width: 16 }} /> },
+            { key: 'end_date', label: 'End Date', type: 'datetime', icon: <Clock style={{ height: 16, width: 16 }} /> },
+            { key: 'is_recurring', label: 'Recurring Event', type: 'boolean', icon: <Clock style={{ height: 16, width: 16 }} /> }
           ],
           location: [
-            { key: 'venue_id', label: 'Venue', type: 'text', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'address', label: 'Address', type: 'text', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin className="h-4 w-4" /> }
+            { key: 'venue_id', label: 'Venue', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'address', label: 'Address', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> }
           ],
           details: [
-            { key: 'price', label: 'Price', type: 'number', icon: <Tag className="h-4 w-4" /> },
-            { key: 'capacity', label: 'Capacity', type: 'number', icon: <Users className="h-4 w-4" /> },
-            { key: 'age_restriction', label: 'Age Restriction', type: 'text', icon: <Users className="h-4 w-4" /> },
-            { key: 'website', label: 'Website', type: 'url', icon: <Globe className="h-4 w-4" /> },
-            { key: 'image_url', label: 'Image URL', type: 'url', icon: <Upload className="h-4 w-4" /> }
+            { key: 'price', label: 'Price', type: 'number', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'capacity', label: 'Capacity', type: 'number', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'age_restriction', label: 'Age Restriction', type: 'text', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'website', label: 'Website', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> },
+            { key: 'image_url', label: 'Image URL', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> }
           ]
         };
         
       case 'venues':
         return {
           basic: [
-            { key: 'name', label: 'Venue Name', type: 'text', required: true, icon: <Building className="h-4 w-4" /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'venue_type', label: 'Venue Type', type: 'text', icon: <Building className="h-4 w-4" /> },
-            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'temporarily_closed'], icon: <Star className="h-4 w-4" /> }
+            { key: 'name', label: 'Venue Name', type: 'text', required: true, icon: <Building style={{ height: 16, width: 16 }} /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'venue_type', label: 'Venue Type', type: 'text', icon: <Building style={{ height: 16, width: 16 }} /> },
+            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'temporarily_closed'], icon: <Star style={{ height: 16, width: 16 }} /> }
           ],
           location: [
-            { key: 'address', label: 'Address', type: 'text', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'city', label: 'City', type: 'text', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'country', label: 'Country', type: 'text', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin className="h-4 w-4" /> }
+            { key: 'address', label: 'Address', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'city', label: 'City', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'country', label: 'Country', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> }
           ],
           contact: [
-            { key: 'phone', label: 'Phone', type: 'tel', icon: <Users className="h-4 w-4" /> },
-            { key: 'email', label: 'Email', type: 'email', icon: <Users className="h-4 w-4" /> },
-            { key: 'website', label: 'Website', type: 'url', icon: <Globe className="h-4 w-4" /> },
-            { key: 'social_media', label: 'Social Media', type: 'json', icon: <Globe className="h-4 w-4" /> }
+            { key: 'phone', label: 'Phone', type: 'tel', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'email', label: 'Email', type: 'email', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'website', label: 'Website', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> },
+            { key: 'social_media', label: 'Social Media', type: 'json', icon: <Globe style={{ height: 16, width: 16 }} /> }
           ],
           details: [
-            { key: 'capacity', label: 'Capacity', type: 'number', icon: <Users className="h-4 w-4" /> },
-            { key: 'accessibility_features', label: 'Accessibility Features', type: 'array', icon: <Users className="h-4 w-4" /> },
-            { key: 'amenities', label: 'Amenities', type: 'array', icon: <Star className="h-4 w-4" /> },
-            { key: 'image_url', label: 'Image URL', type: 'url', icon: <Upload className="h-4 w-4" /> }
+            { key: 'capacity', label: 'Capacity', type: 'number', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'accessibility_features', label: 'Accessibility Features', type: 'array', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'amenities', label: 'Amenities', type: 'array', icon: <Star style={{ height: 16, width: 16 }} /> },
+            { key: 'image_url', label: 'Image URL', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> }
           ]
         };
 
       case 'personalities':
         return {
           basic: [
-            { key: 'name', label: 'Name', type: 'text', required: true, icon: <User className="h-4 w-4" /> },
-            { key: 'bio', label: 'Biography', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'profession', label: 'Profession', type: 'text', icon: <Building className="h-4 w-4" /> },
-            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive'], icon: <Star className="h-4 w-4" /> }
+            { key: 'name', label: 'Name', type: 'text', required: true, icon: <User style={{ height: 16, width: 16 }} /> },
+            { key: 'bio', label: 'Biography', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'profession', label: 'Profession', type: 'text', icon: <Building style={{ height: 16, width: 16 }} /> },
+            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive'], icon: <Star style={{ height: 16, width: 16 }} /> }
           ],
           personal: [
-            { key: 'birth_date', label: 'Birth Date', type: 'date', icon: <Calendar className="h-4 w-4" /> },
-            { key: 'death_date', label: 'Death Date', type: 'date', icon: <Calendar className="h-4 w-4" /> },
-            { key: 'nationality', label: 'Nationality', type: 'text', icon: <Globe className="h-4 w-4" /> },
-            { key: 'gender', label: 'Gender', type: 'text', icon: <User className="h-4 w-4" /> }
+            { key: 'birth_date', label: 'Birth Date', type: 'date', icon: <Calendar style={{ height: 16, width: 16 }} /> },
+            { key: 'death_date', label: 'Death Date', type: 'date', icon: <Calendar style={{ height: 16, width: 16 }} /> },
+            { key: 'nationality', label: 'Nationality', type: 'text', icon: <Globe style={{ height: 16, width: 16 }} /> },
+            { key: 'gender', label: 'Gender', type: 'text', icon: <User style={{ height: 16, width: 16 }} /> }
           ],
           media: [
-            { key: 'image_url', label: 'Profile Image', type: 'url', icon: <Upload className="h-4 w-4" /> },
-            { key: 'website', label: 'Website', type: 'url', icon: <Globe className="h-4 w-4" /> },
-            { key: 'social_links', label: 'Social Links', type: 'json', icon: <Globe className="h-4 w-4" /> }
+            { key: 'image_url', label: 'Profile Image', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> },
+            { key: 'website', label: 'Website', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> },
+            { key: 'social_links', label: 'Social Links', type: 'json', icon: <Globe style={{ height: 16, width: 16 }} /> }
           ],
           metadata: [
-            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag className="h-4 w-4" /> },
-            { key: 'categories', label: 'Categories', type: 'array', icon: <Tag className="h-4 w-4" /> },
-            { key: 'view_count', label: 'View Count', type: 'number', readonly: true, icon: <Eye className="h-4 w-4" /> }
+            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'categories', label: 'Categories', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'view_count', label: 'View Count', type: 'number', readonly: true, icon: <Eye style={{ height: 16, width: 16 }} /> }
           ]
         };
 
       case 'community_groups':
         return {
           basic: [
-            { key: 'name', label: 'Group Name', type: 'text', required: true, icon: <Users className="h-4 w-4" /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'rules', label: 'Group Rules', type: 'textarea', icon: <Tag className="h-4 w-4" /> }
+            { key: 'name', label: 'Group Name', type: 'text', required: true, icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'rules', label: 'Group Rules', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> }
           ],
           settings: [
-            { key: 'is_private', label: 'Private Group', type: 'boolean', icon: <Users className="h-4 w-4" /> },
-            { key: 'member_count', label: 'Member Count', type: 'number', readonly: true, icon: <Users className="h-4 w-4" /> }
+            { key: 'is_private', label: 'Private Group', type: 'boolean', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'member_count', label: 'Member Count', type: 'number', readonly: true, icon: <Users style={{ height: 16, width: 16 }} /> }
           ],
           media: [
-            { key: 'image_url', label: 'Group Image', type: 'url', icon: <Upload className="h-4 w-4" /> },
-            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag className="h-4 w-4" /> }
+            { key: 'image_url', label: 'Group Image', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> },
+            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> }
           ]
         };
 
       case 'community_posts':
         return {
           basic: [
-            { key: 'content', label: 'Post Content', type: 'textarea', required: true, icon: <Tag className="h-4 w-4" /> },
-            { key: 'post_type', label: 'Post Type', type: 'select', options: ['text', 'image', 'link', 'poll'], icon: <Tag className="h-4 w-4" /> }
+            { key: 'content', label: 'Post Content', type: 'textarea', required: true, icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'post_type', label: 'Post Type', type: 'select', options: ['text', 'image', 'link', 'poll'], icon: <Tag style={{ height: 16, width: 16 }} /> }
           ],
           settings: [
-            { key: 'visibility', label: 'Visibility', type: 'select', options: ['public', 'private', 'friends'], icon: <Eye className="h-4 w-4" /> },
-            { key: 'pinned', label: 'Pinned Post', type: 'boolean', icon: <Star className="h-4 w-4" /> }
+            { key: 'visibility', label: 'Visibility', type: 'select', options: ['public', 'private', 'friends'], icon: <Eye style={{ height: 16, width: 16 }} /> },
+            { key: 'pinned', label: 'Pinned Post', type: 'boolean', icon: <Star style={{ height: 16, width: 16 }} /> }
           ],
           engagement: [
-            { key: 'likes_count', label: 'Likes', type: 'number', readonly: true, icon: <Star className="h-4 w-4" /> },
-            { key: 'comments_count', label: 'Comments', type: 'number', readonly: true, icon: <Users className="h-4 w-4" /> },
-            { key: 'shares_count', label: 'Shares', type: 'number', readonly: true, icon: <Globe className="h-4 w-4" /> }
+            { key: 'likes_count', label: 'Likes', type: 'number', readonly: true, icon: <Star style={{ height: 16, width: 16 }} /> },
+            { key: 'comments_count', label: 'Comments', type: 'number', readonly: true, icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'shares_count', label: 'Shares', type: 'number', readonly: true, icon: <Globe style={{ height: 16, width: 16 }} /> }
           ],
           media: [
-            { key: 'images', label: 'Images', type: 'array', icon: <Upload className="h-4 w-4" /> },
-            { key: 'link_url', label: 'Link URL', type: 'url', icon: <Globe className="h-4 w-4" /> },
-            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag className="h-4 w-4" /> }
+            { key: 'images', label: 'Images', type: 'array', icon: <Upload style={{ height: 16, width: 16 }} /> },
+            { key: 'link_url', label: 'Link URL', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> },
+            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> }
           ]
         };
 
       case 'cms_content':
         return {
           basic: [
-            { key: 'title', label: 'Title', type: 'text', required: true, icon: <Tag className="h-4 w-4" /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'content_type', label: 'Content Type', type: 'select', options: ['page', 'article', 'blog_post'], icon: <Tag className="h-4 w-4" /> },
-            { key: 'workflow_state', label: 'Workflow State', type: 'select', options: ['draft', 'review', 'published', 'archived'], icon: <Star className="h-4 w-4" /> }
+            { key: 'title', label: 'Title', type: 'text', required: true, icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'content_type', label: 'Content Type', type: 'select', options: ['page', 'article', 'blog_post'], icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'workflow_state', label: 'Workflow State', type: 'select', options: ['draft', 'review', 'published', 'archived'], icon: <Star style={{ height: 16, width: 16 }} /> }
           ],
           settings: [
-            { key: 'visibility_level', label: 'Visibility', type: 'select', options: ['public', 'private', 'restricted'], icon: <Eye className="h-4 w-4" /> },
-            { key: 'featured_weight', label: 'Featured Weight', type: 'number', icon: <Star className="h-4 w-4" /> }
+            { key: 'visibility_level', label: 'Visibility', type: 'select', options: ['public', 'private', 'restricted'], icon: <Eye style={{ height: 16, width: 16 }} /> },
+            { key: 'featured_weight', label: 'Featured Weight', type: 'number', icon: <Star style={{ height: 16, width: 16 }} /> }
           ],
           meta: [
-            { key: 'meta_title', label: 'Meta Title', type: 'text', icon: <Globe className="h-4 w-4" /> },
-            { key: 'meta_description', label: 'Meta Description', type: 'textarea', icon: <Globe className="h-4 w-4" /> },
-            { key: 'slug', label: 'URL Slug', type: 'text', icon: <Globe className="h-4 w-4" /> },
-            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag className="h-4 w-4" /> }
+            { key: 'meta_title', label: 'Meta Title', type: 'text', icon: <Globe style={{ height: 16, width: 16 }} /> },
+            { key: 'meta_description', label: 'Meta Description', type: 'textarea', icon: <Globe style={{ height: 16, width: 16 }} /> },
+            { key: 'slug', label: 'URL Slug', type: 'text', icon: <Globe style={{ height: 16, width: 16 }} /> },
+            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> }
           ]
         };
 
       case 'news_articles':
         return {
           basic: [
-            { key: 'title', label: 'Article Title', type: 'text', required: true, icon: <Tag className="h-4 w-4" /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'excerpt', label: 'Excerpt', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'content', label: 'Article Content', type: 'textarea', icon: <Tag className="h-4 w-4" /> }
+            { key: 'title', label: 'Article Title', type: 'text', required: true, icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'excerpt', label: 'Excerpt', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'content', label: 'Article Content', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> }
           ],
           meta: [
-            { key: 'author', label: 'Author', type: 'text', icon: <User className="h-4 w-4" /> },
-            { key: 'category', label: 'Category', type: 'text', icon: <Tag className="h-4 w-4" /> },
-            { key: 'status', label: 'Status', type: 'select', options: ['draft', 'published', 'archived'], icon: <Star className="h-4 w-4" /> },
-            { key: 'published_at', label: 'Published Date', type: 'datetime', icon: <Calendar className="h-4 w-4" /> }
+            { key: 'author', label: 'Author', type: 'text', icon: <User style={{ height: 16, width: 16 }} /> },
+            { key: 'category', label: 'Category', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'status', label: 'Status', type: 'select', options: ['draft', 'published', 'archived'], icon: <Star style={{ height: 16, width: 16 }} /> },
+            { key: 'published_at', label: 'Published Date', type: 'datetime', icon: <Calendar style={{ height: 16, width: 16 }} /> }
           ],
           media: [
-            { key: 'image_url', label: 'Featured Image', type: 'url', icon: <Upload className="h-4 w-4" /> },
-            { key: 'source_url', label: 'Source URL', type: 'url', icon: <Globe className="h-4 w-4" /> }
+            { key: 'image_url', label: 'Featured Image', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> },
+            { key: 'source_url', label: 'Source URL', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> }
           ],
           settings: [
-            { key: 'is_featured', label: 'Featured Article', type: 'boolean', icon: <Star className="h-4 w-4" /> },
-            { key: 'views_count', label: 'Views', type: 'number', readonly: true, icon: <Eye className="h-4 w-4" /> },
-            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag className="h-4 w-4" /> }
+            { key: 'is_featured', label: 'Featured Article', type: 'boolean', icon: <Star style={{ height: 16, width: 16 }} /> },
+            { key: 'views_count', label: 'Views', type: 'number', readonly: true, icon: <Eye style={{ height: 16, width: 16 }} /> },
+            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> }
           ]
         };
 
       case 'tags':
         return {
           basic: [
-            { key: 'name', label: 'Tag Name', type: 'text', required: true, icon: <Tag className="h-4 w-4" /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'category', label: 'Category', type: 'text', icon: <Tag className="h-4 w-4" /> },
-            { key: 'slug', label: 'URL Slug', type: 'text', icon: <Globe className="h-4 w-4" /> }
+            { key: 'name', label: 'Tag Name', type: 'text', required: true, icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'category', label: 'Category', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'slug', label: 'URL Slug', type: 'text', icon: <Globe style={{ height: 16, width: 16 }} /> }
           ],
           appearance: [
-            { key: 'color', label: 'Tag Color', type: 'text', icon: <Star className="h-4 w-4" /> },
-            { key: 'image_url', label: 'Tag Image', type: 'url', icon: <Upload className="h-4 w-4" /> }
+            { key: 'color', label: 'Tag Color', type: 'text', icon: <Star style={{ height: 16, width: 16 }} /> },
+            { key: 'image_url', label: 'Tag Image', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> }
           ],
           metadata: [
-            { key: 'usage_count', label: 'Usage Count', type: 'number', readonly: true, icon: <Users className="h-4 w-4" /> },
-            { key: 'wikipedia_url', label: 'Wikipedia URL', type: 'url', icon: <Globe className="h-4 w-4" /> }
+            { key: 'usage_count', label: 'Usage Count', type: 'number', readonly: true, icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'wikipedia_url', label: 'Wikipedia URL', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> }
           ]
         };
 
       case 'cities':
         return {
           basic: [
-            { key: 'name', label: 'City Name', type: 'text', required: true, icon: <Building className="h-4 w-4" /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'region_name', label: 'Region', type: 'text', icon: <MapPin className="h-4 w-4" /> }
+            { key: 'name', label: 'City Name', type: 'text', required: true, icon: <Building style={{ height: 16, width: 16 }} /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'region_name', label: 'Region', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> }
           ],
           location: [
-            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'timezone', label: 'Timezone', type: 'text', icon: <Clock className="h-4 w-4" /> }
+            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'timezone', label: 'Timezone', type: 'text', icon: <Clock style={{ height: 16, width: 16 }} /> }
           ],
           details: [
-            { key: 'population', label: 'Population', type: 'number', icon: <Users className="h-4 w-4" /> },
-            { key: 'is_capital', label: 'Is Capital', type: 'boolean', icon: <Star className="h-4 w-4" /> },
-            { key: 'is_major_city', label: 'Is Major City', type: 'boolean', icon: <Star className="h-4 w-4" /> },
-            { key: 'image_url', label: 'City Image', type: 'url', icon: <Upload className="h-4 w-4" /> }
+            { key: 'population', label: 'Population', type: 'number', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'is_capital', label: 'Is Capital', type: 'boolean', icon: <Star style={{ height: 16, width: 16 }} /> },
+            { key: 'is_major_city', label: 'Is Major City', type: 'boolean', icon: <Star style={{ height: 16, width: 16 }} /> },
+            { key: 'image_url', label: 'City Image', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> }
           ]
         };
 
       case 'countries':
         return {
           basic: [
-            { key: 'name', label: 'Country Name', type: 'text', required: true, icon: <Globe className="h-4 w-4" /> },
-            { key: 'code', label: 'Country Code', type: 'text', icon: <Globe className="h-4 w-4" /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'capital', label: 'Capital City', type: 'text', icon: <Building className="h-4 w-4" /> }
+            { key: 'name', label: 'Country Name', type: 'text', required: true, icon: <Globe style={{ height: 16, width: 16 }} /> },
+            { key: 'code', label: 'Country Code', type: 'text', icon: <Globe style={{ height: 16, width: 16 }} /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'capital', label: 'Capital City', type: 'text', icon: <Building style={{ height: 16, width: 16 }} /> }
           ],
           details: [
-            { key: 'population', label: 'Population', type: 'number', icon: <Users className="h-4 w-4" /> },
-            { key: 'area_km2', label: 'Area (km²)', type: 'number', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'currency', label: 'Currency', type: 'text', icon: <Tag className="h-4 w-4" /> },
-            { key: 'languages', label: 'Languages', type: 'array', icon: <Globe className="h-4 w-4" /> }
+            { key: 'population', label: 'Population', type: 'number', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'area_km2', label: 'Area (km²)', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'currency', label: 'Currency', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'languages', label: 'Languages', type: 'array', icon: <Globe style={{ height: 16, width: 16 }} /> }
           ],
           location: [
-            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'timezone', label: 'Timezone', type: 'text', icon: <Clock className="h-4 w-4" /> }
+            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'timezone', label: 'Timezone', type: 'text', icon: <Clock style={{ height: 16, width: 16 }} /> }
           ]
         };
 
       case 'marketplace_listings':
         return {
           basic: [
-            { key: 'title', label: 'Listing Title', type: 'text', required: true, icon: <Tag className="h-4 w-4" /> },
-            { key: 'business_name', label: 'Business Name', type: 'text', icon: <Building className="h-4 w-4" /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag className="h-4 w-4" /> },
-            { key: 'category', label: 'Category', type: 'text', icon: <Tag className="h-4 w-4" /> }
+            { key: 'title', label: 'Listing Title', type: 'text', required: true, icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'business_name', label: 'Business Name', type: 'text', icon: <Building style={{ height: 16, width: 16 }} /> },
+            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'category', label: 'Category', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> }
           ],
           pricing: [
-            { key: 'price', label: 'Price', type: 'number', icon: <Tag className="h-4 w-4" /> },
-            { key: 'currency', label: 'Currency', type: 'text', icon: <Tag className="h-4 w-4" /> },
-            { key: 'business_type', label: 'Business Type', type: 'text', icon: <Building className="h-4 w-4" /> }
+            { key: 'price', label: 'Price', type: 'number', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'currency', label: 'Currency', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> },
+            { key: 'business_type', label: 'Business Type', type: 'text', icon: <Building style={{ height: 16, width: 16 }} /> }
           ],
           contact: [
-            { key: 'contact_email', label: 'Contact Email', type: 'email', icon: <Users className="h-4 w-4" /> },
-            { key: 'contact_phone', label: 'Contact Phone', type: 'tel', icon: <Users className="h-4 w-4" /> },
-            { key: 'website', label: 'Website', type: 'url', icon: <Globe className="h-4 w-4" /> }
+            { key: 'contact_email', label: 'Contact Email', type: 'email', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'contact_phone', label: 'Contact Phone', type: 'tel', icon: <Users style={{ height: 16, width: 16 }} /> },
+            { key: 'website', label: 'Website', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> }
           ],
           details: [
-            { key: 'location', label: 'Location', type: 'text', icon: <MapPin className="h-4 w-4" /> },
-            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'pending'], icon: <Star className="h-4 w-4" /> },
-            { key: 'images', label: 'Images', type: 'array', icon: <Upload className="h-4 w-4" /> }
+            { key: 'location', label: 'Location', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
+            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'pending'], icon: <Star style={{ height: 16, width: 16 }} /> },
+            { key: 'images', label: 'Images', type: 'array', icon: <Upload style={{ height: 16, width: 16 }} /> }
           ]
         };
 
@@ -407,7 +409,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             key, 
             label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
             type: 'auto', 
-            icon: <Tag className="h-4 w-4" /> 
+            icon: <Tag style={{ height: 16, width: 16 }} /> 
           }));
         }
         
@@ -416,7 +418,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             key, 
             label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
             type: 'auto', 
-            icon: <MapPin className="h-4 w-4" /> 
+            icon: <MapPin style={{ height: 16, width: 16 }} /> 
           }));
         }
         
@@ -425,7 +427,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             key, 
             label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
             type: 'auto', 
-            icon: <Users className="h-4 w-4" /> 
+            icon: <Users style={{ height: 16, width: 16 }} /> 
           }));
         }
         
@@ -434,7 +436,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             key, 
             label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
             type: 'auto', 
-            icon: <Upload className="h-4 w-4" /> 
+            icon: <Upload style={{ height: 16, width: 16 }} /> 
           }));
         }
         
@@ -443,7 +445,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             key, 
             label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
             type: 'auto', 
-            icon: <Calendar className="h-4 w-4" /> 
+            icon: <Calendar style={{ height: 16, width: 16 }} /> 
           }));
         }
         
@@ -452,7 +454,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             key, 
             label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
             type: 'auto', 
-            icon: <Tag className="h-4 w-4" /> 
+            icon: <Tag style={{ height: 16, width: 16 }} /> 
           }));
         }
         
@@ -461,7 +463,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             key, 
             label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
             type: 'auto', 
-            icon: <Star className="h-4 w-4" />,
+            icon: <Star style={{ height: 16, width: 16 }} />,
             readonly: true // Stats are usually read-only
           }));
         }
@@ -471,7 +473,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             key, 
             label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
             type: 'auto', 
-            icon: <Tag className="h-4 w-4" /> 
+            icon: <Tag style={{ height: 16, width: 16 }} /> 
           }));
         }
         
@@ -481,7 +483,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             key, 
             label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
             type: 'auto', 
-            icon: <Tag className="h-4 w-4" /> 
+            icon: <Tag style={{ height: 16, width: 16 }} /> 
           }));
         }
         
@@ -495,13 +497,13 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
     if (readonly) {
       return (
-        <div key={key} className="space-y-2">
-          <Label className="flex items-center gap-2">
+        <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Label sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {icon}
             {label}
-            <Badge variant="secondary" className="text-xs">Read-only</Badge>
+            <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>Read-only</Badge>
           </Label>
-          <div className="px-3 py-2 bg-muted rounded-md text-sm">
+          <div sx={{ px: 1.5, py: 1, bgcolor: 'action.hover', borderRadius: 1, fontSize: '0.875rem' }}>
             {fieldValue?.toLocaleString() || 'N/A'}
           </div>
         </div>
@@ -514,11 +516,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         // Special handling for profession field
         if (key === 'profession') {
           return (
-            <div key={key} className="space-y-2">
-              <Label htmlFor={key} className="flex items-center gap-2">
+            <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {icon}
                 {label}
-                {required && <span className="text-destructive">*</span>}
+                {required && <span sx={{ color: 'error.main' }}>*</span>}
               </Label>
               <ProfessionAutocomplete
                 id={key}
@@ -534,11 +536,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         // Special handling for nationality field
         if (key === 'nationality') {
           return (
-            <div key={key} className="space-y-2">
-              <Label htmlFor={key} className="flex items-center gap-2">
+            <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {icon}
                 {label}
-                {required && <span className="text-destructive">*</span>}
+                {required && <span sx={{ color: 'error.main' }}>*</span>}
               </Label>
               <CountryAutocomplete
                 id={key}
@@ -552,11 +554,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         }
         
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Input
               id={key}
@@ -569,17 +571,17 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
       case 'textarea':
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Textarea
               id={key}
               value={fieldValue || ''}
               onChange={(e) => handleFieldChange(key, e.target.value)}
-              className="min-h-24"
+              sx={{ minHeight: 96 }}
               required={required}
             />
           </div>
@@ -587,11 +589,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
       case 'number':
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Input
               id={key}
@@ -605,11 +607,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
       case 'email':
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Input
               id={key}
@@ -623,11 +625,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
       case 'tel':
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Input
               id={key}
@@ -643,7 +645,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         // Special handling for image URLs
         if (key === 'image_url' || key.includes('image')) {
           return (
-            <div key={key} className="space-y-2">
+            <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <ImageUpload
                 id={key}
                 value={fieldValue || ''}
@@ -657,11 +659,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         }
         
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Input
               id={key}
@@ -675,11 +677,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
       case 'date':
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Input
               id={key}
@@ -693,11 +695,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
       case 'datetime':
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Input
               id={key}
@@ -711,13 +713,13 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
       case 'boolean':
         return (
-          <div key={key} className="flex items-center space-x-2">
+          <div key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Switch
               id={key}
               checked={fieldValue || false}
               onCheckedChange={(checked) => handleFieldChange(key, checked)}
             />
-            <Label htmlFor={key} className="flex items-center gap-2">
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
             </Label>
@@ -726,19 +728,19 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
       case 'select':
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Select value={fieldValue || ''} onValueChange={(value) => handleFieldChange(key, value)}>
               <SelectTrigger>
                 <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
               </SelectTrigger>
-              <SelectContent className="bg-background border border-border shadow-lg z-50">
+              <SelectContent sx={{ bgcolor: 'background.default', border: 1, borderColor: 'divider', boxShadow: 6, zIndex: 50 }}>
                 {options?.filter((option: string) => option && option.trim() !== '').map((option: string) => (
-                  <SelectItem key={option} value={option} className="capitalize">
+                  <SelectItem key={option} value={option} sx={{ textTransform: 'capitalize' }}>
                     {option.replace(/_/g, ' ')}
                   </SelectItem>
                 ))}
@@ -773,11 +775,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         }
         
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Textarea
               id={key}
@@ -787,10 +789,10 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
                 handleFieldChange(key, items);
               }}
               placeholder="Enter comma-separated values"
-              className="min-h-24"
+              sx={{ minHeight: 96 }}
             />
             {displayValue && (
-              <div className="text-xs text-muted-foreground">
+              <div sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                 Current: {displayValue.split(',').length} item(s)
               </div>
             )}
@@ -818,11 +820,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         }
         
         return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key} className="flex items-center gap-2">
+          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span className="text-destructive">*</span>}
+              {required && <span sx={{ color: 'error.main' }}>*</span>}
             </Label>
             <Textarea
               id={key}
@@ -836,11 +838,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
                   handleFieldChange(key, e.target.value);
                 }
               }}
-              className="min-h-24 font-mono text-sm"
+              sx={{ minHeight: 96, fontFamily: 'monospace', fontSize: '0.875rem' }}
               placeholder="Enter JSON data"
             />
             {jsonDisplayValue && (
-              <div className="text-xs text-muted-foreground">
+              <div sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                 {jsonDisplayValue.length > 100 ? `${jsonDisplayValue.length} characters` : 'Valid JSON'}
               </div>
             )}
@@ -886,10 +888,10 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
   if (!content) {
     return (
       <Card>
-        <CardContent className="p-8 text-center">
-          <p className="text-muted-foreground">No content selected for editing</p>
-          <Button onClick={onClose} className="mt-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+        <CardContent sx={{ p: 4, textAlign: 'center' }}>
+          <p style={{ color: 'var(--muted-foreground)' }}>No content selected for editing</p>
+          <Button onClick={onClose} sx={{ mt: 2 }}>
+            <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
             Back
           </Button>
         </CardContent>
@@ -898,46 +900,46 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
   }
 
   return (
-    <div className="space-y-6">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button variant="ghost" onClick={onClose}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
             Back
           </Button>
-          <div className="flex items-center gap-3">
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {content.image_url && (
-              <Avatar className="h-12 w-12">
+              <Avatar style={{ height: 48, width: 48 }}>
                 <AvatarImage src={content.image_url} alt={content.title} />
                 <AvatarFallback>
-                  {content.content_type === 'events' && <Calendar className="h-6 w-6" />}
-                  {content.content_type === 'venues' && <Building className="h-6 w-6" />}
-                  {content.content_type === 'personalities' && <User className="h-6 w-6" />}
-                  {content.content_type === 'community_groups' && <Users className="h-6 w-6" />}
-                  {content.content_type === 'community_posts' && <Tag className="h-6 w-6" />}
+                  {content.content_type === 'events' && <Calendar style={{ height: 24, width: 24 }} />}
+                  {content.content_type === 'venues' && <Building style={{ height: 24, width: 24 }} />}
+                  {content.content_type === 'personalities' && <User style={{ height: 24, width: 24 }} />}
+                  {content.content_type === 'community_groups' && <Users style={{ height: 24, width: 24 }} />}
+                  {content.content_type === 'community_posts' && <Tag style={{ height: 24, width: 24 }} />}
                 </AvatarFallback>
               </Avatar>
             )}
             <div>
-              <h1 className="text-2xl font-bold">{content.title || content.name || 'Edit Content'}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="capitalize">
+              <h1 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{content.title || content.name || 'Edit Content'}</h1>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
                   {content.content_type.replace('_', ' ')}
                 </Badge>
-                <span className="text-sm text-muted-foreground">ID: {content.id}</span>
+                <span sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>ID: {content.id}</span>
               </div>
             </div>
           </div>
         </div>
         
-        <div className="flex gap-2">
+        <div sx={{ display: 'flex', gap: 1 }}>
           <Button variant="outline" disabled>
-            <Eye className="h-4 w-4 mr-2" />
+            <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
             Preview
           </Button>
           <Button onClick={handleSave} disabled={loading}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save style={{ height: 16, width: 16, marginRight: 8 }} />
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
@@ -946,8 +948,8 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       <Separator />
 
       {/* Content Form with Tabs */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3">
+      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
+        <div sx={{ gridColumn: { lg: 'span 3' } }}>
           <Card>
             <CardHeader>
               <CardTitle>Content Details</CardTitle>
@@ -957,27 +959,27 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList sx={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
                   {tabs.map(tab => (
-                    <TabsTrigger key={tab} value={tab} className="capitalize">
-                      {tab === 'basic' && <Tag className="h-4 w-4 mr-2" />}
-                      {tab === 'datetime' && <Clock className="h-4 w-4 mr-2" />}
-                      {tab === 'location' && <MapPin className="h-4 w-4 mr-2" />}
-                      {tab === 'contact' && <Users className="h-4 w-4 mr-2" />}
-                      {tab === 'details' && <Star className="h-4 w-4 mr-2" />}
-                      {tab === 'personal' && <User className="h-4 w-4 mr-2" />}
-                      {tab === 'media' && <Upload className="h-4 w-4 mr-2" />}
-                      {tab === 'metadata' && <Tag className="h-4 w-4 mr-2" />}
-                      {tab === 'settings' && <Star className="h-4 w-4 mr-2" />}
-                      {tab === 'engagement' && <Users className="h-4 w-4 mr-2" />}
+                    <TabsTrigger key={tab} value={tab} sx={{ textTransform: 'capitalize' }}>
+                      {tab === 'basic' && <Tag style={{ height: 16, width: 16, marginRight: 8 }} />}
+                      {tab === 'datetime' && <Clock style={{ height: 16, width: 16, marginRight: 8 }} />}
+                      {tab === 'location' && <MapPin style={{ height: 16, width: 16, marginRight: 8 }} />}
+                      {tab === 'contact' && <Users style={{ height: 16, width: 16, marginRight: 8 }} />}
+                      {tab === 'details' && <Star style={{ height: 16, width: 16, marginRight: 8 }} />}
+                      {tab === 'personal' && <User style={{ height: 16, width: 16, marginRight: 8 }} />}
+                      {tab === 'media' && <Upload style={{ height: 16, width: 16, marginRight: 8 }} />}
+                      {tab === 'metadata' && <Tag style={{ height: 16, width: 16, marginRight: 8 }} />}
+                      {tab === 'settings' && <Star style={{ height: 16, width: 16, marginRight: 8 }} />}
+                      {tab === 'engagement' && <Users style={{ height: 16, width: 16, marginRight: 8 }} />}
                       {tab.replace('_', ' ')}
                     </TabsTrigger>
                   ))}
                 </TabsList>
 
                 {tabs.map(tab => (
-                  <TabsContent key={tab} value={tab} className="space-y-4 mt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <TabsContent key={tab} value={tab} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 3 }}>
+                    <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                       {fieldGroups[tab]?.map(field => renderField(field))}
                     </div>
                   </TabsContent>
@@ -987,38 +989,38 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Content Info */}
           <Card>
             <CardHeader>
               <CardTitle>Content Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div>
-                <Label className="text-sm font-medium">Content Type</Label>
-                <p className="text-sm text-muted-foreground capitalize">
+                <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Content Type</Label>
+                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', textTransform: 'capitalize' }}>
                   {content.content_type.replace('_', ' ')}
                 </p>
               </div>
               
               <div>
-                <Label className="text-sm font-medium">Created</Label>
-                <p className="text-sm text-muted-foreground">
+                <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Created</Label>
+                <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                   {new Date(content.created_at).toLocaleString()}
                 </p>
               </div>
               
               <div>
-                <Label className="text-sm font-medium">Last Updated</Label>
-                <p className="text-sm text-muted-foreground">
+                <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Last Updated</Label>
+                <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                   {new Date(content.updated_at).toLocaleString()}
                 </p>
               </div>
 
               {content.status && (
                 <div>
-                  <Label className="text-sm font-medium">Status</Label>
-                  <Badge className="ml-2" variant={content.status === 'active' ? 'default' : 'secondary'}>
+                  <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Status</Label>
+                  <Badge sx={{ ml: 1 }} variant={content.status === 'active' ? 'default' : 'secondary'}>
                     {content.status}
                   </Badge>
                 </div>
@@ -1031,17 +1033,17 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full" disabled>
-                <Eye className="h-4 w-4 mr-2" />
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Button variant="outline" size="sm" sx={{ width: '100%' }} disabled>
+                <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
                 View Public Page
               </Button>
-              <Button variant="outline" size="sm" className="w-full" disabled>
-                <Upload className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" sx={{ width: '100%' }} disabled>
+                <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
                 Upload Media
               </Button>
-              <Button variant="outline" size="sm" className="w-full text-destructive" disabled>
-                <Trash2 className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" sx={{ width: '100%', color: 'error.main' }} disabled>
+                <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
                 Delete Content
               </Button>
             </CardContent>
@@ -1056,8 +1058,8 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-48">
-                <pre className="text-xs bg-muted p-2 rounded overflow-auto">
+              <ScrollArea sx={{ height: 192 }}>
+                <pre sx={{ fontSize: '0.75rem', bgcolor: 'action.hover', p: 1, borderRadius: 1, overflow: 'auto' }}>
                   {JSON.stringify(content, null, 2)}
                 </pre>
               </ScrollArea>

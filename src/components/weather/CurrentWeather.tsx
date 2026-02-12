@@ -81,18 +81,18 @@ export function CurrentWeather({ latitude, longitude, cityName, className }: Cur
     const code = iconCode?.substring(0, 2);
     switch (code) {
       case '01':
-        return <Sun className="h-8 w-8 text-yellow-500" />;
+        return <Sun style={{ height: 32, width: 32, color: '#eab308' }} />;
       case '02':
       case '03':
       case '04':
-        return <Cloud className="h-8 w-8 text-gray-500" />;
+        return <Cloud style={{ height: 32, width: 32, color: '#6b7280' }} />;
       case '09':
       case '10':
-        return <CloudRain className="h-8 w-8 text-blue-500" />;
+        return <CloudRain style={{ height: 32, width: 32, color: '#3b82f6' }} />;
       case '13':
-        return <CloudSnow className="h-8 w-8 text-blue-200" />;
+        return <CloudSnow style={{ height: 32, width: 32, color: '#bfdbfe' }} />;
       default:
-        return <Sun className="h-8 w-8 text-yellow-500" />;
+        return <Sun style={{ height: 32, width: 32, color: '#eab308' }} />;
     }
   };
 
@@ -100,14 +100,14 @@ export function CurrentWeather({ latitude, longitude, cityName, className }: Cur
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Thermometer className="h-5 w-5 text-primary" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Thermometer style={{ height: 20, width: 20, color: 'var(--primary)' }} />
             Current Weather
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="text-muted-foreground">Loading weather data...</div>
+          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
+            <div style={{ color: 'var(--muted-foreground)' }}>Loading weather data...</div>
           </div>
         </CardContent>
       </Card>
@@ -123,60 +123,60 @@ export function CurrentWeather({ latitude, longitude, cityName, className }: Cur
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Thermometer className="h-5 w-5 text-primary" />
+        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Thermometer style={{ height: 20, width: 20, color: 'var(--primary)' }} />
           Current Weather
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {/* Main weather display */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {getWeatherIcon(current.icon)}
             <div>
-              <div className="text-3xl font-bold">{Math.round(current.temp)}°C</div>
-              <div className="text-sm text-muted-foreground capitalize">
+              <div sx={{ fontSize: '1.875rem', fontWeight: 700 }}>{Math.round(current.temp)}°C</div>
+              <div sx={{ fontSize: '0.875rem', color: 'text.secondary', textTransform: 'capitalize' }}>
                 {current.description}
               </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-sm text-muted-foreground">Feels like</div>
-            <div className="text-lg font-semibold">{Math.round(current.feels_like)}°C</div>
+          <div sx={{ textAlign: 'right' }}>
+            <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Feels like</div>
+            <div sx={{ fontSize: '1.125rem', fontWeight: 600 }}>{Math.round(current.feels_like)}°C</div>
           </div>
         </div>
 
         {/* Weather details */}
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-          <div className="flex items-center gap-2">
-            <Droplets className="h-4 w-4 text-blue-500" />
+        <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Droplets style={{ height: 16, width: 16, color: '#3b82f6' }} />
             <div>
-              <div className="text-sm text-muted-foreground">Humidity</div>
-              <div className="font-semibold">{current.humidity}%</div>
+              <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Humidity</div>
+              <div sx={{ fontWeight: 600 }}>{current.humidity}%</div>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Wind className="h-4 w-4 text-gray-500" />
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Wind style={{ height: 16, width: 16, color: '#6b7280' }} />
             <div>
-              <div className="text-sm text-muted-foreground">Wind</div>
-              <div className="font-semibold">{current.windSpeed} m/s</div>
+              <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Wind</div>
+              <div sx={{ fontWeight: 600 }}>{current.windSpeed} m/s</div>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-gray-500" />
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Eye style={{ height: 16, width: 16, color: '#6b7280' }} />
             <div>
-              <div className="text-sm text-muted-foreground">Visibility</div>
-              <div className="font-semibold">{(current.visibility / 1000).toFixed(1)} km</div>
+              <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Visibility</div>
+              <div sx={{ fontWeight: 600 }}>{(current.visibility / 1000).toFixed(1)} km</div>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Thermometer className="h-4 w-4 text-gray-500" />
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Thermometer style={{ height: 16, width: 16, color: '#6b7280' }} />
             <div>
-              <div className="text-sm text-muted-foreground">Pressure</div>
-              <div className="font-semibold">{current.pressure} hPa</div>
+              <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Pressure</div>
+              <div sx={{ fontWeight: 600 }}>{current.pressure} hPa</div>
             </div>
           </div>
         </div>

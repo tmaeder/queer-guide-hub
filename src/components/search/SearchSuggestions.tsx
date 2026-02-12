@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { CommandGroup, CommandItem, CommandSeparator } from "@/components/ui/command";
 import { Search } from "lucide-react";
 import { SearchSuggestion } from "@/hooks/useSearchSuggestions";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface SearchSuggestionsProps {
   suggestions: SearchSuggestion[];
@@ -10,19 +12,19 @@ interface SearchSuggestionsProps {
   onSelectSuggestion: (suggestion: SearchSuggestion) => void;
 }
 
-export function SearchSuggestions({ 
-  suggestions, 
-  loading, 
-  query, 
-  onSelectSuggestion 
+export function SearchSuggestions({
+  suggestions,
+  loading,
+  query,
+  onSelectSuggestion
 }: SearchSuggestionsProps) {
   if (loading && query.length >= 2) {
     return (
       <>
         <CommandSeparator />
         <CommandGroup heading="Searching...">
-          <CommandItem disabled className="text-muted-foreground">
-            <Search className="h-4 w-4 mr-2 animate-spin" />
+          <CommandItem disabled sx={{ color: 'text.secondary' }}>
+            <Search style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
             Finding results...
           </CommandItem>
         </CommandGroup>
@@ -42,23 +44,23 @@ export function SearchSuggestions({
           const Icon = suggestion.icon;
           const displayName = suggestion.name || suggestion.title;
           const subtitle = suggestion.subtitle;
-          
+
           return (
             <CommandItem
               key={`${suggestion.type}-${suggestion.id}`}
               onSelect={() => onSelectSuggestion(suggestion)}
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              sx={{ cursor: 'pointer' }}
             >
-              <Icon className="h-4 w-4 mr-3 text-muted-foreground flex-shrink-0" />
-              <div className="flex flex-col items-start flex-1 min-w-0">
-                <span className="font-medium text-sm truncate w-full">{displayName}</span>
+              <Box component={Icon} sx={{ height: 16, width: 16, mr: 1.5, color: 'text.secondary', flexShrink: 0 }} />
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{displayName}</Typography>
                 {subtitle && (
-                  <span className="text-xs text-muted-foreground truncate w-full">{subtitle}</span>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{subtitle}</Typography>
                 )}
-              </div>
-              <Badge 
-                variant="outline" 
-                className="ml-2 text-xs capitalize bg-background/50 border-muted flex-shrink-0"
+              </Box>
+              <Badge
+                variant="outline"
+                sx={{ ml: 1, fontSize: '0.75rem', textTransform: 'capitalize', flexShrink: 0 }}
               >
                 {suggestion.type}
               </Badge>

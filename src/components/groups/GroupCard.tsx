@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Lock, Globe, UserPlus, UserMinus, Settings, ExternalLink } from "lucide-react";
 import { Group } from "@/hooks/useGroups";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 interface GroupCardProps {
   group: Group;
@@ -15,135 +17,169 @@ interface GroupCardProps {
   isLeaving?: boolean;
 }
 
-export const GroupCard = ({ 
-  group, 
-  onJoin, 
-  onLeave, 
-  onManage, 
-  isJoining, 
-  isLeaving 
+export const GroupCard = ({
+  group,
+  onJoin,
+  onLeave,
+  onManage,
+  isJoining,
+  isLeaving
 }: GroupCardProps) => {
   const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
 
   return (
-    <Card className="group hover:shadow-elegant transition-all duration-300">
-      <CardHeader className="pb-3">
-        <div className="flex items-start gap-3">
-          <Avatar className="h-12 w-12">
-            <AvatarImage 
-              src={group.image_url || undefined}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${group.name}`;
+    <Card sx={{ '&:hover': { boxShadow: 3 }, transition: 'all 0.3s' }}>
+        <CardHeader>
+          <Box sx={{ pb: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <Avatar>
+                <AvatarImage
+                  src={group.image_url || undefined}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${group.name}`;
+                  }}
+                />
+                <AvatarFallback>
+                  {group.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                  <Link to={`/groups/${group.id}`} style={{ flex: 1 }}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        fontWeight: 600,
+                        overflow: 'hidden',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 1,
+                        WebkitBoxOrient: 'vertical',
+                        '&:hover': { textDecoration: 'underline' },
+                      }}
+                    >
+                      {group.name}
+                    </Typography>
+                  </Link>
+                  {group.is_private ? (
+                    <Lock style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+                  ) : (
+                    <Globe style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+                  )}
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Users style={{ width: 12, height: 12 }} />
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>{group.member_count}</Typography>
+                    <Typography variant="body2" color="text.secondary">members</Typography>
+                  </Box>
+                  {group.member_count > 0 && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          bgcolor: 'success.main',
+                          borderRadius: '50%',
+                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        }}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        {Math.floor(group.member_count * 0.3)} active
+                      </Typography>
+                    </Box>
+                  )}
+                  {group.user_role && (
+                    <Badge variant="secondary">
+                      <Typography variant="caption">{group.user_role}</Typography>
+                    </Badge>
+                  )}
+                </Box>
+              </Box>
+
+              {canManage && onManage && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onManage(group)}
+                  aria-label="Manage group settings"
+                  sx={{ opacity: 0, transition: 'opacity 0.2s' }}
+                >
+                  <Settings style={{ width: 16, height: 16 }} />
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </CardHeader>
+
+        <CardContent>
+          {group.description && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                mb: 2,
               }}
-            />
-            <AvatarFallback className="bg-gradient-primary text-primary-foreground">
-              {group.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Link to={`/groups/${group.id}`} className="flex-1">
-                <CardTitle className="text-lg line-clamp-1 group-hover:text-primary transition-colors hover:underline">
-                  {group.name}
-                </CardTitle>
-              </Link>
-              {group.is_private ? (
-                <Lock className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <Globe className="h-4 w-4 text-muted-foreground" />
-              )}
-            </div>
-            
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
-                <span className="font-medium text-foreground">{group.member_count}</span>
-                <span>members</span>
-              </div>
-              {group.member_count > 0 && (
-                <div className="flex items-center gap-1">
-                  <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-xs">{Math.floor(group.member_count * 0.3)} active</span>
-                </div>
-              )}
-              {group.user_role && (
-                <Badge variant="secondary" className="text-xs">
-                  {group.user_role}
+            >
+              {group.description}
+            </Typography>
+          )}
+
+          {group.tags && group.tags.length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+              {group.tags.slice(0, 3).map((tag) => (
+                <Badge key={tag} variant="outline">
+                  <Typography variant="caption">{tag}</Typography>
+                </Badge>
+              ))}
+              {group.tags.length > 3 && (
+                <Badge variant="outline">
+                  <Typography variant="caption">+{group.tags.length - 3} more</Typography>
                 </Badge>
               )}
-            </div>
-          </div>
-
-          {canManage && onManage && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onManage(group)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-              aria-label="Manage group settings"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
+            </Box>
           )}
-        </div>
-      </CardHeader>
 
-      <CardContent className="pt-0">
-        {group.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-            {group.description}
-          </p>
-        )}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button asChild variant="ghost" size="sm" sx={{ flex: 1 }}>
+              <Link to={`/groups/${group.id}`}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                  View Group
+                </Box>
+              </Link>
+            </Button>
 
-        {group.tags && group.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
-            {group.tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {group.tags.length > 3 && (
-              <Badge variant="outline" className="text-xs">
-                +{group.tags.length - 3} more
-              </Badge>
+            {!group.is_member ? (
+              <Button
+                onClick={() => onJoin?.(group.id)}
+                disabled={isJoining}
+                size="sm"
+                sx={{ flex: 1 }}
+              >
+                <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
+                {isJoining ? "Joining..." : "Join"}
+              </Button>
+            ) : (
+              <Button
+                onClick={() => onLeave?.(group.id)}
+                disabled={isLeaving}
+                variant="outline"
+                size="sm"
+                sx={{ flex: 1 }}
+              >
+                <UserMinus style={{ width: 16, height: 16, marginRight: 8 }} />
+                {isLeaving ? "Leaving..." : "Leave"}
+              </Button>
             )}
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          <Button asChild variant="ghost" size="sm" className="flex-1">
-            <Link to={`/groups/${group.id}`} className="flex items-center">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              View Group
-            </Link>
-          </Button>
-          
-          {!group.is_member ? (
-            <Button
-              onClick={() => onJoin?.(group.id)}
-              disabled={isJoining}
-              className="flex-1 bg-gradient-primary hover:opacity-90"
-              size="sm"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              {isJoining ? "Joining..." : "Join"}
-            </Button>
-          ) : (
-            <Button
-              onClick={() => onLeave?.(group.id)}
-              disabled={isLeaving}
-              variant="outline"
-              className="flex-1"
-              size="sm"
-            >
-              <UserMinus className="h-4 w-4 mr-2" />
-              {isLeaving ? "Leaving..." : "Leave"}
-            </Button>
-          )}
-        </div>
-      </CardContent>
+          </Box>
+        </CardContent>
     </Card>
   );
 };

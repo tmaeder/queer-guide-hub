@@ -11,18 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
   ArrowLeft,
   ShoppingBag,
   DollarSign,
@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 export default function AdminMarketplace() {
   const navigate = useNavigate();
@@ -75,7 +77,7 @@ export default function AdminMarketplace() {
   });
 
   const categories = [
-    "food_beverage", "retail", "services", "health_wellness", 
+    "food_beverage", "retail", "services", "health_wellness",
     "entertainment", "technology", "fashion", "home_garden", "other"
   ];
 
@@ -104,7 +106,7 @@ export default function AdminMarketplace() {
     let filtered = listings;
 
     if (searchQuery) {
-      filtered = filtered.filter(listing => 
+      filtered = filtered.filter(listing =>
         listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         listing.business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         listing.description?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -129,7 +131,7 @@ export default function AdminMarketplace() {
       };
 
       const { error } = await createListing(listingData);
-      
+
       if (error) throw new Error(error);
 
       toast({
@@ -175,7 +177,7 @@ export default function AdminMarketplace() {
     setIsImporting(true);
     try {
       console.log("Starting Awin import with params:", importParams);
-      
+
       const { data, error } = await supabase.functions.invoke('import-awin-products', {
         body: importParams
       });
@@ -193,7 +195,7 @@ export default function AdminMarketplace() {
       setIsAwinImportOpen(false);
       // Refresh listings
       window.location.reload();
-      
+
     } catch (error) {
       console.error("Import error:", error);
       toast({
@@ -208,44 +210,44 @@ export default function AdminMarketplace() {
 
   if (rolesLoading || loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">Loading...</div>
-      </div>
+      <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+        <Box sx={{ textAlign: 'center' }}>Loading...</Box>
+      </Box>
     );
   }
 
   return (
-    <div className="w-full p-6">
+    <Box sx={{ width: '100%', p: 3 }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button variant="outline" onClick={() => navigate("/admin")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
             Back to Dashboard
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Marketplace Management</h1>
-            <p className="text-muted-foreground">Manage marketplace listings and products</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>Marketplace Management</Typography>
+            <Typography sx={{ color: 'var(--muted-foreground)' }}>Manage marketplace listings and products</Typography>
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Dialog open={isAwinImportOpen} onOpenChange={setIsAwinImportOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
+                <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                 Import from Awin
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent style={{ maxWidth: 672 }}>
               <DialogHeader>
                 <DialogTitle>Import Products from Awin CSV Feed</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
                   Import products from Awin CSV data feeds. Leave CSV URL blank to use the default feed with your API credentials.
-                </p>
-                
-                <div>
+                </Typography>
+
+                <Box>
                   <Label htmlFor="awin-csv-url">Custom CSV Feed URL (Optional)</Label>
                   <Input
                     id="awin-csv-url"
@@ -253,13 +255,13 @@ export default function AdminMarketplace() {
                     value={importParams.csvUrl}
                     onChange={(e) => setImportParams(prev => ({ ...prev, csvUrl: e.target.value }))}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <Typography sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', mt: 0.5 }}>
                     Leave blank to use default Awin CSV feed with your API credentials
-                  </p>
-                </div>
+                  </Typography>
+                </Box>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="awin-max-products">Max Products</Label>
                     <Input
                       id="awin-max-products"
@@ -269,8 +271,8 @@ export default function AdminMarketplace() {
                       value={importParams.maxProducts}
                       onChange={(e) => setImportParams(prev => ({ ...prev, maxProducts: parseInt(e.target.value) || 1000 }))}
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="awin-skip-rows">Skip Rows</Label>
                     <Input
                       id="awin-skip-rows"
@@ -279,8 +281,8 @@ export default function AdminMarketplace() {
                       value={importParams.skipRows}
                       onChange={(e) => setImportParams(prev => ({ ...prev, skipRows: parseInt(e.target.value) || 0 }))}
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="awin-batch-size">Batch Size</Label>
                     <Input
                       id="awin-batch-size"
@@ -290,21 +292,21 @@ export default function AdminMarketplace() {
                       value={importParams.batchSize}
                       onChange={(e) => setImportParams(prev => ({ ...prev, batchSize: parseInt(e.target.value) || 100 }))}
                     />
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
-                <div className="bg-muted p-4 rounded-lg space-y-2">
-                  <h4 className="font-medium">Import Process:</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
+                <Box sx={{ bgcolor: 'var(--muted)', p: 2, borderRadius: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography sx={{ fontWeight: 500 }}>Import Process:</Typography>
+                  <Box component="ul" sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <li>• Downloads and decompresses gzipped CSV feed</li>
                     <li>• Processes products in batches to avoid timeouts</li>
                     <li>• Maps Awin categories to marketplace categories</li>
                     <li>• Preserves all original Awin metadata</li>
                     <li>• Supports multiple product images</li>
-                  </ul>
-                </div>
+                  </Box>
+                </Box>
 
-                <div className="flex justify-end gap-2 pt-4">
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
                   <Button
                     variant="outline"
                     onClick={() => setIsAwinImportOpen(false)}
@@ -318,38 +320,38 @@ export default function AdminMarketplace() {
                   >
                     {isImporting ? (
                       <>
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        <RefreshCw style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
                         Importing...
                       </>
                     ) : (
                       <>
-                        <Download className="h-4 w-4 mr-2" />
+                        <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                         Import CSV Feed
                       </>
                     )}
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
             </DialogContent>
           </Dialog>
-          
+
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={resetForm}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
                 Create Listing
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent style={{ maxWidth: 896, maxHeight: '90vh', overflowY: 'auto' }}>
             <DialogHeader>
               <DialogTitle>Create New Listing</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               {/* Basic Info */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Basic Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Basic Information</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="title">Listing Title</Label>
                     <Input
                       id="title"
@@ -357,8 +359,8 @@ export default function AdminMarketplace() {
                       onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                       required
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="business_name">Business Name</Label>
                     <Input
                       id="business_name"
@@ -366,10 +368,10 @@ export default function AdminMarketplace() {
                       onChange={(e) => setFormData(prev => ({ ...prev, business_name: e.target.value }))}
                       required
                     />
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
-                <div>
+                <Box>
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
@@ -377,10 +379,10 @@ export default function AdminMarketplace() {
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     rows={3}
                   />
-                </div>
+                </Box>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="category">Category</Label>
                     <Select
                       value={formData.category}
@@ -397,8 +399,8 @@ export default function AdminMarketplace() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="subcategory">Subcategory</Label>
                     <Input
                       id="subcategory"
@@ -406,8 +408,8 @@ export default function AdminMarketplace() {
                       onChange={(e) => setFormData(prev => ({ ...prev, subcategory: e.target.value }))}
                       placeholder="Optional"
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="business_type">Business Type</Label>
                     <Select
                       value={formData.business_type}
@@ -424,15 +426,15 @@ export default function AdminMarketplace() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
-              </div>
+                  </Box>
+                </Box>
+              </Box>
 
               {/* Pricing */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Pricing</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Pricing</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="price">Price</Label>
                     <Input
                       id="price"
@@ -441,8 +443,8 @@ export default function AdminMarketplace() {
                       value={formData.price}
                       onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="price_type">Price Type</Label>
                     <Select
                       value={formData.price_type}
@@ -459,8 +461,8 @@ export default function AdminMarketplace() {
                         <SelectItem value="negotiable">Negotiable</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="currency">Currency</Label>
                     <Select
                       value={formData.currency}
@@ -476,23 +478,23 @@ export default function AdminMarketplace() {
                         <SelectItem value="CAD">CAD</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
-              </div>
+                  </Box>
+                </Box>
+              </Box>
 
               {/* Contact & Location */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Contact & Location</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Contact & Location</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="contact_phone">Phone</Label>
                     <Input
                       id="contact_phone"
                       value={formData.contact_phone}
                       onChange={(e) => setFormData(prev => ({ ...prev, contact_phone: e.target.value }))}
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="contact_email">Email</Label>
                     <Input
                       id="contact_email"
@@ -500,18 +502,18 @@ export default function AdminMarketplace() {
                       value={formData.contact_email}
                       onChange={(e) => setFormData(prev => ({ ...prev, contact_email: e.target.value }))}
                     />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="website">Website</Label>
                     <Input
                       id="website"
                       value={formData.website}
                       onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="location">Location</Label>
                     <Input
                       id="location"
@@ -519,24 +521,24 @@ export default function AdminMarketplace() {
                       onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                       placeholder="City, State"
                     />
-                  </div>
-                </div>
-              </div>
+                  </Box>
+                </Box>
+              </Box>
 
               {/* Shipping & Settings */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Shipping & Settings</h3>
-                <div className="flex items-center space-x-2 mb-4">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Shipping & Settings</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <Checkbox
                     id="shipping_available"
                     checked={formData.shipping_available}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, shipping_available: checked as boolean }))}
                   />
                   <Label htmlFor="shipping_available">Shipping Available</Label>
-                </div>
-                
+                </Box>
+
                 {formData.shipping_available && (
-                  <div>
+                  <Box>
                     <Label htmlFor="shipping_info">Shipping Information</Label>
                     <Textarea
                       id="shipping_info"
@@ -545,45 +547,45 @@ export default function AdminMarketplace() {
                       rows={2}
                       placeholder="Shipping details, costs, timeframes, etc."
                     />
-                  </div>
+                  </Box>
                 )}
 
-                <div className="flex items-center space-x-2">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id="featured"
                     checked={formData.featured}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked as boolean }))}
                   />
                   <Label htmlFor="featured">Featured Listing</Label>
-                </div>
-              </div>
+                </Box>
+              </Box>
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" style={{ width: '100%' }}>
                 Create Listing
               </Button>
             </form>
           </DialogContent>
         </Dialog>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Card style={{ marginBottom: 24 }}>
+        <CardContent style={{ padding: 24 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+            <Box sx={{ flex: 1 }}>
+              <Box sx={{ position: 'relative' }}>
+                <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Input
                   placeholder="Search listings..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  style={{ paddingLeft: 40 }}
                 />
-              </div>
-            </div>
+              </Box>
+            </Box>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger style={{ width: 192 }}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -595,59 +597,59 @@ export default function AdminMarketplace() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 3, mb: 4 }}>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-2xl font-bold">{listings.length}</p>
-                <p className="text-sm text-muted-foreground">Total Listings</p>
-              </div>
-            </div>
+          <CardContent style={{ padding: 24 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ShoppingBag style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+              <Box>
+                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{listings.length}</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Total Listings</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-accent" />
-              <div>
-                <p className="text-2xl font-bold">{listings.filter(l => l.featured).length}</p>
-                <p className="text-sm text-muted-foreground">Featured</p>
-              </div>
-            </div>
+          <CardContent style={{ padding: 24 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Star style={{ height: 20, width: 20, color: 'var(--accent)' }} />
+              <Box>
+                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{listings.filter(l => l.featured).length}</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Featured</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Eye className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-2xl font-bold">
+          <CardContent style={{ padding: 24 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Eye style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+              <Box>
+                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
                   {listings.reduce((total, listing) => total + (listing.views_count || 0), 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">Total Views</p>
-              </div>
-            </div>
+                </Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Total Views</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-accent" />
-              <div>
-                <p className="text-2xl font-bold">{new Set(categories).size}</p>
-                <p className="text-sm text-muted-foreground">Categories</p>
-              </div>
-            </div>
+          <CardContent style={{ padding: 24 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <DollarSign style={{ height: 20, width: 20, color: 'var(--accent)' }} />
+              <Box>
+                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{new Set(categories).size}</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Categories</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Listings */}
       <Card>
@@ -655,67 +657,67 @@ export default function AdminMarketplace() {
           <CardTitle>Listings ({filteredListings.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {filteredListings.map((listing) => (
-              <div key={listing.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-semibold">{listing.title}</h3>
+              <Box key={listing.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, border: 1, borderColor: 'divider', borderRadius: 2, '&:hover': { bgcolor: 'var(--muted)', opacity: 0.5 } }}>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                    <Typography sx={{ fontWeight: 600 }}>{listing.title}</Typography>
                     <Badge variant="outline">
                       {listing.category.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())}
                     </Badge>
                     {listing.featured && (
-                      <Badge className="bg-secondary/10 text-secondary">Featured</Badge>
+                      <Badge style={{ backgroundColor: 'var(--secondary)', opacity: 0.1, color: 'var(--secondary)' }}>Featured</Badge>
                     )}
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                    <div>Business: {listing.business_name}</div>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'var(--muted-foreground)', mb: 1 }}>
+                    <Box>Business: {listing.business_name}</Box>
                     {listing.price && (
-                      <div>
+                      <Box>
                         Price: {listing.currency} {listing.price}
                         {listing.price_type !== "fixed" && ` (${listing.price_type})`}
-                      </div>
+                      </Box>
                     )}
                     {listing.location && (
-                      <div>Location: {listing.location}</div>
+                      <Box>Location: {listing.location}</Box>
                     )}
-                  </div>
+                  </Box>
 
                   {listing.description && (
-                    <p className="text-sm text-muted-foreground">
+                    <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
                       {listing.description.slice(0, 100)}...
-                    </p>
+                    </Typography>
                   )}
-                </div>
-                
-                <div className="flex items-center gap-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {/* TODO: implement edit */}}
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit style={{ height: 16, width: 16 }} />
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => {/* TODO: implement delete */}}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 style={{ height: 16, width: 16 }} />
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
             ))}
-            
+
             {filteredListings.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No listings found</p>
-              </div>
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography sx={{ color: 'var(--muted-foreground)' }}>No listings found</Typography>
+              </Box>
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

@@ -1,20 +1,38 @@
 import * as React from "react"
-
-import { cn } from "@/lib/utils"
+import InputBase from "@mui/material/InputBase"
 
 export interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, ...props }, ref) => {
+  ({ className, style, ...props }, ref) => {
     return (
-      <textarea
-        className={cn(
-          "flex min-h-[80px] w-full rounded-lg bg-muted px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:bg-accent disabled:cursor-not-allowed disabled:opacity-50",
-          className
-        )}
-        ref={ref}
-        {...props}
+      <InputBase
+        inputRef={ref}
+        className={className}
+        style={style}
+        multiline
+        minRows={3}
+        fullWidth
+        sx={{
+          px: 1.5,
+          py: 1,
+          fontSize: '0.875rem',
+          bgcolor: 'action.hover',
+          borderRadius: 1.25,
+          '&:focus-within': {
+            bgcolor: 'action.selected',
+          },
+          '& textarea::placeholder': {
+            color: 'text.secondary',
+            opacity: 1,
+          },
+          '&.Mui-disabled': {
+            cursor: 'not-allowed',
+            opacity: 0.5,
+          },
+        }}
+        {...(props as any)}
       />
     )
   }

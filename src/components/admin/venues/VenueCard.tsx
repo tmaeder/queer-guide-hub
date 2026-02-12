@@ -2,6 +2,8 @@ import { MapPin, Edit, Trash2, Star, CheckCircle, ExternalLink, Phone, Mail } fr
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface VenueCardProps {
   venue: any;
@@ -15,112 +17,112 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-all duration-200 hover:border-primary/20">
-      <CardContent className="p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+    <Card sx={{ '&:hover': { boxShadow: 3, borderColor: 'primary.main', opacity: 0.2 }, transition: 'all 0.2s' }}>
+      <CardContent sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: { md: 'flex-start' }, justifyContent: { md: 'space-between' } }}>
           {/* Main Content */}
-          <div className="flex-1 space-y-3">
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {/* Header */}
-            <div className="flex flex-wrap items-start gap-2">
-              <h3 className="font-semibold text-lg leading-tight">{venue.name}</h3>
-              <div className="flex flex-wrap gap-1">
-                <Badge variant="outline" className="text-xs">
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 'tight' }}>{venue.name}</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                   {venue.category}
                 </Badge>
                 {venue.featured && (
-                  <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-xs">
-                    <Star className="h-3 w-3 mr-1" />
+                  <Badge sx={{ bgcolor: '#fef9c3', color: '#854d0e', fontSize: '0.75rem' }}>
+                    <Star style={{ width: 12, height: 12, marginRight: 4 }} />
                     Featured
                   </Badge>
                 )}
                 {venue.verified && (
-                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
-                    <CheckCircle className="h-3 w-3 mr-1" />
+                  <Badge sx={{ bgcolor: '#dcfce7', color: '#166534', fontSize: '0.75rem' }}>
+                    <CheckCircle style={{ width: 12, height: 12, marginRight: 4 }} />
                     Verified
                   </Badge>
                 )}
-              </div>
-            </div>
+              </Box>
+            </Box>
 
             {/* Location & Price */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                <span>{venue.city}{venue.state && `, ${venue.state}`}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="font-medium">Price: {getPriceDisplay(venue.price_range)}</span>
-              </div>
-            </div>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'text.secondary' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <MapPin style={{ width: 12, height: 12 }} />
+                <Typography component="span">{venue.city}{venue.state && `, ${venue.state}`}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Typography component="span" sx={{ fontWeight: 500 }}>Price: {getPriceDisplay(venue.price_range)}</Typography>
+              </Box>
+            </Box>
 
             {/* Description */}
             {venue.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2">
+              <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                 {venue.description}
-              </p>
+              </Typography>
             )}
 
             {/* Contact Info */}
-            <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
               {venue.phone && (
-                <div className="flex items-center gap-1">
-                  <Phone className="h-3 w-3" />
-                  <span>{venue.phone}</span>
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Phone style={{ width: 12, height: 12 }} />
+                  <Typography component="span">{venue.phone}</Typography>
+                </Box>
               )}
               {venue.email && (
-                <div className="flex items-center gap-1">
-                  <Mail className="h-3 w-3" />
-                  <span>{venue.email}</span>
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Mail style={{ width: 12, height: 12 }} />
+                  <Typography component="span">{venue.email}</Typography>
+                </Box>
               )}
               {venue.website && (
-                <div className="flex items-center gap-1">
-                  <ExternalLink className="h-3 w-3" />
-                  <span>Website</span>
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <ExternalLink style={{ width: 12, height: 12 }} />
+                  <Typography component="span">Website</Typography>
+                </Box>
               )}
-            </div>
+            </Box>
 
             {/* Tags */}
             {venue.tags && venue.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                 {venue.tags.slice(0, 3).map((tag: string, index: number) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
+                  <Badge key={index} variant="secondary" sx={{ fontSize: '0.75rem' }}>
                     {tag}
                   </Badge>
                 ))}
                 {venue.tags.length > 3 && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
                     +{venue.tags.length - 3} more
                   </Badge>
                 )}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
 
           {/* Actions */}
-          <div className="flex gap-2 md:flex-col">
+          <Box sx={{ display: 'flex', gap: 1, flexDirection: { md: 'column' } }}>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onEdit(venue)}
-              className="flex-1 md:flex-none"
+              sx={{ flex: { xs: 1, md: 'none' } }}
             >
-              <Edit className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">Edit</span>
+              <Edit style={{ width: 16, height: 16, marginRight: { md: 8 } }} />
+              <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>Edit</Box>
             </Button>
             <Button
               variant="destructive"
               size="sm"
               onClick={() => onDelete(venue)}
-              className="flex-1 md:flex-none"
+              sx={{ flex: { xs: 1, md: 'none' } }}
             >
-              <Trash2 className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">Delete</span>
+              <Trash2 style={{ width: 16, height: 16, marginRight: { md: 8 } }} />
+              <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>Delete</Box>
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

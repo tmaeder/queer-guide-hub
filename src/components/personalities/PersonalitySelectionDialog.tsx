@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Box, Typography } from '@mui/material';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,10 +28,10 @@ interface PersonalitySelectionDialogProps {
   loading?: boolean;
 }
 
-export function PersonalitySelectionDialog({ 
-  open, 
-  onOpenChange, 
-  candidates, 
+export function PersonalitySelectionDialog({
+  open,
+  onOpenChange,
+  candidates,
   searchTerm,
   onSelect,
   loading = false
@@ -45,48 +46,50 @@ export function PersonalitySelectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent sx={{ maxWidth: '768px', maxHeight: '80vh', overflowY: 'auto' }}>
         <DialogHeader>
           <DialogTitle>Multiple Results Found</DialogTitle>
-          <p className="text-muted-foreground">
+          <Typography sx={{ color: 'text.secondary' }}>
             Found {candidates.length} potential matches for "{searchTerm}". Please select the correct person:
-          </p>
+          </Typography>
         </DialogHeader>
-        
-        <div className="space-y-3">
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {candidates.map((candidate) => (
-            <Card 
+            <Card
               key={candidate.id}
-              className={`cursor-pointer transition-colors ${
-                selectedCandidate?.id === candidate.id 
-                  ? 'ring-2 ring-primary bg-accent/50' 
-                  : 'hover:bg-accent/30'
-              }`}
+              sx={{
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                ...(selectedCandidate?.id === candidate.id
+                  ? { boxShadow: 2, bgcolor: 'action.selected', outline: 2, outlineColor: 'primary.main' }
+                  : { '&:hover': { bgcolor: 'action.hover' } })
+              }}
               onClick={() => setSelectedCandidate(candidate)}
             >
-              <CardHeader className="pb-2">
-                <div className="flex items-start gap-3">
-                  <div className="mt-1">
-                    <User className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <CardTitle className="text-base">{candidate.title}</CardTitle>
-                    <CardDescription className="mt-1 mb-3">
+              <CardHeader sx={{ pb: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                  <Box sx={{ mt: 0.5 }}>
+                    <User sx={{ height: '20px', width: '20px', color: 'text.secondary' }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <CardTitle sx={{ fontSize: '1rem' }}>{candidate.title}</CardTitle>
+                    <CardDescription sx={{ mt: 0.5, mb: 1.5 }}>
                       {candidate.description}
                     </CardDescription>
-                    
+
                     {candidate.details && (
-                      <div className="flex flex-wrap gap-2">
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         {candidate.details.profession && (
-                          <Badge variant="secondary" className="text-xs gap-1">
-                            <Briefcase className="h-3 w-3" />
+                          <Badge variant="secondary" sx={{ fontSize: '0.75rem', gap: 0.5 }}>
+                            <Briefcase sx={{ height: '12px', width: '12px' }} />
                             {candidate.details.profession}
                           </Badge>
                         )}
-                        
+
                         {(candidate.details.birthYear || candidate.details.deathYear) && (
-                          <Badge variant="outline" className="text-xs gap-1">
-                            <Calendar className="h-3 w-3" />
+                          <Badge variant="outline" sx={{ fontSize: '0.75rem', gap: 0.5 }}>
+                            <Calendar sx={{ height: '12px', width: '12px' }} />
                             {candidate.details.birthYear && candidate.details.deathYear
                               ? `${candidate.details.birthYear}–${candidate.details.deathYear}`
                               : candidate.details.birthYear
@@ -96,34 +99,37 @@ export function PersonalitySelectionDialog({
                               : ''
                             }
                             {candidate.details.isLiving && candidate.details.birthYear && (
-                              <span className="text-green-600">• Living</span>
+                              <Box component="span" sx={{ color: 'success.main' }}>• Living</Box>
                             )}
                           </Badge>
                         )}
-                        
+
                         {candidate.details.nationality && (
-                          <Badge variant="outline" className="text-xs gap-1">
-                            <MapPin className="h-3 w-3" />
+                          <Badge variant="outline" sx={{ fontSize: '0.75rem', gap: 0.5 }}>
+                            <MapPin sx={{ height: '12px', width: '12px' }} />
                             {candidate.details.nationality}
                           </Badge>
                         )}
-                      </div>
+                      </Box>
                     )}
-                  </div>
-                  <div className="flex items-center">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      selectedCandidate?.id === candidate.id 
-                        ? 'bg-primary border-primary' 
-                        : 'border-muted-foreground'
-                    }`} />
-                  </div>
-                </div>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Box sx={{
+                      width: '16px',
+                      height: '16px',
+                      borderRadius: '50%',
+                      border: 2,
+                      borderColor: selectedCandidate?.id === candidate.id ? 'primary.main' : 'text.secondary',
+                      bgcolor: selectedCandidate?.id === candidate.id ? 'primary.main' : 'transparent'
+                    }} />
+                  </Box>
+                </Box>
               </CardHeader>
             </Card>
           ))}
-        </div>
+        </Box>
 
-        <div className="flex gap-2 pt-4">
+        <Box sx={{ display: 'flex', gap: 1, pt: 2 }}>
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -134,12 +140,12 @@ export function PersonalitySelectionDialog({
           <Button
             onClick={handleSelect}
             disabled={!selectedCandidate || loading}
-            className="gap-2"
+            sx={{ gap: 1 }}
           >
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {loading && <Loader2 sx={{ height: '16px', width: '16px' }} />}
             {loading ? 'Processing...' : 'Select Person'}
           </Button>
-        </div>
+        </Box>
       </DialogContent>
     </Dialog>
   );

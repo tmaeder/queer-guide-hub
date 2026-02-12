@@ -10,6 +10,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface PrivacySetting {
   key: string;
@@ -25,7 +27,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'bio_public',
     label: 'Bio Visibility',
     description: 'Allow others to see your bio and description',
-    icon: <User className="h-4 w-4" />,
+    icon: <User style={{ height: 16, width: 16 }} />,
     category: 'basic',
     defaultValue: true
   },
@@ -33,7 +35,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'location_public',
     label: 'Location Sharing',
     description: 'Share your general location with others',
-    icon: <MapPin className="h-4 w-4" />,
+    icon: <MapPin style={{ height: 16, width: 16 }} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -41,7 +43,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'pronouns_public',
     label: 'Pronouns Visibility',
     description: 'Display your pronouns publicly',
-    icon: <User className="h-4 w-4" />,
+    icon: <User style={{ height: 16, width: 16 }} />,
     category: 'basic',
     defaultValue: false
   },
@@ -49,7 +51,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'interests_public',
     label: 'Interests & Hobbies',
     description: 'Share your interests and hobbies',
-    icon: <Heart className="h-4 w-4" />,
+    icon: <Heart style={{ height: 16, width: 16 }} />,
     category: 'basic',
     defaultValue: false
   },
@@ -57,7 +59,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'contact_public',
     label: 'Contact Information',
     description: 'Allow others to see your website and social links',
-    icon: <Phone className="h-4 w-4" />,
+    icon: <Phone style={{ height: 16, width: 16 }} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -65,7 +67,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'phone_public',
     label: 'Phone Number',
     description: 'Share your phone number (highly sensitive)',
-    icon: <Phone className="h-4 w-4" />,
+    icon: <Phone style={{ height: 16, width: 16 }} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -73,7 +75,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'gender_identity_public',
     label: 'Gender Identity',
     description: 'Share your gender identity',
-    icon: <User className="h-4 w-4" />,
+    icon: <User style={{ height: 16, width: 16 }} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -81,7 +83,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'sexual_orientation_public',
     label: 'Sexual Orientation',
     description: 'Share your sexual orientation',
-    icon: <Heart className="h-4 w-4" />,
+    icon: <Heart style={{ height: 16, width: 16 }} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -89,7 +91,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'relationship_status_public',
     label: 'Relationship Status',
     description: 'Share your relationship status',
-    icon: <Heart className="h-4 w-4" />,
+    icon: <Heart style={{ height: 16, width: 16 }} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -97,7 +99,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'income_range_public',
     label: 'Income Information',
     description: 'Share your income range (financial data)',
-    icon: <DollarSign className="h-4 w-4" />,
+    icon: <DollarSign style={{ height: 16, width: 16 }} />,
     category: 'financial',
     defaultValue: false
   },
@@ -105,7 +107,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'emergency_contact_public',
     label: 'Emergency Contact',
     description: 'Emergency contact information visibility',
-    icon: <Phone className="h-4 w-4" />,
+    icon: <Phone style={{ height: 16, width: 16 }} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -113,7 +115,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'political_views_public',
     label: 'Political Views',
     description: 'Share your political perspectives',
-    icon: <User className="h-4 w-4" />,
+    icon: <User style={{ height: 16, width: 16 }} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -121,7 +123,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'religious_beliefs_public',
     label: 'Religious Beliefs',
     description: 'Share your religious or spiritual beliefs',
-    icon: <User className="h-4 w-4" />,
+    icon: <User style={{ height: 16, width: 16 }} />,
     category: 'sensitive',
     defaultValue: false
   }
@@ -151,12 +153,12 @@ export function PrivacyControlCenter() {
 
     try {
       setLoading(true);
-      
+
       const newSettings = { ...settings, [key]: value };
       setSettings(newSettings);
 
-      await updateProfile({ 
-        privacy_settings: newSettings 
+      await updateProfile({
+        privacy_settings: newSettings
       });
 
       // Log security event for sensitive changes
@@ -198,13 +200,13 @@ export function PrivacyControlCenter() {
       acc[setting.key] = false;
       return acc;
     }, {} as Record<string, boolean>);
-    
+
     try {
       setLoading(true);
       setSettings(privateSettings);
-      
-      await updateProfile({ 
-        privacy_settings: privateSettings 
+
+      await updateProfile({
+        privacy_settings: privateSettings
       });
 
       toast({
@@ -225,26 +227,26 @@ export function PrivacyControlCenter() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'basic':
-        return <Eye className="h-4 w-4 text-blue-600" />;
+        return <Eye style={{ height: 16, width: 16, color: '#2563eb' }} />;
       case 'sensitive':
-        return <Shield className="h-4 w-4 text-orange-600" />;
+        return <Shield style={{ height: 16, width: 16, color: '#ea580c' }} />;
       case 'financial':
-        return <Lock className="h-4 w-4 text-red-600" />;
+        return <Lock style={{ height: 16, width: 16, color: '#dc2626' }} />;
       default:
-        return <Eye className="h-4 w-4" />;
+        return <Eye style={{ height: 16, width: 16 }} />;
     }
   };
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryBadgeSx = (category: string) => {
     switch (category) {
       case 'basic':
-        return 'bg-blue-100 text-blue-800';
+        return { bgcolor: '#dbeafe', color: '#1e40af' };
       case 'sensitive':
-        return 'bg-orange-100 text-orange-800';
+        return { bgcolor: '#ffedd5', color: '#9a3412' };
       case 'financial':
-        return 'bg-red-100 text-red-800';
+        return { bgcolor: '#fee2e2', color: '#991b1b' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { bgcolor: 'grey.100', color: 'grey.800' };
     }
   };
 
@@ -257,23 +259,23 @@ export function PrivacyControlCenter() {
   }, {} as Record<string, PrivacySetting[]>);
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-6 w-6" />
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Shield style={{ height: 24, width: 24 }} />
               <CardTitle>Privacy Control Center</CardTitle>
-            </div>
-            <Button 
-              variant="outline" 
+            </Box>
+            <Button
+              variant="outline"
               onClick={setAllToPrivate}
               disabled={loading}
             >
-              <EyeOff className="h-4 w-4 mr-2" />
+              <EyeOff style={{ height: 16, width: 16, marginRight: 8 }} />
               Set All Private
             </Button>
-          </div>
+          </Box>
           <CardDescription>
             Control who can see your personal information. Changes are saved automatically.
           </CardDescription>
@@ -281,7 +283,7 @@ export function PrivacyControlCenter() {
       </Card>
 
       <Alert>
-        <Shield className="h-4 w-4" />
+        <Shield style={{ height: 16, width: 16 }} />
         <AlertTitle>Privacy Protection Active</AlertTitle>
         <AlertDescription>
           Your data is protected by enhanced security measures. All privacy changes are logged for security purposes.
@@ -291,52 +293,56 @@ export function PrivacyControlCenter() {
       {Object.entries(groupedSettings).map(([category, categorySettings]) => (
         <Card key={category}>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              {getCategoryIcon(category)}
-              <span className="capitalize">{category} Information</span>
-              <Badge variant="secondary" className={getCategoryColor(category)}>
-                {categorySettings.length} settings
-              </Badge>
+            <CardTitle>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {getCategoryIcon(category)}
+                <Box component="span" sx={{ textTransform: 'capitalize' }}>{category} Information</Box>
+                <Badge variant="secondary" style={getCategoryBadgeSx(category)}>
+                  {categorySettings.length} settings
+                </Badge>
+              </Box>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {categorySettings.map((setting, index) => (
-              <div key={setting.key}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    {setting.icon}
-                    <div>
-                      <div className="font-medium">{setting.label}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {setting.description}
+          <CardContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {categorySettings.map((setting, index) => (
+                <div key={setting.key}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      {setting.icon}
+                      <div>
+                        <Box sx={{ fontWeight: 500 }}>{setting.label}</Box>
+                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+                          {setting.description}
+                        </Typography>
                       </div>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={settings[setting.key] || false}
-                    onCheckedChange={(checked) => updatePrivacySetting(setting.key, checked)}
-                    disabled={loading}
-                  />
+                    </Box>
+                    <Switch
+                      checked={settings[setting.key] || false}
+                      onCheckedChange={(checked) => updatePrivacySetting(setting.key, checked)}
+                      disabled={loading}
+                    />
+                  </Box>
+                  {index < categorySettings.length - 1 && <Separator style={{ marginTop: 16 }} />}
                 </div>
-                {index < categorySettings.length - 1 && <Separator className="mt-4" />}
-              </div>
-            ))}
+              ))}
+            </Box>
           </CardContent>
         </Card>
       ))}
 
       <Card>
-        <CardContent className="pt-6">
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
+        <CardContent style={{ paddingTop: 24 }}>
+          <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
               Privacy settings are enforced at the database level for maximum security.
-            </p>
-            <p className="text-xs text-muted-foreground">
+            </Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
               Even administrators require justification to access sensitive data.
-            </p>
-          </div>
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { useToast } from "@/hooks/use-toast"; 
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -73,7 +75,7 @@ export const CrawlForm = () => {
     setIsLoading(true);
     setProgress(0);
     setCrawlResult(null);
-    
+
     try {
       // Test connection to local instance first
       const isConnected = await FirecrawlService.testConnection(localEndpoint);
@@ -89,10 +91,10 @@ export const CrawlForm = () => {
 
       console.log('Starting crawl for URL:', url);
       setProgress(25);
-      
+
       const result = await FirecrawlService.crawlWebsite(url, { endpoint: localEndpoint });
       setProgress(75);
-      
+
       if (result.success) {
         // Save crawl job to database
         const { error: saveError } = await (supabase as any)
@@ -139,32 +141,32 @@ export const CrawlForm = () => {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle className="flex items-center gap-2">
+      <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             Local Website Crawler
-            <Server className="h-4 w-4" />
+            <Server style={{ width: 16, height: 16 }} />
           </CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             Crawl websites using your local Firecrawl instance
-          </p>
-        </div>
+          </Typography>
+        </Box>
         <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
+              <Settings style={{ width: 16, height: 16, marginRight: 8 }} />
               Connection Settings
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Server className="h-5 w-5" />
+              <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Server style={{ width: 20, height: 20 }} />
                 Local Firecrawl Configuration
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label htmlFor="localEndpoint">Local Endpoint</Label>
                 <Input
                   id="localEndpoint"
@@ -173,103 +175,105 @@ export const CrawlForm = () => {
                   onChange={(e) => setLocalEndpoint(e.target.value)}
                   placeholder="http://localhost:3002"
                 />
-                <p className="text-xs text-muted-foreground">
+                <Typography variant="caption" color="text.secondary">
                   Make sure your local Firecrawl instance is running. Default port is 3002.{' '}
-                  <a 
-                    href="https://github.com/mendableai/firecrawl#-installation" 
-                    target="_blank" 
+                  <a
+                    href="https://github.com/mendableai/firecrawl#-installation"
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline"
+                    style={{ color: 'inherit', textDecoration: 'underline' }}
                   >
                     Setup instructions
                   </a>
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleConnectionTest} 
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  onClick={handleConnectionTest}
                   disabled={isTesting || !localEndpoint}
-                  className="flex-1"
+                  sx={{ flex: 1 }}
                 >
-                  <Wifi className="h-4 w-4 mr-2" />
+                  <Wifi style={{ width: 16, height: 16, marginRight: 8 }} />
                   {isTesting ? "Testing..." : "Test Connection"}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setIsSettingsOpen(false)}
                 >
                   Cancel
                 </Button>
-              </div>
-            </div>
+              </Box>
+            </Box>
           </DialogContent>
         </Dialog>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="url">Website URL</Label>
-            <Input
-              id="url"
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com"
-              required
-            />
-          </div>
-          
-          {isLoading && (
-            <div className="space-y-2">
-              <Label>Crawl Progress</Label>
-              <Progress value={progress} className="w-full" />
-            </div>
-          )}
-          
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full"
-          >
-            {isLoading ? "Crawling..." : "Start Crawl"}
-          </Button>
+        <form onSubmit={handleSubmit}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Label htmlFor="url">Website URL</Label>
+              <Input
+                id="url"
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com"
+                required
+              />
+            </Box>
+
+            {isLoading && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Label>Crawl Progress</Label>
+                <Progress value={progress} sx={{ width: '100%' }} />
+              </Box>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              sx={{ width: '100%' }}
+            >
+              {isLoading ? "Crawling..." : "Start Crawl"}
+            </Button>
+          </Box>
         </form>
 
         {crawlResult && (
-          <div className="mt-6 space-y-4">
-            <h3 className="text-lg font-semibold">Crawl Results</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
+          <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="h6">Crawl Results</Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              <Box>
                 <Label>Status</Label>
-                <p className="font-mono">{crawlResult.status}</p>
-              </div>
-              <div>
+                <Typography sx={{ fontFamily: 'monospace' }}>{crawlResult.status}</Typography>
+              </Box>
+              <Box>
                 <Label>Pages Crawled</Label>
-                <p className="font-mono">{crawlResult.completed}/{crawlResult.total}</p>
-              </div>
-              <div>
+                <Typography sx={{ fontFamily: 'monospace' }}>{crawlResult.completed}/{crawlResult.total}</Typography>
+              </Box>
+              <Box>
                 <Label>Credits Used</Label>
-                <p className="font-mono">{crawlResult.creditsUsed}</p>
-              </div>
-              <div>
+                <Typography sx={{ fontFamily: 'monospace' }}>{crawlResult.creditsUsed}</Typography>
+              </Box>
+              <Box>
                 <Label>Expires At</Label>
-                <p className="font-mono">
+                <Typography sx={{ fontFamily: 'monospace' }}>
                   {crawlResult.expiresAt ? new Date(crawlResult.expiresAt).toLocaleString() : 'N/A'}
-                </p>
-              </div>
-            </div>
-            
+                </Typography>
+              </Box>
+            </Box>
+
             {crawlResult.data && (
-              <div className="space-y-2">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label>Crawled Data ({crawlResult.data.length} pages)</Label>
-                <div className="bg-muted p-4 rounded-md max-h-60 overflow-auto">
-                  <pre className="text-xs">
+                <Box sx={{ bgcolor: 'grey.100', p: 2, borderRadius: 1, maxHeight: 240, overflow: 'auto' }}>
+                  <pre style={{ fontSize: '0.75rem' }}>
                     {JSON.stringify(crawlResult.data, null, 2)}
                   </pre>
-                </div>
-              </div>
+                </Box>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
       </CardContent>
     </Card>

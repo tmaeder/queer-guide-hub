@@ -3,6 +3,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import type { SignupData } from '../MultiStepSignup';
 
 interface PreferencesStepProps {
@@ -74,91 +76,91 @@ export default function PreferencesStep({ data, updateData }: PreferencesStepPro
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold">What are you looking for?</h3>
-        <p className="text-sm text-muted-foreground">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ textAlign: 'center', mb: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>What are you looking for?</Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           Help us connect you with the right people and experiences
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
-      <div className="space-y-4">
-        <div>
-          <Label className="text-base font-medium">I'm looking for: *</Label>
-          <p className="text-sm text-muted-foreground mb-3">Select all that apply</p>
-          
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box>
+          <Label sx={{ fontSize: '1rem', fontWeight: 500 }}>I'm looking for: *</Label>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>Select all that apply</Typography>
+
           {data.lookingFor && data.lookingFor.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
               {data.lookingFor.map((option) => (
-                <Badge key={option} variant="secondary" className="cursor-pointer">
+                <Badge key={option} variant="secondary" sx={{ cursor: 'pointer' }}>
                   {option}
-                  <X 
-                    className="ml-1 h-3 w-3" 
+                  <X
+                    style={{ marginLeft: 4, width: 12, height: 12 }}
                     onClick={() => deleteLookingFor(option)}
                   />
                 </Badge>
               ))}
-            </div>
+            </Box>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1 }}>
             {lookingForOptions.map((option) => (
-              <div key={option} className="flex items-center space-x-2">
+              <Box key={option} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Checkbox
                   id={`looking-${option}`}
                   checked={(data.lookingFor || []).includes(option)}
                   onCheckedChange={() => toggleLookingFor(option)}
                 />
-                <Label 
+                <Label
                   htmlFor={`looking-${option}`}
-                  className="text-sm cursor-pointer"
+                  sx={{ fontSize: '0.875rem', cursor: 'pointer' }}
                 >
                   {option}
                 </Label>
-              </div>
+              </Box>
             ))}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
-        <div>
-          <Label className="text-base font-medium">Interests & Hobbies</Label>
-          <p className="text-sm text-muted-foreground mb-3">Select your interests (optional)</p>
-          
+        <Box>
+          <Label sx={{ fontSize: '1rem', fontWeight: 500 }}>Interests & Hobbies</Label>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>Select your interests (optional)</Typography>
+
           {data.interests && data.interests.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
               {data.interests.map((interest) => (
-                <Badge key={interest} variant="outline" className="cursor-pointer">
+                <Badge key={interest} variant="outline" sx={{ cursor: 'pointer' }}>
                   {interest}
-                  <X 
-                    className="ml-1 h-3 w-3" 
+                  <X
+                    style={{ marginLeft: 4, width: 12, height: 12 }}
                     onClick={() => deleteInterest(interest)}
                   />
                 </Badge>
               ))}
-            </div>
+            </Box>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 1 }}>
             {interestOptions.map((interest) => (
-              <div key={interest} className="flex items-center space-x-2">
+              <Box key={interest} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Checkbox
                   id={`interest-${interest}`}
                   checked={(data.interests || []).includes(interest)}
                   onCheckedChange={() => toggleInterest(interest)}
                 />
-                <Label 
+                <Label
                   htmlFor={`interest-${interest}`}
-                  className="text-sm cursor-pointer"
+                  sx={{ fontSize: '0.875rem', cursor: 'pointer' }}
                 >
                   {interest}
                 </Label>
-              </div>
+              </Box>
             ))}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor="ageRangePreference">Preferred Age Range</Label>
             <Select value={data.ageRangePreference} onValueChange={(value) => updateData({ ageRangePreference: value })}>
               <SelectTrigger>
@@ -173,9 +175,9 @@ export default function PreferencesStep({ data, updateData }: PreferencesStepPro
                 <SelectItem value="any">Any age</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </Box>
 
-          <div className="space-y-2">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor="locationRadius">Location Settings</Label>
             <Select value={data.locationRadius} onValueChange={(value) => updateData({ locationRadius: value })}>
               <SelectTrigger>
@@ -190,9 +192,9 @@ export default function PreferencesStep({ data, updateData }: PreferencesStepPro
                 <SelectItem value="anywhere">Anywhere</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }

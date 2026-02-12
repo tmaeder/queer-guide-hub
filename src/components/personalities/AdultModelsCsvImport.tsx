@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { Box, Typography } from '@mui/material';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -113,27 +114,27 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <Upload className="h-4 w-4" />
+        <Button variant="outline" sx={{ gap: 1 }}>
+          <Upload sx={{ height: '16px', width: '16px' }} />
           Import Adult Models CSV
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent sx={{ maxWidth: '768px', maxHeight: '90vh', overflowY: 'auto' }}>
         <DialogHeader>
           <DialogTitle>Import Adult Models from CSV</DialogTitle>
         </DialogHeader>
 
         {!importResult ? (
-          <div className="space-y-6">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Alert>
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle sx={{ height: '16px', width: '16px' }} />
               <AlertDescription>
                 Upload a CSV file with adult model data. Each model will be created as a personality with the profession "adult model".
               </AlertDescription>
             </Alert>
 
-            <div className="space-y-4">
-              <div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box>
                 <Label htmlFor="csv-file">Select CSV File</Label>
                 <Input
                   ref={fileInputRef}
@@ -142,55 +143,55 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
                   accept=".csv"
                   onChange={handleFileUpload}
                   disabled={isUploading}
-                  className="mt-1"
+                  sx={{ mt: 0.5 }}
                 />
-              </div>
+              </Box>
 
-              <div className="text-sm text-muted-foreground space-y-2">
-                <p><strong>Required columns:</strong></p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li><code>pornhub-profile</code> - Profile URL</li>
-                  <li><code>picture</code> - Image URL</li>
-                  <li><code>name</code> - Model name</li>
-                </ul>
-                <p className="mt-2">
+              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>Required columns:</Typography>
+                <Box component="ul" sx={{ listStylePosition: 'inside', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Box component="li"><Typography component="code">pornhub-profile</Typography> - Profile URL</Box>
+                  <Box component="li"><Typography component="code">picture</Typography> - Image URL</Box>
+                  <Box component="li"><Typography component="code">name</Typography> - Model name</Box>
+                </Box>
+                <Typography variant="body2" sx={{ mt: 1 }}>
                   All personalities will be created with profession "adult model" and will not be marked as verified or featured by default.
-                </p>
-              </div>
+                </Typography>
+              </Box>
 
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={downloadTemplate} className="gap-2">
-                  <Download className="h-4 w-4" />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Button variant="outline" onClick={downloadTemplate} sx={{ gap: 1 }}>
+                  <Download sx={{ height: '16px', width: '16px' }} />
                   Download Template
                 </Button>
-                <Button disabled={isUploading} className="gap-2">
+                <Button disabled={isUploading} sx={{ gap: 1 }}>
                   {isUploading ? (
                     <>Processing...</>
                   ) : (
                     <>
-                      <Upload className="h-4 w-4" />
+                      <Upload sx={{ height: '16px', width: '16px' }} />
                       Upload File
                     </>
                   )}
                 </Button>
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
         ) : (
-          <div className="space-y-4">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {importResult.success ? (
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <CheckCircle sx={{ height: '20px', width: '20px', color: 'success.main' }} />
                   ) : (
-                    <XCircle className="h-5 w-5 text-red-600" />
+                    <XCircle sx={{ height: '20px', width: '20px', color: 'error.main' }} />
                   )}
                   Import Results
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex gap-4">
+              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
                   <Badge variant="outline">
                     {importResult.imported} imported
                   </Badge>
@@ -202,39 +203,39 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
                       {importResult.errors.length} errors
                     </Badge>
                   )}
-                </div>
+                </Box>
 
                 {importResult.error && (
                   <Alert variant="destructive">
-                    <XCircle className="h-4 w-4" />
+                    <XCircle sx={{ height: '16px', width: '16px' }} />
                     <AlertDescription>{importResult.error}</AlertDescription>
                   </Alert>
                 )}
 
                 {importResult.errors && importResult.errors.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm">Errors:</h4>
-                    <div className="max-h-32 overflow-y-auto space-y-1">
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>Errors:</Typography>
+                    <Box sx={{ maxHeight: '128px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                       {importResult.errors.map((error, index) => (
-                        <div key={index} className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                        <Box key={index} sx={{ fontSize: '0.875rem', color: 'error.main', bgcolor: 'error.light', p: 1, borderRadius: 1 }}>
                           {error}
-                        </div>
+                        </Box>
                       ))}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
               </CardContent>
             </Card>
 
-            <div className="flex justify-between">
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Button variant="outline" onClick={resetImport}>
                 Import Another File
               </Button>
               <Button onClick={() => setIsOpen(false)}>
                 Close
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
       </DialogContent>
     </Dialog>

@@ -1,6 +1,8 @@
 import { Building } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VenueCard } from "./VenueCard";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface VenuesListProps {
   venues: any[];
@@ -12,14 +14,14 @@ export function VenuesList({ venues, onEdit, onDelete }: VenuesListProps) {
   if (venues.length === 0) {
     return (
       <Card>
-        <CardContent className="py-12">
-          <div className="text-center">
-            <Building className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No venues found</h3>
-            <p className="text-muted-foreground">
+        <CardContent sx={{ py: 6 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Building style={{ height: 48, width: 48, margin: '0 auto', color: 'var(--muted-foreground)', marginBottom: 16 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No venues found</Typography>
+            <Typography sx={{ color: 'text.secondary' }}>
               Try adjusting your search criteria or add a new venue to get started.
-            </p>
-          </div>
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
     );
@@ -28,13 +30,13 @@ export function VenuesList({ venues, onEdit, onDelete }: VenuesListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Building className="h-5 w-5" />
+        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Building style={{ height: 20, width: 20 }} />
           Venues ({venues.length})
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="space-y-4">
+      <CardContent sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {venues.map((venue) => (
             <VenueCard
               key={venue.id}
@@ -43,7 +45,7 @@ export function VenuesList({ venues, onEdit, onDelete }: VenuesListProps) {
               onDelete={onDelete}
             />
           ))}
-        </div>
+        </Box>
       </CardContent>
     </Card>
   );

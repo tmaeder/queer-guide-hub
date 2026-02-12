@@ -1,3 +1,4 @@
+import { Box, Typography } from '@mui/material';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -20,15 +21,15 @@ export function PersonalityCard({
     switch (personality.verification_status) {
       case 'verified':
         return (
-          <Badge variant="secondary" className="flex items-center gap-1 bg-green-500/10 text-green-700 border-green-200 hover:bg-green-500/20 transition-colors">
-            <Check className="h-3 w-3" />
+          <Badge variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'success.light', color: 'success.dark', borderColor: 'success.light' }}>
+            <Check sx={{ height: '12px', width: '12px' }} />
             Verified
           </Badge>
         );
       case 'disputed':
         return (
-          <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-500/10 text-yellow-700 border-yellow-200 hover:bg-yellow-500/20 transition-colors">
-            <AlertCircle className="h-3 w-3" />
+          <Badge variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'warning.light', color: 'warning.dark', borderColor: 'warning.light' }}>
+            <AlertCircle sx={{ height: '12px', width: '12px' }} />
             Disputed
           </Badge>
         );
@@ -66,126 +67,126 @@ export function PersonalityCard({
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={handleCardClick}>
-      <CardContent className="p-6">
-        <div className="flex items-start gap-4 mb-4">
-          <Avatar className="h-16 w-16">
-            <AvatarImage 
-              src={personality.image_url} 
+    <Card sx={{ '&:hover': { boxShadow: 3 }, transition: 'box-shadow 0.2s', cursor: 'pointer' }} onClick={handleCardClick}>
+      <CardContent sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+          <Avatar sx={{ height: '64px', width: '64px' }}>
+            <AvatarImage
+              src={personality.image_url}
               alt={personality.name}
-              className="object-cover"
+              sx={{ objectFit: 'cover' }}
             />
-            <AvatarFallback className="text-lg font-semibold">
+            <AvatarFallback sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
               {getInitials(personality.name)}
             </AvatarFallback>
           </Avatar>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-2">
-              <h3 className="font-semibold text-lg line-clamp-1">
+
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {personality.name}
-              </h3>
-              <div className="flex items-center gap-2 ml-2">
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 1 }}>
                 {personality.is_featured && (
-                  <Badge variant="secondary" className="text-xs">
-                    <Star className="h-3 w-3 mr-1" />
+                  <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
+                    <Star sx={{ height: '12px', width: '12px', mr: 0.5 }} />
                     Featured
                   </Badge>
                 )}
                 {getVerificationBadge()}
-              </div>
-            </div>
-            
+              </Box>
+            </Box>
+
             {personality.pronouns && (
-              <p className="text-sm text-muted-foreground mb-2">
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
                 {personality.pronouns}
-              </p>
+              </Typography>
             )}
-            
+
             {personality.profession && (
-              <Button 
+              <Button
                 variant="ghost"
                 size="sm"
-                className="h-auto p-0 text-sm text-primary hover:underline"
+                sx={{ height: 'auto', p: 0, fontSize: '0.875rem', color: 'primary.main' }}
                 onClick={handleProfessionClick}
               >
                 {personality.profession}
               </Button>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {personality.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+          <Typography variant="body2" sx={{ color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', mb: 2 }}>
             {personality.description}
-          </p>
+          </Typography>
         )}
 
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'text.secondary', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               {personality.is_living ? (
                 <>
-                  <Heart className="h-3 w-3 text-green-600" />
-                  <span>Living</span>
+                  <Heart sx={{ height: '12px', width: '12px', color: 'success.main' }} />
+                  <Typography component="span">Living</Typography>
                 </>
               ) : (
                 <>
-                  <Clock className="h-3 w-3" />
-                  <span>Historical</span>
+                  <Clock sx={{ height: '12px', width: '12px' }} />
+                  <Typography component="span">Historical</Typography>
                 </>
               )}
-            </div>
-            
+            </Box>
+
             {personality.birth_date && (
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                <span>{calculateAge()}</span>
-              </div>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Calendar sx={{ height: '12px', width: '12px' }} />
+                <Typography component="span">{calculateAge()}</Typography>
+              </Box>
             )}
-            
+
             {personality.nationality && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-auto p-0 text-xs hover:underline"
+                sx={{ height: 'auto', p: 0, fontSize: '0.75rem' }}
                 onClick={handleNationalityClick}
               >
-                <MapPin className="h-3 w-3 mr-1" />
+                <MapPin sx={{ height: '12px', width: '12px', mr: 0.5 }} />
                 {personality.nationality}
               </Button>
             )}
-          </div>
+          </Box>
 
-          <div className="flex items-center gap-1">
-            <Eye className="h-3 w-3" />
-            <span>{personality.view_count.toLocaleString()}</span>
-          </div>
-        </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Eye sx={{ height: '12px', width: '12px' }} />
+            <Typography component="span">{personality.view_count.toLocaleString()}</Typography>
+          </Box>
+        </Box>
 
         {personality.fields && personality.fields.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
             {personality.fields.slice(0, 3).map((field, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
+              <Badge key={index} variant="outline" sx={{ fontSize: '0.75rem' }}>
                 {field}
               </Badge>
             ))}
             {personality.fields.length > 3 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                 +{personality.fields.length - 3} more
               </Badge>
             )}
-          </div>
+          </Box>
         )}
 
         {personality.website_url && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full"
+          <Button
+            variant="outline"
+            size="sm"
+            sx={{ width: '100%' }}
             onClick={handleWebsiteClick}
           >
-            <ExternalLink className="h-4 w-4 mr-2" />
+            <ExternalLink sx={{ height: '16px', width: '16px', mr: 1 }} />
             Visit Website
           </Button>
         )}

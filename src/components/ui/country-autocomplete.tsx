@@ -1,21 +1,9 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import MuiAutocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Country {
@@ -39,9 +27,9 @@ export function CountryAutocomplete({
   required,
   id,
 }: CountryAutocompleteProps) {
-  const [open, setOpen] = useState(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(false);
+  const [inputValue, setInputValue] = useState(value || "");
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -68,80 +56,57 @@ export function CountryAutocomplete({
     fetchCountries();
   }, []);
 
-  const filteredCountries = countries.filter(country =>
-    country.name.toLowerCase().includes((value || '').toLowerCase())
-  );
-
-  const selectedCountry = countries.find(country => country.name === value);
+  const selectedCountry = countries.find(country => country.name === value) || null;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          id={id}
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between bg-muted"
-        >
-          <div className="flex items-center gap-2">
-            {selectedCountry?.flag_emoji && (
-              <span className="text-lg">{selectedCountry.flag_emoji}</span>
+    <MuiAutocomplete
+      id={id}
+      options={countries}
+      loading={loading}
+      value={selectedCountry}
+      inputValue={inputValue}
+      onInputChange={(_, newInputValue) => {
+        setInputValue(newInputValue);
+      }}
+      onChange={(_, newValue) => {
+        onValueChange(newValue ? newValue.name : "");
+      }}
+      getOptionLabel={(option) => option.name}
+      isOptionEqualToValue={(option, val) => option.code === val.code}
+      renderOption={(props, option) => {
+        const { key, ...rest } = props as any;
+        return (
+          <Box component="li" key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }} {...rest}>
+            {option.flag_emoji && (
+              <span style={{ fontSize: '1.25rem' }}>{option.flag_emoji}</span>
             )}
-            <span>{value || placeholder}</span>
-          </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0 bg-background border shadow-md">
-        <Command>
-          <CommandInput 
-            placeholder="Search countries..." 
-            value={value}
-            onValueChange={onValueChange}
-          />
-          <CommandList>
-            {loading ? (
-              <CommandEmpty>Loading countries...</CommandEmpty>
-            ) : filteredCountries.length === 0 ? (
-              <CommandEmpty>
-                No country found.
-              </CommandEmpty>
-            ) : (
-              <CommandGroup>
-                {filteredCountries.slice(0, 10).map((country) => (
-                  <CommandItem
-                    key={country.code}
-                    value={country.name}
-                    onSelect={(currentValue) => {
-                      onValueChange(currentValue === value ? "" : currentValue);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === country.name ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    <div className="flex items-center gap-2">
-                      {country.flag_emoji && (
-                        <span className="text-lg">{country.flag_emoji}</span>
-                      )}
-                      <span>{country.name}</span>
-                    </div>
-                  </CommandItem>
-                ))}
-                {filteredCountries.length > 10 && (
-                  <CommandItem disabled>
-                    ... and {filteredCountries.length - 10} more
-                  </CommandItem>
-                )}
-              </CommandGroup>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+            <span>{option.name}</span>
+          </Box>
+        );
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          placeholder={placeholder}
+          required={required}
+          size="small"
+          slotProps={{
+            input: {
+              ...params.InputProps,
+              startAdornment: selectedCountry?.flag_emoji ? (
+                <span style={{ fontSize: '1.25rem', marginRight: 4 }}>{selectedCountry.flag_emoji}</span>
+              ) : undefined,
+              endAdornment: (
+                <>
+                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            },
+          }}
+        />
+      )}
+      sx={{ width: '100%' }}
+    />
   );
 }

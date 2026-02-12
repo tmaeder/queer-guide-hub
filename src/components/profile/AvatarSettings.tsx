@@ -8,6 +8,8 @@ import { hasGravatar, getGravatarUrl } from '@/lib/gravatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface AvatarData {
   avatarUrl?: string;
@@ -22,10 +24,10 @@ interface AvatarSettingsProps {
   showSaveButton?: boolean;
 }
 
-export const AvatarSettings = ({ 
-  initialData, 
-  onSave, 
-  showSaveButton = false 
+export const AvatarSettings = ({
+  initialData,
+  onSave,
+  showSaveButton = false
 }: AvatarSettingsProps) => {
   const [data, setData] = useState<AvatarData>(initialData);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -49,7 +51,7 @@ export const AvatarSettings = ({
   const updateData = (updates: Partial<AvatarData>) => {
     const newData = { ...data, ...updates };
     setData(newData);
-    
+
     // Auto-save when used in profile settings
     if (!showSaveButton && onSave) {
       onSave(newData);
@@ -62,7 +64,7 @@ export const AvatarSettings = ({
       setSelectedFile(file);
       // Create preview URL for immediate display
       const previewUrl = URL.createObjectURL(file);
-      updateData({ 
+      updateData({
         avatarUrl: previewUrl,
         avatarConfig: undefined,
         avatarType: 'upload'
@@ -71,7 +73,7 @@ export const AvatarSettings = ({
   };
 
   const handleSaveAvatar = (avatarConfig: any) => {
-    updateData({ 
+    updateData({
       avatarConfig,
       avatarUrl: undefined,
       avatarType: 'builder'
@@ -80,7 +82,7 @@ export const AvatarSettings = ({
 
   const generateRandomAvatar = () => {
     const randomConfig = generateRandomConfig();
-    updateData({ 
+    updateData({
       avatarConfig: randomConfig,
       avatarUrl: undefined,
       avatarType: 'builder'
@@ -88,7 +90,7 @@ export const AvatarSettings = ({
   };
 
   const useGravatar = () => {
-    updateData({ 
+    updateData({
       avatarUrl: undefined,
       avatarConfig: undefined,
       avatarType: 'gravatar'
@@ -102,11 +104,11 @@ export const AvatarSettings = ({
     try {
       // Upload file to Supabase storage if there's a selected file
       let finalAvatarUrl = data.avatarUrl;
-      
+
       if (selectedFile && data.avatarType === 'upload') {
         const fileExt = selectedFile.name.split('.').pop();
         const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-        
+
         const { error: uploadError } = await supabase.storage
           .from('avatars')
           .upload(fileName, selectedFile, { upsert: true });
@@ -140,7 +142,7 @@ export const AvatarSettings = ({
       }
 
       onSave({ ...data, avatarUrl: finalAvatarUrl });
-      
+
       toast({
         title: "Avatar updated",
         description: "Your profile picture has been successfully updated.",
@@ -158,169 +160,187 @@ export const AvatarSettings = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-center">
-        <AvatarDisplay 
-          avatarUrl={data.avatarUrl} 
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <AvatarDisplay
+          avatarUrl={data.avatarUrl}
           avatarConfig={data.avatarConfig}
           email={data.email}
           size="lg"
         />
-      </div>
+      </Box>
 
-      <Tabs defaultValue={data.avatarType || "builder"} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue={data.avatarType || "builder"} style={{ width: '100%' }}>
+        <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
           <TabsTrigger value="upload">
-            <Upload className="h-4 w-4 mr-2" />
+            <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
             Upload
           </TabsTrigger>
           <TabsTrigger value="builder">
-            <Palette className="h-4 w-4 mr-2" />
+            <Palette style={{ height: 16, width: 16, marginRight: 8 }} />
             Build
           </TabsTrigger>
           <TabsTrigger value="gravatar" disabled={!gravatarExists && !checkingGravatar}>
-            <Mail className="h-4 w-4 mr-2" />
+            <Mail style={{ height: 16, width: 16, marginRight: 8 }} />
             Gravatar
           </TabsTrigger>
           <TabsTrigger value="random">
-            <User className="h-4 w-4 mr-2" />
+            <User style={{ height: 16, width: 16, marginRight: 8 }} />
             Random
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="upload" className="mt-4">
-          <div className="space-y-4">
-            <div className="text-center">
-              <p className="text-sm font-medium mb-1">Upload Your Photo</p>
-              <p className="text-xs text-muted-foreground">
+        <TabsContent value="upload" style={{ marginTop: 16 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Upload Your Photo</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                 Use your own image as your profile picture
-              </p>
-            </div>
-            <div className="flex items-center justify-center w-full">
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                  <p className="mb-1 text-sm text-muted-foreground">
-                    <span className="font-semibold">Click to upload</span>
-                  </p>
-                  <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
-                </div>
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+              <Box
+                component="label"
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  height: 128,
+                  border: 2,
+                  borderStyle: 'dashed',
+                  borderColor: 'text.disabled',
+                  borderRadius: 2,
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  '&:hover': { bgcolor: 'action.hover' },
+                }}
+              >
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pt: 2.5, pb: 3 }}>
+                  <Upload style={{ width: 32, height: 32, marginBottom: 8, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
+                    <Box component="span" sx={{ fontWeight: 600 }}>Click to upload</Box>
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>PNG, JPG up to 5MB</Typography>
+                </Box>
                 <input
                   type="file"
-                  className="hidden"
+                  style={{ display: 'none' }}
                   accept="image/*"
                   onChange={handleFileSelect}
                 />
-              </label>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
         </TabsContent>
 
-        <TabsContent value="builder" className="mt-4">
-          <div className="space-y-4">
-            <div className="text-center">
-              <p className="text-sm font-medium mb-1">Avatar Builder</p>
-              <p className="text-xs text-muted-foreground">
+        <TabsContent value="builder" style={{ marginTop: 16 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Avatar Builder</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                 Create a custom avatar with our builder
-              </p>
-            </div>
-            <AvatarBuilder 
+              </Typography>
+            </Box>
+            <AvatarBuilder
               onSave={handleSaveAvatar}
               initialConfig={data.avatarConfig}
             />
-          </div>
+          </Box>
         </TabsContent>
 
-        <TabsContent value="gravatar" className="mt-4">
-          <div className="space-y-4 text-center">
-            <div>
-              <p className="text-sm font-medium mb-1">Gravatar</p>
-              <p className="text-xs text-muted-foreground">
+        <TabsContent value="gravatar" style={{ marginTop: 16 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'center' }}>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Gravatar</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                 Use your globally recognized avatar from Gravatar.com
-              </p>
-            </div>
-            
+              </Typography>
+            </Box>
+
             {checkingGravatar ? (
-              <div className="py-8">
-                <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Checking for Gravatar...</p>
-              </div>
+              <Box sx={{ py: 4 }}>
+                <RefreshCw style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', margin: '0 auto', marginBottom: 8, color: 'var(--muted-foreground)' }} />
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>Checking for Gravatar...</Typography>
+              </Box>
             ) : gravatarExists ? (
-              <div className="space-y-4">
-                <div className="flex justify-center">
-                  <img 
-                    src={getGravatarUrl(data.email, 64) || ''} 
-                    alt="Gravatar preview" 
-                    className="w-16 h-16 rounded-full"
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <Box
+                    component="img"
+                    src={getGravatarUrl(data.email, 64) || ''}
+                    alt="Gravatar preview"
+                    sx={{ width: 64, height: 64, borderRadius: '50%' }}
                   />
-                </div>
-                <Button 
+                </Box>
+                <Button
                   onClick={useGravatar}
                   size="lg"
-                  className="w-full"
+                  style={{ width: '100%' }}
                   variant={data.avatarType === 'gravatar' ? 'default' : 'outline'}
                 >
-                  <Mail className="h-4 w-4 mr-2" />
+                  <Mail style={{ height: 16, width: 16, marginRight: 8 }} />
                   {data.avatarType === 'gravatar' ? 'Using Gravatar' : 'Use This Gravatar'}
                 </Button>
-              </div>
+              </Box>
             ) : (
-              <div className="py-4 space-y-3">
-                <div className="text-center">
-                  <Mail className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-2">
+              <Box sx={{ py: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Mail style={{ width: 32, height: 32, margin: '0 auto', marginBottom: 8, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
                     No Gravatar found for <strong>{data.email}</strong>
-                  </p>
-                  <p className="text-xs text-muted-foreground">
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                     Create one at{' '}
-                    <a 
-                      href="https://gravatar.com" 
-                      target="_blank" 
+                    <a
+                      href="https://gravatar.com"
+                      target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline"
+                      style={{ color: 'inherit', textDecoration: 'underline' }}
                     >
                       gravatar.com
                     </a>{' '}
                     to use this option
-                  </p>
-                </div>
-              </div>
+                  </Typography>
+                </Box>
+              </Box>
             )}
-          </div>
+          </Box>
         </TabsContent>
 
-        <TabsContent value="random" className="mt-4">
-          <div className="space-y-4 text-center">
-            <div>
-              <p className="text-sm font-medium mb-1">Random Avatar</p>
-              <p className="text-xs text-muted-foreground">
+        <TabsContent value="random" style={{ marginTop: 16 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'center' }}>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Random Avatar</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                 Generate a random avatar instantly
-              </p>
-            </div>
-            <Button 
+              </Typography>
+            </Box>
+            <Button
               onClick={generateRandomAvatar}
               size="lg"
-              className="w-full"
+              style={{ width: '100%' }}
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
               Generate Random Avatar
             </Button>
-          </div>
+          </Box>
         </TabsContent>
       </Tabs>
 
       {showSaveButton && (
-        <div className="flex justify-end pt-4 border-t">
-          <Button 
-            onClick={handleSave} 
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Button
+            onClick={handleSave}
             disabled={saving}
             size="lg"
           >
-            {saving && <RefreshCw className="h-4 w-4 mr-2 animate-spin" />}
+            {saving && <RefreshCw style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />}
             Save Avatar
           </Button>
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };

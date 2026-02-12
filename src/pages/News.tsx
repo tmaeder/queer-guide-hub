@@ -12,6 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Newspaper, Loader, Search, Grid3X3, List, SortAsc, SortDesc, Filter, X, Calendar, Eye, Clock, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+
 interface SortOption {
   value: string;
   label: string;
@@ -116,7 +120,7 @@ export default function News() {
     const option = sortOptions.find(opt => opt.value === value);
     if (option) {
       // Local sorting implementation
-      setCurrentFilters(prev => ({
+      setCurrentFilters((prev: any) => ({
         ...prev,
         sortBy: value
       }));
@@ -160,59 +164,59 @@ export default function News() {
   };
   const hasActiveFilters = quickSearch || Object.keys(currentFilters).length > 0;
   if (error) {
-    return <div className="container mx-auto px-4 py-8">
-        <Card className="border-destructive/20">
-          <CardContent className="pt-6">
-            <p className="text-destructive">Something went wrong while loading news. Please try again later.</p>
+    return <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Card style={{ borderColor: 'var(--destructive)', borderWidth: 1, opacity: 0.8 }}>
+          <CardContent sx={{ pt: 3 }}>
+            <Typography color="error">Something went wrong while loading news. Please try again later.</Typography>
           </CardContent>
         </Card>
-      </div>;
+      </Container>;
   }
-  return <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8">
+  return <Box sx={{ minHeight: '100vh' }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold text-foreground">
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: { lg: 'center' }, justifyContent: { lg: 'space-between' }, gap: 3, mb: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="h3" sx={{ fontWeight: 700 }}>
               News
-            </h1>
-            <p className="text-lg text-muted-foreground">
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary">
               Stay informed with the latest news and stories from the LGBTQ+ community worldwide
-            </p>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Newspaper className="h-4 w-4" />
-                {articles.length} articles
-              </div>
-              <div className="flex items-center gap-1">
-                <TrendingUp className="h-4 w-4" />
-                {sources.length} sources
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            
-          </div>
-        </div>
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Newspaper style={{ width: 16, height: 16 }} />
+                <Typography variant="body2" color="text.secondary">{articles.length} articles</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <TrendingUp style={{ width: 16, height: 16 }} />
+                <Typography variant="body2" color="text.secondary">{sources.length} sources</Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
+
+          </Box>
+        </Box>
 
         {/* Quick Search & Controls */}
-        <div className="flex flex-col lg:flex-row gap-4 mb-6">
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2, mb: 3 }}>
           {/* Quick Search */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Quick search articles..." value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} className="pl-10 pr-10" />
-            {quickSearch && <Button variant="ghost" size="sm" onClick={() => handleQuickSearch('')} className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0">
-                <X className="h-4 w-4" />
+          <Box sx={{ position: 'relative', flex: 1, maxWidth: '28rem' }}>
+            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+            <Input placeholder="Quick search articles..." value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} />
+            {quickSearch && <Button variant="ghost" size="sm" onClick={() => handleQuickSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', height: 24, width: 24, padding: 0 }}>
+                <X style={{ width: 16, height: 16 }} />
               </Button>}
-          </div>
+          </Box>
 
           {/* Controls */}
-          <div className="flex items-center gap-3">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {/* Sort */}
             <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-[180px]">
-                <SortAsc className="h-4 w-4 mr-2" />
+              <SelectTrigger style={{ width: 180 }}>
+                <SortAsc style={{ width: 16, height: 16, marginRight: 8 }} />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -223,80 +227,80 @@ export default function News() {
             </Select>
 
             {/* View Mode */}
-            <div className="flex items-center border rounded-lg p-1">
-              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} className="h-8 w-8 p-0">
-                <Grid3X3 className="h-4 w-4" />
+            <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2, p: 0.5 }}>
+              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }}>
+                <Grid3X3 style={{ width: 16, height: 16 }} />
               </Button>
-              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} className="h-8 w-8 p-0">
-                <List className="h-4 w-4" />
+              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} style={{ height: 32, width: 32, padding: 0 }}>
+                <List style={{ width: 16, height: 16 }} />
               </Button>
-            </div>
+            </Box>
 
             {/* Advanced Filters Toggle */}
-            <Button variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(!showFilters)} className="gap-2">
-              <Filter className="h-4 w-4" />
+            <Button variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', gap: 8 }}>
+              <Filter style={{ width: 16, height: 16 }} />
               Filters
-              {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 text-xs">
+              {hasActiveFilters && <Badge variant="secondary" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>
                   !
                 </Badge>}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Active Filters Summary */}
-        {hasActiveFilters && <div className="flex items-center justify-between mb-6 p-4 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Filter className="h-4 w-4" />
-              <span>Active filters applied</span>
+        {hasActiveFilters && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Filter style={{ width: 16, height: 16 }} />
+              <Typography variant="body2" color="text.secondary">Active filters applied</Typography>
               {quickSearch && <Badge variant="outline">Search: {quickSearch}</Badge>}
-            </div>
+            </Box>
             <Button variant="ghost" size="sm" onClick={clearAllFilters}>
               Clear All
             </Button>
-          </div>}
+          </Box>}
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
           {/* Sidebar Filters */}
-          {showFilters && <div className="lg:col-span-1">
+          {showFilters && <Box sx={{ gridColumn: { lg: 'span 1' } }}>
               <NewsFilters sources={sources} onFiltersChange={handleFiltersChange} trendingTags={trendingTags} />
-            </div>}
+            </Box>}
 
           {/* Main Content */}
-          <div className={showFilters ? "lg:col-span-3" : "lg:col-span-4"}>
+          <Box sx={{ gridColumn: showFilters ? { lg: 'span 3' } : { lg: 'span 4' } }}>
             {/* Loading State */}
-            {loading && <div className="flex items-center justify-center py-12">
-                <Loader className="h-8 w-8 animate-spin text-primary" />
-                <span className="ml-2 text-muted-foreground">Loading articles...</span>
-              </div>}
+            {loading && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
+                <Loader style={{ width: 32, height: 32, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
+                <Typography color="text.secondary" sx={{ ml: 1 }}>Loading articles...</Typography>
+              </Box>}
 
             {/* Empty State */}
-            {!loading && getSortedArticles().length === 0 && <Card className="p-8 text-center">
+            {!loading && getSortedArticles().length === 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
                 <CardContent>
-                  
-                  <h3 className="text-xl font-semibold mb-2">No articles found</h3>
-                  
-                  <div className="text-sm text-muted-foreground">
+
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No articles found</Typography>
+
+                  <Typography variant="body2" color="text.secondary">
                     News is automatically imported every 2 hours via cron job
-                  </div>
+                  </Typography>
                 </CardContent>
               </Card>}
 
             {/* Articles */}
-            {!loading && getSortedArticles().length > 0 && <div className="space-y-6">
+            {!loading && getSortedArticles().length > 0 && <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {/* Results Summary */}
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">
                     Showing {getSortedArticles().length} article{getSortedArticles().length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-                
+                  </Typography>
+                </Box>
+
                 {/* Articles Grid/List */}
-                <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "space-y-4"}>
+                <Box sx={viewMode === 'grid' ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: 'repeat(3, 1fr)' }, gap: 3 } : { display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {getSortedArticles().map(article => <NewsCard key={article.id} article={article} onViewArticle={handleViewArticle} />)}
-                </div>
-              </div>}
-          </div>
-        </div>
-      </div>
-    </div>;
+                </Box>
+              </Box>}
+          </Box>
+        </Box>
+      </Container>
+    </Box>;
 }

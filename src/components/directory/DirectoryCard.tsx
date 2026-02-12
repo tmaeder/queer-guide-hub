@@ -132,11 +132,11 @@ export const DirectoryCard = ({
   const getIcon = () => {
     switch (type) {
       case "continent":
-        return <Globe className="h-5 w-5 text-primary" />;
+        return <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
       case "country":
-        return <MapPin className="h-5 w-5 text-primary" />;
+        return <MapPin style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
       case "city":
-        return <Building2 className="h-5 w-5 text-primary" />;
+        return <Building2 style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
       default:
         return null;
     }
@@ -144,23 +144,23 @@ export const DirectoryCard = ({
   const getSubtitle = () => {
     if (type === "country" && data) {
       const country = data as Country;
-      return <div className="space-y-1">
-          {country.capital && <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Crown className="h-4 w-4" />
+      return <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {country.capital && <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+            <Crown style={{ height: 16, width: 16 }} />
             <span>{country.capital}</span>
           </div>}
         </div>;
     }
     if (type === "city" && data) {
       const city = data as City;
-      return <div className="space-y-1">
-          {city.countries && <p className="text-sm text-muted-foreground">{city.countries.name}</p>}
-          <div className="flex gap-2">
-            {city.is_capital && <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
-                <Crown className="h-3 w-3 text-primary" />
+      return <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {city.countries && <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', margin: 0 }}>{city.countries.name}</p>}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {city.is_capital && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', backgroundColor: 'rgba(var(--primary-rgb), 0.1)' }}>
+                <Crown style={{ height: 12, width: 12, color: 'var(--primary)' }} />
               </div>}
-            {city.is_major_city && <div className="flex items-center justify-center w-6 h-6 rounded-full bg-secondary/10">
-                <Building2 className="h-3 w-3 text-secondary-foreground" />
+            {city.is_major_city && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', backgroundColor: 'rgba(var(--secondary-rgb), 0.1)' }}>
+                <Building2 style={{ height: 12, width: 12, color: 'var(--secondary-foreground)' }} />
               </div>}
           </div>
         </div>;
@@ -169,54 +169,54 @@ export const DirectoryCard = ({
   };
   const getStats = () => {
     if (data?.population) {
-      return <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Users className="h-4 w-4" />
+      return <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+          <Users style={{ height: 16, width: 16 }} />
           <span>{formatPopulation(data.population)}</span>
         </div>;
     }
     return null;
   };
-  const cardContent = <Card className={`cursor-pointer transition-all hover:shadow-md hover:scale-105 ${onClick ? "hover:bg-accent/50" : ""}`}>
+  const cardContent = <Card style={{ cursor: 'pointer', transition: 'all 0.3s' }}>
       {/* Country Image */}
-      {type === "country" && <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
-          {imageLoading ? <div className="w-full h-full flex items-center justify-center">
-              <div className="animate-pulse bg-muted-foreground/20 w-full h-full"></div>
-            </div> : <img src={countryImage || `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`} alt={`${name} landscape`} className="w-full h-full object-cover" onError={e => {
+      {type === "country" && <div style={{ aspectRatio: '4/3', width: '100%', overflow: 'hidden', borderRadius: '8px 8px 0 0', backgroundColor: 'var(--accent)' }}>
+          {imageLoading ? <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', backgroundColor: 'rgba(var(--muted-foreground-rgb), 0.2)', width: '100%', height: '100%' }}></div>
+            </div> : <img src={countryImage || `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`} alt={`${name} landscape`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => {
         // Fallback to default image if Pexels image fails to load
         e.currentTarget.src = `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`;
       }} />}
         </div>}
       
       {/* City Image */}
-      {type === "city" && <div className="aspect-[4/3] w-full overflow-hidden rounded-t-lg bg-muted">
-          {cityImageLoading ? <div className="w-full h-full flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div> : cityImageUrl && !cityImageError ? <img src={cityImageUrl} alt={`${name} cityscape`} className="w-full h-full object-cover" onError={() => setCityImageError(true)} /> : <div className="w-full h-full flex items-center justify-center">
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
+      {type === "city" && <div style={{ aspectRatio: '4/3', width: '100%', overflow: 'hidden', borderRadius: '8px 8px 0 0', backgroundColor: 'var(--accent)' }}>
+          {cityImageLoading ? <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Loader2 style={{ height: 24, width: 24, animation: 'spin 1s linear infinite', color: 'var(--muted-foreground)' }} />
+            </div> : cityImageUrl && !cityImageError ? <img src={cityImageUrl} alt={`${name} cityscape`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setCityImageError(true)} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ImageIcon style={{ height: 32, width: 32, color: 'var(--muted-foreground)' }} />
             </div>}
         </div>}
-      <CardHeader className={type === "country" || type === "city" ? "pb-2 pt-3 px-3" : "pb-3"}>
-        <CardTitle className={`flex items-center justify-between ${type === "country" || type === "city" ? "text-sm" : ""}`}>
-          <div className="flex items-center gap-2">
+      <CardHeader style={type === "country" || type === "city" ? { paddingBottom: 8, paddingTop: 12, paddingLeft: 12, paddingRight: 12 } : { paddingBottom: 12 }}>
+        <CardTitle style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', ...(type === "country" || type === "city" ? { fontSize: '0.875rem' } : {}) }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {type !== "country" && type !== "city" && getIcon()}
-            <span className={type === "country" || type === "city" ? "text-sm font-medium" : "text-lg"}>{name}</span>
+            <span style={type === "country" || type === "city" ? { fontSize: '0.875rem', fontWeight: 500 } : { fontSize: '1.125rem' }}>{name}</span>
           </div>
           {type !== "country" && type !== "city" && getStats()}
         </CardTitle>
       </CardHeader>
-      {getSubtitle() && <CardContent className="pt-0">
+      {getSubtitle() && <CardContent sx={{ pt: 0 }}>
           {getSubtitle()}
         </CardContent>}
     </Card>;
 
   // Wrap with Link for cities and countries, otherwise use onClick
   if (type === "city" && data?.id) {
-    return <Link to={`/city/${data.id}`} className="block">
+    return <Link to={`/city/${data.id}`} style={{ display: 'block' }}>
         {cardContent}
       </Link>;
   }
   if (type === "country" && data?.id) {
-    return <Link to={`/country/${data.id}`} className="block">
+    return <Link to={`/country/${data.id}`} style={{ display: 'block' }}>
         {cardContent}
       </Link>;
   }

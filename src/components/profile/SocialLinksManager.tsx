@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { SocialLinksList } from './social/SocialLinksList';
 import { PlatformSelector } from './social/PlatformSelector';
 import { PLATFORM_CONFIGS } from './social/platformConfigs';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface SocialLink {
   platform: string;
@@ -46,14 +48,14 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
 
   const detectPlatformFromUrl = (url: string): string => {
     const cleanUrl = url.startsWith('http') ? url : `https://${url}`;
-    
+
     for (const config of PLATFORM_CONFIGS) {
       try {
         const regexPattern = config.urlDetectionRegex
           .replace(/^\(\?\i\)/, '')
           .replace(/\\\\/g, '\\');
         const regex = new RegExp(regexPattern, 'i');
-        
+
         if (regex.test(cleanUrl)) {
           return config.platform;
         }
@@ -61,29 +63,29 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
         continue;
       }
     }
-    
+
     return 'Custom Platform';
   };
 
   const handleQuickAdd = async () => {
     if (!quickAddUrl.trim()) return;
-    
+
     let url = quickAddUrl.trim();
     if (!url.startsWith('http')) {
       url = `https://${url}`;
     }
 
     const platform = detectPlatformFromUrl(url);
-    
+
     const newLink: SocialLink = {
       platform,
       url
     };
     setCustomLinks(prev => [...prev, newLink]);
-    
+
     setQuickAddUrl('');
     setDetectedPlatform('');
-    
+
     toast({
       title: "Platform added",
       description: `${platform} profile has been added successfully.`
@@ -115,7 +117,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
       url: url === 'username' ? '' : url
     };
     setCustomLinks(prev => [...prev, newLink]);
-    
+
     setShowPlatformSelector(false);
     toast({
       title: "Platform added",
@@ -125,7 +127,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
 
   const saveSocialLinks = async () => {
     if (!user) return;
-    
+
     setIsSaving(true);
     try {
       const allSocialLinks = {
@@ -165,70 +167,74 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Social Media Profiles
-          </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Globe style={{ width: 20, height: 20 }} />
+            <Typography variant="h6">Social Media Profiles</Typography>
+          </Box>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowPlatformSelector(!showPlatformSelector)}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
             Add Platform
           </Button>
-        </CardTitle>
+        </Box>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Quick Add URL Input */}
-        <div className="p-4 border rounded-lg bg-card">
-          <div className="space-y-3">
-            <h3 className="text-lg font-medium">Add Social Profile</h3>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Paste any social media URL (e.g., https://twitter.com/username)"
-                value={quickAddUrl}
-                onChange={(e) => setQuickAddUrl(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleQuickAdd()}
-                className="flex-1"
-              />
-              <Button 
-                onClick={handleQuickAdd}
-                disabled={!quickAddUrl.trim()}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add
-              </Button>
-            </div>
-            {detectedPlatform && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Globe className="h-4 w-4" />
-                Detected: {detectedPlatform}
-              </div>
-            )}
-          </div>
-        </div>
+      <CardContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {/* Quick Add URL Input */}
+          <Box sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 500 }}>Add Social Profile</Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Input
+                  placeholder="Paste any social media URL (e.g., https://twitter.com/username)"
+                  value={quickAddUrl}
+                  onChange={(e) => setQuickAddUrl(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleQuickAdd()}
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  onClick={handleQuickAdd}
+                  disabled={!quickAddUrl.trim()}
+                >
+                  <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
+                  Add
+                </Button>
+              </Box>
+              {detectedPlatform && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Globe style={{ width: 16, height: 16 }} />
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    Detected: {detectedPlatform}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
 
-        {showPlatformSelector && (
-          <PlatformSelector onPlatformSelect={handlePlatformAdd} />
-        )}
-        
-        <SocialLinksList
-          customLinks={customLinks}
-          onCustomLinkChange={handleCustomLinkChange}
-          onRemoveCustomLink={removeCustomLink}
-        />
+          {showPlatformSelector && (
+            <PlatformSelector onPlatformSelect={handlePlatformAdd} />
+          )}
 
-        <div className="flex justify-end pt-4">
-          <Button 
-            onClick={saveSocialLinks}
-            disabled={isSaving}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {isSaving ? "Saving..." : "Save Social Links"}
-          </Button>
-        </div>
+          <SocialLinksList
+            customLinks={customLinks}
+            onCustomLinkChange={handleCustomLinkChange}
+            onRemoveCustomLink={removeCustomLink}
+          />
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
+            <Button
+              onClick={saveSocialLinks}
+              disabled={isSaving}
+            >
+              <Save style={{ width: 16, height: 16, marginRight: 8 }} />
+              {isSaving ? "Saving..." : "Save Social Links"}
+            </Button>
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

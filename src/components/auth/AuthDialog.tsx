@@ -8,6 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface AuthDialogProps {
   open: boolean;
@@ -62,25 +64,25 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-full mx-4 p-0 gap-0 bg-gradient-to-br from-background via-background/95 to-background/90 border shadow-xl">
-        <DialogHeader className="px-6 pt-6 pb-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Heart className="h-7 w-7 text-primary fill-current animate-pulse" />
-            <span className="text-xl font-bold gradient-text">The Queer Guide</span>
-          </div>
-          <DialogTitle className="text-2xl font-semibold text-foreground">
+      <DialogContent sx={{ maxWidth: { sm: '28rem' }, width: '100%', mx: 2, p: 0, gap: 0 }}>
+        <DialogHeader sx={{ px: 3, pt: 3, pb: 2, textAlign: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1.5 }}>
+            <Heart style={{ width: 28, height: 28, color: 'var(--primary)', fill: 'currentColor', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
+            <Typography variant="h6" sx={{ fontWeight: 700 }} className="gradient-text">The Queer Guide</Typography>
+          </Box>
+          <DialogTitle sx={{ fontSize: '1.5rem', fontWeight: 600, color: 'text.primary' }}>
             Welcome Back
           </DialogTitle>
-          <p className="text-sm text-muted-foreground mt-1">
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
             Sign in to continue your journey
-          </p>
+          </Typography>
         </DialogHeader>
-        
-        <div className="px-6 pb-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-foreground">
+
+        <Box sx={{ px: 3, pb: 3 }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Label htmlFor="email" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>
                   Email Address
                 </Label>
                 <Input
@@ -89,81 +91,87 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                   placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-11 bg-background/50 border-input/60 focus:border-primary/60 focus:ring-primary/20"
                   required
                 />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-foreground">
+              </Box>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Label htmlFor="password" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>
                   Password
                 </Label>
-                <div className="relative">
+                <Box sx={{ position: 'relative' }}>
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-11 bg-background/50 border-input/60 focus:border-primary/60 focus:ring-primary/20 pr-10"
                     required
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 p-0 hover:bg-transparent"
+                    sx={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', height: 36, width: 36, p: 0 }}
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={loading}
                   >
-                    {showPassword ? 
-                      <EyeOff className="h-4 w-4 text-muted-foreground" /> : 
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    {showPassword ?
+                      <EyeOff style={{ width: 16, height: 16 }} sx={{ color: 'text.secondary' }} /> :
+                      <Eye style={{ width: 16, height: 16 }} sx={{ color: 'text.secondary' }} />
                     }
                   </Button>
-                </div>
-              </div>
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02]"
+                </Box>
+              </Box>
+            </Box>
+
+            <Button
+              type="submit"
               disabled={loading}
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 style={{ marginRight: 8, height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
                   Signing in...
                 </>
               ) : (
                 'Sign In'
               )}
             </Button>
-          </form>
-          
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-3 text-muted-foreground font-medium">
+          </Box>
+
+          <Box sx={{ mt: 3 }}>
+            <Box sx={{ position: 'relative' }}>
+              <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+                <Separator style={{ width: '100%' }} />
+              </Box>
+              <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    bgcolor: 'background.paper',
+                    px: 1.5,
+                    color: 'text.secondary',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                  }}
+                >
                   New to The Queer Guide?
-                </span>
-              </div>
-            </div>
-            
-            <div className="mt-4 text-center">
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
               <Button
                 variant="outline"
                 onClick={handleSignUpClick}
-                className="w-full h-11 border-input/60 hover:bg-muted/50 hover:border-primary/60 transition-all duration-200"
+                style={{ width: '100%' }}
               >
                 Create your account with guided signup
               </Button>
-            </div>
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Box>
       </DialogContent>
     </Dialog>
   );

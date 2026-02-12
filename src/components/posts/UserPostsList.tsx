@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PenSquare, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface UserPostsListProps {
   userId: string;
@@ -25,47 +27,47 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 bg-muted rounded-full"></div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-muted rounded w-24"></div>
-                  <div className="h-3 bg-muted rounded w-32"></div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="h-4 bg-muted rounded w-full"></div>
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-                <div className="h-4 bg-muted rounded w-1/2"></div>
-              </div>
+          <Card key={i} sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                <Box sx={{ height: 40, width: 40, bgcolor: 'action.hover', borderRadius: '50%' }}></Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: 96 }}></Box>
+                  <Box sx={{ height: 12, bgcolor: 'action.hover', borderRadius: 1, width: 128 }}></Box>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '100%' }}></Box>
+                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }}></Box>
+                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '50%' }}></Box>
+              </Box>
             </CardContent>
           </Card>
         ))}
-      </div>
+      </Box>
     );
   }
 
   if (!posts.length) {
     return (
       <Card>
-        <CardContent className="p-8 text-center">
-          <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">
+        <CardContent sx={{ p: 4, textAlign: 'center' }}>
+          <Users style={{ width: 48, height: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+          <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>
             {isOwnProfile ? "You haven't posted anything yet" : "No posts yet"}
-          </h3>
-          <p className="text-muted-foreground mb-4">
-            {isOwnProfile 
+          </Typography>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
+            {isOwnProfile
               ? "Share your thoughts, experiences, or ask questions with the community."
               : "This user hasn't shared any posts yet."
             }
-          </p>
+          </Typography>
           {isOwnProfile && user && (
             <CreatePostDialog>
               <Button>
-                <PenSquare className="h-4 w-4 mr-2" />
+                <PenSquare style={{ width: 16, height: 16, marginRight: 8 }} />
                 Create Your First Post
               </Button>
             </CreatePostDialog>
@@ -76,14 +78,14 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Create Post Button for Own Profile */}
       {isOwnProfile && user && (
         <Card>
-          <CardContent className="p-4">
+          <CardContent sx={{ p: 2 }}>
             <CreatePostDialog>
-              <Button variant="outline" className="w-full justify-start h-12">
-                <PenSquare className="h-4 w-4 mr-2" />
+              <Button variant="outline" sx={{ width: '100%', justifyContent: 'flex-start', height: 48 }}>
+                <PenSquare style={{ width: 16, height: 16, marginRight: 8 }} />
                 What's on your mind?
               </Button>
             </CreatePostDialog>
@@ -92,7 +94,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
       )}
 
       {/* Posts List */}
-      <div className="space-y-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {posts.map((post) => (
           <PostCard
             key={post.id}
@@ -103,7 +105,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
             isLiking={isLikingPost || isDeletingPost}
           />
         ))}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };

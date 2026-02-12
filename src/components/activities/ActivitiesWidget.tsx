@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import Box from '@mui/material/Box';
 
 interface ActivitiesWidgetProps {
   destination: string;
@@ -22,13 +23,13 @@ export function ActivitiesWidget({ destination, countryCode }: ActivitiesWidgetP
   }, []);
 
   return (
-    <div className="min-h-[400px] w-full">
-      <div 
+    <Box sx={{ minHeight: 400, width: '100%' }}>
+      <Box
         ref={containerRef}
-        data-gyg-widget="auto" 
+        data-gyg-widget="auto"
         data-gyg-partner-id="2PBDXWH"
-        className="w-full min-h-[400px]"
+        sx={{ width: '100%', minHeight: 400 }}
       />
-    </div>
+    </Box>
   );
 }

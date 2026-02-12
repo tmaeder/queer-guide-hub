@@ -101,31 +101,31 @@ export function VenuesFilters({
 
   return (
     <Card>
-      <CardContent className="p-6">
-        <div className="space-y-4">
+      <CardContent sx={{ p: 3 }}>
+        <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Search and basic filters */}
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2, alignItems: { lg: 'center' } }}>
+            <div sx={{ flex: 1 }}>
+              <div sx={{ position: 'relative' }}>
+                <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Input
                   placeholder="Search venues by name, description, or city..."
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  className="pl-10"
+                  sx={{ pl: 5 }}
                 />
               </div>
             </div>
             
-            <div className="flex items-center gap-2 flex-wrap">
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               {/* Category Filter */}
-              <div className="flex items-center gap-2">
-                <Grid3X3 className="h-4 w-4 text-muted-foreground" />
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Grid3X3 style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Select value={selectedCategory} onValueChange={onCategoryChange}>
-                  <SelectTrigger className="w-40 bg-background">
+                  <SelectTrigger sx={{ width: 160, bgcolor: 'background.default' }}>
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background border border-border shadow-lg z-50">
+                  <SelectContent sx={{ bgcolor: 'background.default', border: 1, borderColor: 'divider', boxShadow: 6, zIndex: 50 }}>
                     <SelectItem value="all">All Categories</SelectItem>
                     {categories.map(category => (
                       <SelectItem key={category} value={category}>
@@ -137,13 +137,13 @@ export function VenuesFilters({
               </div>
 
               {/* City Filter */}
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <MapPin style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Select value={selectedCity} onValueChange={onCityChange}>
-                  <SelectTrigger className="w-32 bg-background">
+                  <SelectTrigger sx={{ width: 128, bgcolor: 'background.default' }}>
                     <SelectValue placeholder="City" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background border border-border shadow-lg z-50">
+                  <SelectContent sx={{ bgcolor: 'background.default', border: 1, borderColor: 'divider', boxShadow: 6, zIndex: 50 }}>
                     <SelectItem value="all">All Cities</SelectItem>
                     {cities.map(city => (
                       <SelectItem key={city} value={city}>
@@ -159,18 +159,18 @@ export function VenuesFilters({
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className="flex items-center gap-2"
+                sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
               >
-                <Filter className="h-4 w-4" />
+                <Filter style={{ height: 16, width: 16 }} />
                 Filters
                 {activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+                  <Badge variant="secondary" sx={{ ml: 0.5, height: 20, width: 20, borderRadius: '50%', p: 0, fontSize: '0.75rem' }}>
                     {activeFiltersCount}
                   </Badge>
                 )}
               </Button>
 
-              <Badge variant="outline" className="text-sm">
+              <Badge variant="outline" sx={{ fontSize: '0.875rem' }}>
                 {totalResults} results
               </Badge>
             </div>
@@ -178,35 +178,35 @@ export function VenuesFilters({
 
           {/* Advanced Filters */}
           {showAdvancedFilters && (
-            <div className="border-t pt-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium">Advanced Filters</h4>
+            <div sx={{ borderTop: 1, borderColor: 'divider', pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h4 sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Advanced Filters</h4>
                 <Button variant="ghost" size="sm" onClick={clearAllFilters}>
                   Clear All
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 {/* Tags Filter */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Tag className="h-4 w-4" />
+                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Tag style={{ height: 16, width: 16 }} />
                     Tags
                   </label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
+                      <Button variant="outline" sx={{ width: '100%', justifyContent: 'space-between' }}>
                         {selectedTags.length === 0 
                           ? "Select tags..." 
                           : `${selectedTags.length} selected`}
-                        <Filter className="ml-2 h-4 w-4" />
+                        <Filter style={{ marginLeft: 8, height: 16, width: 16 }} />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-80 p-0 bg-background border border-border">
+                    <PopoverContent sx={{ width: 320, p: 0, bgcolor: 'background.default', border: 1, borderColor: 'divider' }}>
                       <Command>
                         <CommandInput placeholder="Search tags..." />
                         <CommandEmpty>No tags found.</CommandEmpty>
-                        <CommandGroup className="max-h-64 overflow-auto">
+                        <CommandGroup sx={{ maxHeight: 256, overflow: 'auto' }}>
                           {tags.map((tag) => (
                             <CommandItem
                               key={tag}
@@ -216,7 +216,7 @@ export function VenuesFilters({
                                   : [...selectedTags, tag];
                                 onTagsChange(newTags);
                               }}
-                              className="flex items-center space-x-2"
+                              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                             >
                               <Checkbox
                                 checked={selectedTags.includes(tag)}
@@ -232,25 +232,25 @@ export function VenuesFilters({
                 </div>
 
                 {/* Amenities Filter */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Grid3X3 className="h-4 w-4" />
+                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Grid3X3 style={{ height: 16, width: 16 }} />
                     Amenities
                   </label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
+                      <Button variant="outline" sx={{ width: '100%', justifyContent: 'space-between' }}>
                         {selectedAmenities.length === 0 
                           ? "Select amenities..." 
                           : `${selectedAmenities.length} selected`}
-                        <Filter className="ml-2 h-4 w-4" />
+                        <Filter style={{ marginLeft: 8, height: 16, width: 16 }} />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-80 p-0 bg-background border border-border">
+                    <PopoverContent sx={{ width: 320, p: 0, bgcolor: 'background.default', border: 1, borderColor: 'divider' }}>
                       <Command>
                         <CommandInput placeholder="Search amenities..." />
                         <CommandEmpty>No amenities found.</CommandEmpty>
-                        <CommandGroup className="max-h-64 overflow-auto">
+                        <CommandGroup sx={{ maxHeight: 256, overflow: 'auto' }}>
                           {amenities.map((amenity) => (
                             <CommandItem
                               key={amenity}
@@ -260,7 +260,7 @@ export function VenuesFilters({
                                   : [...selectedAmenities, amenity];
                                 onAmenitiesChange(newAmenities);
                               }}
-                              className="flex items-center space-x-2"
+                              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                             >
                               <Checkbox
                                 checked={selectedAmenities.includes(amenity)}
@@ -278,23 +278,23 @@ export function VenuesFilters({
 
               {/* Active Filters Display */}
               {(selectedTags.length > 0 || selectedAmenities.length > 0) && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Active Filters:</label>
-                  <div className="flex flex-wrap gap-2">
+                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Active Filters:</label>
+                  <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {selectedTags.map(tag => (
-                      <Badge key={`tag-${tag}`} variant="secondary" className="flex items-center gap-1">
+                      <Badge key={`tag-${tag}`} variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         {tag}
                         <X 
-                          className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                          style={{ height: 12, width: 12, cursor: 'pointer' }} 
                           onClick={() => onTagsChange(selectedTags.filter(t => t !== tag))}
                         />
                       </Badge>
                     ))}
                     {selectedAmenities.map(amenity => (
-                      <Badge key={`amenity-${amenity}`} variant="secondary" className="flex items-center gap-1">
+                      <Badge key={`amenity-${amenity}`} variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         {amenity}
                         <X 
-                          className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                          style={{ height: 12, width: 12, cursor: 'pointer' }} 
                           onClick={() => onAmenitiesChange(selectedAmenities.filter(a => a !== amenity))}
                         />
                       </Badge>

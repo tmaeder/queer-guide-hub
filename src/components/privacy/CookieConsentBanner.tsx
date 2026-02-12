@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/card';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { CookiePreferencesDialog } from './CookiePreferencesDialog';
 import { Link } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export function CookieConsentBanner() {
   const { showBanner, acceptAll, acceptNecessary } = useCookieConsent();
@@ -14,56 +16,56 @@ export function CookieConsentBanner() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 bg-background/95 backdrop-blur border-t border-border">
-        <Card className="p-6 max-w-4xl mx-auto">
-          <div className="flex items-start gap-4">
-            <Cookie className="h-6 w-6 text-muted-foreground mt-1 flex-shrink-0" />
-            <div className="flex-1 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Cookie Settings</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  We use cookies to enhance your experience, analyze site traffic, and personalize content. 
+      <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60, p: 2, bgcolor: 'rgba(var(--background), 0.95)', backdropFilter: 'blur(8px)', borderTop: 1, borderColor: 'divider' }}>
+        <Card style={{ padding: 24, maxWidth: 896, margin: '0 auto' }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+            <Cookie style={{ height: 24, width: 24, color: 'var(--muted-foreground)', marginTop: 4, flexShrink: 0 }} />
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Cookie Settings</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                  We use cookies to enhance your experience, analyze site traffic, and personalize content.
                   You can manage your preferences or learn more in our{' '}
-                  <Link to="/legal" className="underline hover:text-foreground">
+                  <Box component={Link} to="/legal" sx={{ textDecoration: 'underline', '&:hover': { color: 'text.primary' } }}>
                     Legal Hub
-                  </Link>
+                  </Box>
                   , including our{' '}
-                  <Link to="/privacy" className="underline hover:text-foreground">
+                  <Box component={Link} to="/privacy" sx={{ textDecoration: 'underline', '&:hover': { color: 'text.primary' } }}>
                     Privacy Policy
-                  </Link>
+                  </Box>
                   {' '}and{' '}
-                  <Link to="/cookies" className="underline hover:text-foreground">
+                  <Box component={Link} to="/cookies" sx={{ textDecoration: 'underline', '&:hover': { color: 'text.primary' } }}>
                     Cookie Policy
-                  </Link>
+                  </Box>
                   .
-                </p>
-              </div>
-              
-              <div className="flex flex-wrap gap-3">
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                 <Button onClick={acceptAll} size="sm">
                   Accept All
                 </Button>
                 <Button onClick={acceptNecessary} variant="outline" size="sm">
                   Necessary Only
                 </Button>
-                <Button 
-                  onClick={() => setShowPreferences(true)} 
-                  variant="ghost" 
+                <Button
+                  onClick={() => setShowPreferences(true)}
+                  variant="ghost"
                   size="sm"
-                  className="gap-2"
+                  style={{ display: 'inline-flex', gap: 8 }}
                 >
-                  <Settings className="h-4 w-4" />
+                  <Settings style={{ height: 16, width: 16 }} />
                   Customize
                 </Button>
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
         </Card>
-      </div>
+      </Box>
 
-      <CookiePreferencesDialog 
-        open={showPreferences} 
-        onOpenChange={setShowPreferences} 
+      <CookiePreferencesDialog
+        open={showPreferences}
+        onOpenChange={setShowPreferences}
       />
     </>
   );

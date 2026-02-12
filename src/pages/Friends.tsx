@@ -11,6 +11,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 
 export default function Friends() {
   const { user } = useAuth();
@@ -31,13 +34,13 @@ export default function Friends() {
     queryKey: ['friend-profiles', friends.map(f => f.user_id === user?.id ? f.target_user_id : f.user_id)],
     queryFn: async () => {
       if (!user || friends.length === 0) return [];
-      
+
       const friendIds = friends.map(f => f.user_id === user.id ? f.target_user_id : f.user_id);
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url, location')
         .in('user_id', friendIds);
-      
+
       if (error) throw error;
       return data;
     },
@@ -48,13 +51,13 @@ export default function Friends() {
     queryKey: ['request-profiles', pendingRequests.map(r => r.user_id)],
     queryFn: async () => {
       if (!user || pendingRequests.length === 0) return [];
-      
+
       const requestIds = pendingRequests.map(r => r.user_id);
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url, location')
         .in('user_id', requestIds);
-      
+
       if (error) throw error;
       return data;
     },
@@ -63,192 +66,208 @@ export default function Friends() {
 
   if (!user) {
     return (
-      <div className="container mx-auto p-6">
+      <Container maxWidth="lg" sx={{ p: 3 }}>
         <Card>
           <CardHeader>
             <CardTitle>Authentication Required</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">Please log in to view your friends.</p>
+            <Typography color="text.secondary">Please log in to view your friends.</Typography>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Friends</h1>
-          <p className="text-muted-foreground">Manage your connections</p>
-        </div>
-        <Badge variant="secondary" className="gap-2">
-          <Users className="h-4 w-4" />
-          {friends.length} Friends
-        </Badge>
-      </div>
+    <Container maxWidth="lg" sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>Friends</Typography>
+            <Typography color="text.secondary">Manage your connections</Typography>
+          </Box>
+          <Badge variant="secondary">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Users style={{ width: 16, height: 16 }} />
+              {friends.length} Friends
+            </Box>
+          </Badge>
+        </Box>
 
-      <Tabs defaultValue="friends" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="friends" className="gap-2">
-            <Users className="h-4 w-4" />
-            Friends ({friends.length})
-          </TabsTrigger>
-          <TabsTrigger value="requests" className="gap-2">
-            <Clock className="h-4 w-4" />
-            Requests ({pendingRequests.length})
-          </TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="friends" style={{ width: '100%' }}>
+          <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr' }}>
+            <TabsTrigger value="friends">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Users style={{ width: 16, height: 16 }} />
+                Friends ({friends.length})
+              </Box>
+            </TabsTrigger>
+            <TabsTrigger value="requests">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Clock style={{ width: 16, height: 16 }} />
+                Requests ({pendingRequests.length})
+              </Box>
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="friends" className="space-y-4">
-          {friends.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">No friends yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  Start connecting with people in your community
-                </p>
-                <Button asChild>
-                  <Link to="/users">
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Find People
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {friends.map((friendship) => {
-                const friendId = friendship.user_id === user.id ? friendship.target_user_id : friendship.user_id;
-                const profile = friendProfiles?.find(p => p.user_id === friendId);
-                
-                return (
-                  <Card key={friendship.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={profile?.avatar_url || undefined} />
-                            <AvatarFallback>
-                              {profile?.display_name?.charAt(0)?.toUpperCase() || "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <Link 
-                              to={`/users/${friendId}`}
-                              className="font-medium hover:text-primary"
-                            >
-                              {profile?.display_name || "Unknown User"}
-                            </Link>
-                            {profile?.location && (
-                              <p className="text-sm text-muted-foreground">
-                                {profile.location}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <StartConversationButton
-                            userId={friendId}
-                            userName={profile?.display_name || "User"}
-                            variant="outline"
-                            size="sm"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeRelationship(friendId)}
-                            disabled={loading}
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
+          <TabsContent value="friends">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {friends.length === 0 ? (
+                <Card>
+                  <CardContent sx={{ textAlign: 'center', py: 6 }}>
+                    <Users style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+                    <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>No friends yet</Typography>
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
+                      Start connecting with people in your community
+                    </Typography>
+                    <Button asChild>
+                      <Link to="/users">
+                        <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
+                        Find People
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  {friends.map((friendship) => {
+                    const friendId = friendship.user_id === user.id ? friendship.target_user_id : friendship.user_id;
+                    const profile = friendProfiles?.find(p => p.user_id === friendId);
 
-        <TabsContent value="requests" className="space-y-4">
-          {pendingRequests.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Clock className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">No pending requests</h3>
-                <p className="text-muted-foreground">
-                  Friend requests will appear here
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {pendingRequests.map((request) => {
-                const profile = requestProfiles?.find(p => p.user_id === request.user_id);
-                
-                return (
-                  <Card key={request.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={profile?.avatar_url || undefined} />
-                            <AvatarFallback>
-                              {profile?.display_name?.charAt(0)?.toUpperCase() || "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <Link 
-                              to={`/users/${request.user_id}`}
-                              className="font-medium hover:text-primary"
-                            >
-                              {profile?.display_name || "Unknown User"}
-                            </Link>
-                            <p className="text-sm text-muted-foreground">
-                              Sent you a friend request
-                            </p>
-                            {profile?.location && (
-                              <p className="text-sm text-muted-foreground">
-                                {profile.location}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => acceptFriendRequest(request.id)}
-                            disabled={loading}
-                            className="gap-2"
-                          >
-                            <Check className="h-4 w-4" />
-                            Accept
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => rejectFriendRequest(request.id)}
-                            disabled={loading}
-                            className="gap-2"
-                          >
-                            <X className="h-4 w-4" />
-                            Decline
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+                    return (
+                      <Card key={friendship.id}>
+                        <CardContent sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <Avatar style={{ width: 48, height: 48 }}>
+                                <AvatarImage src={profile?.avatar_url || undefined} />
+                                <AvatarFallback>
+                                  {profile?.display_name?.charAt(0)?.toUpperCase() || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <Box>
+                                <Link
+                                  to={`/users/${friendId}`}
+                                  style={{ fontWeight: 500 }}
+                                  style={{ transition: 'color 0.2s' }}
+                                >
+                                  {profile?.display_name || "Unknown User"}
+                                </Link>
+                                {profile?.location && (
+                                  <Typography variant="body2" color="text.secondary">
+                                    {profile.location}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <StartConversationButton
+                                userId={friendId}
+                                userName={profile?.display_name || "User"}
+                                variant="outline"
+                                size="sm"
+                              />
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeRelationship(friendId)}
+                                disabled={loading}
+                              >
+                                Remove
+                              </Button>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </Box>
+              )}
+            </Box>
+          </TabsContent>
+
+          <TabsContent value="requests">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {pendingRequests.length === 0 ? (
+                <Card>
+                  <CardContent sx={{ textAlign: 'center', py: 6 }}>
+                    <Clock style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+                    <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>No pending requests</Typography>
+                    <Typography color="text.secondary">
+                      Friend requests will appear here
+                    </Typography>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Box sx={{ display: 'grid', gap: 2 }}>
+                  {pendingRequests.map((request) => {
+                    const profile = requestProfiles?.find(p => p.user_id === request.user_id);
+
+                    return (
+                      <Card key={request.id}>
+                        <CardContent sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <Avatar style={{ width: 48, height: 48 }}>
+                                <AvatarImage src={profile?.avatar_url || undefined} />
+                                <AvatarFallback>
+                                  {profile?.display_name?.charAt(0)?.toUpperCase() || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <Box>
+                                <Link
+                                  to={`/users/${request.user_id}`}
+                                  style={{ fontWeight: 500 }}
+                                  style={{ transition: 'color 0.2s' }}
+                                >
+                                  {profile?.display_name || "Unknown User"}
+                                </Link>
+                                <Typography variant="body2" color="text.secondary">
+                                  Sent you a friend request
+                                </Typography>
+                                {profile?.location && (
+                                  <Typography variant="body2" color="text.secondary">
+                                    {profile.location}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => acceptFriendRequest(request.id)}
+                                disabled={loading}
+                              >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Check style={{ width: 16, height: 16 }} />
+                                  Accept
+                                </Box>
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => rejectFriendRequest(request.id)}
+                                disabled={loading}
+                              >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <X style={{ width: 16, height: 16 }} />
+                                  Decline
+                                </Box>
+                              </Button>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </Box>
+              )}
+            </Box>
+          </TabsContent>
+        </Tabs>
+      </Box>
+    </Container>
   );
 }

@@ -18,6 +18,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 const Aurora = lazy(() => import("@/components/ui/Aurora"));
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { createOptimizedQueryClient } from "@/utils/queryOptimizations";
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 
 const Index = lazy(() => import("./pages/Index"));
 const Venues = lazy(() => import("./pages/Venues"));
@@ -104,8 +106,8 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen flex flex-col relative">
-               <div className="fixed inset-0 z-0 pointer-events-none">
+            <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+               <Box sx={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
                  <Suspense fallback={null}>
                    <Aurora
                      colorStops={["#A855F7", "#EC4899", "#6366F1"]}
@@ -114,21 +116,21 @@ const App = () => {
                      speed={0.3}
                    />
                  </Suspense>
-               </div>
+               </Box>
               <AnalyticsTracker />
-              <div className="relative z-10">
+              <Box sx={{ position: 'relative', zIndex: 10 }}>
                 <Header />
-              </div>
-              <main className="flex-1 relative z-10">
-                <div className="container mx-auto px-2 sm:px-4">
+              </Box>
+              <Box component="main" sx={{ flex: 1, position: 'relative', zIndex: 10 }}>
+                <Container maxWidth="lg" sx={{ px: { xs: 1, sm: 2 } }}>
                   <ErrorBoundary>
                   <Suspense fallback={
-                    <div className="py-10">
-                      <div className="grid gap-6 sm:grid-cols-2">
-                        <Skeleton className="h-48" />
-                        <Skeleton className="h-48" />
-                      </div>
-                    </div>
+                    <Box sx={{ py: 5 }}>
+                      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+                        <Skeleton sx={{ height: 192 }} />
+                        <Skeleton sx={{ height: 192 }} />
+                      </Box>
+                    </Box>
                   }>
                   <Routes>
                   <Route path="/" element={<Index />} />
@@ -138,7 +140,7 @@ const App = () => {
                   <Route path="/events/:id" element={<EventDetail />} />
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/marketplace/:id" element={<MarketplaceItemDetail />} />
-                  
+
                   <Route path="/places" element={<Places />} />
                   <Route path="/city/:id" element={<CityDetail />} />
                   <Route path="/country/:id" element={<CountryDetail />} />
@@ -152,7 +154,7 @@ const App = () => {
                    <Route path="/ressources/:tagName" element={<Navigate to="/resources" replace />} />
                    <Route path="/tags" element={<Navigate to="/resources" replace />} />
                    <Route path="/tags/:tagName" element={<Navigate to="/resources" replace />} />
-                   
+
                    <Route path="/about-hub" element={<AboutHub />} />
                    <Route path="/about" element={<About />} />
                    <Route path="/contact" element={<Contact />} />
@@ -172,13 +174,13 @@ const App = () => {
                       <AdminDashboard />
                     </AdminRouteGuard>
                    } />
-                   
+
                    <Route path="/admin/cms" element={
                      <AdminRouteGuard>
                        <AdminCMS />
                      </AdminRouteGuard>
                    } />
-                   
+
                   <Route path="/admin/tags" element={
                     <AdminRouteGuard>
                       <AdminTags />
@@ -286,14 +288,14 @@ const App = () => {
                    } />
                    <Route path="/news" element={<News />} />
                    <Route path="/search" element={<SearchResults />} />
-                   
+
                     <Route path="/groups" element={<Groups />} />
                     <Route path="/groups/:groupId" element={<GroupDetail />} />
                     <Route path="/my-groups" element={<MyGroups />} />
                    <Route path="/accessibility" element={<AccessibilityHub />} />
                    <Route path="/messages" element={<Messages />} />
                    <Route path="/friends" element={<Friends />} />
-                    
+
                     <Route path="/favorites" element={<Favorites />} />
                      <Route path="/feed" element={<Feed />} />
                       <Route path="/community" element={<Navigate to="/feed" replace />} />
@@ -305,13 +307,13 @@ const App = () => {
                   </Routes>
                   </Suspense>
                   </ErrorBoundary>
-                </div>
-              </main>
-              <div className="relative z-10">
+                </Container>
+              </Box>
+              <Box sx={{ position: 'relative', zIndex: 10 }}>
                 <Footer />
-              </div>
+              </Box>
               <CookieConsentBanner />
-            </div>
+            </Box>
           </BrowserRouter>
               </TooltipProvider>
             </AuthProvider>

@@ -11,6 +11,9 @@ import { useMarketplace } from '@/hooks/useMarketplace';
 import { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Row'] & {
@@ -32,8 +35,7 @@ export default function MarketplaceItemDetail() {
     const fetchListing = async () => {
       try {
         setLoading(true);
-        
-        // Fetch listing details
+
         const { data: listingData, error: listingError } = await supabase
           .from('marketplace_listings')
           .select('*')
@@ -43,10 +45,8 @@ export default function MarketplaceItemDetail() {
         if (listingError) throw listingError;
         setListing(listingData);
 
-        // Increment view count
         await incrementViews(id);
 
-        // Fetch reviews with user profiles
         const { data: reviewsData, error: reviewsError } = await supabase
           .from('marketplace_reviews')
           .select(`
@@ -62,7 +62,6 @@ export default function MarketplaceItemDetail() {
         if (reviewsError) throw reviewsError;
         setReviews(reviewsData || []);
 
-        // Check if favorited by current user
         if (user) {
           const { data: favoriteData } = await supabase
             .from('marketplace_favorites')
@@ -70,7 +69,7 @@ export default function MarketplaceItemDetail() {
             .eq('listing_id', id)
             .eq('user_id', user.id)
             .single();
-          
+
           setIsFavorited(!!favoriteData);
         }
 
@@ -103,7 +102,7 @@ export default function MarketplaceItemDetail() {
           .delete()
           .eq('listing_id', listing.id)
           .eq('user_id', user.id);
-        
+
         if (error) throw error;
         setIsFavorited(false);
         toast({ title: "Removed from favorites" });
@@ -111,7 +110,7 @@ export default function MarketplaceItemDetail() {
         const { error } = await supabase
           .from('marketplace_favorites')
           .insert({ listing_id: listing.id, user_id: user.id });
-        
+
         if (error) throw error;
         setIsFavorited(true);
         toast({ title: "Added to favorites" });
@@ -128,40 +127,40 @@ export default function MarketplaceItemDetail() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded w-1/3 mb-6"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <div className="h-64 bg-muted rounded"></div>
-              <div className="h-48 bg-muted rounded"></div>
-            </div>
-            <div className="space-y-6">
-              <div className="h-32 bg-muted rounded"></div>
-              <div className="h-48 bg-muted rounded"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+          <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%', mb: 3 }} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }} />
+              <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }} />
+              <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
+            </Box>
+          </Box>
+        </Box>
+      </Container>
     );
   }
 
   if (!listing) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold mb-4">Item Not Found</h1>
-        <p className="text-muted-foreground mb-6">The marketplace item you're looking for doesn't exist.</p>
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Item Not Found</Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>The marketplace item you're looking for doesn't exist.</Typography>
         <Link to="/marketplace">
           <Button>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Marketplace
           </Button>
         </Link>
-      </div>
+      </Container>
     );
   }
 
-  const averageRating = reviews.length 
+  const averageRating = reviews.length
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
 
@@ -182,7 +181,7 @@ export default function MarketplaceItemDetail() {
     }
 
     const price = `$${listing.price}`;
-    
+
     switch (listing.price_type) {
       case 'starting_at':
         return `Starting at ${price}`;
@@ -198,15 +197,15 @@ export default function MarketplaceItemDetail() {
   const getBusinessTypeIcon = (type: string) => {
     switch (type) {
       case 'online':
-        return <Globe className="h-4 w-4" />;
+        return <Globe style={{ width: 16, height: 16 }} />;
       case 'physical':
-        return <MapPin className="h-4 w-4" />;
+        return <MapPin style={{ width: 16, height: 16 }} />;
       case 'both':
         return (
-          <div className="flex gap-1">
-            <Globe className="h-4 w-4" />
-            <MapPin className="h-4 w-4" />
-          </div>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Globe style={{ width: 16, height: 16 }} />
+            <MapPin style={{ width: 16, height: 16 }} />
+          </Box>
         );
       default:
         return null;
@@ -214,36 +213,36 @@ export default function MarketplaceItemDetail() {
   };
 
   return (
-    <div className="w-full px-4 py-8">
+    <Box sx={{ width: '100%', px: 2, py: 4 }}>
       {/* Header */}
-      <div className="mb-6">
-        <Link to="/marketplace" className="inline-flex items-center text-muted-foreground hover:text-primary mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Marketplace
+      <Box sx={{ mb: 3 }}>
+        <Link to="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', color: 'inherit', textDecoration: 'none', marginBottom: 16 }}>
+          <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>Back to Marketplace</Typography>
         </Link>
-        
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">{listing.title}</h1>
+
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { md: 'flex-start' }, justifyContent: { md: 'space-between' }, gap: 2 }}>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>{listing.title}</Typography>
               {listing.featured && (
-                <Badge className="bg-accent/10 text-accent">Featured</Badge>
+                <Badge style={{ backgroundColor: 'rgba(var(--accent), 0.1)', color: 'var(--accent)' }}>Featured</Badge>
               )}
-            </div>
-            
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-lg font-medium">{listing.business_name}</span>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>{listing.business_name}</Typography>
               {listing.business_type && getBusinessTypeIcon(listing.business_type)}
               {listing.location && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <MapPin className="h-3 w-3" />
-                  <span className="text-sm">{listing.location}</span>
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <MapPin style={{ width: 12, height: 12, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="body2" color="text.secondary">{listing.location}</Typography>
+                </Box>
               )}
-            </div>
+            </Box>
 
-            <div className="flex items-center gap-3">
-              <Badge className={getCategoryColor(listing.category)}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Badge variant="secondary">
                 {listing.category}
               </Badge>
               {listing.subcategory && (
@@ -252,55 +251,56 @@ export default function MarketplaceItemDetail() {
                 </Badge>
               )}
               {averageRating > 0 && (
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-current text-accent" />
-                  <span className="font-medium">{averageRating.toFixed(1)}</span>
-                  <span className="text-muted-foreground">({reviews.length} reviews)</span>
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Star style={{ width: 16, height: 16, fill: 'currentColor', color: 'var(--accent)' }} />
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>{averageRating.toFixed(1)}</Typography>
+                  <Typography variant="body2" color="text.secondary">({reviews.length} reviews)</Typography>
+                </Box>
               )}
               {listing.views_count && listing.views_count > 0 && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Eye className="h-4 w-4" />
-                  <span>{listing.views_count} views</span>
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Eye style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="body2" color="text.secondary">{listing.views_count} views</Typography>
+                </Box>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className="flex gap-2">
+          <Box sx={{ display: 'flex', gap: 1 }}>
             <Button variant="outline" size="sm" onClick={handleToggleFavorite}>
-              <Heart className={`h-4 w-4 mr-2 ${isFavorited ? 'fill-current text-destructive' : ''}`} />
+              <Heart style={{ width: 16, height: 16, marginRight: 8, fill: isFavorited ? 'currentColor' : 'none', color: isFavorited ? 'var(--destructive)' : 'inherit' }} />
               {isFavorited ? 'Favorited' : 'Favorite'}
             </Button>
             <Button variant="outline" size="sm">
-              <Share2 className="h-4 w-4 mr-2" />
+              <Share2 style={{ width: 16, height: 16, marginRight: 8 }} />
               Share
             </Button>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Images */}
           {listing.images && listing.images.length > 0 && (
             <Card>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                   {listing.images.slice(0, 4).map((image, index) => (
-                    <div key={index} className="aspect-video bg-muted rounded-lg overflow-hidden">
-                      <img 
-                        src={image} 
+                    <Box key={index} sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', borderRadius: 2, overflow: 'hidden' }}>
+                      <Box
+                        component="img"
+                        src={image}
                         alt={`${listing.title} - Image ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
+                        sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                           e.currentTarget.style.display = 'none';
                         }}
                       />
-                    </div>
+                    </Box>
                   ))}
-                </div>
+                </Box>
               </CardContent>
             </Card>
           )}
@@ -312,7 +312,7 @@ export default function MarketplaceItemDetail() {
                 <CardTitle>Description</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">{listing.description}</p>
+                <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>{listing.description}</Typography>
               </CardContent>
             </Card>
           )}
@@ -321,13 +321,15 @@ export default function MarketplaceItemDetail() {
           {listing.shipping_available && listing.shipping_info && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Truck className="h-4 w-4" />
-                  Shipping Information
+                <CardTitle>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Truck style={{ width: 16, height: 16 }} />
+                    Shipping Information
+                  </Box>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">{listing.shipping_info}</p>
+                <Typography color="text.secondary">{listing.shipping_info}</Typography>
               </CardContent>
             </Card>
           )}
@@ -339,111 +341,114 @@ export default function MarketplaceItemDetail() {
             </CardHeader>
             <CardContent>
               {reviews.length > 0 ? (
-                <div className="space-y-4">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {reviews.slice(0, 5).map((review) => (
-                    <div key={review.id} className="border-b pb-4 last:border-b-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="w-8 h-8">
+                    <Box key={review.id} sx={{ borderBottom: 1, borderColor: 'divider', pb: 2, '&:last-child': { borderBottom: 0 } }}>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Avatar style={{ width: 32, height: 32 }}>
                             <AvatarFallback>
                               {review.profiles?.display_name?.[0] || 'U'}
                             </AvatarFallback>
                           </Avatar>
-                          <div>
-                            <p className="font-medium">{review.profiles?.display_name || 'Anonymous'}</p>
-                            <div className="flex items-center gap-1">
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>{review.profiles?.display_name || 'Anonymous'}</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`h-3 w-3 ${
-                                    i < review.rating ? 'fill-current text-accent' : 'text-muted'
-                                  }`}
+                                  style={{
+                                    width: 12,
+                                    height: 12,
+                                    fill: i < review.rating ? 'currentColor' : 'none',
+                                    color: i < review.rating ? 'var(--accent)' : 'var(--muted)',
+                                  }}
                                 />
                               ))}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
+                            </Box>
+                          </Box>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           {review.purchase_verified && (
-                            <Badge variant="outline" className="text-xs">
-                              <Shield className="h-3 w-3 mr-1" />
+                            <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                              <Shield style={{ width: 12, height: 12, marginRight: 4 }} />
                               Verified Purchase
                             </Badge>
                           )}
-                          <span className="text-xs text-muted-foreground">
+                          <Typography variant="caption" color="text.secondary">
                             {new Date(review.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
+                          </Typography>
+                        </Box>
+                      </Box>
                       {review.title && (
-                        <h4 className="font-medium mb-1">{review.title}</h4>
+                        <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>{review.title}</Typography>
                       )}
                       {review.content && (
-                        <p className="text-sm text-muted-foreground">{review.content}</p>
+                        <Typography variant="body2" color="text.secondary">{review.content}</Typography>
                       )}
-                    </div>
+                    </Box>
                   ))}
-                </div>
+                </Box>
               ) : (
-                <p className="text-muted-foreground text-center py-4">No reviews yet</p>
+                <Typography color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>No reviews yet</Typography>
               )}
             </CardContent>
           </Card>
-        </div>
+        </Box>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Price & Contact */}
           <Card>
             <CardHeader>
               <CardTitle>Price & Contact</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h4" color="primary" sx={{ fontWeight: 700, mb: 1 }}>
                   {formatPrice()}
-                </div>
+                </Typography>
                 {listing.currency && listing.currency !== 'USD' && (
-                  <p className="text-sm text-muted-foreground">Currency: {listing.currency}</p>
+                  <Typography variant="body2" color="text.secondary">Currency: {listing.currency}</Typography>
                 )}
-              </div>
+              </Box>
 
               <Separator />
 
-              <div className="space-y-3">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {listing.contact_email && (
-                  <Button className="w-full" asChild>
+                  <Button style={{ width: '100%' }} asChild>
                     <a href={`mailto:${listing.contact_email}`}>
-                      <Mail className="h-4 w-4 mr-2" />
+                      <Mail style={{ width: 16, height: 16, marginRight: 8 }} />
                       Send Email
                     </a>
                   </Button>
                 )}
-                
+
                 {listing.contact_phone && (
-                  <Button variant="outline" className="w-full" asChild>
+                  <Button variant="outline" style={{ width: '100%' }} asChild>
                     <a href={`tel:${listing.contact_phone}`}>
-                      <Phone className="h-4 w-4 mr-2" />
+                      <Phone style={{ width: 16, height: 16, marginRight: 8 }} />
                       Call {listing.contact_phone}
                     </a>
                   </Button>
                 )}
-                
+
                 {listing.website && (
-                  <Button variant="outline" className="w-full" asChild>
+                  <Button variant="outline" style={{ width: '100%' }} asChild>
                     <a href={listing.website} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
+                      <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
                       Visit Website
                     </a>
                   </Button>
                 )}
-              </div>
+              </Box>
 
               {listing.shipping_available && (
-                <div className="flex items-center gap-2 text-sm text-accent bg-accent/10 p-2 rounded">
-                  <Truck className="h-4 w-4" />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14, color: 'var(--accent)', bgcolor: 'action.hover', p: 1, borderRadius: 1 }}>
+                  <Truck style={{ width: 16, height: 16 }} />
                   Shipping available
-                </div>
+                </Box>
               )}
             </CardContent>
           </Card>
@@ -453,28 +458,28 @@ export default function MarketplaceItemDetail() {
             <CardHeader>
               <CardTitle>Business Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <h4 className="font-medium text-sm mb-1">Business Type</h4>
-                <div className="flex items-center gap-2">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Business Type</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {listing.business_type && getBusinessTypeIcon(listing.business_type)}
-                  <span className="text-sm capitalize">{listing.business_type || 'Not specified'}</span>
-                </div>
-              </div>
+                  <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{listing.business_type || 'Not specified'}</Typography>
+                </Box>
+              </Box>
 
               {listing.location && (
-                <div>
-                  <h4 className="font-medium text-sm mb-1">Location</h4>
-                  <p className="text-sm text-muted-foreground">{listing.location}</p>
-                </div>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Location</Typography>
+                  <Typography variant="body2" color="text.secondary">{listing.location}</Typography>
+                </Box>
               )}
 
-              <div>
-                <h4 className="font-medium text-sm mb-1">Listed</h4>
-                <p className="text-sm text-muted-foreground">
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Listed</Typography>
+                <Typography variant="body2" color="text.secondary">
                   {new Date(listing.created_at).toLocaleDateString()}
-                </p>
-              </div>
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
 
@@ -484,17 +489,17 @@ export default function MarketplaceItemDetail() {
               <CardHeader>
                 <CardTitle>Social Media</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {Object.entries(listing.social_media as Record<string, string>).map(([platform, url]) => (
                   <Button
                     key={platform}
                     variant="outline"
                     size="sm"
-                    className="w-full justify-start"
+                    style={{ width: '100%', justifyContent: 'flex-start' }}
                     asChild
                   >
                     <a href={url} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
+                      <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
                       {platform.charAt(0).toUpperCase() + platform.slice(1)}
                     </a>
                   </Button>
@@ -502,10 +507,8 @@ export default function MarketplaceItemDetail() {
               </CardContent>
             </Card>
           )}
-
-          {/* Tags - will be implemented with unified tag system */}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

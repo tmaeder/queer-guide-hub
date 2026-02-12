@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { 
-  Shield, 
-  RefreshCw, 
-  Settings, 
-  Bell, 
+import { Box, Typography, Container } from "@mui/material";
+import {
+  Shield,
+  RefreshCw,
+  Settings,
+  Bell,
   Filter,
   Grid3X3,
   List
@@ -39,39 +40,39 @@ export function DashboardHeader({
   lastUpdate
 }: DashboardHeaderProps) {
   return (
-    <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary rounded border">
-                <Shield className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-                <p className="text-muted-foreground">
+    <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 40 }}>
+      <Container maxWidth={false} sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ p: 1, bgcolor: 'primary.main', borderRadius: 1, border: 1, borderColor: 'divider' }}>
+                <Shield style={{ height: 24, width: 24, color: 'white' }} />
+              </Box>
+              <Box>
+                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Admin Dashboard</Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                   Monitor and manage your platform
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 text-sm mt-3">
-              <Badge variant={isAdmin ? "default" : "secondary"} className="font-medium">
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: 14, mt: 1.5 }}>
+              <Badge variant={isAdmin ? "default" : "secondary"} sx={{ fontWeight: 500 }}>
                 {isAdmin ? "Administrator" : isModerator ? "Moderator" : "Staff"}
               </Badge>
               {lastUpdate && (
-                <span className="text-muted-foreground">
+                <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
                   Last updated: {lastUpdate.toLocaleTimeString()}
-                </span>
+                </Typography>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className="flex items-center gap-3">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {/* Time Period Filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Filter style={{ height: 16, width: 16, color: 'rgba(0, 0, 0, 0.6)' }} />
               <Select value={filterPeriod} onValueChange={onFilterPeriodChange}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger sx={{ width: 128 }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -80,58 +81,58 @@ export function DashboardHeader({
                   <SelectItem value="90d">Last 90 days</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Box>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 border rounded-lg p-1">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 2, p: 0.5 }}>
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => onViewModeChange('grid')}
-                className="h-7 w-7 p-0"
+                sx={{ height: 28, width: 28, p: 0, minWidth: 28 }}
               >
-                <Grid3X3 className="h-4 w-4" />
+                <Grid3X3 style={{ height: 16, width: 16 }} />
               </Button>
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => onViewModeChange('list')}
-                className="h-7 w-7 p-0"
+                sx={{ height: 28, width: 28, p: 0, minWidth: 28 }}
               >
-                <List className="h-4 w-4" />
+                <List style={{ height: 16, width: 16 }} />
               </Button>
-            </div>
+            </Box>
 
             {/* Auto Refresh Toggle */}
-            <div className="flex items-center gap-2">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Switch
                 id="auto-refresh"
                 checked={autoRefresh}
                 onCheckedChange={onAutoRefreshChange}
               />
-              <Label htmlFor="auto-refresh" className="text-sm">
+              <Label htmlFor="auto-refresh" sx={{ fontSize: 14 }}>
                 Auto-refresh
               </Label>
-            </div>
+            </Box>
 
             {/* Manual Refresh */}
             <Button
               variant="outline"
               size="sm"
               onClick={onRefresh}
-              className="gap-2"
+              sx={{ gap: 1 }}
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw style={{ height: 16, width: 16 }} />
               Refresh
             </Button>
 
             {/* Settings */}
             <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4" />
+              <Settings style={{ height: 16, width: 16 }} />
             </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 }

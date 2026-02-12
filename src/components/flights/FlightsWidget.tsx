@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface FlightsWidgetProps {
   destination: string;
@@ -20,11 +22,11 @@ export function FlightsWidget({ destination, countryCode = 'xx' }: FlightsWidget
     const script = document.createElement('script');
     script.async = true;
     script.charset = 'utf-8';
-    
+
     // Format destination name for the API (sanitize input)
     const formattedDestination = destination.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '_');
     const formattedCountryCode = countryCode.toLowerCase().replace(/[^a-z]/g, '');
-    
+
     // Construct URL safely
     const url = new URL('https://tpscr.com/content');
     url.searchParams.set('currency', 'eur');
@@ -40,7 +42,7 @@ export function FlightsWidget({ destination, countryCode = 'xx' }: FlightsWidget
     url.searchParams.set('form_background_color', 'FFFFFF');
     url.searchParams.set('campaign_id', '111');
     url.searchParams.set('promo_id', '4478');
-    
+
     script.src = url.toString();
 
     containerRef.current.appendChild(script);
@@ -57,13 +59,13 @@ export function FlightsWidget({ destination, countryCode = 'xx' }: FlightsWidget
   }, [destination, countryCode]);
 
   return (
-    <div 
-      ref={containerRef} 
-      className="min-h-[400px] w-full"
+    <Box
+      ref={containerRef}
+      sx={{ minHeight: 400, width: '100%' }}
     >
-      <div className="text-center text-muted-foreground py-16">
-        <p>Loading flight deals...</p>
-      </div>
-    </div>
+      <Box sx={{ textAlign: 'center', color: 'text.secondary', py: 8 }}>
+        <Typography>Loading flight deals...</Typography>
+      </Box>
+    </Box>
   );
 }

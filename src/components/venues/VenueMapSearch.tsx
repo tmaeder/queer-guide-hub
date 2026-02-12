@@ -222,71 +222,82 @@ const [filtersOpen, setFiltersOpen] = useState(false);
       }
     }
   }, [externalSearchTerm, filters]);
-  return <div className={className}>
-      <div className="h-[500px] w-full rounded-lg overflow-hidden border">
-        <div ref={mapContainer} className="w-full h-full" />
-      </div>
-      <div className="mt-2">
+  return (
+    <Box sx={className ? {} : { width: '100%' }}>
+      <Box sx={{ height: 500, width: '100%', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
+        <Box ref={mapContainer} sx={{ width: '100%', height: '100%' }} />
+      </Box>
+      <Box sx={{ mt: 1 }}>
         <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-
-<div className="flex items-center gap-2">
-<ToggleGroup
-  type="single"
-  value={mode}
-  onValueChange={(v) => v && setMode(v as 'venues' | 'organizations')}
->
-  <ToggleGroupItem value="venues" aria-label="Venues">
-    Venues
-  </ToggleGroupItem>
-  <ToggleGroupItem value="organizations" aria-label="Organizations">
-    Organizations
-  </ToggleGroupItem>
-</ToggleGroup>
-</div>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ToggleGroup
+                type="single"
+                value={mode}
+                onValueChange={(v) => v && setMode(v as 'venues' | 'organizations')}
+              >
+                <ToggleGroupItem value="venues" aria-label="Venues">
+                  Venues
+                </ToggleGroupItem>
+                <ToggleGroupItem value="organizations" aria-label="Organizations">
+                  Organizations
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </Box>
 
             <Button variant="outline" size="icon" aria-label="Toggle filters" onClick={() => setFiltersOpen(!filtersOpen)}>
-              <Filter className="h-4 w-4" />
+              <Filter style={{ width: 16, height: 16 }} />
             </Button>
-          </div>
+          </Box>
 
-          <CollapsibleContent className="mt-2 space-y-3">
-            <div className="flex items-center">
+          <CollapsibleContent sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Button variant="outline" size="sm" onClick={() => setShowRestrooms(!showRestrooms)}>
                 {showRestrooms ? 'Hide' : 'Show'} Restrooms
               </Button>
-            </div>
+            </Box>
             <VenueFilters onFiltersChange={handleAdvancedFilters} />
           </CollapsibleContent>
         </Collapsible>
-      </div>
-      {selectedItem && <div className="mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold">
+      </Box>
+      {selectedItem && (
+        <Box sx={{ mt: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
               Selected {selectedItem && 'type' in selectedItem ? 'Restroom' : 'Venue'}
-            </h4>
+            </Typography>
             <Button variant="ghost" size="sm" onClick={() => setSelectedItem(null)}>
               ✕
             </Button>
-          </div>
-          <div className="max-w-md">
-            {selectedItem && 'type' in selectedItem ? <Card>
-                <CardContent className="p-4">
-                  <h5 className="font-medium">{selectedItem.name}</h5>
-                  <p className="text-sm text-muted-foreground">
+          </Box>
+          <Box sx={{ maxWidth: '28rem' }}>
+            {selectedItem && 'type' in selectedItem ? (
+              <Card>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>{selectedItem.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">
                     Restroom • {selectedItem.city}, {selectedItem.state}
-                  </p>
-                  <div className="flex gap-2 mt-2">
-                    {selectedItem.accessible && <span className="text-xs bg-muted px-2 py-1 rounded">
-                         Accessible
-                       </span>}
-                     {selectedItem.unisex && <span className="text-xs bg-muted px-2 py-1 rounded">
-                         Unisex
-                       </span>}
-                  </div>
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                    {selectedItem.accessible && (
+                      <Box component="span" sx={{ fontSize: '0.75rem', bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 1 }}>
+                        Accessible
+                      </Box>
+                    )}
+                    {selectedItem.unisex && (
+                      <Box component="span" sx={{ fontSize: '0.75rem', bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 1 }}>
+                        Unisex
+                      </Box>
+                    )}
+                  </Box>
                 </CardContent>
-              </Card> : <VenueCard venue={selectedItem as Venue} />}
-          </div>
-        </div>}
-    </div>;
+              </Card>
+            ) : (
+              <VenueCard venue={selectedItem as Venue} />
+            )}
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
 }

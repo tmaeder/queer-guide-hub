@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -16,7 +18,7 @@ export function AdminRoleRequest() {
 
   const handleRequestAdmin = async () => {
     if (!user) return;
-    
+
     setRequesting(true);
     try {
       // Insert admin role for current user
@@ -60,9 +62,9 @@ export function AdminRoleRequest() {
   if (loading) {
     return (
       <Card>
-        <CardContent className="p-8 text-center">
-          <div className="animate-spin h-8 w-8 bg-primary mx-auto mb-4"></div>
-          <p>Checking your permissions...</p>
+        <CardContent sx={{ p: 4, textAlign: 'center' }}>
+          <Box sx={{ width: 32, height: 32, bgcolor: 'primary.main', mx: 'auto', mb: 2, animation: 'spin 1s linear infinite', '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } } }} />
+          <Typography>Checking your permissions...</Typography>
         </CardContent>
       </Card>
     );
@@ -71,10 +73,10 @@ export function AdminRoleRequest() {
   if (isAdmin) {
     return (
       <Card>
-        <CardContent className="p-8 text-center">
-          <Crown className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold mb-2">Admin Access Granted</h2>
-          <p className="text-muted-foreground mb-4">You have admin privileges.</p>
+        <CardContent sx={{ p: 4, textAlign: 'center' }}>
+          <Crown style={{ width: 48, height: 48, color: '#eab308', margin: '0 auto 16px' }} />
+          <Typography variant="h5" sx={{ mb: 1 }}>Admin Access Granted</Typography>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>You have admin privileges.</Typography>
           <Button onClick={() => window.location.reload()}>
             Refresh Page
           </Button>
@@ -86,17 +88,17 @@ export function AdminRoleRequest() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
+        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Shield style={{ width: 20, height: 20 }} />
           Admin Access Required
         </CardTitle>
         <CardDescription>
           You need admin privileges to use this feature.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Alert>
-          <Info className="h-4 w-4" />
+          <Info style={{ width: 16, height: 16 }} />
           <AlertDescription>
             <strong>Current Status:</strong> You are logged in as a regular user.
             <br />
@@ -106,25 +108,25 @@ export function AdminRoleRequest() {
           </AlertDescription>
         </Alert>
 
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Typography variant="body2" color="text.secondary">
             If this is your project and you should have admin access, you can assign yourself admin privileges:
-          </p>
-          
-          <Button 
+          </Typography>
+
+          <Button
             onClick={handleRequestAdmin}
             disabled={requesting}
-            className="w-full"
+            sx={{ width: '100%' }}
           >
-            <User className="h-4 w-4 mr-2" />
+            <User style={{ width: 16, height: 16, marginRight: 8 }} />
             {requesting ? "Assigning Role..." : "Grant Myself Admin Access"}
           </Button>
-          
-          <p className="text-xs text-muted-foreground">
+
+          <Typography variant="caption" color="text.secondary">
             Note: This will only work if the database policies allow role assignment.
             If this fails, you may need to ask an existing admin to grant you access.
-          </p>
-        </div>
+          </Typography>
+        </Box>
       </CardContent>
     </Card>
   );

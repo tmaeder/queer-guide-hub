@@ -1,28 +1,37 @@
 import * as React from "react"
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import { Check } from "lucide-react"
+import MuiCheckbox from "@mui/material/Checkbox"
 
-import { cn } from "@/lib/utils"
+interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+  checked?: boolean;
+  defaultChecked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+  disabled?: boolean;
+}
 
-const Checkbox = React.forwardRef<
-  React.ElementRef<typeof CheckboxPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <CheckboxPrimitive.Root
-    ref={ref}
-    className={cn(
-      "peer h-4 w-4 shrink-0 rounded-sm bg-muted focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-      className
-    )}
-    {...props}
-  >
-    <CheckboxPrimitive.Indicator
-      className={cn("flex items-center justify-center text-current")}
-    >
-      <Check className="h-4 w-4" />
-    </CheckboxPrimitive.Indicator>
-  </CheckboxPrimitive.Root>
-))
-Checkbox.displayName = CheckboxPrimitive.Root.displayName
+const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
+  ({ className, checked, defaultChecked, onCheckedChange, disabled, id, ...props }, ref) => {
+    return (
+      <MuiCheckbox
+        ref={ref as any}
+        checked={checked}
+        defaultChecked={defaultChecked}
+        onChange={(e) => onCheckedChange?.(e.target.checked)}
+        disabled={disabled}
+        id={id}
+        className={className}
+        size="small"
+        color="primary"
+        sx={{
+          width: 20,
+          height: 20,
+          p: 0,
+          borderRadius: 0.5,
+        }}
+        {...(props as any)}
+      />
+    )
+  }
+)
+Checkbox.displayName = "Checkbox"
 
 export { Checkbox }

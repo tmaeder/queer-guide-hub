@@ -1,5 +1,6 @@
 import React from 'react';
 import DOMPurify from 'dompurify';
+import Box from '@mui/material/Box';
 
 // Initialize DOMPurify hooks once per module to harden link handling
 let sanitizerHooksInitialized = false;
@@ -32,15 +33,15 @@ function ensureSanitizerHooks() {
 
 interface ContentSanitizerProps {
   content: string;
-  className?: string;
+  sx?: any;
   allowedTags?: string[];
   allowedAttrs?: string[];
   stripAll?: boolean; // Enhanced security option to strip all HTML
 }
 
-export function ContentSanitizer({ 
-  content, 
-  className = '', 
+export function ContentSanitizer({
+  content,
+  sx,
   allowedTags = ['p', 'br', 'strong', 'em', 'u'],
   allowedAttrs = ['class', 'id', 'title'],
   stripAll = false
@@ -71,15 +72,15 @@ export function ContentSanitizer({
 
   // Security improvement: avoid dangerouslySetInnerHTML when possible
   const sanitizedContent = sanitizeContent(content);
-  
+
   // If content is just text (no HTML), render as text
   if (sanitizedContent === content && !content.includes('<')) {
-    return <div className={className}>{content}</div>;
+    return <Box sx={sx}>{content}</Box>;
   }
 
   return (
-    <div 
-      className={className}
+    <Box
+      sx={sx}
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );

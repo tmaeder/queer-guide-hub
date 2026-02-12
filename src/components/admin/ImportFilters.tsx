@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -60,7 +62,7 @@ export const ImportFilters = () => {
 
     const fieldLabel = filterFields.find(f => f.value === newFilter.field)?.label || newFilter.field;
     const operatorLabel = operators.find(o => o.value === newFilter.operator)?.label || newFilter.operator;
-    
+
     const filter: FilterConfig = {
       field: newFilter.field,
       operator: newFilter.operator,
@@ -133,12 +135,12 @@ export const ImportFilters = () => {
       return (
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full justify-start text-left font-normal">
-              <CalendarIcon className="mr-2 h-4 w-4" />
+            <Button variant="outline" sx={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 400 }}>
+              <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
               {newFilter.value ? format(new Date(newFilter.value), 'PPP') : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
+          <PopoverContent sx={{ width: 'auto', p: 0 }}>
             <Calendar
               mode="single"
               selected={newFilter.value ? new Date(newFilter.value) : undefined}
@@ -161,18 +163,18 @@ export const ImportFilters = () => {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       {/* Active Filters */}
       {filters.map((filter, index) => (
-        <Badge key={index} variant="secondary" className="gap-1">
+        <Badge key={index} variant="secondary" sx={{ gap: 0.5 }}>
           {filter.label}
           <Button
             variant="ghost"
             size="sm"
-            className="h-auto p-0 hover:bg-transparent"
+            sx={{ height: 'auto', p: 0, '&:hover': { bgcolor: 'transparent' } }}
             onClick={() => removeFilter(index)}
           >
-            <X className="h-3 w-3" />
+            <X style={{ width: 12, height: 12 }} />
           </Button>
         </Badge>
       ))}
@@ -187,16 +189,16 @@ export const ImportFilters = () => {
       {/* Add Filter Popover */}
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2">
-            <Filter className="h-4 w-4" />
+          <Button variant="outline" size="sm" sx={{ gap: 1 }}>
+            <Filter style={{ width: 16, height: 16 }} />
             Add Filter
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80">
-          <div className="space-y-4">
-            <h4 className="font-medium leading-none">Add Filter</h4>
-            
-            <div className="space-y-2">
+        <PopoverContent sx={{ width: 320 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 500, lineHeight: 1 }}>Add Filter</Typography>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="field">Field</Label>
               <Select value={newFilter.field} onValueChange={(value) => setNewFilter({ ...newFilter, field: value, operator: '', value: '' })}>
                 <SelectTrigger>
@@ -208,10 +210,10 @@ export const ImportFilters = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Box>
 
             {newFilter.field && (
-              <div className="space-y-2">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label htmlFor="operator">Operator</Label>
                 <Select value={newFilter.operator} onValueChange={(value) => setNewFilter({ ...newFilter, operator: value, value: '' })}>
                   <SelectTrigger>
@@ -223,27 +225,27 @@ export const ImportFilters = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </Box>
             )}
 
             {newFilter.operator && (
-              <div className="space-y-2">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label htmlFor="value">Value</Label>
                 {renderValueInput()}
-              </div>
+              </Box>
             )}
 
-            <div className="flex gap-2">
-              <Button 
-                onClick={addFilter} 
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                onClick={addFilter}
                 disabled={!newFilter.field || !newFilter.operator || !newFilter.value}
                 size="sm"
-                className="flex-1"
+                sx={{ flex: 1 }}
               >
                 Add Filter
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setNewFilter({ field: '', operator: '', value: '' });
                   setIsOpen(false);
@@ -252,10 +254,10 @@ export const ImportFilters = () => {
               >
                 Cancel
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </PopoverContent>
       </Popover>
-    </div>
+    </Box>
   );
 };

@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +18,6 @@ import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, 
 import { StartConversationButton } from "@/components/messaging/StartConversationButton";
 import { UserModeBadge } from "@/components/profile/UserModeBadge";
 import { Tables } from "@/integrations/supabase/types";
-import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import useScreenSize from "@/hooks/use-screen-size";
 import Gravity, { MatterBody } from "@/fancy/components/physics/cursor-attractor-and-gravity";
@@ -57,7 +58,7 @@ const UserDirectory = () => {
     hasPets: false,
     sortBy: 'newest'
   });
-  
+
   const [showFilters, setShowFilters] = useState(false);
   const [interestsOpen, setInterestsOpen] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -70,7 +71,7 @@ const UserDirectory = () => {
   const educationLevels = ["High School", "Some College", "Bachelor's", "Master's", "PhD", "Trade School"];
   const genderIdentities = ["Man", "Woman", "Non-binary", "Genderfluid", "Agender", "Other"];
   const commonInterests = ["Technology", "Art", "Music", "Sports", "Travel", "Food", "Books", "Movies", "Gaming", "Fitness", "Photography", "Nature", "Fashion", "Science"];
-  
+
   // Active filters count
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -209,14 +210,14 @@ const UserDirectory = () => {
         console.error('Profile fetch error:', error);
         throw new Error(`Failed to load profiles: ${error.message}`);
       }
-      
+
       // Filter by interests (client-side since it's a JSON array)
       let filteredData = data as Profile[];
       if (filters.interests.length > 0) {
         filteredData = filteredData.filter(profile => {
           const profileInterests = profile.interests as string[] || [];
-          return filters.interests.some(interest => 
-            profileInterests.some(profileInterest => 
+          return filters.interests.some(interest =>
+            profileInterests.some(profileInterest =>
               profileInterest.toLowerCase().includes(interest.toLowerCase())
             )
           );
@@ -234,7 +235,7 @@ const UserDirectory = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
               query: `${userLocation.longitude},${userLocation.latitude}`,
               isReverseGeocode: true
             }),
@@ -245,12 +246,12 @@ const UserDirectory = () => {
             if (data.features && data.features.length > 0) {
               const userCity = data.features[0].place_name;
               const cityParts = userCity.split(',').map(part => part.trim().toLowerCase());
-              
+
               // Filter users whose location contains any part of the user's city
               filteredData = filteredData.filter(profile => {
                 if (!profile.location) return false;
                 const profileLocation = profile.location.toLowerCase();
-                return cityParts.some(cityPart => 
+                return cityParts.some(cityPart =>
                   profileLocation.includes(cityPart) && cityPart.length > 2
                 );
               });
@@ -261,7 +262,7 @@ const UserDirectory = () => {
           // If geocoding fails, fall back to showing all users
         }
       }
-      
+
       return filteredData;
     },
     retry: 2,
@@ -299,224 +300,225 @@ const UserDirectory = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8 space-y-8">
+    <Box sx={{ minHeight: '100vh' }}>
+      <Box sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
         {/* Hero Section */}
         <Card>
-          <CardContent className="p-8 text-center space-y-6">
-            <div className="space-y-4">
-              <div className="relative h-20">
+          <CardContent sx={{ p: 4, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ position: 'relative', height: 80 }}>
                 <Gravity
                   attractorPoint={{ x: "50%", y: "50%" }}
                   attractorStrength={0.0008}
                   cursorStrength={-0.006}
                   cursorFieldRadius={screenSize.lessThan("sm") ? 100 : 200}
-                  className="w-full h-full"
+                  style={{ width: '100%', height: '100%' }}
                 >
                   <MatterBody x="50%" y="50%">
-                    <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+                    <Typography variant="h3" sx={{ fontWeight: 700, color: 'text.primary', fontSize: { xs: '2.25rem', md: '3rem' } }}>
                       Community Directory
-                    </h1>
+                    </Typography>
                   </MatterBody>
                 </Gravity>
-              </div>
-              <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Discover amazing people, build meaningful connections, and grow your network within our 
+              </Box>
+              <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary', maxWidth: '48rem', mx: 'auto', lineHeight: 1.75 }}>
+                Discover amazing people, build meaningful connections, and grow your network within our
                 inclusive LGBTQ+ community.
-              </p>
-            </div>
-            
+              </Typography>
+            </Box>
+
             {/* Stats */}
-            <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
-                <Users className="h-4 w-4 text-primary" />
-                <span className="font-medium">{profiles?.length || 0} Members</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-full">
-                <Sparkles className="h-4 w-4 text-blue-600" />
-                <span className="font-medium">Active Community</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-full">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <span className="font-medium">Growing Daily</span>
-              </div>
-            </div>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 3, fontSize: '0.875rem' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: 'rgba(var(--primary-rgb, 99, 102, 241), 0.1)', borderRadius: '9999px' }}>
+                <Users style={{ height: 16, width: 16, color: 'var(--primary)' }} />
+                <Typography component="span" sx={{ fontWeight: 500 }}>{profiles?.length || 0} Members</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: 'rgba(59, 130, 246, 0.1)', borderRadius: '9999px' }}>
+                <Sparkles style={{ height: 16, width: 16, color: '#2563eb' }} />
+                <Typography component="span" sx={{ fontWeight: 500 }}>Active Community</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: 'rgba(34, 197, 94, 0.1)', borderRadius: '9999px' }}>
+                <TrendingUp style={{ height: 16, width: 16, color: '#16a34a' }} />
+                <Typography component="span" sx={{ fontWeight: 500 }}>Growing Daily</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
-          
+
         {/* Search and Filter Section */}
-        <Card className="bg-gradient-to-r from-card to-card/90 border-2 shadow-lg">
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+        <Card sx={{ background: 'linear-gradient(to right, var(--card), rgba(var(--card-rgb), 0.9))', border: 2, boxShadow: 6 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
+                <Box sx={{ position: 'relative', flex: 1 }}>
+                  <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   <Input
                     placeholder="Search by name, bio, location, or interests..."
                     value={filters.searchQuery}
                     onChange={(e) => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
-                    className="pl-10 h-12 text-base border-2 focus:border-primary/50 transition-colors"
+                    sx={{ pl: 5, height: 48, fontSize: '1rem', border: 2, '&:focus': { borderColor: 'rgba(var(--primary-rgb), 0.5)' }, transition: 'border-color 0.2s' }}
                   />
-                </div>
-                <div className="flex gap-2">
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1 }}>
                   <Button
                     variant={nearMe ? "default" : "outline"}
                     onClick={handleNearMeToggle}
                     disabled={isDetectingLocation}
                     size="icon"
-                    className={`h-12 w-12 ${nearMe ? 'bg-gradient-primary hover:opacity-90' : ''}`}
+                    className={nearMe ? 'bg-gradient-primary' : ''}
+                    style={{ height: 48, width: 48 }}
                   >
                     {isDetectingLocation ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
                     ) : (
-                      <Navigation className="h-4 w-4" />
+                      <Navigation style={{ height: 16, width: 16 }} />
                     )}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
                     size="icon"
-                    className="relative h-12 w-12 hover:bg-accent/50 transition-colors"
+                    sx={{ position: 'relative', height: 48, width: 48, transition: 'background-color 0.2s', '&:hover': { bgcolor: 'rgba(var(--accent-rgb), 0.5)' } }}
                   >
-                    <Filter className="h-4 w-4" />
+                    <Filter style={{ height: 16, width: 16 }} />
                     {activeFiltersCount > 0 && (
-                      <Badge variant="secondary" className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs flex items-center justify-center bg-primary text-primary-foreground">
+                      <Badge variant="secondary" sx={{ position: 'absolute', top: -8, right: -8, height: 20, width: 20, p: 0, fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'primary.main', color: 'primary.contrastText' }}>
                         {activeFiltersCount}
                       </Badge>
                     )}
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
 
               {/* Advanced Filters */}
               {showFilters && (
-                <div className="animate-fade-in">
-                  <Card className="bg-background/80 backdrop-blur border-2 border-dashed border-muted">
-                    <CardContent className="p-6">
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Star className="h-5 w-5 text-primary" />
-                            <h3 className="text-lg font-semibold">Advanced Filters</h3>
-                          </div>
+                <Box className="animate-fade-in">
+                  <Card sx={{ bgcolor: 'rgba(var(--background-rgb), 0.8)', backdropFilter: 'blur(8px)', border: 2, borderStyle: 'dashed', borderColor: 'divider' }}>
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Star style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+                            <Typography variant="h6" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Advanced Filters</Typography>
+                          </Box>
                           {activeFiltersCount > 0 && (
-                            <Button variant="ghost" size="sm" onClick={clearAllFilters} className="gap-2 hover:bg-destructive/10 hover:text-destructive">
-                              <X className="h-4 w-4" />
+                            <Button variant="ghost" size="sm" onClick={clearAllFilters} sx={{ gap: 1, '&:hover': { bgcolor: 'rgba(var(--destructive-rgb), 0.1)', color: 'error.main' } }}>
+                              <X style={{ height: 16, width: 16 }} />
                               Clear All ({activeFiltersCount})
                             </Button>
                           )}
-                        </div>
+                        </Box>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 3 }}>
                           {/* Location Filter */}
-                          <div className="space-y-3">
-                            <Label className="text-sm font-medium flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-primary" />
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <MapPin style={{ height: 16, width: 16, color: 'var(--primary)' }} />
                               Location
                             </Label>
                             <Input
                               placeholder="Enter city or region"
                               value={filters.location}
                               onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
-                              className="border-2 focus:border-primary/50"
+                              sx={{ border: 2, '&:focus': { borderColor: 'primary.main' } }}
                             />
-                          </div>
+                          </Box>
 
                           {/* Age Range Filter */}
-                          <div className="space-y-3">
-                            <Label className="text-sm font-medium flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-primary" />
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Calendar style={{ height: 16, width: 16, color: 'var(--primary)' }} />
                               Age Range
                             </Label>
                             <Select value={filters.ageRange} onValueChange={(value) => setFilters(prev => ({ ...prev, ageRange: value }))}>
-                              <SelectTrigger className="border-2 focus:border-primary/50">
+                              <SelectTrigger sx={{ border: 2, '&:focus': { borderColor: 'primary.main' } }}>
                                 <SelectValue placeholder="Select age range" />
                               </SelectTrigger>
-                              <SelectContent className="bg-background backdrop-blur border-2">
+                              <SelectContent sx={{ bgcolor: 'background.default', backdropFilter: 'blur(8px)', border: 2 }}>
                                 <SelectItem value="all">All ages</SelectItem>
                                 {ageRanges.map((range) => (
                                   <SelectItem key={range} value={range}>{range}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                          </div>
+                          </Box>
 
                           {/* Relationship Status */}
-                          <div className="space-y-3">
-                            <Label className="text-sm font-medium flex items-center gap-2">
-                              <Heart className="h-4 w-4 text-primary" />
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Heart style={{ height: 16, width: 16, color: 'var(--primary)' }} />
                               Relationship Status
                             </Label>
                             <Select value={filters.relationshipStatus} onValueChange={(value) => setFilters(prev => ({ ...prev, relationshipStatus: value }))}>
-                              <SelectTrigger className="border-2 focus:border-primary/50">
+                              <SelectTrigger sx={{ border: 2, '&:focus': { borderColor: 'primary.main' } }}>
                                 <SelectValue placeholder="Select status" />
                               </SelectTrigger>
-                              <SelectContent className="bg-background backdrop-blur border-2">
+                              <SelectContent sx={{ bgcolor: 'background.default', backdropFilter: 'blur(8px)', border: 2 }}>
                                 <SelectItem value="all">Any status</SelectItem>
                                 {relationshipStatuses.map((status) => (
                                   <SelectItem key={status} value={status}>{status}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                          </div>
+                          </Box>
 
                           {/* Occupation */}
-                          <div className="space-y-3">
-                            <Label className="text-sm font-medium flex items-center gap-2">
-                              <Briefcase className="h-4 w-4 text-primary" />
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Briefcase style={{ height: 16, width: 16, color: 'var(--primary)' }} />
                               Occupation
                             </Label>
                             <Input
                               placeholder="Enter occupation"
                               value={filters.occupation}
                               onChange={(e) => setFilters(prev => ({ ...prev, occupation: e.target.value }))}
-                              className="border-2 focus:border-primary/50"
+                              sx={{ border: 2, '&:focus': { borderColor: 'primary.main' } }}
                             />
-                          </div>
+                          </Box>
 
                           {/* Education */}
-                          <div className="space-y-3">
-                            <Label className="text-sm font-medium flex items-center gap-2">
-                              <GraduationCap className="h-4 w-4 text-primary" />
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <GraduationCap style={{ height: 16, width: 16, color: 'var(--primary)' }} />
                               Education
                             </Label>
                             <Select value={filters.education} onValueChange={(value) => setFilters(prev => ({ ...prev, education: value }))}>
-                              <SelectTrigger className="border-2 focus:border-primary/50">
+                              <SelectTrigger sx={{ border: 2, '&:focus': { borderColor: 'primary.main' } }}>
                                 <SelectValue placeholder="Select education" />
                               </SelectTrigger>
-                              <SelectContent className="bg-background backdrop-blur border-2">
+                              <SelectContent sx={{ bgcolor: 'background.default', backdropFilter: 'blur(8px)', border: 2 }}>
                                 <SelectItem value="all">Any education</SelectItem>
                                 {educationLevels.map((level) => (
                                   <SelectItem key={level} value={level}>{level}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                          </div>
+                          </Box>
 
                           {/* Gender Identity */}
-                          <div className="space-y-3">
-                            <Label className="text-sm font-medium flex items-center gap-2">
-                              <Users className="h-4 w-4 text-primary" />
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Users style={{ height: 16, width: 16, color: 'var(--primary)' }} />
                               Gender Identity
                             </Label>
                             <Select value={filters.genderIdentity} onValueChange={(value) => setFilters(prev => ({ ...prev, genderIdentity: value }))}>
-                              <SelectTrigger className="border-2 focus:border-primary/50">
+                              <SelectTrigger sx={{ border: 2, '&:focus': { borderColor: 'primary.main' } }}>
                                 <SelectValue placeholder="Select gender" />
                               </SelectTrigger>
-                              <SelectContent className="bg-background backdrop-blur border-2">
+                              <SelectContent sx={{ bgcolor: 'background.default', backdropFilter: 'blur(8px)', border: 2 }}>
                                 <SelectItem value="all">Any gender</SelectItem>
                                 {genderIdentities.map((gender) => (
                                   <SelectItem key={gender} value={gender}>{gender}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
 
                         {/* Interests Filter */}
-                        <div className="space-y-3">
-                          <Label className="text-sm font-medium flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-primary" />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                          <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Sparkles style={{ height: 16, width: 16, color: 'var(--primary)' }} />
                             Interests
                           </Label>
                           <Popover open={interestsOpen} onOpenChange={setInterestsOpen}>
@@ -525,15 +527,15 @@ const UserDirectory = () => {
                                 variant="outline"
                                 role="combobox"
                                 aria-expanded={interestsOpen}
-                                className="w-full justify-between border-2"
+                                sx={{ width: '100%', justifyContent: 'space-between', border: 2 }}
                               >
                                 {filters.interests.length > 0
                                   ? `${filters.interests.length} interest${filters.interests.length !== 1 ? 's' : ''} selected`
                                   : "Select interests..."}
-                                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                <ChevronDown style={{ marginLeft: 8, height: 16, width: 16, flexShrink: 0, opacity: 0.5 }} />
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-full p-0 bg-background backdrop-blur border-2">
+                            <PopoverContent sx={{ width: '100%', p: 0, bgcolor: 'background.default', backdropFilter: 'blur(8px)', border: 2 }}>
                               <Command>
                                 <CommandInput placeholder="Search interests..." />
                                 <CommandList>
@@ -546,10 +548,12 @@ const UserDirectory = () => {
                                         onSelect={() => handleInterestToggle(interest)}
                                       >
                                         <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            filters.interests.includes(interest) ? "opacity-100" : "opacity-0"
-                                          )}
+                                          style={{
+                                            marginRight: 8,
+                                            height: 16,
+                                            width: 16,
+                                            opacity: filters.interests.includes(interest) ? 1 : 0,
+                                          }}
                                         />
                                         {interest}
                                       </CommandItem>
@@ -560,173 +564,173 @@ const UserDirectory = () => {
                             </PopoverContent>
                           </Popover>
                           {filters.interests.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2">
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
                               {filters.interests.map((interest) => (
-                                <Badge key={interest} variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
-                                  <Sparkles className="h-3 w-3" />
+                                <Badge key={interest} variant="secondary" sx={{ gap: 0.5, bgcolor: 'rgba(var(--primary-rgb), 0.1)', color: 'primary.main', borderColor: 'rgba(var(--primary-rgb), 0.2)' }}>
+                                  <Sparkles style={{ height: 12, width: 12 }} />
                                   {interest}
                                   <X
-                                    className="h-3 w-3 cursor-pointer hover:text-destructive"
+                                    style={{ height: 12, width: 12, cursor: 'pointer' }}
                                     onClick={() => handleInterestToggle(interest)}
                                   />
                                 </Badge>
                               ))}
-                            </div>
+                            </Box>
                           )}
-                        </div>
+                        </Box>
 
                         {/* Boolean Filters */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="flex items-center space-x-2">
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Checkbox
                               id="verified"
                               checked={filters.isVerified}
                               onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isVerified: !!checked }))}
                             />
-                            <Label htmlFor="verified" className="text-sm">Verified profiles</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
+                            <Label htmlFor="verified" style={{ fontSize: '0.875rem' }}>Verified profiles</Label>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Checkbox
                               id="business"
                               checked={filters.isBusiness}
                               onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isBusiness: !!checked }))}
                             />
-                            <Label htmlFor="business" className="text-sm">Business accounts</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
+                            <Label htmlFor="business" style={{ fontSize: '0.875rem' }}>Business accounts</Label>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Checkbox
                               id="children"
                               checked={filters.hasChildren}
                               onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasChildren: !!checked }))}
                             />
-                            <Label htmlFor="children" className="text-sm">Has children</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
+                            <Label htmlFor="children" style={{ fontSize: '0.875rem' }}>Has children</Label>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Checkbox
                               id="pets"
                               checked={filters.hasPets}
                               onCheckedChange={(checked) => setFilters(prev => ({ ...prev, hasPets: !!checked }))}
                             />
-                            <Label htmlFor="pets" className="text-sm">Has pets</Label>
-                          </div>
-                        </div>
+                            <Label htmlFor="pets" style={{ fontSize: '0.875rem' }}>Has pets</Label>
+                          </Box>
+                        </Box>
 
                         {/* Sort Options */}
-                        <div className="space-y-3">
-                          <Label className="text-sm font-medium flex items-center gap-2">
-                            <TrendingUp className="h-4 w-4 text-primary" />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                          <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <TrendingUp style={{ height: 16, width: 16, color: 'var(--primary)' }} />
                             Sort By
                           </Label>
                           <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value as any }))}>
-                            <SelectTrigger className="w-full md:w-[200px] border-2">
+                            <SelectTrigger sx={{ width: { xs: '100%', md: 200 }, border: 2 }}>
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="bg-background backdrop-blur border-2">
+                            <SelectContent sx={{ bgcolor: 'background.default', backdropFilter: 'blur(8px)', border: 2 }}>
                               <SelectItem value="newest">Newest members</SelectItem>
                               <SelectItem value="oldest">Oldest members</SelectItem>
                               <SelectItem value="alphabetical">Alphabetical</SelectItem>
                               <SelectItem value="last_active">Last active</SelectItem>
                             </SelectContent>
                           </Select>
-                        </div>
-                      </div>
+                        </Box>
+                      </Box>
                     </CardContent>
                   </Card>
-                </div>
+                </Box>
               )}
 
               {/* Active Filters Display */}
               {activeFiltersCount > 0 && !showFilters && (
-                <div className="animate-fade-in">
-                  <div className="flex flex-wrap gap-2 items-center justify-center p-4 bg-accent/30 rounded-lg border">
-                    <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <Filter className="h-4 w-4" />
+                <Box className="animate-fade-in">
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center', justifyContent: 'center', p: 2, bgcolor: 'action.hover', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+                    <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Filter style={{ height: 16, width: 16 }} />
                       Active filters:
-                    </span>
+                    </Typography>
                     {nearMe && (
-                      <Badge variant="secondary" className="gap-1 bg-blue-500/10 text-blue-700 border-blue-200">
-                        <Navigation className="h-3 w-3" />
+                      <Badge variant="secondary" sx={{ gap: 0.5, bgcolor: 'rgba(59,130,246,0.1)', color: '#1d4ed8', borderColor: '#bfdbfe' }}>
+                        <Navigation style={{ height: 12, width: 12 }} />
                         Near Me
-                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={handleNearMeToggle} />
+                        <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={handleNearMeToggle} />
                       </Badge>
                     )}
                     {filters.location && (
-                      <Badge variant="secondary" className="gap-1">
-                        <MapPin className="h-3 w-3" />
+                      <Badge variant="secondary" sx={{ gap: 0.5 }}>
+                        <MapPin style={{ height: 12, width: 12 }} />
                         {filters.location}
-                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => setFilters(prev => ({ ...prev, location: "" }))} />
+                        <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setFilters(prev => ({ ...prev, location: "" }))} />
                       </Badge>
                     )}
                     {filters.ageRange && filters.ageRange !== 'all' && (
-                      <Badge variant="secondary" className="gap-1">
-                        <Calendar className="h-3 w-3" />
+                      <Badge variant="secondary" sx={{ gap: 0.5 }}>
+                        <Calendar style={{ height: 12, width: 12 }} />
                         {filters.ageRange}
-                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => setFilters(prev => ({ ...prev, ageRange: "all" }))} />
+                        <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setFilters(prev => ({ ...prev, ageRange: "all" }))} />
                       </Badge>
                     )}
                     {filters.interests.map((interest) => (
-                      <Badge key={interest} variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
-                        <Sparkles className="h-3 w-3" />
+                      <Badge key={interest} variant="secondary" sx={{ gap: 0.5, bgcolor: 'rgba(var(--primary-rgb), 0.1)', color: 'primary.main', borderColor: 'rgba(var(--primary-rgb), 0.2)' }}>
+                        <Sparkles style={{ height: 12, width: 12 }} />
                         {interest}
-                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => handleInterestToggle(interest)} />
+                        <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => handleInterestToggle(interest)} />
                       </Badge>
                     ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               )}
-            </div>
+            </Box>
           </CardContent>
         </Card>
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span className="text-sm font-medium text-primary">Finding amazing people...</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: 'rgba(var(--primary-rgb, 99, 102, 241), 0.1)', borderRadius: '9999px' }}>
+                <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite', color: 'var(--primary)' }} />
+                <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'primary.main' }}>Finding amazing people...</Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: '1fr 1fr 1fr' }, gap: 3 }}>
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="p-6 animate-pulse border-2">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-16 h-16 bg-muted rounded-full" />
-                    <div className="space-y-2 flex-1">
-                      <div className="h-5 bg-muted rounded w-3/4" />
-                      <div className="h-4 bg-muted rounded w-1/2" />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="h-4 bg-muted rounded" />
-                    <div className="h-4 bg-muted rounded w-2/3" />
-                    <div className="flex gap-2">
-                      <div className="h-6 bg-muted rounded w-16" />
-                      <div className="h-6 bg-muted rounded w-20" />
-                    </div>
-                  </div>
+                <Card key={i} sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', border: 2 }} style={{ padding: 24 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Box sx={{ width: 64, height: 64, bgcolor: 'action.hover', borderRadius: '50%' }} />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
+                      <Box sx={{ height: 20, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }} />
+                      <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '50%' }} />
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1 }} />
+                    <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '66%' }} />
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: 64 }} />
+                      <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: 80 }} />
+                    </Box>
+                  </Box>
                 </Card>
               ))}
-            </div>
-          </div>
+            </Box>
+          </Box>
         ) : (
-          <div className="space-y-6">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Results Header */}
             {profiles && profiles.length > 0 && (
-              <div className="flex items-center justify-between p-4 bg-accent/20 rounded-lg border">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  <span className="font-medium">
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: 'action.hover', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Users style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+                  <Typography component="span" sx={{ fontWeight: 500 }}>
                     {profiles.length} member{profiles.length !== 1 ? 's' : ''} found
-                  </span>
+                  </Typography>
                   {activeFiltersCount > 0 && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                       Filtered
                     </Badge>
                   )}
-                </div>
+                </Box>
                 <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value as any }))}>
-                  <SelectTrigger className="w-auto border-0 bg-transparent">
+                  <SelectTrigger sx={{ width: 'auto', border: 0, bgcolor: 'transparent' }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -736,184 +740,184 @@ const UserDirectory = () => {
                     <SelectItem value="last_active">Last active</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </Box>
             )}
 
             {/* User Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: '1fr 1fr 1fr' }, gap: 3 }}>
               {profiles?.map((profile) => (
-                <Link key={profile.user_id} to={`/user/${profile.user_id}`} className="block group">
-                  <Card className="p-6 h-full hover:shadow-elegant transition-all duration-300 hover-scale border-2 hover:border-primary/20 animate-fade-in group-hover:bg-accent/30">
-                    <div className="flex items-start space-x-4 mb-4">
-                      <div className="relative group/avatar">
-                        <Avatar className="h-16 w-16 border-4 border-background shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <Link key={profile.user_id} to={`/user/${profile.user_id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                  <Card className="animate-fade-in" sx={{ height: '100%', transition: 'all 0.3s', border: 2, '&:hover': { boxShadow: 6, borderColor: 'rgba(var(--primary-rgb), 0.2)', transform: 'scale(1.02)' } }} style={{ padding: 24 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+                      <Box sx={{ position: 'relative' }}>
+                        <Avatar sx={{ height: 64, width: 64, border: 4, borderColor: 'background.default', boxShadow: 6 }}>
                           <AvatarImage src={profile.avatar_url || undefined} />
-                          <AvatarFallback className="bg-gradient-primary text-primary-foreground text-lg font-bold">
+                          <AvatarFallback sx={{ background: 'var(--gradient-primary)', color: 'primary.contrastText', fontSize: '1.125rem', fontWeight: 700 }}>
                             {profile.display_name?.charAt(0)?.toUpperCase() || "U"}
                           </AvatarFallback>
                         </Avatar>
                         {profile.verified_identity && (
-                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-primary rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                            <Check className="h-3 w-3 text-primary-foreground" />
-                          </div>
+                          <Box sx={{ position: 'absolute', top: -4, right: -4, width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 3, background: 'var(--gradient-primary)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+                            <Check style={{ height: 12, width: 12, color: 'var(--primary-foreground)' }} />
+                          </Box>
                         )}
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-lg text-foreground truncate group-hover:text-primary transition-colors duration-300">
+                      </Box>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.125rem', color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {profile.display_name || "Anonymous User"}
-                        </h3>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          {profile.pronouns && <span className="font-medium">{profile.pronouns}</span>}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
+                          {profile.pronouns && <Typography component="span" sx={{ fontWeight: 500, fontSize: 'inherit', color: 'inherit' }}>{profile.pronouns}</Typography>}
                           {profile.age_range && (
                             <>
-                              {profile.pronouns && <span>•</span>}
-                              <span>{profile.age_range}</span>
+                              {profile.pronouns && <Typography component="span" sx={{ fontSize: 'inherit', color: 'inherit' }}>&#8226;</Typography>}
+                              <Typography component="span" sx={{ fontSize: 'inherit', color: 'inherit' }}>{profile.age_range}</Typography>
                             </>
                           )}
-                        </div>
-                        <div className="flex flex-wrap gap-1">
+                        </Box>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {(profile as any)?.user_mode && (
                             <UserModeBadge mode={(profile as any).user_mode} size="sm" />
                           )}
                           {profile.is_business && (
-                            <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-200 text-blue-700">
-                              <Briefcase className="h-3 w-3 mr-1" />
+                            <Badge variant="outline" sx={{ fontSize: '0.75rem', bgcolor: 'rgba(59,130,246,0.1)', borderColor: '#bfdbfe', color: '#1d4ed8' }}>
+                              <Briefcase style={{ height: 12, width: 12, marginRight: 4 }} />
                               Business
                             </Badge>
                           )}
                           {profile.verified_identity && (
-                            <Badge variant="outline" className="text-xs bg-green-500/10 border-green-200 text-green-700">
-                              <Check className="h-3 w-3 mr-1" />
+                            <Badge variant="outline" sx={{ fontSize: '0.75rem', bgcolor: 'rgba(34,197,94,0.1)', borderColor: '#bbf7d0', color: '#15803d' }}>
+                              <Check style={{ height: 12, width: 12, marginRight: 4 }} />
                               Verified
                             </Badge>
                           )}
-                        </div>
-                      </div>
-                    </div>
+                        </Box>
+                      </Box>
+                    </Box>
 
                     {profile.bio && (
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
+                      <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 2, lineHeight: 1.75, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {profile.bio}
-                      </p>
+                      </Typography>
                     )}
 
-                    <div className="space-y-2 mb-4">
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
                       {profile.location && (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4 mr-2" />
+                        <Box sx={{ display: 'flex', alignItems: 'center', fontSize: '0.875rem', color: 'text.secondary' }}>
+                          <MapPin style={{ height: 16, width: 16, marginRight: 8 }} />
                           {profile.location}
-                        </div>
+                        </Box>
                       )}
-                      
+
                       {profile.occupation && (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Briefcase className="h-4 w-4 mr-2" />
+                        <Box sx={{ display: 'flex', alignItems: 'center', fontSize: '0.875rem', color: 'text.secondary' }}>
+                          <Briefcase style={{ height: 16, width: 16, marginRight: 8 }} />
                           {profile.occupation}
-                        </div>
+                        </Box>
                       )}
 
                       {profile.education && (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <GraduationCap className="h-4 w-4 mr-2" />
+                        <Box sx={{ display: 'flex', alignItems: 'center', fontSize: '0.875rem', color: 'text.secondary' }}>
+                          <GraduationCap style={{ height: 16, width: 16, marginRight: 8 }} />
                           {profile.education}
-                        </div>
+                        </Box>
                       )}
-                      
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4 mr-2" />
+
+                      <Box sx={{ display: 'flex', alignItems: 'center', fontSize: '0.875rem', color: 'text.secondary' }}>
+                        <Calendar style={{ height: 16, width: 16, marginRight: 8 }} />
                         Joined {new Date(profile.created_at).toLocaleDateString()}
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
 
                     {/* Profile Tags */}
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
                       {profile.relationship_status && (
-                        <Badge variant="outline" className="text-xs bg-pink-500/10 border-pink-200 text-pink-700">
-                          <Heart className="h-3 w-3 mr-1" />
+                        <Badge variant="outline" sx={{ fontSize: '0.75rem', bgcolor: 'rgba(236,72,153,0.1)', borderColor: '#fbcfe8', color: '#be185d' }}>
+                          <Heart style={{ height: 12, width: 12, marginRight: 4 }} />
                           {profile.relationship_status}
                         </Badge>
                       )}
                       {profile.has_children && (
-                        <Badge variant="outline" className="text-xs bg-orange-500/10 border-orange-200 text-orange-700">
+                        <Badge variant="outline" sx={{ fontSize: '0.75rem', bgcolor: 'rgba(249,115,22,0.1)', borderColor: '#fed7aa', color: '#c2410c' }}>
                           Children
                         </Badge>
                       )}
                       {profile.has_pets && (
-                        <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-200 text-amber-700">
+                        <Badge variant="outline" sx={{ fontSize: '0.75rem', bgcolor: 'rgba(245,158,11,0.1)', borderColor: '#fde68a', color: '#b45309' }}>
                           Pets
                         </Badge>
                       )}
                       {profile.gender_identity && (
-                        <Badge variant="secondary" className="text-xs bg-purple-500/10 border-purple-200 text-purple-700">
+                        <Badge variant="secondary" sx={{ fontSize: '0.75rem', bgcolor: 'rgba(168,85,247,0.1)', borderColor: '#e9d5ff', color: '#7e22ce' }}>
                           {profile.gender_identity}
                         </Badge>
                       )}
-                    </div>
+                    </Box>
 
                     {/* Action Footer */}
-                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/50">
+                    <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2, borderTop: 1, borderColor: 'divider' }}>
                       {profile.website ? (
-                        <a
+                        <Box
+                          component="a"
                           href={profile.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline flex items-center gap-1 font-medium transition-colors"
-                          onClick={(e) => e.stopPropagation()}
+                          sx={{ fontSize: '0.875rem', color: 'primary.main', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 0.5, fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}
+                          onClick={(e: React.MouseEvent) => e.stopPropagation()}
                         >
                           Visit Website
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
+                          <ExternalLink style={{ height: 12, width: 12 }} />
+                        </Box>
                       ) : (
-                        <div />
+                        <Box />
                       )}
-                      
-                      <div onClick={(e) => e.stopPropagation()}>
+
+                      <Box onClick={(e) => e.stopPropagation()}>
                         <StartConversationButton
                           userId={profile.user_id}
                           userName={profile.display_name || "Anonymous User"}
                           variant="outline"
                           size="sm"
-                          className="hover:bg-primary hover:text-primary-foreground transition-colors"
+                          sx={{ transition: 'all 0.2s', '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText' } }}
                         />
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
                   </Card>
                 </Link>
               ))}
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {/* Empty State */}
         {profiles && profiles.length === 0 && (
-          <Card className="border-2 border-dashed border-muted">
-            <CardContent className="p-12 text-center space-y-6">
-              <div className="relative">
-                <Users className="mx-auto h-16 w-16 text-muted-foreground/50" />
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Search className="h-4 w-4 text-primary" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-foreground">No members found</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
+          <Card sx={{ border: 2, borderStyle: 'dashed', borderColor: 'divider' }}>
+            <CardContent sx={{ p: 6, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ position: 'relative', display: 'inline-block', mx: 'auto' }}>
+                <Users style={{ height: 64, width: 64, color: 'var(--muted-foreground)', opacity: 0.5 }} />
+                <Box sx={{ position: 'absolute', top: -8, right: -8, width: 32, height: 32, bgcolor: 'rgba(var(--primary-rgb, 99, 102, 241), 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Search style={{ height: 16, width: 16, color: 'var(--primary)' }} />
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="h6" sx={{ fontSize: '1.25rem', fontWeight: 600, color: 'text.primary' }}>No members found</Typography>
+                <Typography sx={{ color: 'text.secondary', maxWidth: '28rem', mx: 'auto' }}>
                   {filters.searchQuery || activeFiltersCount > 0
-                    ? "Try adjusting your search terms or filters to discover more amazing people in our community." 
+                    ? "Try adjusting your search terms or filters to discover more amazing people in our community."
                     : "Be among the first to join our growing community of inclusive and welcoming members!"}
-                </p>
-              </div>
+                </Typography>
+              </Box>
               {(filters.searchQuery || activeFiltersCount > 0) && (
-                <Button variant="outline" onClick={clearAllFilters} className="gap-2">
-                  <X className="h-4 w-4" />
+                <Button variant="outline" onClick={clearAllFilters} sx={{ gap: 1 }}>
+                  <X style={{ height: 16, width: 16 }} />
                   Clear all filters
                 </Button>
               )}
             </CardContent>
           </Card>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

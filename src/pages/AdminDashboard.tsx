@@ -360,17 +360,17 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">Loading admin dashboard...</div>
+      <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+        <div sx={{ textAlign: 'center' }}>Loading admin dashboard...</div>
       </div>
     );
   }
 
   if (!canManageContent()) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+      <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+        <div sx={{ textAlign: 'center' }}>
+          <h1 sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Access Denied</h1>
           <p>You don't have permission to access the admin dashboard.</p>
         </div>
       </div>
@@ -378,27 +378,27 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container mx-auto px-6 py-8 max-w-7xl">
+    <div sx={{ maxWidth: 1280, mx: 'auto', px: 3, py: 4 }}>
       {/* Header Section */}
-      <header className="mb-8 space-y-6">
+      <header sx={{ mb: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Title & Role */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary rounded-lg">
-              <Shield className="h-8 w-8 text-primary-foreground" />
+        <div sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <div sx={{ p: 1.5, bgcolor: 'primary.main', borderRadius: 2 }}>
+              <Shield style={{ height: 32, width: 32, color: 'var(--primary-foreground)' }} />
             </div>
-            <div className="space-y-1">
-              <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-              <p className="text-muted-foreground">Monitor and manage your platform</p>
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <h1 sx={{ fontSize: '1.875rem', fontWeight: 700, color: 'text.primary' }}>Admin Dashboard</h1>
+              <p style={{ color: 'var(--muted-foreground)' }}>Monitor and manage your platform</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <Badge variant={isAdmin ? "default" : "secondary"} className="font-medium">
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Badge variant={isAdmin ? "default" : "secondary"} sx={{ fontWeight: 500 }}>
               {isAdmin ? "Administrator" : isModerator ? "Moderator" : "Staff"}
             </Badge>
             {lastUpdate && (
-              <span className="text-sm text-muted-foreground">
+              <span sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 Updated: {lastUpdate.toLocaleTimeString()}
               </span>
             )}
@@ -406,14 +406,14 @@ export default function AdminDashboard() {
         </div>
 
         {/* Controls Bar */}
-        <div className="flex items-center justify-between p-4 bg-card rounded-lg border">
-          <div className="flex items-center gap-6">
+        <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             {/* Time Period Filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Period:</span>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Filter style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+              <span sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>Period:</span>
               <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger sx={{ width: 128 }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -425,91 +425,91 @@ export default function AdminDashboard() {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-foreground">View:</span>
-              <div className="flex items-center gap-1 border rounded-lg p-1">
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <span sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>View:</span>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 2, p: 0.5 }}>
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className="h-7 w-7 p-0"
+                  sx={{ height: 28, width: 28, p: 0 }}
                 >
-                  <Grid3X3 className="h-4 w-4" />
+                  <Grid3X3 style={{ height: 16, width: 16 }} />
                 </Button>
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className="h-7 w-7 p-0"
+                  sx={{ height: 28, width: 28, p: 0 }}
                 >
-                  <List className="h-4 w-4" />
+                  <List style={{ height: 16, width: 16 }} />
                 </Button>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {/* Auto Refresh Toggle */}
-            <div className="flex items-center gap-2">
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Switch
                 id="auto-refresh"
                 checked={autoRefresh}
                 onCheckedChange={setAutoRefresh}
               />
-              <Label htmlFor="auto-refresh" className="text-sm font-medium">
+              <Label htmlFor="auto-refresh" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
                 Auto-refresh
               </Label>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleRefresh}
-                className="gap-2"
+                sx={{ gap: 1 }}
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw style={{ height: 16, width: 16 }} />
                 Refresh
               </Button>
               <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4" />
+                <Settings style={{ height: 16, width: 16 }} />
               </Button>
             </div>
           </div>
         </div>
       </header>
       
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
+      <Tabs defaultValue="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsList sx={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+          <TabsTrigger value="overview" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <BarChart3 style={{ height: 16, width: 16 }} />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
+          <TabsTrigger value="analytics" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Activity style={{ height: 16, width: 16 }} />
             Analytics
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
+          <TabsTrigger value="security" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Shield style={{ height: 16, width: 16 }} />
             Security
           </TabsTrigger>
-          <TabsTrigger value="cloudflare" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
+          <TabsTrigger value="cloudflare" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TrendingUp style={{ height: 16, width: 16 }} />
             Cloudflare
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-12 xl:gap-8">
-            <div className="lg:col-span-8 xl:col-span-9">
+        <TabsContent value="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div sx={{ display: 'grid', gap: { xs: 3, xl: 4 }, gridTemplateColumns: { lg: 'repeat(12, 1fr)' } }}>
+            <div sx={{ gridColumn: { lg: 'span 8', xl: 'span 9' } }}>
               <DashboardOverview
                 stats={stats}
                 systemHealth={systemHealth}
                 statsLoading={statsLoading}
               />
             </div>
-            <div className="lg:col-span-4 xl:col-span-3 space-y-6">
+            <div sx={{ gridColumn: { lg: 'span 4', xl: 'span 3' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
               <QuickActions />
               <RecentActivity 
                 activities={recentActivity}

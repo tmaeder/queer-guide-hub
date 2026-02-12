@@ -9,14 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { 
+import {
   Table,
   TableBody,
   TableCell,
@@ -27,6 +27,9 @@ import {
 import { Plus, Edit, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { Tables } from "@/integrations/supabase/types";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 type VenueService = Tables<'venue_services'>;
 
@@ -79,7 +82,7 @@ export default function AdminVenueServices() {
         .select('*')
         .order('category', { ascending: true })
         .order('sort_order', { ascending: true });
-      
+
       if (error) throw error;
       return data as VenueService[];
     }
@@ -91,7 +94,7 @@ export default function AdminVenueServices() {
       const { error } = await supabase
         .from('venue_services')
         .insert([data]);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -112,7 +115,7 @@ export default function AdminVenueServices() {
         .from('venue_services')
         .update(data)
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -134,7 +137,7 @@ export default function AdminVenueServices() {
         .from('venue_services')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -148,7 +151,7 @@ export default function AdminVenueServices() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (editingService) {
       updateServiceMutation.mutate({ id: editingService.id, data: formData });
     } else {
@@ -196,46 +199,46 @@ export default function AdminVenueServices() {
     setEditingService(null);
   };
 
-  const filteredServices = filterCategory === 'all' 
-    ? services 
+  const filteredServices = filterCategory === 'all'
+    ? services
     : services.filter(service => service.category === filterCategory);
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading services...</div>
-        </div>
-      </div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+          <Typography variant="subtitle1">Loading services...</Typography>
+        </Box>
+      </Container>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Venue Services</h1>
-          <p className="text-muted-foreground">Manage venue services and offerings</p>
-        </div>
-        
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>Venue Services</Typography>
+          <Typography color="text.secondary">Manage venue services and offerings</Typography>
+        </Box>
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm} className="gap-2">
-              <Plus className="h-4 w-4" />
+            <Button onClick={resetForm} style={{ display: 'flex', gap: 8 }}>
+              <Plus style={{ width: 16, height: 16 }} />
               Add Service
             </Button>
           </DialogTrigger>
-          
-          <DialogContent className="max-w-2xl">
+
+          <DialogContent style={{ maxWidth: 672 }}>
             <DialogHeader>
               <DialogTitle>
                 {editingService ? 'Edit Service' : 'Add New Service'}
               </DialogTitle>
             </DialogHeader>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
@@ -243,9 +246,9 @@ export default function AdminVenueServices() {
                     onChange={(e) => handleNameChange(e.target.value)}
                     required
                   />
-                </div>
-                
-                <div className="space-y-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="slug">Slug *</Label>
                   <Input
                     id="slug"
@@ -253,10 +256,10 @@ export default function AdminVenueServices() {
                     onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
                     required
                   />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
@@ -264,10 +267,10 @@ export default function AdminVenueServices() {
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   rows={3}
                 />
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
+              </Box>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="icon">Icon</Label>
                   <Input
                     id="icon"
@@ -275,12 +278,12 @@ export default function AdminVenueServices() {
                     onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
                     placeholder="Lucide icon name"
                   />
-                </div>
-                
-                <div className="space-y-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="category">Category</Label>
-                  <Select 
-                    value={formData.category} 
+                  <Select
+                    value={formData.category}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
                   >
                     <SelectTrigger>
@@ -294,9 +297,9 @@ export default function AdminVenueServices() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                
-                <div className="space-y-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="sort_order">Sort Order</Label>
                   <Input
                     id="sort_order"
@@ -304,44 +307,44 @@ export default function AdminVenueServices() {
                     value={formData.sort_order}
                     onChange={(e) => setFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
                   />
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Switch
                   id="is_active"
                   checked={formData.is_active}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
                 />
                 <Label htmlFor="is_active">Active</Label>
-              </div>
-              
-              <div className="flex justify-end gap-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+              </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  <X className="h-4 w-4 mr-2" />
+                  <X style={{ width: 16, height: 16, marginRight: 8 }} />
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={createServiceMutation.isPending || updateServiceMutation.isPending}
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save style={{ width: 16, height: 16, marginRight: 8 }} />
                   {editingService ? 'Update' : 'Create'}
                 </Button>
-              </div>
-            </form>
+              </Box>
+            </Box>
           </DialogContent>
         </Dialog>
-      </div>
+      </Box>
 
       {/* Filter */}
-      <div className="mb-6">
+      <Box sx={{ mb: 3 }}>
         <Select value={filterCategory} onValueChange={setFilterCategory}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger style={{ width: 192 }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -353,7 +356,7 @@ export default function AdminVenueServices() {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </Box>
 
       <Card>
         <CardHeader>
@@ -368,19 +371,19 @@ export default function AdminVenueServices() {
                 <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Sort Order</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead style={{ textAlign: 'right' }}>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredServices.map((service) => (
                 <TableRow key={service.id}>
-                  <TableCell className="font-medium">{service.name}</TableCell>
+                  <TableCell style={{ fontWeight: 500 }}>{service.name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
                       {service.category?.charAt(0).toUpperCase() + service.category?.slice(1)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-xs truncate">
+                  <TableCell style={{ maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {service.description}
                   </TableCell>
                   <TableCell>
@@ -389,31 +392,33 @@ export default function AdminVenueServices() {
                     </Badge>
                   </TableCell>
                   <TableCell>{service.sort_order}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                  <TableCell style={{ textAlign: 'right' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(service)}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit style={{ width: 16, height: 16 }} />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(service.id)}
-                        className="text-destructive hover:text-destructive"
+                        style={{ color: 'var(--destructive)' }}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 style={{ width: 16, height: 16 }} />
                       </Button>
-                    </div>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
               {filteredServices.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No services found. Create your first service to get started.
+                  <TableCell colSpan={6} style={{ textAlign: 'center', padding: '32px 0' }}>
+                    <Typography color="text.secondary">
+                      No services found. Create your first service to get started.
+                    </Typography>
                   </TableCell>
                 </TableRow>
               )}
@@ -421,6 +426,6 @@ export default function AdminVenueServices() {
           </Table>
         </CardContent>
       </Card>
-    </div>
+    </Container>
   );
 }

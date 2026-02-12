@@ -6,12 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Plus, 
-  Upload, 
-  X, 
-  Edit3, 
-  Trash2, 
+import {
+  Plus,
+  Upload,
+  X,
+  Edit3,
+  Trash2,
   Camera,
   ImageIcon,
   Loader2,
@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { useUserPhotos } from '@/hooks/useUserPhotos';
 import { useAuth } from '@/hooks/useAuth';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface PhotoGalleryProps {
   userId: string;
@@ -95,10 +97,10 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center h-32">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          </div>
+        <CardContent style={{ padding: 24 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 128 }}>
+            <Loader2 style={{ width: 24, height: 24, animation: 'spin 1s linear infinite' }} />
+          </Box>
         </CardContent>
       </Card>
     );
@@ -106,20 +108,20 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
 
   return (
     <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Camera className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">Photo Gallery</h3>
+      <CardContent sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Camera style={{ width: 20, height: 20 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>Photo Gallery</Typography>
             {photos && photos.length > 0 && (
               <Badge variant="secondary">{photos.length}</Badge>
             )}
-          </div>
+          </Box>
           {isOwnProfile && (
             <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
               <DialogTrigger asChild>
                 <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
                   Add Photo
                 </Button>
               </DialogTrigger>
@@ -127,29 +129,30 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                 <DialogHeader>
                   <DialogTitle>Upload Photo</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <div>
                     <Label htmlFor="photo-upload">Choose Photo</Label>
-                    <div className="mt-2">
+                    <Box sx={{ mt: 1 }}>
                       <Input
                         id="photo-upload"
                         type="file"
                         accept="image/*"
                         onChange={handleFileSelect}
                       />
-                    </div>
+                    </Box>
                   </div>
-                  
+
                   {selectedFile && (
-                    <div className="space-y-4">
-                      <div className="relative">
-                        <img
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Box sx={{ position: 'relative' }}>
+                        <Box
+                          component="img"
                           src={URL.createObjectURL(selectedFile)}
                           alt="Preview"
-                          className="w-full h-48 object-cover rounded-md"
+                          sx={{ width: '100%', height: 192, objectFit: 'cover', borderRadius: 1 }}
                         />
-                      </div>
-                      
+                      </Box>
+
                       <div>
                         <Label htmlFor="caption">Caption (optional)</Label>
                         <Textarea
@@ -157,13 +160,13 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                           value={caption}
                           onChange={(e) => setCaption(e.target.value)}
                           placeholder="Add a caption to your photo..."
-                          className="mt-1"
+                          style={{ marginTop: 4 }}
                         />
                       </div>
-                    </div>
+                    </Box>
                   )}
-                  
-                  <div className="flex justify-end gap-2">
+
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
                     <Button variant="outline" onClick={() => {
                       setUploadOpen(false);
                       setSelectedFile(null);
@@ -171,41 +174,41 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                     }}>
                       Cancel
                     </Button>
-                    <Button 
-                      onClick={handleUpload} 
+                    <Button
+                      onClick={handleUpload}
                       disabled={!selectedFile || uploadPhoto.isPending}
                     >
                       {uploadPhoto.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        <Loader2 style={{ width: 16, height: 16, animation: 'spin 1s linear infinite', marginRight: 8 }} />
                       ) : (
-                        <Upload className="h-4 w-4 mr-2" />
+                        <Upload style={{ width: 16, height: 16, marginRight: 8 }} />
                       )}
                       Upload
                     </Button>
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </DialogContent>
             </Dialog>
           )}
-        </div>
+        </Box>
 
         {!photos || photos.length === 0 ? (
-          <div className="text-center py-8">
-            <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">No photos yet</h3>
-            <p className="text-muted-foreground">
-              {isOwnProfile 
-                ? "Upload your first photo to get started" 
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <ImageIcon style={{ width: 48, height: 48, margin: '0 auto', marginBottom: 16, color: 'var(--muted-foreground)' }} />
+            <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>No photos yet</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              {isOwnProfile
+                ? "Upload your first photo to get started"
                 : "This user hasn't uploaded any photos yet"
               }
-            </p>
-          </div>
+            </Typography>
+          </Box>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
             {photos.map((photo) => (
-              <div key={photo.id} className="relative group">
-                <div 
-                  className="aspect-square overflow-hidden rounded-lg bg-muted cursor-pointer"
+              <Box key={photo.id} sx={{ position: 'relative', '&:hover .photo-overlay': { opacity: 1 }, '&:hover .photo-actions': { opacity: 1 }, '&:hover img': { transform: 'scale(1.05)' } }}>
+                <Box
+                  sx={{ aspectRatio: '1', overflow: 'hidden', borderRadius: 2, bgcolor: 'action.hover', cursor: 'pointer' }}
                   onClick={async () => {
                     const existing = signedUrls[photo.storage_path];
                     if (existing) {
@@ -216,91 +219,109 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                     }
                   }}
                 >
-                  <img
+                  <Box
+                    component="img"
                     src={signedUrls[photo.storage_path] || ''}
                     alt={photo.caption || 'User photo'}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.2s' }}
                   />
-                  <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/20 transition-colors flex items-center justify-center">
-                    <ZoomIn className="h-6 w-6 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                </div>
-                
+                  <Box
+                    className="photo-overlay"
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      bgcolor: 'rgba(0,0,0,0)',
+                      '&:hover': { bgcolor: 'rgba(0,0,0,0.2)' },
+                      transition: 'background-color 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: 0,
+                    }}
+                  >
+                    <ZoomIn style={{ width: 24, height: 24, color: 'var(--primary-foreground)' }} />
+                  </Box>
+                </Box>
+
                 {photo.caption && (
-                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                  <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {editingCaption === photo.id ? (
-                      <div className="space-y-2">
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <Textarea
                           value={editCaptionText}
                           onChange={(e) => setEditCaptionText(e.target.value)}
-                          className="text-xs"
+                          style={{ fontSize: '0.75rem' }}
                           rows={2}
                         />
-                        <div className="flex gap-2">
+                        <Box sx={{ display: 'flex', gap: 1 }}>
                           <Button size="sm" onClick={() => handleSaveCaption(photo.id)}>
                             Save
                           </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
+                          <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => setEditingCaption(null)}
                           >
                             Cancel
                           </Button>
-                        </div>
-                      </div>
+                        </Box>
+                      </Box>
                     ) : (
                       photo.caption
                     )}
-                  </p>
+                  </Typography>
                 )}
 
                 {isOwnProfile && (
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="flex gap-1">
+                  <Box
+                    className="photo-actions"
+                    sx={{ position: 'absolute', top: 8, right: 8, opacity: 0, transition: 'opacity 0.2s' }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
                       <Button
                         size="sm"
                         variant="secondary"
-                        className="h-8 w-8 p-0"
+                        style={{ height: 32, width: 32, padding: 0 }}
                         onClick={() => handleEditCaption(photo.id, photo.caption || '')}
                       >
-                        <Edit3 className="h-3 w-3" />
+                        <Edit3 style={{ width: 12, height: 12 }} />
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
-                        className="h-8 w-8 p-0"
+                        style={{ height: 32, width: 32, padding: 0 }}
                         onClick={() => handleDeletePhoto(photo.id)}
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 style={{ width: 12, height: 12 }} />
                       </Button>
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
-              </div>
+              </Box>
             ))}
-          </div>
+          </Box>
         )}
 
         {/* Image Lightbox */}
         {selectedImage && (
           <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-            <DialogContent className="max-w-4xl">
-              <div className="relative">
-                <img
+            <DialogContent style={{ maxWidth: 896 }}>
+              <Box sx={{ position: 'relative' }}>
+                <Box
+                  component="img"
                   src={selectedImage}
                   alt="Full size photo"
-                  className="w-full max-h-[80vh] object-contain"
+                  sx={{ width: '100%', maxHeight: '80vh', objectFit: 'contain' }}
                 />
                 <Button
-                  className="absolute top-2 right-2"
+                  style={{ position: 'absolute', top: 8, right: 8 }}
                   variant="secondary"
                   size="icon"
                   onClick={() => setSelectedImage(null)}
                 >
-                  <X className="h-4 w-4" />
+                  <X style={{ width: 16, height: 16 }} />
                 </Button>
-              </div>
+              </Box>
             </DialogContent>
           </Dialog>
         )}

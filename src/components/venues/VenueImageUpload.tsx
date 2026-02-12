@@ -5,6 +5,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, X, ImagePlus } from "lucide-react";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 
 interface VenueImageUploadProps {
   images: string[];
@@ -115,78 +118,95 @@ export const VenueImageUpload = ({
   };
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Label>Venue Images (Optional)</Label>
-      
+
       {/* Upload Area */}
-      <Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
-        <CardContent className="p-6">
+      <Paper
+        sx={{
+          border: 2,
+          borderStyle: 'dashed',
+          borderColor: 'divider',
+          transition: 'border-color 0.2s',
+          '&:hover': { borderColor: 'primary.main', opacity: 0.5 }
+        }}
+      >
+        <Box sx={{ p: 3 }}>
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
             multiple
             onChange={handleFileSelect}
-            className="hidden"
+            style={{ display: 'none' }}
             disabled={uploading || images.length >= maxImages}
           />
-          
-          <div 
-            className="flex flex-col items-center justify-center cursor-pointer"
+
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
             onClick={triggerFileInput}
           >
-            <div className="mb-4">
-              <ImagePlus className="h-12 w-12 text-muted-foreground" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-medium">
+            <Box sx={{ mb: 2 }}>
+              <ImagePlus style={{ width: 48, height: 48, color: 'var(--muted-foreground)' }} />
+            </Box>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
                 {uploading ? "Uploading..." : "Click to upload venue images"}
-              </p>
-              <p className="text-xs text-muted-foreground">
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
                 PNG, JPG, WebP up to 20MB (max {maxImages} images)
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
                 {images.length}/{maxImages} images uploaded
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Paper>
 
       {/* Image Previews */}
       {images.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2 }}>
           {images.map((imageUrl, index) => (
-            <div key={index} className="relative group">
-              <div className="aspect-square rounded-lg overflow-hidden bg-muted">
-                <img
+            <Box key={index} sx={{ position: 'relative' }}>
+              <Box sx={{ aspectRatio: '1', borderRadius: 2, overflow: 'hidden', bgcolor: 'action.hover' }}>
+                <Box
+                  component="img"
                   src={imageUrl}
                   alt={`Venue image ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/placeholder.svg';
                   }}
                 />
-              </div>
+              </Box>
               <Button
                 variant="destructive"
                 size="sm"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  opacity: 0,
+                  transition: 'opacity 0.2s',
+                  '&:hover': { opacity: 1 },
+                  '.group:hover &': { opacity: 1 }
+                }}
                 onClick={() => removeImage(index)}
               >
-                <X className="h-3 w-3" />
+                <X style={{ width: 12, height: 12 }} />
               </Button>
-            </div>
+            </Box>
           ))}
-        </div>
+        </Box>
       )}
 
       {images.length >= maxImages && (
-        <p className="text-xs text-muted-foreground">
+        <Typography variant="caption" color="text.secondary">
           Maximum number of images reached. Remove an image to upload more.
-        </p>
+        </Typography>
       )}
-    </div>
+    </Box>
   );
 };

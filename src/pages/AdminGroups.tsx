@@ -150,9 +150,9 @@ export default function AdminGroups() {
 
   const getStatusBadge = (group: any) => {
     if (group.is_private) {
-      return <Badge variant="secondary"><Lock className="h-3 w-3 mr-1" />Private</Badge>;
+      return <Badge variant="secondary"><Lock style={{ height: 12, width: 12, marginRight: 4 }} />Private</Badge>;
     }
-    return <Badge variant="outline"><Globe className="h-3 w-3 mr-1" />Public</Badge>;
+    return <Badge variant="outline"><Globe style={{ height: 12, width: 12, marginRight: 4 }} />Public</Badge>;
   };
 
   const getActivityLevel = (groupId: string) => {
@@ -176,74 +176,74 @@ export default function AdminGroups() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-4 mb-6">
+    <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <Button
           variant="ghost"
           onClick={() => navigate("/admin")}
-          className="flex items-center gap-2"
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft style={{ height: 16, width: 16 }} />
           Back to Admin
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Groups Management</h1>
-          <p className="text-muted-foreground">Manage community groups and their settings</p>
+          <h1 sx={{ fontSize: '1.875rem', fontWeight: 700 }}>Groups Management</h1>
+          <p style={{ color: 'var(--muted-foreground)' }}>Manage community groups and their settings</p>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(5, 1fr)' }, gap: 2, mb: 3 }}>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Groups</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Total Groups</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{groups?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{groups?.length || 0}</div>
+            <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
               {filteredGroups.length !== groups?.length && `${filteredGroups.length} filtered`}
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Public Groups</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Public Groups</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {groups?.filter(g => !g.is_private).length || 0}
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Private Groups</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Private Groups</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {groups?.filter(g => g.is_private).length || 0}
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Members</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Total Members</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {groups?.reduce((sum, g) => sum + (g.member_count || 0), 0) || 0}
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Posts</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Total Posts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {Object.values(groupStats).reduce((sum, stats) => sum + stats.posts, 0)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
               {Object.values(groupStats).reduce((sum, stats) => sum + stats.events, 0)} events
             </p>
           </CardContent>
@@ -253,9 +253,9 @@ export default function AdminGroups() {
       {/* Filters and Bulk Actions */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <CardTitle>Manage Groups</CardTitle>
-            <div className="flex items-center gap-2">
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {selectedGroups.length > 0 && (
                 <>
                   <Badge variant="secondary">{selectedGroups.length} selected</Badge>
@@ -265,7 +265,7 @@ export default function AdminGroups() {
                       size="sm"
                       onClick={handleBulkDelete}
                     >
-                      <Trash2 className="h-4 w-4 mr-1" />
+                      <Trash2 style={{ height: 16, width: 16, marginRight: 4 }} />
                       Delete Selected
                     </Button>
                   )}
@@ -276,25 +276,25 @@ export default function AdminGroups() {
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
               >
-                <Filter className="h-4 w-4 mr-1" />
+                <Filter style={{ height: 16, width: 16, marginRight: 4 }} />
                 Filters
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+            <div sx={{ flex: 1, position: 'relative' }}>
+              <Search style={{ position: 'absolute', left: 12, top: 12, height: 16, width: 16, color: 'var(--muted-foreground)' }} />
               <Input
                 placeholder="Search by name, description, or tags..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                sx={{ pl: 5 }}
               />
             </div>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger sx={{ width: 200 }}>
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
@@ -306,11 +306,11 @@ export default function AdminGroups() {
           </div>
           
           {showFilters && (
-            <div className="border-t pt-4">
-              <h4 className="text-sm font-medium mb-2">Additional Filters</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div sx={{ borderTop: 1, borderColor: 'divider', pt: 2 }}>
+              <h4 sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1 }}>Additional Filters</h4>
+              <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
                 <div>
-                  <label className="text-sm text-muted-foreground">Activity Level</label>
+                  <label sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Activity Level</label>
                   <Select>
                     <SelectTrigger>
                       <SelectValue placeholder="Any activity" />
@@ -325,7 +325,7 @@ export default function AdminGroups() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm text-muted-foreground">Member Count</label>
+                  <label sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Member Count</label>
                   <Select>
                     <SelectTrigger>
                       <SelectValue placeholder="Any size" />
@@ -339,7 +339,7 @@ export default function AdminGroups() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm text-muted-foreground">Created</label>
+                  <label sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Created</label>
                   <Select>
                     <SelectTrigger>
                       <SelectValue placeholder="Any time" />
@@ -365,17 +365,17 @@ export default function AdminGroups() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-4">Loading groups...</div>
+            <div sx={{ textAlign: 'center', py: 2 }}>Loading groups...</div>
           ) : filteredGroups.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
               No groups found matching your criteria.
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div sx={{ overflowX: 'auto' }}>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">
+                    <TableHead sx={{ width: 48 }}>
                       <Checkbox
                         checked={selectedGroups.length === filteredGroups.length && filteredGroups.length > 0}
                         onCheckedChange={(checked) => {
@@ -412,14 +412,14 @@ export default function AdminGroups() {
                         />
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center text-primary-foreground font-medium">
+                        <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <div sx={{ height: 40, width: 40, borderRadius: 2, background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'primary.contrastText', fontWeight: 500 }}>
                             {group.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-medium">{group.name}</div>
+                            <div sx={{ fontWeight: 500 }}>{group.name}</div>
                             {group.description && (
-                              <div className="text-sm text-muted-foreground line-clamp-1">
+                              <div sx={{ fontSize: '0.875rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {group.description}
                               </div>
                             )}
@@ -428,23 +428,23 @@ export default function AdminGroups() {
                       </TableCell>
                       <TableCell>{getStatusBadge(group)}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4" />
+                        <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Users style={{ height: 16, width: 16 }} />
                           {group.member_count || 0}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="space-y-1">
+                        <div sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                           {getActivityBadge(group.id)}
-                          <div className="text-xs text-muted-foreground">
+                          <div sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                             {groupStats[group.id] && (
                               <>
-                                <div className="flex items-center gap-1">
-                                  <MessageSquare className="h-3 w-3" />
+                                <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <MessageSquare style={{ height: 12, width: 12 }} />
                                   {groupStats[group.id].posts} posts
                                 </div>
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-3 w-3" />
+                                <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <Calendar style={{ height: 12, width: 12 }} />
                                   {groupStats[group.id].events} events
                                 </div>
                               </>
@@ -454,67 +454,67 @@ export default function AdminGroups() {
                       </TableCell>
                       <TableCell>
                         {group.tags && group.tags.length > 0 ? (
-                          <div className="flex flex-wrap gap-1 max-w-[200px]">
+                          <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxWidth: 200 }}>
                             {group.tags.slice(0, 2).map((tag) => (
-                              <Badge key={tag} variant="outline" className="text-xs">
+                              <Badge key={tag} variant="outline" sx={{ fontSize: '0.75rem' }}>
                                 {tag}
                               </Badge>
                             ))}
                             {group.tags.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                                 +{group.tags.length - 2}
                               </Badge>
                             )}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground text-sm">No tags</span>
+                          <span sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>No tags</span>
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
+                        <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Calendar style={{ height: 16, width: 16 }} />
                           {new Date(group.created_at).toLocaleDateString()}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`/groups/${group.id}`)}
                             title="View Group"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye style={{ height: 16, width: 16 }} />
                           </Button>
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button variant="ghost" size="sm" title="Group Details">
-                                <MoreVertical className="h-4 w-4" />
+                                <MoreVertical style={{ height: 16, width: 16 }} />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-md">
+                            <DialogContent sx={{ maxWidth: 448 }}>
                               <DialogHeader>
                                 <DialogTitle>{group.name} - Details</DialogTitle>
                               </DialogHeader>
-                              <div className="space-y-4">
+                              <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 <div>
-                                  <h4 className="font-medium mb-2">Description</h4>
-                                  <p className="text-sm text-muted-foreground">
+                                  <h4 sx={{ fontWeight: 500, mb: 1 }}>Description</h4>
+                                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                                     {group.description || "No description"}
                                   </p>
                                 </div>
                                 {group.rules && (
                                   <div>
-                                    <h4 className="font-medium mb-2">Rules</h4>
-                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                    <h4 sx={{ fontWeight: 500, mb: 1 }}>Rules</h4>
+                                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary', whiteSpace: 'pre-wrap' }}>
                                       {group.rules}
                                     </p>
                                   </div>
                                 )}
                                 {group.tags && group.tags.length > 0 && (
                                   <div>
-                                    <h4 className="font-medium mb-2">Tags</h4>
-                                    <div className="flex flex-wrap gap-1">
+                                    <h4 sx={{ fontWeight: 500, mb: 1 }}>Tags</h4>
+                                    <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                       {group.tags.map((tag) => (
                                         <Badge key={tag} variant="outline">
                                           {tag}
@@ -524,8 +524,8 @@ export default function AdminGroups() {
                                   </div>
                                 )}
                                 <div>
-                                  <h4 className="font-medium mb-2">Statistics</h4>
-                                  <div className="grid grid-cols-2 gap-2 text-sm">
+                                  <h4 sx={{ fontWeight: 500, mb: 1 }}>Statistics</h4>
+                                  <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, fontSize: '0.875rem' }}>
                                     <div>Members: {group.member_count || 0}</div>
                                     <div>Posts: {groupStats[group.id]?.posts || 0}</div>
                                     <div>Events: {groupStats[group.id]?.events || 0}</div>
@@ -540,10 +540,10 @@ export default function AdminGroups() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeleteGroup(group.id)}
-                              className="text-destructive hover:text-destructive"
+                              sx={{ color: 'error.main', '&:hover': { color: 'error.main' } }}
                               title="Delete Group"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 style={{ height: 16, width: 16 }} />
                             </Button>
                           )}
                         </div>

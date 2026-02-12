@@ -4,16 +4,18 @@ import { Fingerprint, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface PasskeyButtonProps {
   mode: 'enroll' | 'signin';
-  className?: string;
+  sx?: object;
   variant?: 'default' | 'outline' | 'secondary' | 'ghost';
 }
 
-export const PasskeyButton = ({ 
-  mode, 
-  className,
+export const PasskeyButton = ({
+  mode,
+  sx,
   variant = 'outline'
 }: PasskeyButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +24,7 @@ export const PasskeyButton = ({
 
   const handlePasskeyAction = async () => {
     setIsLoading(true);
-    
+
     try {
       if (mode === 'enroll') {
         const { error } = await enrollPasskey();
@@ -94,8 +96,8 @@ export const PasskeyButton = ({
     return null;
   }
 
-  const buttonText = mode === 'enroll' 
-    ? 'Set up Passkey' 
+  const buttonText = mode === 'enroll'
+    ? 'Set up Passkey'
     : 'Sign in with Passkey';
 
   const buttonDescription = mode === 'enroll'
@@ -103,23 +105,22 @@ export const PasskeyButton = ({
     : 'Use your device biometrics';
 
   return (
-    <div className="space-y-2">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...sx }}>
       <Button
         variant={variant}
         onClick={handlePasskeyAction}
         disabled={isLoading}
-        className={className}
       >
         {isLoading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
         ) : (
-          <Fingerprint className="mr-2 h-4 w-4" />
+          <Fingerprint style={{ width: 16, height: 16, marginRight: 8 }} />
         )}
         {buttonText}
       </Button>
-      <p className="text-xs text-muted-foreground text-center">
+      <Typography variant="caption" sx={{ color: 'text.secondary', textAlign: 'center' }}>
         {buttonDescription}
-      </p>
-    </div>
+      </Typography>
+    </Box>
   );
 };

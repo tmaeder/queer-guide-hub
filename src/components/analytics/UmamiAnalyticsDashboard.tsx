@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Box, Typography } from '@mui/material';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { Calendar, MapPin, Monitor, Users, Eye, Activity, Clock, Globe, Smartpho
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { UmamiMap } from './UmamiMap';
+
 interface UmamiSession {
   session_id: string;
   hostname: string;
@@ -22,6 +24,7 @@ interface UmamiSession {
   city: string;
   created_at: string;
 }
+
 interface UmamiEvent {
   event_id: string;
   url_path: string;
@@ -31,6 +34,7 @@ interface UmamiEvent {
   created_at: string;
   session: UmamiSession;
 }
+
 interface UmamiStats {
   totalPageViews: number;
   totalSessions: number;
@@ -85,7 +89,9 @@ interface UmamiStats {
   totalUptime: number;
   conversionRate: number;
 }
+
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', 'hsl(var(--destructive))', 'hsl(var(--warning))'];
+
 export const UmamiAnalyticsDashboard = () => {
   const [stats, setStats] = useState<UmamiStats>({
     totalPageViews: 0,
@@ -115,6 +121,7 @@ export const UmamiAnalyticsDashboard = () => {
   const [deviceFilter, setDeviceFilter] = useState<'all' | 'desktop' | 'mobile' | 'tablet'>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [autoRefresh, setAutoRefresh] = useState(true);
+
   useEffect(() => {
     fetchUmamiStats();
 
@@ -125,10 +132,12 @@ export const UmamiAnalyticsDashboard = () => {
         fetchUmamiStats(true);
       }, 5 * 60 * 1000);
     }
+
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [dateRange, deviceFilter, countryFilter, autoRefresh]);
+
   const fetchUmamiStats = async (isRefresh = false) => {
     try {
       if (isRefresh) {
@@ -144,7 +153,7 @@ export const UmamiAnalyticsDashboard = () => {
           session
         }
       } = await supabase.auth.getSession();
-      
+
       const {
         data: analyticsData,
         error
@@ -159,13 +168,13 @@ export const UmamiAnalyticsDashboard = () => {
           Authorization: `Bearer ${session.access_token}`
         } : {}
       });
-      
+
       if (error) {
         console.error('Error fetching Umami stats:', error);
         setError('Failed to load analytics data. Umami may not be configured yet.');
         return;
       }
-      
+
       if (analyticsData) {
         setStats(analyticsData);
       }
@@ -177,9 +186,11 @@ export const UmamiAnalyticsDashboard = () => {
       setRefreshing(false);
     }
   };
+
   const handleRefresh = () => {
     fetchUmamiStats(true);
   };
+
   const handleExport = async () => {
     try {
       // Get current session for auth header
@@ -218,91 +229,93 @@ export const UmamiAnalyticsDashboard = () => {
       console.error('Error exporting data:', error);
     }
   };
+
   if (loading) {
-    return <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => <Card key={i} className="animate-pulse">
-              <CardHeader className="space-y-2">
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-                <div className="h-8 bg-muted rounded w-1/2"></div>
+    return <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3 }}>
+          {[...Array(3)].map((_, i) => <Card key={i} sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+              <CardHeader sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }}></Box>
+                <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '50%' }}></Box>
               </CardHeader>
             </Card>)}
-        </div>
-      </div>;
+        </Box>
+      </Box>;
   }
 
   if (error) {
-    return <div className="space-y-6">
+    return <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-destructive/10 rounded-lg">
-                <Activity className="h-6 w-6 text-destructive" />
-              </div>
-              <div>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ p: 1, bgcolor: 'error.light', opacity: 0.1, borderRadius: 2 }}>
+                <Activity sx={{ height: 24, width: 24, color: 'error.main' }} />
+              </Box>
+              <Box>
                 <CardTitle>Analytics Unavailable</CardTitle>
                 <CardDescription>{error}</CardDescription>
-              </div>
-            </div>
+              </Box>
+            </Box>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 To enable analytics tracking, you need to configure Umami analytics:
-              </p>
-              <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+              </Typography>
+              <Box component="ol" sx={{ listStyle: 'decimal', listStylePosition: 'inside', display: 'flex', flexDirection: 'column', gap: 1, fontSize: '0.875rem', color: 'text.secondary' }}>
                 <li>Set up an Umami instance or use Umami Cloud</li>
                 <li>Create a website tracking code</li>
                 <li>Add the tracking script to your site</li>
                 <li>Configure the database connection</li>
-              </ol>
-              <div className="flex gap-2 mt-4">
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                 <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
-                  <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                  <RefreshCw sx={{ height: 16, width: 16, mr: 1, ...(refreshing && { animation: 'spin 1s linear infinite' }) }} />
                   Retry
                 </Button>
-              </div>
-            </div>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
-      </div>;
+      </Box>;
   }
-  return <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          
-          
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+
+  return <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+
+
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Badge variant="outline" sx={{ gap: 1 }}>
+            <Box sx={{ width: 8, height: 8, bgcolor: 'green', borderRadius: '50%', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
             {stats.liveVisitors} Live
           </Badge>
-          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} className="gap-2">
-            <RefreshCw className={`h-3 w-3 ${refreshing ? 'animate-spin' : ''}`} />
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} sx={{ gap: 1 }}>
+            <RefreshCw sx={{ height: 12, width: 12, ...(refreshing && { animation: 'spin 1s linear infinite' }) }} />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
-            <Download className="h-3 w-3" />
+          <Button variant="outline" size="sm" onClick={handleExport} sx={{ gap: 1 }}>
+            <Download sx={{ height: 12, width: 12 }} />
             Export
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Filter sx={{ height: 16, width: 16 }} />
             Filters & Controls
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium">Date Range:</label>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography component="label" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Date Range:</Typography>
               <Select value={dateRange} onValueChange={(value: '7d' | '30d' | '90d' | 'custom') => setDateRange(value)}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger sx={{ width: 128 }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -312,12 +325,12 @@ export const UmamiAnalyticsDashboard = () => {
                   <SelectItem value="custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium">Device:</label>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography component="label" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Device:</Typography>
               <Select value={deviceFilter} onValueChange={(value: 'all' | 'desktop' | 'mobile' | 'tablet') => setDeviceFilter(value)}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger sx={{ width: 128 }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -327,89 +340,89 @@ export const UmamiAnalyticsDashboard = () => {
                   <SelectItem value="tablet">Tablet</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium">Auto Refresh:</label>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography component="label" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Auto Refresh:</Typography>
               <Button variant={autoRefresh ? "default" : "outline"} size="sm" onClick={() => setAutoRefresh(!autoRefresh)}>
                 {autoRefresh ? "ON" : "OFF"}
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Page Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+          <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Page Views</CardTitle>
+            <Eye sx={{ height: 16, width: 16, color: 'text.secondary' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPageViews.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">+12.5% from last period</p>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.totalPageViews.toLocaleString()}</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>+12.5% from last period</Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sessions</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Sessions</CardTitle>
+            <Users sx={{ height: 16, width: 16, color: 'text.secondary' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSessions.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">+8.2% from last period</p>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.totalSessions.toLocaleString()}</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>+8.2% from last period</Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unique Visitors</CardTitle>
-            <Monitor className="h-4 w-4 text-muted-foreground" />
+          <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Unique Visitors</CardTitle>
+            <Monitor sx={{ height: 16, width: 16, color: 'text.secondary' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.uniqueVisitors.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">+15.3% from last period</p>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.uniqueVisitors.toLocaleString()}</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>+15.3% from last period</Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Duration</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+          <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Avg. Duration</CardTitle>
+            <Clock sx={{ height: 16, width: 16, color: 'text.secondary' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{Math.round(stats.avgSessionDuration / 60)}m</div>
-            <p className="text-xs text-muted-foreground">Session duration</p>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{Math.round(stats.avgSessionDuration / 60)}m</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Session duration</Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bounce Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Bounce Rate</CardTitle>
+            <TrendingUp sx={{ height: 16, width: 16, color: 'text.secondary' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.bounceRate}%</div>
-            <p className="text-xs text-muted-foreground">Single page visits</p>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.bounceRate}%</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Single page visits</Typography>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversion</CardTitle>
-            <Globe className="h-4 w-4 text-muted-foreground" />
+          <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Conversion</CardTitle>
+            <Globe sx={{ height: 16, width: 16, color: 'text.secondary' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.conversionRate}%</div>
-            <p className="text-xs text-muted-foreground">Goal completion</p>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.conversionRate}%</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Goal completion</Typography>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Charts and Analytics */}
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="pages">Pages</TabsTrigger>
@@ -419,7 +432,7 @@ export const UmamiAnalyticsDashboard = () => {
           <TabsTrigger value="realtime">Real-time</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Traffic Chart */}
           <Card>
             <CardHeader>
@@ -460,36 +473,36 @@ export const UmamiAnalyticsDashboard = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="pages" className="space-y-6">
+        <TabsContent value="pages" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card>
             <CardHeader>
               <CardTitle>Top Pages</CardTitle>
               <CardDescription>Most visited pages with performance metrics</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {stats.topPages.map((page, index) => <div key={page.path} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <Badge variant="secondary" className="w-6 h-6 rounded-full p-0 flex items-center justify-center text-xs">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {stats.topPages.map((page, index) => <Box key={page.path} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
+                      <Badge variant="secondary" sx={{ width: 24, height: 24, borderRadius: '50%', p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
                         {index + 1}
                       </Badge>
-                      <div className="flex-1">
-                        <p className="font-mono text-sm font-medium">{page.path}</p>
-                        <Progress value={page.percentage} className="h-2 mt-1" />
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{page.views.toLocaleString()} views</p>
-                      <p className="text-xs text-muted-foreground">{page.percentage}%</p>
-                    </div>
-                  </div>)}
-              </div>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontFamily: 'monospace', fontSize: '0.875rem', fontWeight: 500 }}>{page.path}</Typography>
+                        <Progress value={page.percentage} sx={{ height: 8, mt: 0.5 }} />
+                      </Box>
+                    </Box>
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{page.views.toLocaleString()} views</Typography>
+                      <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{page.percentage}%</Typography>
+                    </Box>
+                  </Box>)}
+              </Box>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="audience" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="audience" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' }, gap: 3 }}>
             {/* Countries Chart */}
             <Card>
               <CardHeader>
@@ -538,12 +551,12 @@ export const UmamiAnalyticsDashboard = () => {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-          </div>
+          </Box>
         </TabsContent>
 
-        <TabsContent value="geography" className="space-y-6">
+        <TabsContent value="geography" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <UmamiMap countryData={stats.topCountries} loading={loading} />
-          
+
           {/* Country Details Table */}
           <Card>
             <CardHeader>
@@ -551,33 +564,33 @@ export const UmamiAnalyticsDashboard = () => {
               <CardDescription>Detailed breakdown of visitors by country</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {stats.topCountries.map((country, index) => (
-                  <div key={country.country} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="w-8 h-8 rounded-full p-0 flex items-center justify-center text-xs">
+                  <Box key={country.country} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, border: 1, borderColor: 'divider' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Badge variant="outline" sx={{ width: 32, height: 32, borderRadius: '50%', p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
                         {index + 1}
                       </Badge>
-                      <div>
-                        <p className="font-medium">{country.country}</p>
-                        <p className="text-xs text-muted-foreground">
+                      <Box>
+                        <Typography sx={{ fontWeight: 500 }}>{country.country}</Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                           {country.percentage}% of total traffic
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{country.count.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">visitors</p>
-                    </div>
-                  </div>
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography sx={{ fontWeight: 500 }}>{country.count.toLocaleString()}</Typography>
+                      <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>visitors</Typography>
+                    </Box>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="technology" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="technology" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
             {/* Browsers */}
             <Card>
               <CardHeader>
@@ -585,20 +598,20 @@ export const UmamiAnalyticsDashboard = () => {
                 <CardDescription>Most used browsers</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {stats.topBrowsers.map((browser, index) => <div key={browser.browser} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-1">
-                        <Badge variant="secondary" className="w-6 h-6 rounded-full p-0 flex items-center justify-center text-xs">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {stats.topBrowsers.map((browser, index) => <Box key={browser.browser} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                        <Badge variant="secondary" sx={{ width: 24, height: 24, borderRadius: '50%', p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
                           {index + 1}
                         </Badge>
-                        <span className="text-sm">{browser.browser}</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{browser.count}</p>
-                        <p className="text-xs text-muted-foreground">{browser.percentage}%</p>
-                      </div>
-                    </div>)}
-                </div>
+                        <Box component="span" sx={{ fontSize: '0.875rem' }}>{browser.browser}</Box>
+                      </Box>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{browser.count}</Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{browser.percentage}%</Typography>
+                      </Box>
+                    </Box>)}
+                </Box>
               </CardContent>
             </Card>
 
@@ -609,18 +622,18 @@ export const UmamiAnalyticsDashboard = () => {
                 <CardDescription>Device types</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {stats.topDevices.map((device, index) => <div key={device.device} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-1">
-                        <Smartphone className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{device.device}</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{device.count}</p>
-                        <p className="text-xs text-muted-foreground">{device.percentage}%</p>
-                      </div>
-                    </div>)}
-                </div>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {stats.topDevices.map((device, index) => <Box key={device.device} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                        <Smartphone sx={{ height: 16, width: 16, color: 'text.secondary' }} />
+                        <Box component="span" sx={{ fontSize: '0.875rem' }}>{device.device}</Box>
+                      </Box>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{device.count}</Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{device.percentage}%</Typography>
+                      </Box>
+                    </Box>)}
+                </Box>
               </CardContent>
             </Card>
 
@@ -631,82 +644,82 @@ export const UmamiAnalyticsDashboard = () => {
                 <CardDescription>Most common screen resolutions</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {stats.topScreens.map((screen, index) => <div key={screen.screen} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-1">
-                        <Monitor className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-mono">{screen.screen}</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{screen.count}</p>
-                        <p className="text-xs text-muted-foreground">{screen.percentage}%</p>
-                      </div>
-                    </div>)}
-                </div>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {stats.topScreens.map((screen, index) => <Box key={screen.screen} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                        <Monitor sx={{ height: 16, width: 16, color: 'text.secondary' }} />
+                        <Box component="span" sx={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>{screen.screen}</Box>
+                      </Box>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{screen.count}</Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{screen.percentage}%</Typography>
+                      </Box>
+                    </Box>)}
+                </Box>
               </CardContent>
             </Card>
-          </div>
+          </Box>
         </TabsContent>
 
-        <TabsContent value="realtime" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="realtime" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' }, gap: 3 }}>
             {/* Live Activity */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 8, height: 8, bgcolor: 'green', borderRadius: '50%', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
                   Live Activity
                 </CardTitle>
                 <CardDescription>Real-time visitor activity</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-green-500">{stats.liveVisitors}</div>
-                    <p className="text-sm text-muted-foreground">Active visitors right now</p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Page views (last hour)</span>
-                      <span className="font-medium">{stats.hourlyData[stats.hourlyData.length - 1]?.views || 0}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Sessions (last hour)</span>
-                      <span className="font-medium">{stats.hourlyData[stats.hourlyData.length - 1]?.sessions || 0}</span>
-                    </div>
-                  </div>
-                </div>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography sx={{ fontSize: '2.25rem', fontWeight: 'bold', color: 'green' }}>{stats.liveVisitors}</Typography>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Active visitors right now</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                      <Box component="span">Page views (last hour)</Box>
+                      <Box component="span" sx={{ fontWeight: 500 }}>{stats.hourlyData[stats.hourlyData.length - 1]?.views || 0}</Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                      <Box component="span">Sessions (last hour)</Box>
+                      <Box component="span" sx={{ fontWeight: 500 }}>{stats.hourlyData[stats.hourlyData.length - 1]?.sessions || 0}</Box>
+                    </Box>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
 
             {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
+                <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Activity sx={{ height: 16, width: 16 }} />
                   Recent Activity
                 </CardTitle>
                 <CardDescription>Latest page views and events</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 max-h-80 overflow-y-auto">
-                  {stats.recentEvents.slice(0, 10).map(event => <div key={event.event_id} className="flex items-center justify-between text-sm">
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate font-mono">{event.url_path}</p>
-                        <p className="text-xs text-muted-foreground">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 320, overflowY: 'auto' }}>
+                  {stats.recentEvents.slice(0, 10).map(event => <Box key={event.event_id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>{event.url_path}</Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                           {event.session?.browser} • {event.session?.country}
-                        </p>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
+                        </Typography>
+                      </Box>
+                      <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                         {new Date(event.created_at).toLocaleTimeString()}
-                      </div>
-                    </div>)}
-                </div>
+                      </Typography>
+                    </Box>)}
+                </Box>
               </CardContent>
             </Card>
-          </div>
+          </Box>
         </TabsContent>
       </Tabs>
 
-    </div>;
+    </Box>;
 };

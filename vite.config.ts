@@ -37,8 +37,8 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
-          utils: ['date-fns', 'clsx', 'tailwind-merge'],
+          mui: ['@mui/material', '@emotion/react', '@emotion/styled'],
+          utils: ['date-fns'],
         },
         // Optimize for Cloudflare Pages
         assetFileNames: (assetInfo) => {

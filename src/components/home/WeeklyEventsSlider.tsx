@@ -81,24 +81,24 @@ const WeeklyEventsSlider = React.memo(() => {
   if (!userLocation || weeklyEvents.length === 0) {
     return null;
   }
-  return <section className={`bg-muted/10 ${isMobile ? 'py-8' : 'py-16'} px-4`}>
-      <div className="container mx-auto">
-        <div className={`flex items-center justify-between ${isMobile ? 'mb-6' : 'mb-8'}`}>
+  return <section style={{ backgroundColor: 'rgba(var(--muted-rgb), 0.1)', padding: isMobile ? '32px 16px' : '64px 16px' }}>
+      <div sx={{ maxWidth: 'lg', mx: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isMobile ? 24 : 32 }}>
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Navigation className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-primary`} />
-              <h2 className={`font-bold ${isMobile ? 'text-xl' : 'text-3xl'}`}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Navigation style={{ height: isMobile ? 20 : 24, width: isMobile ? 20 : 24, color: 'hsl(var(--primary))' }} />
+              <h2 style={{ fontWeight: 700, fontSize: isMobile ? '1.25rem' : '1.875rem' }}>
                 This Week Near You
               </h2>
             </div>
-            <p className={`text-muted-foreground ${isMobile ? 'text-sm' : 'text-lg'}`}>
+            <p style={{ color: 'var(--muted-foreground)', fontSize: isMobile ? '0.875rem' : '1.125rem' }}>
               Events happening in {userLocation.city || 'your area'} this week
             </p>
           </div>
           <Button variant="outline" size={isMobile ? "sm" : "default"} asChild>
             <Link to="/events">
               View All
-              <ArrowRight className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+              <ArrowRight style={{ marginLeft: 8, height: isMobile ? 12 : 16, width: isMobile ? 12 : 16 }} />
             </Link>
           </Button>
         </div>
@@ -106,57 +106,57 @@ const WeeklyEventsSlider = React.memo(() => {
         <Carousel opts={{
         align: "start",
         loop: false
-      }} className="w-full">
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {weeklyEvents.map(event => <CarouselItem key={event.id} className={`pl-2 md:pl-4 ${isMobile ? 'basis-full' : 'basis-full md:basis-1/2 lg:basis-1/3'}`}>
-                <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
-                  <CardContent className="p-6 h-full flex flex-col">
-                    <div className="flex items-start justify-between mb-4">
-                      <Badge variant="secondary" className="text-xs">
+      }} sx={{ width: '100%' }}>
+          <CarouselContent sx={{ ml: { xs: -1, md: -2 } }}>
+            {weeklyEvents.map(event => <CarouselItem key={event.id} style={{ paddingLeft: isMobile ? 8 : 16, flex: isMobile ? '0 0 100%' : '0 0 33.333%' }}>
+                <Card sx={{ transition: 'all 0.3s', height: '100%', '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' } }}>
+                  <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <div sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+                      <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
                         {event.event_type}
                       </Badge>
-                      {event.is_free ? <Badge variant="outline" className="text-xs">
+                      {event.is_free ? <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                           Free
-                        </Badge> : event.price_min && <Badge variant="outline" className="text-xs">
+                        </Badge> : event.price_min && <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                           ${event.price_min}+
                         </Badge>}
                     </div>
                     
-                    <h3 className={`font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors ${isMobile ? 'text-base' : 'text-lg'}`}>
+                    <h3 style={{ fontWeight: 600, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', transition: 'color 0.2s', fontSize: isMobile ? '1rem' : '1.125rem' }}>
                       {event.title}
                     </h3>
                     
-                    <div className="space-y-2 mb-4 flex-grow">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4 flex-shrink-0" />
-                        <span className="text-sm">
+                    <div sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2, flexGrow: 1 }}>
+                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                        <Calendar style={{ height: 16, width: 16, flexShrink: 0 }} />
+                        <span sx={{ fontSize: '0.875rem' }}>
                           {format(new Date(event.start_date), 'EEE, MMM d')}
                         </span>
                       </div>
                       
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Clock className="h-4 w-4 flex-shrink-0" />
-                        <span className="text-sm">
+                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                        <Clock style={{ height: 16, width: 16, flexShrink: 0 }} />
+                        <span sx={{ fontSize: '0.875rem' }}>
                           {formatEventTime(event.start_date, event.end_date)}
                         </span>
                       </div>
                       
-                      {(event.city || event.venue_name) && <div className="flex items-center gap-2 text-muted-foreground">
-                          <MapPin className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-sm truncate">
+                      {(event.city || event.venue_name) && <div sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                          <MapPin style={{ height: 16, width: 16, flexShrink: 0 }} />
+                          <span sx={{ fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {event.venue_name || event.city}
                           </span>
                         </div>}
                     </div>
 
-                    {event.description && <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                    {event.description && <p sx={{ fontSize: '0.875rem', color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 2 }}>
                         {event.description}
                       </p>}
 
-                    <Button variant="ghost" size="sm" className="mt-auto self-start group-hover:bg-muted/50" asChild>
+                    <Button variant="ghost" size="sm" sx={{ mt: 'auto', alignSelf: 'flex-start' }} asChild>
                       <Link to={`/events/${event.id}`}>
                         Learn More
-                        <ArrowRight className="ml-2 h-3 w-3" />
+                        <ArrowRight style={{ marginLeft: 8, height: 12, width: 12 }} />
                       </Link>
                     </Button>
                   </CardContent>
@@ -165,14 +165,14 @@ const WeeklyEventsSlider = React.memo(() => {
           </CarouselContent>
           
           {!isMobile && weeklyEvents.length > 3 && <>
-              <CarouselPrevious className="hidden md:flex" />
-              <CarouselNext className="hidden md:flex" />
+              <CarouselPrevious sx={{ display: { xs: 'none', md: 'flex' } }} />
+              <CarouselNext sx={{ display: { xs: 'none', md: 'flex' } }} />
             </>}
         </Carousel>
 
-        {isMobile && weeklyEvents.length > 1 && <div className="flex justify-center mt-4">
-            <div className="flex space-x-2">
-              {weeklyEvents.slice(0, 5).map((_, index) => <div key={index} className="w-2 h-2 rounded-full bg-muted" />)}
+        {isMobile && weeklyEvents.length > 1 && <div sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <div sx={{ display: 'flex', gap: 1 }}>
+              {weeklyEvents.slice(0, 5).map((_, index) => <div key={index} sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'action.hover' }} />)}
             </div>
           </div>}
       </div>

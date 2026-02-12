@@ -1,53 +1,117 @@
 import * as React from "react"
+import MuiButton, { type ButtonProps as MuiButtonProps } from "@mui/material/Button"
+import MuiIconButton from "@mui/material/IconButton"
 import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils"
-
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded text-sm font-medium transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/95 hover:backdrop-blur-lg",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/95 hover:backdrop-blur-lg",
-        outline: "bg-accent text-accent-foreground hover:bg-accent/95 hover:backdrop-blur-lg",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/95 hover:backdrop-blur-lg",
-        ghost: "bg-transparent text-foreground hover:bg-accent/80 hover:text-accent-foreground hover:backdrop-blur-md",
-        link: "bg-transparent text-primary hover:bg-primary/10 hover:backdrop-blur-sm",
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3",
-        lg: "h-11 px-8",
-        icon: "h-10 w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
+// Variant mapping: shadcn → MUI
+type ShadcnVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+type ShadcnSize = "default" | "sm" | "lg" | "icon";
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ShadcnVariant;
+  size?: ShadcnSize;
+  asChild?: boolean;
+}
+
+function mapVariantToMui(variant: ShadcnVariant = "default"): {
+  muiVariant: MuiButtonProps["variant"];
+  muiColor: MuiButtonProps["color"];
+} {
+  switch (variant) {
+    case "default":
+      return { muiVariant: "contained", muiColor: "primary" };
+    case "destructive":
+      return { muiVariant: "contained", muiColor: "error" };
+    case "outline":
+      return { muiVariant: "outlined", muiColor: "inherit" };
+    case "secondary":
+      return { muiVariant: "contained", muiColor: "secondary" };
+    case "ghost":
+      return { muiVariant: "text", muiColor: "inherit" };
+    case "link":
+      return { muiVariant: "text", muiColor: "primary" };
+    default:
+      return { muiVariant: "contained", muiColor: "primary" };
+  }
+}
+
+function mapSizeToMui(size: ShadcnSize = "default"): MuiButtonProps["size"] {
+  switch (size) {
+    case "sm": return "small";
+    case "lg": return "large";
+    case "default": return "medium";
+    case "icon": return "medium";
+    default: return "medium";
+  }
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
+  ({ className, variant = "default", size = "default", asChild = false, children, style, ...props }, ref) => {
+    // asChild pattern: render children as the root element
+    // This is used for <Button asChild><Link to="...">...</Link></Button>
+    if (asChild) {
+      return (
+        <Slot
+          ref={ref}
+          className={className}
+          style={style}
+          {...props}
+        >
+          {children}
+        </Slot>
+      );
+    }
+
+    // Icon button — square with icon only
+    if (size === "icon") {
+      return (
+        <MuiIconButton
+          ref={ref}
+          className={className}
+          color={variant === "destructive" ? "error" : variant === "default" ? "primary" : "default"}
+          sx={{
+            width: 40,
+            height: 40,
+          }}
+          style={style}
+          {...(props as any)}
+        >
+          {children}
+        </MuiIconButton>
+      );
+    }
+
+    const { muiVariant, muiColor } = mapVariantToMui(variant);
+    const muiSize = mapSizeToMui(size);
+
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+      <MuiButton
         ref={ref}
-        {...props}
-      />
-    )
+        variant={muiVariant}
+        color={muiColor}
+        size={muiSize}
+        className={className}
+        style={style}
+        sx={{
+          // Preserve existing icon sizing behavior
+          '& svg': {
+            width: 16,
+            height: 16,
+            flexShrink: 0,
+            pointerEvents: 'none',
+          },
+        }}
+        {...(props as any)}
+      >
+        {children}
+      </MuiButton>
+    );
   }
 )
 Button.displayName = "Button"
+
+// Keep buttonVariants export for compatibility (some files import it)
+const buttonVariants = (() => "") as any;
 
 export { Button, buttonVariants }

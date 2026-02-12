@@ -133,9 +133,9 @@ export default function PersonalityDetail() {
   const getVerificationBadge = () => {
     switch (personality?.verification_status) {
       case 'verified':
-        return <Badge variant="secondary" className="gap-1"><Verified className="h-3 w-3" />Verified</Badge>;
+        return <Badge variant="secondary" sx={{ gap: 0.5 }}><Verified style={{ height: 12, width: 12 }} />Verified</Badge>;
       case 'disputed':
-        return <Badge variant="secondary" className="gap-1 bg-yellow-500/10 text-yellow-700">Disputed</Badge>;
+        return <Badge variant="secondary" sx={{ gap: 0.5, bgcolor: 'rgba(234,179,8,0.1)', color: '#a16207' }}>Disputed</Badge>;
       default:
         return null;
     }
@@ -164,17 +164,17 @@ export default function PersonalityDetail() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded w-1/3 mb-6"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <div className="h-64 bg-muted rounded"></div>
-              <div className="h-48 bg-muted rounded"></div>
+      <div sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4 }}>
+        <div style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+          <div sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%', mb: 3 }}></div>
+          <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 4 }}>
+            <div sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <div sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }}></div>
+              <div sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }}></div>
             </div>
-            <div className="space-y-6">
-              <div className="h-32 bg-muted rounded"></div>
-              <div className="h-48 bg-muted rounded"></div>
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <div sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }}></div>
+              <div sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }}></div>
             </div>
           </div>
         </div>
@@ -184,11 +184,11 @@ export default function PersonalityDetail() {
 
   if (!personality) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold mb-4">Personality Not Found</h1>
-        <p className="text-muted-foreground mb-6">The personality you're looking for doesn't exist.</p>
+      <div sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
+        <h1 sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Personality Not Found</h1>
+        <p sx={{ color: 'text.secondary', mb: 3 }}>The personality you're looking for doesn't exist.</p>
         <Button onClick={() => navigate('/personalities')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
           Back to Personalities
         </Button>
       </div>
@@ -196,37 +196,37 @@ export default function PersonalityDetail() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div sx={{ maxWidth: 1152, mx: 'auto', px: 2, py: 4 }}>
       {/* Header */}
-      <div className="mb-6">
+      <div sx={{ mb: 3 }}>
         <Button 
           variant="ghost" 
           onClick={() => navigate('/personalities')}
-          className="mb-4"
+          sx={{ mb: 2 }}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
           Back to Personalities
         </Button>
         
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <Avatar className="h-24 w-24">
+        <div sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { md: 'flex-start' }, justifyContent: { md: 'space-between' }, gap: 2 }}>
+          <div sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+            <Avatar sx={{ height: 96, width: 96 }}>
               <AvatarImage 
                 src={personality.image_url || ''} 
                 alt={personality.name}
-                className="object-cover"
+                sx={{ objectFit: 'cover' }}
               />
-              <AvatarFallback className="text-xl font-semibold">
+              <AvatarFallback sx={{ fontSize: '1.25rem', fontWeight: 600 }}>
                 {getInitials(personality.name)}
               </AvatarFallback>
             </Avatar>
             
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold">{personality.name}</h1>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                <h1 sx={{ fontSize: '1.875rem', fontWeight: 700 }}>{personality.name}</h1>
                 {personality.is_featured && (
-                  <Badge variant="secondary" className="gap-1">
-                    <Star className="h-3 w-3" />
+                  <Badge variant="secondary" sx={{ gap: 0.5 }}>
+                    <Star style={{ height: 12, width: 12 }} />
                     Featured
                   </Badge>
                 )}
@@ -234,31 +234,31 @@ export default function PersonalityDetail() {
               </div>
               
               {personality.pronouns && (
-                <p className="text-muted-foreground mb-2">({personality.pronouns})</p>
+                <p sx={{ color: 'text.secondary', mb: 1 }}>({personality.pronouns})</p>
               )}
               
-              <div className="flex items-center gap-4 text-muted-foreground mb-3">
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', mb: 1.5 }}>
                 {personality.profession && (
-                  <div className="flex items-center gap-1">
-                    <Briefcase className="h-4 w-4" />
+                  <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Briefcase style={{ height: 16, width: 16 }} />
                     <span>{personality.profession}</span>
                   </div>
                 )}
                 {personality.nationality && (
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
+                  <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <MapPin style={{ height: 16, width: 16 }} />
                     <span>{personality.nationality}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-1">
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   {personality.is_living ? (
                     <>
-                      <Heart className="h-4 w-4 text-green-600" />
+                      <Heart style={{ height: 16, width: 16, color: '#16a34a' }} />
                       <span>Living</span>
                     </>
                   ) : (
                     <>
-                      <Calendar className="h-4 w-4" />
+                      <Calendar style={{ height: 16, width: 16 }} />
                       <span>Historical</span>
                     </>
                   )}
@@ -266,16 +266,16 @@ export default function PersonalityDetail() {
               </div>
               
               {personality.birth_date && (
-                <p className="text-sm text-muted-foreground mb-3">
+                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5 }}>
                   Age: {calculateAge(personality.birth_date, personality.death_date || undefined)}
                   {personality.is_living ? ' years old' : ' years'}
                 </p>
               )}
 
               {personality.fields.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {personality.fields.map((field, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
+                    <Badge key={index} variant="outline" sx={{ fontSize: '0.75rem' }}>
                       {field}
                     </Badge>
                   ))}
@@ -284,19 +284,19 @@ export default function PersonalityDetail() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Eye className="h-4 w-4" />
-              <span className="text-sm">{personality.view_count.toLocaleString()}</span>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+              <Eye style={{ height: 16, width: 16 }} />
+              <span sx={{ fontSize: '0.875rem' }}>{personality.view_count.toLocaleString()}</span>
             </div>
             <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-2" />
+              <Share2 style={{ height: 16, width: 16, marginRight: 8 }} />
               Share
             </Button>
             {personality.website_url && (
               <Button variant="outline" size="sm" asChild>
                 <a href={personality.website_url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-2" />
+                  <ExternalLink style={{ height: 16, width: 16, marginRight: 8 }} />
                   Website
                 </a>
               </Button>
@@ -305,9 +305,9 @@ export default function PersonalityDetail() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 4 }}>
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Description */}
           {personality.description && (
             <Card>
@@ -315,7 +315,7 @@ export default function PersonalityDetail() {
                 <CardTitle>About</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">{personality.description}</p>
+                <p style={{ color: 'var(--muted-foreground)' }}>{personality.description}</p>
               </CardContent>
             </Card>
           )}
@@ -327,10 +327,10 @@ export default function PersonalityDetail() {
                 <CardTitle>Biography</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {personality.bio.split('\n').map((paragraph, index) => (
                     paragraph.trim() && (
-                      <p key={index} className="text-muted-foreground">
+                      <p key={index} style={{ color: 'var(--muted-foreground)' }}>
                         {paragraph}
                       </p>
                     )
@@ -347,11 +347,11 @@ export default function PersonalityDetail() {
                 <CardTitle>Notable Achievements</CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2">
+                <ul sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {personality.achievements.map((achievement, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <div className="h-2 w-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                      <span className="text-muted-foreground">{achievement}</span>
+                    <li key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                      <div sx={{ height: 8, width: 8, bgcolor: 'primary.main', borderRadius: '50%', mt: 1, flexShrink: 0 }} />
+                      <span style={{ color: 'var(--muted-foreground)' }}>{achievement}</span>
                     </li>
                   ))}
                 </ul>
@@ -361,50 +361,50 @@ export default function PersonalityDetail() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Personal Information */}
           <Card>
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {personality.birth_date && (
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Calendar style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   <div>
-                    <p className="text-sm text-muted-foreground">Born</p>
-                    <p className="font-medium">
+                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Born</p>
+                    <p sx={{ fontWeight: 500 }}>
                       {new Date(personality.birth_date).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
               )}
               {personality.death_date && (
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Calendar style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   <div>
-                    <p className="text-sm text-muted-foreground">Died</p>
-                    <p className="font-medium">
+                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Died</p>
+                    <p sx={{ fontWeight: 500 }}>
                       {new Date(personality.death_date).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
               )}
               {personality.nationality && (
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <MapPin style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   <div>
-                    <p className="text-sm text-muted-foreground">Nationality</p>
-                    <p className="font-medium">{personality.nationality}</p>
+                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Nationality</p>
+                    <p sx={{ fontWeight: 500 }}>{personality.nationality}</p>
                   </div>
                 </div>
               )}
               {personality.profession && (
-                <div className="flex items-center gap-3">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Briefcase style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   <div>
-                    <p className="text-sm text-muted-foreground">Profession</p>
-                    <p className="font-medium">{personality.profession}</p>
+                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Profession</p>
+                    <p sx={{ fontWeight: 500 }}>{personality.profession}</p>
                   </div>
                 </div>
               )}
@@ -433,9 +433,9 @@ export default function PersonalityDetail() {
                 <CardTitle>Tags</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
+                <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {personality.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
+                    <Badge key={index} variant="outline" sx={{ fontSize: '0.75rem' }}>
                       {tag}
                     </Badge>
                   ))}
@@ -446,10 +446,10 @@ export default function PersonalityDetail() {
 
           {/* View Count */}
           <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Eye className="h-4 w-4" />
-                <span className="text-sm">
+            <CardContent sx={{ pt: 3 }}>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                <Eye style={{ height: 16, width: 16 }} />
+                <span sx={{ fontSize: '0.875rem' }}>
                   {personality.view_count.toLocaleString()} profile views
                 </span>
               </div>

@@ -10,6 +10,8 @@ import { LocationInfo } from "@/components/location/LocationInfo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Crown } from "lucide-react";
 
 // Lazy load the map component
@@ -24,10 +26,10 @@ export default function Places() {
   const { fetchCitiesByCountry, searchLocations, findNearbyCities } = usePlaces();
   const loading = countriesLoading || citiesLoading;
   const error = null;
-  
+
   // Fetch continents for grouping countries
   const [continents, setContinents] = useState<any[]>([]);
-  
+
   useEffect(() => {
     const fetchContinents = async () => {
       try {
@@ -35,14 +37,14 @@ export default function Places() {
           .from('continents')
           .select('*')
           .order('name');
-        
+
         if (error) throw error;
         setContinents(continentsData || []);
       } catch (error) {
         console.error('Error fetching continents:', error);
       }
     };
-    
+
     fetchContinents();
   }, []);
 
@@ -108,11 +110,11 @@ export default function Places() {
   // Memoized filter logic for performance
   const filteredCountries = useMemo(() => {
     let result = countries;
-    
+
     if (filters.continent !== "all") {
       result = result.filter(country => country.continent_id === filters.continent);
     }
-    
+
     if (filters.populationRange !== "all") {
       const [min, max] = filters.populationRange.split('-').map(Number);
       result = result.filter(country => {
@@ -120,13 +122,13 @@ export default function Places() {
         return pop >= min && (max ? pop <= max : true);
       });
     }
-    
+
     return result.sort((a, b) => {
       const field = filters.sortBy === 'name' ? 'name' : 'population';
       const aVal = a[field] || (field === 'name' ? '' : 0);
       const bVal = b[field] || (field === 'name' ? '' : 0);
-      
-      return filters.sortOrder === 'asc' 
+
+      return filters.sortOrder === 'asc'
         ? aVal > bVal ? 1 : -1
         : aVal < bVal ? 1 : -1;
     });
@@ -134,25 +136,25 @@ export default function Places() {
 
   const filteredCities = useMemo(() => {
     let result = cities;
-    
+
     if (filters.isMajorCity !== "all") {
-      result = result.filter(city => 
+      result = result.filter(city =>
         filters.isMajorCity === "true" ? city.is_major_city : !city.is_major_city
       );
     }
-    
+
     if (filters.isCapital !== "all") {
-      result = result.filter(city => 
+      result = result.filter(city =>
         filters.isCapital === "true" ? city.is_capital : !city.is_capital
       );
     }
-    
+
     return result.sort((a, b) => {
       const field = filters.sortBy === 'name' ? 'name' : 'population';
       const aVal = a[field] || (field === 'name' ? '' : 0);
       const bVal = b[field] || (field === 'name' ? '' : 0);
-      
-      return filters.sortOrder === 'asc' 
+
+      return filters.sortOrder === 'asc'
         ? aVal > bVal ? 1 : -1
         : aVal < bVal ? 1 : -1;
     });
@@ -172,53 +174,53 @@ export default function Places() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-pulse">
-            <Globe className="h-12 w-12 mx-auto text-primary/60" />
-          </div>
-          <p className="text-muted-foreground">Loading places...</p>
-        </div>
-      </div>
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+            <Globe style={{ height: 48, width: 48, margin: '0 auto', color: 'var(--primary)', opacity: 0.6 }} />
+          </Box>
+          <Typography sx={{ color: 'var(--muted-foreground)' }}>Loading places...</Typography>
+        </Box>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="text-destructive">
-            <MapPin className="h-12 w-12 mx-auto" />
-          </div>
-          <p className="text-destructive">Something went wrong while loading places. Please try again later.</p>
-        </div>
-      </div>
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ color: 'error.main' }}>
+            <MapPin style={{ height: 48, width: 48, margin: '0 auto' }} />
+          </Box>
+          <Typography sx={{ color: 'error.main' }}>Something went wrong while loading places. Please try again later.</Typography>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className={`w-full transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+    <Box sx={{ width: '100%', transition: 'opacity 300ms', opacity: isTransitioning ? 0.5 : 1 }}>
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="relative mx-auto max-w-7xl px-6 py-12 lg:py-20">
+      <Box sx={{ position: 'relative', overflow: 'hidden' }}>
+        <Box sx={{ position: 'relative', mx: 'auto', maxWidth: 1280, px: 3, py: { xs: 6, lg: 10 } }}>
           {/* Navigation Header */}
-          <div className="mb-8">
+          <Box sx={{ mb: 4 }}>
             {viewMode !== "overview" && (
-              <div className="animate-fade-in">
-                <Button 
-                  variant="ghost" 
+              <Box className="animate-fade-in">
+                <Button
+                  variant="ghost"
                   onClick={handleBack}
-                  className="mb-4 hover:bg-accent/50 transition-all duration-200"
+                  sx={{ mb: 2, '&:hover': { bgcolor: 'rgba(var(--accent), 0.5)' }, transition: 'all 200ms' }}
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
                   Back
                 </Button>
-              </div>
+              </Box>
             )}
-            
+
             {/* Dynamic Title */}
-            <div className="space-y-3">
-              <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Typography variant="h3" sx={{ fontSize: { xs: '2.25rem', lg: '3rem' }, fontWeight: 700, letterSpacing: '-0.025em', color: 'var(--foreground)' }}>
                 {viewMode === "overview" && "Explore Places"}
                 {viewMode === "country" && selectedCountry && (
                   <>Explore {selectedCountry.name}</>
@@ -227,147 +229,149 @@ export default function Places() {
                   <>Discover {selectedCity.name}</>
                 )}
                 {viewMode === "search" && "Search Results"}
-              </h1>
-              
-              <p className="text-lg text-muted-foreground max-w-2xl">
+              </Typography>
+
+              <Typography sx={{ fontSize: '1.125rem', color: 'var(--muted-foreground)', maxWidth: 672 }}>
                 {viewMode === "overview" && "Discover amazing places around the world. Find countries, cities, and locations that match your interests."}
                 {viewMode === "country" && selectedCountry && `Explore cities and regions in ${selectedCountry.name}. Find the perfect destination for your next adventure.`}
                 {viewMode === "city" && selectedCity && `Everything you need to know about ${selectedCity.name}. Weather, demographics, and local insights.`}
                 {viewMode === "search" && "Find exactly what you're looking for with our powerful search and filtering tools."}
-              </p>
-            </div>
-          </div>
-          
+              </Typography>
+            </Box>
+          </Box>
+
           {/* Enhanced Search */}
-          <div className="mb-8">
-            <PlacesSearch 
-              onSearch={handleSearch} 
-              onFiltersChange={handleFiltersChange} 
+          <Box sx={{ mb: 4 }}>
+            <PlacesSearch
+              onSearch={handleSearch}
+              onFiltersChange={handleFiltersChange}
               onNearMeSearch={handleNearMeSearch}
               placeholder="Search countries, cities, or regions..."
             />
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Main Content Area */}
-      <div className="mx-auto max-w-7xl px-6 pb-12">
+      <Box sx={{ mx: 'auto', maxWidth: 1280, px: 3, pb: 6 }}>
         {/* Breadcrumb Navigation */}
         {viewMode !== "overview" && viewMode !== "search" && (
-          <div className="mb-6 animate-fade-in">
-            <nav className="flex items-center gap-2 text-sm">
-              <button 
-                onClick={() => setViewMode("overview")} 
-                className="text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent/50"
+          <Box sx={{ mb: 3 }} className="animate-fade-in">
+            <Box component="nav" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
+              <Box
+                component="button"
+                onClick={() => setViewMode("overview")}
+                sx={{ color: 'var(--muted-foreground)', '&:hover': { color: 'var(--foreground)', bgcolor: 'rgba(var(--accent), 0.5)' }, transition: 'color 150ms', px: 1, py: 0.5, borderRadius: 1, border: 'none', bgcolor: 'transparent', cursor: 'pointer' }}
               >
                 Places
-              </button>
+              </Box>
               {selectedCountry && (
                 <>
-                  <span className="text-muted-foreground/50">/</span>
-                  <button 
-                    onClick={() => setViewMode("country")} 
-                    className="text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent/50"
+                  <Box component="span" sx={{ color: 'var(--muted-foreground)', opacity: 0.5 }}>/</Box>
+                  <Box
+                    component="button"
+                    onClick={() => setViewMode("country")}
+                    sx={{ color: 'var(--muted-foreground)', '&:hover': { color: 'var(--foreground)', bgcolor: 'rgba(var(--accent), 0.5)' }, transition: 'color 150ms', px: 1, py: 0.5, borderRadius: 1, border: 'none', bgcolor: 'transparent', cursor: 'pointer' }}
                   >
                     {selectedCountry.name}
-                  </button>
+                  </Box>
                 </>
               )}
               {selectedCity && (
                 <>
-                  <span className="text-muted-foreground/50">/</span>
-                  <span className="text-foreground font-medium px-2 py-1">{selectedCity.name}</span>
+                  <Box component="span" sx={{ color: 'var(--muted-foreground)', opacity: 0.5 }}>/</Box>
+                  <Box component="span" sx={{ color: 'var(--foreground)', fontWeight: 500, px: 1, py: 0.5 }}>{selectedCity.name}</Box>
                 </>
               )}
-            </nav>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {/* Content based on view mode */}
-        <div className="animate-fade-in">
+        <Box className="animate-fade-in">
           {viewMode === "overview" && (
-            <Tabs defaultValue="countries" className="space-y-8">
+            <Tabs defaultValue="countries" sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Enhanced Tab Navigation */}
-              <div className="flex items-center justify-between">
-                <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted/50">
-                  <TabsTrigger 
-                    value="countries" 
-                    className="flex items-center gap-2 data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all"
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <TabsList sx={{ display: 'grid', width: '100%', maxWidth: 448, gridTemplateColumns: 'repeat(3, 1fr)', bgcolor: 'rgba(var(--muted), 0.5)' }}>
+                  <TabsTrigger
+                    value="countries"
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'rgba(var(--background), 0.8)', boxShadow: 1 }, transition: 'all 150ms' }}
                   >
-                    <MapPin className="h-4 w-4" />
-                    <span className="hidden sm:inline">Countries</span>
+                    <MapPin style={{ height: 16, width: 16 }} />
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Countries</Box>
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="cities" 
-                    className="flex items-center gap-2 data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all"
+                  <TabsTrigger
+                    value="cities"
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'rgba(var(--background), 0.8)', boxShadow: 1 }, transition: 'all 150ms' }}
                   >
-                    <Building2 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Cities</span>
+                    <Building2 style={{ height: 16, width: 16 }} />
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cities</Box>
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="map" 
-                    className="flex items-center gap-2 data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all"
+                  <TabsTrigger
+                    value="map"
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'rgba(var(--background), 0.8)', boxShadow: 1 }, transition: 'all 150ms' }}
                   >
-                    <Map className="h-4 w-4" />
-                    <span className="hidden sm:inline">Map</span>
+                    <Map style={{ height: 16, width: 16 }} />
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Map</Box>
                   </TabsTrigger>
                 </TabsList>
-                
-                {/* Stats Overview */}
-                <div className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    <span>{countries.length} countries</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Building2 className="h-4 w-4" />
-                    <span>{cities.length} cities</span>
-                  </div>
-                </div>
-              </div>
 
-              <TabsContent value="countries" className="space-y-6 animate-fade-in">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold">Explore Countries</h2>
-                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                {/* Stats Overview */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <MapPin style={{ height: 16, width: 16 }} />
+                    <span>{countries.length} countries</span>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Building2 style={{ height: 16, width: 16 }} />
+                    <span>{cities.length} cities</span>
+                  </Box>
+                </Box>
+              </Box>
+
+              <TabsContent value="countries" className="animate-fade-in" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>Explore Countries</Typography>
+                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
                       {filteredCountries.length} found
                     </Badge>
-                  </div>
-                </div>
-                
-                <div className="space-y-10">
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
                       {Array.from({ length: 12 }).map((_, i) => (
-                        <div key={i} className="h-32 bg-muted/50 rounded-lg animate-pulse" />
+                        <Box key={i} sx={{ height: 128, bgcolor: 'rgba(var(--muted), 0.5)', borderRadius: 2, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
                       ))}
-                    </div>
+                    </Box>
                   ) : continents.length > 0 ? (
                     continents.map((continent) => {
-                      const continentCountries = filteredCountries.filter(country => 
+                      const continentCountries = filteredCountries.filter(country =>
                         country.continent_id === continent.id
                       );
-                      
+
                       if (continentCountries.length === 0) return null;
-                      
+
                       return (
-                        <div key={continent.id} className="group space-y-6">
-                          <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/40">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-lg bg-primary/10">
-                                <Globe className="h-5 w-5 text-primary" />
-                              </div>
-                              <div>
-                                <h3 className="text-lg font-semibold">{continent.name}</h3>
-                                <p className="text-sm text-muted-foreground">{continentCountries.length} countries to explore</p>
-                              </div>
-                            </div>
-                          </div>
-                        
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 pl-6">
+                        <Box key={continent.id} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'rgba(var(--muted), 0.4)' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(var(--primary), 0.1)' }}>
+                                <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+                              </Box>
+                              <Box>
+                                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>{continent.name}</Typography>
+                                <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>{continentCountries.length} countries to explore</Typography>
+                              </Box>
+                            </Box>
+                          </Box>
+
+                          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2, pl: 3 }}>
                             {continentCountries.map((country, index) => (
-                              <div
+                              <Box
                                 key={country.id}
                                 className="animate-fade-in"
                                 style={{ animationDelay: `${index * 50}ms` }}
@@ -378,16 +382,16 @@ export default function Places() {
                                   data={country}
                                   onClick={() => handleCountryClick(country)}
                                 />
-                              </div>
+                              </Box>
                             ))}
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
                       );
                     })
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
                       {filteredCountries.map((country, index) => (
-                        <div
+                        <Box
                           key={country.id}
                           className="animate-fade-in"
                           style={{ animationDelay: `${index * 50}ms` }}
@@ -398,52 +402,52 @@ export default function Places() {
                             data={country}
                             onClick={() => handleCountryClick(country)}
                           />
-                        </div>
+                        </Box>
                       ))}
-                    </div>
+                    </Box>
                   )}
-                </div>
+                </Box>
               </TabsContent>
 
-              <TabsContent value="cities" className="space-y-6 animate-fade-in">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold">Discover Cities</h2>
-                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+              <TabsContent value="cities" className="animate-fade-in" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>Discover Cities</Typography>
+                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
                       {filteredCities.length} found
                     </Badge>
-                  </div>
-                </div>
-                
-                <div className="space-y-10">
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   {continents.map((continent) => {
-                    const continentCountries = countries.filter(country => 
+                    const continentCountries = countries.filter(country =>
                       country.continent_id === continent.id
                     );
-                    
+
                     const continentCities = filteredCities.filter(city => {
                       return continentCountries.some(country => country.id === city.country_id);
                     });
-                    
+
                     if (continentCities.length === 0) return null;
-                    
+
                     return (
-                      <div key={continent.id} className="space-y-6">
-                        <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/40">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-primary/10">
-                              <Building2 className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-semibold">{continent.name}</h3>
-                              <p className="text-sm text-muted-foreground">{continentCities.length} cities to discover</p>
-                            </div>
-                          </div>
-                        </div>
-                      
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 pl-6">
+                      <Box key={continent.id} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'rgba(var(--muted), 0.4)' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(var(--primary), 0.1)' }}>
+                              <Building2 style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+                            </Box>
+                            <Box>
+                              <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>{continent.name}</Typography>
+                              <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>{continentCities.length} cities to discover</Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2, pl: 3 }}>
                           {continentCities.map((city, index) => (
-                            <div
+                            <Box
                               key={city.id}
                               className="animate-fade-in"
                               style={{ animationDelay: `${index * 50}ms` }}
@@ -454,24 +458,24 @@ export default function Places() {
                                 data={city}
                                 onClick={() => handleCityClick(city)}
                               />
-                            </div>
+                            </Box>
                           ))}
-                        </div>
-                      </div>
+                        </Box>
+                      </Box>
                     );
                   })}
-                </div>
+                </Box>
               </TabsContent>
 
               <TabsContent value="map" className="animate-fade-in">
                 <Suspense
                   fallback={
-                    <div className="h-[600px] bg-muted/50 rounded-lg animate-pulse flex items-center justify-center">
-                      <div className="text-center space-y-2">
-                        <Map className="h-8 w-8 mx-auto text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">Loading map...</p>
-                      </div>
-                    </div>
+                    <Box sx={{ height: 600, bgcolor: 'rgba(var(--muted), 0.5)', borderRadius: 2, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Map style={{ height: 32, width: 32, margin: '0 auto', color: 'var(--muted-foreground)' }} />
+                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Loading map...</Typography>
+                      </Box>
+                    </Box>
                   }
                 >
                   <PlacesMapView
@@ -488,16 +492,16 @@ export default function Places() {
 
           {/* Country View */}
           {viewMode === "country" && selectedCountry && (
-            <div className="space-y-8">
-              <div className="space-y-6">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <PlacesCard
                   type="country"
                   name={selectedCountry.name}
                   data={selectedCountry}
                 />
-                
+
                 {selectedCountry.latitude && selectedCountry.longitude && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                     <LocationInfo
                       name={selectedCountry.name}
                       type="country"
@@ -507,22 +511,22 @@ export default function Places() {
                       longitude={selectedCountry.longitude}
                       cityName={selectedCountry.capital || selectedCountry.name}
                     />
-                  </div>
+                  </Box>
                 )}
-              </div>
+              </Box>
 
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-semibold">Cities in {selectedCountry.name}</h2>
-                  <Badge variant="secondary" className="px-3 py-1 font-medium">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 600 }}>Cities in {selectedCountry.name}</Typography>
+                  <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
                     {countryCities.length} cities
                   </Badge>
-                </div>
-                
+                </Box>
+
                 {countryCities.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
                     {countryCities.map((city, index) => (
-                      <div
+                      <Box
                         key={city.id}
                         className="animate-fade-in"
                         style={{ animationDelay: `${index * 50}ms` }}
@@ -533,30 +537,30 @@ export default function Places() {
                           data={city}
                           onClick={() => handleCityClick(city)}
                         />
-                      </div>
+                      </Box>
                     ))}
-                  </div>
+                  </Box>
                 ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No cities found in this country</p>
-                  </div>
+                  <Box sx={{ textAlign: 'center', py: 6, color: 'var(--muted-foreground)' }}>
+                    <Building2 style={{ height: 48, width: 48, margin: '0 auto 16px', opacity: 0.5 }} />
+                    <Typography>No cities found in this country</Typography>
+                  </Box>
                 )}
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
 
           {/* City View */}
           {viewMode === "city" && selectedCity && (
-            <div className="space-y-8">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <PlacesCard
                 type="city"
                 name={selectedCity.name}
                 data={selectedCity}
               />
-              
+
               {selectedCity.latitude && selectedCity.longitude && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                   <LocationInfo
                     name={selectedCity.name}
                     type="city"
@@ -566,25 +570,25 @@ export default function Places() {
                     longitude={selectedCity.longitude}
                     cityName={selectedCity.name}
                   />
-                </div>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
 
           {/* Search Results */}
           {viewMode === "search" && (
-            <div className="space-y-8">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {searchResults.countries?.length > 0 && (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold">Countries</h2>
-                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>Countries</Typography>
+                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
                       {searchResults.countries.length} found
                     </Badge>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                  </Box>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
                     {searchResults.countries.map((country: any, index: number) => (
-                      <div
+                      <Box
                         key={country.id}
                         className="animate-fade-in"
                         style={{ animationDelay: `${index * 50}ms` }}
@@ -595,23 +599,23 @@ export default function Places() {
                           data={country}
                           onClick={() => handleCountryClick(country)}
                         />
-                      </div>
+                      </Box>
                     ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               )}
 
               {searchResults.cities?.length > 0 && (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold">Cities</h2>
-                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>Cities</Typography>
+                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
                       {searchResults.cities.length} found
                     </Badge>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                  </Box>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
                     {searchResults.cities.map((city: any, index: number) => (
-                      <div
+                      <Box
                         key={city.id}
                         className="animate-fade-in"
                         style={{ animationDelay: `${index * 50}ms` }}
@@ -622,22 +626,22 @@ export default function Places() {
                           data={city}
                           onClick={() => handleCityClick(city)}
                         />
-                      </div>
+                      </Box>
                     ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               )}
 
               {(!searchResults.countries?.length && !searchResults.cities?.length) && (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Globe className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No places found matching your search</p>
-                </div>
+                <Box sx={{ textAlign: 'center', py: 6, color: 'var(--muted-foreground)' }}>
+                  <Globe style={{ height: 48, width: 48, margin: '0 auto 16px', opacity: 0.5 }} />
+                  <Typography>No places found matching your search</Typography>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

@@ -5,6 +5,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Navigation } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 
 interface UserLocation {
   latitude: number;
@@ -69,32 +72,32 @@ const RegionalEventsCalendar: React.FC = () => {
   }
 
   return (
-    <section className={`bg-muted/10 ${isMobile ? 'py-6' : 'py-12'} px-4`}>
-      <div className="container mx-auto">
-        <div className={`flex items-center justify-between ${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Navigation className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-primary`} />
-              <h2 className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+    <Box component="section" sx={{ bgcolor: 'action.hover', py: isMobile ? 3 : 6, px: 2 }}>
+      <Container maxWidth="lg">
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: isMobile ? 2 : 3 }}>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Navigation style={{ width: isMobile ? 20 : 24, height: isMobile ? 20 : 24 }} color="var(--mui-palette-primary-main)" />
+              <Typography variant={isMobile ? 'subtitle1' : 'h5'} sx={{ fontWeight: 700 }}>
                 Upcoming Events Near You
-              </h2>
-            </div>
-            <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-base'}`}>
+              </Typography>
+            </Box>
+            <Typography variant={isMobile ? 'caption' : 'body1'} color="text.secondary">
               Calendar for {userLocation?.city || userLocation?.region || 'your region'}
-            </p>
-          </div>
+            </Typography>
+          </Box>
           <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/events')}>
             Browse All
           </Button>
-        </div>
+        </Box>
 
         <EventsCalendarView
           events={events}
           onEventSelect={(event) => navigate(`/events/${event.id}`)}
           onAttendanceUpdate={updateAttendance}
         />
-      </div>
-    </section>
+      </Container>
+    </Box>
   );
 };
 

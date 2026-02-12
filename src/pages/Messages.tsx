@@ -3,6 +3,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
 
 export default function Messages() {
   const { user } = useAuth();
@@ -16,27 +19,27 @@ export default function Messages() {
 
   if (!user) {
     return (
-      <div className="container mx-auto p-6">
+      <Container maxWidth="lg" sx={{ p: 3 }}>
         <Card>
           <CardHeader>
             <CardTitle>Authentication Required</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">Please log in to access your messages.</p>
+            <Typography color="text.secondary">Please log in to access your messages.</Typography>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="w-full p-3 sm:p-6">
-      <div className="mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">Messages</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">Stay connected with your community</p>
-      </div>
-      
+    <Box sx={{ width: '100%', p: { xs: 1.5, sm: 3 } }}>
+      <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, fontSize: { xs: '1.5rem', sm: '1.875rem' } }}>Messages</Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>Stay connected with your community</Typography>
+      </Box>
+
       <MessagingInterface />
-    </div>
+    </Box>
   );
 }

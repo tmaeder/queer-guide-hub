@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { Heart, Target, Star, Leaf, Users, MapPin, Calendar, ShoppingBag, MessageCircle, Shield, Globe, Lightbulb, Award, Handshake, TreePine, Recycle, Sun, Droplets, ChevronDown, ChevronRight } from "lucide-react";
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -49,7 +52,7 @@ export default function AboutHub() {
     },
     {
       icon: Shield,
-      title: "Safety & Security", 
+      title: "Safety & Security",
       description: "The safety of our community members is our highest priority with rigorous verification processes."
     },
     {
@@ -88,59 +91,59 @@ export default function AboutHub() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Heart className="h-12 w-12 text-primary fill-current animate-pulse" />
-          <h1 className="text-4xl font-bold gradient-text">About The Queer Guide</h1>
-        </div>
-        <p className="text-muted-foreground text-lg">
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 2 }}>
+          <Heart style={{ width: 48, height: 48, color: 'var(--mui-palette-primary-main)', fill: 'currentColor', animation: 'pulse 2s infinite' }} />
+          <Typography variant="h3" sx={{ fontWeight: 700, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>About The Queer Guide</Typography>
+        </Box>
+        <Typography color="text.secondary" sx={{ fontSize: '1.125rem' }}>
           Learn about our mission, values, vision, and commitment to sustainability
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
-      <div className="space-y-6">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* About Us */}
         <Card>
           <Collapsible open={openSections.about} onOpenChange={() => toggleSection('about')}>
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Heart className="h-6 w-6 text-primary" />
-                    <div className="text-left">
+              <CardHeader sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' }, transition: 'background-color 0.2s' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Heart style={{ width: 24, height: 24 }} color="var(--mui-palette-primary-main)" />
+                    <Box sx={{ textAlign: 'left' }}>
                       <CardTitle>About Us</CardTitle>
                       <CardDescription>Our mission and what we offer to the community</CardDescription>
-                    </div>
-                  </div>
-                  {openSections.about ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                </div>
+                    </Box>
+                  </Box>
+                  {openSections.about ? <ChevronDown style={{ width: 20, height: 20 }} /> : <ChevronRight style={{ width: 20, height: 20 }} />}
+                </Box>
               </CardHeader>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent className="prose prose-slate dark:prose-invert max-w-none">
-                <section className="space-y-6">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Our Mission</h3>
-                    <p>The Queer Guide exists to create a safer, more connected world for LGBTQ+ individuals and allies. We believe everyone deserves to find welcoming spaces, supportive communities, and opportunities to live authentically.</p>
-                  </div>
+              <CardContent>
+                <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Our Mission</Typography>
+                    <Typography>The Queer Guide exists to create a safer, more connected world for LGBTQ+ individuals and allies. We believe everyone deserves to find welcoming spaces, supportive communities, and opportunities to live authentically.</Typography>
+                  </Box>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">What We Offer</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>What We Offer</Typography>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                       {features.map((feature, index) => (
-                        <div key={index} className="flex items-start gap-3">
-                          <feature.icon className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-medium">{feature.title}</h4>
-                            <p className="text-sm text-muted-foreground">{feature.description}</p>
-                          </div>
-                        </div>
+                        <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                          <feature.icon style={{ width: 24, height: 24, marginTop: 4, flexShrink: 0, color: 'var(--mui-palette-primary-main)' }} />
+                          <Box>
+                            <Typography sx={{ fontWeight: 500 }}>{feature.title}</Typography>
+                            <Typography variant="body2" color="text.secondary">{feature.description}</Typography>
+                          </Box>
+                        </Box>
                       ))}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
 
-                </section>
+                </Box>
               </CardContent>
             </CollapsibleContent>
           </Collapsible>
@@ -150,63 +153,63 @@ export default function AboutHub() {
         <Card>
           <Collapsible open={openSections.vision} onOpenChange={() => toggleSection('vision')}>
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Target className="h-6 w-6 text-primary" />
-                    <div className="text-left">
+              <CardHeader sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' }, transition: 'background-color 0.2s' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Target style={{ width: 24, height: 24 }} color="var(--mui-palette-primary-main)" />
+                    <Box sx={{ textAlign: 'left' }}>
                       <CardTitle>Our Vision</CardTitle>
                       <CardDescription>The future we're building for the LGBTQ+ community</CardDescription>
-                    </div>
-                  </div>
-                  {openSections.vision ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                </div>
+                    </Box>
+                  </Box>
+                  {openSections.vision ? <ChevronDown style={{ width: 20, height: 20 }} /> : <ChevronRight style={{ width: 20, height: 20 }} />}
+                </Box>
               </CardHeader>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent className="prose prose-slate dark:prose-invert max-w-none">
-                <section className="space-y-6">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">The Future We're Building</h3>
-                    <p>To create a world where every LGBTQ+ person can live authentically, find their community, and access safe spaces without fear or hesitation.</p>
-                    <p>We envision a future where geography, culture, and circumstance don't determine whether an LGBTQ+ person can find acceptance, support, and community.</p>
-                  </div>
+              <CardContent>
+                <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>The Future We're Building</Typography>
+                    <Typography>To create a world where every LGBTQ+ person can live authentically, find their community, and access safe spaces without fear or hesitation.</Typography>
+                    <Typography>We envision a future where geography, culture, and circumstance don't determine whether an LGBTQ+ person can find acceptance, support, and community.</Typography>
+                  </Box>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Vision Pillars</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Globe className="h-5 w-5 text-primary" />
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Vision Pillars</Typography>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Globe style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
                           Global Inclusivity
-                        </h4>
-                        <p className="text-sm text-muted-foreground">Safe, welcoming spaces wherever you are, from major cities to small towns across the globe.</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Users className="h-5 w-5 text-primary" />
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">Safe, welcoming spaces wherever you are, from major cities to small towns across the globe.</Typography>
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Users style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
                           Connected Communities
-                        </h4>
-                        <p className="text-sm text-muted-foreground">Bridging gaps between isolated individuals and vibrant communities.</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Shield className="h-5 w-5 text-primary" />
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">Bridging gaps between isolated individuals and vibrant communities.</Typography>
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Shield style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
                           Safety First
-                        </h4>
-                        <p className="text-sm text-muted-foreground">Verified safe spaces where authenticity is celebrated and discrimination has no place.</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Lightbulb className="h-5 w-5 text-primary" />
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">Verified safe spaces where authenticity is celebrated and discrimination has no place.</Typography>
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Lightbulb style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
                           Innovation for Good
-                        </h4>
-                        <p className="text-sm text-muted-foreground">Leveraging technology to solve real problems and make resources more accessible.</p>
-                      </div>
-                    </div>
-                  </div>
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">Leveraging technology to solve real problems and make resources more accessible.</Typography>
+                      </Box>
+                    </Box>
+                  </Box>
 
-                </section>
+                </Box>
               </CardContent>
             </CollapsibleContent>
           </Collapsible>
@@ -216,65 +219,65 @@ export default function AboutHub() {
         <Card>
           <Collapsible open={openSections.values} onOpenChange={() => toggleSection('values')}>
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Star className="h-6 w-6 text-primary" />
-                    <div className="text-left">
+              <CardHeader sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' }, transition: 'background-color 0.2s' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Star style={{ width: 24, height: 24 }} color="var(--mui-palette-primary-main)" />
+                    <Box sx={{ textAlign: 'left' }}>
                       <CardTitle>Our Values</CardTitle>
                       <CardDescription>The principles that guide every decision we make</CardDescription>
-                    </div>
-                  </div>
-                  {openSections.values ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                </div>
+                    </Box>
+                  </Box>
+                  {openSections.values ? <ChevronDown style={{ width: 20, height: 20 }} /> : <ChevronRight style={{ width: 20, height: 20 }} />}
+                </Box>
               </CardHeader>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent className="prose prose-slate dark:prose-invert max-w-none">
-                <section className="space-y-6">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Core Values</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent>
+                <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Core Values</Typography>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                       {coreValues.map((value, index) => (
-                        <div key={index} className="flex items-start gap-3">
-                          <value.icon className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-medium">{value.title}</h4>
-                            <p className="text-sm text-muted-foreground">{value.description}</p>
-                          </div>
-                        </div>
+                        <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                          <value.icon style={{ width: 24, height: 24, marginTop: 4, flexShrink: 0, color: 'var(--mui-palette-primary-main)' }} />
+                          <Box>
+                            <Typography sx={{ fontWeight: 500 }}>{value.title}</Typography>
+                            <Typography variant="body2" color="text.secondary">{value.description}</Typography>
+                          </Box>
+                        </Box>
                       ))}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">How We Operate</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Award className="h-5 w-5 text-primary" />
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>How We Operate</Typography>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Award style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
                           Transparency
-                        </h4>
-                        <p className="text-sm text-muted-foreground">Open communication about our policies, decisions, and operations.</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Handshake className="h-5 w-5 text-primary" />
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">Open communication about our policies, decisions, and operations.</Typography>
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Handshake style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
                           Collaboration
-                        </h4>
-                        <p className="text-sm text-muted-foreground">Working together with community organizations and local businesses.</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Heart className="h-5 w-5 text-primary" />
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">Working together with community organizations and local businesses.</Typography>
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Heart style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
                           Empathy
-                        </h4>
-                        <p className="text-sm text-muted-foreground">Understanding and sharing the experiences of our community members.</p>
-                      </div>
-                    </div>
-                  </div>
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">Understanding and sharing the experiences of our community members.</Typography>
+                      </Box>
+                    </Box>
+                  </Box>
 
-                </section>
+                </Box>
               </CardContent>
             </CollapsibleContent>
           </Collapsible>
@@ -284,84 +287,83 @@ export default function AboutHub() {
         <Card>
           <Collapsible open={openSections.sustainability} onOpenChange={() => toggleSection('sustainability')}>
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Leaf className="h-6 w-6 text-primary" />
-                    <div className="text-left">
+              <CardHeader sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' }, transition: 'background-color 0.2s' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Leaf style={{ width: 24, height: 24 }} color="var(--mui-palette-primary-main)" />
+                    <Box sx={{ textAlign: 'left' }}>
                       <CardTitle>Sustainability</CardTitle>
                       <CardDescription>Our commitment to environmental responsibility</CardDescription>
-                    </div>
-                  </div>
-                  {openSections.sustainability ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                </div>
+                    </Box>
+                  </Box>
+                  {openSections.sustainability ? <ChevronDown style={{ width: 20, height: 20 }} /> : <ChevronRight style={{ width: 20, height: 20 }} />}
+                </Box>
               </CardHeader>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent className="prose prose-slate dark:prose-invert max-w-none">
-                <section className="space-y-6">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Our Environmental Commitment</h3>
-                    <p>We believe that caring for our planet is essential to creating safe and thriving spaces for our community. Building a sustainable future through environmental responsibility and mindful practices.</p>
-                  </div>
+              <CardContent>
+                <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Our Environmental Commitment</Typography>
+                    <Typography>We believe that caring for our planet is essential to creating safe and thriving spaces for our community. Building a sustainable future through environmental responsibility and mindful practices.</Typography>
+                  </Box>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Green Initiatives</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Green Initiatives</Typography>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                       {sustainabilityInitiatives.map((initiative, index) => (
-                        <div key={index} className="flex items-start gap-3">
-                          <initiative.icon className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-medium">{initiative.title}</h4>
-                            <p className="text-sm text-muted-foreground">{initiative.description}</p>
-                          </div>
-                        </div>
+                        <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                          <initiative.icon style={{ width: 24, height: 24, marginTop: 4, flexShrink: 0, color: 'var(--mui-palette-primary-main)' }} />
+                          <Box>
+                            <Typography sx={{ fontWeight: 500 }}>{initiative.title}</Typography>
+                            <Typography variant="body2" color="text.secondary">{initiative.description}</Typography>
+                          </Box>
+                        </Box>
                       ))}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
 
-
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Additional Commitments</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <h4 className="font-medium">Community Gardens</h4>
-                        <p className="text-sm text-muted-foreground">Supporting LGBTQ+ community gardens and urban farming initiatives.</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Green Transportation</h4>
-                        <p className="text-sm text-muted-foreground">Encouraging sustainable transportation to events and supporting EV charging.</p>
-                      </div>
-                    </div>
-                  </div>
-                </section>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Additional Commitments</Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500 }}>Community Gardens</Typography>
+                        <Typography variant="body2" color="text.secondary">Supporting LGBTQ+ community gardens and urban farming initiatives.</Typography>
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 500 }}>Green Transportation</Typography>
+                        <Typography variant="body2" color="text.secondary">Encouraging sustainable transportation to events and supporting EV charging.</Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
               </CardContent>
             </CollapsibleContent>
           </Collapsible>
         </Card>
-      </div>
+      </Box>
 
       {/* Contact Section */}
-      <Card className="mt-8">
+      <Card sx={{ mt: 4 }}>
         <CardHeader>
-          <CardTitle className="text-center">Get in Touch</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle sx={{ textAlign: 'center' }}>Get in Touch</CardTitle>
+          <CardDescription sx={{ textAlign: 'center' }}>
             Questions about our mission, values, or sustainability efforts?
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h4 className="font-medium mb-2">General Inquiries</h4>
-              <p className="text-sm text-muted-foreground">hello@queer.guide</p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">Values & Feedback</h4>
-              <p className="text-sm text-muted-foreground">values@queer.guide</p>
-            </div>
-          </div>
+        <CardContent sx={{ textAlign: 'center' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <Box>
+              <Typography sx={{ fontWeight: 500, mb: 1 }}>General Inquiries</Typography>
+              <Typography variant="body2" color="text.secondary">hello@queer.guide</Typography>
+            </Box>
+            <Box>
+              <Typography sx={{ fontWeight: 500, mb: 1 }}>Values & Feedback</Typography>
+              <Typography variant="body2" color="text.secondary">values@queer.guide</Typography>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Container>
   );
 }

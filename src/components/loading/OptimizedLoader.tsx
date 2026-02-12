@@ -1,4 +1,7 @@
 import React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
@@ -8,140 +11,140 @@ interface OptimizedLoaderProps {
   showTitle?: boolean;
 }
 
-export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({ 
-  type = 'card', 
+export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
+  type = 'card',
   count = 1,
-  showTitle = true 
+  showTitle = true
 }) => {
   if (type === 'profile') {
     return (
-      <div className="w-full p-6 space-y-6">
+      <Box sx={{ width: '100%', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
         {showTitle && (
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-96" />
-          </div>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Skeleton sx={{ height: 32, width: 256 }} />
+            <Skeleton sx={{ height: 16, width: 384 }} />
+          </Box>
         )}
-        
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-12" />
-            </div>
-            <Skeleton className="h-2 w-full" />
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+              <Skeleton sx={{ height: 16, width: 128 }} />
+              <Skeleton sx={{ height: 16, width: 48 }} />
+            </Box>
+            <Skeleton sx={{ height: 8, width: '100%' }} />
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
               <CardHeader>
-                <Skeleton className="h-6 w-32" />
+                <Skeleton sx={{ height: 24, width: 128 }} />
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
+              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Skeleton sx={{ height: 16, width: 96 }} />
+                  <Skeleton sx={{ height: 40, width: '100%' }} />
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Skeleton sx={{ height: 16, width: 96 }} />
+                  <Skeleton sx={{ height: 40, width: '100%' }} />
+                </Box>
               </CardContent>
             </Card>
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   if (type === 'dashboard') {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-4" />
+              <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+                <Skeleton sx={{ height: 16, width: 96 }} />
+                <Skeleton sx={{ height: 16, width: 16 }} />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-8 w-16 mb-2" />
-                <Skeleton className="h-3 w-32" />
+                <Skeleton sx={{ height: 32, width: 64, mb: 1 }} />
+                <Skeleton sx={{ height: 12, width: 128 }} />
               </CardContent>
             </Card>
           ))}
-        </div>
-        
+        </Box>
+
         <Card>
           <CardHeader>
-            <Skeleton className="h-6 w-32" />
+            <Skeleton sx={{ height: 24, width: 128 }} />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-3 w-3/4" />
-                  </div>
-                </div>
+                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Skeleton sx={{ height: 40, width: 40, borderRadius: '50%' }} />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
+                    <Skeleton sx={{ height: 16, width: '100%' }} />
+                    <Skeleton sx={{ height: 12, width: '75%' }} />
+                  </Box>
+                </Box>
               ))}
-            </div>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
     );
   }
 
   if (type === 'list') {
     return (
-      <div className="space-y-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {Array.from({ length: count }).map((_, i) => (
-          <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2 flex-1">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-3 w-2/3" />
-            </div>
-            <Skeleton className="h-8 w-20" />
-          </div>
+          <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+            <Skeleton sx={{ height: 48, width: 48, borderRadius: '50%' }} />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
+              <Skeleton sx={{ height: 16, width: '100%' }} />
+              <Skeleton sx={{ height: 12, width: '66%' }} />
+            </Box>
+            <Skeleton sx={{ height: 32, width: 80 }} />
+          </Box>
         ))}
-      </div>
+      </Box>
     );
   }
 
   if (type === 'full') {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-sm text-muted-foreground">Loading your data...</p>
-        </div>
-      </div>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
+          <CircularProgress size={48} />
+          <Typography variant="body2" color="text.secondary">Loading your data...</Typography>
+        </Box>
+      </Box>
     );
   }
 
   // Default card type
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 3 }}>
       {Array.from({ length: count }).map((_, i) => (
         <Card key={i}>
           <CardHeader>
-            <Skeleton className="h-6 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
+            <Skeleton sx={{ height: 24, width: '75%' }} />
+            <Skeleton sx={{ height: 16, width: '50%' }} />
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-              <Skeleton className="h-4 w-4/6" />
-            </div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Skeleton sx={{ height: 16, width: '100%' }} />
+              <Skeleton sx={{ height: 16, width: '83%' }} />
+              <Skeleton sx={{ height: 16, width: '66%' }} />
+            </Box>
           </CardContent>
         </Card>
       ))}
-    </div>
+    </Box>
   );
 };

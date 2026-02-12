@@ -21,7 +21,9 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+
 type Event = Database['public']['Tables']['events']['Row'];
 const eventTypes = ['party', 'workshop', 'meetup', 'pride', 'rally', 'conference', 'social', 'fundraiser', 'performance'];
 const Events = () => {
@@ -200,16 +202,16 @@ const Events = () => {
   };
   const hasActiveFilters = search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe;
   if (error) {
-    return <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-8">
-          <Card className="p-8 text-center">
-            <CardContent>
-              <p className="text-destructive mb-4">Something went wrong while loading events. Please try again.</p>
+    return <Box sx={{ minHeight: '100vh' }}>
+        <Box sx={{ width: '100%', px: 2, py: 4 }}>
+          <Card>
+            <CardContent sx={{ p: 4, textAlign: 'center' }}>
+              <Typography color="error" sx={{ mb: 2 }}>Something went wrong while loading events. Please try again.</Typography>
               <Button onClick={() => fetchEvents()}>Try Again</Button>
             </CardContent>
           </Card>
-        </div>
-      </div>;
+        </Box>
+      </Box>;
   }
   useEffect(() => {
     (async () => {
@@ -222,71 +224,71 @@ const Events = () => {
       });
     })();
   }, []);
-  return <div className="min-h-screen">
-      <div className="w-full px-4 py-8">
+  return <Box sx={{ minHeight: '100vh' }}>
+      <Box sx={{ width: '100%', px: 2, py: 4 }}>
         {/* Header */}
-        <Card className="mb-8">
-          <CardContent className="p-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-4xl font-bold text-foreground mb-2">
+        <Card sx={{ mb: 4 }}>
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
                   Events
-                </h1>
-                <p className="text-lg text-muted-foreground">
+                </Typography>
+                <Typography variant="subtitle1" color="text.secondary">
                   Discover and join community events in your area
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 {/* View Toggle */}
-                <div className="flex items-center gap-1 p-1 bg-muted rounded-lg" role="group" aria-label="View mode">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, p: 0.5, bgcolor: 'action.hover', borderRadius: 2 }} role="group" aria-label="View mode">
                   <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" aria-label="Grid view" onClick={() => setViewMode('grid')}>
-                    <Grid className="h-4 w-4" />
+                    <Grid style={{ width: 16, height: 16 }} />
                   </Button>
                   <Button variant={viewMode === 'calendar' ? 'default' : 'ghost'} size="icon" aria-label="Calendar view" onClick={() => setViewMode('calendar')}>
-                    <CalendarIcon className="h-4 w-4" />
+                    <CalendarIcon style={{ width: 16, height: 16 }} />
                   </Button>
-                </div>
-                {user && <Button className="bg-primary gap-2" onClick={() => navigate('/admin/events')}>
-                    <Plus className="h-4 w-4" />
+                </Box>
+                {user && <Button onClick={() => navigate('/admin/events')} style={{ display: 'flex', gap: 8 }}>
+                    <Plus style={{ width: 16, height: 16 }} />
                     Create Event
                   </Button>}
-              </div>
-            </div>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
 
         {/* Filters */}
-        <div className="space-y-4 p-4 bg-card rounded-lg border mb-8">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider', mb: 4 }}>
           {/* Search Bar */}
-          <div className="flex gap-2 flex-nowrap">
-            <div className="flex-1 min-w-0 flex items-center gap-2 border rounded-md px-3 py-2 bg-background">
-              <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <SearchInputTyped placeholders={["Search for events...", "Find parties near you...", "Discover LGBTQ+ meetups...", "Look for workshops...", "Search pride events...", "Find social gatherings..."]} value={search} onValueChange={setSearch} onKeyDown={e => e.key === 'Enter' && handleFiltersChange()} className="border-0 shadow-none p-0 h-auto bg-transparent focus-visible:ring-0 flex-1 min-w-0 w-full sm:min-w-[200px] md:min-w-[300px] lg:min-w-[400px]" typingSpeed={75} pauseDuration={1500} />
-            </div>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap' }}>
+            <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1, border: 1, borderColor: 'divider', borderRadius: 1, px: 1.5, py: 1, bgcolor: 'background.default' }}>
+              <Search style={{ width: 16, height: 16, color: 'var(--muted-foreground)', flexShrink: 0 }} />
+              <SearchInputTyped placeholders={["Search for events...", "Find parties near you...", "Discover LGBTQ+ meetups...", "Look for workshops...", "Search pride events...", "Find social gatherings..."]} value={search} onValueChange={setSearch} onKeyDown={e => e.key === 'Enter' && handleFiltersChange()} style={{ border: 0, boxShadow: 'none', padding: 0, height: 'auto', background: 'transparent', outline: 'none', flex: 1, minWidth: 0, width: '100%' }} typingSpeed={75} pauseDuration={1500} />
+            </Box>
             <Button onClick={handleNearMe} variant={nearMe ? "default" : "outline"} disabled={locationLoading} size="icon" aria-label="Find events near me">
-              {locationLoading ? <Loader className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+              {locationLoading ? <Loader style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} /> : <MapPin style={{ width: 16, height: 16 }} />}
             </Button>
-            <Button onClick={handleFiltersChange} className="bg-primary" size="icon" aria-label="Search events">
-              <Search className="h-4 w-4" />
+            <Button onClick={handleFiltersChange} size="icon" aria-label="Search events">
+              <Search style={{ width: 16, height: 16 }} />
             </Button>
             <Button variant="outline" onClick={() => setShowFilters(!showFilters)} size="icon" aria-label="Toggle filters">
-              <Filter className="h-4 w-4" />
+              <Filter style={{ width: 16, height: 16 }} />
             </Button>
-          </div>
+          </Box>
 
           {/* Extended Filters */}
-          {showFilters && <div className="space-y-4 pt-4 border-t">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-2">
+          {showFilters && <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="city">City</Label>
                   <Popover open={cityOpen} onOpenChange={setCityOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" aria-expanded={cityOpen} className="w-full justify-between">
+                      <Button variant="outline" role="combobox" aria-expanded={cityOpen} style={{ width: '100%', justifyContent: 'space-between' }}>
                         {city || "Select city..."}
-                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <ChevronDown style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }} />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
+                    <PopoverContent style={{ width: '100%', padding: 0 }}>
                       <Command>
                         <CommandInput placeholder="Search cities..." value={city} onValueChange={setCity} />
                         <CommandList>
@@ -296,7 +298,7 @@ const Events = () => {
                           setCity(value === city ? "" : value);
                           setCityOpen(false);
                         }}>
-                                <Check className={cn("mr-2 h-4 w-4", city === cityName ? "opacity-100" : "opacity-0")} />
+                                <Check style={{ marginRight: 8, width: 16, height: 16, opacity: city === cityName ? 1 : 0 }} />
                                 {cityName}
                               </CommandItem>)}
                           </CommandGroup>
@@ -304,8 +306,8 @@ const Events = () => {
                       </Command>
                     </PopoverContent>
                   </Popover>
-                </div>
-                <div className="space-y-2">
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="eventType">Event Type</Label>
                   <Select value={eventType} onValueChange={setEventType}>
                     <SelectTrigger>
@@ -318,103 +320,103 @@ const Events = () => {
                         </SelectItem>)}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label>Start Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                      <Button variant="outline" style={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 400, ...(!startDate ? { color: 'var(--muted-foreground)' } : {}) }}>
+                        <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
                         {startDate ? format(startDate, "PPP") : <span>Pick start date</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent mode="single" selected={startDate} onSelect={setStartDate} initialFocus className="p-3 pointer-events-auto" />
+                    <PopoverContent style={{ width: 'auto', padding: 0 }} align="start">
+                      <CalendarComponent mode="single" selected={startDate} onSelect={setStartDate} initialFocus style={{ padding: 12, pointerEvents: 'auto' }} />
                     </PopoverContent>
                   </Popover>
-                </div>
-                <div className="space-y-2">
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label>End Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                      <Button variant="outline" style={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 400, ...(!endDate ? { color: 'var(--muted-foreground)' } : {}) }}>
+                        <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
                         {endDate ? format(endDate, "PPP") : <span>Pick end date</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent mode="single" selected={endDate} onSelect={setEndDate} initialFocus className="p-3 pointer-events-auto" disabled={date => startDate ? date < startDate : false} />
+                    <PopoverContent style={{ width: 'auto', padding: 0 }} align="start">
+                      <CalendarComponent mode="single" selected={endDate} onSelect={setEndDate} initialFocus style={{ padding: 12, pointerEvents: 'auto' }} disabled={date => startDate ? date < startDate : false} />
                     </PopoverContent>
                   </Popover>
-                </div>
-              </div>
+                </Box>
+              </Box>
 
               {/* Tags */}
               <TagSelector selectedTags={selectedTags} onTagsChange={setSelectedTags} placeholder="Filter events by tags..." maxTags={5} allowCustomTags={false} categories={['events']} />
 
               {/* Action Buttons */}
-              <div className="flex gap-2 pt-2">
-                <Button onClick={handleFiltersChange} className="bg-primary">
+              <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+                <Button onClick={handleFiltersChange}>
                   Apply Filters
                 </Button>
-                {hasActiveFilters && <Button variant="outline" onClick={clearFilters} className="gap-2">
-                    <X className="h-4 w-4" />
+                {hasActiveFilters && <Button variant="outline" onClick={clearFilters} style={{ display: 'flex', gap: 8 }}>
+                    <X style={{ width: 16, height: 16 }} />
                     Clear All
                   </Button>}
-              </div>
-            </div>}
+              </Box>
+            </Box>}
 
           {/* Active Filters Display */}
-          {hasActiveFilters && !showFilters && <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-sm text-muted-foreground">Active filters:</span>
-              {search && <Badge variant="secondary" className="gap-1">
+          {hasActiveFilters && !showFilters && <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+              <Typography variant="body2" color="text.secondary">Active filters:</Typography>
+              {search && <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   Search: {search}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => setSearch('')} />
+                  <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setSearch('')} />
                 </Badge>}
-              {city && <Badge variant="secondary" className="gap-1">
+              {city && <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   City: {city}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => setCity('')} />
+                  <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setCity('')} />
                 </Badge>}
-              {eventType && <Badge variant="secondary" className="gap-1">
+              {eventType && <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {eventType}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => setEventType('')} />
+                  <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setEventType('')} />
                 </Badge>}
-              {startDate && <Badge variant="secondary" className="gap-1">
+              {startDate && <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   From: {format(startDate, "MMM d, yyyy")}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => setStartDate(undefined)} />
+                  <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setStartDate(undefined)} />
                 </Badge>}
-              {endDate && <Badge variant="secondary" className="gap-1">
+              {endDate && <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   To: {format(endDate, "MMM d, yyyy")}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => setEndDate(undefined)} />
+                  <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setEndDate(undefined)} />
                 </Badge>}
-              {nearMe && <Badge variant="secondary" className="gap-1">
+              {nearMe && <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   Near Me
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => setNearMe(false)} />
+                  <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setNearMe(false)} />
                 </Badge>}
-              {selectedTags.map(tag => <Badge key={tag} variant="secondary" className="gap-1">
+              {selectedTags.map(tag => <Badge key={tag} variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {tag}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))} />
+                  <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))} />
                 </Badge>)}
-            </div>}
-        </div>
+            </Box>}
+        </Box>
 
         {/* Loading State */}
-        {loading && <Card className="p-8">
-            <CardContent className="flex items-center justify-center py-4">
-              <Loader className="h-8 w-8 animate-spin text-primary" />
-              <span className="ml-2 text-muted-foreground">Loading events...</span>
+        {loading && <Card sx={{ p: 4 }}>
+            <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
+              <Loader style={{ width: 32, height: 32, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
+              <Typography color="text.secondary" sx={{ ml: 1 }}>Loading events...</Typography>
             </CardContent>
           </Card>}
 
         {/* Empty State */}
-        {!loading && events.length === 0 && <Card className="p-8 text-center">
+        {!loading && events.length === 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
             <CardContent>
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">No events found</h3>
-              <p className="text-muted-foreground mb-4">
+              <Calendar style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No events found</Typography>
+              <Typography color="text.secondary" sx={{ mb: 2 }}>
                 We couldn't find any events matching your criteria. Try adjusting your filters or be the first to create an event!
-              </p>
-              {user && <Button className="bg-primary" onClick={() => navigate('/admin/events')}>
+              </Typography>
+              {user && <Button onClick={() => navigate('/admin/events')}>
                   Create the First Event
                 </Button>}
             </CardContent>
@@ -422,17 +424,17 @@ const Events = () => {
 
         {/* Event Content */}
         {!loading && events.length > 0 && <>
-            <Card className="mb-6">
-              
+            <Card sx={{ mb: 3 }}>
+
             </Card>
-            
-            {viewMode === 'grid' ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {viewMode === 'grid' ? <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
                 {events.map(event => <EventCard key={event.id} event={event} onViewDetails={handleViewDetails} onUpdateAttendance={user ? handleAttendanceUpdate : undefined} />)}
-              </div> : <EventsCalendarView events={events} onEventSelect={handleViewDetails} onAttendanceUpdate={handleAttendanceUpdate} />}
+              </Box> : <EventsCalendarView events={events} onEventSelect={handleViewDetails} onAttendanceUpdate={handleAttendanceUpdate} />}
           </>}
 
         {/* Load More */}
-        {!loading && events.length > 0 && <div className="text-center mt-12">
+        {!loading && events.length > 0 && <Box sx={{ textAlign: 'center', mt: 6 }}>
             {hasMore && autoLoadedCount >= 50 && <Button variant="outline" size="lg" onClick={async () => {
           setAutoLoadedCount(0);
           const nextPage = page + 1;
@@ -445,8 +447,8 @@ const Events = () => {
         }}>
                 Load More Events
               </Button>}
-          </div>}
-      </div>
-    </div>;
+          </Box>}
+      </Box>
+    </Box>;
 };
 export default Events;

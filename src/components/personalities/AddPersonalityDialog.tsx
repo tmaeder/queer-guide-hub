@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Box, Typography } from '@mui/material';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const { createPersonality } = usePersonalities();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState<{
     name: string;
@@ -138,7 +139,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Error", 
+        title: "Error",
         description: "Image must be less than 5MB",
         variant: "destructive"
       });
@@ -146,11 +147,11 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     }
 
     setUploading(true);
-    
+
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('personalities')
         .upload(fileName, file);
@@ -162,7 +163,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         .getPublicUrl(fileName);
 
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
-      
+
       toast({
         title: "Success",
         description: "Image uploaded successfully"
@@ -194,7 +195,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     }
 
     setLookupLoading(true);
-    
+
     try {
       const { data, error } = await supabase.functions.invoke('fetch-personality-data', {
         body: { searchTerm: searchTerm.trim() }
@@ -232,12 +233,12 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
   const handleCandidateSelection = async (candidate: any) => {
     setLookupLoading(true);
-    
+
     try {
       const { data, error } = await supabase.functions.invoke('fetch-personality-data', {
-        body: { 
+        body: {
           searchTerm: searchTerm.trim(),
-          selectedId: candidate.id 
+          selectedId: candidate.id
         }
       });
 
@@ -284,10 +285,10 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     console.log('=== SUBMIT STARTED ===');
     console.log('Form data:', formData);
-    
+
     if (!formData.name.trim()) {
       console.log('Name validation failed');
       toast({
@@ -299,7 +300,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     }
 
     setLoading(true);
-    
+
     try {
       console.log('Calling createPersonality...');
       const personalityData = {
@@ -307,11 +308,11 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         social_links: {}
       };
       console.log('Personality data to create:', personalityData);
-      
+
       await createPersonality(personalityData);
-      
+
       console.log('Personality created successfully');
-      
+
       // Reset form
       setFormData({
         name: '',
@@ -333,10 +334,10 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         visibility: 'public',
         is_featured: false
       });
-      
+
       setOpen(false);
       onSuccess?.();
-      
+
     } catch (error) {
       console.error('Error in handleSubmit:', error);
       toast({
@@ -352,26 +353,26 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className="gap-2">
-          <Plus className="h-5 w-5" />
+        <Button size="lg" sx={{ gap: 1 }}>
+          <Plus sx={{ height: '20px', width: '20px' }} />
           Add Personality
         </Button>
       </DialogTrigger>
-      
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+
+      <DialogContent sx={{ maxWidth: '1024px', maxHeight: '90vh', overflowY: 'auto' }}>
         <DialogHeader>
           <DialogTitle>Add New Personality</DialogTitle>
         </DialogHeader>
-        
+
         {/* Wikipedia/Wikidata Lookup */}
-        <Card className="mb-6">
-          <CardContent className="p-4 space-y-4">
-            <h3 className="font-semibold text-lg mb-3">Quick Lookup</h3>
-            <p className="text-sm text-muted-foreground mb-3">
+        <Card sx={{ mb: 3 }}>
+          <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Quick Lookup</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>
               Search Wikipedia/Wikidata to automatically prefill personality information
-            </p>
-            
-            <div className="flex gap-2">
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 1 }}>
               <Input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -382,27 +383,27 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 type="button"
                 onClick={handleWikipediaLookup}
                 disabled={lookupLoading || !searchTerm.trim()}
-                className="gap-2"
+                sx={{ gap: 1 }}
               >
                 {lookupLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 sx={{ height: '16px', width: '16px' }} />
                 ) : (
-                  <Search className="h-4 w-4" />
+                  <Search sx={{ height: '16px', width: '16px' }} />
                 )}
                 {lookupLoading ? 'Searching...' : 'Lookup'}
               </Button>
-            </div>
+            </Box>
           </CardContent>
         </Card>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
             {/* Basic Information */}
             <Card>
-              <CardContent className="p-4 space-y-4">
-                <h3 className="font-semibold text-lg mb-3">Basic Information</h3>
-                
-                <div>
+              <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Basic Information</Typography>
+
+                <Box>
                   <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
@@ -411,9 +412,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     placeholder="Full name"
                     required
                   />
-                </div>
+                </Box>
 
-                <div>
+                <Box>
                   <Label htmlFor="pronouns">Pronouns</Label>
                   <Input
                     id="pronouns"
@@ -421,9 +422,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     onChange={(e) => setFormData(prev => ({ ...prev, pronouns: e.target.value }))}
                     placeholder="e.g., they/them, she/her, he/him"
                   />
-                </div>
+                </Box>
 
-                <div>
+                <Box>
                   <Label htmlFor="profession">Profession</Label>
                   <Input
                     id="profession"
@@ -431,9 +432,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     onChange={(e) => setFormData(prev => ({ ...prev, profession: e.target.value }))}
                     placeholder="Primary profession or role"
                   />
-                </div>
+                </Box>
 
-                <div>
+                <Box>
                   <Label htmlFor="nationality">Nationality</Label>
                   <Input
                     id="nationality"
@@ -441,9 +442,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     onChange={(e) => setFormData(prev => ({ ...prev, nationality: e.target.value }))}
                     placeholder="Country of origin"
                   />
-                </div>
+                </Box>
 
-                <div>
+                <Box>
                   <Label htmlFor="birth_place">Birth Place</Label>
                   <Input
                     id="birth_place"
@@ -451,27 +452,27 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     onChange={(e) => setFormData(prev => ({ ...prev, birth_place: e.target.value }))}
                     placeholder="City, Country"
                   />
-                </div>
+                </Box>
               </CardContent>
             </Card>
 
             {/* Dates and Status */}
             <Card>
-              <CardContent className="p-4 space-y-4">
-                <h3 className="font-semibold text-lg mb-3">Dates & Status</h3>
-                
-                <div className="flex items-center space-x-2">
+              <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Dates & Status</Typography>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id="is_living"
                     checked={formData.is_living}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setFormData(prev => ({ ...prev, is_living: !!checked }))
                     }
                   />
                   <Label htmlFor="is_living">Currently living</Label>
-                </div>
+                </Box>
 
-                <div>
+                <Box>
                   <Label htmlFor="birth_date">Birth Date</Label>
                   <Input
                     id="birth_date"
@@ -479,10 +480,10 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     value={formData.birth_date}
                     onChange={(e) => setFormData(prev => ({ ...prev, birth_date: e.target.value }))}
                   />
-                </div>
+                </Box>
 
                 {!formData.is_living && (
-                  <div>
+                  <Box>
                     <Label htmlFor="death_date">Death Date</Label>
                     <Input
                       id="death_date"
@@ -490,10 +491,10 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                       value={formData.death_date}
                       onChange={(e) => setFormData(prev => ({ ...prev, death_date: e.target.value }))}
                     />
-                  </div>
+                  </Box>
                 )}
 
-                <div>
+                <Box>
                   <Label htmlFor="visibility">Visibility</Label>
                   <Select
                     value={formData.visibility}
@@ -510,70 +511,71 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                       <SelectItem value="private">Private</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </Box>
 
                 {/* Image Upload */}
-                <div>
+                <Box>
                   <Label>Profile Image</Label>
-                  <div className="space-y-3">
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                     {formData.image_url ? (
-                      <div className="relative">
-                        <img 
-                          src={formData.image_url} 
-                          alt="Preview" 
-                          className="w-32 h-32 object-cover rounded-lg border"
+                      <Box sx={{ position: 'relative' }}>
+                        <Box
+                          component="img"
+                          src={formData.image_url}
+                          alt="Preview"
+                          sx={{ width: '128px', height: '128px', objectFit: 'cover', borderRadius: 2, border: 1, borderColor: 'divider' }}
                         />
                         <Button
                           type="button"
                           variant="destructive"
                           size="sm"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                          sx={{ position: 'absolute', top: '-8px', right: '-8px', height: '24px', width: '24px', borderRadius: '50%', p: 0 }}
                           onClick={removeImage}
                         >
-                          <X className="h-3 w-3" />
+                          <X sx={{ height: '12px', width: '12px' }} />
                         </Button>
-                      </div>
+                      </Box>
                     ) : (
-                      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                        <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground">No image uploaded</p>
-                      </div>
+                      <Box sx={{ border: 2, borderStyle: 'dashed', borderColor: 'text.secondary', borderRadius: 2, p: 3, textAlign: 'center' }}>
+                        <ImageIcon sx={{ height: '32px', width: '32px', mx: 'auto', color: 'text.secondary', mb: 1 }} />
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>No image uploaded</Typography>
+                      </Box>
                     )}
-                    
-                    <div className="flex gap-2">
+
+                    <Box sx={{ display: 'flex', gap: 1 }}>
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="gap-2"
+                        sx={{ gap: 1 }}
                         onClick={() => document.getElementById('image-upload')?.click()}
                         disabled={uploading}
                       >
-                        <Upload className="h-4 w-4" />
+                        <Upload sx={{ height: '16px', width: '16px' }} />
                         {uploading ? 'Uploading...' : 'Upload Image'}
                       </Button>
-                      <input
+                      <Box
+                        component="input"
                         id="image-upload"
                         type="file"
                         accept="image/*"
-                        className="hidden"
+                        sx={{ display: 'none' }}
                         onChange={handleImageUpload}
                       />
-                    </div>
-                    
-                    <div className="text-xs text-muted-foreground">
+                    </Box>
+
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                       Or enter URL manually:
-                    </div>
+                    </Typography>
                     <Input
                       value={formData.image_url}
                       onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
                       placeholder="https://..."
-                      className="text-sm"
                     />
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
-                <div>
+                <Box>
                   <Label htmlFor="website_url">Website URL</Label>
                   <Input
                     id="website_url"
@@ -581,17 +583,17 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     onChange={(e) => setFormData(prev => ({ ...prev, website_url: e.target.value }))}
                     placeholder="https://..."
                   />
-                </div>
+                </Box>
               </CardContent>
             </Card>
-          </div>
+          </Box>
 
           {/* Description and Bio */}
           <Card>
-            <CardContent className="p-4 space-y-4">
-              <h3 className="font-semibold text-lg mb-3">Description & Biography</h3>
-              
-              <div>
+            <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Description & Biography</Typography>
+
+              <Box>
                 <Label htmlFor="description">Short Description</Label>
                 <Textarea
                   id="description"
@@ -600,9 +602,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   placeholder="Brief description (1-2 sentences)"
                   rows={2}
                 />
-              </div>
+              </Box>
 
-              <div>
+              <Box>
                 <Label htmlFor="bio">Biography</Label>
                 <Textarea
                   id="bio"
@@ -611,57 +613,57 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   placeholder="Detailed biography"
                   rows={4}
                 />
-              </div>
+              </Box>
             </CardContent>
           </Card>
 
           {/* Fields of Work */}
           <Card>
-            <CardContent className="p-4 space-y-4">
-              <h3 className="font-semibold text-lg mb-3">Fields of Work</h3>
-              
+            <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Fields of Work</Typography>
+
               {formData.fields.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
                   {formData.fields.map((field) => (
-                    <Badge key={field} variant="secondary" className="flex items-center gap-1">
+                    <Badge key={field} variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       {field}
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-4 w-4 p-0 hover:bg-transparent"
+                        sx={{ height: '16px', width: '16px', p: 0 }}
                         onClick={() => handleFieldToggle(field)}
                       >
-                        <X className="h-3 w-3" />
+                        <X sx={{ height: '12px', width: '12px' }} />
                       </Button>
                     </Badge>
                   ))}
-                </div>
+                </Box>
               )}
-              
-              <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto">
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, maxHeight: '128px', overflowY: 'auto' }}>
                 {FIELD_OPTIONS.map((field) => (
-                  <div key={field} className="flex items-center space-x-2">
+                  <Box key={field} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Checkbox
                       id={field}
                       checked={formData.fields.includes(field)}
                       onCheckedChange={() => handleFieldToggle(field)}
                     />
-                    <Label htmlFor={field} className="text-sm capitalize cursor-pointer">
+                    <Label htmlFor={field} sx={{ fontSize: '0.875rem', textTransform: 'capitalize', cursor: 'pointer' }}>
                       {field}
                     </Label>
-                  </div>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             </CardContent>
           </Card>
 
           {/* Achievements */}
           <Card>
-            <CardContent className="p-4 space-y-4">
-              <h3 className="font-semibold text-lg mb-3">Achievements</h3>
-              
-              <div className="flex gap-2">
+            <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Achievements</Typography>
+
+              <Box sx={{ display: 'flex', gap: 1 }}>
                 <Input
                   value={newAchievement}
                   onChange={(e) => setNewAchievement(e.target.value)}
@@ -669,36 +671,36 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAchievement())}
                 />
                 <Button type="button" onClick={addAchievement} size="sm">
-                  <Plus className="h-4 w-4" />
+                  <Plus sx={{ height: '16px', width: '16px' }} />
                 </Button>
-              </div>
-              
+              </Box>
+
               {formData.achievements.length > 0 && (
-                <div className="space-y-2">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {formData.achievements.map((achievement, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
-                      <span className="flex-1 text-sm">{achievement}</span>
+                    <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
+                      <Typography component="span" variant="body2" sx={{ flex: 1 }}>{achievement}</Typography>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => removeAchievement(index)}
                       >
-                        <X className="h-4 w-4" />
+                        <X sx={{ height: '16px', width: '16px' }} />
                       </Button>
-                    </div>
+                    </Box>
                   ))}
-                </div>
+                </Box>
               )}
             </CardContent>
           </Card>
 
           {/* Tags */}
           <Card>
-            <CardContent className="p-4 space-y-4">
-              <h3 className="font-semibold text-lg mb-3">Tags</h3>
-              
-              <div className="flex gap-2">
+            <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Tags</Typography>
+
+              <Box sx={{ display: 'flex', gap: 1 }}>
                 <Input
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
@@ -706,41 +708,41 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                 />
                 <Button type="button" onClick={addTag} size="sm">
-                  <Plus className="h-4 w-4" />
+                  <Plus sx={{ height: '16px', width: '16px' }} />
                 </Button>
-              </div>
-              
+              </Box>
+
               {formData.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {formData.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="flex items-center gap-1">
+                    <Badge key={index} variant="outline" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       {tag}
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-4 w-4 p-0 hover:bg-transparent"
+                        sx={{ height: '16px', width: '16px', p: 0 }}
                         onClick={() => removeTag(index)}
                       >
-                        <X className="h-3 w-3" />
+                        <X sx={{ height: '12px', width: '12px' }} />
                       </Button>
                     </Badge>
                   ))}
-                </div>
+                </Box>
               )}
             </CardContent>
           </Card>
 
           {/* Submit Button */}
-          <div className="flex justify-end gap-3 pt-4">
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, pt: 2 }}>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
               {loading ? 'Adding...' : 'Add Personality'}
             </Button>
-          </div>
-        </form>
+          </Box>
+        </Box>
 
         <PersonalitySelectionDialog
           open={selectionDialogOpen}

@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Search, Filter, Users, Lock, Globe, X } from "lucide-react";
 import { TagSelector } from "@/components/tags/TagSelector";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
 
 interface GroupFiltersProps {
   searchQuery: string;
@@ -53,113 +55,120 @@ export const GroupFilters = ({
   const hasActiveFilters = activeFilters.length > 0 || searchQuery || showMyGroups || selectedTags.length > 0;
 
   return (
-    <Card className="p-4 space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search groups..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        {hasActiveFilters && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearAllFilters}
-            className="flex items-center gap-1"
-          >
-            <X className="h-3 w-3" />
-            Clear
-          </Button>
-        )}
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant={showMyGroups ? "default" : "outline"}
-          size="sm"
-          onClick={() => onShowMyGroupsChange(!showMyGroups)}
-          className={showMyGroups ? "bg-gradient-primary" : ""}
-        >
-          My Groups
-        </Button>
-
-        {filterOptions.map((option) => {
-          const Icon = option.icon;
-          const isActive = activeFilters.includes(option.id);
-          
-          return (
+    <Card>
+      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ position: 'relative', flex: 1 }}>
+            <Search
+              style={{
+                position: 'absolute',
+                left: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 16,
+                height: 16,
+              }}
+              color="var(--muted-foreground)"
+            />
+            <Input
+              placeholder="Search groups..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              style={{ paddingLeft: 40 }}
+            />
+          </Box>
+          {hasActiveFilters && (
             <Button
-              key={option.id}
-              variant={isActive ? "default" : "outline"}
+              variant="outline"
               size="sm"
-              onClick={() => toggleFilter(option.id)}
-              className={`flex items-center gap-1 ${isActive ? "bg-gradient-primary" : ""}`}
+              onClick={clearAllFilters}
             >
-              <Icon className="h-3 w-3" />
-              {option.label}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <X style={{ width: 12, height: 12 }} />
+                Clear
+              </Box>
             </Button>
-          );
-        })}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="tags">Filter by Tags</Label>
-        <TagSelector
-          selectedTags={selectedTags}
-          onTagsChange={onTagsChange}
-          placeholder="Filter groups by tags..."
-          maxTags={3}
-          allowCustomTags={false}
-        />
-      </div>
-
-      {hasActiveFilters && (
-        <div className="flex flex-wrap gap-1">
-          {searchQuery && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              Search: "{searchQuery}"
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => onSearchChange("")}
-              />
-            </Badge>
           )}
-          {showMyGroups && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              My Groups
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => onShowMyGroupsChange(false)}
-              />
-            </Badge>
-          )}
-          {selectedTags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-              Tag: {tag}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => onTagsChange(selectedTags.filter(t => t !== tag))}
-              />
-            </Badge>
-          ))}
-          {activeFilters.map((filter) => {
-            const option = filterOptions.find(opt => opt.id === filter);
+        </Box>
+
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <Button
+            variant={showMyGroups ? "default" : "outline"}
+            size="sm"
+            onClick={() => onShowMyGroupsChange(!showMyGroups)}
+          >
+            My Groups
+          </Button>
+
+          {filterOptions.map((option) => {
+            const Icon = option.icon;
+            const isActive = activeFilters.includes(option.id);
+
             return (
-              <Badge key={filter} variant="secondary" className="flex items-center gap-1">
-                {option?.label}
-                <X 
-                  className="h-3 w-3 cursor-pointer" 
-                  onClick={() => toggleFilter(filter)}
-                />
-              </Badge>
+              <Button
+                key={option.id}
+                variant={isActive ? "default" : "outline"}
+                size="sm"
+                onClick={() => toggleFilter(option.id)}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Icon style={{ width: 12, height: 12 }} />
+                  {option.label}
+                </Box>
+              </Button>
             );
           })}
-        </div>
-      )}
+        </Box>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Label htmlFor="tags">Filter by Tags</Label>
+          <TagSelector
+            selectedTags={selectedTags}
+            onTagsChange={onTagsChange}
+            placeholder="Filter groups by tags..."
+            maxTags={3}
+            allowCustomTags={false}
+          />
+        </Box>
+
+        {hasActiveFilters && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {searchQuery && (
+              <Chip
+                label={`Search: "${searchQuery}"`}
+                size="small"
+                onDelete={() => onSearchChange("")}
+              />
+            )}
+            {showMyGroups && (
+              <Chip
+                label="My Groups"
+                size="small"
+                onDelete={() => onShowMyGroupsChange(false)}
+              />
+            )}
+            {selectedTags.map((tag) => (
+              <Chip
+                key={tag}
+                label={`Tag: ${tag}`}
+                size="small"
+                onDelete={() => onTagsChange(selectedTags.filter(t => t !== tag))}
+              />
+            ))}
+            {activeFilters.map((filter) => {
+              const option = filterOptions.find(opt => opt.id === filter);
+              return (
+                <Chip
+                  key={filter}
+                  label={option?.label}
+                  size="small"
+                  onDelete={() => toggleFilter(filter)}
+                />
+              );
+            })}
+          </Box>
+        )}
+      </Box>
     </Card>
   );
 };

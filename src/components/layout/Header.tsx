@@ -15,6 +15,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { AdminMenu } from './AdminMenu';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -142,138 +146,206 @@ export function Header() {
     navigate(path);
     setMenuOpen(false);
   };
-  return <header className="bg-background/80 backdrop-blur-xl sticky top-0 z-50 border-b border-border/50 shadow-soft">
-      <div className="container mx-auto px-4">
+  return (
+    <Box
+      component="header"
+      sx={{
+        bgcolor: 'background.default',
+        position: 'sticky',
+        top: 0,
+        zIndex: 'appBar',
+        borderBottom: 1,
+        borderColor: 'divider',
+        boxShadow: 1,
+      }}
+    >
+      <Container maxWidth="lg">
         {/* Main header */}
-        <div className="h-16 flex items-center justify-between gap-2">
+        <Box sx={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <img src="/images/logo.png" alt="Queer Guide Logo" className="h-8 w-8 dark:invert" />
-            <span className="sr-only">Queer Guide</span>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, textDecoration: 'none' }}>
+            <img src="/images/logo.png" alt="Queer Guide Logo" style={{ height: 32, width: 32 }} />
+            <Box
+              component="span"
+              sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+            >
+              Queer Guide
+            </Box>
           </Link>
 
           {/* Search */}
           <UniversalSearchBar />
 
           {/* Right side controls */}
-          <div className="flex items-center gap-2">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {/* Submit a Space CTA */}
             <Button
               variant="default"
               size="sm"
-              className="hidden sm:inline-flex gap-1.5 bg-primary text-primary-foreground font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              style={{ display: undefined }}
               onClick={() => navigate('/admin/venues')}
             >
-              <Plus className="h-4 w-4" />
-              Submit a Space
+              <Box
+                component="span"
+                sx={{
+                  display: { xs: 'none', sm: 'inline-flex' },
+                  alignItems: 'center',
+                  gap: 0.75,
+                  fontWeight: 600,
+                }}
+              >
+                <Plus style={{ width: 16, height: 16 }} />
+                Submit a Space
+              </Box>
             </Button>
 
             {/* Admin menu - only visible to admins */}
             <AdminMenu />
-            
+
             {/* User menu - includes notifications when logged in */}
               {user ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0" aria-label="Open user menu">
-                    <Avatar className="h-9 w-9">
+                  <Button variant="ghost" size="sm" style={{ position: 'relative', height: 40, width: 40, padding: 0 }} aria-label="Open user menu">
+                    <Avatar style={{ height: 36, width: 36 }}>
                       <AvatarImage src={avatarSrc} alt={(profile?.display_name || user?.email || 'User avatar') as string} />
                       <AvatarFallback>
                         {(profile?.display_name || user?.email || 'U')?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] px-1">
+                      <Box
+                        component="span"
+                        sx={{
+                          position: 'absolute',
+                          top: -4,
+                          right: -4,
+                          display: 'inline-flex',
+                          minWidth: '1.25rem',
+                          height: 20,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '9999px',
+                          bgcolor: 'error.main',
+                          color: 'error.contrastText',
+                          fontSize: '10px',
+                          px: 0.5,
+                        }}
+                      >
                         {unreadCount}
-                      </span>
+                      </Box>
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 p-4 bg-popover/95 backdrop-blur-xl border-border/50 shadow-lg z-50">
+                <DropdownMenuContent align="end" style={{ width: 320, padding: 16, zIndex: 50 }}>
                   {/* User mode */}
-                  <div className="mb-4">
-                    
+                  <Box sx={{ mb: 2 }}>
                     <Select value={profile?.user_mode || 'community'} onValueChange={handleModeChange}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger style={{ width: '100%' }}>
                         <SelectValue placeholder="Select mode" />
                       </SelectTrigger>
                       <SelectContent>
                         {userModes.map((mode) => (
                           <SelectItem key={mode.value} value={mode.value}>
-                            <div className="flex items-center gap-2">
-                              <mode.icon className="h-4 w-4" />
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <mode.icon style={{ width: 16, height: 16 }} />
                               <span>{mode.label}</span>
-                            </div>
+                            </Box>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
+                  </Box>
 
                   {/* Notifications */}
-                  <div className="mb-4">
+                  <Box sx={{ mb: 2 }}>
                     <NotificationList />
-                  </div>
+                  </Box>
 
                   <DropdownMenuSeparator />
 
                   {/* Quick actions grid */}
-                  <div className="grid grid-cols-3 gap-2 p-2">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, p: 1 }}>
                     {userMenuItems.map(item => (
-                      <Button key={item.to} variant="ghost" size="sm" className="flex flex-col items-center p-3 h-auto gap-1" onClick={() => navigate(item.to)}>
-                        <item.icon className="h-4 w-4" />
-                        <span className="text-xs">{item.label}</span>
+                      <Button key={item.to} variant="ghost" size="sm" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 12, height: 'auto', gap: 4 }} onClick={() => navigate(item.to)}>
+                        <item.icon style={{ width: 16, height: 16 }} />
+                        <Typography variant="caption">{item.label}</Typography>
                       </Button>
                      ))}
-                  </div>
+                  </Box>
 
                   <DropdownMenuSeparator />
-                  
-                  <Button variant="ghost" size="sm" className="w-full justify-start text-destructive hover:text-destructive" onClick={signOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
+
+                  <Button variant="ghost" size="sm" style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--destructive)' }} onClick={signOut}>
+                    <LogOut style={{ width: 16, height: 16, marginRight: 8 }} />
                     Sign Out
                   </Button>
                 </DropdownMenuContent>
               </DropdownMenu> : <Button onClick={() => setAuthDialogOpen(true)} size="icon" aria-label="Sign in">
-                <User className="h-4 w-4" />
+                <User style={{ width: 16, height: 16 }} />
               </Button>}
 
             {/* Main menu */}
             <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" aria-label="Open navigation menu">
-                  <Menu className="h-5 w-5" />
+                  <Menu style={{ width: 20, height: 20 }} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72 max-h-[80vh] overflow-y-auto p-4 bg-popover/95 backdrop-blur-xl border-border/50 shadow-lg z-50">
+              <DropdownMenuContent align="end" style={{ width: 288, maxHeight: '80vh', overflowY: 'auto', padding: 16, zIndex: 50 }}>
                 {/* Main navigation */}
-                {navigationSections.map(section => <div key={section.title} className="mb-6">
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">{section.title}</h3>
-                    <div className="grid grid-cols-3 gap-2 p-2">
-                      {section.items.map(item => <Button key={item.to} variant={isActiveRoute(item.to) ? "default" : "ghost"} size="sm" className={`flex flex-col items-center p-3 h-auto gap-1 ${isActiveRoute(item.to) ? 'bg-primary/15 text-primary border border-primary/20' : ''}`} onClick={() => handleMenuItemClick(item.to)}>
-                          <item.icon className="h-4 w-4" />
-                          <span className="text-xs">{item.label}</span>
-                        </Button>)}
-                    </div>
-                  </div>)}
+                {navigationSections.map(section => (
+                  <Box key={section.title} sx={{ mb: 3 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary', mb: 1 }}>
+                      {section.title}
+                    </Typography>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, p: 1 }}>
+                      {section.items.map(item => (
+                        <Button
+                          key={item.to}
+                          variant={isActiveRoute(item.to) ? "default" : "ghost"}
+                          size="sm"
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            padding: 12,
+                            height: 'auto',
+                            gap: 4,
+                            ...(isActiveRoute(item.to) ? {
+                              backgroundColor: 'rgba(var(--primary-rgb, 124, 58, 237), 0.15)',
+                              color: 'var(--primary)',
+                              border: '1px solid rgba(var(--primary-rgb, 124, 58, 237), 0.2)',
+                            } : {}),
+                          }}
+                          onClick={() => handleMenuItemClick(item.to)}
+                        >
+                          <item.icon style={{ width: 16, height: 16 }} />
+                          <Typography variant="caption">{item.label}</Typography>
+                        </Button>
+                      ))}
+                    </Box>
+                  </Box>
+                ))}
 
                 {/* Submit a Space CTA (mobile) */}
-                <div className="pt-2 border-t sm:hidden">
+                <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider', display: { xs: 'block', sm: 'none' } }}>
                   <Button
                     variant="default"
                     size="sm"
-                    className="w-full gap-1.5 bg-primary text-primary-foreground font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    style={{ width: '100%', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
                     onClick={() => handleMenuItemClick('/admin/venues')}
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus style={{ width: 16, height: 16 }} />
                     Submit a Space
                   </Button>
-                </div>
+                </Box>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Container>
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
-    </header>;
+    </Box>
+  );
 }

@@ -8,7 +8,8 @@ import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { formatEventTime } from '@/lib/event-time';
 import { FavoriteButton } from '@/components/ui/favorite-button';
-import { cn } from '@/lib/utils';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -35,21 +36,21 @@ interface EventCardProps {
 export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCardProps) {
   const attendeeCount = event.event_attendees?.filter(a => a.status === 'going').length || 0;
 
-  const getEventTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      party: 'bg-primary/10 text-primary',
-      workshop: 'bg-accent/10 text-accent',
-      meetup: 'bg-secondary/10 text-secondary',
-      pride: 'bg-primary text-primary-foreground',
-      rally: 'bg-destructive/10 text-destructive',
+  const getEventTypeStyle = (type: string): React.CSSProperties => {
+    const styles: Record<string, React.CSSProperties> = {
+      party: { backgroundColor: 'rgba(var(--primary-rgb), 0.1)', color: 'hsl(var(--primary))' },
+      workshop: { backgroundColor: 'rgba(var(--accent-rgb), 0.1)', color: 'var(--accent)' },
+      meetup: { backgroundColor: 'rgba(var(--secondary-rgb), 0.1)', color: 'var(--secondary)' },
+      pride: { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' },
+      rally: { backgroundColor: 'rgba(var(--destructive-rgb), 0.1)', color: 'var(--destructive)' },
     };
-    return colors[type] || 'bg-muted/10 text-muted-foreground';
+    return styles[type] || { backgroundColor: 'rgba(var(--muted-rgb), 0.1)', color: 'var(--muted-foreground)' };
   };
 
   const formatEventDate = (startDate: string, endDate?: string | null) => {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : null;
-    
+
     if (end && format(start, 'yyyy-MM-dd') !== format(end, 'yyyy-MM-dd')) {
       return `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`;
     }
@@ -69,240 +70,235 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
   };
 
   return (
-    <Card className="group relative overflow-hidden bg-card shadow-card hover:shadow-card-hover border-border/50 transition-all duration-300 hover:-translate-y-0.5">
+    <Card sx={{ position: 'relative', overflow: 'hidden', bgcolor: 'background.paper', transition: 'all 0.3s', '&:hover': { transform: 'translateY(-2px)', boxShadow: 6 } }}>
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-primary/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      
+      <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'primary.main', opacity: 0, transition: 'opacity 0.5s', '.group:hover &': { opacity: 0.02 } }} />
+
       {/* Event Images */}
       {event.images && event.images.length > 0 ? (
-        <div className="relative h-56 overflow-hidden">
-          <div className="absolute inset-0 bg-foreground/20 z-10" />
-          <img
+        <Box sx={{ position: 'relative', height: 224, overflow: 'hidden' }}>
+          <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.2)', zIndex: 10 }} />
+          <Box
+            component="img"
             src={event.images[0]}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
+            sx={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.7s', '&:hover': { transform: 'scale(1.1)' } }}
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+              (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-          
+
           {/* Image Overlay Content */}
-          <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start">
-            <div className="flex gap-2">
+          <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16, zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
               {event.featured && (
-                <Badge className="bg-primary text-primary-foreground">
-                  <Star className="h-3 w-3 mr-1" />
+                <Badge sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                  <Star style={{ height: 12, width: 12, marginRight: 4 }} />
                   Featured
                 </Badge>
               )}
-              <Badge className={cn(
-                "bg-muted text-foreground",
-                getEventTypeColor(event.event_type)
-              )}>
+              <Badge style={{ ...getEventTypeStyle(event.event_type) }}>
                 {event.event_type}
               </Badge>
-            </div>
-            
-            <div className="flex items-center gap-2">
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {event.images.length > 1 && (
-                <Badge variant="secondary" className="bg-muted text-foreground">
+                <Badge variant="secondary" sx={{ bgcolor: 'action.hover', color: 'text.primary' }}>
                   +{event.images.length - 1} photos
                 </Badge>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {/* Price Badge */}
-          <div className="absolute bottom-4 right-4 z-20">
+          <Box sx={{ position: 'absolute', bottom: 16, right: 16, zIndex: 20 }}>
             {event.is_free ? (
-              <Badge className="bg-success text-success-foreground text-sm px-3 py-1">
-                <Ticket className="h-3 w-3 mr-1" />
+              <Badge sx={{ bgcolor: 'success.main', color: 'success.contrastText', fontSize: '0.875rem', px: 1.5, py: 0.5 }}>
+                <Ticket style={{ height: 12, width: 12, marginRight: 4 }} />
                 Free
               </Badge>
             ) : (
-              <Badge variant="secondary" className="bg-muted text-foreground text-sm px-3 py-1">
-                <DollarSign className="h-3 w-3 mr-1" />
+              <Badge variant="secondary" sx={{ bgcolor: 'action.hover', color: 'text.primary', fontSize: '0.875rem', px: 1.5, py: 0.5 }}>
+                <DollarSign style={{ height: 12, width: 12, marginRight: 4 }} />
                 {getPriceDisplay()}
               </Badge>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
       ) : (
-        // Placeholder for events without images
-        <div className="relative h-56 bg-primary/10 flex items-center justify-center">
-          <div className="text-center space-y-2">
-            <div className="w-16 h-16 mx-auto bg-primary/20 rounded-lg flex items-center justify-center">
-              <Calendar className="h-8 w-8 text-primary" />
-            </div>
-            <div className="flex gap-2 justify-center">
+        <Box sx={{ position: 'relative', height: 224, bgcolor: 'primary.main', opacity: 0.1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ width: 64, height: 64, mx: 'auto', bgcolor: 'primary.main', opacity: 0.2, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Calendar style={{ height: 32, width: 32, color: 'var(--primary)' }} />
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
               {event.featured && (
-                <Badge className="bg-primary text-primary-foreground">
-                  <Star className="h-3 w-3 mr-1" />
+                <Badge sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                  <Star style={{ height: 12, width: 12, marginRight: 4 }} />
                   Featured
                 </Badge>
               )}
-              <Badge className={getEventTypeColor(event.event_type)}>
+              <Badge style={getEventTypeStyle(event.event_type)}>
                 {event.event_type}
               </Badge>
-            </div>
-          </div>
-          
-          {/* Price Badge for no-image cards */}
-          <div className="absolute bottom-4 right-4">
+            </Box>
+          </Box>
+
+          <Box sx={{ position: 'absolute', bottom: 16, right: 16 }}>
             {event.is_free ? (
-              <Badge className="bg-success text-success-foreground">
-                <Ticket className="h-3 w-3 mr-1" />
+              <Badge sx={{ bgcolor: 'success.main', color: 'success.contrastText' }}>
+                <Ticket style={{ height: 12, width: 12, marginRight: 4 }} />
                 Free
               </Badge>
             ) : (
-              <Badge variant="outline" className="bg-background">
-                <DollarSign className="h-3 w-3 mr-1" />
+              <Badge variant="outline" sx={{ bgcolor: 'background.default' }}>
+                <DollarSign style={{ height: 12, width: 12, marginRight: 4 }} />
                 {getPriceDisplay()}
               </Badge>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
-      <CardHeader className="relative z-10 space-y-4 pb-4">
-        <CardTitle className="text-xl font-bold leading-tight group-hover:text-primary transition-colors duration-300 line-clamp-2">
+      <CardHeader sx={{ position: 'relative', zIndex: 10, pb: 2 }}>
+        <CardTitle sx={{ fontSize: '1.25rem', fontWeight: 'bold', lineHeight: 1.25, transition: 'color 0.3s', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
           {event.title}
         </CardTitle>
-        
+
         {/* Date and Time Info */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-lg">
-              <Calendar className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">{formatEventDate(event.start_date, event.end_date)}</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
-            </div>
-          </div>
-        </div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, bgcolor: 'action.hover', borderRadius: 2 }}>
+              <Calendar style={{ height: 16, width: 16, color: 'var(--primary)' }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>{formatEventDate(event.start_date, event.end_date)}</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, bgcolor: 'action.hover', borderRadius: 2 }}>
+              <Clock style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+              <Typography variant="body2">{formatEventTime(event.start_date, event.end_date)}</Typography>
+            </Box>
+          </Box>
+        </Box>
       </CardHeader>
 
-      <CardContent className="relative z-10 space-y-4 pt-0">
+      <CardContent sx={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', gap: 2, pt: 0 }}>
         {/* Description */}
         {event.description && (
-          <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+          <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', lineHeight: 1.6 }}>
             {event.description}
-          </p>
+          </Typography>
         )}
 
         {/* Location */}
-        <div className="flex items-start gap-2 p-3 bg-muted/30 rounded-lg">
-          <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
+          <MapPin style={{ height: 16, width: 16, color: 'var(--primary)', marginTop: 2, flexShrink: 0 }} />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {event.venues?.name || event.venue_name || 'Location TBA'}
-            </p>
-            <p className="text-xs text-muted-foreground">
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
               {event.city}, {event.state}
-            </p>
+            </Typography>
             {event.venues?.address && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
                 {event.venues.address}
-              </p>
+              </Typography>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Event Stats */}
-        <div className="flex items-center justify-between py-2">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-primary/10 rounded-lg">
-                <Users className="h-3 w-3 text-primary" />
-              </div>
-              <span className="text-sm font-medium">{attendeeCount} attending</span>
-            </div>
-            
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ p: 0.75, bgcolor: 'action.hover', borderRadius: 2 }}>
+                <Users style={{ height: 12, width: 12, color: 'var(--primary)' }} />
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>{attendeeCount} attending</Typography>
+            </Box>
+
             {event.age_restriction && (
-              <Badge variant="outline" className="text-xs bg-muted/50">
+              <Badge variant="outline" sx={{ fontSize: '0.75rem', bgcolor: 'rgba(var(--muted-rgb), 0.5)' }}>
                 {event.age_restriction}
               </Badge>
             )}
-          </div>
-          
+          </Box>
+
           <FavoriteButton itemId={event.id} type="event" />
-        </div>
+        </Box>
 
         {/* Action Buttons */}
-        <div className="flex gap-2 pt-4 border-t border-border/50">
-          <Link to={`/events/${event.id}`} className="flex-1">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="w-full hover:bg-primary hover:text-primary-foreground transition-all duration-300 group/btn"
+        <Box sx={{ display: 'flex', gap: 1, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Link to={`/events/${event.id}`} style={{ flex: 1 }}>
+            <Button
+              size="sm"
+              variant="outline"
+              sx={{ width: '100%', transition: 'all 0.3s', '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText' } }}
             >
-              <Eye className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform" />
+              <Eye style={{ height: 16, width: 16, marginRight: 8, transition: 'transform 0.2s' }} />
               View Details
             </Button>
           </Link>
-          
+
           {/* External Links */}
-          <div className="flex gap-1">
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
             {event.venues?.website && (
-              <Button size="sm" variant="outline" className="px-3 hover:bg-primary/10" asChild>
+              <Button size="sm" variant="outline" sx={{ px: 1.5, '&:hover': { bgcolor: 'rgba(var(--primary-rgb), 0.1)' } }} asChild>
                 <a href={event.venues.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                  <ExternalLink className="h-4 w-4" />
+                  <ExternalLink style={{ height: 16, width: 16 }} />
                 </a>
               </Button>
             )}
             {event.ticket_url && (
-              <Button size="sm" variant="default" className="px-3 bg-primary hover:opacity-90" asChild>
+              <Button size="sm" variant="default" sx={{ px: 1.5, bgcolor: 'primary.main', '&:hover': { opacity: 0.9 } }} asChild>
                 <a href={event.ticket_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                  <Ticket className="h-4 w-4" />
+                  <Ticket style={{ height: 16, width: 16 }} />
                 </a>
               </Button>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Attendance Buttons */}
         {onUpdateAttendance && (
-          <div className="flex gap-2 pt-2">
-            <Button 
-              size="sm" 
-              variant="default" 
-              className="flex-1 bg-success text-success-foreground hover:opacity-90"
+          <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+            <Button
+              size="sm"
+              variant="default"
+              sx={{ flex: 1, bgcolor: 'success.main', color: 'success.contrastText', '&:hover': { opacity: 0.9 } }}
               onClick={(e) => {
                 e.stopPropagation();
                 onUpdateAttendance(event.id, 'going');
               }}
             >
-              <Heart className="h-4 w-4 mr-2" />
+              <Heart style={{ height: 16, width: 16, marginRight: 8 }} />
               I'm Going
             </Button>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="flex-1 hover:opacity-90"
+            <Button
+              size="sm"
+              variant="outline"
+              sx={{ flex: 1, '&:hover': { opacity: 0.9 } }}
               onClick={(e) => {
                 e.stopPropagation();
                 onUpdateAttendance(event.id, 'interested');
               }}
             >
-              <Star className="h-4 w-4 mr-2" />
+              <Star style={{ height: 16, width: 16, marginRight: 8 }} />
               Interested
             </Button>
-          </div>
+          </Box>
         )}
 
         {/* Venue Contact Info */}
         {event.venues?.phone && (
-          <div className="text-xs text-muted-foreground pt-2 border-t border-border/30">
-            <span>Contact: {event.venues.phone}</span>
-          </div>
+          <Typography variant="caption" color="text.secondary" sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
+            Contact: {event.venues.phone}
+          </Typography>
         )}
       </CardContent>
 
       {/* Hover Glow Effect */}
-      <div className="absolute inset-0 rounded-lg bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <Box sx={{ position: 'absolute', inset: 0, borderRadius: 2, bgcolor: 'primary.main', opacity: 0, transition: 'opacity 0.5s', pointerEvents: 'none', '&:hover': { opacity: 0.05 } }} />
     </Card>
   );
 }

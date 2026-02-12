@@ -2,6 +2,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import type { SignupData } from '../MultiStepSignup';
 
 interface PersonalDetailsStepProps {
@@ -13,15 +15,15 @@ interface PersonalDetailsStepProps {
 export default function PersonalDetailsStep({ data, updateData, isIdentityStep }: PersonalDetailsStepProps) {
   if (isIdentityStep) {
     return (
-      <div className="space-y-4">
-        <div className="text-center mb-6">
-          <h3 className="text-lg font-semibold">Tell us about your identity</h3>
-          <p className="text-sm text-muted-foreground">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>Tell us about your identity</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             Help us create a more inclusive experience
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className="space-y-2">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Label htmlFor="pronouns">Pronouns *</Label>
           <Select value={data.pronouns} onValueChange={(value) => updateData({ pronouns: value })}>
             <SelectTrigger>
@@ -38,9 +40,9 @@ export default function PersonalDetailsStep({ data, updateData, isIdentityStep }
               <SelectItem value="other">other</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </Box>
 
-        <div className="space-y-2">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Label htmlFor="genderIdentity">Gender Identity *</Label>
           <Select value={data.genderIdentity} onValueChange={(value) => updateData({ genderIdentity: value })}>
             <SelectTrigger>
@@ -65,9 +67,9 @@ export default function PersonalDetailsStep({ data, updateData, isIdentityStep }
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </Box>
 
-        <div className="space-y-2">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Label htmlFor="sexualOrientation">Sexual Orientation</Label>
           <Select value={data.sexualOrientation} onValueChange={(value) => updateData({ sexualOrientation: value })}>
             <SelectTrigger>
@@ -88,9 +90,9 @@ export default function PersonalDetailsStep({ data, updateData, isIdentityStep }
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </Box>
 
-        <div className="space-y-2">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Label htmlFor="relationshipStatus">Current Relationship Status</Label>
           <Select value={data.relationshipStatus} onValueChange={(value) => updateData({ relationshipStatus: value })}>
             <SelectTrigger>
@@ -106,21 +108,21 @@ export default function PersonalDetailsStep({ data, updateData, isIdentityStep }
               <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold">Personal Information</h3>
-        <p className="text-sm text-muted-foreground">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ textAlign: 'center', mb: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>Personal Information</Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           Help others get to know you better
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
-      <div className="space-y-2">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Label htmlFor="displayName">Display Name *</Label>
         <Input
           id="displayName"
@@ -130,10 +132,10 @@ export default function PersonalDetailsStep({ data, updateData, isIdentityStep }
           onChange={(e) => updateData({ displayName: e.target.value })}
           required
         />
-      </div>
+      </Box>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Label htmlFor="firstName">First Name *</Label>
           <Input
             id="firstName"
@@ -143,8 +145,8 @@ export default function PersonalDetailsStep({ data, updateData, isIdentityStep }
             onChange={(e) => updateData({ firstName: e.target.value })}
             required
           />
-        </div>
-        <div className="space-y-2">
+        </Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Label htmlFor="lastName">Last Name *</Label>
           <Input
             id="lastName"
@@ -154,10 +156,10 @@ export default function PersonalDetailsStep({ data, updateData, isIdentityStep }
             onChange={(e) => updateData({ lastName: e.target.value })}
             required
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="space-y-2">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Label htmlFor="dateOfBirth">Date of Birth</Label>
         <Input
           id="dateOfBirth"
@@ -165,16 +167,16 @@ export default function PersonalDetailsStep({ data, updateData, isIdentityStep }
           value={data.dateOfBirth}
           onChange={(e) => updateData({ dateOfBirth: e.target.value })}
         />
-      </div>
+      </Box>
 
-      <div className="space-y-2">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Label htmlFor="location">Location</Label>
         <LocationAutocomplete
           value={data.location}
           onChange={(value) => updateData({ location: value })}
           placeholder="City, State/Province, Country"
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

@@ -1,79 +1,140 @@
 import * as React from "react"
-
-import { cn } from "@/lib/utils"
+import MuiCard from "@mui/material/Card"
+import MuiCardContent from "@mui/material/CardContent"
+import MuiCardHeader from "@mui/material/CardHeader"
+import MuiCardActions from "@mui/material/CardActions"
+import Typography from "@mui/material/Typography"
 
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
+>(({ className, children, style, ...props }, ref) => (
+  <MuiCard
     ref={ref}
-    className={cn(
-      "bg-card text-card-foreground transition-all duration-200 hover:bg-card/95 hover:backdrop-blur-lg",
-      className
-    )}
-    {...props}
-  />
+    className={className}
+    style={style}
+    variant="outlined"
+    sx={{
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      '&:hover': {
+        backdropFilter: 'blur(8px)',
+      },
+    }}
+    {...(props as any)}
+  >
+    {children}
+  </MuiCard>
 ))
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+>(({ className, children, style, ...props }, ref) => (
+  <MuiCardHeader
+    ref={ref as any}
+    className={className}
+    style={style}
+    title={undefined}
+    sx={{ pb: 0 }}
+    component="div"
+    {...(props as any)}
+  >
+    {/* MuiCardHeader doesn't render children the same way; use a wrapper */}
+  </MuiCardHeader>
+))
+// Actually, MUI CardHeader uses title/subheader/action props, not children.
+// We need to keep rendering children like shadcn does. Use a plain div with sx.
+const CardHeaderCompat = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, children, style, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    className={className}
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 6,
+      padding: 24,
+      ...style,
+    }}
     {...props}
-  />
+  >
+    {children}
+  </div>
 ))
-CardHeader.displayName = "CardHeader"
+CardHeaderCompat.displayName = "CardHeader"
 
 const CardTitle = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
+>(({ className, children, style, ...props }, ref) => (
+  <Typography
     ref={ref}
-    className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
-      className
-    )}
-    {...props}
-  />
+    variant="h6"
+    component="h3"
+    className={className}
+    style={style}
+    sx={{
+      fontWeight: 600,
+      lineHeight: 1,
+      letterSpacing: '-0.015em',
+    }}
+    {...(props as any)}
+  >
+    {children}
+  </Typography>
 ))
 CardTitle.displayName = "CardTitle"
 
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <p
+>(({ className, children, style, ...props }, ref) => (
+  <Typography
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
+    variant="body2"
+    color="text.secondary"
+    className={className}
+    style={style}
+    {...(props as any)}
+  >
+    {children}
+  </Typography>
 ))
 CardDescription.displayName = "CardDescription"
 
 const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+>(({ className, children, style, ...props }, ref) => (
+  <MuiCardContent
+    ref={ref as any}
+    className={className}
+    style={style}
+    sx={{ pt: 0, '&:last-child': { pb: 3 } }}
+    {...(props as any)}
+  >
+    {children}
+  </MuiCardContent>
 ))
 CardContent.displayName = "CardContent"
 
 const CardFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
-    {...props}
-  />
+>(({ className, children, style, ...props }, ref) => (
+  <MuiCardActions
+    ref={ref as any}
+    className={className}
+    style={style}
+    sx={{ px: 3, pt: 0 }}
+    {...(props as any)}
+  >
+    {children}
+  </MuiCardActions>
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export { Card, CardHeaderCompat as CardHeader, CardFooter, CardTitle, CardDescription, CardContent }

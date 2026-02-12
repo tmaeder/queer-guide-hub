@@ -4,6 +4,8 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import type { SignupData } from '../MultiStepSignup';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 
 interface BasicInfoStepProps {
@@ -16,15 +18,15 @@ export default function BasicInfoStep({ data, updateData }: BasicInfoStepProps) 
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
-    <div className="space-y-4">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold">Let's start with the basics</h3>
-        <p className="text-sm text-muted-foreground">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ textAlign: 'center', mb: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>Let's start with the basics</Typography>
+        <Typography variant="body2" color="text.secondary">
           Create your account credentials
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
-      <div className="space-y-2">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Label htmlFor="email">Email Address *</Label>
         <Input
           id="email"
@@ -34,11 +36,11 @@ export default function BasicInfoStep({ data, updateData }: BasicInfoStepProps) 
           onChange={(e) => updateData({ email: e.target.value })}
           required
         />
-      </div>
+      </Box>
 
-      <div className="space-y-2">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Label htmlFor="password">Password *</Label>
-        <div className="relative">
+        <Box sx={{ position: 'relative' }}>
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
@@ -52,17 +54,17 @@ export default function BasicInfoStep({ data, updateData }: BasicInfoStepProps) 
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+            sx={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', height: 32, width: 32, p: 0 }}
             onClick={() => setShowPassword(!showPassword)}
           >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showPassword ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="space-y-2">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Label htmlFor="confirmPassword">Confirm Password *</Label>
-        <div className="relative">
+        <Box sx={{ position: 'relative' }}>
           <Input
             id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
@@ -75,35 +77,35 @@ export default function BasicInfoStep({ data, updateData }: BasicInfoStepProps) 
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+            sx={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', height: 32, width: 32, p: 0 }}
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
           >
-            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showConfirmPassword ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-        <h4 className="font-medium mb-2">Password Requirements:</h4>
-        <ul className="text-sm text-muted-foreground space-y-1">
-          <li className={data.password.length >= 8 ? 'text-green-600' : ''}>
+      <Box sx={{ mt: 3, p: 2, bgcolor: 'action.hover', opacity: 0.5, borderRadius: 2 }}>
+        <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Password Requirements:</Typography>
+        <Box component="ul" sx={{ fontSize: '0.875rem', color: 'text.secondary', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Typography component="li" sx={{ color: data.password.length >= 8 ? 'success.main' : 'inherit' }}>
             • At least 8 characters long
-          </li>
-          <li className={/(?=.*[a-z])/.test(data.password) ? 'text-green-600' : ''}>
+          </Typography>
+          <Typography component="li" sx={{ color: /(?=.*[a-z])/.test(data.password) ? 'success.main' : 'inherit' }}>
             • One lowercase letter
-          </li>
-          <li className={/(?=.*[A-Z])/.test(data.password) ? 'text-green-600' : ''}>
+          </Typography>
+          <Typography component="li" sx={{ color: /(?=.*[A-Z])/.test(data.password) ? 'success.main' : 'inherit' }}>
             • One uppercase letter
-          </li>
-          <li className={/(?=.*\d)/.test(data.password) ? 'text-green-600' : ''}>
+          </Typography>
+          <Typography component="li" sx={{ color: /(?=.*\d)/.test(data.password) ? 'success.main' : 'inherit' }}>
             • One number
-          </li>
-          <li className={data.password === data.confirmPassword && data.password ? 'text-green-600' : ''}>
+          </Typography>
+          <Typography component="li" sx={{ color: data.password === data.confirmPassword && data.password ? 'success.main' : 'inherit' }}>
             • Passwords match
-          </li>
-        </ul>
-      </div>
+          </Typography>
+        </Box>
+      </Box>
 
-    </div>
+    </Box>
   );
 }

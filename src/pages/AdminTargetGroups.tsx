@@ -10,6 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 type TargetGroup = {
   id: string;
@@ -68,7 +71,7 @@ export default function AdminTargetGroups() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingGroup) {
         const { error } = await supabase
@@ -129,7 +132,7 @@ export default function AdminTargetGroups() {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Target group deleted successfully",
@@ -161,32 +164,36 @@ export default function AdminTargetGroups() {
     const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          group.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesActive = !showActiveOnly || group.is_active;
-    
+
     return matchesSearch && matchesActive;
   });
 
   if (loading) {
-    return <div className="flex items-center justify-center h-96">Loading...</div>;
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 384 }}>
+        Loading...
+      </Box>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Target Groups</h1>
+    <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>Target Groups</Typography>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
               Add Target Group
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent style={{ maxWidth: 448 }}>
             <DialogHeader>
               <DialogTitle>
                 {editingGroup ? "Edit Target Group" : "Add Target Group"}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div>
                 <Label htmlFor="name">Name</Label>
                 <Input
@@ -216,20 +223,20 @@ export default function AdminTargetGroups() {
               </div>
               <div>
                 <Label htmlFor="color">Color</Label>
-                <div className="flex space-x-2">
+                <Box sx={{ display: 'flex', gap: 1 }}>
                   <Input
                     id="color"
                     type="color"
                     value={formData.color}
                     onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                    className="w-16 h-10"
+                    style={{ width: 64, height: 40 }}
                   />
                   <Input
                     value={formData.color}
                     onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                     placeholder="#6366f1"
                   />
-                </div>
+                </Box>
               </div>
               <div>
                 <Label htmlFor="sort_order">Sort Order</Label>
@@ -240,114 +247,116 @@ export default function AdminTargetGroups() {
                   onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
                 />
               </div>
-              <div className="flex items-center space-x-2">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Switch
                   id="is_active"
                   checked={formData.is_active}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                 />
                 <Label htmlFor="is_active">Active</Label>
-              </div>
-              <div className="flex justify-end space-x-2 pt-4">
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit">
                   {editingGroup ? "Update" : "Create"}
                 </Button>
-              </div>
-            </form>
+              </Box>
+            </Box>
           </DialogContent>
         </Dialog>
-      </div>
+      </Box>
 
       {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex-1 min-w-64">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+      <Card sx={{ mb: 3 }}>
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+            <Box sx={{ flex: 1, minWidth: 256 }}>
+              <Box sx={{ position: 'relative' }}>
+                <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--muted-foreground)' }} />
                 <Input
                   placeholder="Search target groups..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  style={{ paddingLeft: 40 }}
                 />
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Switch
                 id="active-only"
                 checked={showActiveOnly}
                 onCheckedChange={setShowActiveOnly}
               />
               <Label htmlFor="active-only">Active only</Label>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Target Groups Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 3 }}>
         {filteredGroups.map((group) => (
-          <Card key={group.id} className={!group.is_active ? "opacity-60" : ""}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center space-x-2">
-                  <div 
-                    className="w-4 h-4 rounded-full border" 
-                    style={{ backgroundColor: group.color }}
-                  />
-                  <span>{group.name}</span>
+          <Card key={group.id} sx={{ opacity: !group.is_active ? 0.6 : 1 }}>
+            <CardHeader sx={{ pb: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <CardTitle>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{ width: 16, height: 16, borderRadius: '50%', border: 1, borderColor: 'divider' }}
+                      style={{ backgroundColor: group.color }}
+                    />
+                    <Typography variant="subtitle1">{group.name}</Typography>
+                  </Box>
                 </CardTitle>
-              </div>
+              </Box>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {group.description && (
-                  <p className="text-sm text-muted-foreground">{group.description}</p>
+                  <Typography variant="body2" color="text.secondary">{group.description}</Typography>
                 )}
                 {group.icon && (
-                  <p className="text-sm">
-                    <span className="font-medium">Icon:</span> {group.icon}
-                  </p>
+                  <Typography variant="body2">
+                    <Box component="span" sx={{ fontWeight: 600 }}>Icon:</Box> {group.icon}
+                  </Typography>
                 )}
-                <div className="flex items-center justify-between text-sm">
-                  <span>Order: {group.sort_order}</span>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography variant="body2">Order: {group.sort_order}</Typography>
                   <Badge variant={group.is_active ? "default" : "secondary"}>
                     {group.is_active ? "Active" : "Inactive"}
                   </Badge>
-                </div>
-                <div className="flex justify-end space-x-2 pt-2">
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 1 }}>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleEdit(group)}
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit style={{ width: 16, height: 16 }} />
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleDelete(group.id)}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 style={{ width: 16, height: 16 }} />
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         ))}
-      </div>
+      </Box>
 
       {filteredGroups.length === 0 && (
         <Card>
-          <CardContent className="p-12 text-center">
-            <p className="text-muted-foreground">No target groups found matching your criteria.</p>
+          <CardContent sx={{ p: 6, textAlign: 'center' }}>
+            <Typography color="text.secondary">No target groups found matching your criteria.</Typography>
           </CardContent>
         </Card>
       )}
-    </div>
+    </Container>
   );
 }

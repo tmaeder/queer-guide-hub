@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { User, Mail, MapPin, Heart, Settings } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import type { SignupData } from '../MultiStepSignup';
 
 interface ReviewStepProps {
@@ -11,152 +13,152 @@ interface ReviewStepProps {
 
 export default function ReviewStep({ data }: ReviewStepProps) {
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold">Review your information</h3>
-        <p className="text-sm text-muted-foreground">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ textAlign: 'center', mb: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>Review your information</Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           Make sure everything looks good before creating your account
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
-      <div className="space-y-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <User className="h-4 w-4" />
+          <CardHeader sx={{ pb: 1.5 }}>
+            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
+              <User style={{ height: 16, width: 16 }} />
               Personal Information
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div>
-              <span className="font-medium">Display Name:</span> {data.displayName || 'Not set'}
-            </div>
-            <div>
-              <span className="font-medium">Name:</span> {data.firstName} {data.lastName}
-            </div>
+          <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box>
+              <Box component="span" sx={{ fontWeight: 500 }}>Display Name:</Box> {data.displayName || 'Not set'}
+            </Box>
+            <Box>
+              <Box component="span" sx={{ fontWeight: 500 }}>Name:</Box> {data.firstName} {data.lastName}
+            </Box>
             {data.dateOfBirth && (
-              <div>
-                <span className="font-medium">Date of Birth:</span> {data.dateOfBirth}
-              </div>
+              <Box>
+                <Box component="span" sx={{ fontWeight: 500 }}>Date of Birth:</Box> {data.dateOfBirth}
+              </Box>
             )}
             {data.location && (
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <span>{data.location}</span>
-              </div>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <MapPin style={{ height: 16, width: 16 }} />
+                <Box component="span">{data.location}</Box>
+              </Box>
             )}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Heart className="h-4 w-4" />
+          <CardHeader sx={{ pb: 1.5 }}>
+            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
+              <Heart style={{ height: 16, width: 16 }} />
               Identity & Preferences
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <span className="font-medium">Pronouns:</span> {data.pronouns || 'Not set'}
-            </div>
-            <div>
-              <span className="font-medium">Gender Identity:</span> {data.genderIdentity || 'Not set'}
-            </div>
+          <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box>
+              <Box component="span" sx={{ fontWeight: 500 }}>Pronouns:</Box> {data.pronouns || 'Not set'}
+            </Box>
+            <Box>
+              <Box component="span" sx={{ fontWeight: 500 }}>Gender Identity:</Box> {data.genderIdentity || 'Not set'}
+            </Box>
             {data.sexualOrientation && (
-              <div>
-                <span className="font-medium">Sexual Orientation:</span> {data.sexualOrientation}
-              </div>
+              <Box>
+                <Box component="span" sx={{ fontWeight: 500 }}>Sexual Orientation:</Box> {data.sexualOrientation}
+              </Box>
             )}
             {data.relationshipStatus && (
-              <div>
-                <span className="font-medium">Relationship Status:</span> {data.relationshipStatus}
-              </div>
+              <Box>
+                <Box component="span" sx={{ fontWeight: 500 }}>Relationship Status:</Box> {data.relationshipStatus}
+              </Box>
             )}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Heart className="h-4 w-4" />
+          <CardHeader sx={{ pb: 1.5 }}>
+            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
+              <Heart style={{ height: 16, width: 16 }} />
               What You're Looking For
             </CardTitle>
           </CardHeader>
           <CardContent>
             {data.lookingFor && data.lookingFor.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {data.lookingFor.map((item) => (
                   <Badge key={item} variant="secondary">
                     {item}
                   </Badge>
                 ))}
-              </div>
+              </Box>
             ) : (
-              <span className="text-muted-foreground">Not specified</span>
+              <Box component="span" sx={{ color: 'text.secondary' }}>Not specified</Box>
             )}
           </CardContent>
         </Card>
 
         {data.interests && data.interests.length > 0 && (
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Interests</CardTitle>
+            <CardHeader sx={{ pb: 1.5 }}>
+              <CardTitle sx={{ fontSize: '0.875rem' }}>Interests</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-2">
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {data.interests.map((interest) => (
                   <Badge key={interest} variant="outline">
                     {interest}
                   </Badge>
                 ))}
-              </div>
+              </Box>
             </CardContent>
           </Card>
         )}
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Mail className="h-4 w-4" />
+          <CardHeader sx={{ pb: 1.5 }}>
+            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
+              <Mail style={{ height: 16, width: 16 }} />
               Account Settings
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div>
-              <span className="font-medium">Email:</span> {data.email}
-            </div>
-            <div>
-              <span className="font-medium">Profile Visibility:</span> {data.profileVisibility}
-            </div>
-            <div>
-              <span className="font-medium">Email Notifications:</span> {data.emailNotifications ? 'Enabled' : 'Disabled'}
-            </div>
-            <div>
-              <span className="font-medium">Match Notifications:</span> {data.matchNotifications ? 'Enabled' : 'Disabled'}
-            </div>
+          <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box>
+              <Box component="span" sx={{ fontWeight: 500 }}>Email:</Box> {data.email}
+            </Box>
+            <Box>
+              <Box component="span" sx={{ fontWeight: 500 }}>Profile Visibility:</Box> {data.profileVisibility}
+            </Box>
+            <Box>
+              <Box component="span" sx={{ fontWeight: 500 }}>Email Notifications:</Box> {data.emailNotifications ? 'Enabled' : 'Disabled'}
+            </Box>
+            <Box>
+              <Box component="span" sx={{ fontWeight: 500 }}>Match Notifications:</Box> {data.matchNotifications ? 'Enabled' : 'Disabled'}
+            </Box>
           </CardContent>
         </Card>
 
         {data.bio && (
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Bio</CardTitle>
+            <CardHeader sx={{ pb: 1.5 }}>
+              <CardTitle sx={{ fontSize: '0.875rem' }}>Bio</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">{data.bio}</p>
+              <Typography variant="body2">{data.bio}</Typography>
             </CardContent>
           </Card>
         )}
-      </div>
+      </Box>
 
       <Separator />
 
-      <div className="bg-primary/5 p-4 rounded-lg">
-        <h4 className="font-medium mb-2">Ready to join The Queer Guide?</h4>
-        <p className="text-sm text-muted-foreground">
+      <Box sx={{ bgcolor: 'rgba(var(--primary), 0.05)', p: 2, borderRadius: 2 }}>
+        <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Ready to join The Queer Guide?</Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           Click "Create Account" to complete your registration. You'll receive an email to verify your account before you can sign in.
-        </p>
-      </div>
-    </div>
+        </Typography>
+      </Box>
+    </Box>
   );
 }

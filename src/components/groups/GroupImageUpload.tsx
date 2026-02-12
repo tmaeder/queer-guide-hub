@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface GroupImageUploadProps {
   currentImages?: string[];
@@ -12,10 +14,10 @@ interface GroupImageUploadProps {
   maxImages?: number;
 }
 
-export const GroupImageUpload = ({ 
-  currentImages = [], 
-  onImagesChange, 
-  maxImages = 5 
+export const GroupImageUpload = ({
+  currentImages = [],
+  onImagesChange,
+  maxImages = 5
 }: GroupImageUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
@@ -85,83 +87,92 @@ export const GroupImageUpload = ({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Label>Group Images ({currentImages.length}/{maxImages})</Label>
-        <div className="flex items-center gap-2">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Input
             type="file"
             accept="image/*"
             multiple
             onChange={handleFileUpload}
             disabled={isUploading || currentImages.length >= maxImages}
-            className="hidden"
+            sx={{ display: 'none' }}
             id="group-image-upload"
           />
           <Label
             htmlFor="group-image-upload"
-            className={`flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-accent transition-colors ${
-              isUploading || currentImages.length >= maxImages
-                ? 'opacity-50 cursor-not-allowed'
-                : ''
-            }`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '8px 16px',
+              border: '1px solid',
+              borderColor: 'inherit',
+              borderRadius: 6,
+              cursor: isUploading || currentImages.length >= maxImages ? 'not-allowed' : 'pointer',
+              opacity: isUploading || currentImages.length >= maxImages ? 0.5 : 1,
+              transition: 'background-color 0.2s',
+            }}
           >
             {isUploading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <Box sx={{ width: 16, height: 16, border: 2, borderColor: 'primary.main', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
                 Uploading...
               </>
             ) : (
               <>
-                <Upload className="h-4 w-4" />
+                <Upload style={{ height: 16, width: 16 }} />
                 Upload Images
               </>
             )}
           </Label>
-        </div>
+        </Box>
         {currentImages.length >= maxImages && (
-          <p className="text-sm text-muted-foreground">
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             Maximum number of images reached.
-          </p>
+          </Typography>
         )}
-      </div>
+      </Box>
 
       {currentImages.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
           {currentImages.map((imageUrl, index) => (
-            <div key={index} className="relative group">
-              <div className="aspect-square rounded-lg overflow-hidden border">
-                <img
+            <Box key={index} sx={{ position: 'relative', '&:hover .remove-btn': { opacity: 1 } }}>
+              <Box sx={{ aspectRatio: '1', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
+                <Box
+                  component="img"
                   src={imageUrl}
                   alt={`Group image ${index + 1}`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/placeholder.svg';
                   }}
                 />
-              </div>
+              </Box>
               <Button
                 type="button"
                 variant="destructive"
                 size="sm"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                className="remove-btn"
+                sx={{ position: 'absolute', top: 1, right: 1, opacity: 0, transition: 'opacity 0.2s', height: 24, width: 24, p: 0 }}
                 onClick={() => removeImage(index)}
               >
-                <X className="h-3 w-3" />
+                <X style={{ height: 12, width: 12 }} />
               </Button>
-            </div>
+            </Box>
           ))}
-        </div>
+        </Box>
       )}
 
       {currentImages.length === 0 && (
-        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-          <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No images uploaded yet</p>
-          <p className="text-sm text-muted-foreground">Upload images to showcase your group</p>
-        </div>
+        <Box sx={{ border: 2, borderStyle: 'dashed', borderColor: 'text.disabled', borderRadius: 2, p: 4, textAlign: 'center' }}>
+          <ImageIcon style={{ width: 48, height: 48, margin: '0 auto', marginBottom: 16, opacity: 0.5 }} />
+          <Typography sx={{ color: 'text.secondary' }}>No images uploaded yet</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>Upload images to showcase your group</Typography>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };

@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface EventsCsvImportProps {
   onImportComplete?: () => void;
@@ -93,43 +95,43 @@ Tech Conference,Annual technology conference,conference,Convention Center,456 Co
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Upload className="h-4 w-4 mr-2" />
+          <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
           Import CSV
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent sx={{ maxWidth: 448 }}>
         <DialogHeader>
           <DialogTitle>Import Events from CSV</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box>
             <Label htmlFor="csv-file">Select CSV File</Label>
             <Input
               id="csv-file"
               type="file"
               accept=".csv"
               onChange={handleFileChange}
-              className="mt-1"
+              sx={{ mt: 0.5 }}
             />
-          </div>
-          
-          <div className="text-sm text-muted-foreground">
-            <p>CSV should include columns: title, description, event_type, venue_name, address, city, state, country, start_date, end_date, price_min, price_max, is_free, max_attendees, age_restriction, website, ticket_url, organizer_name, organizer_contact, featured</p>
-          </div>
+          </Box>
 
-          <div className="flex justify-between">
+          <Typography variant="body2" color="text.secondary">
+            CSV should include columns: title, description, event_type, venue_name, address, city, state, country, start_date, end_date, price_min, price_max, is_free, max_attendees, age_restriction, website, ticket_url, organizer_name, organizer_contact, featured
+          </Typography>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Button variant="outline" onClick={downloadTemplate}>
-              <Download className="h-4 w-4 mr-2" />
+              <Download style={{ height: 16, width: 16, marginRight: 8 }} />
               Download Template
             </Button>
-            <Button 
-              onClick={handleImport} 
+            <Button
+              onClick={handleImport}
               disabled={!file || isUploading}
             >
               {isUploading ? "Importing..." : "Import Events"}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </DialogContent>
     </Dialog>
   );

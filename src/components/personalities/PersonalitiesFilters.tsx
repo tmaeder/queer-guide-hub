@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Box, Typography } from '@mui/material';
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -58,7 +59,7 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
 
         // Extract unique professions and handle comma-separated values
         const uniqueProfessions = new Set<string>();
-        
+
         data?.forEach(item => {
           if (item.profession) {
             // Split by comma and clean up each profession
@@ -95,7 +96,7 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
     const newFields = selectedFields.includes(field)
       ? selectedFields.filter(f => f !== field)
       : [...selectedFields, field];
-    
+
     setSelectedFields(newFields);
     onFiltersChange({ ...filters, fields: newFields.length > 0 ? newFields : undefined });
   };
@@ -109,43 +110,43 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
   const hasActiveFilters = searchTerm || selectedFields.length > 0 || filters.is_living !== undefined || filters.profession || filters.featured_only;
 
   return (
-    <div className="space-y-4 p-4 bg-card rounded-lg border mb-8">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider', mb: 4 }}>
       {/* Search Bar */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ position: 'relative', flex: 1 }}>
+          <Search sx={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', height: '16px', width: '16px', color: 'text.secondary' }} />
           <Input
             placeholder="Search personalities..."
             value={searchTerm}
             onChange={(e) => handleSearchChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-9"
+            sx={{ pl: 4.5 }}
           />
-        </div>
-        <Button onClick={handleSearch} className="bg-primary" size="icon">
-          <Search className="h-4 w-4" />
+        </Box>
+        <Button onClick={handleSearch} size="icon">
+          <Search sx={{ height: '16px', width: '16px' }} />
         </Button>
         <Button
           variant="outline"
           onClick={() => setShowAllFilters(!showAllFilters)}
           size="icon"
         >
-          <Filter className="h-4 w-4" />
+          <Filter sx={{ height: '16px', width: '16px' }} />
         </Button>
-      </div>
+      </Box>
 
       {/* Extended Filters */}
       {showAllFilters && (
-        <div className="space-y-4 pt-4 border-t">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Status</Label>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Status</Label>
               <Select
                 value={filters.is_living === true ? 'living' : filters.is_living === false ? 'deceased' : 'all'}
-                onValueChange={(value) => 
-                  onFiltersChange({ 
-                    ...filters, 
-                    is_living: value === 'living' ? true : value === 'deceased' ? false : undefined 
+                onValueChange={(value) =>
+                  onFiltersChange({
+                    ...filters,
+                    is_living: value === 'living' ? true : value === 'deceased' ? false : undefined
                   })
                 }
               >
@@ -158,16 +159,16 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
                   <SelectItem value="deceased">Historical</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Box>
 
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Profession</Label>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Profession</Label>
               <Select
                 value={filters.profession || 'all'}
-                onValueChange={(value) => 
-                  onFiltersChange({ 
-                    ...filters, 
-                    profession: value === 'all' ? undefined : value 
+                onValueChange={(value) =>
+                  onFiltersChange({
+                    ...filters,
+                    profession: value === 'all' ? undefined : value
                   })
                 }
               >
@@ -183,16 +184,16 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Box>
 
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Featured</Label>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Featured</Label>
               <Select
                 value={filters.featured_only ? 'featured' : 'all'}
-                onValueChange={(value) => 
-                  onFiltersChange({ 
-                    ...filters, 
-                    featured_only: value === 'featured' ? true : undefined 
+                onValueChange={(value) =>
+                  onFiltersChange({
+                    ...filters,
+                    featured_only: value === 'featured' ? true : undefined
                   })
                 }
               >
@@ -204,15 +205,15 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
                   <SelectItem value="featured">Featured Only</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {/* Fields of Work */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Fields of Work</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Fields of Work</Label>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 1 }}>
               {FIELD_OPTIONS.map((field) => (
-                <div key={field} className="flex items-center space-x-2">
+                <Box key={field} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id={field}
                     checked={selectedFields.includes(field)}
@@ -220,66 +221,66 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
                   />
                   <Label
                     htmlFor={field}
-                    className="text-sm font-normal capitalize cursor-pointer"
+                    sx={{ fontSize: '0.875rem', fontWeight: 'normal', textTransform: 'capitalize', cursor: 'pointer' }}
                   >
                     {field}
                   </Label>
-                </div>
+                </Box>
               ))}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            <Button onClick={handleSearch} className="bg-primary">
+          <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+            <Button onClick={handleSearch}>
               Apply Filters
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters} className="gap-2">
-                <X className="h-4 w-4" />
+              <Button variant="outline" onClick={clearFilters} sx={{ gap: 1 }}>
+                <X sx={{ height: '16px', width: '16px' }} />
                 Clear All
               </Button>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
       {/* Active Filters Display */}
       {hasActiveFilters && !showAllFilters && (
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+          <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>Active filters:</Typography>
           {searchTerm && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 0.5 }}>
               Search: {searchTerm}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchTerm('')} />
+              <X sx={{ height: '12px', width: '12px', cursor: 'pointer' }} onClick={() => setSearchTerm('')} />
             </Badge>
           )}
           {filters.profession && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 0.5 }}>
               {filters.profession}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => onFiltersChange({ ...filters, profession: undefined })} />
+              <X sx={{ height: '12px', width: '12px', cursor: 'pointer' }} onClick={() => onFiltersChange({ ...filters, profession: undefined })} />
             </Badge>
           )}
           {filters.is_living !== undefined && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 0.5 }}>
               {filters.is_living ? 'Living' : 'Historical'}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => onFiltersChange({ ...filters, is_living: undefined })} />
+              <X sx={{ height: '12px', width: '12px', cursor: 'pointer' }} onClick={() => onFiltersChange({ ...filters, is_living: undefined })} />
             </Badge>
           )}
           {filters.featured_only && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 0.5 }}>
               Featured
-              <X className="h-3 w-3 cursor-pointer" onClick={() => onFiltersChange({ ...filters, featured_only: undefined })} />
+              <X sx={{ height: '12px', width: '12px', cursor: 'pointer' }} onClick={() => onFiltersChange({ ...filters, featured_only: undefined })} />
             </Badge>
           )}
           {selectedFields.map(field => (
-            <Badge key={field} variant="secondary" className="gap-1">
+            <Badge key={field} variant="secondary" sx={{ gap: 0.5 }}>
               {field}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => handleFieldToggle(field)} />
+              <X sx={{ height: '12px', width: '12px', cursor: 'pointer' }} onClick={() => handleFieldToggle(field)} />
             </Badge>
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

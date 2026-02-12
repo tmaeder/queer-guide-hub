@@ -5,6 +5,8 @@ import { Crown, Shield, User, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface GroupMember {
   user_id: string;
@@ -29,11 +31,11 @@ export function GroupMembersList({ members, canManage, onStartConversation }: Gr
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'admin':
-        return <Crown className="h-3 w-3" />;
+        return <Crown style={{ width: 12, height: 12 }} />;
       case 'moderator':
-        return <Shield className="h-3 w-3" />;
+        return <Shield style={{ width: 12, height: 12 }} />;
       default:
-        return <User className="h-3 w-3" />;
+        return <User style={{ width: 12, height: 12 }} />;
     }
   };
 
@@ -49,63 +51,67 @@ export function GroupMembersList({ members, canManage, onStartConversation }: Gr
   };
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {members.map((member) => (
         <Card key={member.user_id}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Avatar>
                   <AvatarImage src={member.profiles.avatar_url || undefined} />
-                  <AvatarFallback className="bg-gradient-primary text-primary-foreground">
+                  <AvatarFallback>
                     {member.profiles.display_name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                
-                <div className="space-y-1">
-                  <h4 className="font-medium">{member.profiles.display_name}</h4>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={getRoleColor(member.role) as any} className="flex items-center gap-1">
-                      {getRoleIcon(member.role)}
-                      {member.role}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Joined {new Date(member.joined_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  {member.profiles.social_links && Object.keys(member.profiles.social_links).length > 0 && (
-                    <div className="mt-2">
-                      <SocialLinksDisplay 
-                        socialLinks={member.profiles.social_links} 
-                        size="sm" 
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
 
-              <div className="flex items-center gap-2">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {member.profiles.display_name}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Badge variant={getRoleColor(member.role) as any}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        {getRoleIcon(member.role)}
+                        {member.role}
+                      </Box>
+                    </Badge>
+                    <Typography variant="caption" color="text.secondary">
+                      Joined {new Date(member.joined_at).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                  {member.profiles.social_links && Object.keys(member.profiles.social_links).length > 0 && (
+                    <Box sx={{ mt: 1 }}>
+                      <SocialLinksDisplay
+                        socialLinks={member.profiles.social_links}
+                        size="sm"
+                      />
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {member.user_id !== user?.id && onStartConversation && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onStartConversation(member.user_id)}
                   >
-                    <MessageSquare className="h-4 w-4 mr-2" />
+                    <MessageSquare style={{ width: 16, height: 16, marginRight: 8 }} />
                     Message
                   </Button>
                 )}
-                
+
                 {canManage && member.role !== 'admin' && member.user_id !== user?.id && (
                   <Button variant="outline" size="sm">
                     Manage
                   </Button>
                 )}
-              </div>
-            </div>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
       ))}
-    </div>
+    </Box>
   );
 }

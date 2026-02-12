@@ -9,14 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { 
+import {
   Table,
   TableBody,
   TableCell,
@@ -27,6 +27,9 @@ import {
 import { Plus, Edit, Trash2, Save, X, ChevronDown, ChevronRight, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { Tables } from "@/integrations/supabase/types";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 type VenueAmenity = Tables<'venue_amenities'>;
 
@@ -80,7 +83,7 @@ export default function AdminVenueAmenities() {
         .select('*')
         .order('category', { ascending: true })
         .order('sort_order', { ascending: true });
-      
+
       if (error) throw error;
       return data as VenueAmenity[];
     }
@@ -92,7 +95,7 @@ export default function AdminVenueAmenities() {
       .from('venues')
       .select('id, name, city, country')
       .contains('amenities', [amenityName]);
-    
+
     if (error) throw error;
     return data || [];
   };
@@ -103,7 +106,7 @@ export default function AdminVenueAmenities() {
       const { error } = await supabase
         .from('venue_amenities')
         .insert([data]);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -124,7 +127,7 @@ export default function AdminVenueAmenities() {
         .from('venue_amenities')
         .update(data)
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -146,7 +149,7 @@ export default function AdminVenueAmenities() {
         .from('venue_amenities')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -160,7 +163,7 @@ export default function AdminVenueAmenities() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (editingAmenity) {
       updateAmenityMutation.mutate({ id: editingAmenity.id, data: formData });
     } else {
@@ -208,8 +211,8 @@ export default function AdminVenueAmenities() {
     setEditingAmenity(null);
   };
 
-  const filteredAmenities = filterCategory === 'all' 
-    ? amenities 
+  const filteredAmenities = filterCategory === 'all'
+    ? amenities
     : amenities.filter(amenity => amenity.category === filterCategory);
 
   const toggleRowExpansion = (amenityId: string) => {
@@ -224,40 +227,40 @@ export default function AdminVenueAmenities() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading amenities...</div>
-        </div>
-      </div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+          <Typography variant="subtitle1">Loading amenities...</Typography>
+        </Box>
+      </Container>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <div>
-          <h1 className="text-3xl font-bold">Venue Amenities</h1>
-          <p className="text-muted-foreground">Manage venue amenities and features</p>
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>Venue Amenities</Typography>
+          <Typography color="text.secondary">Manage venue amenities and features</Typography>
         </div>
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm} className="gap-2">
-              <Plus className="h-4 w-4" />
+            <Button onClick={resetForm} style={{ display: 'flex', gap: 8 }}>
+              <Plus style={{ width: 16, height: 16 }} />
               Add Amenity
             </Button>
           </DialogTrigger>
-          
-          <DialogContent className="max-w-2xl">
+
+          <DialogContent sx={{ maxWidth: 672 }}>
             <DialogHeader>
               <DialogTitle>
                 {editingAmenity ? 'Edit Amenity' : 'Add New Amenity'}
               </DialogTitle>
             </DialogHeader>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
@@ -265,9 +268,9 @@ export default function AdminVenueAmenities() {
                     onChange={(e) => handleNameChange(e.target.value)}
                     required
                   />
-                </div>
-                
-                <div className="space-y-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="slug">Slug *</Label>
                   <Input
                     id="slug"
@@ -275,10 +278,10 @@ export default function AdminVenueAmenities() {
                     onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
                     required
                   />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
@@ -286,10 +289,10 @@ export default function AdminVenueAmenities() {
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   rows={3}
                 />
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
+              </Box>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="icon">Icon</Label>
                   <Input
                     id="icon"
@@ -297,12 +300,12 @@ export default function AdminVenueAmenities() {
                     onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
                     placeholder="Lucide icon name"
                   />
-                </div>
-                
-                <div className="space-y-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="category">Category</Label>
-                  <Select 
-                    value={formData.category} 
+                  <Select
+                    value={formData.category}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
                   >
                     <SelectTrigger>
@@ -316,9 +319,9 @@ export default function AdminVenueAmenities() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                
-                <div className="space-y-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="sort_order">Sort Order</Label>
                   <Input
                     id="sort_order"
@@ -326,44 +329,44 @@ export default function AdminVenueAmenities() {
                     value={formData.sort_order}
                     onChange={(e) => setFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
                   />
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Switch
                   id="is_active"
                   checked={formData.is_active}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
                 />
                 <Label htmlFor="is_active">Active</Label>
-              </div>
-              
-              <div className="flex justify-end gap-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+              </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  <X className="h-4 w-4 mr-2" />
+                  <X style={{ width: 16, height: 16, marginRight: 8 }} />
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={createAmenityMutation.isPending || updateAmenityMutation.isPending}
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save style={{ width: 16, height: 16, marginRight: 8 }} />
                   {editingAmenity ? 'Update' : 'Create'}
                 </Button>
-              </div>
-            </form>
+              </Box>
+            </Box>
           </DialogContent>
         </Dialog>
-      </div>
+      </Box>
 
       {/* Filter */}
-      <div className="mb-6">
+      <Box sx={{ mb: 3 }}>
         <Select value={filterCategory} onValueChange={setFilterCategory}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger sx={{ width: 192 }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -375,7 +378,7 @@ export default function AdminVenueAmenities() {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </Box>
 
       <Card>
         <CardHeader>
@@ -392,7 +395,7 @@ export default function AdminVenueAmenities() {
                 <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Sort Order</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead style={{ textAlign: 'right' }}>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -401,27 +404,36 @@ export default function AdminVenueAmenities() {
                 return (
                   <>
                     <TableRow key={amenity.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <button
+                      <TableCell style={{ fontWeight: 600 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box
+                            component="button"
                             onClick={() => toggleRowExpansion(amenity.id)}
-                            className="p-1 hover:bg-muted rounded transition-colors"
+                            sx={{
+                              p: 0.5,
+                              borderRadius: 1,
+                              border: 'none',
+                              background: 'none',
+                              cursor: 'pointer',
+                              '&:hover': { bgcolor: 'action.hover' },
+                              transition: 'background-color 0.15s',
+                            }}
                           >
                             {isExpanded ? (
-                              <ChevronDown className="h-4 w-4" />
+                              <ChevronDown style={{ width: 16, height: 16 }} />
                             ) : (
-                              <ChevronRight className="h-4 w-4" />
+                              <ChevronRight style={{ width: 16, height: 16 }} />
                             )}
-                          </button>
+                          </Box>
                           {amenity.name}
-                        </div>
+                        </Box>
                       </TableCell>
                   <TableCell>
                     <Badge variant="outline">
                       {amenity.category?.charAt(0).toUpperCase() + amenity.category?.slice(1)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-xs truncate">
+                  <TableCell style={{ maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {amenity.description}
                   </TableCell>
                   <TableCell>
@@ -430,27 +442,27 @@ export default function AdminVenueAmenities() {
                     </Badge>
                   </TableCell>
                   <TableCell>{amenity.sort_order}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                      <TableCell style={{ textAlign: 'right' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleEdit(amenity)}
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit style={{ width: 16, height: 16 }} />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDelete(amenity.id)}
-                            className="text-destructive hover:text-destructive"
+                            style={{ color: 'var(--destructive)' }}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 style={{ width: 16, height: 16 }} />
                           </Button>
-                        </div>
+                        </Box>
                       </TableCell>
                     </TableRow>
-                    
+
                     {/* Expanded row showing linked venues */}
                     {isExpanded && (
                       <LinkedVenuesRow amenityName={amenity.name} />
@@ -460,15 +472,19 @@ export default function AdminVenueAmenities() {
               })}
               {filteredAmenities.length === 0 && amenities.length > 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No amenities match the current filter. Total amenities: {amenities.length}
+                  <TableCell colSpan={6} style={{ textAlign: 'center', padding: '32px 0' }}>
+                    <Typography color="text.secondary">
+                      No amenities match the current filter. Total amenities: {amenities.length}
+                    </Typography>
                   </TableCell>
                 </TableRow>
               )}
               {filteredAmenities.length === 0 && amenities.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No amenities found. Create your first amenity to get started.
+                  <TableCell colSpan={6} style={{ textAlign: 'center', padding: '32px 0' }}>
+                    <Typography color="text.secondary">
+                      No amenities found. Create your first amenity to get started.
+                    </Typography>
                   </TableCell>
                 </TableRow>
               )}
@@ -476,7 +492,7 @@ export default function AdminVenueAmenities() {
           </Table>
         </CardContent>
       </Card>
-    </div>
+    </Container>
   );
 }
 
@@ -493,7 +509,7 @@ function LinkedVenuesRow({ amenityName }: { amenityName: string }) {
           .from('venues')
           .select('id, name, city, country')
           .contains('amenities', [amenityName]);
-        
+
         if (error) throw error;
         setVenues(data || []);
       } catch (error) {
@@ -508,35 +524,37 @@ function LinkedVenuesRow({ amenityName }: { amenityName: string }) {
   }, [amenityName]);
 
   return (
-    <TableRow className="bg-muted/20">
-      <TableCell colSpan={6} className="py-4">
-        <div className="ml-8">
-          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            Linked Venues ({venues.length})
-          </h4>
+    <TableRow sx={{ bgcolor: 'action.hover' }}>
+      <TableCell colSpan={6} sx={{ py: 2 }}>
+        <Box sx={{ ml: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <MapPin style={{ width: 16, height: 16 }} />
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              Linked Venues ({venues.length})
+            </Typography>
+          </Box>
           {loading ? (
-            <div className="text-sm text-muted-foreground">Loading venues...</div>
+            <Typography variant="body2" color="text.secondary">Loading venues...</Typography>
           ) : venues.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 1 }}>
               {venues.map((venue) => (
-                <div 
-                  key={venue.id} 
-                  className="text-sm p-2 bg-background rounded border"
+                <Box
+                  key={venue.id}
+                  sx={{ p: 1, bgcolor: 'background.paper', borderRadius: 1, border: 1, borderColor: 'divider' }}
                 >
-                  <div className="font-medium">{venue.name}</div>
-                  <div className="text-muted-foreground text-xs">
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{venue.name}</Typography>
+                  <Typography variant="caption" color="text.secondary">
                     {venue.city}, {venue.country}
-                  </div>
-                </div>
+                  </Typography>
+                </Box>
               ))}
-            </div>
+            </Box>
           ) : (
-            <div className="text-sm text-muted-foreground">
+            <Typography variant="body2" color="text.secondary">
               No venues currently use this amenity
-            </div>
+            </Typography>
           )}
-        </div>
+        </Box>
       </TableCell>
     </TableRow>
   );

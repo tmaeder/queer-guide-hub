@@ -1,42 +1,59 @@
 import * as React from "react"
-import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
-import { Circle } from "lucide-react"
+import MuiRadioGroup from "@mui/material/RadioGroup"
+import MuiRadio from "@mui/material/Radio"
+import MuiFormControlLabel from "@mui/material/FormControlLabel"
 
-import { cn } from "@/lib/utils"
+interface RadioGroupProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
+  disabled?: boolean;
+  orientation?: 'horizontal' | 'vertical';
+}
 
-const RadioGroup = React.forwardRef<
-  React.ElementRef<typeof RadioGroupPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
->(({ className, ...props }, ref) => {
-  return (
-    <RadioGroupPrimitive.Root
-      className={cn("grid gap-2", className)}
-      {...props}
-      ref={ref}
-    />
-  )
-})
-RadioGroup.displayName = RadioGroupPrimitive.Root.displayName
+const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
+  ({ className, value, defaultValue, onValueChange, disabled, children, ...props }, ref) => {
+    return (
+      <MuiRadioGroup
+        ref={ref}
+        value={value}
+        defaultValue={defaultValue}
+        onChange={(e) => onValueChange?.(e.target.value)}
+        className={className}
+        {...(props as any)}
+      >
+        {children}
+      </MuiRadioGroup>
+    )
+  }
+)
+RadioGroup.displayName = "RadioGroup"
 
-const RadioGroupItem = React.forwardRef<
-  React.ElementRef<typeof RadioGroupPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
->(({ className, ...props }, ref) => {
-  return (
-    <RadioGroupPrimitive.Item
-      ref={ref}
-      className={cn(
-        "aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      {...props}
-    >
-      <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-        <Circle className="h-2.5 w-2.5 fill-current text-current" />
-      </RadioGroupPrimitive.Indicator>
-    </RadioGroupPrimitive.Item>
-  )
-})
-RadioGroupItem.displayName = RadioGroupPrimitive.Item.displayName
+interface RadioGroupItemProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+  value: string;
+  id?: string;
+}
+
+const RadioGroupItem = React.forwardRef<HTMLButtonElement, RadioGroupItemProps>(
+  ({ className, value, id, ...props }, ref) => {
+    return (
+      <MuiRadio
+        ref={ref as any}
+        value={value}
+        id={id}
+        className={className}
+        size="small"
+        color="primary"
+        sx={{
+          width: 20,
+          height: 20,
+          p: 0,
+        }}
+        {...(props as any)}
+      />
+    )
+  }
+)
+RadioGroupItem.displayName = "RadioGroupItem"
 
 export { RadioGroup, RadioGroupItem }

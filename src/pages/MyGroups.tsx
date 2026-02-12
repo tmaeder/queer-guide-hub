@@ -63,13 +63,13 @@ export default function MyGroups() {
 
   if (!user) {
     return (
-      <div className="space-y-8 py-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">My Groups</h1>
-          <p className="text-lg text-muted-foreground mb-8">
+      <div sx={{ display: 'flex', flexDirection: 'column', gap: 4, py: 4 }}>
+        <div sx={{ textAlign: 'center' }}>
+          <h1 sx={{ fontSize: '2.25rem', fontWeight: 700, mb: 2 }}>My Groups</h1>
+          <p sx={{ fontSize: '1.125rem', color: 'text.secondary', mb: 4 }}>
             Please sign in to view your groups
           </p>
-          <Button asChild className="bg-gradient-primary hover:opacity-90">
+          <Button asChild sx={{ background: 'var(--gradient-primary)', '&:hover': { opacity: 0.9 } }}>
             <Link to="/auth">Sign In</Link>
           </Button>
         </div>
@@ -78,22 +78,22 @@ export default function MyGroups() {
   }
 
   return (
-    <div className="space-y-8 py-8">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 4, py: 4 }}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { sm: 'center' }, justifyContent: { sm: 'space-between' }, gap: 2 }}>
         <div>
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-slate-950">
+          <h1 sx={{ fontSize: '2.25rem', fontWeight: 700, mb: 1, backgroundImage: 'var(--gradient-primary)', backgroundClip: 'text', WebkitBackgroundClip: 'text', color: '#020617' }}>
             My Groups
           </h1>
-          <p className="text-muted-foreground">
+          <p style={{ color: 'var(--muted-foreground)' }}>
             Manage and explore your community groups
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
           <Button variant="outline" asChild>
             <Link to="/groups">
-              <Users className="h-4 w-4 mr-2" />
+              <Users style={{ height: 16, width: 16, marginRight: 8 }} />
               Discover Groups
             </Link>
           </Button>
@@ -101,68 +101,68 @@ export default function MyGroups() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Groups</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Total Groups</CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              <span className="text-2xl font-bold">{stats.total}</span>
+          <CardContent sx={{ pt: 0 }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Users style={{ height: 16, width: 16, color: 'var(--primary)' }} />
+              <span sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.total}</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Owned</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Owned</CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex items-center gap-2">
-              <Crown className="h-4 w-4 text-yellow-500" />
-              <span className="text-2xl font-bold">{stats.ownedGroups}</span>
+          <CardContent sx={{ pt: 0 }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Crown style={{ height: 16, width: 16, color: '#eab308' }} />
+              <span sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.ownedGroups}</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Member Of</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Member Of</CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-green-500" />
-              <span className="text-2xl font-bold">{stats.memberGroups}</span>
+          <CardContent sx={{ pt: 0 }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <UserCheck style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <span sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.memberGroups}</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Private</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Private</CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex items-center gap-2">
-              <Settings className="h-4 w-4 text-blue-500" />
-              <span className="text-2xl font-bold">{stats.privateGroups}</span>
+          <CardContent sx={{ pt: 0 }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Settings style={{ height: 16, width: 16, color: '#3b82f6' }} />
+              <span sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.privateGroups}</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Search and Sort Controls */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
+      <div sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+        <div sx={{ flex: 1 }}>
           <Input
             placeholder="Search your groups..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full"
+            sx={{ width: '100%' }}
           />
         </div>
         <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger sx={{ width: { xs: '100%', sm: 192 } }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -176,26 +176,26 @@ export default function MyGroups() {
       {/* Groups Grid */}
       {isLoading ? (
         <Card>
-          <CardContent className="p-8 text-center">
-            <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading your groups...</p>
+          <CardContent sx={{ p: 4, textAlign: 'center' }}>
+            <div sx={{ animation: 'spin 1s linear infinite', height: 32, width: 32, border: 2, borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%', mx: 'auto', mb: 2 }} />
+            <p style={{ color: 'var(--muted-foreground)' }}>Loading your groups...</p>
           </CardContent>
         </Card>
       ) : filteredAndSortedGroups.length === 0 ? (
         <Card>
-          <CardContent className="p-8 text-center">
-            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">
+          <CardContent sx={{ p: 4, textAlign: 'center' }}>
+            <Users style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+            <h3 sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
               {searchQuery ? "No groups found" : "You haven't joined any groups yet"}
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p sx={{ color: 'text.secondary', mb: 2 }}>
               {searchQuery 
                 ? "Try adjusting your search query" 
                 : "Start by joining existing groups or create your own!"
               }
             </p>
             {!searchQuery && (
-              <div className="flex justify-center gap-4">
+              <div sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                 <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
                 <Button variant="outline" asChild>
                   <Link to="/groups">Browse Groups</Link>
@@ -205,7 +205,7 @@ export default function MyGroups() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
           {filteredAndSortedGroups.map(group => (
             <GroupCard
               key={group.id}

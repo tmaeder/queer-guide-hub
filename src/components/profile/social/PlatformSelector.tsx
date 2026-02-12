@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Search, Plus } from 'lucide-react';
 import { PLATFORM_CONFIGS, PlatformConfig } from './platformConfigs';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface PlatformSelectorProps {
   onPlatformSelect: (platform: string, url: string) => void;
@@ -16,7 +18,7 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
   const [showCustom, setShowCustom] = useState(false);
 
   const categories = ['all', ...new Set(PLATFORM_CONFIGS.map(p => p.category))];
-  
+
   const filteredPlatforms = PLATFORM_CONFIGS.filter(platform => {
     const matchesSearch = platform.platform.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || platform.category === selectedCategory;
@@ -39,7 +41,7 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
           return false;
         }
       });
-      
+
       onPlatformSelect(detectedPlatform?.platform || 'Custom', customUrl);
       setCustomUrl('');
       setShowCustom(false);
@@ -47,23 +49,23 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
   };
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg bg-card">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Add Platform</h3>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, border: 1, borderRadius: 2, borderColor: 'divider', bgcolor: 'background.paper' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h6" sx={{ fontWeight: 500 }}>Add Platform</Typography>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setShowCustom(!showCustom)}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
           Custom URL
         </Button>
-      </div>
+      </Box>
 
       {showCustom && (
-        <div className="space-y-2 p-3 bg-muted rounded-md">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 1.5 }}>
           <Label htmlFor="custom-url">Custom URL</Label>
-          <div className="flex gap-2">
+          <Box sx={{ display: 'flex', gap: 1 }}>
             <Input
               id="custom-url"
               placeholder="https://platform.com/username"
@@ -73,54 +75,63 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
             <Button onClick={handleCustomAdd} disabled={!customUrl.trim()}>
               Add
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
-      <div className="space-y-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ position: 'relative' }}>
+          <Search style={{ position: 'absolute', left: 12, top: 12, width: 16, height: 16, color: 'var(--muted-foreground)' }} />
           <Input
             placeholder="Search platforms..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            sx={{ pl: 5 }}
           />
-        </div>
+        </Box>
 
-        <div className="flex flex-wrap gap-2">
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {categories.map((category) => (
-            <button
+            <Box
+              component="button"
               key={category}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                selectedCategory === category 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              }`}
+              sx={{
+                px: 1.5,
+                py: 0.5,
+                borderRadius: '9999px',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                transition: 'colors 0.2s',
+                bgcolor: selectedCategory === category ? 'primary.main' : 'secondary.main',
+                color: selectedCategory === category ? 'primary.contrastText' : 'secondary.contrastText',
+                '&:hover': { bgcolor: selectedCategory === category ? 'primary.main' : 'secondary.dark', opacity: 0.8 },
+                border: 'none',
+                cursor: 'pointer'
+              }}
               onClick={() => setSelectedCategory(category)}
             >
               {category.charAt(0).toUpperCase() + category.slice(1)}
-            </button>
+            </Box>
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }, gap: 1, maxHeight: 240, overflowY: 'auto' }}>
         {filteredPlatforms.map((platform) => {
           const Icon = platform.icon;
           return (
             <Button
               key={platform.platform}
               variant="outline"
-              className="h-auto p-3 flex flex-col items-center gap-2 hover:bg-accent"
+              sx={{ height: 'auto', p: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, '&:hover': { bgcolor: 'action.hover' } }}
               onClick={() => handleQuickAdd(platform)}
             >
-              <Icon className="h-5 w-5" />
-              <span className="text-xs text-center">{platform.platform}</span>
+              <Icon style={{ width: 20, height: 20 }} />
+              <Typography variant="caption" sx={{ textAlign: 'center' }}>{platform.platform}</Typography>
             </Button>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

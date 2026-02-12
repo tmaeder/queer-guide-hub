@@ -5,6 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload, X, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface EnhancedImageUploadProps {
   onUpload: (url: string) => void;
@@ -29,7 +31,7 @@ export function EnhancedImageUpload({
 
   const validateFile = useCallback(async (file: File) => {
     setValidationErrors([]);
-    
+
     // Call database validation function
     const { data: validation, error } = await supabase.rpc('validate_file_upload', {
       file_name: file.name,
@@ -68,7 +70,7 @@ export function EnhancedImageUpload({
       // Create unique filename to prevent conflicts
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      
+
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from(bucket)
@@ -87,7 +89,7 @@ export function EnhancedImageUpload({
         .getPublicUrl(data.path);
 
       onUpload(urlData.publicUrl);
-      
+
       toast({
         title: "Success",
         description: "Image uploaded successfully",
@@ -121,11 +123,11 @@ export function EnhancedImageUpload({
         const url = new URL(currentImage);
         const pathParts = url.pathname.split('/');
         const fileName = pathParts[pathParts.length - 1];
-        
+
         if (fileName) {
           await supabase.storage.from(bucket).remove([fileName]);
         }
-        
+
         onRemove();
         toast({
           title: "Success",
@@ -143,28 +145,41 @@ export function EnhancedImageUpload({
   }, [currentImage, onRemove, bucket, toast]);
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} className={className}>
       {validationErrors.length > 0 && (
         <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangle style={{ height: 16, width: 16 }} />
           <AlertDescription>
-            <ul className="list-disc list-inside space-y-1">
+            <Box component="ul" sx={{ listStyle: 'disc', listStylePosition: 'inside', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               {validationErrors.map((error, index) => (
                 <li key={index}>{error}</li>
               ))}
-            </ul>
+            </Box>
           </AlertDescription>
         </Alert>
       )}
 
       {currentImage ? (
-        <div className="relative group">
-          <img
+        <Box sx={{ position: 'relative', '&:hover .overlay': { opacity: 1 } }}>
+          <Box
+            component="img"
             src={currentImage}
             alt="Uploaded image"
-            className="w-full h-48 object-cover bg-muted"
+            sx={{ width: '100%', height: 192, objectFit: 'cover', bgcolor: 'action.hover' }}
           />
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <Box
+            className="overlay"
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              bgcolor: 'rgba(0,0,0,0.5)',
+              opacity: 0,
+              transition: 'opacity 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
             <Button
               type="button"
               variant="destructive"
@@ -172,38 +187,48 @@ export function EnhancedImageUpload({
               onClick={handleRemove}
               disabled={uploading}
             >
-              <X className="h-4 w-4 mr-2" />
+              <X style={{ height: 16, width: 16, marginRight: 8 }} />
               Remove
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       ) : (
-        <div
+        <Box
           {...getRootProps()}
-          className={`
-            border-2 border-dashed bg-muted/10 p-8 text-center cursor-pointer transition-colors
-            ${isDragActive ? 'border-primary bg-primary/10' : 'border-muted-foreground/25'}
-            ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary hover:bg-primary/5'}
-          `}
+          sx={{
+            border: 2,
+            borderStyle: 'dashed',
+            borderColor: isDragActive ? 'primary.main' : 'divider',
+            bgcolor: isDragActive ? 'primary.light' : 'action.hover',
+            p: 4,
+            textAlign: 'center',
+            cursor: uploading ? 'not-allowed' : 'pointer',
+            transition: 'all 0.2s',
+            opacity: uploading ? 0.5 : 1,
+            '&:hover': {
+              borderColor: 'primary.main',
+              bgcolor: 'action.selected'
+            }
+          }}
         >
           <input {...getInputProps()} />
-          <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <div className="space-y-2">
-            <p className="text-sm font-medium">
+          <Upload style={{ height: 48, width: 48, marginLeft: 'auto', marginRight: 'auto', marginBottom: 16, color: 'var(--muted-foreground)' }} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
               {isDragActive ? 'Drop image here' : 'Click or drag image to upload'}
-            </p>
-            <p className="text-xs text-muted-foreground">
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
               Supports: JPEG, PNG, GIF, WebP (max {Math.round(maxSize / 1024 / 1024)}MB)
-            </p>
-          </div>
+            </Typography>
+          </Box>
           {uploading && (
-            <div className="mt-4">
-              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto" />
-              <p className="text-xs text-muted-foreground mt-2">Uploading...</p>
-            </div>
+            <Box sx={{ mt: 2 }}>
+              <Box sx={{ animation: 'spin 1s linear infinite', height: 24, width: 24, border: 2, borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%', mx: 'auto' }} />
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>Uploading...</Typography>
+            </Box>
           )}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

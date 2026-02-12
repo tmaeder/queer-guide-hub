@@ -11,17 +11,18 @@ import { useMessaging } from "@/hooks/useMessaging";
 import { useGroupNotifications } from "@/hooks/useGroupNotifications";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 const getNotificationIcon = (type: string) => {
   switch (type) {
     case 'message':
-      return <MessageCircle className="h-4 w-4" />;
+      return <MessageCircle style={{ height: 16, width: 16 }} />;
     case 'event':
-      return <Calendar className="h-4 w-4" />;
+      return <Calendar style={{ height: 16, width: 16 }} />;
     default:
-      return <Info className="h-4 w-4" />;
+      return <Info style={{ height: 16, width: 16 }} />;
   }
 };
 
@@ -155,7 +156,7 @@ export const NotificationList = () => {
   }, [conversations]);
 
   const Empty = ({ label }: { label: string }) => (
-    <div className="p-4 text-center text-muted-foreground">{label}</div>
+    <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>{label}</Box>
   );
 
   const isLoadingAll = loading || messagingLoading || groupsLoading || likesLoading || commentsLoading;
@@ -197,37 +198,41 @@ export const NotificationList = () => {
       case 'notification': {
         const n = item.data;
         return (
-          <div
+          <Box
             key={item.key}
-            className={cn(
-              "p-3 cursor-pointer hover:bg-muted/50 transition-colors",
-              !n.read && "bg-primary/5"
-            )}
+            sx={{
+              p: 1.5,
+              cursor: 'pointer',
+              '&:hover': { bgcolor: 'action.hover' },
+              transition: 'background-color 0.2s',
+              ...(!n.read && { bgcolor: 'rgba(var(--mui-palette-primary-mainChannel) / 0.05)' }),
+            }}
             onClick={() => handleNotificationClick(n)}
           >
-            <div className="flex items-start gap-3">
-              <div className={cn(
-                "p-1",
-                n.type === 'message' && "bg-primary/10 text-primary",
-                n.type === 'event' && "bg-accent/10 text-accent",
-                n.type === 'system' && "bg-secondary/10 text-secondary"
-              )}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <Box sx={{
+                p: 0.5,
+                borderRadius: 1,
+                ...(n.type === 'message' && { bgcolor: 'primary.main', color: 'primary.contrastText', opacity: 0.1 }),
+                ...(n.type === 'event' && { bgcolor: 'secondary.main', color: 'secondary.contrastText', opacity: 0.1 }),
+                ...(n.type === 'system' && { bgcolor: 'grey.200' }),
+              }}>
                 {getNotificationIcon(n.type)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between">
-                  <h4 className={cn("text-sm font-medium truncate", !n.read && "font-semibold")}>{n.title}</h4>
-                  {!n.read && (<div className="w-2 h-2 bg-primary" />)}
-                </div>
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" sx={{ fontWeight: !n.read ? 600 : 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</Typography>
+                  {!n.read && (<Box sx={{ width: 8, height: 8, bgcolor: 'primary.main' }} />)}
+                </Box>
                 {n.content && (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.content}</p>
+                  <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{n.content}</Typography>
                 )}
-                <p className="text-xs text-muted-foreground mt-1">
+                <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>
                   {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                </p>
-              </div>
-            </div>
-          </div>
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
         );
       }
       case 'dm': {
@@ -236,99 +241,99 @@ export const NotificationList = () => {
         const title = c.title || others.map((o: any) => o.profile?.display_name || 'User').join(', ');
         const avatar = others[0]?.profile?.avatar_url || '';
         return (
-          <div key={item.key} className="p-3 hover:bg-muted/50 cursor-pointer" onClick={() => navigate('/messages')}>
-            <div className="flex items-start gap-3">
-              <Avatar className="h-8 w-8">
+          <Box key={item.key} sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => navigate('/messages')}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={avatar} />
                 <AvatarFallback>{(title || 'U').charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4" /> {title || 'Conversation'}
-                  </h4>
-                  <span className="text-xs text-muted-foreground ml-2">
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography component="h4" sx={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <MessageCircle style={{ height: 16, width: 16 }} /> {title || 'Conversation'}
+                  </Typography>
+                  <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 truncate">Tap to open chat</p>
-              </div>
-            </div>
-          </div>
+                  </Typography>
+                </Box>
+                <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Tap to open chat</Typography>
+              </Box>
+            </Box>
+          </Box>
         );
       }
       case 'group': {
         const n = item.data;
         return (
-          <div key={item.key} className="p-3 hover:bg-muted/50 cursor-pointer" onClick={() => navigate('/groups')}>
-            <div className="flex items-start gap-3">
-              <Avatar className="h-8 w-8">
+          <Box key={item.key} sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => navigate('/groups')}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={n.triggered_by_profile?.avatar_url || ''} />
                 <AvatarFallback>{(n.triggered_by_profile?.display_name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <Users className="h-4 w-4" /> {n.community_groups?.name || 'Group'}
-                  </h4>
-                  <span className="text-xs text-muted-foreground ml-2">
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography component="h4" sx={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Users style={{ height: 16, width: 16 }} /> {n.community_groups?.name || 'Group'}
+                  </Typography>
+                  <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 truncate">
+                  </Typography>
+                </Box>
+                <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {String(n.notification_type).replace('_', ' ')} • by {n.triggered_by_profile?.display_name || 'Someone'}
-                </p>
-              </div>
-            </div>
-          </div>
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
         );
       }
       case 'like': {
         const l = item.data as LikeItem;
         return (
-          <div key={item.key} className="p-3 hover:bg-muted/50 cursor-pointer" onClick={() => navigate('/feed')}>
-            <div className="flex items-start gap-3">
-              <Avatar className="h-8 w-8">
+          <Box key={item.key} sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => navigate('/feed')}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={l.user_avatar_url || ''} />
                 <AvatarFallback>{(l.user_display_name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <Heart className="h-4 w-4" /> {l.user_display_name} liked your post
-                  </h4>
-                  <span className="text-xs text-muted-foreground ml-2">
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography component="h4" sx={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Heart style={{ height: 16, width: 16 }} /> {l.user_display_name} liked your post
+                  </Typography>
+                  <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 truncate">Tap to view in feed</p>
-              </div>
-            </div>
-          </div>
+                  </Typography>
+                </Box>
+                <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Tap to view in feed</Typography>
+              </Box>
+            </Box>
+          </Box>
         );
       }
       case 'comment': {
         const c = item.data as CommentItem;
         return (
-          <div key={item.key} className="p-3 hover:bg-muted/50 cursor-pointer" onClick={() => navigate('/feed')}>
-            <div className="flex items-start gap-3">
-              <Avatar className="h-8 w-8">
+          <Box key={item.key} sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => navigate('/feed')}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={c.user_avatar_url || ''} />
                 <AvatarFallback>{(c.user_display_name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" /> {c.user_display_name} commented
-                  </h4>
-                  <span className="text-xs text-muted-foreground ml-2">
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography component="h4" sx={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <MessageSquare style={{ height: 16, width: 16 }} /> {c.user_display_name} commented
+                  </Typography>
+                  <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{c.content}</p>
-              </div>
-            </div>
-          </div>
+                  </Typography>
+                </Box>
+                <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{c.content}</Typography>
+              </Box>
+            </Box>
+          </Box>
         );
       }
       default:
@@ -337,25 +342,25 @@ export const NotificationList = () => {
   };
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between p-2">
-        <span className="text-sm font-medium">Recent</span>
-        <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-xs">
-          <CheckCheck className="h-3 w-3 mr-1" />
+    <Box sx={{ width: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1 }}>
+        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Recent</Typography>
+        <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+          <CheckCheck style={{ height: 12, width: 12, marginRight: 4 }} />
           Mark all read
         </Button>
-      </div>
+      </Box>
       {isLoadingAll ? (
         <Empty label="Loading..." />
       ) : combinedItems.length === 0 ? (
         <Empty label="Nothing new yet" />
       ) : (
-        <ScrollArea className="h-96">
-          <div className="divide-y">
+        <ScrollArea style={{ height: 384 }}>
+          <Box sx={{ '> *:not(:first-of-type)': { borderTop: 1, borderColor: 'divider' } }}>
             {combinedItems.map(renderItem)}
-          </div>
+          </Box>
         </ScrollArea>
       )}
-    </div>
+    </Box>
   );
 };

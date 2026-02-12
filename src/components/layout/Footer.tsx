@@ -3,6 +3,9 @@ import { ChevronUp, FileText, Shield, Lock, Cookie, Copyright, Scale, Plus } fro
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
 
 export function Footer() {
   const navigate = useNavigate();
@@ -17,62 +20,82 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-background/80 backdrop-blur-sm border-t border-border/50 mt-auto">
-      <div className="container mx-auto px-4 py-3">
+    <Box
+      component="footer"
+      sx={{
+        bgcolor: 'background.default',
+        borderTop: 1,
+        borderColor: 'divider',
+        mt: 'auto',
+      }}
+    >
+      <Container maxWidth="lg" sx={{ py: 1.5 }}>
         {/* Single Row Layout */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <p className="text-sm text-muted-foreground">
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+          <Typography variant="body2" color="text.secondary">
             &copy; {currentYear} Queer Guide. All rights reserved.
-          </p>
+          </Typography>
 
           {/* Legal Links */}
-          <nav aria-label="Legal" className="flex items-center gap-1 flex-wrap">
+          <Box component="nav" aria-label="Legal" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
             {legalLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className="text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1"
+                style={{ textDecoration: 'none' }}
               >
-                {link.label}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                    px: 1,
+                    py: 0.5,
+                    display: 'inline-block',
+                    '&:hover': { color: 'primary.main' },
+                    transition: 'color 0.2s',
+                  }}
+                >
+                  {link.label}
+                </Typography>
               </Link>
             ))}
-          </nav>
+          </Box>
 
           {/* Quick Actions */}
-          <div className="flex items-center gap-2">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Button
               variant="default"
               size="sm"
-              className="h-8 text-xs gap-1 bg-primary text-primary-foreground font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              style={{ height: 32, fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600 }}
               onClick={() => navigate("/admin/venues")}
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus style={{ width: 14, height: 14 }} />
               Submit a Space
             </Button>
-            <Separator orientation="vertical" className="h-6" />
+            <Separator orientation="vertical" style={{ height: 24 }} />
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              style={{ height: 32, fontSize: '0.75rem' }}
               aria-label="Scroll to top"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              <ChevronUp className="h-4 w-4" />
+              <ChevronUp style={{ width: 16, height: 16 }} />
             </Button>
-            <Separator orientation="vertical" className="h-6" />
+            <Separator orientation="vertical" style={{ height: 24 }} />
             <Button
               variant="ghost"
               size="sm"
               aria-label="Sitemap"
-              className="h-8 text-xs hover:bg-primary/10 hover:text-primary transition-all duration-200"
+              style={{ height: 32, fontSize: '0.75rem' }}
               onClick={() => navigate("/sitemap")}
             >
-              <FileText className="h-4 w-4" />
+              <FileText style={{ width: 16, height: 16 }} />
             </Button>
             <ThemeToggle />
-          </div>
-        </div>
-      </div>
-    </footer>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 }

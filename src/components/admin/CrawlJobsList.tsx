@@ -8,6 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ExternalLink, Eye, Trash2, RefreshCw } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface CrawlJob {
   id: string;
@@ -56,7 +58,7 @@ export const CrawlJobsList = () => {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       setJobs(jobs.filter(job => job.id !== id));
       toast({
         title: "Success",
@@ -77,7 +79,7 @@ export const CrawlJobsList = () => {
   }, []);
 
   const getStatusBadge = (status: string) => {
-    const variant = status === 'completed' ? 'default' : 
+    const variant = status === 'completed' ? 'default' :
                    status === 'failed' ? 'destructive' : 'secondary';
     return <Badge variant={variant}>{status}</Badge>;
   };
@@ -89,9 +91,9 @@ export const CrawlJobsList = () => {
           <CardTitle>Crawl Jobs</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center p-8">
-            <RefreshCw className="h-6 w-6 animate-spin" />
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
+            <RefreshCw style={{ height: 24, width: 24, animation: 'spin 1s linear infinite' }} />
+          </Box>
         </CardContent>
       </Card>
     );
@@ -99,20 +101,20 @@ export const CrawlJobsList = () => {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <CardTitle>Crawl Jobs ({jobs.length})</CardTitle>
         <Button onClick={fetchJobs} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
+          <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
           Refresh
         </Button>
       </CardHeader>
       <CardContent>
         {jobs.length === 0 ? (
-          <div className="text-center p-8 text-muted-foreground">
+          <Box sx={{ textAlign: 'center', p: 4, color: 'text.secondary' }}>
             No crawl jobs found. Start by crawling a website above.
-          </div>
+          </Box>
         ) : (
-          <div className="rounded-md border">
+          <Box sx={{ borderRadius: 1.5, border: 1, borderColor: 'divider' }}>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -127,16 +129,17 @@ export const CrawlJobsList = () => {
               <TableBody>
                 {jobs.map((job) => (
                   <TableRow key={job.id}>
-                    <TableCell className="max-w-xs truncate">
-                      <a 
-                        href={job.url} 
-                        target="_blank" 
+                    <TableCell sx={{ maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <Box
+                        component="a"
+                        href={job.url}
+                        target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline inline-flex items-center gap-1"
+                        sx={{ color: 'primary.main', '&:hover': { textDecoration: 'underline' }, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
                       >
                         {job.url}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
+                        <ExternalLink style={{ height: 12, width: 12 }} />
+                      </Box>
                     </TableCell>
                     <TableCell>{getStatusBadge(job.status)}</TableCell>
                     <TableCell>{job.pages_crawled}/{job.total_pages}</TableCell>
@@ -145,65 +148,68 @@ export const CrawlJobsList = () => {
                       {new Date(job.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => setSelectedJob(job)}
                             >
-                              <Eye className="h-3 w-3" />
+                              <Eye style={{ height: 12, width: 12 }} />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-4xl">
+                          <DialogContent style={{ maxWidth: 896 }}>
                             <DialogHeader>
                               <DialogTitle>Crawl Results: {job.url}</DialogTitle>
                             </DialogHeader>
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-4 gap-4 text-sm">
-                                <div>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, fontSize: '0.875rem' }}>
+                                <Box>
                                   <strong>Status:</strong> {getStatusBadge(job.status)}
-                                </div>
-                                <div>
+                                </Box>
+                                <Box>
                                   <strong>Pages:</strong> {job.pages_crawled}/{job.total_pages}
-                                </div>
-                                <div>
+                                </Box>
+                                <Box>
                                   <strong>Credits:</strong> {job.credits_used}
-                                </div>
-                                <div>
+                                </Box>
+                                <Box>
                                   <strong>Created:</strong> {new Date(job.created_at).toLocaleString()}
-                                </div>
-                              </div>
-                              
+                                </Box>
+                              </Box>
+
                               {job.result_data && (
-                                <div>
-                                  <strong className="text-sm">Crawled Data ({job.result_data.length} pages):</strong>
-                                  <ScrollArea className="h-96 mt-2">
-                                    <pre className="text-xs bg-muted p-4 rounded-md">
+                                <Box>
+                                  <Typography component="strong" variant="body2">Crawled Data ({job.result_data.length} pages):</Typography>
+                                  <ScrollArea style={{ height: 384, marginTop: 8 }}>
+                                    <Box
+                                      component="pre"
+                                      sx={{ fontSize: '0.75rem', bgcolor: 'action.hover', p: 2, borderRadius: 1.5 }}
+                                    >
                                       {JSON.stringify(job.result_data, null, 2)}
-                                    </pre>
+                                    </Box>
                                   </ScrollArea>
-                                </div>
+                                </Box>
                               )}
-                            </div>
+                            </Box>
                           </DialogContent>
                         </Dialog>
-                        
-                        <Button 
-                          variant="outline" 
+
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => deleteJob(job.id)}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 style={{ height: 12, width: 12 }} />
                         </Button>
-                      </div>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </Box>
         )}
       </CardContent>
     </Card>

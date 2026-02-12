@@ -24,10 +24,11 @@ import {
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, X, Check, ChevronDown, Navigation, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useUnifiedTags } from '@/hooks/useUnifiedTags';
 import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface VenueFiltersProps {
   onFiltersChange: (filters: {
@@ -46,7 +47,7 @@ interface VenueFiltersProps {
 
 const categories = [
   'bar',
-  'restaurant', 
+  'restaurant',
   'cafe',
   'club',
   'hotel',
@@ -111,7 +112,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [nearMe, setNearMe] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  
+
   // Use unified tags from the tag wiki
   const { tags: unifiedTags, loading: tagsLoading, fetchTags } = useUnifiedTags();
   const { accessibilityAttributes, loading: accessibilityLoading } = useAccessibilityAttributes();
@@ -157,7 +158,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
       const { latitude, longitude } = position.coords;
       setUserLocation({ latitude, longitude });
       setNearMe(true);
-      
+
       // Automatically apply the near me filter
       onFiltersChange({
         search: search || undefined,
@@ -251,67 +252,67 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const hasActiveFilters = search || city || (category && category !== 'all') || selectedTags.length > 0 || selectedAmenities.length > 0 || selectedServices.length > 0 || selectedAccessibilityAttributes.length > 0 || selectedTargetGroups.length > 0 || nearMe;
 
   return (
-    <div className="space-y-6 p-6 bg-card rounded-xl shadow-sm w-full">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 3, bgcolor: 'background.paper', borderRadius: 3, boxShadow: 1, width: '100%' }}>
       {/* Search Bar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
+        <Box sx={{ position: 'relative', flex: 1 }}>
+          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--muted-foreground)' }} />
           <Input
             placeholder="Search venues & organizations..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-9 h-11"
+            sx={{ pl: 4.5, height: 44 }}
           />
-        </div>
-        <div className="flex gap-2">
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant={nearMe ? "default" : "outline"}
             onClick={handleNearMeToggle}
             disabled={isDetectingLocation}
             size="icon"
-            className="h-11 w-11"
+            sx={{ height: 44, width: 44 }}
             aria-label="Find near me"
           >
             {isDetectingLocation ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 style={{ width: 16, height: 16 }} />
             ) : (
-              <Navigation className="h-4 w-4" />
+              <Navigation style={{ width: 16, height: 16 }} />
             )}
           </Button>
-          <Button onClick={handleSearch} className="bg-primary h-11 w-11" size="icon" aria-label="Search">
-            <Search className="h-4 w-4" />
+          <Button onClick={handleSearch} sx={{ bgcolor: 'primary.main', height: 44, width: 44 }} size="icon" aria-label="Search">
+            <Search style={{ width: 16, height: 16 }} />
           </Button>
           <Button
             variant="outline"
             onClick={() => setShowAllFilters(!showAllFilters)}
             size="icon"
-            className="h-11 w-11"
+            sx={{ height: 44, width: 44 }}
             aria-label="Toggle filters"
           >
-            <Filter className="h-4 w-4" />
+            <Filter style={{ width: 16, height: 16 }} />
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Extended Filters */}
       {showAllFilters && (
-        <div className="space-y-6 pt-6 border-t animate-fade-in">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="city" className="text-sm font-medium">City</Label>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 3, borderTop: 1, borderColor: 'divider' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Label htmlFor="city" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>City</Label>
               <Input
                 id="city"
                 placeholder="Enter city..."
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="h-10"
+                sx={{ height: 40 }}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-sm font-medium">Category</Label>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Label htmlFor="category" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Category</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="h-10">
+                <SelectTrigger sx={{ height: 40 }}>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -323,16 +324,18 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {/* Filter Categories - Updated to 5 columns */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(5, 1fr)' }, gap: 3 }}>
             {/* Tags */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <span className="w-2 h-2 bg-primary rounded-full"></span>
-                Tags
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 8, height: 8, bgcolor: 'primary.main', borderRadius: '50%' }} />
+                  Tags
+                </Box>
               </Label>
               <Popover open={tagsOpen} onOpenChange={setTagsOpen}>
                 <PopoverTrigger asChild>
@@ -340,24 +343,24 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                     variant="outline"
                     role="combobox"
                     aria-expanded={tagsOpen}
-                    className="w-full justify-between h-10"
+                    sx={{ width: '100%', justifyContent: 'space-between', height: 40 }}
                   >
                     {selectedTags.length > 0
                       ? `${selectedTags.length} tag${selectedTags.length !== 1 ? 's' : ''} selected`
                       : "Select tags..."}
-                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronDown style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }} />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0" align="start">
+                <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
                   <Command>
                   <CommandInput placeholder="Search tags..." />
                   <CommandList>
                     <CommandEmpty>No tags found.</CommandEmpty>
                     <CommandGroup>
                       {tagsLoading ? (
-                        <div className="flex items-center justify-center p-4">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        </div>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+                          <Loader2 style={{ width: 16, height: 16 }} />
+                        </Box>
                       ) : (
                         unifiedTags.map((tag) => (
                           <CommandItem
@@ -366,20 +369,22 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                             onSelect={() => handleTagToggle(tag.name)}
                           >
                             <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                selectedTags.includes(tag.name) ? "opacity-100" : "opacity-0"
-                              )}
+                              style={{
+                                marginRight: 8,
+                                width: 16,
+                                height: 16,
+                                opacity: selectedTags.includes(tag.name) ? 1 : 0
+                              }}
                             />
-                            <div className="flex items-center gap-2">
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               {tag.color && (
-                                <div 
-                                  className="w-3 h-3 rounded-full border"
+                                <Box
+                                  sx={{ width: 12, height: 12, borderRadius: '50%', border: 1, borderColor: 'divider' }}
                                   style={{ backgroundColor: tag.color }}
                                 />
                               )}
                               {tag.name}
-                            </div>
+                            </Box>
                           </CommandItem>
                         ))
                       )}
@@ -389,25 +394,27 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               </PopoverContent>
             </Popover>
             {selectedTags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
                 {selectedTags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="gap-1 text-xs">
+                  <Badge key={tag} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
                     {tag}
                     <X
-                      className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      style={{ width: 12, height: 12, cursor: 'pointer' }}
                       onClick={() => handleTagToggle(tag)}
                     />
                   </Badge>
                 ))}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
 
           {/* Amenities */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-              Amenities
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 8, height: 8, bgcolor: '#3b82f6', borderRadius: '50%' }} />
+                Amenities
+              </Box>
             </Label>
             <Popover open={amenitiesOpen} onOpenChange={setAmenitiesOpen}>
               <PopoverTrigger asChild>
@@ -415,15 +422,15 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                   variant="outline"
                   role="combobox"
                   aria-expanded={amenitiesOpen}
-                  className="w-full justify-between h-10"
+                  sx={{ width: '100%', justifyContent: 'space-between', height: 40 }}
                 >
                   {selectedAmenities.length > 0
                     ? `${selectedAmenities.length} amenity${selectedAmenities.length !== 1 ? 'ies' : ''} selected`
                     : "Select amenities..."}
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronDown style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }} />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
+              <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
                 <Command>
                   <CommandInput placeholder="Search amenities..." />
                   <CommandList>
@@ -436,10 +443,12 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                           onSelect={() => handleAmenityToggle(amenity)}
                         >
                           <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedAmenities.includes(amenity) ? "opacity-100" : "opacity-0"
-                            )}
+                            style={{
+                              marginRight: 8,
+                              width: 16,
+                              height: 16,
+                              opacity: selectedAmenities.includes(amenity) ? 1 : 0
+                            }}
                           />
                           {amenity}
                         </CommandItem>
@@ -450,25 +459,27 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               </PopoverContent>
             </Popover>
             {selectedAmenities.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
                 {selectedAmenities.map((amenity) => (
-                  <Badge key={amenity} variant="secondary" className="gap-1 text-xs">
+                  <Badge key={amenity} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
                     {amenity}
                     <X
-                      className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      style={{ width: 12, height: 12, cursor: 'pointer' }}
                       onClick={() => handleAmenityToggle(amenity)}
                     />
                   </Badge>
                 ))}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
 
           {/* Services */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              Services
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 8, height: 8, bgcolor: '#22c55e', borderRadius: '50%' }} />
+                Services
+              </Box>
             </Label>
             <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
               <PopoverTrigger asChild>
@@ -476,15 +487,15 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                   variant="outline"
                   role="combobox"
                   aria-expanded={servicesOpen}
-                  className="w-full justify-between h-10"
+                  sx={{ width: '100%', justifyContent: 'space-between', height: 40 }}
                 >
                   {selectedServices.length > 0
                     ? `${selectedServices.length} service${selectedServices.length !== 1 ? 's' : ''} selected`
                     : "Select services..."}
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronDown style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }} />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
+              <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
                 <Command>
                   <CommandInput placeholder="Search services..." />
                   <CommandList>
@@ -497,10 +508,12 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                           onSelect={() => handleServiceToggle(service)}
                         >
                           <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedServices.includes(service) ? "opacity-100" : "opacity-0"
-                            )}
+                            style={{
+                              marginRight: 8,
+                              width: 16,
+                              height: 16,
+                              opacity: selectedServices.includes(service) ? 1 : 0
+                            }}
                           />
                           {service}
                         </CommandItem>
@@ -511,25 +524,27 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               </PopoverContent>
             </Popover>
             {selectedServices.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
                 {selectedServices.map((service) => (
-                  <Badge key={service} variant="secondary" className="gap-1 text-xs">
+                  <Badge key={service} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
                     {service}
                     <X
-                      className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      style={{ width: 12, height: 12, cursor: 'pointer' }}
                       onClick={() => handleServiceToggle(service)}
                     />
                   </Badge>
                 ))}
-             </div>
+             </Box>
            )}
-           </div>
+           </Box>
 
            {/* Accessibility Attributes */}
-           <div className="space-y-3">
-             <Label className="text-sm font-medium flex items-center gap-2">
-               <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-               Accessibility
+           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+             <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                 <Box sx={{ width: 8, height: 8, bgcolor: '#a855f7', borderRadius: '50%' }} />
+                 Accessibility
+               </Box>
              </Label>
              <Popover open={accessibilityOpen} onOpenChange={setAccessibilityOpen}>
                <PopoverTrigger asChild>
@@ -537,24 +552,24 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                    variant="outline"
                    role="combobox"
                    aria-expanded={accessibilityOpen}
-                   className="w-full justify-between h-10"
+                   sx={{ width: '100%', justifyContent: 'space-between', height: 40 }}
                  >
                    {selectedAccessibilityAttributes.length > 0
                      ? `${selectedAccessibilityAttributes.length} feature${selectedAccessibilityAttributes.length !== 1 ? 's' : ''} selected`
                      : "Select accessibility..."}
-                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                   <ChevronDown style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }} />
                  </Button>
                </PopoverTrigger>
-               <PopoverContent className="w-full p-0" align="start">
+               <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
                  <Command>
                    <CommandInput placeholder="Search accessibility features..." />
                    <CommandList>
                      <CommandEmpty>No accessibility features found.</CommandEmpty>
                      <CommandGroup>
                        {accessibilityLoading ? (
-                         <div className="flex items-center justify-center p-4">
-                           <Loader2 className="h-4 w-4 animate-spin" />
-                         </div>
+                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+                           <Loader2 style={{ width: 16, height: 16 }} />
+                         </Box>
                        ) : (
                          accessibilityAttributes.map((attr) => (
                            <CommandItem
@@ -563,10 +578,12 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                              onSelect={() => handleAccessibilityToggle(attr.name)}
                            >
                              <Check
-                               className={cn(
-                                 "mr-2 h-4 w-4",
-                                 selectedAccessibilityAttributes.includes(attr.name) ? "opacity-100" : "opacity-0"
-                               )}
+                               style={{
+                                 marginRight: 8,
+                                 width: 16,
+                                 height: 16,
+                                 opacity: selectedAccessibilityAttributes.includes(attr.name) ? 1 : 0
+                               }}
                              />
                              {attr.name}
                            </CommandItem>
@@ -578,25 +595,27 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                </PopoverContent>
              </Popover>
              {selectedAccessibilityAttributes.length > 0 && (
-               <div className="flex flex-wrap gap-1 mt-2">
+               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
                  {selectedAccessibilityAttributes.map((attr) => (
-                   <Badge key={attr} variant="secondary" className="gap-1 text-xs">
+                   <Badge key={attr} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
                      {attr}
                      <X
-                       className="h-3 w-3 cursor-pointer hover:text-destructive"
+                       style={{ width: 12, height: 12, cursor: 'pointer' }}
                        onClick={() => handleAccessibilityToggle(attr)}
                      />
                    </Badge>
                  ))}
-               </div>
+               </Box>
              )}
-           </div>
+           </Box>
 
            {/* Target Groups */}
-           <div className="space-y-3">
-             <Label className="text-sm font-medium flex items-center gap-2">
-               <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-               Target Groups
+           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+             <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                 <Box sx={{ width: 8, height: 8, bgcolor: '#f97316', borderRadius: '50%' }} />
+                 Target Groups
+               </Box>
              </Label>
              <Popover open={targetGroupsOpen} onOpenChange={setTargetGroupsOpen}>
                <PopoverTrigger asChild>
@@ -604,24 +623,24 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                    variant="outline"
                    role="combobox"
                    aria-expanded={targetGroupsOpen}
-                   className="w-full justify-between h-10"
+                   sx={{ width: '100%', justifyContent: 'space-between', height: 40 }}
                  >
                    {selectedTargetGroups.length > 0
                      ? `${selectedTargetGroups.length} group${selectedTargetGroups.length !== 1 ? 's' : ''} selected`
                      : "Select target groups..."}
-                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                   <ChevronDown style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }} />
                  </Button>
                </PopoverTrigger>
-               <PopoverContent className="w-full p-0" align="start">
+               <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
                  <Command>
                    <CommandInput placeholder="Search target groups..." />
                    <CommandList>
                      <CommandEmpty>No target groups found.</CommandEmpty>
                      <CommandGroup>
                        {targetGroupsLoading ? (
-                         <div className="flex items-center justify-center p-4">
-                           <Loader2 className="h-4 w-4 animate-spin" />
-                         </div>
+                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+                           <Loader2 style={{ width: 16, height: 16 }} />
+                         </Box>
                        ) : (
                          targetGroups.map((group) => (
                            <CommandItem
@@ -630,18 +649,20 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                              onSelect={() => handleTargetGroupToggle(group.name)}
                            >
                              <Check
-                               className={cn(
-                                 "mr-2 h-4 w-4",
-                                 selectedTargetGroups.includes(group.name) ? "opacity-100" : "opacity-0"
-                               )}
+                               style={{
+                                 marginRight: 8,
+                                 width: 16,
+                                 height: 16,
+                                 opacity: selectedTargetGroups.includes(group.name) ? 1 : 0
+                               }}
                              />
-                             <div className="flex items-center gap-2">
-                               <div 
-                                 className="w-3 h-3 rounded-full border"
+                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                               <Box
+                                 sx={{ width: 12, height: 12, borderRadius: '50%', border: 1, borderColor: 'divider' }}
                                  style={{ backgroundColor: group.color }}
                                />
                                {group.name}
-                             </div>
+                             </Box>
                            </CommandItem>
                          ))
                        )}
@@ -651,111 +672,111 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                </PopoverContent>
              </Popover>
              {selectedTargetGroups.length > 0 && (
-               <div className="flex flex-wrap gap-1 mt-2">
+               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
                  {selectedTargetGroups.map((group) => (
-                   <Badge key={group} variant="secondary" className="gap-1 text-xs">
+                   <Badge key={group} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
                      {group}
                      <X
-                       className="h-3 w-3 cursor-pointer hover:text-destructive"
+                       style={{ width: 12, height: 12, cursor: 'pointer' }}
                        onClick={() => handleTargetGroupToggle(group)}
                      />
                    </Badge>
                  ))}
-               </div>
+               </Box>
              )}
-           </div>
-           </div>
+           </Box>
+           </Box>
 
            {/* Action Buttons */}
-           <div className="flex flex-col sm:flex-row gap-3 pt-4">
-             <Button onClick={handleSearch} className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none sm:px-8">
+           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5, pt: 2 }}>
+             <Button onClick={handleSearch} sx={{ bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.dark' }, flex: { xs: 1, sm: 'none' }, px: { sm: 8 } }}>
                Apply Filters
              </Button>
              {hasActiveFilters && (
-               <Button variant="outline" onClick={clearFilters} className="gap-2 flex-1 sm:flex-none">
-                 <X className="h-4 w-4" />
+               <Button variant="outline" onClick={clearFilters} sx={{ gap: 2, flex: { xs: 1, sm: 'none' } }}>
+                 <X style={{ width: 16, height: 16 }} />
                  Clear All
                </Button>
              )}
-            </div>
-         </div>
+            </Box>
+         </Box>
        )}
 
       {/* Active Filters Display */}
       {hasActiveFilters && !showAllFilters && (
-        <div className="flex flex-wrap gap-2 items-center p-4 bg-muted/50 rounded-lg">
-          <span className="text-sm font-medium text-muted-foreground">Active filters:</span>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center', p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>Active filters:</Typography>
           {search && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 1 }}>
               Search: {search}
-              <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => setSearch('')} />
+              <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setSearch('')} />
             </Badge>
           )}
           {city && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 1 }}>
               City: {city}
-              <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => setCity('')} />
+              <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setCity('')} />
             </Badge>
           )}
           {category && category !== 'all' && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 1 }}>
               {category}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setCategory('')} />
+              <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setCategory('')} />
             </Badge>
           )}
           {selectedTags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="gap-1">
+            <Badge key={tag} variant="secondary" sx={{ gap: 1 }}>
               {tag}
               <X
-                className="h-3 w-3 cursor-pointer"
+                style={{ width: 12, height: 12, cursor: 'pointer' }}
                 onClick={() => handleTagToggle(tag)}
               />
             </Badge>
           ))}
           {selectedAmenities.map((amenity) => (
-            <Badge key={amenity} variant="secondary" className="gap-1">
+            <Badge key={amenity} variant="secondary" sx={{ gap: 1 }}>
               {amenity}
               <X
-                className="h-3 w-3 cursor-pointer"
+                style={{ width: 12, height: 12, cursor: 'pointer' }}
                 onClick={() => handleAmenityToggle(amenity)}
               />
             </Badge>
           ))}
           {selectedServices.map((service) => (
-            <Badge key={service} variant="secondary" className="gap-1">
+            <Badge key={service} variant="secondary" sx={{ gap: 1 }}>
               {service}
               <X
-                className="h-3 w-3 cursor-pointer"
+                style={{ width: 12, height: 12, cursor: 'pointer' }}
                 onClick={() => handleServiceToggle(service)}
               />
             </Badge>
            ))}
            {selectedAccessibilityAttributes.map((attr) => (
-             <Badge key={attr} variant="secondary" className="gap-1">
+             <Badge key={attr} variant="secondary" sx={{ gap: 1 }}>
                {attr}
                <X
-                 className="h-3 w-3 cursor-pointer"
+                 style={{ width: 12, height: 12, cursor: 'pointer' }}
                  onClick={() => handleAccessibilityToggle(attr)}
                />
              </Badge>
            ))}
            {selectedTargetGroups.map((group) => (
-             <Badge key={group} variant="secondary" className="gap-1">
+             <Badge key={group} variant="secondary" sx={{ gap: 1 }}>
                {group}
                <X
-                 className="h-3 w-3 cursor-pointer"
+                 style={{ width: 12, height: 12, cursor: 'pointer' }}
                  onClick={() => handleTargetGroupToggle(group)}
                />
              </Badge>
            ))}
            {nearMe && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" sx={{ gap: 1 }}>
               Near Me
-              <X className="h-3 w-3 cursor-pointer" onClick={handleNearMeToggle} />
+              <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={handleNearMeToggle} />
             </Badge>
           )}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

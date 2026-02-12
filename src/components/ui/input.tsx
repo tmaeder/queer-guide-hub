@@ -1,18 +1,41 @@
 import * as React from "react"
+import TextField from "@mui/material/TextField"
+import InputBase from "@mui/material/InputBase"
 
-import { cn } from "@/lib/utils"
+export interface InputProps extends React.ComponentProps<"input"> {
+  // Keep the same interface as before
+}
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, style, ...props }, ref) => {
     return (
-      <input
+      <InputBase
         type={type}
-        className={cn(
-          "flex h-10 w-full rounded bg-muted px-3 py-2 text-base file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:bg-accent disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-          className
-        )}
-        ref={ref}
-        {...props}
+        inputRef={ref}
+        className={className}
+        style={style}
+        fullWidth
+        size="small"
+        sx={{
+          height: 40,
+          px: 1.5,
+          py: 0.5,
+          fontSize: { xs: '1rem', md: '0.875rem' },
+          bgcolor: 'action.hover',
+          borderRadius: 1.25,
+          '&:focus-within': {
+            bgcolor: 'action.selected',
+          },
+          '& input::placeholder': {
+            color: 'text.secondary',
+            opacity: 1,
+          },
+          '&.Mui-disabled': {
+            cursor: 'not-allowed',
+            opacity: 0.5,
+          },
+        }}
+        {...(props as any)}
       />
     )
   }

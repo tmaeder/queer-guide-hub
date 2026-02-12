@@ -8,6 +8,10 @@ import { useNews } from '@/hooks/useNews';
 import { ArrowRight, Calendar, Clock, ExternalLink } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+
 const LatestNewsSlider = React.memo(() => {
   const {
     articles,
@@ -32,131 +36,131 @@ const LatestNewsSlider = React.memo(() => {
   }, [fetchArticles, articles.length]);
   const latestArticles = useMemo(() => articles.slice(0, 6), [articles]);
   if (loading) {
-    return <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
-        <div className="container mx-auto">
-          <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
-            <div className={`h-8 bg-muted rounded animate-pulse ${isMobile ? 'w-48' : 'w-64'} mb-4`}></div>
-            <div className={`h-4 bg-muted rounded animate-pulse ${isMobile ? 'w-72' : 'w-96'}`}></div>
-          </div>
-          <div className="flex gap-4">
+    return <Box component="section" sx={{ bgcolor: 'background.default', py: isMobile ? 4 : 8, px: 2 }}>
+        <Container maxWidth="lg">
+          <Box sx={{ mb: isMobile ? 3 : 4 }}>
+            <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', height: 32, bgcolor: 'action.hover', borderRadius: 1, width: isMobile ? 192 : 256, mb: 2 }} />
+            <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', height: 16, bgcolor: 'action.hover', borderRadius: 1, width: isMobile ? 288 : 384 }} />
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2 }}>
             {Array.from({
             length: isMobile ? 1 : 3
-          }).map((_, i) => <div key={i} className={`${isMobile ? 'w-full' : 'w-80'}`}>
-                <Card className="h-64">
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="h-4 bg-muted rounded animate-pulse"></div>
-                      <div className="h-3 bg-muted rounded animate-pulse w-3/4"></div>
-                      <div className="h-3 bg-muted rounded animate-pulse w-1/2"></div>
-                      <div className="h-20 bg-muted rounded animate-pulse"></div>
-                    </div>
+          }).map((_, i) => <Box key={i} sx={{ width: isMobile ? '100%' : 320 }}>
+                <Card style={{ height: 256 }}>
+                  <CardContent style={{ padding: 24 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', height: 16, bgcolor: 'action.hover', borderRadius: 1 }} />
+                      <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', height: 12, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }} />
+                      <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', height: 12, bgcolor: 'action.hover', borderRadius: 1, width: '50%' }} />
+                      <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', height: 80, bgcolor: 'action.hover', borderRadius: 1 }} />
+                    </Box>
                   </CardContent>
                 </Card>
-              </div>)}
-          </div>
-        </div>
-      </section>;
+              </Box>)}
+          </Box>
+        </Container>
+      </Box>;
   }
   if (error) {
-    return <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
-        <div className="container mx-auto">
-          <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
-            <h2 className={`font-bold mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+    return <Box component="section" sx={{ bgcolor: 'background.default', py: isMobile ? 4 : 8, px: 2 }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', py: isMobile ? 4 : 6 }}>
+            <Typography variant={isMobile ? 'h6' : 'h5'} sx={{ fontWeight: 700, mb: 2 }}>
               Latest News
-            </h2>
-            <p className="text-muted-foreground mb-6">
+            </Typography>
+            <Typography color="text.secondary" sx={{ mb: 3 }}>
               Unable to load news articles at the moment. Please try again later.
-            </p>
+            </Typography>
             <Button variant="outline" asChild>
               <Link to="/news">View All News</Link>
             </Button>
-          </div>
-        </div>
-      </section>;
+          </Box>
+        </Container>
+      </Box>;
   }
   if (latestArticles.length === 0) {
     return null;
   }
-  return <section className={`bg-background ${isMobile ? 'py-8' : 'py-16'} px-4`}>
-      <div className="container mx-auto">
-        <div className={`flex items-center justify-between ${isMobile ? 'mb-6' : 'mb-8'}`}>
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Calendar className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-primary`} />
-              <h2 className={`font-bold ${isMobile ? 'text-xl' : 'text-3xl'}`}>
+  return <Box component="section" sx={{ bgcolor: 'background.default', py: isMobile ? 4 : 8, px: 2 }}>
+      <Container maxWidth="lg">
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: isMobile ? 3 : 4 }}>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Calendar style={{ width: isMobile ? 20 : 24, height: isMobile ? 20 : 24 }} color="var(--mui-palette-primary-main)" />
+              <Typography variant={isMobile ? 'h6' : 'h4'} sx={{ fontWeight: 700 }}>
                 Latest News
-              </h2>
-            </div>
-            <p className={`text-muted-foreground ${isMobile ? 'text-sm' : 'text-lg'}`}>
+              </Typography>
+            </Box>
+            <Typography variant={isMobile ? 'body2' : 'subtitle1'} color="text.secondary">
               Stay updated with the latest LGBTQ+ news and community updates
-            </p>
-          </div>
+            </Typography>
+          </Box>
           <Button variant="outline" size={isMobile ? "sm" : "default"} asChild>
             <Link to="/news">
               View All
-              <ArrowRight className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+              <ArrowRight style={{ marginLeft: 8, width: isMobile ? 12 : 16, height: isMobile ? 12 : 16 }} />
             </Link>
           </Button>
-        </div>
+        </Box>
 
         <Carousel opts={{
         align: "start",
         loop: false
-      }} className="w-full">
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {latestArticles.map(article => <CarouselItem key={article.id} className={`pl-2 md:pl-4 ${isMobile ? 'basis-full' : 'basis-full md:basis-1/2 lg:basis-1/3'}`}>
-                <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
-                  <CardContent className="p-6 h-full flex flex-col">
-                    
-                    
-                    <h3 className={`font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors ${isMobile ? 'text-base' : 'text-lg'}`}>
+      }} style={{ width: '100%' }}>
+          <CarouselContent style={{ marginLeft: isMobile ? -8 : -16 }}>
+            {latestArticles.map(article => <CarouselItem key={article.id} style={{ paddingLeft: isMobile ? 8 : 16, flexBasis: isMobile ? '100%' : '33.333%' }}>
+                <Card sx={{ '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' }, transition: 'all 300ms' }} style={{ height: '100%' }}>
+                  <CardContent style={{ padding: 24, height: '100%', display: 'flex', flexDirection: 'column' }}>
+
+
+                    <Typography variant={isMobile ? 'body1' : 'subtitle1'} sx={{ fontWeight: 600, mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', transition: 'color 0.2s' }}>
                       {article.title}
-                    </h3>
-                    
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Clock className="h-4 w-4 flex-shrink-0" />
-                        <span className="text-sm">
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                        <Clock style={{ width: 16, height: 16, flexShrink: 0 }} />
+                        <Typography variant="body2">
                           {format(new Date(article.published_at), 'MMM d, yyyy')}
-                        </span>
-                      </div>
-                      
-                      {article.source && <div className="flex items-center gap-2 text-muted-foreground">
-                          <ExternalLink className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-sm truncate">
+                        </Typography>
+                      </Box>
+
+                      {article.source && <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                          <ExternalLink style={{ width: 16, height: 16, flexShrink: 0 }} />
+                          <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {article.source}
-                          </span>
-                        </div>}
-                    </div>
+                          </Typography>
+                        </Box>}
+                    </Box>
 
-                    {article.summary && <p className="text-sm text-muted-foreground line-clamp-3 mb-4 flex-grow">
+                    {article.summary && <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 2, flexGrow: 1 }}>
                         {article.summary}
-                      </p>}
+                      </Typography>}
 
-                    <Button variant="ghost" size="sm" className="mt-auto self-start group-hover:bg-muted/50" asChild>
+                    <Button variant="ghost" size="sm" style={{ marginTop: 'auto', alignSelf: 'flex-start' }} asChild>
                       <Link to={`/news/${article.id}`}>
                         Read More
-                        <ArrowRight className="ml-2 h-3 w-3" />
+                        <ArrowRight style={{ marginLeft: 8, width: 12, height: 12 }} />
                       </Link>
                     </Button>
                   </CardContent>
                 </Card>
               </CarouselItem>)}
           </CarouselContent>
-          
+
           {!isMobile && latestArticles.length > 3 && <>
-              <CarouselPrevious className="hidden md:flex" />
-              <CarouselNext className="hidden md:flex" />
+              <CarouselPrevious style={{ display: 'flex' }} />
+              <CarouselNext style={{ display: 'flex' }} />
             </>}
         </Carousel>
 
-        {isMobile && latestArticles.length > 1 && <div className="flex justify-center mt-4">
-            <div className="flex space-x-2">
-              {latestArticles.slice(0, 5).map((_, index) => <div key={index} className="w-2 h-2 rounded-full bg-muted" />)}
-            </div>
-          </div>}
-      </div>
-    </section>;
+        {isMobile && latestArticles.length > 1 && <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {latestArticles.slice(0, 5).map((_, index) => <Box key={index} sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'action.hover' }} />)}
+            </Box>
+          </Box>}
+      </Container>
+    </Box>;
 });
 LatestNewsSlider.displayName = 'LatestNewsSlider';
 export default LatestNewsSlider;

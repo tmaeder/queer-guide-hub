@@ -3,19 +3,20 @@ import { User } from "lucide-react";
 import { BigHead } from "@bigheads/core";
 import type { AvatarConfig } from "./AvatarBuilder";
 import { getGravatarUrl } from "@/lib/gravatar";
+import Box from '@mui/material/Box';
 
 interface AvatarDisplayProps {
   avatarUrl?: string;
   avatarConfig?: AvatarConfig;
   email?: string;
-  className?: string;
+  sx?: object;
   size?: "sm" | "md" | "lg";
 }
 
-const sizeClasses = {
-  sm: "h-8 w-8",
-  md: "h-10 w-10",
-  lg: "h-16 w-16"
+const sizeStyles = {
+  sm: { width: 32, height: 32 },
+  md: { width: 40, height: 40 },
+  lg: { width: 64, height: 64 }
 };
 
 const sizePixels = {
@@ -24,30 +25,32 @@ const sizePixels = {
   lg: 64
 };
 
-export const AvatarDisplay = ({ 
-  avatarUrl, 
+export const AvatarDisplay = ({
+  avatarUrl,
   avatarConfig,
   email,
-  className, 
-  size = "md" 
+  sx,
+  size = "md"
 }: AvatarDisplayProps) => {
   const gravatarUrl = getGravatarUrl(email, sizePixels[size]);
-  
+
   // Priority: avatarUrl > avatarConfig > gravatarUrl > fallback
   if (avatarUrl) {
     return (
-      <Avatar className={`${sizeClasses[size]} ${className || ''}`}>
-        <AvatarImage src={avatarUrl} alt="User avatar" />
-        <AvatarFallback>
-          <User className="h-4 w-4" />
-        </AvatarFallback>
+      <Avatar>
+        <Box component="span" sx={{ ...sizeStyles[size], display: 'inline-flex', ...sx }}>
+          <AvatarImage src={avatarUrl} alt="User avatar" />
+          <AvatarFallback>
+            <User style={{ width: 16, height: 16 }} />
+          </AvatarFallback>
+        </Box>
       </Avatar>
     );
   }
 
   if (avatarConfig) {
     return (
-      <div className={`${sizeClasses[size]} ${className || ''}`}>
+      <Box sx={{ ...sizeStyles[size], ...sx }}>
         <BigHead
           accessory={avatarConfig.accessory}
           body={avatarConfig.body}
@@ -68,27 +71,31 @@ export const AvatarDisplay = ({
           skinTone={avatarConfig.skinTone}
           circleColor={avatarConfig.circleColor}
         />
-      </div>
+      </Box>
     );
   }
 
   // Use Gravatar if available
   if (gravatarUrl) {
     return (
-      <Avatar className={`${sizeClasses[size]} ${className || ''}`}>
-        <AvatarImage src={gravatarUrl} alt="Gravatar avatar" />
-        <AvatarFallback>
-          <User className="h-4 w-4" />
-        </AvatarFallback>
+      <Avatar>
+        <Box component="span" sx={{ ...sizeStyles[size], display: 'inline-flex', ...sx }}>
+          <AvatarImage src={gravatarUrl} alt="Gravatar avatar" />
+          <AvatarFallback>
+            <User style={{ width: 16, height: 16 }} />
+          </AvatarFallback>
+        </Box>
       </Avatar>
     );
   }
 
   return (
-    <Avatar className={`${sizeClasses[size]} ${className || ''}`}>
-      <AvatarFallback>
-        <User className="h-4 w-4" />
-      </AvatarFallback>
+    <Avatar>
+      <Box component="span" sx={{ ...sizeStyles[size], display: 'inline-flex', ...sx }}>
+        <AvatarFallback>
+          <User style={{ width: 16, height: 16 }} />
+        </AvatarFallback>
+      </Box>
     </Avatar>
   );
 };

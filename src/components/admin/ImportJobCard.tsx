@@ -1,11 +1,13 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ImportJob } from '@/hooks/useImportHub';
 import { ImportStatusBadge } from './ImportStatusBadge';
-import { 
-  Eye, Download, X, Clock, FileText, Database, 
+import {
+  Eye, Download, X, Clock, FileText, Database,
   AlertTriangle, Info, Calendar, Settings, Users
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -18,12 +20,12 @@ interface ImportJobCardProps {
   compact?: boolean;
 }
 
-export const ImportJobCard = ({ 
-  job, 
-  onViewDetails, 
-  onCancel, 
-  onExport, 
-  compact = false 
+export const ImportJobCard = ({
+  job,
+  onViewDetails,
+  onCancel,
+  onExport,
+  compact = false
 }: ImportJobCardProps) => {
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return 'N/A';
@@ -46,78 +48,78 @@ export const ImportJobCard = ({
 
   if (compact) {
     return (
-      <Card className="hover:opacity-90 transition-opacity duration-200 cursor-pointer">
-        <CardContent className="p-4" onClick={() => onViewDetails(job.id)}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <JobTypeIcon className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{job.type}</span>
+      <Card sx={{ '&:hover': { opacity: 0.9 }, transition: 'all 0.2s', cursor: 'pointer' }}>
+        <CardContent sx={{ p: 2 }} onClick={() => onViewDetails(job.id)}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'primary.light' }}>
+                <JobTypeIcon style={{ width: 16, height: 16, color: 'var(--primary)' }} />
+              </Box>
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>{job.type}</Typography>
                   <ImportStatusBadge status={job.status} size="sm" />
-                </div>
-                <div className="text-sm text-muted-foreground">
+                </Box>
+                <Typography variant="body2" color="text.secondary">
                   {job.processed_records}/{job.total_records} • {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Progress value={job.progress_percentage} className="w-16 h-2" />
-              <span className="text-sm font-medium w-10 text-right">{job.progress_percentage}%</span>
-            </div>
-          </div>
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Progress value={job.progress_percentage} sx={{ width: 64, height: 8 }} />
+              <Typography variant="body2" sx={{ fontWeight: 500, width: 40, textAlign: 'right' }}>{job.progress_percentage}%</Typography>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="hover:opacity-90 transition-opacity duration-300 bg-card">
-      <CardContent className="p-6">
+    <Card sx={{ '&:hover': { opacity: 0.9 }, transition: 'all 0.3s', bgcolor: 'background.paper' }}>
+      <CardContent sx={{ p: 3 }}>
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-primary/10">
-              <JobTypeIcon className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-xl font-semibold">{job.type}</h3>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'primary.light' }}>
+              <JobTypeIcon style={{ width: 24, height: 24, color: 'var(--primary)' }} />
+            </Box>
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                <Typography variant="h6">{job.type}</Typography>
                 <ImportStatusBadge status={job.status} />
                 {job.source_type && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                     {job.source_type}
                   </Badge>
                 )}
-              </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  <span>Created {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}</span>
-                </div>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Clock style={{ width: 12, height: 12 }} />
+                  <Typography variant="body2" color="text.secondary">Created {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}</Typography>
+                </Box>
                 {job.file_name && (
-                  <div className="flex items-center gap-1">
-                    <FileText className="h-3 w-3" />
-                    <span>{job.file_name}</span>
-                  </div>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <FileText style={{ width: 12, height: 12 }} />
+                    <Typography variant="body2" color="text.secondary">{job.file_name}</Typography>
+                  </Box>
                 )}
                 {job.file_size && (
-                  <span>{formatFileSize(job.file_size)}</span>
+                  <Typography variant="body2" color="text.secondary">{formatFileSize(job.file_size)}</Typography>
                 )}
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
+              </Box>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onViewDetails(job.id)}
-              className="gap-2"
+              sx={{ gap: 1 }}
             >
-              <Eye className="h-4 w-4" />
+              <Eye style={{ width: 16, height: 16 }} />
               Details
             </Button>
             {canExport && onExport && (
@@ -125,9 +127,9 @@ export const ImportJobCard = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onExport(job)}
-                className="gap-2"
+                sx={{ gap: 1 }}
               >
-                <Download className="h-4 w-4" />
+                <Download style={{ width: 16, height: 16 }} />
                 Export
               </Button>
             )}
@@ -136,84 +138,84 @@ export const ImportJobCard = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onCancel(job.id)}
-                className="gap-2 text-destructive hover:text-destructive"
+                sx={{ gap: 1, color: 'error.main', '&:hover': { color: 'error.main' } }}
               >
-                <X className="h-4 w-4" />
+                <X style={{ width: 16, height: 16 }} />
                 Cancel
               </Button>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Progress Section */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Progress</span>
-            <span className="font-bold">{job.progress_percentage}%</span>
-          </div>
-          <Progress value={job.progress_percentage} className="h-2" />
-          
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>Progress</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>{job.progress_percentage}%</Typography>
+          </Box>
+          <Progress value={job.progress_percentage} sx={{ height: 8 }} />
+
           {/* Statistics Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4">
-            <div className="text-center">
-              <div className="text-lg font-bold text-primary">{job.total_records.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">Total</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-foreground">{job.processed_records.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">Processed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-success">{job.successful_records.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">Success</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-destructive">{job.failed_records.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">Failed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-warning">{job.duplicate_records.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">Duplicates</div>
-            </div>
-          </div>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(5, 1fr)' }, gap: 2, pt: 2 }}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'primary.main' }}>{job.total_records.toLocaleString()}</Typography>
+              <Typography variant="caption" color="text.secondary">Total</Typography>
+            </Box>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{job.processed_records.toLocaleString()}</Typography>
+              <Typography variant="caption" color="text.secondary">Processed</Typography>
+            </Box>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'success.main' }}>{job.successful_records.toLocaleString()}</Typography>
+              <Typography variant="caption" color="text.secondary">Success</Typography>
+            </Box>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'error.main' }}>{job.failed_records.toLocaleString()}</Typography>
+              <Typography variant="caption" color="text.secondary">Failed</Typography>
+            </Box>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'warning.main' }}>{job.duplicate_records.toLocaleString()}</Typography>
+              <Typography variant="caption" color="text.secondary">Duplicates</Typography>
+            </Box>
+          </Box>
 
           {/* Configuration */}
           {(job.duplicate_strategy || job.unique_key_fields?.length) && (
-            <div className="flex items-center gap-3 pt-3 text-sm">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pt: 1.5 }}>
               {job.duplicate_strategy && (
-                <Badge variant="outline" className="gap-1">
-                  <Settings className="h-3 w-3" />
+                <Badge variant="outline" sx={{ gap: 0.5 }}>
+                  <Settings style={{ width: 12, height: 12 }} />
                   {job.duplicate_strategy.replace('_', ' ')}
                 </Badge>
               )}
               {job.unique_key_fields?.length && (
-                <Badge variant="outline" className="gap-1">
-                  <Database className="h-3 w-3" />
+                <Badge variant="outline" sx={{ gap: 0.5 }}>
+                  <Database style={{ width: 12, height: 12 }} />
                   {job.unique_key_fields.length} key field(s)
                 </Badge>
               )}
-            </div>
+            </Box>
           )}
 
           {/* Warnings/Info */}
           {job.status === 'failed' && (
-            <div className="flex items-center gap-2 p-3 bg-destructive/5 rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-              <span className="text-sm text-destructive">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, bgcolor: 'error.light', borderRadius: 2 }}>
+              <AlertTriangle style={{ width: 16, height: 16, color: 'var(--destructive)' }} />
+              <Typography variant="body2" color="error.main">
                 Import failed. Check the validation report for details.
-              </span>
-            </div>
+              </Typography>
+            </Box>
           )}
-          
+
           {job.duplicate_records > 0 && job.status === 'completed' && (
-            <div className="flex items-center gap-2 p-3 bg-warning/5 rounded-lg">
-              <Info className="h-4 w-4 text-warning" />
-              <span className="text-sm text-warning">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, bgcolor: 'warning.light', borderRadius: 2 }}>
+              <Info style={{ width: 16, height: 16, color: 'var(--warning)' }} />
+              <Typography variant="body2" color="warning.main">
                 {job.duplicate_records} duplicate records were handled using {job.duplicate_strategy} strategy.
-              </span>
-            </div>
+              </Typography>
+            </Box>
           )}
-        </div>
+        </Box>
       </CardContent>
     </Card>
   );

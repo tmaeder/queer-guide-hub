@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Settings, FileEdit, Upload, Shield } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export function AdminMenu() {
   const navigate = useNavigate();
@@ -32,25 +34,25 @@ export function AdminMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative h-10 w-10 p-0" aria-label="Admin menu">
-          <Shield className="h-4 w-4" />
+        <Button variant="ghost" size="sm" style={{ position: 'relative', height: 40, width: 40, padding: 0 }} aria-label="Admin menu">
+          <Shield style={{ width: 16, height: 16 }} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 p-4 bg-background/90 backdrop-blur-md border-white/20 z-50">
-        <div className="grid grid-cols-1 gap-2">
+      <DropdownMenuContent align="end" style={{ width: 192, padding: 16, zIndex: 50 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1 }}>
           {adminMenuItems.map(item => (
-            <Button 
-              key={item.to} 
-              variant="ghost" 
-              size="sm" 
-              className="flex items-center justify-start p-3 h-auto gap-2" 
+            <Button
+              key={item.to}
+              variant="ghost"
+              size="sm"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', padding: 12, height: 'auto', gap: 8 }}
               onClick={() => navigate(item.to)}
             >
-              <item.icon className="h-4 w-4" />
-              <span className="text-sm">{item.label}</span>
+              <item.icon style={{ width: 16, height: 16 }} />
+              <Typography variant="body2">{item.label}</Typography>
             </Button>
           ))}
-        </div>
+        </Box>
       </DropdownMenuContent>
     </DropdownMenu>
   );

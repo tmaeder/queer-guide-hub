@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Newspaper, Mail, Globe, MapPin, Calendar, Users, BookOpen, TrendingUp } from "lucide-react";
 import { useConsolidatedStats } from "@/hooks/useConsolidatedStats";
 import { useMeta } from "@/hooks/useMeta";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 export default function Press() {
   useMeta({
@@ -30,113 +32,115 @@ export default function Press() {
       ];
 
   return (
-    <div className="w-full p-6">
+    <Box sx={{ p: 3 }}>
       {/* Hero Section */}
-      <div className="text-center mb-12">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Newspaper className="h-12 w-12 text-primary" />
-          <h1 className="text-4xl font-bold gradient-text">Press & Media</h1>
-        </div>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+      <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 2 }}>
+          <Newspaper style={{ width: 48, height: 48 }} color="var(--mui-palette-primary-main)" />
+          <Typography variant="h3" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #f472b6, #a78bfa, #60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Press & Media</Typography>
+        </Box>
+        <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '48rem', mx: 'auto' }}>
           Resources for journalists, bloggers, and media professionals covering
           Queer Guide and LGBTQ+ technology initiatives.
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr 1fr' }, gap: 4 }}>
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-8">
+        <Box sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 4 }}>
           {/* About */}
-          <section>
-            <h2 className="text-2xl font-bold mb-6">About Queer Guide</h2>
+          <Box component="section">
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>About Queer Guide</Typography>
             <Card>
-              <CardContent className="p-6 space-y-4">
-                <p className="text-muted-foreground">
+              <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography color="text.secondary">
                   Queer Guide is a comprehensive platform connecting the LGBTQ+ community
                   with safe spaces, events, businesses, and each other. Our mission is to create
                   a safer, more connected world for LGBTQ+ individuals and allies worldwide.
-                </p>
-                <p className="text-muted-foreground">
+                </Typography>
+                <Typography color="text.secondary">
                   The platform features verified LGBTQ+-friendly venues, community events,
                   a marketplace for queer-owned businesses, news aggregation, and travel resources
                   spanning cities and countries around the globe.
-                </p>
+                </Typography>
               </CardContent>
             </Card>
-          </section>
+          </Box>
 
           {/* Platform Statistics */}
           {platformStats.length > 0 && (
-            <section>
-              <h2 className="text-2xl font-bold mb-6">Platform at a Glance</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <Box component="section">
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>Platform at a Glance</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
                 {platformStats.map((stat) => (
                   <Card key={stat.label}>
-                    <CardContent className="p-4 text-center">
-                      <stat.icon className="h-5 w-5 text-primary mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-primary">{stat.value}</div>
-                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                      <stat.icon style={{ width: 20, height: 20, margin: '0 auto 8px' }} color="var(--mui-palette-primary-main)" />
+                      <Typography variant="h5" sx={{ fontWeight: 700 }} color="primary">{stat.value}</Typography>
+                      <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
                     </CardContent>
                   </Card>
                 ))}
-              </div>
-            </section>
+              </Box>
+            </Box>
           )}
 
           {/* Key Facts */}
-          <section>
-            <h2 className="text-2xl font-bold mb-6">Key Facts</h2>
+          <Box component="section">
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>Key Facts</Typography>
             <Card>
-              <CardContent className="p-6">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <TrendingUp className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground">
-                      Free, open platform available at <a href="https://queer.guide" className="text-primary hover:underline">queer.guide</a>
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Globe className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground">
+              <CardContent sx={{ p: 3 }}>
+                <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <Box component="li" sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                    <TrendingUp style={{ width: 20, height: 20, flexShrink: 0, marginTop: 2 }} color="var(--mui-palette-primary-main)" />
+                    <Typography color="text.secondary">
+                      Free, open platform available at <Typography component="a" href="https://queer.guide" color="primary" sx={{ '&:hover': { textDecoration: 'underline' } }}>queer.guide</Typography>
+                    </Typography>
+                  </Box>
+                  <Box component="li" sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                    <Globe style={{ width: 20, height: 20, flexShrink: 0, marginTop: 2 }} color="var(--mui-palette-primary-main)" />
+                    <Typography color="text.secondary">
                       Global coverage with venue and event data across multiple continents
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Users className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground">
+                    </Typography>
+                  </Box>
+                  <Box component="li" sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                    <Users style={{ width: 20, height: 20, flexShrink: 0, marginTop: 2 }} color="var(--mui-palette-primary-main)" />
+                    <Typography color="text.secondary">
                       Community-driven: users can submit venues, events, and reviews
-                    </span>
-                  </li>
-                </ul>
+                    </Typography>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
-          </section>
-        </div>
+          </Box>
+        </Box>
 
         {/* Sidebar */}
-        <div className="space-y-8">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {/* Press Contact */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
-                Press Contact
+              <CardTitle>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Mail style={{ width: 20, height: 20 }} />
+                  Press Contact
+                </Box>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground text-sm">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="body2" color="text.secondary">
                 For press inquiries, interview requests, or media partnerships,
                 please reach out to our team.
-              </p>
-              <Button asChild className="w-full gap-2">
+              </Typography>
+              <Button asChild style={{ width: '100%', display: 'inline-flex', gap: 8 }}>
                 <a href="mailto:press@queer.guide">
-                  <Mail className="h-4 w-4" />
+                  <Mail style={{ width: 16, height: 16 }} />
                   press@queer.guide
                 </a>
               </Button>
-              <p className="text-xs text-muted-foreground">
+              <Typography variant="caption" color="text.secondary">
                 We aim to respond to press inquiries within 48 hours.
-              </p>
+              </Typography>
             </CardContent>
           </Card>
 
@@ -145,14 +149,14 @@ export default function Press() {
             <CardHeader>
               <CardTitle>Brand Assets</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground text-sm">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="body2" color="text.secondary">
                 For logos, brand guidelines, and visual assets, please contact our
                 press team. We'll provide a media kit tailored to your needs.
-              </p>
-              <Button variant="outline" asChild className="w-full gap-2">
+              </Typography>
+              <Button variant="outline" asChild style={{ width: '100%', display: 'inline-flex', gap: 8 }}>
                 <a href="mailto:press@queer.guide?subject=Brand%20Assets%20Request">
-                  <Mail className="h-4 w-4" />
+                  <Mail style={{ width: 16, height: 16 }} />
                   Request Brand Assets
                 </a>
               </Button>
@@ -165,24 +169,24 @@ export default function Press() {
               <CardTitle>Usage Guidelines</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">&bull;</span>
-                  <span>Use &ldquo;Queer Guide&rdquo; (two words, capitalized) in all references</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">&bull;</span>
-                  <span>Link to <a href="https://queer.guide" className="text-primary hover:underline">queer.guide</a> when referencing the platform</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-1">&bull;</span>
-                  <span>Contact us for approval before using our logo or brand materials</span>
-                </li>
-              </ul>
+              <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box component="li" sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <Typography component="span" color="primary" sx={{ mt: 0.5 }}>&bull;</Typography>
+                  <Typography variant="body2" color="text.secondary">Use &ldquo;Queer Guide&rdquo; (two words, capitalized) in all references</Typography>
+                </Box>
+                <Box component="li" sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <Typography component="span" color="primary" sx={{ mt: 0.5 }}>&bull;</Typography>
+                  <Typography variant="body2" color="text.secondary">Link to <Typography component="a" href="https://queer.guide" color="primary" sx={{ '&:hover': { textDecoration: 'underline' } }}>queer.guide</Typography> when referencing the platform</Typography>
+                </Box>
+                <Box component="li" sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <Typography component="span" color="primary" sx={{ mt: 0.5 }}>&bull;</Typography>
+                  <Typography variant="body2" color="text.secondary">Contact us for approval before using our logo or brand materials</Typography>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

@@ -1,5 +1,8 @@
 import { Heart, Shield, Users, Globe, Lightbulb, Star, Award, Handshake } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 export default function OurValues() {
   const coreValues = [
@@ -116,161 +119,161 @@ export default function OurValues() {
   ];
 
   return (
-    <div className="w-full">
-      <div className="container mx-auto px-4 py-12">
+    <Box>
+      <Container maxWidth="lg" sx={{ py: 6 }}>
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <Star className="h-12 w-12 text-primary" />
-            <h1 className="text-4xl font-bold gradient-text">Our Values</h1>
-          </div>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            The principles that guide every decision we make and every feature we build. 
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 3 }}>
+            <Star style={{ width: 48, height: 48 }} color="var(--mui-palette-primary-main)" />
+            <Typography variant="h3" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #f472b6, #a78bfa, #60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Our Values</Typography>
+          </Box>
+          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '48rem', mx: 'auto' }}>
+            The principles that guide every decision we make and every feature we build.
             These values are the foundation of The Queer Guide community.
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
       {/* Core Values */}
-      <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">Core Values</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <Box component="section" sx={{ mb: 8 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>Core Values</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
           {coreValues.map((value, index) => (
-            <Card key={index} className="h-full">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <value.icon className="h-8 w-8 text-primary" />
-                  <h3 className="text-xl font-semibold">{value.title}</h3>
-                </div>
-                <p className="text-muted-foreground mb-4">{value.description}</p>
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">In practice, this means:</h4>
-                  <ul className="space-y-1">
+            <Card key={index} sx={{ height: '100%' }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                  <value.icon style={{ width: 32, height: 32 }} color="var(--mui-palette-primary-main)" />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>{value.title}</Typography>
+                </Box>
+                <Typography color="text.secondary" sx={{ mb: 2 }}>{value.description}</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>In practice, this means:</Typography>
+                  <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     {value.principles.map((principle, idx) => (
-                      <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>{principle}</span>
-                      </li>
+                      <Box component="li" key={idx} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                        <Typography component="span" color="primary" sx={{ mt: 0.5 }}>&#8226;</Typography>
+                        <Typography variant="body2" color="text.secondary">{principle}</Typography>
+                      </Box>
                     ))}
-                  </ul>
-                </div>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
           ))}
-        </div>
-      </section>
+        </Box>
+      </Box>
 
       {/* Operational Values */}
-      <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">How We Operate</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Box component="section" sx={{ mb: 8 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>How We Operate</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
           {operationalValues.map((value, index) => (
             <Card key={index}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <value.icon className="h-6 w-6 text-primary" />
-                  <h3 className="text-lg font-semibold">{value.title}</h3>
-                </div>
-                <p className="text-muted-foreground text-sm mb-3">{value.description}</p>
-                <ul className="space-y-1">
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                  <value.icon style={{ width: 24, height: 24 }} color="var(--mui-palette-primary-main)" />
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{value.title}</Typography>
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>{value.description}</Typography>
+                <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   {value.examples.map((example, idx) => (
-                    <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
-                      <span className="text-primary mt-0.5">•</span>
-                      <span>{example}</span>
-                    </li>
+                    <Box component="li" key={idx} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                      <Typography component="span" color="primary" sx={{ mt: 0.25 }}>&#8226;</Typography>
+                      <Typography variant="caption" color="text.secondary">{example}</Typography>
+                    </Box>
                   ))}
-                </ul>
+                </Box>
               </CardContent>
             </Card>
           ))}
-        </div>
-      </section>
+        </Box>
+      </Box>
 
       {/* Values in Action */}
-      <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">Values in Action</h2>
-        <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-8">
-          <div className="text-center max-w-2xl mx-auto space-y-4">
-            <div className="text-3xl font-bold text-primary mb-2">Zero Tolerance</div>
-            <p className="text-muted-foreground">
+      <Box component="section" sx={{ mb: 8 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>Values in Action</Typography>
+        <Box sx={{ background: 'linear-gradient(to right, rgba(var(--mui-palette-primary-mainChannel) / 0.1), rgba(var(--mui-palette-secondary-mainChannel) / 0.1))', borderRadius: 2, p: 4 }}>
+          <Box sx={{ textAlign: 'center', maxWidth: '42rem', mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }} color="primary">Zero Tolerance</Typography>
+            <Typography color="text.secondary">
               We maintain a strict zero-tolerance policy for discrimination, harassment,
               and hate speech across our entire platform. Every report is reviewed, and
               every community member deserves to feel safe and welcome.
-            </p>
-          </div>
-        </div>
-      </section>
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Our Commitments */}
-      <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">Our Commitments</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Box component="section" sx={{ mb: 8 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>Our Commitments</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
           {commitments.map((commitment, index) => (
             <Card key={index}>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-3">{commitment.title}</h3>
-                <p className="text-muted-foreground mb-4">{commitment.description}</p>
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Our actions:</h4>
-                  <div className="flex flex-wrap gap-2">
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>{commitment.title}</Typography>
+                <Typography color="text.secondary" sx={{ mb: 2 }}>{commitment.description}</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>Our actions:</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {commitment.actions.map((action, idx) => (
-                      <span key={idx} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded">
+                      <Typography key={idx} component="span" variant="caption" color="primary" sx={{ bgcolor: 'rgba(var(--mui-palette-primary-mainChannel) / 0.1)', px: 1, py: 0.5, borderRadius: 1 }}>
                         {action}
-                      </span>
+                      </Typography>
                     ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
           ))}
-        </div>
-      </section>
+        </Box>
+      </Box>
 
       {/* Community Feedback */}
-      <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">Accountability</h2>
+      <Box component="section" sx={{ mb: 8 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>Accountability</Typography>
         <Card>
-          <CardContent className="p-8 text-center">
-            <h3 className="text-xl font-semibold mb-4">We're Accountable to You</h3>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Our values are meaningless without accountability. We regularly review our practices, 
+          <CardContent sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>We're Accountable to You</Typography>
+            <Typography color="text.secondary" sx={{ mb: 3, maxWidth: '42rem', mx: 'auto' }}>
+              Our values are meaningless without accountability. We regularly review our practices,
               listen to community feedback, and adjust our approach to better serve our mission.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <h4 className="font-semibold mb-2">Monthly Community Reviews</h4>
-                <p className="text-sm text-muted-foreground">Regular assessment of our policies and practices</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Open Feedback Channels</h4>
-                <p className="text-sm text-muted-foreground">Multiple ways for the community to share concerns</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Transparent Reporting</h4>
-                <p className="text-sm text-muted-foreground">Regular updates on how we're living up to our values</p>
-              </div>
-            </div>
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
+              <Box>
+                <Typography sx={{ fontWeight: 600, mb: 1 }}>Monthly Community Reviews</Typography>
+                <Typography variant="body2" color="text.secondary">Regular assessment of our policies and practices</Typography>
+              </Box>
+              <Box>
+                <Typography sx={{ fontWeight: 600, mb: 1 }}>Open Feedback Channels</Typography>
+                <Typography variant="body2" color="text.secondary">Multiple ways for the community to share concerns</Typography>
+              </Box>
+              <Box>
+                <Typography sx={{ fontWeight: 600, mb: 1 }}>Transparent Reporting</Typography>
+                <Typography variant="body2" color="text.secondary">Regular updates on how we're living up to our values</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
-      </section>
+      </Box>
 
       {/* Call to Action */}
-      <section className="text-center">
-        <h2 className="text-3xl font-bold mb-4">Living Our Values Together</h2>
-        <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-          These values come to life through our community. When you use The Queer Guide, 
-          you're not just finding places and events—you're participating in a movement 
+      <Box component="section" sx={{ textAlign: 'center' }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>Living Our Values Together</Typography>
+        <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3, maxWidth: '42rem', mx: 'auto' }}>
+          These values come to life through our community. When you use The Queer Guide,
+          you're not just finding places and events—you're participating in a movement
           built on these principles.
-        </p>
+        </Typography>
         <Card>
-          <CardContent className="p-6">
-            <p className="text-muted-foreground">
-              Have feedback about how we're living up to our values? We want to hear from you. 
+          <CardContent sx={{ p: 3 }}>
+            <Typography color="text.secondary">
+              Have feedback about how we're living up to our values? We want to hear from you.
               Contact us at values@queer.guide
-            </p>
+            </Typography>
           </CardContent>
         </Card>
-      </section>
-      </div>
-    </div>
+      </Box>
+      </Container>
+    </Box>
   );
 }

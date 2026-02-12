@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Calendar, 
-  MapPin, 
-  Users, 
-  DollarSign, 
-  Clock, 
+import {
+  Calendar,
+  MapPin,
+  Users,
+  DollarSign,
+  Clock,
   ExternalLink,
   UserPlus,
   UserMinus,
@@ -16,6 +16,9 @@ import { format } from 'date-fns';
 import { formatEventDateTime } from '@/lib/event-time';
 import { GroupEvent } from '@/hooks/useGroupEvents';
 import { useAuth } from '@/hooks/useAuth';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
 
 interface GroupEventCardProps {
   event: GroupEvent;
@@ -28,15 +31,27 @@ interface GroupEventCardProps {
   canManage: boolean;
 }
 
-export function GroupEventCard({ 
-  event, 
-  onJoinEvent, 
-  onLeaveEvent, 
+const eventTypeColors: Record<string, { bgcolor: string; color: string }> = {
+  social: { bgcolor: '#dbeafe', color: '#1e40af' },
+  meetup: { bgcolor: '#dcfce7', color: '#166534' },
+  workshop: { bgcolor: '#f3e8ff', color: '#6b21a8' },
+  conference: { bgcolor: '#e0e7ff', color: '#3730a3' },
+  party: { bgcolor: '#fce7f3', color: '#9d174d' },
+  sports: { bgcolor: '#ffedd5', color: '#9a3412' },
+  cultural: { bgcolor: '#ccfbf1', color: '#115e59' },
+  educational: { bgcolor: '#fef9c3', color: '#854d0e' },
+  other: { bgcolor: '#f3f4f6', color: '#1f2937' },
+};
+
+export function GroupEventCard({
+  event,
+  onJoinEvent,
+  onLeaveEvent,
   onDeleteEvent,
-  isJoining, 
+  isJoining,
   isLeaving,
   isDeleting,
-  canManage 
+  canManage
 }: GroupEventCardProps) {
   const { user } = useAuth();
 
@@ -45,147 +60,146 @@ export function GroupEventCard({
   };
 
   const getEventTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      social: 'bg-blue-100 text-blue-800',
-      meetup: 'bg-green-100 text-green-800',
-      workshop: 'bg-purple-100 text-purple-800',
-      conference: 'bg-indigo-100 text-indigo-800',
-      party: 'bg-pink-100 text-pink-800',
-      sports: 'bg-orange-100 text-orange-800',
-      cultural: 'bg-teal-100 text-teal-800',
-      educational: 'bg-yellow-100 text-yellow-800',
-      other: 'bg-gray-100 text-gray-800'
-    };
-    return colors[type] || colors.other;
+    return eventTypeColors[type] || eventTypeColors.other;
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card>
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <CardTitle className="text-xl">{event.title}</CardTitle>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              {formatEventDate(event.start_date, event.end_date)}
-            </div>
-          </div>
-          <Badge className={getEventTypeColor(event.event_type)}>
-            {event.event_type}
-          </Badge>
-        </div>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="h6">{event.title}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Calendar style={{ width: 16, height: 16 }} />
+              <Typography variant="body2" color="text.secondary">
+                {formatEventDate(event.start_date, event.end_date)}
+              </Typography>
+            </Box>
+          </Box>
+          <Chip
+            label={event.event_type}
+            size="small"
+            sx={{
+              bgcolor: getEventTypeColor(event.event_type).bgcolor,
+              color: getEventTypeColor(event.event_type).color,
+              fontWeight: 500,
+            }}
+          />
+        </Box>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {event.description && (
-          <p className="text-muted-foreground">{event.description}</p>
-        )}
-
-        <div className="space-y-2">
-          {(event.venue_name || event.address) && (
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <span>
-                {event.venue_name && event.address 
-                  ? `${event.venue_name}, ${event.address}`
-                  : event.venue_name || event.address}
-              </span>
-            </div>
+      <CardContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {event.description && (
+            <Typography variant="body2" color="text.secondary">{event.description}</Typography>
           )}
 
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span>{event.city}{event.state && `, ${event.state}`}</span>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <span>
-              {event.attendee_count || 0} attending
-              {event.max_attendees && ` • ${event.max_attendees} max`}
-            </span>
-          </div>
-
-          {!event.is_free && (event.price_min || event.price_max) && (
-            <div className="flex items-center gap-2 text-sm">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span>
-                {event.price_min && event.price_max && event.price_min !== event.price_max
-                  ? `$${event.price_min} - $${event.price_max}`
-                  : `$${event.price_min || event.price_max}`}
-              </span>
-            </div>
-          )}
-
-          {event.is_free && (
-            <div className="flex items-center gap-2 text-sm">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span className="text-green-600 font-medium">Free</span>
-            </div>
-          )}
-
-          {event.age_restriction && (
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span>{event.age_restriction}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between pt-4">
-          <div className="flex items-center gap-2">
-            {event.user_attending ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onLeaveEvent(event.id)}
-                disabled={isLeaving}
-              >
-                <UserMinus className="h-4 w-4 mr-2" />
-                {isLeaving ? "Leaving..." : "Leave"}
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                onClick={() => onJoinEvent(event.id)}
-                disabled={isJoining || (event.max_attendees && (event.attendee_count || 0) >= event.max_attendees)}
-                className="bg-gradient-primary hover:opacity-90"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                {isJoining ? "Joining..." : "Join"}
-              </Button>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {(event.venue_name || event.address) && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <MapPin style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+                <Typography variant="body2">
+                  {event.venue_name && event.address
+                    ? `${event.venue_name}, ${event.address}`
+                    : event.venue_name || event.address}
+                </Typography>
+              </Box>
             )}
 
-            {(event.ticket_url || event.website) && (
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-              >
-                <a 
-                  href={event.ticket_url || event.website} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <MapPin style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+              <Typography variant="body2">
+                {event.city}{event.state && `, ${event.state}`}
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Users style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+              <Typography variant="body2">
+                {event.attendee_count || 0} attending
+                {event.max_attendees && ` \u2022 ${event.max_attendees} max`}
+              </Typography>
+            </Box>
+
+            {!event.is_free && (event.price_min || event.price_max) && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <DollarSign style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+                <Typography variant="body2">
+                  {event.price_min && event.price_max && event.price_min !== event.price_max
+                    ? `$${event.price_min} - $${event.price_max}`
+                    : `$${event.price_min || event.price_max}`}
+                </Typography>
+              </Box>
+            )}
+
+            {event.is_free && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <DollarSign style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+                <Typography variant="body2" sx={{ color: 'success.main', fontWeight: 500 }}>Free</Typography>
+              </Box>
+            )}
+
+            {event.age_restriction && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Clock style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+                <Typography variant="body2">{event.age_restriction}</Typography>
+              </Box>
+            )}
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {event.user_attending ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLeaveEvent(event.id)}
+                  disabled={isLeaving}
                 >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  {event.ticket_url ? "Tickets" : "Website"}
-                </a>
+                  <UserMinus style={{ width: 16, height: 16, marginRight: 8 }} />
+                  {isLeaving ? "Leaving..." : "Leave"}
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => onJoinEvent(event.id)}
+                  disabled={isJoining || (event.max_attendees && (event.attendee_count || 0) >= event.max_attendees)}
+                >
+                  <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
+                  {isJoining ? "Joining..." : "Join"}
+                </Button>
+              )}
+
+              {(event.ticket_url || event.website) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                >
+                  <a
+                    href={event.ticket_url || event.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                    {event.ticket_url ? "Tickets" : "Website"}
+                  </a>
+                </Button>
+              )}
+            </Box>
+
+            {canManage && onDeleteEvent && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onDeleteEvent(event.id)}
+                disabled={isDeleting}
+              >
+                <Trash2 style={{ width: 16, height: 16, color: 'var(--destructive)' }} />
               </Button>
             )}
-          </div>
-
-          {canManage && onDeleteEvent && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onDeleteEvent(event.id)}
-              disabled={isDeleting}
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

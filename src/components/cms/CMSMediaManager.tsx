@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Upload, Image, File, Trash2, Download, Search, Filter } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +25,7 @@ export function CMSMediaManager() {
   const fetchMedia = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch CMS media
       const { data: cmsMediaData, error: cmsError } = await supabase
         .from('cms_media')
@@ -53,7 +56,7 @@ export function CMSMediaManager() {
         try {
           const { data: files, error } = await supabase.storage
             .from(bucket)
-            .list('', { 
+            .list('', {
               limit: 1000,
               sortBy: { column: 'created_at', order: 'desc' }
             });
@@ -84,7 +87,7 @@ export function CMSMediaManager() {
                 source: bucket,
                 bucket: bucket
               }));
-            
+
             allStorageFiles = [...allStorageFiles, ...processedFiles];
           }
         } catch (storageError) {
@@ -94,7 +97,7 @@ export function CMSMediaManager() {
 
       // Combine all media
       const allMedia = [...processCmsMedia, ...allStorageFiles];
-      
+
       console.log(`Found ${allMedia.length} media items:`, {
         cms: processCmsMedia.length,
         storage: allStorageFiles.length,
@@ -103,7 +106,7 @@ export function CMSMediaManager() {
           count: allStorageFiles.filter(f => f.bucket === bucket).length
         }))
       });
-      
+
       setMediaFiles(allMedia);
     } catch (error) {
       console.error('Error fetching media:', error);
@@ -130,15 +133,15 @@ export function CMSMediaManager() {
   };
 
   const filteredMedia = mediaFiles.filter(file => {
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       file.original_filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
       file.filename.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesType = selectedType === 'all' || 
+
+    const matchesType = selectedType === 'all' ||
       (selectedType === 'image' && file.mime_type.startsWith('image/')) ||
       (selectedType === 'document' && file.mime_type === 'application/pdf') ||
       (selectedType === 'video' && file.mime_type.startsWith('video/'));
-    
+
     return matchesSearch && matchesType;
   });
 
@@ -152,41 +155,41 @@ export function CMSMediaManager() {
 
   const getFileIcon = (mimeType: string) => {
     if (mimeType.startsWith('image/')) {
-      return <Image className="h-8 w-8 text-blue-500" />;
+      return <Image style={{ height: 32, width: 32, color: '#3b82f6' }} />;
     }
-    return <File className="h-8 w-8 text-gray-500" />;
+    return <File style={{ height: 32, width: 32, color: '#6b7280' }} />;
   };
 
   const isImage = (mimeType: string) => mimeType.startsWith('image/');
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Media Library</h2>
-          <p className="text-muted-foreground">Manage images, documents, and other media files</p>
-        </div>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>Media Library</Typography>
+          <Typography variant="body2" color="text.secondary">Manage images, documents, and other media files</Typography>
+        </Box>
         <Button>
-          <Upload className="h-4 w-4 mr-2" />
+          <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
           Upload Media
         </Button>
-      </div>
+      </Box>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+        <Box sx={{ position: 'relative', flex: 1, maxWidth: 448 }}>
+          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           <Input
             placeholder="Search media files..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            style={{ paddingLeft: 40 }}
           />
-        </div>
-        
+        </Box>
+
         <Select value={selectedType} onValueChange={setSelectedType}>
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger style={{ width: '100%', maxWidth: 192 }}>
             <SelectValue placeholder="File Type" />
           </SelectTrigger>
           <SelectContent>
@@ -198,7 +201,7 @@ export function CMSMediaManager() {
         </Select>
 
         <Select value={selectedRole} onValueChange={setSelectedRole}>
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger style={{ width: '100%', maxWidth: 192 }}>
             <SelectValue placeholder="Usage Role" />
           </SelectTrigger>
           <SelectContent>
@@ -211,144 +214,151 @@ export function CMSMediaManager() {
         </Select>
 
         <Button variant="outline">
-          <Filter className="h-4 w-4 mr-2" />
+          <Filter style={{ height: 16, width: 16, marginRight: 8 }} />
           More Filters
         </Button>
-      </div>
+      </Box>
 
       {/* Media Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
         {loading ? (
           Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="pb-2">
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
+            <Card key={i} style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+              <CardHeader style={{ paddingBottom: 8 }}>
+                <Box sx={{ height: 16, bgcolor: 'grey.200', borderRadius: 1, width: '75%' }} />
+                <Box sx={{ height: 12, bgcolor: 'grey.200', borderRadius: 1, width: '50%' }} />
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="aspect-square bg-muted rounded-lg mb-3"></div>
-                <div className="space-y-2">
-                  <div className="h-3 bg-muted rounded w-1/3"></div>
-                  <div className="h-3 bg-muted rounded w-1/2"></div>
-                </div>
+              <CardContent style={{ paddingTop: 0 }}>
+                <Box sx={{ aspectRatio: '1/1', bgcolor: 'grey.200', borderRadius: 2, mb: 1.5 }} />
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ height: 12, bgcolor: 'grey.200', borderRadius: 1, width: '33%' }} />
+                  <Box sx={{ height: 12, bgcolor: 'grey.200', borderRadius: 1, width: '50%' }} />
+                </Box>
               </CardContent>
             </Card>
           ))
         ) : (
           filteredMedia.map((file) => (
-            <Card key={file.id} className="group hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-sm font-medium truncate">
-                    {file.original_filename}
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    {formatFileSize(file.file_size)} • {file.mime_type}
-                  </CardDescription>
-                </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                    <Download className="h-3 w-3" />
-                  </Button>
-                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive hover:text-destructive">
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center overflow-hidden">
-                {isImage(file.mime_type) ? (
-                  getImageUrl(file) ? (
-                    <img 
-                      src={getImageUrl(file)} 
-                      alt={file.original_filename}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                  ) : null
-                ) : (
-                  <div className="flex flex-col items-center justify-center">
-                    {getFileIcon(file.mime_type)}
-                    <span className="text-xs text-muted-foreground mt-2 uppercase">
-                      {file.mime_type.split('/')[1]}
-                    </span>
-                  </div>
-                )}
-                {isImage(file.mime_type) && (
-                  <div className="hidden w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-                    <Image className="h-12 w-12 text-blue-300" />
-                    <span className="sr-only">Image preview placeholder</span>
-                  </div>
-                )}
-              </div>
+            <Card key={file.id} style={{ transition: 'box-shadow 0.2s' }}>
+              <CardHeader style={{ paddingBottom: 8 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <CardTitle>
+                      <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {file.original_filename}
+                      </Typography>
+                    </CardTitle>
+                    <CardDescription>
+                      <Typography variant="caption">
+                        {formatFileSize(file.file_size)} &bull; {file.mime_type}
+                      </Typography>
+                    </CardDescription>
+                  </Box>
+                  <Box sx={{ opacity: 0, transition: 'opacity 0.2s', display: 'flex', gap: 0.5, 'Card:hover &': { opacity: 1 } }}>
+                    <Button size="sm" variant="ghost" style={{ height: 24, width: 24, padding: 0 }}>
+                      <Download style={{ height: 12, width: 12 }} />
+                    </Button>
+                    <Button size="sm" variant="ghost" style={{ height: 24, width: 24, padding: 0, color: 'var(--destructive)' }}>
+                      <Trash2 style={{ height: 12, width: 12 }} />
+                    </Button>
+                  </Box>
+                </Box>
+              </CardHeader>
+              <CardContent style={{ paddingTop: 0 }}>
+                <Box sx={{ aspectRatio: '1/1', bgcolor: 'grey.100', borderRadius: 2, mb: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  {isImage(file.mime_type) ? (
+                    getImageUrl(file) ? (
+                      <Box
+                        component="img"
+                        src={getImageUrl(file)}
+                        alt={file.original_filename}
+                        sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null
+                  ) : (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      {getFileIcon(file.mime_type)}
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, textTransform: 'uppercase' }}>
+                        {file.mime_type.split('/')[1]}
+                      </Typography>
+                    </Box>
+                  )}
+                  {isImage(file.mime_type) && (
+                    <Box sx={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #eff6ff 0%, #f3e8ff 100%)', display: 'none', alignItems: 'center', justifyContent: 'center' }}>
+                      <Image style={{ height: 48, width: 48, color: '#93c5fd' }} />
+                      <Box component="span" sx={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', borderWidth: 0 }}>Image preview placeholder</Box>
+                    </Box>
+                  )}
+                </Box>
 
-              <div className="space-y-2">
-                {file.width && file.height && (
-                  <div className="text-xs text-muted-foreground">
-                    {file.width} × {file.height}
-                  </div>
-                )}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {file.width && file.height && (
+                    <Typography variant="caption" color="text.secondary">
+                      {file.width} x {file.height}
+                    </Typography>
+                  )}
 
-                {file.attribution && (
-                  <div className="text-xs">
-                    <span className="text-muted-foreground">By:</span> {file.attribution}
-                  </div>
-                )}
+                  {file.attribution && (
+                    <Typography variant="caption">
+                      <Typography component="span" variant="caption" color="text.secondary">By:</Typography> {file.attribution}
+                    </Typography>
+                  )}
 
-                {file.license && (
-                  <Badge variant="outline" className="text-xs">
-                    {file.license}
-                  </Badge>
-                )}
+                  {file.license && (
+                    <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                      {file.license}
+                    </Badge>
+                  )}
 
-                <div className="text-xs text-muted-foreground">
-                  {new Date(file.created_at).toLocaleDateString()}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                  <Typography variant="caption" color="text.secondary">
+                    {new Date(file.created_at).toLocaleDateString()}
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
           ))
         )}
-      </div>
+      </Box>
 
       {filteredMedia.length === 0 && (
         <Card>
-          <CardContent className="p-8 text-center">
-            <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No media files found</h3>
-            <p className="text-muted-foreground mb-4">
-              {searchQuery || selectedType !== 'all' 
-                ? 'Try adjusting your search criteria' 
-                : 'Upload your first media file to get started'
-              }
-            </p>
-            <Button>
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Media
-            </Button>
+          <CardContent>
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+              <Upload style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>No media files found</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {searchQuery || selectedType !== 'all'
+                  ? 'Try adjusting your search criteria'
+                  : 'Upload your first media file to get started'
+                }
+              </Typography>
+              <Button>
+                <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
+                Upload Media
+              </Button>
+            </Box>
           </CardContent>
         </Card>
       )}
 
       {/* Upload Area */}
-      <Card className="border-dashed border-2 border-muted-foreground/25">
-        <CardContent className="p-8 text-center">
-          <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Drop files here to upload</h3>
-          <p className="text-muted-foreground mb-4">
+      <Paper variant="outlined" sx={{ borderStyle: 'dashed', borderWidth: 2, borderColor: 'divider' }}>
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Upload style={{ height: 32, width: 32, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Drop files here to upload</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Or click to browse and select files from your computer
-          </p>
+          </Typography>
           <Button variant="outline">
             Choose Files
           </Button>
-        </CardContent>
-      </Card>
-    </div>
+        </Box>
+      </Paper>
+    </Box>
   );
 }

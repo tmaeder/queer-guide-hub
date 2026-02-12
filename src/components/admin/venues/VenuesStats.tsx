@@ -1,5 +1,7 @@
 import { Building, Star, MapPin, Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface VenuesStatsProps {
   venues: any[];
@@ -11,45 +13,45 @@ export function VenuesStats({ venues }: VenuesStatsProps) {
       icon: Building,
       label: "Total Venues",
       value: venues.length,
-      color: "text-primary"
+      color: "#f59e0b"
     },
     {
       icon: Star,
       label: "Featured",
       value: venues.filter(v => v.featured).length,
-      color: "text-yellow-500"
+      color: "#eab308"
     },
     {
       icon: MapPin,
       label: "Verified",
       value: venues.filter(v => v.verified).length,
-      color: "text-green-500"
+      color: "#22c55e"
     },
     {
       icon: Globe,
       label: "Cities",
       value: new Set(venues.map(v => v.city)).size,
-      color: "text-blue-500"
+      color: "#3b82f6"
     }
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, '@media (min-width: 768px)': { gridTemplateColumns: 'repeat(4, 1fr)' } }}>
       {stats.map((stat, index) => (
-        <Card key={index} className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg bg-muted/50`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-              </div>
-            </div>
+        <Card key={index} sx={{ '&:hover': { boxShadow: 2 }, transition: 'box-shadow 0.3s' }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover' }}>
+                <stat.icon style={{ height: 20, width: 20, color: stat.color }} />
+              </Box>
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>{stat.value}</Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>{stat.label}</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
       ))}
-    </div>
+    </Box>
   );
 }

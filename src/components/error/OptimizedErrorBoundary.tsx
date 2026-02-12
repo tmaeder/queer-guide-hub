@@ -1,4 +1,6 @@
 import React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,109 +49,113 @@ class OptimizedErrorBoundary extends React.Component<
   }
 }
 
-const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({ 
-  error, 
+const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
+  error,
   resetErrorBoundary,
   errors = []
 }) => {
-  const isNetworkError = error?.message?.includes('fetch') || 
+  const isNetworkError = error?.message?.includes('fetch') ||
                         error?.message?.includes('network') ||
                         errors.some(e => e?.message?.includes('fetch'));
 
   return (
-    <div className="flex items-center justify-center min-h-[400px] p-6">
-      <Card className="max-w-md w-full">
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400, p: 3 }}>
+      <Card sx={{ maxWidth: 'md', width: '100%' }}>
         <CardHeader>
-          <div className="flex items-center gap-2">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {isNetworkError ? (
-              <Wifi className="h-5 w-5 text-destructive" />
+              <Wifi style={{ height: 20, width: 20, color: 'var(--destructive)' }} />
             ) : (
-              <AlertCircle className="h-5 w-5 text-destructive" />
+              <AlertCircle style={{ height: 20, width: 20, color: 'var(--destructive)' }} />
             )}
-            <CardTitle className="text-lg">
+            <CardTitle sx={{ fontSize: '1.125rem' }}>
               {isNetworkError ? 'Connection Issue' : 'Something went wrong'}
             </CardTitle>
-          </div>
+          </Box>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Alert variant="destructive">
             <AlertTitle>Error Details</AlertTitle>
-            <AlertDescription className="text-sm">
-              {isNetworkError 
-                ? 'Unable to connect to the server. Please check your internet connection and try again.'
-                : error?.message || 'An unexpected error occurred. Please try refreshing the page.'
-              }
+            <AlertDescription>
+              <Typography variant="body2">
+                {isNetworkError
+                  ? 'Unable to connect to the server. Please check your internet connection and try again.'
+                  : error?.message || 'An unexpected error occurred. Please try refreshing the page.'
+                }
+              </Typography>
             </AlertDescription>
           </Alert>
 
           {errors.length > 0 && (
             <Alert>
               <AlertTitle>Additional Issues</AlertTitle>
-              <AlertDescription className="text-sm">
-                Some features may not work properly due to:
-                <ul className="list-disc list-inside mt-2 space-y-1">
+              <AlertDescription>
+                <Typography variant="body2">
+                  Some features may not work properly due to:
+                </Typography>
+                <Box component="ul" sx={{ listStyleType: 'disc', listStylePosition: 'inside', mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   {errors.slice(0, 3).map((err, i) => (
-                    <li key={i} className="text-xs">
+                    <Typography component="li" key={i} variant="caption">
                       {err?.message || 'Unknown error'}
-                    </li>
+                    </Typography>
                   ))}
-                </ul>
+                </Box>
               </AlertDescription>
             </Alert>
           )}
 
-          <div className="flex gap-2">
-            <Button 
-              onClick={resetErrorBoundary} 
-              variant="outline" 
-              className="flex-1"
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              onClick={resetErrorBoundary}
+              variant="outline"
+              sx={{ flex: 1 }}
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
               Try Again
             </Button>
-            <Button 
-              onClick={() => window.location.reload()} 
+            <Button
+              onClick={() => window.location.reload()}
               variant="default"
-              className="flex-1"
+              sx={{ flex: 1 }}
             >
               Refresh Page
             </Button>
-          </div>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 };
 
 // Specialized error fallback for data loading errors
-export const DataErrorFallback: React.FC<ErrorFallbackProps> = ({ 
-  error, 
+export const DataErrorFallback: React.FC<ErrorFallbackProps> = ({
+  error,
   resetErrorBoundary,
   errors = []
 }) => {
   return (
-    <Alert variant="destructive" className="m-4">
-      <AlertCircle className="h-4 w-4" />
+    <Alert variant="destructive" sx={{ m: 2 }}>
+      <AlertCircle style={{ height: 16, width: 16 }} />
       <AlertTitle>Failed to load data</AlertTitle>
-      <AlertDescription className="space-y-2">
-        <p>Some information couldn't be loaded. You can continue using the app with limited functionality.</p>
+      <AlertDescription sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Typography variant="body2">Some information couldn't be loaded. You can continue using the app with limited functionality.</Typography>
         {errors.length > 0 && (
-          <details className="text-xs">
-            <summary className="cursor-pointer">Show details</summary>
-            <ul className="list-disc list-inside mt-1 space-y-1">
+          <Box component="details" sx={{ fontSize: '0.75rem' }}>
+            <Box component="summary" sx={{ cursor: 'pointer' }}>Show details</Box>
+            <Box component="ul" sx={{ listStyleType: 'disc', listStylePosition: 'inside', mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               {errors.map((err, i) => (
                 <li key={i}>{err?.message || 'Unknown error'}</li>
               ))}
-            </ul>
-          </details>
+            </Box>
+          </Box>
         )}
-        <Button 
-          onClick={resetErrorBoundary} 
-          variant="outline" 
+        <Button
+          onClick={resetErrorBoundary}
+          variant="outline"
           size="sm"
-          className="mt-2"
+          sx={{ mt: 1 }}
         >
-          <RefreshCw className="h-3 w-3 mr-1" />
+          <RefreshCw style={{ height: 12, width: 12, marginRight: 4 }} />
           Retry
         </Button>
       </AlertDescription>

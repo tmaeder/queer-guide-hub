@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Plus, Save, X, Tag, Globe, Building, User, Calendar, MapPin, Star, Upload, Clock, Users, Eye } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,17 +30,17 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
   const [activeTab, setActiveTab] = useState('basic');
 
   const contentTypes = [
-    { value: 'events', label: 'Events', icon: <Calendar className="h-4 w-4" /> },
-    { value: 'venues', label: 'Venues', icon: <Building className="h-4 w-4" /> },
-    { value: 'personalities', label: 'Personalities', icon: <User className="h-4 w-4" /> },
-    { value: 'community_groups', label: 'Community Groups', icon: <Users className="h-4 w-4" /> },
-    { value: 'community_posts', label: 'Community Posts', icon: <Tag className="h-4 w-4" /> },
-    { value: 'cms_content', label: 'CMS Content', icon: <Tag className="h-4 w-4" /> },
-    { value: 'tags', label: 'Tags', icon: <Tag className="h-4 w-4" /> },
-    { value: 'cities', label: 'Cities', icon: <Building className="h-4 w-4" /> },
-    { value: 'countries', label: 'Countries', icon: <Globe className="h-4 w-4" /> },
-    { value: 'marketplace_listings', label: 'Marketplace Listings', icon: <Building className="h-4 w-4" /> },
-    { value: 'news_articles', label: 'News Articles', icon: <Tag className="h-4 w-4" /> }
+    { value: 'events', label: 'Events', icon: <Calendar style={{ height: 16, width: 16 }} /> },
+    { value: 'venues', label: 'Venues', icon: <Building style={{ height: 16, width: 16 }} /> },
+    { value: 'personalities', label: 'Personalities', icon: <User style={{ height: 16, width: 16 }} /> },
+    { value: 'community_groups', label: 'Community Groups', icon: <Users style={{ height: 16, width: 16 }} /> },
+    { value: 'community_posts', label: 'Community Posts', icon: <Tag style={{ height: 16, width: 16 }} /> },
+    { value: 'cms_content', label: 'CMS Content', icon: <Tag style={{ height: 16, width: 16 }} /> },
+    { value: 'tags', label: 'Tags', icon: <Tag style={{ height: 16, width: 16 }} /> },
+    { value: 'cities', label: 'Cities', icon: <Building style={{ height: 16, width: 16 }} /> },
+    { value: 'countries', label: 'Countries', icon: <Globe style={{ height: 16, width: 16 }} /> },
+    { value: 'marketplace_listings', label: 'Marketplace Listings', icon: <Building style={{ height: 16, width: 16 }} /> },
+    { value: 'news_articles', label: 'News Articles', icon: <Tag style={{ height: 16, width: 16 }} /> }
   ];
 
   const handleFieldChange = (field: string, value: any) => {
@@ -86,7 +88,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
       // Create table name mapping for type safety
       const validTables = {
         'events': 'events',
-        'venues': 'venues', 
+        'venues': 'venues',
         'personalities': 'personalities',
         'community_groups': 'community_groups',
         'community_posts': 'community_posts',
@@ -99,7 +101,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
       } as const;
 
       const tableName = contentType === 'tags' ? 'unified_tags' : contentType;
-      
+
       if (!(tableName in validTables)) {
         throw new Error('Invalid content type');
       }
@@ -283,10 +285,10 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
     switch (type) {
       case 'text':
         return (
-          <div key={key} className="space-y-2">
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key}>
               {label}
-              {required && <span className="text-destructive"> *</span>}
+              {required && <span style={{ color: 'var(--destructive)' }}> *</span>}
             </Label>
             <Input
               id={key}
@@ -294,30 +296,30 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               onChange={(e) => handleFieldChange(key, e.target.value)}
               required={required}
             />
-          </div>
+          </Box>
         );
       case 'textarea':
         return (
-          <div key={key} className="space-y-2">
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key}>
               {label}
-              {required && <span className="text-destructive"> *</span>}
+              {required && <span style={{ color: 'var(--destructive)' }}> *</span>}
             </Label>
             <Textarea
               id={key}
               value={fieldValue || ''}
               onChange={(e) => handleFieldChange(key, e.target.value)}
-              className="min-h-24"
+              style={{ minHeight: 96 }}
               required={required}
             />
-          </div>
+          </Box>
         );
       case 'select':
         return (
-          <div key={key} className="space-y-2">
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key}>
               {label}
-              {required && <span className="text-destructive"> *</span>}
+              {required && <span style={{ color: 'var(--destructive)' }}> *</span>}
             </Label>
             <Select value={fieldValue || ''} onValueChange={(value) => handleFieldChange(key, value)}>
               <SelectTrigger>
@@ -331,25 +333,25 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
         );
       case 'boolean':
         return (
-          <div key={key} className="flex items-center space-x-2">
+          <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Switch
               id={key}
               checked={fieldValue || false}
               onCheckedChange={(checked) => handleFieldChange(key, checked)}
             />
             <Label htmlFor={key}>{label}</Label>
-          </div>
+          </Box>
         );
       case 'number':
         return (
-          <div key={key} className="space-y-2">
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key}>
               {label}
-              {required && <span className="text-destructive"> *</span>}
+              {required && <span style={{ color: 'var(--destructive)' }}> *</span>}
             </Label>
             <Input
               id={key}
@@ -358,14 +360,14 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               onChange={(e) => handleFieldChange(key, e.target.value ? Number(e.target.value) : null)}
               required={required}
             />
-          </div>
+          </Box>
         );
       case 'email':
         return (
-          <div key={key} className="space-y-2">
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key}>
               {label}
-              {required && <span className="text-destructive"> *</span>}
+              {required && <span style={{ color: 'var(--destructive)' }}> *</span>}
             </Label>
             <Input
               id={key}
@@ -374,14 +376,14 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               onChange={(e) => handleFieldChange(key, e.target.value)}
               required={required}
             />
-          </div>
+          </Box>
         );
       case 'tel':
         return (
-          <div key={key} className="space-y-2">
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key}>
               {label}
-              {required && <span className="text-destructive"> *</span>}
+              {required && <span style={{ color: 'var(--destructive)' }}> *</span>}
             </Label>
             <Input
               id={key}
@@ -390,14 +392,14 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               onChange={(e) => handleFieldChange(key, e.target.value)}
               required={required}
             />
-          </div>
+          </Box>
         );
       case 'url':
         return (
-          <div key={key} className="space-y-2">
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key}>
               {label}
-              {required && <span className="text-destructive"> *</span>}
+              {required && <span style={{ color: 'var(--destructive)' }}> *</span>}
             </Label>
             <Input
               id={key}
@@ -406,14 +408,14 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               onChange={(e) => handleFieldChange(key, e.target.value)}
               required={required}
             />
-          </div>
+          </Box>
         );
       case 'datetime-local':
         return (
-          <div key={key} className="space-y-2">
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key}>
               {label}
-              {required && <span className="text-destructive"> *</span>}
+              {required && <span style={{ color: 'var(--destructive)' }}> *</span>}
             </Label>
             <Input
               id={key}
@@ -422,7 +424,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               onChange={(e) => handleFieldChange(key, e.target.value)}
               required={required}
             />
-          </div>
+          </Box>
         );
       default:
         return null;
@@ -434,25 +436,29 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Create Content
+        <Button>
+          <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Plus style={{ height: 16, width: 16 }} />
+            Create Content
+          </Box>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent style={{ maxWidth: 896, maxHeight: '90vh', overflowY: 'auto' }}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
-            Create New Content
+          <DialogTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Plus style={{ height: 20, width: 20 }} />
+              Create New Content
+            </Box>
           </DialogTitle>
           <DialogDescription>
             Select a content type and fill in the required information to create new content.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Content Type Selection */}
-          <div className="space-y-2">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label>Content Type</Label>
             <Select value={contentType} onValueChange={setContentType}>
               <SelectTrigger>
@@ -461,39 +467,41 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
               <SelectContent>
                 {contentTypes.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
-                    <div className="flex items-center gap-2">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       {type.icon}
                       {type.label}
-                    </div>
+                    </Box>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
 
           {/* Form Fields */}
           {contentType && (
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-3">
-                {Object.keys(formFields).map((tab) => (
-                  <TabsTrigger key={tab} value={tab} className="capitalize">
-                    {tab}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                  {Object.keys(formFields).map((tab) => (
+                    <TabsTrigger key={tab} value={tab} style={{ textTransform: 'capitalize' }}>
+                      {tab}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
 
-              {Object.entries(formFields).map(([tabName, fields]) => (
-                <TabsContent key={tabName} value={tabName} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {fields.map(renderField)}
-                  </div>
-                </TabsContent>
-              ))}
+                {Object.entries(formFields).map(([tabName, fields]) => (
+                  <TabsContent key={tabName} value={tabName}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                      {fields.map(renderField)}
+                    </Box>
+                  </TabsContent>
+                ))}
+              </Box>
             </Tabs>
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2, borderTop: 1, borderColor: 'divider' }}>
             <Button
               variant="outline"
               onClick={() => {
@@ -501,18 +509,18 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
                 setIsOpen(false);
               }}
             >
-              <X className="h-4 w-4 mr-2" />
+              <X style={{ height: 16, width: 16, marginRight: 8 }} />
               Cancel
             </Button>
             <Button
               onClick={handleCreate}
               disabled={loading || !contentType}
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save style={{ height: 16, width: 16, marginRight: 8 }} />
               {loading ? 'Creating...' : 'Create Content'}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </DialogContent>
     </Dialog>
   );

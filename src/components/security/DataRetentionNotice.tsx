@@ -3,6 +3,8 @@ import { Clock, Shield, Trash2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface DataRetentionNoticeProps {
   dataType: 'location' | 'messages' | 'photos' | 'profile';
@@ -67,52 +69,56 @@ export function DataRetentionNotice({
   const IconComponent = info.icon;
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <IconComponent className="h-4 w-4" />
-          {info.title}
+    <Card sx={{ width: '100%' }}>
+      <CardHeader sx={{ pb: 1.5 }}>
+        <CardTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
+            <IconComponent style={{ height: 16, width: 16 }} />
+            {info.title}
+          </Box>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Alert variant={info.urgency === 'medium' ? 'default' : 'default'}>
-          <Shield className="h-4 w-4" />
-          <AlertTitle>Privacy Protection Active</AlertTitle>
-          <AlertDescription>
-            {info.description}
-          </AlertDescription>
-        </Alert>
+      <CardContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Alert variant={info.urgency === 'medium' ? 'default' : 'default'}>
+            <Shield style={{ height: 16, width: 16 }} />
+            <AlertTitle>Privacy Protection Active</AlertTitle>
+            <AlertDescription>
+              {info.description}
+            </AlertDescription>
+          </Alert>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div className="space-y-1">
-            <div className="font-medium">Retention Period</div>
-            <div className="text-muted-foreground">{retentionPeriod}</div>
-          </div>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, fontSize: '0.875rem' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <Typography sx={{ fontWeight: 500 }}>Retention Period</Typography>
+              <Typography color="text.secondary">{retentionPeriod}</Typography>
+            </Box>
 
-          {lastCleanup && (
-            <div className="space-y-1">
-              <div className="font-medium">Last Cleanup</div>
-              <div className="text-muted-foreground">{lastCleanup}</div>
-            </div>
+            {lastCleanup && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Typography sx={{ fontWeight: 500 }}>Last Cleanup</Typography>
+                <Typography color="text.secondary">{lastCleanup}</Typography>
+              </Box>
+            )}
+          </Box>
+
+          {showControls && onRequestDeletion && (
+            <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRequestDeletion}
+                style={{ width: '100%' }}
+              >
+                <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
+                Request Data Deletion
+              </Button>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                You can request deletion of your data at any time. This action may take up to 30 days to complete.
+              </Typography>
+            </Box>
           )}
-        </div>
-
-        {showControls && onRequestDeletion && (
-          <div className="pt-2 border-t">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRequestDeletion}
-              className="w-full"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Request Data Deletion
-            </Button>
-            <div className="text-xs text-muted-foreground mt-2">
-              You can request deletion of your data at any time. This action may take up to 30 days to complete.
-            </div>
-          </div>
-        )}
+        </Box>
       </CardContent>
     </Card>
   );

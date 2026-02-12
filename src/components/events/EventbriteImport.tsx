@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Loader2 } from "lucide-react";
+import Box from '@mui/material/Box';
 
 interface EventbriteImportProps {
   onImportComplete?: () => void;
@@ -86,16 +87,16 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Calendar className="h-4 w-4 mr-2" />
+          <Calendar style={{ height: 16, width: 16, marginRight: 8 }} />
           Import from Eventbrite
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent sx={{ maxWidth: 448 }}>
         <DialogHeader>
           <DialogTitle>Import Events from Eventbrite</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box>
             <Label htmlFor="query">Search Query *</Label>
             <Input
               id="query"
@@ -103,9 +104,9 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-          </div>
-          
-          <div>
+          </Box>
+
+          <Box>
             <Label htmlFor="location">Location</Label>
             <Input
               id="location"
@@ -113,9 +114,9 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
-          </div>
+          </Box>
 
-          <div>
+          <Box>
             <Label htmlFor="category">Category</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
@@ -129,33 +130,33 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
 
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              className="flex-1"
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outline"
+              style={{ flex: 1 }}
               onClick={() => setIsOpen(false)}
               disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button 
-              className="flex-1" 
-              onClick={handleImport} 
+            <Button
+              style={{ flex: 1 }}
+              onClick={handleImport}
               disabled={!query.trim() || isLoading}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
                   Importing...
                 </>
               ) : (
                 "Import Events"
               )}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </DialogContent>
     </Dialog>
   );

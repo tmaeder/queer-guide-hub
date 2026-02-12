@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { Settings } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,14 +43,16 @@ export function CMSDashboard() {
 
   if (!canManageContent) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <Container sx={{ py: 4 }}>
         <Card>
-          <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-semibold mb-2">Access Denied</h2>
-            <p className="text-muted-foreground">You don't have permission to access the CMS dashboard.</p>
+          <CardContent>
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>Access Denied</Typography>
+              <Typography variant="body2" color="text.secondary">You don't have permission to access the CMS dashboard.</Typography>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     );
   }
 
@@ -84,148 +89,158 @@ export function CMSDashboard() {
 
   if (showEditor && editingContent) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <Container sx={{ py: 4 }}>
         <UniversalContentEditor content={editingContent} onClose={handleCloseEditor} />
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Content Management System</h1>
-        <p className="text-muted-foreground">Manage all your content types, media, and integrations</p>
-      </div>
+    <Container sx={{ py: 4 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 1 }}>Content Management System</Typography>
+        <Typography variant="body2" color="text.secondary">Manage all your content types, media, and integrations</Typography>
+      </Box>
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="universal">All Content</TabsTrigger>
-          <TabsTrigger value="list">List View</TabsTrigger>
-          <TabsTrigger value="library">Media Library</TabsTrigger>
-          <TabsTrigger value="duplicates">Duplicates</TabsTrigger>
-          <TabsTrigger value="images">Image Optimizer</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-        </TabsList>
+      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <TabsList sx={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(6, 1fr)' }}>
+            <TabsTrigger value="universal">All Content</TabsTrigger>
+            <TabsTrigger value="list">List View</TabsTrigger>
+            <TabsTrigger value="library">Media Library</TabsTrigger>
+            <TabsTrigger value="duplicates">Duplicates</TabsTrigger>
+            <TabsTrigger value="images">Image Optimizer</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="universal">
-          <UniversalContentDashboard />
-        </TabsContent>
+          <TabsContent value="universal">
+            <UniversalContentDashboard />
+          </TabsContent>
 
-        <TabsContent value="list">
-          <CMSListView
-            data={allContent}
-            loading={universalLoading}
-            error={universalError}
-            onEdit={handleEditContent}
-            onDelete={onDelete}
-            onRefresh={() => fetchAllContent()}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          />
-        </TabsContent>
+          <TabsContent value="list">
+            <CMSListView
+              data={allContent}
+              loading={universalLoading}
+              error={universalError}
+              onEdit={handleEditContent}
+              onDelete={onDelete}
+              onRefresh={() => fetchAllContent()}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+          </TabsContent>
 
-        <TabsContent value="library">
-          <MediaLibrary />
-        </TabsContent>
+          <TabsContent value="library">
+            <MediaLibrary />
+          </TabsContent>
 
-        <TabsContent value="duplicates">
-          <CMSDuplicateManager />
-        </TabsContent>
+          <TabsContent value="duplicates">
+            <CMSDuplicateManager />
+          </TabsContent>
 
-        <TabsContent value="images">
-          <ImageOptimizationManager />
-        </TabsContent>
+          <TabsContent value="images">
+            <ImageOptimizationManager />
+          </TabsContent>
 
-        <TabsContent value="settings">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" aria-hidden="true" />
-                  Content Settings
-                </CardTitle>
-                <CardDescription>
-                  Configure content creation and publishing settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="autosave" className="text-sm font-medium">Auto-save drafts</Label>
-                    <p className="text-xs text-muted-foreground">Automatically save content while editing</p>
-                  </div>
-                  <Switch id="autosave" defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="require-review" className="text-sm font-medium">Require review before publish</Label>
-                    <p className="text-xs text-muted-foreground">All content must be reviewed before going live</p>
-                  </div>
-                  <Switch id="require-review" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="versioning" className="text-sm font-medium">Enable content versioning</Label>
-                    <p className="text-xs text-muted-foreground">Keep revision history of content changes</p>
-                  </div>
-                  <Switch id="versioning" defaultChecked />
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="settings">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Settings style={{ height: 20, width: 20 }} aria-hidden="true" />
+                      Content Settings
+                    </Box>
+                  </CardTitle>
+                  <CardDescription>
+                    Configure content creation and publishing settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Label htmlFor="autosave">Auto-save drafts</Label>
+                        <Typography variant="caption" color="text.secondary" component="p">Automatically save content while editing</Typography>
+                      </Box>
+                      <Switch id="autosave" defaultChecked />
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Label htmlFor="require-review">Require review before publish</Label>
+                        <Typography variant="caption" color="text.secondary" component="p">All content must be reviewed before going live</Typography>
+                      </Box>
+                      <Switch id="require-review" />
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Label htmlFor="versioning">Enable content versioning</Label>
+                        <Typography variant="caption" color="text.secondary" component="p">Keep revision history of content changes</Typography>
+                      </Box>
+                      <Switch id="versioning" defaultChecked />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Media Settings</CardTitle>
-                <CardDescription>
-                  Configure media upload and management settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="max-file-size" className="text-sm font-medium block mb-2">Maximum file size (MB)</Label>
-                  <Input id="max-file-size" type="number" defaultValue="10" className="w-24" />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium block mb-2">Allowed file types</Label>
-                  <p className="text-xs text-muted-foreground">jpg, png, gif, webp, svg, pdf, doc, docx</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="compress-images" className="text-sm font-medium">Compress images on upload</Label>
-                    <p className="text-xs text-muted-foreground">Optimize images for web performance</p>
-                  </div>
-                  <Switch id="compress-images" defaultChecked />
-                </div>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Media Settings</CardTitle>
+                  <CardDescription>
+                    Configure media upload and management settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box>
+                      <Label htmlFor="max-file-size" sx={{ display: 'block', mb: 1 }}>Maximum file size (MB)</Label>
+                      <Input id="max-file-size" type="number" defaultValue="10" style={{ width: 96 }} />
+                    </Box>
+                    <Box>
+                      <Label sx={{ display: 'block', mb: 1 }}>Allowed file types</Label>
+                      <Typography variant="caption" color="text.secondary">jpg, png, gif, webp, svg, pdf, doc, docx</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Label htmlFor="compress-images">Compress images on upload</Label>
+                        <Typography variant="caption" color="text.secondary" component="p">Optimize images for web performance</Typography>
+                      </Box>
+                      <Switch id="compress-images" defaultChecked />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>SEO Settings</CardTitle>
-                <CardDescription>
-                  Configure search engine optimization settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="auto-meta" className="text-sm font-medium">Auto-generate meta descriptions</Label>
-                    <p className="text-xs text-muted-foreground">Create meta descriptions from content excerpts</p>
-                  </div>
-                  <Switch id="auto-meta" defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="gen-sitemap" className="text-sm font-medium">Generate XML sitemap</Label>
-                    <p className="text-xs text-muted-foreground">Automatically update sitemap with new content</p>
-                  </div>
-                  <Switch id="gen-sitemap" defaultChecked />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+              <Card>
+                <CardHeader>
+                  <CardTitle>SEO Settings</CardTitle>
+                  <CardDescription>
+                    Configure search engine optimization settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Label htmlFor="auto-meta">Auto-generate meta descriptions</Label>
+                        <Typography variant="caption" color="text.secondary" component="p">Create meta descriptions from content excerpts</Typography>
+                      </Box>
+                      <Switch id="auto-meta" defaultChecked />
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Label htmlFor="gen-sitemap">Generate XML sitemap</Label>
+                        <Typography variant="caption" color="text.secondary" component="p">Automatically update sitemap with new content</Typography>
+                      </Box>
+                      <Switch id="gen-sitemap" defaultChecked />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
+          </TabsContent>
+        </Box>
       </Tabs>
-    </div>
+    </Container>
   );
 }

@@ -2,6 +2,10 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Leaf, Recycle, Heart, TreePine, Sun, Droplets } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 
 export default function Sustainability() {
   useEffect(() => {
@@ -21,180 +25,180 @@ export default function Sustainability() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Hero Section */}
-      <div className="relative py-20 px-4">
-        <div className="container mx-auto text-center">
-          <div className="flex justify-center mb-6">
-            <Leaf className="h-16 w-16 text-primary" />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
+      <Box sx={{ position: 'relative', py: 10, px: 2 }}>
+        <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <Leaf style={{ width: 64, height: 64 }} color="var(--mui-palette-primary-main)" />
+          </Box>
+          <Typography variant="h3" sx={{ fontWeight: 700, mb: 3, typography: { xs: 'h3', md: 'h2' } }}>
             Sustainability
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          </Typography>
+          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '48rem', mx: 'auto' }}>
             Building a sustainable future for the LGBTQ+ community through environmental responsibility and mindful practices.
-          </p>
-        </div>
-      </div>
+          </Typography>
+        </Container>
+      </Box>
 
       {/* Our Commitment */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Our Environmental Commitment</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+      <Box component="section" sx={{ py: 8, px: 2 }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>Our Environmental Commitment</Typography>
+            <Typography color="text.secondary" sx={{ maxWidth: '42rem', mx: 'auto' }}>
               We believe that caring for our planet is essential to creating safe and thriving spaces for our community.
-            </p>
-          </div>
+            </Typography>
+          </Box>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="bg-card border-border">
+          <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 4 }}>
+            <Card>
               <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <TreePine className="h-8 w-8 text-primary" />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                  <TreePine style={{ width: 32, height: 32 }} color="var(--mui-palette-primary-main)" />
                   <CardTitle>Carbon Neutral Events</CardTitle>
-                </div>
+                </Box>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
+                <Typography color="text.secondary">
                   We partner with venues and organizers committed to carbon-neutral practices, and support offset programs for all community events.
-                </p>
+                </Typography>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card>
               <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <Recycle className="h-8 w-8 text-primary" />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                  <Recycle style={{ width: 32, height: 32 }} color="var(--mui-palette-primary-main)" />
                   <CardTitle>Waste Reduction</CardTitle>
-                </div>
+                </Box>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
+                <Typography color="text.secondary">
                   Promoting zero-waste events, reusable materials, and comprehensive recycling programs across all community activities.
-                </p>
+                </Typography>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card>
               <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <Sun className="h-8 w-8 text-primary" />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                  <Sun style={{ width: 32, height: 32 }} color="var(--mui-palette-primary-main)" />
                   <CardTitle>Renewable Energy</CardTitle>
-                </div>
+                </Box>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
+                <Typography color="text.secondary">
                   Supporting venues and businesses that use renewable energy sources and promoting solar and wind energy adoption.
-                </p>
+                </Typography>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card>
               <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <Droplets className="h-8 w-8 text-primary" />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                  <Droplets style={{ width: 32, height: 32 }} color="var(--mui-palette-primary-main)" />
                   <CardTitle>Water Conservation</CardTitle>
-                </div>
+                </Box>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
+                <Typography color="text.secondary">
                   Implementing water-saving practices in partner venues and promoting awareness about water conservation in our community.
-                </p>
+                </Typography>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card>
               <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <Heart className="h-8 w-8 text-primary" />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                  <Heart style={{ width: 32, height: 32 }} color="var(--mui-palette-primary-main)" />
                   <CardTitle>Community Gardens</CardTitle>
-                </div>
+                </Box>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
+                <Typography color="text.secondary">
                   Supporting LGBTQ+ community gardens and urban farming initiatives that bring people together while caring for the environment.
-                </p>
+                </Typography>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card>
               <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <Leaf className="h-8 w-8 text-primary" />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                  <Leaf style={{ width: 32, height: 32 }} color="var(--mui-palette-primary-main)" />
                   <CardTitle>Green Transportation</CardTitle>
-                </div>
+                </Box>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
+                <Typography color="text.secondary">
                   Encouraging carpooling, public transit, cycling, and walking to events while supporting electric vehicle charging at venues.
-                </p>
+                </Typography>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </section>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Take Action */}
-      <section className="py-16 px-4 bg-muted/30">
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-6">Take Action with Us</h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+      <Box component="section" sx={{ py: 8, px: 2, bgcolor: 'action.hover' }}>
+        <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>Take Action with Us</Typography>
+          <Typography color="text.secondary" sx={{ mb: 4, maxWidth: '42rem', mx: 'auto' }}>
             Join our community in making a positive environmental impact. Every small action contributes to a more sustainable future.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-primary hover:bg-primary/90">
+          </Typography>
+
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center' }}>
+            <Button>
               Join Green Initiatives
             </Button>
             <Button variant="outline">
               Learn More About Our Impact
             </Button>
-          </div>
-        </div>
-      </section>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Environmental Impact */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Our Environmental Impact</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+      <Box component="section" sx={{ py: 8, px: 2 }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>Our Environmental Impact</Typography>
+            <Typography color="text.secondary" sx={{ maxWidth: '42rem', mx: 'auto' }}>
               Track our progress and see how our community is making a difference for the planet.
-            </p>
-          </div>
+            </Typography>
+          </Box>
 
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div className="bg-card p-6 border border-border">
-              <div className="text-3xl font-bold text-primary mb-2">500+</div>
-              <div className="text-muted-foreground">Carbon Neutral Events</div>
-            </div>
-            <div className="bg-card p-6 border border-border">
-              <div className="text-3xl font-bold text-primary mb-2">75%</div>
-              <div className="text-muted-foreground">Waste Reduction Goal</div>
-            </div>
-            <div className="bg-card p-6 border border-border">
-              <div className="text-3xl font-bold text-primary mb-2">1000+</div>
-              <div className="text-muted-foreground">Community Members Engaged</div>
-            </div>
-            <div className="bg-card p-6 border border-border">
-              <div className="text-3xl font-bold text-primary mb-2">50+</div>
-              <div className="text-muted-foreground">Green Partner Venues</div>
-            </div>
-          </div>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr 1fr 1fr' }, gap: 4, textAlign: 'center' }}>
+            <Paper variant="outlined" sx={{ p: 3 }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }} color="primary">500+</Typography>
+              <Typography color="text.secondary">Carbon Neutral Events</Typography>
+            </Paper>
+            <Paper variant="outlined" sx={{ p: 3 }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }} color="primary">75%</Typography>
+              <Typography color="text.secondary">Waste Reduction Goal</Typography>
+            </Paper>
+            <Paper variant="outlined" sx={{ p: 3 }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }} color="primary">1000+</Typography>
+              <Typography color="text.secondary">Community Members Engaged</Typography>
+            </Paper>
+            <Paper variant="outlined" sx={{ p: 3 }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }} color="primary">50+</Typography>
+              <Typography color="text.secondary">Green Partner Venues</Typography>
+            </Paper>
+          </Box>
 
           {/* Website Carbon Badge */}
-          <div className="mt-12 text-center">
-            <h3 className="text-xl font-semibold text-foreground mb-4">Our Website's Carbon Footprint</h3>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+          <Box sx={{ mt: 6, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>Our Website's Carbon Footprint</Typography>
+            <Typography color="text.secondary" sx={{ mb: 3, maxWidth: '42rem', mx: 'auto' }}>
               We monitor and work to minimize our digital carbon footprint. See how this website performs below:
-            </p>
-            <div className="flex justify-center">
+            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
               <div id="wcb" className="carbonbadge wcb-d"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
+    </Box>
   );
 }

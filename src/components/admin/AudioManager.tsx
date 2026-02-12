@@ -96,13 +96,13 @@ export function AudioManager() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
-      case 'completed': return 'bg-green-500';
-      case 'processing': return 'bg-yellow-500';
-      case 'failed': return 'bg-red-500';
-      case 'uploaded': return 'bg-blue-500';
-      default: return 'bg-gray-500';
+      case 'completed': return '#22c55e';
+      case 'processing': return '#eab308';
+      case 'failed': return '#ef4444';
+      case 'uploaded': return '#3b82f6';
+      default: return '#6b7280';
     }
   };
 
@@ -115,9 +115,9 @@ export function AudioManager() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+        <div sx={{ textAlign: 'center' }}>
+          <div sx={{ animation: 'spin 1s linear infinite', borderRadius: '50%', height: 32, width: 32, borderBottom: 2, borderColor: 'primary.main', mx: 'auto', mb: 2 }}></div>
           <p>Loading audio files...</p>
         </div>
       </div>
@@ -125,76 +125,76 @@ export function AudioManager() {
   }
 
   return (
-    <div className="space-y-6">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Audio Library</h2>
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Audio Library</h2>
+        <div sx={{ position: 'relative', width: 256 }}>
+          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           <Input
             placeholder="Search audio..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            sx={{ pl: 5 }}
           />
         </div>
       </div>
 
       {/* Audio Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
         {filteredAudios.map((audio) => (
-          <Card key={audio.id} className="overflow-hidden">
-            <div className="aspect-square bg-muted flex items-center justify-center relative">
+          <Card key={audio.id} sx={{ overflow: 'hidden' }}>
+            <div sx={{ aspectRatio: '1/1', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
               {audio.poster_image_path ? (
                 <img
                   src={`https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/public/audio/${audio.poster_image_path}`}
                   alt={audio.title}
-                  className="w-full h-full object-cover"
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
-                <Music className="h-12 w-12 text-muted-foreground" />
+                <Music style={{ height: 48, width: 48, color: 'var(--muted-foreground)' }} />
               )}
               
-              <div className="absolute top-2 right-2">
-                <Badge className={`${getStatusColor(audio.status)} text-white`}>
+              <div sx={{ position: 'absolute', top: 8, right: 8 }}>
+                <Badge style={{ backgroundColor: getStatusColor(audio.status), color: 'white' }}>
                   {audio.status}
                 </Badge>
               </div>
               
               {audio.duration_seconds && (
-                <div className="absolute bottom-2 right-2 bg-black/75 text-white px-2 py-1 rounded text-xs">
+                <div sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: 'rgba(0,0,0,0.75)', color: 'white', px: 1, py: 0.5, borderRadius: 1, fontSize: '0.75rem' }}>
                   {formatDuration(audio.duration_seconds)}
                 </div>
               )}
             </div>
             
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-1 line-clamp-1">{audio.title}</h3>
+            <CardContent sx={{ p: 2 }}>
+              <h3 sx={{ fontWeight: 600, mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{audio.title}</h3>
               
               {audio.artist && (
-                <p className="text-sm text-muted-foreground mb-1 line-clamp-1">
+                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   by {audio.artist}
                 </p>
               )}
               
               {audio.album && (
-                <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
+                <p sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   from {audio.album}
                 </p>
               )}
               
               {audio.description && (
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {audio.description}
                 </p>
               )}
               
-              <div className="text-xs text-muted-foreground mb-3">
+              <div sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1.5 }}>
                 <div>Renditions: {audio.renditions.length}</div>
                 <div>Created: {new Date(audio.created_at).toLocaleDateString()}</div>
               </div>
               
-              <div className="flex gap-2">
+              <div sx={{ display: 'flex', gap: 1 }}>
                 {audio.status === 'completed' && audio.renditions.length > 0 && (
                   <Dialog>
                     <DialogTrigger asChild>
@@ -203,14 +203,14 @@ export function AudioManager() {
                         size="sm"
                         onClick={() => setSelectedAudio(audio)}
                       >
-                        <Play className="h-4 w-4" />
+                        <Play style={{ height: 16, width: 16 }} />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-md">
+                    <DialogContent sx={{ maxWidth: 448 }}>
                       <DialogHeader>
                         <DialogTitle>{audio.title}</DialogTitle>
                       </DialogHeader>
-                      <div className="w-full">
+                      <div sx={{ width: '100%' }}>
                         <ModernAudioPlayer 
                           audio={{
                             id: audio.id,
@@ -232,7 +232,7 @@ export function AudioManager() {
                             }))
                           }}
                           controls={true}
-                          className="w-full"
+                          sx={{ width: '100%' }}
                         />
                       </div>
                     </DialogContent>
@@ -243,9 +243,9 @@ export function AudioManager() {
                   variant="outline"
                   size="sm"
                   onClick={() => deleteAudio(audio.id)}
-                  className="text-destructive hover:text-destructive"
+                  sx={{ color: 'error.main', '&:hover': { color: 'error.main' } }}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 style={{ height: 16, width: 16 }} />
                 </Button>
               </div>
             </CardContent>
@@ -254,10 +254,10 @@ export function AudioManager() {
       </div>
 
       {filteredAudios.length === 0 && (
-        <div className="text-center py-12">
-          <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No audio files found</h3>
-          <p className="text-muted-foreground">
+        <div sx={{ textAlign: 'center', py: 6 }}>
+          <Music style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+          <h3 sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No audio files found</h3>
+          <p style={{ color: 'var(--muted-foreground)' }}>
             {searchTerm ? 'Try adjusting your search terms' : 'Upload some audio files to get started'}
           </p>
         </div>

@@ -6,17 +6,17 @@ interface SecurityAlertProps {
   level: 'info' | 'warning' | 'error' | 'success';
   title: string;
   description: string;
-  className?: string;
+  sx?: any;
 }
 
-export function SecurityAlert({ level, title, description, className = '' }: SecurityAlertProps) {
+export function SecurityAlert({ level, title, description, sx }: SecurityAlertProps) {
   const getIcon = () => {
     switch (level) {
-      case 'info': return <Info className="h-4 w-4" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4" />;
-      case 'error': return <Shield className="h-4 w-4" />;
-      case 'success': return <CheckCircle className="h-4 w-4" />;
-      default: return <Info className="h-4 w-4" />;
+      case 'info': return <Info style={{ height: 16, width: 16 }} />;
+      case 'warning': return <AlertTriangle style={{ height: 16, width: 16 }} />;
+      case 'error': return <Shield style={{ height: 16, width: 16 }} />;
+      case 'success': return <CheckCircle style={{ height: 16, width: 16 }} />;
+      default: return <Info style={{ height: 16, width: 16 }} />;
     }
   };
 
@@ -29,7 +29,7 @@ export function SecurityAlert({ level, title, description, className = '' }: Sec
   };
 
   return (
-    <Alert variant={getVariant()} className={className}>
+    <Alert variant={getVariant()} sx={sx}>
       {getIcon()}
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>{description}</AlertDescription>

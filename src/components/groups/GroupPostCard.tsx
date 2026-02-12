@@ -5,12 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
-import { 
-  Heart, 
-  MessageCircle, 
-  Pin, 
-  PinOff, 
-  MoreHorizontal, 
+import {
+  Heart,
+  MessageCircle,
+  Pin,
+  PinOff,
+  MoreHorizontal,
   Megaphone,
   BarChart3,
   Clock,
@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import { GroupPost } from '@/hooks/useGroupPosts';
 import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface GroupPostCardProps {
   post: GroupPost;
@@ -27,7 +28,7 @@ interface GroupPostCardProps {
   onVote: (data: { postId: string; optionIndex: number }) => void;
   onTogglePin?: (data: { postId: string; isPinned: boolean }) => void;
   canManage?: boolean;
-  className?: string;
+  sx?: object;
 }
 
 export const GroupPostCard = ({
@@ -37,7 +38,7 @@ export const GroupPostCard = ({
   onVote,
   onTogglePin,
   canManage = false,
-  className
+  sx
 }: GroupPostCardProps) => {
   const [showPollResults, setShowPollResults] = useState(false);
 
@@ -51,8 +52,8 @@ export const GroupPostCard = ({
 
   const renderMentions = (content: string) => {
     if (!post.mentions || post.mentions.length === 0) {
-      return <ContentSanitizer 
-        content={content} 
+      return <ContentSanitizer
+        content={content}
         allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']}
       />;
     }
@@ -68,8 +69,8 @@ export const GroupPostCard = ({
       );
     });
 
-    return <ContentSanitizer 
-      content={processedContent} 
+    return <ContentSanitizer
+      content={processedContent}
       allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']}
     />;
   };
@@ -83,42 +84,48 @@ export const GroupPostCard = ({
     }, 0);
 
     return (
-      <div className="mt-4 p-4 border rounded-lg bg-muted/50">
-        <div className="flex items-center gap-2 mb-3">
-          <BarChart3 className="h-4 w-4 text-primary" />
-          <span className="font-medium">{post.poll_data.question}</span>
-        </div>
+      <Box
+        sx={{
+          mt: 2,
+          p: 2,
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          bgcolor: 'action.hover',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+          <BarChart3 style={{ width: 16, height: 16 }} color="var(--primary)" />
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>{post.poll_data.question}</Typography>
+        </Box>
 
-        <div className="space-y-2">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {post.poll_data.options.map((option: string, index: number) => {
             const isVoted = post.user_vote === index;
             const votePercentage = totalVotes > 0 ? 0 : 0; // Placeholder
 
             return (
-              <div key={index} className="space-y-1">
+              <Box key={index} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                 <Button
                   variant={isVoted ? "default" : "outline"}
-                  className={cn(
-                    "w-full justify-start h-auto p-3",
-                    isVoted && "bg-primary text-primary-foreground"
-                  )}
                   onClick={() => onVote({ postId: post.id, optionIndex: index })}
                   disabled={post.user_vote !== null && post.user_vote !== index}
+                  style={{ width: '100%', justifyContent: 'flex-start', height: 'auto', padding: 12 }}
                 >
-                  <span className="text-left">{option}</span>
+                  <Box component="span" sx={{ textAlign: 'left' }}>{option}</Box>
                 </Button>
-                
+
                 {showPollResults && (
-                  <div className="text-xs text-muted-foreground px-2">
+                  <Typography variant="caption" color="text.secondary" sx={{ px: 1 }}>
                     {votePercentage.toFixed(1)}% ({0} votes)
-                  </div>
+                  </Typography>
                 )}
-              </div>
+              </Box>
             );
           })}
-        </div>
+        </Box>
 
-        <div className="flex items-center justify-between mt-3 pt-2 border-t">
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.5, pt: 1, borderTop: 1, borderColor: 'divider' }}>
           <Button
             variant="ghost"
             size="sm"
@@ -126,108 +133,126 @@ export const GroupPostCard = ({
           >
             {showPollResults ? "Hide Results" : "Show Results"}
           </Button>
-          
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Users className="h-3 w-3" />
-            <span>{totalVotes} votes</span>
-          </div>
-        </div>
-      </div>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Users style={{ width: 12, height: 12 }} />
+            <Typography variant="caption" color="text.secondary">{totalVotes} votes</Typography>
+          </Box>
+        </Box>
+      </Box>
     );
   };
 
   return (
-    <Card className={cn("group hover:shadow-md transition-shadow", className)}>
-      <CardHeader className="pb-3">
-        <div className="flex items-start gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={post.profiles?.avatar_url || undefined} />
-            <AvatarFallback>
-              {post.profiles?.display_name?.charAt(0) || 'U'}
-            </AvatarFallback>
-          </Avatar>
+    <Card>
+      <Box sx={{ '&:hover': { boxShadow: 3 }, transition: 'box-shadow 0.2s', ...sx }}>
+        <CardHeader>
+          <Box sx={{ pb: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+              <Avatar>
+                <AvatarImage src={post.profiles?.avatar_url || undefined} />
+                <AvatarFallback>
+                  {post.profiles?.display_name?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-medium text-sm">
-                {post.profiles?.display_name || 'Unknown User'}
-              </span>
-              
-              <div className="flex items-center gap-1">
-                {post.post_type === 'announcement' && (
-                  <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                    <Megaphone className="h-3 w-3" />
-                    Announcement
-                  </Badge>
-                )}
-                
-                {post.is_pinned && (
-                  <Pin className="h-3 w-3 text-primary" />
-                )}
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
-            </div>
-          </div>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {post.profiles?.display_name || 'Unknown User'}
+                  </Typography>
 
-          {canManage && (
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onTogglePin?.({ postId: post.id, isPinned: !post.is_pinned })}
-              >
-                {post.is_pinned ? (
-                  <PinOff className="h-4 w-4" />
-                ) : (
-                  <Pin className="h-4 w-4" />
-                )}
-              </Button>
-              
-              <Button variant="ghost" size="sm">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
-      </CardHeader>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    {post.post_type === 'announcement' && (
+                      <Badge variant="secondary">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.75rem' }}>
+                          <Megaphone style={{ width: 12, height: 12 }} />
+                          Announcement
+                        </Box>
+                      </Badge>
+                    )}
 
-      <CardContent className="pt-0">
-        <div className="space-y-4">
-          <div className="text-sm leading-relaxed">
-            {renderMentions(post.content)}
-          </div>
+                    {post.is_pinned && (
+                      <Pin style={{ width: 12, height: 12 }} color="var(--primary)" />
+                    )}
+                  </Box>
+                </Box>
 
-          {post.post_type === 'poll' && renderPoll()}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Clock style={{ width: 12, height: 12 }} />
+                  <Typography variant="caption" color="text.secondary">
+                    {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                  </Typography>
+                </Box>
+              </Box>
 
-          <Separator />
+              {canManage && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    opacity: 0,
+                    transition: 'opacity 0.2s',
+                    '.group:hover &': { opacity: 1 },
+                  }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onTogglePin?.({ postId: post.id, isPinned: !post.is_pinned })}
+                  >
+                    {post.is_pinned ? (
+                      <PinOff style={{ width: 16, height: 16 }} />
+                    ) : (
+                      <Pin style={{ width: 16, height: 16 }} />
+                    )}
+                  </Button>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLikeToggle}
-                className={cn(
-                  "flex items-center gap-2",
-                  post.user_liked && "text-red-500 hover:text-red-600"
-                )}
-              >
-                <Heart className={cn("h-4 w-4", post.user_liked && "fill-current")} />
-                <span>{post.likes_count}</span>
-              </Button>
+                  <Button variant="ghost" size="sm">
+                    <MoreHorizontal style={{ width: 16, height: 16 }} />
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </CardHeader>
 
-              <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4" />
-                <span>{post.comments_count}</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </CardContent>
+        <CardContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="body2" sx={{ lineHeight: 1.7 }}>
+              {renderMentions(post.content)}
+            </Typography>
+
+            {post.post_type === 'poll' && renderPoll()}
+
+            <Separator />
+
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLikeToggle}
+                  style={post.user_liked ? { color: '#ef4444' } : undefined}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Heart style={{ width: 16, height: 16, ...(post.user_liked && { fill: 'currentColor' }) }} />
+                    <span>{post.likes_count}</span>
+                  </Box>
+                </Button>
+
+                <Button variant="ghost" size="sm">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <MessageCircle style={{ width: 16, height: 16 }} />
+                    <span>{post.comments_count}</span>
+                  </Box>
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+        </CardContent>
+      </Box>
     </Card>
   );
 };

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -184,307 +186,307 @@ export default function Favorites() {
     const getIcon = () => {
       switch (item.type) {
         case 'venue':
-          return <MapPin className="h-4 w-4" />;
+          return <MapPin style={{ height: 16, width: 16 }} />;
         case 'event':
-          return <Calendar className="h-4 w-4" />;
+          return <Calendar style={{ height: 16, width: 16 }} />;
         case 'marketplace':
-          return <ShoppingBag className="h-4 w-4" />;
+          return <ShoppingBag style={{ height: 16, width: 16 }} />;
         case 'news':
-          return <Newspaper className="h-4 w-4" />;
+          return <Newspaper style={{ height: 16, width: 16 }} />;
       }
     };
     if (viewMode === 'grid') {
-      return <Card key={`${item.type}-${item.id}`} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-          <div className="relative">
-            {item.image_url ? <div className="aspect-video relative overflow-hidden rounded-t-lg">
-                <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
-                <div className="absolute top-2 left-2">
-                  <Badge variant="secondary" className="text-xs backdrop-blur-sm bg-background/80">
+      return <Card key={`${item.type}-${item.id}`} sx={{ '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' }, transition: 'all 200ms' }}>
+          <Box sx={{ position: 'relative' }}>
+            {item.image_url ? <Box sx={{ aspectRatio: '16/9', position: 'relative', overflow: 'hidden', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+                <Box component="img" src={item.image_url} alt={item.title} sx={{ width: '100%', height: '100%', objectFit: 'cover', '.group:hover &': { transform: 'scale(1.05)' }, transition: 'transform 200ms' }} />
+                <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
+                  <Badge variant="secondary" sx={{ fontSize: '0.75rem', backdropFilter: 'blur(4px)', bgcolor: 'rgba(var(--background), 0.8)' }}>
                     {getIcon()}
-                    <span className="ml-1 capitalize">{item.type}</span>
+                    <Box component="span" sx={{ ml: 0.5, textTransform: 'capitalize' }}>{item.type}</Box>
                   </Badge>
-                </div>
-                <div className="absolute top-2 right-2">
-                  <FavoriteButton itemId={item.id} type={item.type} variant="ghost" className="bg-background/80 backdrop-blur-sm hover:bg-background" />
-                </div>
-              </div> : <div className="aspect-video bg-muted rounded-t-lg flex items-center justify-center relative">
+                </Box>
+                <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+                  <FavoriteButton itemId={item.id} type={item.type} variant="ghost" sx={{ bgcolor: 'rgba(var(--background), 0.8)', backdropFilter: 'blur(4px)', '&:hover': { bgcolor: 'var(--background)' } }} />
+                </Box>
+              </Box> : <Box sx={{ aspectRatio: '16/9', bgcolor: 'var(--muted)', borderTopLeftRadius: 8, borderTopRightRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 {getIcon()}
-                <div className="absolute top-2 right-2">
+                <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
                   <FavoriteButton itemId={item.id} type={item.type} variant="ghost" />
-                </div>
-              </div>}
-          </div>
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                </Box>
+              </Box>}
+          </Box>
+          <CardContent sx={{ p: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.125rem', mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', '.group:hover &': { color: 'primary.main' }, transition: 'color 150ms' }}>
               {item.title}
-            </h3>
-            {item.description && <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+            </Typography>
+            {item.description && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {item.description}
-              </p>}
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-3">
-              {item.location && <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
+              </Typography>}
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, fontSize: '0.75rem', color: 'var(--muted-foreground)', mb: 1.5 }}>
+              {item.location && <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <MapPin style={{ height: 12, width: 12 }} />
                   {item.location}
-                </div>}
-              {item.rating && <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                </Box>}
+              {item.rating && <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Star style={{ height: 12, width: 12, fill: '#facc15', color: '#facc15' }} />
                   {item.rating}
-                </div>}
-              {item.category && <Badge variant="outline" className="text-xs">
+                </Box>}
+              {item.category && <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                   {item.category}
                 </Badge>}
-            </div>
-            <div className="flex items-center justify-between">
-              {item.price ? <div className="font-semibold text-lg text-primary">
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              {item.price ? <Typography sx={{ fontWeight: 600, fontSize: '1.125rem', color: 'primary.main' }}>
                   ${item.price}
-                </div> : <div />}
-              <Button asChild variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                </Typography> : <Box />}
+              <Button asChild variant="outline" size="sm" sx={{ '.group:hover &': { bgcolor: 'primary.main', color: 'primary.contrastText' }, transition: 'color 150ms, background-color 150ms' }}>
                 <Link to={getItemUrl()}>
-                  <ExternalLink className="h-3 w-3 mr-1" />
+                  <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
                   View
                 </Link>
               </Button>
-            </div>
+            </Box>
           </CardContent>
         </Card>;
     }
-    return <Card key={`${item.type}-${item.id}`} className="group hover:shadow-md transition-all duration-200 hover:border-primary/50">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-4">
-            {item.image_url && <div className="flex-shrink-0">
-                <img src={item.image_url} alt={item.title} className="w-20 h-20 object-cover rounded-lg group-hover:scale-105 transition-transform duration-200" />
-              </div>}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+    return <Card key={`${item.type}-${item.id}`} sx={{ '&:hover': { boxShadow: 3, borderColor: 'rgba(var(--primary), 0.5)' }, transition: 'all 200ms' }}>
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+            {item.image_url && <Box sx={{ flexShrink: 0 }}>
+                <Box component="img" src={item.image_url} alt={item.title} sx={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 2, '.group:hover &': { transform: 'scale(1.05)' }, transition: 'transform 200ms' }} />
+              </Box>}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                     {getIcon()}
-                    <Badge variant="secondary" className="text-xs capitalize">
+                    <Badge variant="secondary" sx={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>
                       {item.type}
                     </Badge>
-                    {item.category && <Badge variant="outline" className="text-xs">
+                    {item.category && <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                         {item.category}
                       </Badge>}
-                  </div>
-                  <h3 className="font-semibold text-xl leading-tight mb-2 group-hover:text-primary transition-colors">
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.25rem', lineHeight: 'tight', mb: 1, '.group:hover &': { color: 'primary.main' }, transition: 'color 150ms' }}>
                     {item.title}
-                  </h3>
-                  {item.description && <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+                  </Typography>
+                  {item.description && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1.5 }}>
                       {item.description}
-                    </p>}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    {item.location && <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
+                    </Typography>}
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                    {item.location && <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <MapPin style={{ height: 12, width: 12 }} />
                         {item.location}
-                      </div>}
-                    {item.date && <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
+                      </Box>}
+                    {item.date && <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Calendar style={{ height: 12, width: 12 }} />
                         {new Date(item.date).toLocaleDateString()}
-                      </div>}
-                    {item.rating && <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      </Box>}
+                    {item.rating && <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Star style={{ height: 12, width: 12, fill: '#facc15', color: '#facc15' }} />
                         {item.rating}
-                      </div>}
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
+                      </Box>}
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
                   <FavoriteButton itemId={item.id} type={item.type} variant="ghost" />
-                  {item.price && <div className="font-semibold text-xl text-primary">
+                  {item.price && <Typography sx={{ fontWeight: 600, fontSize: '1.25rem', color: 'primary.main' }}>
                       ${item.price}
-                    </div>}
-                  <Button asChild variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    </Typography>}
+                  <Button asChild variant="outline" size="sm" sx={{ '.group:hover &': { bgcolor: 'primary.main', color: 'primary.contrastText' }, transition: 'color 150ms, background-color 150ms' }}>
                     <Link to={getItemUrl()}>
-                      <ExternalLink className="h-3 w-3 mr-1" />
+                      <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
                       View Details
                     </Link>
                   </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         </CardContent>
       </Card>;
   };
   if (!user) {
-    return <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Heart className="h-16 w-16 text-muted-foreground mb-4" />
-          <h1 className="text-3xl font-bold mb-2">Sign In Required</h1>
-          <p className="text-muted-foreground mb-6">
+    return <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, textAlign: 'center' }}>
+          <Heart style={{ height: 64, width: 64, color: 'var(--muted-foreground)', marginBottom: 16 }} />
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Sign In Required</Typography>
+          <Typography sx={{ color: 'var(--muted-foreground)', mb: 3 }}>
             Please sign in to view your favorites
-          </p>
+          </Typography>
           <Button asChild>
             <Link to="/auth">Sign In</Link>
           </Button>
-        </div>
-      </div>;
+        </Box>
+      </Box>;
   }
-  return <div className="container mx-auto px-4 py-8">
+  return <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4 }}>
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
-          <div>
-            
-            <p className="text-muted-foreground text-lg">
-              {loading ? <span className="flex items-center gap-2">
-                  <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, lg: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, mb: 3 }}>
+          <Box>
+
+            <Typography sx={{ color: 'var(--muted-foreground)', fontSize: '1.125rem' }}>
+              {loading ? <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ animation: 'spin 1s linear infinite', height: 16, width: 16, border: '2px solid', borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%' }} />
                   Loading your favorites...
-                </span> : <>
-                  <span className="font-semibold text-foreground">{getTotalCount()}</span> items in your favorites
+                </Box> : <>
+                  <Box component="span" sx={{ fontWeight: 600, color: 'var(--foreground)' }}>{getTotalCount()}</Box> items in your favorites
                 </>}
-            </p>
-          </div>
-          
-          {!loading && getTotalCount() > 0 && <div className="flex items-center gap-3">
-              {getEventCount() > 0 && <Button variant="outline" onClick={handleCalendarSubscription} disabled={calendarLoading} className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4" />
+            </Typography>
+          </Box>
+
+          {!loading && getTotalCount() > 0 && <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              {getEventCount() > 0 && <Button variant="outline" onClick={handleCalendarSubscription} disabled={calendarLoading} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CalendarDays style={{ height: 16, width: 16 }} />
                   Subscribe to Events Calendar
                 </Button>}
-              
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">View:</span>
-                <div className="flex items-center border rounded-lg">
-                  <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} className="rounded-r-none">
-                    <List className="h-4 w-4" />
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>View:</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                  <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} sx={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}>
+                    <List style={{ height: 16, width: 16 }} />
                   </Button>
-                  <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} className="rounded-l-none">
-                    <Grid className="h-4 w-4" />
+                  <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} sx={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
+                    <Grid style={{ height: 16, width: 16 }} />
                   </Button>
-                </div>
-              </div>
-            </div>}
-        </div>
+                </Box>
+              </Box>
+            </Box>}
+        </Box>
 
         {/* Calendar Subscription Dialog */}
         <Dialog open={calendarDialogOpen} onOpenChange={setCalendarDialogOpen}>
-          <DialogContent className="sm:max-w-2xl">
+          <DialogContent sx={{ maxWidth: { sm: 672 } }}>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <CalendarDays className="h-5 w-5" />
+              <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CalendarDays style={{ height: 20, width: 20 }} />
                 Subscribe to Your Events Calendar
               </DialogTitle>
               <DialogDescription>
                 Subscribe to your favorite events in any calendar application that supports iCal feeds.
               </DialogDescription>
             </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="p-4 bg-muted rounded-lg">
-                <h4 className="font-medium mb-2">Calendar Subscription URL:</h4>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 p-2 bg-background rounded text-sm font-mono break-all">
-                    {calendarUrl}
-                  </code>
-                  <Button variant="outline" size="sm" onClick={copyCalendarFeedUrl} disabled={calendarLoading}>
-                    <LinkIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ p: 2, bgcolor: 'var(--muted)', borderRadius: 2 }}>
+                <Typography sx={{ fontWeight: 500, mb: 1 }}>Calendar Subscription URL:</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box component="code" sx={{ flex: 1, p: 1, bgcolor: 'var(--background)', borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                    {calendarUrl}
+                  </Box>
+                  <Button variant="outline" size="sm" onClick={copyCalendarFeedUrl} disabled={calendarLoading}>
+                    <LinkIcon style={{ height: 16, width: 16 }} />
+                  </Button>
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Subscribe in Calendar App</CardTitle>
+                  <CardHeader sx={{ pb: 1.5 }}>
+                    <CardTitle sx={{ fontSize: '1.125rem' }}>Subscribe in Calendar App</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">
+                  <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
                       Copy the URL above and add it as a new calendar subscription in your preferred calendar app.
-                    </p>
-                    <div className="space-y-2 text-sm">
-                      <div><strong>Google Calendar:</strong> Settings → Add calendar → From URL</div>
-                      <div><strong>Apple Calendar:</strong> File → New Calendar Subscription</div>
-                      <div><strong>Outlook:</strong> Add calendar → Subscribe from web</div>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={copyCalendarFeedUrl} disabled={calendarLoading} className="w-full">
-                      <LinkIcon className="h-4 w-4 mr-2" />
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, fontSize: '0.875rem' }}>
+                      <Box><strong>Google Calendar:</strong> Settings &rarr; Add calendar &rarr; From URL</Box>
+                      <Box><strong>Apple Calendar:</strong> File &rarr; New Calendar Subscription</Box>
+                      <Box><strong>Outlook:</strong> Add calendar &rarr; Subscribe from web</Box>
+                    </Box>
+                    <Button variant="outline" size="sm" onClick={copyCalendarFeedUrl} disabled={calendarLoading} sx={{ width: '100%' }}>
+                      <LinkIcon style={{ height: 16, width: 16, marginRight: 8 }} />
                       Copy Subscription URL
                     </Button>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Download Calendar File</CardTitle>
+                  <CardHeader sx={{ pb: 1.5 }}>
+                    <CardTitle sx={{ fontSize: '1.125rem' }}>Download Calendar File</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">
+                  <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
                       Download a one-time .ics file that you can import into any calendar application.
-                    </p>
-                    <p className="text-xs text-muted-foreground">
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
                       Note: Downloaded files won't automatically update when you add new favorites. Use the subscription URL for automatic updates.
-                    </p>
-                    <Button variant="outline" size="sm" onClick={downloadCalendarFile} disabled={calendarLoading} className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
+                    </Typography>
+                    <Button variant="outline" size="sm" onClick={downloadCalendarFile} disabled={calendarLoading} sx={{ width: '100%' }}>
+                      <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                       Download .ics File
                     </Button>
                   </CardContent>
                 </Card>
-              </div>
+              </Box>
 
-              <div className="text-xs text-muted-foreground">
-                <p>• Only future events from your favorites will appear in the calendar</p>
-                <p>• The calendar updates automatically when you add or remove event favorites</p>
-                <p>• Calendar subscriptions are cached for up to 1 hour for better performance</p>
-              </div>
-            </div>
+              <Box sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+                <Typography sx={{ fontSize: 'inherit', color: 'inherit' }}>&bull; Only future events from your favorites will appear in the calendar</Typography>
+                <Typography sx={{ fontSize: 'inherit', color: 'inherit' }}>&bull; The calendar updates automatically when you add or remove event favorites</Typography>
+                <Typography sx={{ fontSize: 'inherit', color: 'inherit' }}>&bull; Calendar subscriptions are cached for up to 1 hour for better performance</Typography>
+              </Box>
+            </Box>
           </DialogContent>
         </Dialog>
-      </div>
+      </Box>
 
       {/* Content */}
-      {loading ? <div className="flex items-center justify-center py-12">
-          <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-            <p className="text-muted-foreground">Loading your favorites...</p>
-          </div>
-        </div> : getTotalCount() === 0 ? <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Heart className="h-16 w-16 text-muted-foreground mb-4" />
-          <h3 className="text-2xl font-semibold mb-2">No favorites yet</h3>
-          <p className="text-muted-foreground mb-6 max-w-md">
+      {loading ? <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ animation: 'spin 1s linear infinite', height: 32, width: 32, border: '2px solid', borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%' }} />
+            <Typography sx={{ color: 'var(--muted-foreground)' }}>Loading your favorites...</Typography>
+          </Box>
+        </Box> : getTotalCount() === 0 ? <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, textAlign: 'center' }}>
+          <Heart style={{ height: 64, width: 64, color: 'var(--muted-foreground)', marginBottom: 16 }} />
+          <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>No favorites yet</Typography>
+          <Typography sx={{ color: 'var(--muted-foreground)', mb: 3, maxWidth: 448 }}>
             Start exploring and save your favorite venues, events, marketplace items, and news articles
-          </p>
-          <div className="flex gap-3">
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
             <Button asChild variant="outline">
               <Link to="/venues">Browse Venues</Link>
             </Button>
             <Button asChild>
               <Link to="/events">Browse Events</Link>
             </Button>
-          </div>
-        </div> : <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="all" className="flex items-center gap-1">
+          </Box>
+        </Box> : <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList sx={{ mb: 3 }}>
+            <TabsTrigger value="all" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               All ({getTabCount('all')})
             </TabsTrigger>
-            <TabsTrigger value="venue" className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
+            <TabsTrigger value="venue" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <MapPin style={{ height: 12, width: 12 }} />
               Venues ({getTabCount('venue')})
             </TabsTrigger>
-            <TabsTrigger value="event" className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
+            <TabsTrigger value="event" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Calendar style={{ height: 12, width: 12 }} />
               Events ({getTabCount('event')})
             </TabsTrigger>
-            <TabsTrigger value="marketplace" className="flex items-center gap-1">
-              <ShoppingBag className="h-3 w-3" />
+            <TabsTrigger value="marketplace" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <ShoppingBag style={{ height: 12, width: 12 }} />
               Marketplace ({getTabCount('marketplace')})
             </TabsTrigger>
-            <TabsTrigger value="news" className="flex items-center gap-1">
-              <Newspaper className="h-3 w-3" />
+            <TabsTrigger value="news" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Newspaper style={{ height: 12, width: 12 }} />
               News ({getTabCount('news')})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
+            <Box sx={viewMode === 'grid' ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 } : { display: 'flex', flexDirection: 'column', gap: 2 }}>
               {getAllFavorites().map(renderFavoriteCard)}
-            </div>
+            </Box>
           </TabsContent>
 
           {Object.entries(favorites).map(([type, items]) => <TabsContent key={type} value={type}>
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
+              <Box sx={viewMode === 'grid' ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 } : { display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {items.map(renderFavoriteCard)}
-              </div>
+              </Box>
             </TabsContent>)}
         </Tabs>}
-    </div>;
+    </Box>;
 }

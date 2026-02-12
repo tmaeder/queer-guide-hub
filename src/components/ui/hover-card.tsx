@@ -1,27 +1,28 @@
 import * as React from "react"
-import * as HoverCardPrimitive from "@radix-ui/react-hover-card"
+import MuiPopover from "@mui/material/Popover"
 
-import { cn } from "@/lib/utils"
+function HoverCard({ children }: { children: React.ReactNode }) { return <>{children}</>; }
 
-const HoverCard = HoverCardPrimitive.Root
+const HoverCardTrigger = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement> & { asChild?: boolean }>(
+  ({ children, asChild, ...props }, ref) => {
+    if (asChild && React.isValidElement(children)) {
+      return React.cloneElement(children as React.ReactElement<any>, { ref, ...props });
+    }
+    return <span ref={ref as any} {...props}>{children}</span>;
+  }
+);
+HoverCardTrigger.displayName = "HoverCardTrigger"
 
-const HoverCardTrigger = HoverCardPrimitive.Trigger
+interface HoverCardContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  align?: 'start' | 'center' | 'end';
+  sideOffset?: number;
+}
 
-const HoverCardContent = React.forwardRef<
-  React.ElementRef<typeof HoverCardPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Content>
->(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
-  <HoverCardPrimitive.Content
-    ref={ref}
-    align={align}
-    sideOffset={sideOffset}
-    className={cn(
-      "z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className
-    )}
-    {...props}
-  />
-))
-HoverCardContent.displayName = HoverCardPrimitive.Content.displayName
+const HoverCardContent = React.forwardRef<HTMLDivElement, HoverCardContentProps>(
+  ({ className, children, style, ...props }, ref) => (
+    <div ref={ref} className={className} style={style} {...props}>{children}</div>
+  )
+);
+HoverCardContent.displayName = "HoverCardContent"
 
 export { HoverCard, HoverCardTrigger, HoverCardContent }

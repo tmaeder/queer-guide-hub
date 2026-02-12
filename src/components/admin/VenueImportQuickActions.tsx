@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  MapPin, Search, Download, RefreshCw, CheckCircle, AlertTriangle, 
+import {
+  MapPin, Search, Download, RefreshCw, CheckCircle, AlertTriangle,
   Clock, Zap, Globe, Navigation, Plane, Activity, TrendingUp, AlertCircle
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
@@ -88,7 +90,7 @@ export const VenueImportQuickActions = () => {
       {
         id: 'foursquare',
         name: 'Foursquare',
-        icon: <Navigation className="h-6 w-6" />,
+        icon: <Navigation style={{ width: 24, height: 24 }} />,
         description: 'Import venues from Foursquare with detailed business information',
         color: 'bg-blue-500',
         isLoading: loadingStates.foursquare,
@@ -98,7 +100,7 @@ export const VenueImportQuickActions = () => {
       {
         id: 'google-places',
         name: 'Google Places',
-        icon: <Globe className="h-6 w-6" />,
+        icon: <Globe style={{ width: 24, height: 24 }} />,
         description: 'Import venues from Google Places with comprehensive location data',
         color: 'bg-green-500',
         isLoading: loadingStates['google-places'],
@@ -108,7 +110,7 @@ export const VenueImportQuickActions = () => {
       {
         id: 'tomtom',
         name: 'TomTom',
-        icon: <MapPin className="h-6 w-6" />,
+        icon: <MapPin style={{ width: 24, height: 24 }} />,
         description: 'Import venues from TomTom with accurate mapping information',
         color: 'bg-orange-500',
         isLoading: loadingStates.tomtom,
@@ -118,7 +120,7 @@ export const VenueImportQuickActions = () => {
       {
         id: 'tripadvisor',
         name: 'TripAdvisor',
-        icon: <Plane className="h-6 w-6" />,
+        icon: <Plane style={{ width: 24, height: 24 }} />,
         description: 'Import venues from TripAdvisor with reviews and ratings',
         color: 'bg-purple-500',
         isLoading: loadingStates.tripadvisor,
@@ -163,18 +165,18 @@ export const VenueImportQuickActions = () => {
 
   const getStatusIcon = (provider: VenueProvider) => {
     if (provider.isLoading || provider.status?.isRunning) {
-      return <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />;
+      return <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite', color: '#3b82f6' }} />;
     }
     if (provider.status?.lastResult?.error) {
-      return <AlertCircle className="h-4 w-4 text-red-500" />;
+      return <AlertCircle style={{ width: 16, height: 16, color: '#ef4444' }} />;
     }
     if (provider.status?.lastResult?.success) {
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
+      return <CheckCircle style={{ width: 16, height: 16, color: '#22c55e' }} />;
     }
     if (provider.lastImport) {
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
+      return <CheckCircle style={{ width: 16, height: 16, color: '#22c55e' }} />;
     }
-    return <Clock className="h-4 w-4 text-gray-400" />;
+    return <Clock style={{ width: 16, height: 16, color: '#9ca3af' }} />;
   };
 
   const getStatusText = (provider: VenueProvider) => {
@@ -190,90 +192,104 @@ export const VenueImportQuickActions = () => {
 
   const getStatusBadge = (provider: VenueProvider) => {
     if (provider.isLoading || provider.status?.isRunning) {
-      return <Badge variant="secondary" className="gap-1"><Activity className="h-3 w-3" />Running</Badge>;
+      return <Badge variant="secondary" sx={{ gap: 0.5 }}><Activity style={{ width: 12, height: 12 }} />Running</Badge>;
     }
     if (provider.status?.lastResult?.error) {
-      return <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3" />Error</Badge>;
+      return <Badge variant="destructive" sx={{ gap: 0.5 }}><AlertTriangle style={{ width: 12, height: 12 }} />Error</Badge>;
     }
     if (provider.status?.lastResult?.success) {
-      return <Badge variant="default" className="gap-1"><TrendingUp className="h-3 w-3" />Success</Badge>;
+      return <Badge variant="default" sx={{ gap: 0.5 }}><TrendingUp style={{ width: 12, height: 12 }} />Success</Badge>;
     }
     return null;
   };
 
+  const getProviderColor = (id: string) => {
+    switch (id) {
+      case 'foursquare': return '#3b82f6';
+      case 'google-places': return '#22c55e';
+      case 'tomtom': return '#f97316';
+      case 'tripadvisor': return '#a855f7';
+      default: return '#6b7280';
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Venue Imports</h2>
-          <p className="text-muted-foreground">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="h5">Venue Imports</Typography>
+          <Typography color="text.secondary">
             Import venues from multiple providers with customizable search terms
-          </p>
-        </div>
-        <Badge variant="secondary" className="gap-1">
-          <Zap className="h-3 w-3" />
+          </Typography>
+        </Box>
+        <Badge variant="secondary" sx={{ gap: 0.5 }}>
+          <Zap style={{ width: 12, height: 12 }} />
           Quick Actions
         </Badge>
-      </div>
+      </Box>
 
       {/* Provider Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
         {providers.map((provider) => (
-          <Card key={provider.id} className="relative overflow-hidden hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="p-2 rounded-lg text-white" style={{ backgroundColor: provider.id === 'foursquare' ? '#3b82f6' : provider.id === 'google-places' ? '#22c55e' : provider.id === 'tomtom' ? '#f97316' : '#a855f7' }}>
+          <Card key={provider.id} sx={{ position: 'relative', overflow: 'hidden', '&:hover': { boxShadow: 6 }, transition: 'all 0.2s' }}>
+            <CardHeader sx={{ pb: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ p: 1, borderRadius: 2, color: 'white', bgcolor: getProviderColor(provider.id) }}>
                   {provider.icon}
-                </div>
-                <div className="flex items-center gap-2">
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {getStatusBadge(provider)}
                   {getStatusIcon(provider)}
-                </div>
-              </div>
-              <CardTitle className="text-lg">{provider.name}</CardTitle>
-              <CardDescription className="text-sm">
+                </Box>
+              </Box>
+              <CardTitle sx={{ fontSize: '1.125rem' }}>{provider.name}</CardTitle>
+              <CardDescription>
                 {provider.description}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {/* Stats */}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Venues:</span>
-                <span className="font-semibold">{provider.totalVenues?.toLocaleString()}</span>
-              </div>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="body2" color="text.secondary">Total Venues:</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>{provider.totalVenues?.toLocaleString()}</Typography>
+              </Box>
 
               {/* Status with more detailed information */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{getStatusText(provider)}</span>
-                </div>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="caption" color="text.secondary">{getStatusText(provider)}</Typography>
+                </Box>
                 {provider.status?.lastResult && !provider.status.lastResult.error && (
-                  <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                    Last import: {provider.status.lastResult.imported + provider.status.lastResult.updated} venues processed
-                  </div>
+                  <Box sx={{ p: 1, borderRadius: 1, bgcolor: 'success.light', color: 'success.dark' }}>
+                    <Typography variant="caption">
+                      Last import: {provider.status.lastResult.imported + provider.status.lastResult.updated} venues processed
+                    </Typography>
+                  </Box>
                 )}
                 {provider.status?.lastResult?.error && (
-                  <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
-                    Error: {provider.status.lastResult.error}
-                  </div>
+                  <Box sx={{ p: 1, borderRadius: 1, bgcolor: 'error.light', color: 'error.dark' }}>
+                    <Typography variant="caption">
+                      Error: {provider.status.lastResult.error}
+                    </Typography>
+                  </Box>
                 )}
-              </div>
+              </Box>
 
               {/* Progress bar for loading state */}
               {provider.isLoading && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span>Importing venues...</span>
-                    <span>Processing</span>
-                  </div>
-                  <Progress value={45} className="h-2" />
-                </div>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="caption">Importing venues...</Typography>
+                    <Typography variant="caption">Processing</Typography>
+                  </Box>
+                  <Progress value={45} sx={{ height: 8 }} />
+                </Box>
               )}
 
               {/* Action Button */}
               <Button
-                className="w-full gap-2"
+                sx={{ width: '100%', gap: 1 }}
                 size="sm"
                 variant={provider.isLoading ? "secondary" : "default"}
                 disabled={provider.isLoading}
@@ -281,12 +297,12 @@ export const VenueImportQuickActions = () => {
               >
                 {provider.isLoading ? (
                   <>
-                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
                     Importing...
                   </>
                 ) : (
                   <>
-                    <Search className="h-4 w-4" />
+                    <Search style={{ width: 16, height: 16 }} />
                     Configure Import
                   </>
                 )}
@@ -294,41 +310,41 @@ export const VenueImportQuickActions = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
+      </Box>
 
       {/* Quick Stats */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Download className="h-5 w-5" />
+          <CardTitle sx={{ fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Download style={{ width: 20, height: 20 }} />
             Import Statistics
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+            <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#eff6ff', borderRadius: 2 }}>
+              <Typography variant="h5" sx={{ color: '#2563eb' }}>
                 {providers.reduce((sum, p) => sum + (p.totalVenues || 0), 0).toLocaleString()}
-              </div>
-              <div className="text-sm text-blue-600">Total Venues</div>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#2563eb' }}>Total Venues</Typography>
+            </Box>
+            <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#f0fdf4', borderRadius: 2 }}>
+              <Typography variant="h5" sx={{ color: '#16a34a' }}>
                 {providers.filter(p => p.lastImport).length}
-              </div>
-              <div className="text-sm text-green-600">Active Sources</div>
-            </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#16a34a' }}>Active Sources</Typography>
+            </Box>
+            <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#fff7ed', borderRadius: 2 }}>
+              <Typography variant="h5" sx={{ color: '#ea580c' }}>
                 {providers.filter(p => p.isLoading).length}
-              </div>
-              <div className="text-sm text-orange-600">Currently Importing</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">4</div>
-              <div className="text-sm text-purple-600">Available Providers</div>
-            </div>
-          </div>
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#ea580c' }}>Currently Importing</Typography>
+            </Box>
+            <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#faf5ff', borderRadius: 2 }}>
+              <Typography variant="h5" sx={{ color: '#9333ea' }}>4</Typography>
+              <Typography variant="body2" sx={{ color: '#9333ea' }}>Available Providers</Typography>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
@@ -342,6 +358,6 @@ export const VenueImportQuickActions = () => {
           isImporting={loadingStates[importDialog.provider]}
         />
       )}
-    </div>
+    </Box>
   );
 };

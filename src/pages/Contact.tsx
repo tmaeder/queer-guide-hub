@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, MapPin, Clock, MessageCircle, Shield, Bug } from "lucide-react";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 export default function Contact() {
   const contactMethods = [{
@@ -44,86 +47,86 @@ export default function Contact() {
     question: "Is my personal information secure?",
     answer: "Yes, we take privacy seriously. Please review our Privacy Policy for detailed information about how we collect, use, and protect your data."
   }];
-  return <div className="w-full">
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            We're here to help! Whether you have questions, feedback, or need support, 
+  return <Box>
+      <Container maxWidth="lg" sx={{ py: 6 }}>
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
+          <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>Contact Us</Typography>
+          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '42rem', mx: 'auto' }}>
+            We're here to help! Whether you have questions, feedback, or need support,
             don't hesitate to reach out to our community team.
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 6, mb: 8 }}>
         {/* Contact Methods */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold mb-4">Reach Out</h2>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Reach Out</Typography>
           {contactMethods.map((method, index) => (
             <Card key={index}>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <method.icon className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold mb-1">{method.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-3">{method.description}</p>
-                    <div className="flex items-center justify-between">
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <method.icon style={{ width: 24, height: 24, flexShrink: 0, marginTop: 2 }} color="var(--mui-palette-primary-main)" />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{method.title}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>{method.description}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Button variant="outline" size="sm" asChild>
                         <a href={`mailto:${method.contact}`}>
-                          <Mail className="h-4 w-4 mr-2" />
+                          <Mail style={{ width: 16, height: 16, marginRight: 8 }} />
                           {method.contact}
                         </a>
                       </Button>
-                      <span className="text-xs text-muted-foreground">
+                      <Typography variant="caption" color="text.secondary">
                         Response: ~{method.responseTime}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
           ))}
-        </div>
+        </Box>
 
         {/* Contact Information */}
-        <div className="space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card>
             <CardHeader>
               <CardTitle>Get in Touch</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Global Community</p>
-                  <p className="text-sm text-muted-foreground">Serving LGBTQ+ communities worldwide</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Response Time</p>
-                  <p className="text-sm text-muted-foreground">We aim to respond within 24 hours</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Shield className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Safety First</p>
-                  <p className="text-sm text-muted-foreground">Priority support for safety concerns</p>
-                </div>
-              </div>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <MapPin style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
+                <Box>
+                  <Typography sx={{ fontWeight: 500 }}>Global Community</Typography>
+                  <Typography variant="body2" color="text.secondary">Serving LGBTQ+ communities worldwide</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Clock style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
+                <Box>
+                  <Typography sx={{ fontWeight: 500 }}>Response Time</Typography>
+                  <Typography variant="body2" color="text.secondary">We aim to respond within 24 hours</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Shield style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
+                <Box>
+                  <Typography sx={{ fontWeight: 500 }}>Safety First</Typography>
+                  <Typography variant="body2" color="text.secondary">Priority support for safety concerns</Typography>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
 
-          
-        </div>
-      </div>
+
+        </Box>
+      </Box>
 
       {/* FAQ Section */}
-      <section>
-        
-        
-      </section>
-      </div>
-    </div>;
+      <Box component="section">
+
+
+      </Box>
+      </Container>
+    </Box>;
 }

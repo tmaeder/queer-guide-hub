@@ -1,17 +1,42 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
+import Box from '@mui/material/Box'
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'className'> {
+  sx?: any;
+}
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
+  ({ sx, type, ...props }, ref) => {
     return (
-      <input
+      <Box
+        component="input"
         type={type}
-        className={cn(
-          'flex h-10 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400',
-          className
-        )}
+        sx={{
+          display: 'flex',
+          height: 40,
+          width: '100%',
+          borderRadius: 1,
+          border: '1px solid #d4d4d4',
+          bgcolor: 'white',
+          px: 1.5,
+          py: 1,
+          fontSize: '0.875rem',
+          color: '#171717',
+          '&::placeholder': {
+            color: '#a3a3a3'
+          },
+          '&:focus': {
+            borderColor: '#f59e0b',
+            outline: 'none',
+            boxShadow: '0 0 0 1px #f59e0b'
+          },
+          '&:disabled': {
+            cursor: 'not-allowed',
+            bgcolor: '#f5f5f5',
+            color: '#a3a3a3'
+          },
+          ...sx
+        }}
         ref={ref}
         {...props}
       />

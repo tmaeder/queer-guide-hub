@@ -10,6 +10,8 @@ import { useSearchSuggestions, SearchSuggestion } from "@/hooks/useSearchSuggest
 import { SearchSuggestions } from "./SearchSuggestions";
 import { SearchCategories } from "./SearchCategories";
 import { SearchFilters } from "./SearchFilters";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export const AdvancedSearchBar = () => {
   const [query, setQuery] = useState("");
@@ -126,26 +128,36 @@ export const AdvancedSearchBar = () => {
   };
 
   return (
-    <div className="flex-1 max-w-md mx-4">
+    <Box sx={{ flex: 1, maxWidth: '28rem', mx: 2 }}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <div className="relative">
-            <div 
-              className={`flex items-center transition-all duration-200 rounded-lg border ${
-                isFocused 
-                  ? 'bg-background shadow-lg ring-2 ring-ring/20 border-ring' 
-                  : 'bg-background/50 backdrop-blur-sm hover:bg-background/80'
-              }`}
+          <Box sx={{ position: 'relative' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                transition: 'all 200ms',
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: isFocused ? 'primary.main' : 'divider',
+                bgcolor: isFocused ? 'background.paper' : 'background.paper',
+                opacity: isFocused ? 1 : 0.5,
+                backdropFilter: 'blur(4px)',
+                boxShadow: isFocused ? 4 : 0,
+                '&:hover': {
+                  opacity: isFocused ? 1 : 0.8
+                }
+              }}
             >
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-10 px-3 rounded-l-lg text-muted-foreground hover:text-foreground"
+                sx={{ height: 40, px: 1.5, borderRadius: '8px 0 0 8px', color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
                 onClick={() => setIsOpen(true)}
               >
-                <Search className="h-4 w-4" />
+                <Search style={{ height: 16, width: 16 }} />
               </Button>
-              
+
               <Input
                 ref={inputRef}
                 placeholder="Search anything..."
@@ -160,28 +172,28 @@ export const AdvancedSearchBar = () => {
                   setIsOpen(true);
                 }}
                 onBlur={() => setIsFocused(false)}
-                className="border-0 bg-transparent focus-visible:ring-0 shadow-none text-sm placeholder:text-muted-foreground/60"
+                sx={{ border: 0, bgcolor: 'transparent', '&:focus-visible': { outline: 'none', boxShadow: 'none' }, boxShadow: 'none', fontSize: '0.875rem', '& ::placeholder': { color: 'text.disabled' } }}
                 autoComplete="off"
               />
-              
+
               {query && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 mr-1 text-muted-foreground hover:text-foreground"
+                  sx={{ height: 24, width: 24, p: 0, mr: 0.5, minWidth: 24, color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
                   onClick={() => {
                     setQuery("");
                     inputRef.current?.focus();
                   }}
                 >
-                  <X className="h-3 w-3" />
+                  <X style={{ height: 12, width: 12 }} />
                 </Button>
               )}
-              
+
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-10 px-3 rounded-r-lg text-muted-foreground hover:text-foreground"
+                sx={{ height: 40, px: 1.5, borderRadius: '0 8px 8px 0', color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
                 onClick={() => {
                   if (query.trim()) {
                     handleSearch();
@@ -192,35 +204,37 @@ export const AdvancedSearchBar = () => {
                 }}
               >
                 {loading ? (
-                  <Sparkles className="h-4 w-4 animate-spin" />
+                  <Sparkles style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
                 ) : (
-                  <Zap className="h-4 w-4" />
+                  <Zap style={{ height: 16, width: 16 }} />
                 )}
               </Button>
-            </div>
-              
+            </Box>
+
+
             {/* Active Filters Display */}
             {filters.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
                 {filters.map((filter) => (
                   <Badge
                     key={filter}
                     variant="secondary"
-                    className="text-xs cursor-pointer hover:bg-secondary/80"
+                    style={{ fontSize: '0.75rem', cursor: 'pointer' }}
+                    sx={{ '&:hover': { bgcolor: 'action.hover' } }}
                     onClick={() => removeFilter(filter)}
                   >
                     {filter}
-                    <X className="h-3 w-3 ml-1" />
+                    <X style={{ height: 12, width: 12, marginLeft: 4 }} />
                   </Badge>
                 ))}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         </PopoverTrigger>
         
-        <PopoverContent className="w-96 p-0 z-50 bg-background/95 backdrop-blur-sm border shadow-xl" align="start">
-          <Command shouldFilter={false} className="bg-transparent">
-            <CommandList className="max-h-80">
+        <PopoverContent sx={{ width: 384, p: 0, zIndex: 50, bgcolor: 'rgba(var(--background-rgb), 0.95)', backdropFilter: 'blur(8px)', border: 1, borderColor: 'divider', boxShadow: 24 }} align="start">
+          <Command shouldFilter={false} style={{ backgroundColor: 'transparent' }}>
+            <CommandList style={{ maxHeight: 320 }}>
               {!query && recentSearches.length > 0 && (
                 <>
                   <CommandGroup heading="Recent searches">
@@ -228,29 +242,29 @@ export const AdvancedSearchBar = () => {
                       <CommandItem
                         key={index}
                         onSelect={() => handleRecentSearch(search)}
-                        className="cursor-pointer"
+                        style={{ cursor: 'pointer' }}
                       >
-                        <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span className="flex-1">{search}</span>
+                        <Clock style={{ height: 16, width: 16, marginRight: 8, color: 'var(--muted-foreground)' }} />
+                        <Box component="span" sx={{ flex: 1 }}>{search}</Box>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 w-6 p-0 ml-2"
+                          sx={{ height: 24, width: 24, p: 0, ml: 1, minWidth: 24 }}
                           onClick={(e) => {
                             e.stopPropagation();
                             setRecentSearches(recentSearches.filter((_, i) => i !== index));
                             localStorage.setItem('recent-searches', JSON.stringify(recentSearches.filter((_, i) => i !== index)));
                           }}
                         >
-                          <X className="h-3 w-3" />
+                          <X style={{ height: 12, width: 12 }} />
                         </Button>
                       </CommandItem>
                     ))}
                     <CommandItem
                       onSelect={clearRecentSearches}
-                      className="cursor-pointer text-muted-foreground"
+                      style={{ cursor: 'pointer', color: 'var(--muted-foreground)' }}
                     >
-                      <X className="h-4 w-4 mr-2" />
+                      <X style={{ height: 16, width: 16, marginRight: 8 }} />
                       Clear recent searches
                     </CommandItem>
                   </CommandGroup>
@@ -274,12 +288,12 @@ export const AdvancedSearchBar = () => {
               />
 
               {suggestions.length === 0 && query.length >= 2 && !loading && (
-                <CommandEmpty className="py-6 text-center text-muted-foreground">
-                  <div className="flex flex-col items-center gap-2">
-                    <Search className="h-8 w-8 opacity-50" />
-                    <p>No results found for "{query}"</p>
-                    <p className="text-xs">Try different keywords or check spelling</p>
-                  </div>
+                <CommandEmpty sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                    <Search style={{ height: 32, width: 32, opacity: 0.5 }} />
+                    <Typography>No results found for "{query}"</Typography>
+                    <Typography variant="caption">Try different keywords or check spelling</Typography>
+                  </Box>
                 </CommandEmpty>
               )}
 
@@ -292,25 +306,25 @@ export const AdvancedSearchBar = () => {
               {query && (
                 <>
                   <CommandSeparator />
-                  <div className="p-3">
+                  <Box sx={{ p: 1.5 }}>
                     <Button
                       onClick={() => {
                         handleSearch();
                         setIsOpen(false);
                       }}
-                      className="w-full bg-primary hover:opacity-90 text-primary-foreground"
+                      sx={{ width: '100%', bgcolor: 'primary.main', '&:hover': { opacity: 0.9 }, color: 'primary.contrastText' }}
                       size="sm"
                     >
-                      <Search className="h-4 w-4 mr-2" />
+                      <Search style={{ height: 16, width: 16, marginRight: 8 }} />
                       Search for "{query.length > 20 ? query.slice(0, 20) + '...' : query}"
                     </Button>
-                  </div>
+                  </Box>
                 </>
               )}
             </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
-    </div>
+    </Box>
   );
 };

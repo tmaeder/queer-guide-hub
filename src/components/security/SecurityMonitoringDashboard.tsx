@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Shield, Eye, Lock, Clock } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface SecurityEvent {
   id: string;
@@ -27,7 +29,7 @@ export function SecurityMonitoringDashboard() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    
+
     fetchSecurityEvents();
   }, [isAdmin]);
 
@@ -52,10 +54,10 @@ export function SecurityMonitoringDashboard() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-destructive text-destructive-foreground';
-      case 'high': return 'bg-warning text-warning-foreground';
-      case 'medium': return 'bg-secondary text-secondary-foreground';
-      default: return 'bg-muted text-muted-foreground';
+      case 'critical': return { backgroundColor: 'var(--destructive)', color: 'var(--destructive-foreground)' };
+      case 'high': return { backgroundColor: 'var(--warning)', color: 'var(--warning-foreground)' };
+      case 'medium': return { backgroundColor: 'var(--secondary)', color: 'var(--secondary-foreground)' };
+      default: return { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' };
     }
   };
 
@@ -75,7 +77,7 @@ export function SecurityMonitoringDashboard() {
   if (!isAdmin) {
     return (
       <Alert>
-        <AlertTriangle className="h-4 w-4" />
+        <AlertTriangle style={{ height: 16, width: 16 }} />
         <AlertDescription>
           You need administrator privileges to access this security dashboard.
         </AlertDescription>
@@ -87,27 +89,31 @@ export function SecurityMonitoringDashboard() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Security Monitoring
+          <CardTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Shield style={{ height: 20, width: 20 }} />
+              Security Monitoring
+            </Box>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center p-8">
-            <div className="animate-spin h-8 w-8 bg-primary"></div>
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
+            <Box sx={{ height: 32, width: 32, bgcolor: 'primary.main', animation: 'spin 1s linear infinite' }} />
+          </Box>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Security Monitoring Dashboard
+        <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <CardTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Shield style={{ height: 20, width: 20 }} />
+              Security Monitoring Dashboard
+            </Box>
           </CardTitle>
           <Button onClick={fetchSecurityEvents} variant="outline" size="sm">
             Refresh
@@ -115,72 +121,72 @@ export function SecurityMonitoringDashboard() {
         </CardHeader>
         <CardContent>
           {error && (
-            <Alert className="mb-4">
-              <AlertTriangle className="h-4 w-4" />
+            <Alert style={{ marginBottom: 16 }}>
+              <AlertTriangle style={{ height: 16, width: 16 }} />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          <div className="space-y-4">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {events.length === 0 ? (
-              <div className="text-center text-muted-foreground p-8">
+              <Box sx={{ textAlign: 'center', color: 'var(--muted-foreground)', p: 4 }}>
                 No security events recorded yet.
-              </div>
+              </Box>
             ) : (
               events.map((event) => {
                 const SeverityIcon = getSeverityIcon(event.severity);
                 return (
-                  <Card key={event.id} className="border-l-4 border-l-primary">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3 flex-1">
-                          <SeverityIcon className="h-5 w-5 mt-0.5" />
-                          <div className="flex-1 space-y-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-medium">
+                  <Card key={event.id} style={{ borderLeft: '4px solid var(--primary)' }}>
+                    <CardContent style={{ padding: 16 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, flex: 1 }}>
+                          <SeverityIcon style={{ height: 20, width: 20, marginTop: 2 }} />
+                          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                              <Typography component="span" sx={{ fontWeight: 500 }}>
                                 {formatEventType(event.event_type)}
-                              </span>
-                              <Badge className={getSeverityColor(event.severity)}>
+                              </Typography>
+                              <Badge style={getSeverityColor(event.severity)}>
                                 {event.severity}
                               </Badge>
-                            </div>
-                            
-                            <div className="text-sm text-muted-foreground space-y-1">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-3 w-3" />
+                            </Box>
+
+                            <Box sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Clock style={{ height: 12, width: 12 }} />
                                 {new Date(event.created_at).toLocaleString()}
-                              </div>
-                              
+                              </Box>
+
                               {event.user_id && (
-                                <div>User ID: <code className="text-xs">{event.user_id}</code></div>
+                                <Box>User ID: <code style={{ fontSize: '0.75rem' }}>{event.user_id}</code></Box>
                               )}
-                              
+
                               {event.target_user_id && (
-                                <div>Target User: <code className="text-xs">{event.target_user_id}</code></div>
+                                <Box>Target User: <code style={{ fontSize: '0.75rem' }}>{event.target_user_id}</code></Box>
                               )}
-                              
+
                               {event.metadata && Object.keys(event.metadata).length > 0 && (
-                                <details className="mt-2">
-                                  <summary className="cursor-pointer text-primary">
+                                <details style={{ marginTop: 8 }}>
+                                  <summary style={{ cursor: 'pointer', color: 'var(--primary)' }}>
                                     View Details
                                   </summary>
-                                  <pre className="text-xs bg-muted p-2 rounded mt-1 overflow-auto">
+                                  <pre style={{ fontSize: '0.75rem', backgroundColor: 'var(--muted)', padding: 8, borderRadius: 4, marginTop: 4, overflow: 'auto' }}>
                                     {JSON.stringify(event.metadata, null, 2)}
                                   </pre>
                                 </details>
                               )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Box>
                     </CardContent>
                   </Card>
                 );
               })
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

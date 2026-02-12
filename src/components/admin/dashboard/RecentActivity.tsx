@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { Clock, ArrowUpRight, RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface ActivityItem {
   id: string;
@@ -37,21 +39,21 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Clock className="h-4 w-4" />
+          <CardTitle sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Clock style={{ width: 16, height: 16 }} />
             Recent Activity
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-start gap-3 animate-pulse">
-              <Skeleton className="h-8 w-8 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-48" />
-                <Skeleton className="h-3 w-20" />
-              </div>
-            </div>
+            <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 , animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+              <Skeleton sx={{ height: 32, width: 32, borderRadius: '50%' }} />
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Skeleton sx={{ height: 16, width: 128 }} />
+                <Skeleton sx={{ height: 12, width: 192 }} />
+                <Skeleton sx={{ height: 12, width: 80 }} />
+              </Box>
+            </Box>
           ))}
         </CardContent>
       </Card>
@@ -60,9 +62,9 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Clock className="h-4 w-4" />
+      <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', py: 0 }}>
+        <CardTitle sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Clock style={{ width: 16, height: 16 }} />
           Recent Activity
         </CardTitle>
         {onRefresh && (
@@ -70,60 +72,60 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
             variant="ghost"
             size="sm"
             onClick={onRefresh}
-            className="h-8 w-8 p-0"
+            sx={{ height: 32, width: 32, p: 0 }}
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw style={{ width: 16, height: 16 }} />
           </Button>
         )}
       </CardHeader>
       <CardContent>
         {activities.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No recent activity</p>
-          </div>
+          <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+            <Clock style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
+            <Typography>No recent activity</Typography>
+          </Box>
         ) : (
-          <div className="space-y-4">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {activities.map((activity) => {
               const Icon = activity.icon;
               return (
-                <div key={activity.id} className="flex items-start gap-3 group">
-                  <div className="p-2 bg-muted rounded-full">
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-medium truncate">
+                <Box key={activity.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, '&:hover .arrow': { opacity: 1 } }}>
+                  <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: '50%' }}>
+                    <Icon style={{ width: 16, height: 16 }} />
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {activity.title}
-                      </p>
-                      <Badge 
+                      </Typography>
+                      <Badge
                         variant={getBadgeVariant(activity.type)}
-                        className="text-xs"
+                        sx={{ fontSize: '0.75rem' }}
                       >
                         {activity.badge}
                       </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate mb-1">
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', mb: 0.5 }}>
                       {activity.description}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
                       {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
-                    </p>
-                  </div>
-                  <ArrowUpRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                    </Typography>
+                  </Box>
+                  <ArrowUpRight style={{ width: 16, height: 16, color: 'var(--muted-foreground)', opacity: 0, transition: 'opacity 0.2s' }} />
+                </Box>
               );
             })}
-            
+
             {activities.length > 0 && (
-              <div className="pt-4 border-t">
-                <Button variant="ghost" size="sm" className="w-full">
+              <Box sx={{ pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                <Button variant="ghost" size="sm" sx={{ width: '100%' }}>
                   View All Activity
-                  <ArrowUpRight className="h-4 w-4 ml-2" />
+                  <ArrowUpRight style={{ width: 16, height: 16, marginLeft: 8 }} />
                 </Button>
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
       </CardContent>
     </Card>

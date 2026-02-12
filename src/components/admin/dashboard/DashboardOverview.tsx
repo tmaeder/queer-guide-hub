@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Box, Typography } from "@mui/material";
 import { TrendingUp, Users, Building, Calendar, ShoppingBag, MessageSquare, Activity, Globe, Eye, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -102,119 +103,119 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
 
   if (statsLoading) {
     return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' } }}>
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="pb-2">
-                <div className="h-4 bg-muted rounded w-24"></div>
+            <Card key={i} sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+              <CardHeader sx={{ pb: 1 }}>
+                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: 96 }}></Box>
               </CardHeader>
               <CardContent>
-                <div className="h-8 bg-muted rounded w-16 mb-2"></div>
-                <div className="h-3 bg-muted rounded w-20"></div>
+                <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: 64, mb: 1 }}></Box>
+                <Box sx={{ height: 12, bgcolor: 'action.hover', borderRadius: 1, width: 80 }}></Box>
               </CardContent>
             </Card>
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Key Metrics */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TrendingUp style={{ height: 20, width: 20 }} />
           Key Metrics
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        </Typography>
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' } }}>
           {overviewCards.map((card) => {
             const Icon = card.icon;
             return (
-              <Card 
-                key={card.title} 
-                className="cursor-pointer hover:shadow-md transition-shadow"
+              <Card
+                key={card.title}
+                sx={{ cursor: 'pointer', '&:hover': { boxShadow: 3 }, transition: 'box-shadow 0.2s' }}
                 onClick={card.onClick}
               >
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+                  <CardTitle sx={{ fontSize: 14, fontWeight: 500 }}>
                     {card.title}
                   </CardTitle>
-                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <Icon style={{ height: 16, width: 16, color: 'rgba(0, 0, 0, 0.6)' }} />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{card.value}</div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Badge 
+                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{card.value}</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12, color: 'text.secondary' }}>
+                    <Badge
                       variant={card.changeType === "positive" ? "default" : "destructive"}
-                      className="text-xs"
+                      sx={{ fontSize: 12 }}
                     >
                       {card.change}
                     </Badge>
-                    <span>{card.description}</span>
-                    <ArrowUpRight className="h-3 w-3 ml-auto" />
-                  </div>
+                    <Typography component="span" variant="caption">{card.description}</Typography>
+                    <ArrowUpRight style={{ height: 12, width: 12, marginLeft: 'auto' }} />
+                  </Box>
                 </CardContent>
               </Card>
             );
           })}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* System Health */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Activity className="h-5 w-5" />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Activity style={{ height: 20, width: 20 }} />
           System Health
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        </Typography>
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' } }}>
           {systemCards.map((card) => {
             const Icon = card.icon;
             return (
               <Card key={card.title}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full bg-muted ${card.color}`}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{card.title}</p>
-                      <p className={`text-lg font-semibold ${card.color}`}>
+                <CardContent sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ p: 1, borderRadius: '50%', bgcolor: 'action.hover' }}>
+                      <Icon style={{ height: 16, width: 16, color: card.color }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>{card.title}</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: card.color }}>
                         {card.value}
-                      </p>
-                    </div>
-                  </div>
+                      </Typography>
+                    </Box>
+                  </Box>
                 </CardContent>
               </Card>
             );
           })}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Storage Usage */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Storage Usage</CardTitle>
+          <CardTitle sx={{ fontSize: 16 }}>Storage Usage</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm">
-              <span>Used Storage</span>
-              <span>{systemHealth.storageUsed}% of limit</span>
-            </div>
-            <Progress 
-              value={systemHealth.storageUsed} 
-              className="h-2"
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+              <Typography component="span" variant="body2">Used Storage</Typography>
+              <Typography component="span" variant="body2">{systemHealth.storageUsed}% of limit</Typography>
+            </Box>
+            <Progress
+              value={systemHealth.storageUsed}
+              sx={{ height: 8 }}
             />
-            <p className="text-xs text-muted-foreground">
-              {systemHealth.storageUsed < 80 
-                ? "Storage usage is within normal limits" 
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              {systemHealth.storageUsed < 80
+                ? "Storage usage is within normal limits"
                 : "Consider archiving old data or upgrading storage"}
-            </p>
-          </div>
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

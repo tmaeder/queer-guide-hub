@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import Box from '@mui/material/Box';
 import { 
   Plus, 
   Upload, 
@@ -85,17 +86,17 @@ export function QuickActions() {
   ];
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Zap className="h-4 w-4" />
+          <CardTitle style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Zap style={{ height: 16, width: 16 }} />
             Quick Actions
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
             {quickActions.map((action) => {
               const Icon = action.icon;
               return (
@@ -103,30 +104,30 @@ export function QuickActions() {
                   key={action.title}
                   variant={action.variant}
                   onClick={action.action}
-                  className="h-auto p-4 justify-start"
+                  style={{ height: 'auto', padding: 16, justifyContent: 'flex-start' }}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-5 w-5" />
-                    <div className="text-left">
-                      <div className="font-medium">{action.title}</div>
-                      <div className="text-xs opacity-70">{action.description}</div>
-                    </div>
-                  </div>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Icon style={{ height: 20, width: 20 }} />
+                    <Box sx={{ textAlign: 'left' }}>
+                      <Box sx={{ fontWeight: 500 }}>{action.title}</Box>
+                      <Box sx={{ fontSize: '0.75rem', opacity: 0.7 }}>{action.description}</Box>
+                    </Box>
+                  </Box>
                 </Button>
               );
             })}
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Management Sections */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
         {managementSections.map((section) => (
           <Card key={section.title}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">{section.title}</CardTitle>
+            <CardHeader style={{ paddingBottom: 12 }}>
+              <CardTitle style={{ fontSize: '0.875rem' }}>{section.title}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {section.items.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -135,9 +136,9 @@ export function QuickActions() {
                     variant="ghost"
                     size="sm"
                     onClick={() => navigate(item.path)}
-                    className="w-full justify-start h-8"
+                    style={{ width: '100%', justifyContent: 'flex-start', height: 32 }}
                   >
-                    <Icon className="h-4 w-4 mr-2" />
+                    <Icon style={{ height: 16, width: 16, marginRight: 8 }} />
                     {item.label}
                   </Button>
                 );
@@ -145,7 +146,7 @@ export function QuickActions() {
             </CardContent>
           </Card>
         ))}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

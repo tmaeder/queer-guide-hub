@@ -4,15 +4,17 @@ import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { PrivacyGuard } from '@/components/security/PrivacyGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Briefcase, 
-  GraduationCap, 
-  Heart, 
+import {
+  Briefcase,
+  GraduationCap,
+  Heart,
   MapPin,
   Globe,
   Phone,
   Shield
 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface SecureProfileViewerProps {
   profile: any;
@@ -26,107 +28,109 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
   if (!profile) return null;
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Basic Information - Always visible for public profiles */}
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            {/* Location - Privacy controlled */}
-            <PrivacyGuard
-              profileUserId={profile.user_id}
-              requiredPrivacyField="location_public"
-              privacySettings={profile.privacy_settings}
-              adminJustification="location_verification"
-            >
-              {profile.location && (
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Location</p>
-                    <p className="text-muted-foreground">{profile.location}</p>
-                  </div>
-                </div>
-              )}
-            </PrivacyGuard>
+        <CardContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
 
-            {/* Pronouns - Privacy controlled */}
-            <PrivacyGuard
-              profileUserId={profile.user_id}
-              requiredPrivacyField="pronouns_public"
-              privacySettings={profile.privacy_settings}
-              adminJustification="identity_verification"
-            >
-              {profile.pronouns && (
-                <div>
-                  <p className="font-medium">Pronouns</p>
-                  <p className="text-muted-foreground">{profile.pronouns}</p>
-                </div>
-              )}
-            </PrivacyGuard>
+              {/* Location - Privacy controlled */}
+              <PrivacyGuard
+                profileUserId={profile.user_id}
+                requiredPrivacyField="location_public"
+                privacySettings={profile.privacy_settings}
+                adminJustification="location_verification"
+              >
+                {profile.location && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <MapPin style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Location</Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.location}</Typography>
+                    </Box>
+                  </Box>
+                )}
+              </PrivacyGuard>
 
-            {/* Occupation - Privacy controlled */}
+              {/* Pronouns - Privacy controlled */}
+              <PrivacyGuard
+                profileUserId={profile.user_id}
+                requiredPrivacyField="pronouns_public"
+                privacySettings={profile.privacy_settings}
+                adminJustification="identity_verification"
+              >
+                {profile.pronouns && (
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>Pronouns</Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.pronouns}</Typography>
+                  </Box>
+                )}
+              </PrivacyGuard>
+
+              {/* Occupation - Privacy controlled */}
+              <PrivacyGuard
+                profileUserId={profile.user_id}
+                requiredPrivacyField="interests_public"
+                privacySettings={profile.privacy_settings}
+                adminJustification="profile_verification"
+              >
+                {profile.occupation && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Briefcase style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Occupation</Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.occupation}</Typography>
+                    </Box>
+                  </Box>
+                )}
+              </PrivacyGuard>
+
+              {/* Education - Privacy controlled */}
+              <PrivacyGuard
+                profileUserId={profile.user_id}
+                requiredPrivacyField="interests_public"
+                privacySettings={profile.privacy_settings}
+                adminJustification="profile_verification"
+              >
+                {profile.education && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <GraduationCap style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Education</Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.education}</Typography>
+                    </Box>
+                  </Box>
+                )}
+              </PrivacyGuard>
+            </Box>
+
+            {/* Interests - Privacy controlled */}
             <PrivacyGuard
               profileUserId={profile.user_id}
               requiredPrivacyField="interests_public"
               privacySettings={profile.privacy_settings}
               adminJustification="profile_verification"
             >
-              {profile.occupation && (
-                <div className="flex items-center gap-3">
-                  <Briefcase className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Occupation</p>
-                    <p className="text-muted-foreground">{profile.occupation}</p>
-                  </div>
-                </div>
+              {profile.interests && Array.isArray(profile.interests) && profile.interests.length > 0 && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <Box>
+                    <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>Interests</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {profile.interests.map((interest: string, index: number) => (
+                        <Badge key={index} variant="secondary">
+                          {interest}
+                        </Badge>
+                      ))}
+                    </Box>
+                  </Box>
+                </Box>
               )}
             </PrivacyGuard>
-            
-            {/* Education - Privacy controlled */}
-            <PrivacyGuard
-              profileUserId={profile.user_id}
-              requiredPrivacyField="interests_public"
-              privacySettings={profile.privacy_settings}
-              adminJustification="profile_verification"
-            >
-              {profile.education && (
-                <div className="flex items-center gap-3">
-                  <GraduationCap className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Education</p>
-                    <p className="text-muted-foreground">{profile.education}</p>
-                  </div>
-                </div>
-              )}
-            </PrivacyGuard>
-          </div>
-
-          {/* Interests - Privacy controlled */}
-          <PrivacyGuard
-            profileUserId={profile.user_id}
-            requiredPrivacyField="interests_public"
-            privacySettings={profile.privacy_settings}
-            adminJustification="profile_verification"
-          >
-            {profile.interests && Array.isArray(profile.interests) && profile.interests.length > 0 && (
-              <div className="space-y-3">
-                <div>
-                  <h3 className="font-medium mb-2">Interests</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.interests.map((interest: string, index: number) => (
-                      <Badge key={index} variant="secondary">
-                        {interest}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </PrivacyGuard>
+          </Box>
         </CardContent>
       </Card>
 
@@ -141,41 +145,45 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
           <CardHeader>
             <CardTitle>Contact Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {profile.website && (
-              <div className="flex items-center gap-3">
-                <Globe className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">Website</p>
-                  <a 
-                    href={profile.website} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    {profile.website}
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* Phone - Extra privacy protection */}
-            <PrivacyGuard
-              profileUserId={profile.user_id}
-              requiredPrivacyField="phone_public"
-              privacySettings={profile.privacy_settings}
-              adminJustification="emergency_contact"
-            >
-              {profile.phone && (
-                <div className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Phone</p>
-                    <p className="text-muted-foreground">{profile.phone}</p>
-                  </div>
-                </div>
+          <CardContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {profile.website && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Globe style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>Website</Typography>
+                    <a
+                      href={profile.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'var(--primary)', textDecoration: 'none' }}
+                      onMouseOver={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.textDecoration = 'underline'; }}
+                      onMouseOut={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.textDecoration = 'none'; }}
+                    >
+                      {profile.website}
+                    </a>
+                  </Box>
+                </Box>
               )}
-            </PrivacyGuard>
+
+              {/* Phone - Extra privacy protection */}
+              <PrivacyGuard
+                profileUserId={profile.user_id}
+                requiredPrivacyField="phone_public"
+                privacySettings={profile.privacy_settings}
+                adminJustification="emergency_contact"
+              >
+                {profile.phone && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Phone style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Phone</Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.phone}</Typography>
+                    </Box>
+                  </Box>
+                )}
+              </PrivacyGuard>
+            </Box>
           </CardContent>
         </Card>
       </PrivacyGuard>
@@ -184,91 +192,95 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
       {(isOwnProfile || isAdmin) && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Sensitive Information
-              {!isOwnProfile && (
-                <Badge variant="destructive">Admin Access</Badge>
-              )}
+            <CardTitle>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Shield style={{ height: 20, width: 20 }} />
+                Sensitive Information
+                {!isOwnProfile && (
+                  <Badge variant="destructive">Admin Access</Badge>
+                )}
+              </Box>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              {/* Gender Identity - Highly sensitive */}
-              <PrivacyGuard
-                profileUserId={profile.user_id}
-                requiredPrivacyField="gender_identity_public"
-                privacySettings={profile.privacy_settings}
-                adminJustification="identity_verification_critical"
-              >
-                {profile.gender_identity && (
-                  <div>
-                    <p className="font-medium">Gender Identity</p>
-                    <p className="text-muted-foreground">{profile.gender_identity}</p>
-                  </div>
-                )}
-              </PrivacyGuard>
+          <CardContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
 
-              {/* Sexual Orientation - Highly sensitive */}
-              <PrivacyGuard
-                profileUserId={profile.user_id}
-                requiredPrivacyField="sexual_orientation_public"
-                privacySettings={profile.privacy_settings}
-                adminJustification="identity_verification_critical"
-              >
-                {profile.sexual_orientation && (
-                  <div>
-                    <p className="font-medium">Sexual Orientation</p>
-                    <p className="text-muted-foreground">{profile.sexual_orientation}</p>
-                  </div>
-                )}
-              </PrivacyGuard>
+                {/* Gender Identity - Highly sensitive */}
+                <PrivacyGuard
+                  profileUserId={profile.user_id}
+                  requiredPrivacyField="gender_identity_public"
+                  privacySettings={profile.privacy_settings}
+                  adminJustification="identity_verification_critical"
+                >
+                  {profile.gender_identity && (
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Gender Identity</Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.gender_identity}</Typography>
+                    </Box>
+                  )}
+                </PrivacyGuard>
 
-              {/* Relationship Status - Sensitive */}
-              <PrivacyGuard
-                profileUserId={profile.user_id}
-                requiredPrivacyField="relationship_status_public"
-                privacySettings={profile.privacy_settings}
-                adminJustification="profile_moderation"
-              >
-                {profile.relationship_status && (
-                  <div className="flex items-center gap-3">
-                    <Heart className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">Relationship Status</p>
-                      <p className="text-muted-foreground">{profile.relationship_status}</p>
-                    </div>
-                  </div>
-                )}
-              </PrivacyGuard>
+                {/* Sexual Orientation - Highly sensitive */}
+                <PrivacyGuard
+                  profileUserId={profile.user_id}
+                  requiredPrivacyField="sexual_orientation_public"
+                  privacySettings={profile.privacy_settings}
+                  adminJustification="identity_verification_critical"
+                >
+                  {profile.sexual_orientation && (
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Sexual Orientation</Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.sexual_orientation}</Typography>
+                    </Box>
+                  )}
+                </PrivacyGuard>
 
-              {/* Income Range - Highly sensitive */}
-              <PrivacyGuard
-                profileUserId={profile.user_id}
-                requiredPrivacyField="income_range_public"
-                privacySettings={profile.privacy_settings}
-                adminJustification="financial_verification"
-              >
-                {profile.income_range && (
-                  <div>
-                    <p className="font-medium">Income Range</p>
-                    <p className="text-muted-foreground">{profile.income_range}</p>
-                  </div>
-                )}
-              </PrivacyGuard>
-            </div>
+                {/* Relationship Status - Sensitive */}
+                <PrivacyGuard
+                  profileUserId={profile.user_id}
+                  requiredPrivacyField="relationship_status_public"
+                  privacySettings={profile.privacy_settings}
+                  adminJustification="profile_moderation"
+                >
+                  {profile.relationship_status && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Heart style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Relationship Status</Typography>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.relationship_status}</Typography>
+                      </Box>
+                    </Box>
+                  )}
+                </PrivacyGuard>
 
-            {!isOwnProfile && isAdmin && (
-              <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <p className="text-sm text-destructive font-medium">
-                  ⚠️ Admin Access: This sensitive information is logged and monitored for security compliance.
-                </p>
-              </div>
-            )}
+                {/* Income Range - Highly sensitive */}
+                <PrivacyGuard
+                  profileUserId={profile.user_id}
+                  requiredPrivacyField="income_range_public"
+                  privacySettings={profile.privacy_settings}
+                  adminJustification="financial_verification"
+                >
+                  {profile.income_range && (
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Income Range</Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.income_range}</Typography>
+                    </Box>
+                  )}
+                </PrivacyGuard>
+              </Box>
+
+              {!isOwnProfile && isAdmin && (
+                <Box sx={{ mt: 2, p: 1.5, bgcolor: 'error.main', opacity: 0.1, border: 1, borderColor: 'error.main', borderRadius: 2 }}>
+                  <Typography variant="body2" sx={{ color: 'error.main', fontWeight: 500 }}>
+                    Admin Access: This sensitive information is logged and monitored for security compliance.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
           </CardContent>
         </Card>
       )}
-    </div>
+    </Box>
   );
 }

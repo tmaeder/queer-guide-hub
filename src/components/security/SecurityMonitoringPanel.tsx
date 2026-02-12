@@ -106,11 +106,11 @@ export function SecurityMonitoringPanel() {
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical': return <AlertTriangle className="h-4 w-4" />;
-      case 'high': return <Shield className="h-4 w-4" />;
-      case 'medium': return <Eye className="h-4 w-4" />;
-      case 'low': return <Activity className="h-4 w-4" />;
-      default: return <Clock className="h-4 w-4" />;
+      case 'critical': return <AlertTriangle style={{ height: 16, width: 16 }} />;
+      case 'high': return <Shield style={{ height: 16, width: 16 }} />;
+      case 'medium': return <Eye style={{ height: 16, width: 16 }} />;
+      case 'low': return <Activity style={{ height: 16, width: 16 }} />;
+      default: return <Clock style={{ height: 16, width: 16 }} />;
     }
   };
 
@@ -127,7 +127,7 @@ export function SecurityMonitoringPanel() {
   if (!isAdmin) {
     return (
       <Alert>
-        <AlertTriangle className="h-4 w-4" />
+        <AlertTriangle style={{ height: 16, width: 16 }} />
         <AlertDescription>
           You need administrator privileges to view security monitoring data.
         </AlertDescription>
@@ -137,53 +137,53 @@ export function SecurityMonitoringPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
+        <div sx={{ animation: 'spin 1s linear infinite', height: 32, width: 32, border: 2, borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%' }} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Security Statistics */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Events (24h)</CardTitle>
+            <CardHeader sx={{ pb: 1 }}>
+              <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Total Events (24h)</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total_events}</div>
+              <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.total_events}</div>
             </CardContent>
           </Card>
           
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
+            <CardHeader sx={{ pb: 1 }}>
+              <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AlertTriangle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
                 Critical Events
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-destructive">{stats.critical_events}</div>
+              <div sx={{ fontSize: '1.5rem', fontWeight: 700, color: 'error.main' }}>{stats.critical_events}</div>
             </CardContent>
           </Card>
           
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Failed Logins</CardTitle>
+            <CardHeader sx={{ pb: 1 }}>
+              <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Failed Logins</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.recent_failed_logins}</div>
+              <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.recent_failed_logins}</div>
             </CardContent>
           </Card>
           
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Rate Limited</CardTitle>
+            <CardHeader sx={{ pb: 1 }}>
+              <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Rate Limited</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.rate_limited_users}</div>
+              <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.rate_limited_users}</div>
             </CardContent>
           </Card>
         </div>
@@ -191,7 +191,7 @@ export function SecurityMonitoringPanel() {
 
       {/* Recent Security Events */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <CardTitle>Recent Security Events</CardTitle>
           <Button variant="outline" size="sm" onClick={fetchSecurityData}>
             Refresh
@@ -199,29 +199,29 @@ export function SecurityMonitoringPanel() {
         </CardHeader>
         <CardContent>
           {events.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No recent security events</p>
+            <p sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>No recent security events</p>
           ) : (
-            <div className="space-y-3">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {events.map((event) => (
-                <div key={event.id} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div key={event.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, p: 1.5, bgcolor: 'rgba(var(--muted-rgb), 0.3)', borderRadius: 2 }}>
+                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flex: 1 }}>
                     {getSeverityIcon(event.severity)}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">{formatEventType(event.event_type)}</span>
+                    <div sx={{ minWidth: 0, flex: 1 }}>
+                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                        <span sx={{ fontWeight: 500 }}>{formatEventType(event.event_type)}</span>
                         <Badge variant={getSeverityColor(event.severity) as any}>
                           {event.severity}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                         {formatTimestamp(event.created_at)}
                       </p>
                       {event.metadata && Object.keys(event.metadata).length > 0 && (
-                        <details className="mt-2">
-                          <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                        <details sx={{ mt: 1 }}>
+                          <summary sx={{ fontSize: '0.75rem', color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'text.primary' } }}>
                             View details
                           </summary>
-                          <pre className="text-xs bg-background p-2 rounded mt-1 overflow-auto">
+                          <pre sx={{ fontSize: '0.75rem', bgcolor: 'background.default', p: 1, borderRadius: 1, mt: 0.5, overflow: 'auto' }}>
                             {JSON.stringify(event.metadata, null, 2)}
                           </pre>
                         </details>

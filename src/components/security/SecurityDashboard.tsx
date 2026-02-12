@@ -7,6 +7,8 @@ import { Shield, AlertTriangle, CheckCircle, Eye, Lock, RefreshCw } from 'lucide
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { supabase } from '@/integrations/supabase/client';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface SecurityEvent {
   id: string;
@@ -58,18 +60,18 @@ export function SecurityDashboard() {
 
       if (eventsData) {
         setEvents(eventsData);
-        
+
         // Calculate metrics
         const now = new Date();
         const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        
+
         const recentEvents = eventsData.filter(e => new Date(e.created_at) > last24h);
         const criticalEvents = recentEvents.filter(e => {
           // Extract severity from metadata if available
           const severity = (e.metadata as any)?.severity || 'unknown';
           return severity === 'critical';
         });
-        const adminAccess = recentEvents.filter(e => 
+        const adminAccess = recentEvents.filter(e =>
           e.event_type.includes('ADMIN_') || e.event_type.includes('PRIVACY_OVERRIDE')
         );
 
@@ -90,7 +92,7 @@ export function SecurityDashboard() {
   if (!isAdmin) {
     return (
       <Alert>
-        <AlertTriangle className="h-4 w-4" />
+        <AlertTriangle style={{ height: 16, width: 16 }} />
         <AlertDescription>
           Access denied. This dashboard is only available to administrators.
         </AlertDescription>
@@ -105,7 +107,7 @@ export function SecurityDashboard() {
       high: 'destructive',
       critical: 'destructive'
     } as const;
-    
+
     return (
       <Badge variant={variants[severity as keyof typeof variants] || 'secondary'}>
         {(severity || 'unknown').toUpperCase()}
@@ -117,77 +119,77 @@ export function SecurityDashboard() {
     switch (severity) {
       case 'critical':
       case 'high':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+        return <AlertTriangle style={{ height: 16, width: 16, color: '#ef4444' }} />;
       case 'medium':
-        return <Eye className="h-4 w-4 text-yellow-500" />;
+        return <Eye style={{ height: 16, width: 16, color: '#eab308' }} />;
       default:
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />;
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Shield className="h-6 w-6" />
-          <h1 className="text-2xl font-bold">Security Dashboard</h1>
-        </div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Shield style={{ height: 24, width: 24 }} />
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>Security Dashboard</Typography>
+        </Box>
         <Button onClick={loadSecurityData} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw style={{ height: 16, width: 16, marginRight: 8, ...(loading ? { animation: 'spin 1s linear infinite' } : {}) }} />
           Refresh
         </Button>
-      </div>
+      </Box>
 
       {/* Security Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Events (24h)</p>
-                <p className="text-2xl font-bold">{metrics.totalEvents}</p>
-              </div>
-              <Eye className="h-8 w-8 text-blue-500" />
-            </div>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">Events (24h)</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{metrics.totalEvents}</Typography>
+              </Box>
+              <Eye style={{ height: 32, width: 32, color: '#3b82f6' }} />
+            </Box>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Critical Events</p>
-                <p className="text-2xl font-bold text-red-600">{metrics.criticalEvents}</p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-red-500" />
-            </div>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">Critical Events</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'error.main' }}>{metrics.criticalEvents}</Typography>
+              </Box>
+              <AlertTriangle style={{ height: 32, width: 32, color: '#ef4444' }} />
+            </Box>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Admin Access</p>
-                <p className="text-2xl font-bold">{metrics.recentAdminAccess}</p>
-              </div>
-              <Lock className="h-8 w-8 text-purple-500" />
-            </div>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">Admin Access</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{metrics.recentAdminAccess}</Typography>
+              </Box>
+              <Lock style={{ height: 32, width: 32, color: '#a855f7' }} />
+            </Box>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Failed Logins</p>
-                <p className="text-2xl font-bold">{metrics.failedLogins}</p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-orange-500" />
-            </div>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">Failed Logins</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{metrics.failedLogins}</Typography>
+              </Box>
+              <AlertTriangle style={{ height: 32, width: 32, color: '#f97316' }} />
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Recent Security Events */}
       <Card>
@@ -195,33 +197,36 @@ export function SecurityDashboard() {
           <CardTitle>Recent Security Events</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {events.slice(0, 20).map((event) => (
-              <div key={event.id} className="flex items-start gap-3 p-3 border rounded">
+              <Box key={event.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, p: 1.5, border: 1, borderColor: 'divider', borderRadius: 1 }}>
                 {getSeverityIcon(event.severity)}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium">{event.event_type}</span>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <Typography component="span" sx={{ fontWeight: 500 }}>{event.event_type}</Typography>
                     {getSeverityBadge(event.severity)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
                     {new Date(event.created_at).toLocaleString()}
-                  </p>
+                  </Typography>
                   {(event.details || event.metadata) && (
-                    <pre className="text-xs mt-2 p-2 bg-muted rounded overflow-x-auto">
+                    <Box
+                      component="pre"
+                      sx={{ fontSize: '0.75rem', mt: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1, overflowX: 'auto' }}
+                    >
                       {JSON.stringify(event.details || event.metadata, null, 2)}
-                    </pre>
+                    </Box>
                   )}
-                </div>
-              </div>
+                </Box>
+              </Box>
             ))}
-            
+
             {events.length === 0 && !loading && (
-              <div className="text-center py-8 text-muted-foreground">
+              <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
                 No security events found
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
@@ -230,33 +235,35 @@ export function SecurityDashboard() {
         <CardHeader>
           <CardTitle>Security Implementation Status</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <span>✅ Profile data encryption and RLS policies hardened</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <span>✅ Location privacy lockdown implemented</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <span>✅ Financial data security enhanced</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <span>✅ Credential storage security implemented</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <span>✅ Content sanitization enhanced</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <span>✅ Admin access logging and monitoring active</span>
-          </div>
+        <CardContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <Typography component="span">Profile data encryption and RLS policies hardened</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <Typography component="span">Location privacy lockdown implemented</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <Typography component="span">Financial data security enhanced</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <Typography component="span">Credential storage security implemented</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <Typography component="span">Content sanitization enhanced</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <Typography component="span">Admin access logging and monitoring active</Typography>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

@@ -9,12 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { VenueImageUpload } from "@/components/venues/VenueImageUpload";
@@ -25,6 +25,9 @@ import { VenuesList } from "@/components/admin/venues/VenuesList";
 import { VenueEnrichmentPreview } from "@/components/admin/venues/VenueEnrichmentPreview";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { supabase } from "@/integrations/supabase/client";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 
 export default function AdminVenues() {
   const navigate = useNavigate();
@@ -74,12 +77,12 @@ export default function AdminVenues() {
   });
 
   const venueCategories = [
-    "restaurant", "bar", "cafe", "hotel", "club", "theater", 
+    "restaurant", "bar", "cafe", "hotel", "club", "theater",
     "museum", "gallery", "park", "gym", "spa", "shop", "other"
   ];
 
   const commonAmenities = [
-    "WiFi", "Parking", "Wheelchair Accessible", "Pet Friendly", 
+    "WiFi", "Parking", "Wheelchair Accessible", "Pet Friendly",
     "Outdoor Seating", "Live Music", "Air Conditioning", "Heating",
     "Private Dining", "Takeout", "Delivery", "Reservations"
   ];
@@ -104,7 +107,7 @@ export default function AdminVenues() {
     let filtered = venues;
 
     if (searchQuery) {
-      filtered = filtered.filter(venue => 
+      filtered = filtered.filter(venue =>
         venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         venue.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         venue.city.toLowerCase().includes(searchQuery.toLowerCase())
@@ -120,13 +123,13 @@ export default function AdminVenues() {
     }
 
     if (selectedTags.length > 0) {
-      filtered = filtered.filter(venue => 
+      filtered = filtered.filter(venue =>
         venue.tags && selectedTags.some(tag => venue.tags?.includes(tag))
       );
     }
 
     if (selectedAmenities.length > 0) {
-      filtered = filtered.filter(venue => 
+      filtered = filtered.filter(venue =>
         venue.amenities && selectedAmenities.some(amenity => venue.amenities?.includes(amenity))
       );
     }
@@ -178,7 +181,7 @@ export default function AdminVenues() {
       } else {
         result = await createVenue(venueData);
       }
-      
+
       if (result.error) {
         throw new Error(result.error);
       }
@@ -235,7 +238,7 @@ export default function AdminVenues() {
     try {
       console.log('Attempting to delete venue with id:', venue.id);
       const { error } = await deleteVenue(venue.id);
-      
+
       if (error) {
         console.error('Delete venue error:', error);
         throw new Error(error);
@@ -260,7 +263,7 @@ export default function AdminVenues() {
 
   const handleFoursquareImport = async (isReimport = false) => {
     setIsImporting(true);
-    
+
     try {
       toast({
         title: isReimport ? "Re-import Started" : "Import Started",
@@ -282,7 +285,7 @@ export default function AdminVenues() {
       setTimeout(() => {
         refetch();
       }, 2000);
-      
+
     } catch (error) {
       console.error('Foursquare import error:', error);
       toast({
@@ -297,7 +300,7 @@ export default function AdminVenues() {
 
   const handleTripAdvisorImport = async (isReimport = false) => {
     setIsImportingTripAdvisor(true);
-    
+
     try {
       toast({
         title: isReimport ? "Re-import Started" : "Import Started",
@@ -319,7 +322,7 @@ export default function AdminVenues() {
       setTimeout(() => {
         refetch();
       }, 2000);
-      
+
     } catch (error) {
       console.error('TripAdvisor import error:', error);
       toast({
@@ -334,7 +337,7 @@ export default function AdminVenues() {
 
   const handleTomTomImport = async (isReimport = false) => {
     setIsImportingTomTom(true);
-    
+
     try {
       toast({
         title: isReimport ? "Re-import Started" : "Import Started",
@@ -378,7 +381,7 @@ export default function AdminVenues() {
       });
 
       const { data, error } = await supabase.functions.invoke('import-google-places-venues');
-      
+
       if (error) {
         console.error('Google Places import error:', error);
         toast({
@@ -391,7 +394,7 @@ export default function AdminVenues() {
           title: "Import Completed",
           description: `${data.message}. Page will refresh to show updated venues.`,
         });
-        
+
         // Refresh the venues list after import
         setTimeout(() => {
           refetch();
@@ -400,7 +403,7 @@ export default function AdminVenues() {
     } catch (error) {
       console.error('Google Places import error:', error);
       toast({
-        title: "Import Failed", 
+        title: "Import Failed",
         description: "Failed to import venues from Google Places. Please try again.",
         variant: "destructive"
       });
@@ -416,15 +419,15 @@ export default function AdminVenues() {
       const city = parts[parts.length - 3] || '';
       const stateCountry = parts[parts.length - 2] || '';
       const country = parts[parts.length - 1] || '';
-      
+
       // Extract state from "State ZIP" format
       const stateMatch = stateCountry.match(/^([A-Z]{2})\s+\d+/);
       const state = stateMatch ? stateMatch[1] : stateCountry;
-      
+
       // Extract postal code
       const postalMatch = stateCountry.match(/\d{5}(-\d{4})?$/);
       const postal_code = postalMatch ? postalMatch[0] : '';
-      
+
       setFormData(prev => ({
         ...prev,
         city: city || prev.city,
@@ -448,9 +451,9 @@ export default function AdminVenues() {
     setIsEnrichingVenue(true);
     try {
       const { data, error } = await supabase.functions.invoke('enrich-venue', {
-        body: { 
+        body: {
           venueName: formData.name,
-          currentData: formData 
+          currentData: formData
         }
       });
 
@@ -482,7 +485,7 @@ export default function AdminVenues() {
   const handleSelectEnrichmentResult = (selectedData: any) => {
     // Merge selected data with current venue data, only filling empty fields
     const updatedVenue = { ...formData };
-    
+
     Object.entries(selectedData).forEach(([key, value]) => {
       if (value && (!updatedVenue[key as keyof typeof updatedVenue] || updatedVenue[key as keyof typeof updatedVenue] === '')) {
         (updatedVenue as any)[key] = value;
@@ -491,7 +494,7 @@ export default function AdminVenues() {
 
     setFormData(updatedVenue);
     setShowEnrichmentPreview(false);
-    
+
     toast({
       title: "Success",
       description: "Venue data has been enriched with selected information",
@@ -527,14 +530,14 @@ export default function AdminVenues() {
 
   if (rolesLoading || loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">Loading...</div>
-      </div>
+      <Container maxWidth="lg" sx={{ py: 3 }}>
+        <Box sx={{ textAlign: 'center' }}>Loading...</Box>
+      </Container>
     );
   }
 
   return (
-    <div className="w-full space-y-8 p-6">
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4, p: 3 }}>
       {/* Header */}
       <VenuesHeader
         onBack={() => navigate("/admin")}
@@ -581,27 +584,27 @@ export default function AdminVenues() {
 
       {/* Add/Edit Venue Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
+        <DialogContent sx={{ maxWidth: '72rem', maxHeight: '95vh', overflowY: 'auto' }}>
           <DialogHeader>
             <DialogTitle>{editingVenue ? 'Edit Venue' : 'Add New Venue'}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Basic Info */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Basic Information</h3>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Basic Information</Typography>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleEnrichVenue}
                   disabled={isEnrichingVenue || !formData.name.trim()}
-                  className="text-sm"
+                  style={{ fontSize: '0.875rem' }}
                 >
                   {isEnrichingVenue ? "Enriching..." : "🔍 Enrich Venue"}
                 </Button>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+              </Box>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Box>
                   <Label htmlFor="name">Venue Name</Label>
                   <Input
                     id="name"
@@ -609,8 +612,8 @@ export default function AdminVenues() {
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     required
                   />
-                </div>
-                <div>
+                </Box>
+                <Box>
                   <Label htmlFor="category">Category</Label>
                   <Select
                     value={formData.category}
@@ -627,10 +630,10 @@ export default function AdminVenues() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
+                </Box>
+              </Box>
 
-              <div>
+              <Box>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
@@ -638,12 +641,12 @@ export default function AdminVenues() {
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   rows={3}
                 />
-              </div>
-            </div>
+              </Box>
+            </Box>
 
             {/* Location */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Location</h3>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Location</Typography>
               <LocationAutocomplete
                 value={formData.address}
                 onChange={(address, coordinates) => {
@@ -653,7 +656,7 @@ export default function AdminVenues() {
                     latitude: coordinates ? coordinates.lat.toString() : "",
                     longitude: coordinates ? coordinates.lng.toString() : ""
                   }));
-                  
+
                   // Auto-extract city, state, country from address if coordinates are provided
                   if (coordinates) {
                     parseAddressComponents(address);
@@ -663,11 +666,11 @@ export default function AdminVenues() {
                 required
                 placeholder="Enter full address (e.g., 123 Main St, New York, NY, USA)"
               />
-              
+
               {/* Display coordinates if available */}
               {formData.latitude && formData.longitude && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="latitude">Latitude</Label>
                     <Input
                       id="latitude"
@@ -676,10 +679,10 @@ export default function AdminVenues() {
                       value={formData.latitude}
                       onChange={(e) => setFormData(prev => ({ ...prev, latitude: e.target.value }))}
                       readOnly
-                      className="bg-muted"
+                      style={{ backgroundColor: 'var(--muted)' }}
                      />
-                   </div>
-                   <div>
+                   </Box>
+                   <Box>
                      <Label htmlFor="longitude">Longitude</Label>
                      <Input
                        id="longitude"
@@ -688,19 +691,19 @@ export default function AdminVenues() {
                        value={formData.longitude}
                        onChange={(e) => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
                        readOnly
-                       className="bg-muted"
+                       style={{ backgroundColor: 'var(--muted)' }}
                      />
-                   </div>
-                 </div>
+                   </Box>
+                 </Box>
                )}
-               
+
                {/* Optional manual city/state/country override */}
-               <details className="space-y-4">
-                 <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+               <details>
+                 <Box component="summary" sx={{ fontSize: '0.875rem', color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'text.primary' } }}>
                    Manual location override (optional)
-                 </summary>
-                 <div className="grid grid-cols-3 gap-4 pt-2">
-                   <div>
+                 </Box>
+                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, pt: 1 }}>
+                   <Box>
                      <Label htmlFor="city">City</Label>
                      <Input
                        id="city"
@@ -708,8 +711,8 @@ export default function AdminVenues() {
                        onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
                        placeholder="Auto-filled from address"
                      />
-                   </div>
-                   <div>
+                   </Box>
+                   <Box>
                      <Label htmlFor="state">State/Province</Label>
                      <Input
                        id="state"
@@ -717,8 +720,8 @@ export default function AdminVenues() {
                        onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
                        placeholder="Auto-filled from address"
                      />
-                   </div>
-                   <div>
+                   </Box>
+                   <Box>
                      <Label htmlFor="country">Country</Label>
                      <Input
                        id="country"
@@ -726,9 +729,9 @@ export default function AdminVenues() {
                        onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
                        placeholder="Auto-filled from address"
                      />
-                   </div>
-                 </div>
-                 <div>
+                   </Box>
+                 </Box>
+                 <Box>
                    <Label htmlFor="postal_code">Postal Code</Label>
                    <Input
                      id="postal_code"
@@ -736,23 +739,23 @@ export default function AdminVenues() {
                      onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
                      placeholder="Auto-filled from address"
                    />
-                 </div>
+                 </Box>
                </details>
-             </div>
+             </Box>
 
              {/* Contact */}
-             <div className="space-y-4">
-               <h3 className="text-lg font-semibold">Contact Information</h3>
-               <div className="grid grid-cols-2 gap-4">
-                 <div>
+             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Contact Information</Typography>
+               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                 <Box>
                    <Label htmlFor="phone">Phone</Label>
                    <Input
                      id="phone"
                      value={formData.phone}
                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                    />
-                 </div>
-                 <div>
+                 </Box>
+                 <Box>
                    <Label htmlFor="email">Email</Label>
                    <Input
                      id="email"
@@ -760,33 +763,33 @@ export default function AdminVenues() {
                      value={formData.email}
                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                    />
-                 </div>
-               </div>
-               <div className="grid grid-cols-2 gap-4">
-                 <div>
+                 </Box>
+               </Box>
+               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                 <Box>
                    <Label htmlFor="website">Website</Label>
                    <Input
                      id="website"
                      value={formData.website}
                      onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
                    />
-                 </div>
-                 <div>
+                 </Box>
+                 <Box>
                    <Label htmlFor="instagram">Instagram</Label>
                    <Input
                      id="instagram"
                      value={formData.instagram}
                      onChange={(e) => setFormData(prev => ({ ...prev, instagram: e.target.value }))}
                    />
-                 </div>
-               </div>
-             </div>
+                 </Box>
+               </Box>
+             </Box>
 
              {/* Settings */}
-             <div className="space-y-4">
-               <h3 className="text-lg font-semibold">Settings</h3>
-               <div className="grid grid-cols-3 gap-4">
-                 <div>
+             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Settings</Typography>
+               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                 <Box>
                    <Label htmlFor="price_range">Price Range (1-4)</Label>
                    <Select
                      value={formData.price_range}
@@ -802,39 +805,40 @@ export default function AdminVenues() {
                        <SelectItem value="4">$$$$ - Very Expensive</SelectItem>
                      </SelectContent>
                    </Select>
-                 </div>
-                 <div className="flex items-center space-x-2">
+                 </Box>
+                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                    <Checkbox
                      id="featured"
                      checked={formData.featured}
                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked as boolean }))}
                    />
                    <Label htmlFor="featured">Featured Venue</Label>
-                 </div>
-                 <div className="flex items-center space-x-2">
+                 </Box>
+                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                    <Checkbox
                      id="verified"
                      checked={formData.verified}
                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, verified: checked as boolean }))}
                    />
                    <Label htmlFor="verified">Verified</Label>
-                 </div>
-               </div>
-              </div>
+                 </Box>
+               </Box>
+              </Box>
 
               {/* Venue Attributes */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Venue Attributes</h3>
-                
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Venue Attributes</Typography>
+
                 {/* Tags */}
-                <div>
+                <Box>
                   <Label>Tags</Label>
-                  <div className="mt-2">
-                    <div className="flex flex-wrap gap-2 mb-2">
+                  <Box sx={{ mt: 1 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
                       {formData.tags.map((tag, index) => (
-                        <span
+                        <Box
+                          component="span"
                           key={index}
-                          className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm flex items-center gap-1"
+                          sx={{ bgcolor: 'rgba(var(--primary-rgb, 99, 102, 241), 0.1)', color: 'var(--primary)', px: 1, py: 0.5, borderRadius: 1, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 0.5 }}
                         >
                           {tag}
                           <button
@@ -843,13 +847,13 @@ export default function AdminVenues() {
                               const newTags = formData.tags.filter((_, i) => i !== index);
                               setFormData(prev => ({ ...prev, tags: newTags }));
                             }}
-                            className="text-primary hover:text-primary/70"
+                            style={{ color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer' }}
                           >
                             ×
                           </button>
-                        </span>
+                        </Box>
                       ))}
-                    </div>
+                    </Box>
                     <Input
                       placeholder="Add tags (press Enter)"
                       onKeyPress={(e) => {
@@ -863,18 +867,19 @@ export default function AdminVenues() {
                         }
                       }}
                     />
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
                 {/* Amenities */}
-                <div>
+                <Box>
                   <Label>Amenities</Label>
-                  <div className="mt-2">
-                    <div className="flex flex-wrap gap-2 mb-2">
+                  <Box sx={{ mt: 1 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
                       {formData.amenities.map((amenity, index) => (
-                        <span
+                        <Box
+                          component="span"
                           key={index}
-                          className="bg-secondary/10 text-secondary px-2 py-1 rounded-md text-sm flex items-center gap-1"
+                          sx={{ bgcolor: 'rgba(var(--secondary-rgb, 100, 116, 139), 0.1)', color: 'var(--secondary)', px: 1, py: 0.5, borderRadius: 1, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 0.5 }}
                         >
                           {amenity}
                           <button
@@ -883,13 +888,13 @@ export default function AdminVenues() {
                               const newAmenities = formData.amenities.filter((_, i) => i !== index);
                               setFormData(prev => ({ ...prev, amenities: newAmenities }));
                             }}
-                            className="text-secondary hover:text-secondary/70"
+                            style={{ color: 'var(--secondary)', background: 'none', border: 'none', cursor: 'pointer' }}
                           >
                             ×
                           </button>
-                        </span>
+                        </Box>
                       ))}
-                    </div>
+                    </Box>
                     <Input
                       placeholder="Add amenities (press Enter)"
                       onKeyPress={(e) => {
@@ -903,11 +908,12 @@ export default function AdminVenues() {
                         }
                       }}
                     />
-                    <div className="mt-2">
-                      <Label className="text-sm text-muted-foreground">Common amenities:</Label>
-                      <div className="flex flex-wrap gap-1 mt-1">
+                    <Box sx={{ mt: 1 }}>
+                      <Label style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Common amenities:</Label>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
                         {commonAmenities.map(amenity => (
-                          <button
+                          <Box
+                            component="button"
                             key={amenity}
                             type="button"
                             onClick={() => {
@@ -915,17 +921,17 @@ export default function AdminVenues() {
                                 setFormData(prev => ({ ...prev, amenities: [...prev.amenities, amenity] }));
                               }
                             }}
-                            className="text-xs px-2 py-1 rounded bg-muted hover:bg-muted/80 disabled:opacity-50"
                             disabled={formData.amenities.includes(amenity)}
+                            sx={{ fontSize: '0.75rem', px: 1, py: 0.5, borderRadius: 1, bgcolor: 'action.hover', '&:hover': { bgcolor: 'action.selected' }, '&:disabled': { opacity: 0.5 }, border: 'none', cursor: 'pointer' }}
                           >
                             {amenity}
-                          </button>
+                          </Box>
                         ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
 
               {/* Venue Images */}
               <VenueImageUpload
@@ -934,13 +940,13 @@ export default function AdminVenues() {
                 maxImages={8}
               />
 
-             <Button type="submit" className="w-full">
+             <Button type="submit" style={{ width: '100%' }}>
                {editingVenue ? 'Update Venue' : 'Add Venue'}
              </Button>
-           </form>
+           </Box>
          </DialogContent>
        </Dialog>
-       
+
        <VenueEnrichmentPreview
          isOpen={showEnrichmentPreview}
          onClose={() => setShowEnrichmentPreview(false)}
@@ -948,6 +954,6 @@ export default function AdminVenues() {
          onSelectResult={handleSelectEnrichmentResult}
          venueName={enrichmentVenueName}
        />
-     </div>
+     </Box>
   );
 }

@@ -1,19 +1,34 @@
 import * as React from 'react'
-import { cn } from '@/lib/utils'
+import Box from '@mui/material/Box'
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
-export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
-export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
-export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'className'> {
+  sx?: any;
+}
+export interface CardHeaderProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'className'> {
+  sx?: any;
+}
+export interface CardContentProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'className'> {
+  sx?: any;
+}
+export interface CardFooterProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'className'> {
+  sx?: any;
+}
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) => (
-    <div
+  ({ sx, ...props }, ref) => (
+    <Box
       ref={ref}
-      className={cn(
-        'rounded-lg bg-white shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg',
-        className
-      )}
+      sx={{
+        borderRadius: 2,
+        bgcolor: 'background.paper',
+        boxShadow: 1,
+        overflow: 'hidden',
+        transition: 'all 0.2s',
+        '&:hover': {
+          boxShadow: 3
+        },
+        ...sx
+      }}
       {...props}
     />
   )
@@ -21,10 +36,17 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 Card.displayName = 'Card'
 
 export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
-  ({ className, ...props }, ref) => (
-    <div
+  ({ sx, ...props }, ref) => (
+    <Box
       ref={ref}
-      className={cn('flex flex-col space-y-1.5 p-6 border-b border-neutral-200', className)}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.75,
+        p: 3,
+        borderBottom: '1px solid #e5e5e5',
+        ...sx
+      }}
       {...props}
     />
   )
@@ -32,17 +54,23 @@ export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
 CardHeader.displayName = 'CardHeader'
 
 export const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('p-6', className)} {...props} />
+  ({ sx, ...props }, ref) => (
+    <Box ref={ref} sx={{ p: 3, ...sx }} {...props} />
   )
 )
 CardContent.displayName = 'CardContent'
 
 export const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
-  ({ className, ...props }, ref) => (
-    <div
+  ({ sx, ...props }, ref) => (
+    <Box
       ref={ref}
-      className={cn('flex items-center p-6 border-t border-neutral-200', className)}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        p: 3,
+        borderTop: '1px solid #e5e5e5',
+        ...sx
+      }}
       {...props}
     />
   )

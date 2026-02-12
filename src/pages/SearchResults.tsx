@@ -10,6 +10,10 @@ import { Separator } from '@/components/ui/separator';
 import { MapPin, Calendar, Star, Eye, Heart, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, Search, Filter, ArrowUpDown, Grid, List, TrendingUp, Clock, Sparkles } from 'lucide-react';
 import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const contentTypeIcons = {
   venue: MapPin,
@@ -36,7 +40,6 @@ export default function SearchResults() {
   const initialLocation = searchParams.get('location') || undefined;
   const initialCategories = searchParams.get('categories')?.split(',') || [];
 
-  // Initialize search query state
   useEffect(() => {
     setSearchQuery(query);
   }, [query]);
@@ -54,8 +57,6 @@ export default function SearchResults() {
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
-    
-    // Update URL parameters
     const params = new URLSearchParams(searchParams);
     if (newFilters.types && newFilters.types.length > 0) {
       params.set('types', newFilters.types.join(','));
@@ -131,169 +132,171 @@ export default function SearchResults() {
 
   const renderResultCard = (result: SearchResult) => {
     const Icon = contentTypeIcons[result.type];
-    
+
     if (viewMode === 'grid') {
       return (
-        <Card key={`${result.type}-${result.objectID}`} className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-          <div className="relative">
+        <Card key={`${result.type}-${result.objectID}`} sx={{ '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' }, transition: 'all 0.2s' }}>
+          <Box sx={{ position: 'relative' }}>
             {result.imageUrl ? (
-              <div className="aspect-video relative overflow-hidden rounded-t-lg">
-                <img 
-                  src={result.imageUrl} 
+              <Box sx={{ aspectRatio: '16/9', position: 'relative', overflow: 'hidden', borderRadius: '8px 8px 0 0' }}>
+                <Box
+                  component="img"
+                  src={result.imageUrl}
                   alt={result.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.2s' }}
                 />
-                <div className="absolute top-2 left-2">
-                  <Badge variant="secondary" className="text-xs backdrop-blur-sm bg-background/80">
-                    <Icon className="h-3 w-3 mr-1" />
+                <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
+                  <Badge variant="secondary" style={{ fontSize: '0.75rem', backdropFilter: 'blur(4px)', background: 'rgba(var(--background), 0.8)' }}>
+                    <Icon style={{ width: 12, height: 12, marginRight: 4 }} />
                     {result.type}
                   </Badge>
-                </div>
+                </Box>
                 {result.metadata?.featured && (
-                  <div className="absolute top-2 right-2">
-                    <Badge className="text-xs backdrop-blur-sm">
-                      <Sparkles className="h-3 w-3 mr-1" />
+                  <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+                    <Badge style={{ fontSize: '0.75rem', backdropFilter: 'blur(4px)' }}>
+                      <Sparkles style={{ width: 12, height: 12, marginRight: 4 }} />
                       Featured
                     </Badge>
-                  </div>
+                  </Box>
                 )}
-              </div>
+              </Box>
             ) : (
-              <div className="aspect-video bg-muted rounded-t-lg flex items-center justify-center">
-                <Icon className="h-12 w-12 text-muted-foreground" />
-              </div>
+              <Box sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', borderRadius: '8px 8px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon style={{ width: 48, height: 48, color: 'var(--muted-foreground)' }} />
+              </Box>
             )}
-          </div>
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+          </Box>
+          <CardContent style={{ padding: 16 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
               {result.title}
-            </h3>
+            </Typography>
             {result.description && (
-              <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+              <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', mb: 1.5 }}>
                 {result.description}
-              </p>
+              </Typography>
             )}
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-3">
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 1.5 }}>
               {result.location && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  {result.location}
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <MapPin style={{ width: 12, height: 12 }} />
+                  <Typography variant="caption" color="text.secondary">{result.location}</Typography>
+                </Box>
               )}
               {result.rating && (
-                <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  {result.rating}
-                </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Star style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15' }} />
+                  <Typography variant="caption" color="text.secondary">{result.rating}</Typography>
+                </Box>
               )}
-            </div>
-            <div className="flex items-center justify-between">
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               {result.price ? (
-                <div className="font-semibold text-lg text-primary">
+                <Typography sx={{ fontWeight: 600, fontSize: '1.125rem', color: 'primary.main' }}>
                   ${result.price}
-                </div>
+                </Typography>
               ) : (
-                <div />
+                <Box />
               )}
-              <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+              <Button variant="outline" size="sm" style={{ transition: 'color 0.15s, background-color 0.15s' }}>
                 View
               </Button>
-            </div>
+            </Box>
           </CardContent>
         </Card>
       );
     }
 
     return (
-      <Card key={`${result.type}-${result.objectID}`} className="group hover:shadow-md transition-all duration-200 hover:border-primary/50">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-4">
+      <Card key={`${result.type}-${result.objectID}`} sx={{ '&:hover': { boxShadow: 4, borderColor: 'primary.main' }, transition: 'all 0.2s' }}>
+        <CardContent style={{ padding: 16 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             {result.imageUrl && (
-              <div className="flex-shrink-0">
-                <img 
-                  src={result.imageUrl} 
+              <Box sx={{ flexShrink: 0 }}>
+                <Box
+                  component="img"
+                  src={result.imageUrl}
                   alt={result.title}
-                  className="w-20 h-20 object-cover rounded-lg group-hover:scale-105 transition-transform duration-200"
+                  sx={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 2, transition: 'transform 0.2s' }}
                 />
-              </div>
+              </Box>
             )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                    <Badge variant="secondary" className="text-xs">
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Icon style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                    <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
                       {result.type}
                     </Badge>
                     {result.metadata?.featured && (
-                      <Badge className="text-xs">
-                        <Sparkles className="h-3 w-3 mr-1" />
+                      <Badge style={{ fontSize: '0.75rem' }}>
+                        <Sparkles style={{ width: 12, height: 12, marginRight: 4 }} />
                         Featured
                       </Badge>
                     )}
-                  </div>
-                  <h3 className="font-semibold text-xl leading-tight mb-2 group-hover:text-primary transition-colors">
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
                     {result.title}
-                  </h3>
+                  </Typography>
                   {result.description && (
-                    <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+                    <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', mb: 1.5 }}>
                       {result.description}
-                    </p>
+                    </Typography>
                   )}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-3">
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 1.5 }}>
                     {result.location && (
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {result.location}
-                      </div>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <MapPin style={{ width: 12, height: 12 }} />
+                        <Typography variant="body2" color="text.secondary">{result.location}</Typography>
+                      </Box>
                     )}
                     {result.date && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {formatResultDate(result.date)}
-                      </div>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Calendar style={{ width: 12, height: 12 }} />
+                        <Typography variant="body2" color="text.secondary">{formatResultDate(result.date)}</Typography>
+                      </Box>
                     )}
                     {result.rating && (
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        {result.rating}
-                      </div>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Star style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15' }} />
+                        <Typography variant="body2" color="text.secondary">{result.rating}</Typography>
+                      </Box>
                     )}
                     {result.metadata?.viewsCount && (
-                      <div className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        {result.metadata.viewsCount} views
-                      </div>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Eye style={{ width: 12, height: 12 }} />
+                        <Typography variant="body2" color="text.secondary">{result.metadata.viewsCount} views</Typography>
+                      </Box>
                     )}
-                  </div>
+                  </Box>
                   {result.metadata?.tags && result.metadata.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                       {result.metadata.tags.slice(0, 4).map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
+                        <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
                           {tag}
                         </Badge>
                       ))}
                       {result.metadata.tags.length > 4 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
                           +{result.metadata.tags.length - 4} more
                         </Badge>
                       )}
-                    </div>
+                    </Box>
                   )}
-                </div>
-                <div className="flex flex-col items-end gap-2">
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
                   {result.price && (
-                    <div className="font-semibold text-xl text-primary">
+                    <Typography sx={{ fontWeight: 600, fontSize: '1.25rem', color: 'primary.main' }}>
                       ${result.price}
-                    </div>
+                    </Typography>
                   )}
-                  <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <Button variant="outline" size="sm" style={{ transition: 'color 0.15s, background-color 0.15s' }}>
                     View Details
                   </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
     );
@@ -307,187 +310,186 @@ export default function SearchResults() {
     return acc;
   }, {} as Record<string, SearchResult[]>);
 
-  // Generate tabs based on available result types
   const availableTabs = ['all', ...Object.keys(resultsByType)];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 text-foreground">
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2, alignItems: { lg: 'center' }, justifyContent: { lg: 'space-between' }, mb: 3 }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
               Search Results
-            </h1>
-            <p className="text-muted-foreground text-lg">
+            </Typography>
+            <Typography color="text.secondary" variant="body1">
               {loading ? (
-                <span className="flex items-center gap-2">
-                  <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={16} />
                   Searching across all content...
-                </span>
+                </Box>
               ) : (
                 <>
-                  <span className="font-semibold text-foreground">{totalResults}</span> results found for{' '}
-                  <span className="font-medium text-primary">"{query}"</span>
+                  <Box component="span" sx={{ fontWeight: 600 }}>{totalResults}</Box> results found for{' '}
+                  <Box component="span" sx={{ fontWeight: 500, color: 'primary.main' }}>"{query}"</Box>
                 </>
               )}
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3">
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2"
+              style={{ display: 'flex', alignItems: 'center', gap: 8 }}
             >
-              <Filter className="h-4 w-4" />
+              <Filter style={{ width: 16, height: 16 }} />
               Filters
               {Object.values(filters).some(v => v && (Array.isArray(v) ? v.length > 0 : true)) && (
-                <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 text-xs">
+                <Badge variant="destructive" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>
                   !
                 </Badge>
               )}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Enhanced Search Bar */}
-        <div className="flex gap-3 mb-6">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
+          <Box sx={{ flex: 1, position: 'relative' }}>
+            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--muted-foreground)' }} />
             <Input
               placeholder="Refine your search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="pl-10"
+              style={{ paddingLeft: 40 }}
             />
-          </div>
+          </Box>
           <Button onClick={handleSearch}>
             Search
           </Button>
-        </div>
+        </Box>
 
         {/* Filters Panel */}
         {showFilters && (
-          <Card className="mb-6 border-primary/20 shadow-lg">
+          <Card sx={{ mb: 3, borderColor: 'primary.main', opacity: 0.8, boxShadow: 6 }}>
             <SearchFiltersPanel filters={filters} onFiltersChange={handleFiltersChange} />
           </Card>
         )}
 
         {/* Results Controls */}
         {!loading && results.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 p-4 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Sort by:</span>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', gap: 2, mb: 3, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Sort by:</Typography>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger style={{ width: 160 }}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="z-50 bg-background">
+                  <SelectContent style={{ zIndex: 50, backgroundColor: 'var(--background)' }}>
                     <SelectItem value="relevance">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-3 w-3" />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <TrendingUp style={{ width: 12, height: 12 }} />
                         Relevance
-                      </div>
+                      </Box>
                     </SelectItem>
                     <SelectItem value="newest">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3 w-3" />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Clock style={{ width: 12, height: 12 }} />
                         Newest
-                      </div>
+                      </Box>
                     </SelectItem>
                     <SelectItem value="oldest">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3 w-3 rotate-180" />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Clock style={{ width: 12, height: 12, transform: 'rotate(180deg)' }} />
                         Oldest
-                      </div>
+                      </Box>
                     </SelectItem>
                     <SelectItem value="rating">
-                      <div className="flex items-center gap-2">
-                        <Star className="h-3 w-3" />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Star style={{ width: 12, height: 12 }} />
                         Highest Rated
-                      </div>
+                      </Box>
                     </SelectItem>
                     <SelectItem value="popular">
-                      <div className="flex items-center gap-2">
-                        <Eye className="h-3 w-3" />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Eye style={{ width: 12, height: 12 }} />
                         Most Popular
-                      </div>
+                      </Box>
                     </SelectItem>
                     <SelectItem value="price-low">Price: Low to High</SelectItem>
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
                     <SelectItem value="alpha-asc">
-                      <div className="flex items-center gap-2">
-                        <ArrowUpDown className="h-3 w-3" />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <ArrowUpDown style={{ width: 12, height: 12 }} />
                         A - Z
-                      </div>
+                      </Box>
                     </SelectItem>
                     <SelectItem value="alpha-desc">
-                      <div className="flex items-center gap-2">
-                        <ArrowUpDown className="h-3 w-3 rotate-180" />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <ArrowUpDown style={{ width: 12, height: 12, transform: 'rotate(180deg)' }} />
                         Z - A
-                      </div>
+                      </Box>
                     </SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">View:</span>
-              <div className="flex items-center border rounded-lg">
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>View:</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2 }}>
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className="rounded-r-none"
+                  style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                 >
-                  <List className="h-4 w-4" />
+                  <List style={{ width: 16, height: 16 }} />
                 </Button>
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className="rounded-l-none"
+                  style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
                 >
-                  <Grid className="h-4 w-4" />
+                  <Grid style={{ width: 16, height: 16 }} />
                 </Button>
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
         )}
-      </div>
+      </Box>
 
       {/* Results */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-            <p className="text-muted-foreground">Searching across all content types...</p>
-          </div>
-        </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+            <CircularProgress size={32} />
+            <Typography color="text.secondary">Searching across all content types...</Typography>
+          </Box>
+        </Box>
       ) : results.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Search className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No results found</h3>
-          <p className="text-muted-foreground mb-4">
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, textAlign: 'center' }}>
+          <Search style={{ width: 48, height: 48, color: 'var(--muted-foreground)', marginBottom: 16 }} />
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No results found</Typography>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
             Try adjusting your search query or filters
-          </p>
+          </Typography>
           <Button variant="outline" onClick={() => setShowFilters(true)}>
             Adjust Filters
           </Button>
-        </div>
+        </Box>
       ) : (
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="mb-6">
+          <TabsList style={{ marginBottom: 24 }}>
             <TabsTrigger value="all">All ({totalResults})</TabsTrigger>
             {Object.entries(resultsByType).map(([type, typeResults]) => {
               const Icon = contentTypeIcons[type as keyof typeof contentTypeIcons];
               return (
-                <TabsTrigger key={type} value={type} className="flex items-center gap-1">
-                  <Icon className="h-3 w-3" />
+                <TabsTrigger key={type} value={type} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Icon style={{ width: 12, height: 12 }} />
                   {type} ({typeResults.length})
                 </TabsTrigger>
               );
@@ -495,26 +497,26 @@ export default function SearchResults() {
           </TabsList>
 
           <TabsContent value="all">
-            <div className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
-              : 'space-y-4'
+            <Box sx={viewMode === 'grid'
+              ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }
+              : { display: 'flex', flexDirection: 'column', gap: 2 }
             }>
               {sortedResults.map(renderResultCard)}
-            </div>
+            </Box>
           </TabsContent>
 
           {Object.entries(sortedResultsByType).map(([type, typeResults]) => (
             <TabsContent key={type} value={type}>
-              <div className={viewMode === 'grid' 
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
-                : 'space-y-4'
+              <Box sx={viewMode === 'grid'
+                ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }
+                : { display: 'flex', flexDirection: 'column', gap: 2 }
               }>
                 {typeResults.map(renderResultCard)}
-              </div>
+              </Box>
             </TabsContent>
           ))}
         </Tabs>
       )}
-    </div>
+    </Container>
   );
 }

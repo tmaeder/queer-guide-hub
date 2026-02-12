@@ -11,6 +11,9 @@ import { Store, Plus, Loader, Heart, Grid, List } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 const Marketplace = () => {
   const {
@@ -101,82 +104,82 @@ const Marketplace = () => {
     count: listings.filter(l => l.category === 'services').length
   }];
   if (error) {
-    return <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-8">
-          <Card className="p-8 text-center">
+    return <Box sx={{ minHeight: '100vh' }}>
+        <Box sx={{ width: '100%', px: 2, py: 4 }}>
+          <Card sx={{ p: 4, textAlign: 'center' }}>
             <CardContent>
-              <p className="text-destructive mb-4">Something went wrong while loading the marketplace. Please try again.</p>
+              <Typography color="error" sx={{ mb: 2 }}>Something went wrong while loading the marketplace. Please try again.</Typography>
               <Button onClick={() => fetchListings()}>Try Again</Button>
             </CardContent>
           </Card>
-        </div>
-      </div>;
+        </Box>
+      </Box>;
   }
-  return <div className="min-h-screen">
-      <div className="w-full px-4 py-8">
+  return <Box sx={{ minHeight: '100vh' }}>
+      <Box sx={{ width: '100%', px: 2, py: 4 }}>
         {/* Header */}
-        <Card className="mb-8">
-          <CardContent className="p-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-4xl font-bold text-foreground mb-2">
+        <Card sx={{ mb: 4 }}>
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
                   Marketplace
-                </h1>
-                <p className="text-lg text-muted-foreground">
+                </Typography>
+                <Typography variant="subtitle1" color="text.secondary">
                   Discover and support local businesses offering products and services
-                </p>
-              </div>
+                </Typography>
+              </Box>
               {user && (
-                <Button className="bg-primary gap-2">
-                  <Plus className="h-4 w-4" />
+                <Button style={{ display: 'flex', gap: 8 }}>
+                  <Plus style={{ width: 16, height: 16 }} />
                   List Your Business
                 </Button>
               )}
-            </div>
+            </Box>
           </CardContent>
         </Card>
 
         {/* Filters */}
-        <div className="mb-8">
+        <Box sx={{ mb: 4 }}>
           <MarketplaceFilters onFiltersChange={handleFiltersChange} />
-        </div>
+        </Box>
 
         {/* Category Tabs & View Toggle */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <TabsList className="grid w-full max-w-md grid-cols-3">
-              {categories.map(category => <TabsTrigger key={category.id} value={category.id} className="text-xs">
+        <Tabs value={activeTab} onValueChange={setActiveTab} style={{ marginBottom: 24 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <TabsList style={{ display: 'grid', width: '100%', maxWidth: '28rem', gridTemplateColumns: '1fr 1fr 1fr' }}>
+              {categories.map(category => <TabsTrigger key={category.id} value={category.id} style={{ fontSize: '0.75rem' }}>
                   {category.label}
-                  <span className="ml-1 text-xs opacity-60">({category.count})</span>
+                  <span style={{ marginLeft: 4, fontSize: '0.75rem', opacity: 0.6 }}>({category.count})</span>
                 </TabsTrigger>)}
             </TabsList>
-            
-            <div className="flex gap-2">
+
+            <Box sx={{ display: 'flex', gap: 1 }}>
               <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')}>
-                <Grid className="h-4 w-4" />
+                <Grid style={{ width: 16, height: 16 }} />
               </Button>
               <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')}>
-                <List className="h-4 w-4" />
+                <List style={{ width: 16, height: 16 }} />
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {/* Loading State */}
-          {loading && <div className="flex items-center justify-center py-12">
-              <Loader className="h-8 w-8 animate-spin text-primary" />
-              <span className="ml-2 text-muted-foreground">Loading marketplace...</span>
-            </div>}
+          {loading && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
+              <Loader style={{ width: 32, height: 32, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
+              <Typography color="text.secondary" sx={{ ml: 1 }}>Loading marketplace...</Typography>
+            </Box>}
 
           {/* Empty State */}
-          {!loading && listings.length === 0 && <Card className="p-8 text-center">
+          {!loading && listings.length === 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
               <CardContent>
-                <Store className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">No listings found</h3>
-                <p className="text-muted-foreground mb-4">
+                <Store style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No listings found</Typography>
+                <Typography color="text.secondary" sx={{ mb: 2 }}>
                   We couldn't find any listings matching your criteria. Try adjusting your filters or be the first to add your business!
-                </p>
+                </Typography>
                 {user && (
-                  <Button className="bg-primary">
+                  <Button>
                     List Your Business
                   </Button>
                 )}
@@ -184,39 +187,39 @@ const Marketplace = () => {
             </Card>}
 
           {/* Tab Contents */}
-          {categories.map(category => <TabsContent key={category.id} value={category.id} className="">
+          {categories.map(category => <TabsContent key={category.id} value={category.id}>
               {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length > 0 && <>
-                  <div className="flex items-center justify-between mb-6">
-                    <p className="text-muted-foreground">
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Typography color="text.secondary">
                       Found {getFilteredListings(category.id === 'all' ? undefined : category.id).length} listing{getFilteredListings(category.id === 'all' ? undefined : category.id).length !== 1 ? 's' : ''}
-                    </p>
-                  </div>
-                  
-                  <div className={viewMode === 'grid' 
-                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6" 
-                    : "space-y-3"
+                    </Typography>
+                  </Box>
+
+                  <Box sx={viewMode === 'grid'
+                    ? { display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)', '2xl': 'repeat(4, 1fr)' }, gap: { xs: 2, sm: 3 } }
+                    : { display: 'flex', flexDirection: 'column', gap: 1.5 }
                   }>
-                    {getFilteredListings(category.id === 'all' ? undefined : category.id).map(listing => 
-                      <div key={listing.id} className="animate-fade-in">
-                        <MarketplaceCard 
-                          listing={listing} 
-                          onViewDetails={handleViewDetails} 
-                          onToggleFavorite={user ? handleToggleFavorite : undefined} 
-                          showFavoriteButton={!!user} 
+                    {getFilteredListings(category.id === 'all' ? undefined : category.id).map(listing =>
+                      <Box key={listing.id}>
+                        <MarketplaceCard
+                          listing={listing}
+                          onViewDetails={handleViewDetails}
+                          onToggleFavorite={user ? handleToggleFavorite : undefined}
+                          showFavoriteButton={!!user}
                         />
-                      </div>
+                      </Box>
                     )}
-                  </div>
+                  </Box>
                 </>}
 
               {/* Category-specific empty state */}
-              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length === 0 && listings.length > 0 && <Card className="p-8 text-center">
+              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length === 0 && listings.length > 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
                   <CardContent>
-                    <Store className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-semibold mb-2">No {category.label.toLowerCase()} found</h3>
-                    <p className="text-muted-foreground mb-4">
+                    <Store style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No {category.label.toLowerCase()} found</Typography>
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
                       There are no {category.label.toLowerCase()} matching your current filters.
-                    </p>
+                    </Typography>
                     <Button variant="outline" onClick={() => handleFiltersChange({})}>
                       Clear Filters
                     </Button>
@@ -226,12 +229,12 @@ const Marketplace = () => {
         </Tabs>
 
         {/* Load More */}
-        {!loading && listings.length > 0 && <div className="text-center mt-12">
+        {!loading && listings.length > 0 && <Box sx={{ textAlign: 'center', mt: 6 }}>
             <Button variant="outline" size="lg">
               Load More Listings
             </Button>
-          </div>}
-      </div>
-    </div>;
+          </Box>}
+      </Box>
+    </Box>;
 };
 export default Marketplace;

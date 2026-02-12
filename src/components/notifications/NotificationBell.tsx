@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNotifications } from "@/hooks/useNotifications";
 import { useProfile } from "@/hooks/useProfile";
 import { NotificationList } from "./NotificationList";
+import Box from '@mui/material/Box';
+
 export const NotificationBell = () => {
   const {
     unreadCount
@@ -46,41 +48,41 @@ export const NotificationBell = () => {
   };
   return <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-          {unreadCount > 0 ? <BellRing className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-          {unreadCount > 0 && <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+        <Button variant="ghost" size="icon" style={{ position: 'relative' }} aria-label="Notifications">
+          {unreadCount > 0 ? <BellRing style={{ height: 20, width: 20 }} /> : <Bell style={{ height: 20, width: 20 }} />}
+          {unreadCount > 0 && <Badge variant="destructive" style={{ position: 'absolute', top: -8, right: -8, height: 20, width: 20, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
-        
-        
+      <DropdownMenuContent align="end" style={{ width: 320 }}>
+
+
         {/* User mode selector */}
-        <div className="flex items-center justify-between p-2 mb-3 border-b border-border">
-          
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1, mb: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+
           <Select value={profile?.user_mode || 'exploration'} onValueChange={handleModeChange}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger style={{ width: '100%' }}>
               <SelectValue>
-                <div className="flex items-center gap-2">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {(() => {
                   const CurrentIcon = userModes.find(m => m.value === profile?.user_mode)?.icon;
-                  return CurrentIcon ? <CurrentIcon className="h-4 w-4" /> : null;
+                  return CurrentIcon ? <CurrentIcon style={{ height: 16, width: 16 }} /> : null;
                 })()}
                   <span>{userModes.find(m => m.value === profile?.user_mode)?.label}</span>
-                </div>
+                </Box>
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {userModes.map(mode => <SelectItem key={mode.value} value={mode.value}>
-                  <div className="flex items-center gap-2">
-                    <mode.icon className="h-4 w-4" />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <mode.icon style={{ height: 16, width: 16 }} />
                     <span>{mode.label}</span>
-                  </div>
+                  </Box>
                 </SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </Box>
         <NotificationList />
       </DropdownMenuContent>
     </DropdownMenu>;

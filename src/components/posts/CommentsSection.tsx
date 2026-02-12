@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Heart, 
-  MessageCircle, 
-  Reply, 
-  MoreHorizontal, 
+import {
+  Heart,
+  MessageCircle,
+  Reply,
+  MoreHorizontal,
   Send,
   Trash2,
   Edit,
@@ -22,6 +22,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface CommentsSectionProps {
   postId: string;
@@ -39,9 +41,9 @@ interface CommentItemProps {
 const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }: CommentItemProps) => {
   const { user } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  
+
   const isOwnComment = user?.id === comment.user_id;
-  
+
   const handleLikeToggle = () => {
     if (comment.user_liked) {
       onUnlike(comment.id);
@@ -52,7 +54,7 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
 
   const renderCommentContent = () => {
     let content = comment.content;
-    
+
     // Handle mentions
     if (comment.mentions && Array.isArray(comment.mentions)) {
       (comment.mentions as any[]).forEach((mention: any) => {
@@ -75,76 +77,75 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
 
   return (
     <>
-      <div className="flex gap-3 py-3">
-        <Avatar className="h-8 w-8">
+      <Box sx={{ display: 'flex', gap: 1.5, py: 1.5 }}>
+        <Avatar sx={{ height: 32, width: 32 }}>
           <AvatarImage src={comment.profiles?.avatar_url || undefined} />
-          <AvatarFallback className="text-xs">
+          <AvatarFallback sx={{ fontSize: '0.75rem' }}>
             {comment.profiles?.display_name?.charAt(0)?.toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <Link 
+
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <Link
               to={`/user/${comment.user_id}`}
-              className="font-medium text-sm hover:underline"
+              style={{ fontWeight: 500, fontSize: '0.875rem' }}
             >
               {comment.profiles?.display_name || 'Unknown User'}
             </Link>
-            <span className="text-xs text-muted-foreground">
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-            </span>
-          </div>
-          
-          <div className="text-sm text-foreground mb-2">
+            </Typography>
+          </Box>
+
+          <Typography variant="body2" sx={{ mb: 1 }}>
             {renderCommentContent()}
-          </div>
-          
-          <div className="flex items-center gap-4">
+          </Typography>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleLikeToggle}
               disabled={isLiking || !user}
-              className={`h-6 px-2 text-xs ${comment.user_liked ? 'text-red-500' : 'text-muted-foreground'}`}
+              sx={{ height: 24, px: 1, fontSize: '0.75rem', ...(comment.user_liked && { color: 'error.main' }) }}
             >
-              <Heart className={`h-3 w-3 mr-1 ${comment.user_liked ? 'fill-current' : ''}`} />
+              <Heart style={{ width: 12, height: 12, marginRight: 4, ...(comment.user_liked && { fill: 'currentColor' }) }} />
               {comment.likes_count || 0}
             </Button>
-            
+
             {user && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onReply(comment.id, comment.profiles?.display_name || 'User')}
-                className="h-6 px-2 text-xs text-muted-foreground"
+                sx={{ height: 24, px: 1, fontSize: '0.75rem', color: 'text.secondary' }}
               >
-                <Reply className="h-3 w-3 mr-1" />
+                <Reply style={{ width: 12, height: 12, marginRight: 4 }} />
                 Reply
               </Button>
             )}
-          </div>
-        </div>
-        
+          </Box>
+        </Box>
+
         {(isOwnComment || user) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <MoreHorizontal className="h-3 w-3" />
+              <Button variant="ghost" size="sm" sx={{ height: 24, width: 24, p: 0 }}>
+                <MoreHorizontal style={{ width: 12, height: 12 }} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {isOwnComment && (
                 <>
                   <DropdownMenuItem>
-                    <Edit className="h-3 w-3 mr-2" />
+                    <Edit style={{ width: 12, height: 12, marginRight: 8 }} />
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    className="text-destructive"
+                  <DropdownMenuItem
                     onClick={() => setShowDeleteDialog(true)}
                   >
-                    <Trash2 className="h-3 w-3 mr-2" />
+                    <Trash2 style={{ width: 12, height: 12, marginRight: 8 }} />
                     Delete
                   </DropdownMenuItem>
                 </>
@@ -157,8 +158,8 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-      </div>
-      
+      </Box>
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
@@ -175,7 +176,6 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
                 onDelete(comment.id);
                 setShowDeleteDialog(false);
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>
@@ -219,7 +219,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
     const mentionRegex = /@(\w+)/g;
     const mentions: Array<{ user_id: string; username: string }> = [];
     let match;
-    
+
     while ((match = mentionRegex.exec(newComment)) !== null) {
       const username = match[1];
       // In a real implementation, you'd look up the user_id by username
@@ -248,18 +248,18 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="p-4">
-          <div className="space-y-4">
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex gap-3 animate-pulse">
-                <div className="h-8 w-8 bg-muted rounded-full"></div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-muted rounded w-1/4"></div>
-                  <div className="h-4 bg-muted rounded w-3/4"></div>
-                </div>
-              </div>
+              <Box key={i} sx={{ display: 'flex', gap: 1.5 , animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+                <Box sx={{ height: 32, width: 32, bgcolor: 'action.hover', borderRadius: '50%' }}></Box>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ height: 12, bgcolor: 'action.hover', borderRadius: 1, width: '25%' }}></Box>
+                  <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }}></Box>
+                </Box>
+              </Box>
             ))}
-          </div>
+          </Box>
         </CardContent>
       </Card>
     );
@@ -267,21 +267,21 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
 
   return (
     <Card>
-      <CardContent className="p-0">
+      <CardContent sx={{ p: 0 }}>
         {/* Comments Header */}
-        <div className="p-4 border-b">
-          <h3 className="font-medium flex items-center gap-2">
-            <MessageCircle className="h-4 w-4" />
+        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <MessageCircle style={{ width: 16, height: 16 }} />
             Comments ({comments.length})
-          </h3>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Add Comment */}
         {user && (
-          <div className="p-4 border-b">
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
             {replyingTo && (
-              <div className="mb-2 p-2 bg-muted/50 rounded text-xs text-muted-foreground">
-                Replying to <span className="font-medium">{replyingTo.username}</span>
+              <Box sx={{ mb: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1, fontSize: '0.75rem', color: 'text.secondary' }}>
+                Replying to <Box component="span" sx={{ fontWeight: 500 }}>{replyingTo.username}</Box>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -289,74 +289,74 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                     setReplyingTo(null);
                     setNewComment('');
                   }}
-                  className="ml-2 h-4 px-1"
+                  sx={{ ml: 1, height: 16, px: 0.5 }}
                 >
                   Cancel
                 </Button>
-              </div>
+              </Box>
             )}
-            
-            <div className="flex gap-3">
-              <Avatar className="h-8 w-8">
+
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <Avatar sx={{ height: 32, width: 32 }}>
                 <AvatarImage src={user.user_metadata?.avatar_url} />
-                <AvatarFallback className="text-xs">
+                <AvatarFallback sx={{ fontSize: '0.75rem' }}>
                   {user.email?.charAt(0)?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              
-              <div className="flex-1">
+
+              <Box sx={{ flex: 1 }}>
                 <Textarea
                   ref={textareaRef}
                   placeholder="Add a comment... Use @ to mention users and # for tags"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  className="min-h-[60px] resize-none text-sm"
+                  sx={{ minHeight: 60, resize: 'none', fontSize: '0.875rem' }}
                   maxLength={500}
                 />
-                
-                <div className="flex items-center justify-between mt-2">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <AtSign className="h-3 w-3" />
+
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.75rem', color: 'text.secondary' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <AtSign style={{ width: 12, height: 12 }} />
                       <span>mention</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Hash className="h-3 w-3" />
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Hash style={{ width: 12, height: 12 }} />
                       <span>tag</span>
-                    </div>
+                    </Box>
                     <span>• Ctrl+Enter to post</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                       {newComment.length}/500
-                    </span>
+                    </Typography>
                     <Button
                       size="sm"
                       onClick={handleSubmitComment}
                       disabled={!newComment.trim() || isCreatingComment}
-                      className="h-7"
+                      sx={{ height: 28 }}
                     >
-                      <Send className="h-3 w-3 mr-1" />
+                      <Send style={{ width: 12, height: 12, marginRight: 4 }} />
                       {isCreatingComment ? 'Posting...' : 'Post'}
                     </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         )}
 
         {/* Comments List */}
-        <div className="divide-y">
+        <Box sx={{ '& > *': { borderBottom: 1, borderColor: 'divider' } }}>
           {comments.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No comments yet. Be the first to comment!</p>
-            </div>
+            <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
+              <MessageCircle style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
+              <Typography variant="body2">No comments yet. Be the first to comment!</Typography>
+            </Box>
           ) : (
-            <div className="px-4">
+            <Box sx={{ px: 2 }}>
               {comments.map((comment) => (
                 <CommentItem
                   key={comment.id}
@@ -368,9 +368,9 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                   isLiking={isLikingComment}
                 />
               ))}
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
       </CardContent>
     </Card>
   );

@@ -8,6 +8,10 @@ import { VenueFilters } from '@/components/venues/VenueFilters';
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+
 interface FrontPageVenueMapProps {
   className?: string;
   fullWidth?: boolean;
@@ -189,30 +193,44 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
       });
     }
   }, [venues, mode, mapToken]);
-  return <section className={className}>
+  return <Box component="section" className={className}>
       {fullWidth ? <>
-          
-        </> : <div className="container mx-auto px-4">
+
+        </> : <Container maxWidth="lg" sx={{ px: 2 }}>
           <Card>
             <CardHeader>
               <CardTitle>Explore Venues & Organizations Near You</CardTitle>
             </CardHeader>
             <CardContent>
               {(((mapLoading && Boolean(mapToken)) || tokenLoading)) ? (
-                <div className="h-[480px] w-full rounded-lg bg-muted animate-pulse" aria-label="Loading map" />
+                <Box
+                  sx={{ height: 480, width: '100%', borderRadius: 2, bgcolor: 'action.hover', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
+                  aria-label="Loading map"
+                />
               ) : (
-                <div className="relative">
-                  <div ref={mapContainer} className="h-[480px] w-full rounded-lg" />
-                  <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-background/70 backdrop-blur px-2 py-1 rounded">
+                <Box sx={{ position: 'relative' }}>
+                  <Box ref={mapContainer} sx={{ height: 480, width: '100%', borderRadius: 2 }} />
+                  <Box sx={{
+                    position: 'absolute',
+                    bottom: 12,
+                    left: 12,
+                    fontSize: '0.75rem',
+                    color: 'text.secondary',
+                    bgcolor: 'rgba(var(--background), 0.7)',
+                    backdropFilter: 'blur(4px)',
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 1
+                  }}>
                     Centered {ipLocated ? 'via IP location' : 'globally'}
-                    {tokenError && <span className="ml-2 text-destructive">Error loading map</span>}
-                  </div>
-                </div>
+                    {tokenError && <Typography component="span" sx={{ ml: 1, color: 'error.main' }}>Error loading map</Typography>}
+                  </Box>
+                </Box>
               )}
               {!mapToken && !tokenLoading && (
-                <div className="mt-3 rounded-lg border p-3 text-sm">
-                  <p className="mb-2">Mapbox token required. Paste your public token to enable the map.</p>
-                  <div className="flex gap-2">
+                <Box sx={{ mt: 1.5, borderRadius: 2, border: 1, borderColor: 'divider', p: 1.5, fontSize: '0.875rem' }}>
+                  <Typography variant="body2" sx={{ mb: 1 }}>Mapbox token required. Paste your public token to enable the map.</Typography>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
                     <Input
                       value={manualToken}
                       onChange={(e) => setManualToken(e.target.value)}
@@ -227,21 +245,21 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
                     >
                       Save token
                     </Button>
-                  </div>
-                  {tokenError && <p className="mt-2 text-destructive">Secure token fetch failed; using local token.</p>}
-                </div>
+                  </Box>
+                  {tokenError && <Typography variant="body2" sx={{ mt: 1, color: 'error.main' }}>Secure token fetch failed; using local token.</Typography>}
+                </Box>
               )}
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
                 <ToggleGroup type="single" value={mode} onValueChange={v => v && setMode(v as any)}>
                   <ToggleGroupItem value="all" aria-label="Show all">All</ToggleGroupItem>
                   <ToggleGroupItem value="venues" aria-label="Show venues">Venues</ToggleGroupItem>
                   <ToggleGroupItem value="orgs" aria-label="Show organizations">Orgs</ToggleGroupItem>
                 </ToggleGroup>
-                {isFetching && <span className="text-sm text-muted-foreground">Loading…</span>}
-              </div>
+                {isFetching && <Typography variant="body2" color="text.secondary">Loading...</Typography>}
+              </Box>
             </CardContent>
           </Card>
-        </div>}
-    </section>;
+        </Container>}
+    </Box>;
 };
 export default FrontPageVenueMap;

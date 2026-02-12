@@ -10,8 +10,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Plus } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { CreateGroupEventData } from '@/hooks/useGroupEvents';
+import Box from '@mui/material/Box';
 
 interface CreateGroupEventDialogProps {
   onCreateEvent: (eventData: CreateGroupEventData) => void;
@@ -43,7 +43,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!startDate || !formData.title || !formData.city) {
       return;
     }
@@ -70,7 +70,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
     };
 
     onCreateEvent(eventData);
-    
+
     // Reset form
     setFormData({
       title: '',
@@ -98,19 +98,19 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-primary hover:opacity-90">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button sx={{ background: 'linear-gradient(to right, var(--gradient-primary))', '&:hover': { opacity: 0.9 } }}>
+          <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
           Create Event
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent sx={{ maxWidth: { sm: '600px' }, maxHeight: '80vh', overflowY: 'auto' }}>
         <DialogHeader>
           <DialogTitle>Create Group Event</DialogTitle>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <Box sx={{ gridColumn: { md: 'span 2' } }}>
               <Label htmlFor="title">Event Title *</Label>
               <Input
                 id="title"
@@ -119,9 +119,9 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 placeholder="Enter event title"
                 required
               />
-            </div>
+            </Box>
 
-            <div className="md:col-span-2">
+            <Box sx={{ gridColumn: { md: 'span 2' } }}>
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
@@ -130,7 +130,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 placeholder="Describe your event"
                 rows={3}
               />
-            </div>
+            </Box>
 
             <div>
               <Label>Start Date *</Label>
@@ -138,22 +138,19 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
-                    )}
+                    sx={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 'normal', ...(!startDate && { color: 'text.secondary' }) }}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
                     {startDate ? format(startDate, "PPP") : "Select start date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent sx={{ width: 'auto', p: 0 }}>
                   <Calendar
                     mode="single"
                     selected={startDate}
                     onSelect={setStartDate}
                     initialFocus
-                    className="pointer-events-auto"
+                    style={{ pointerEvents: 'auto' }}
                   />
                 </PopoverContent>
               </Popover>
@@ -165,22 +162,19 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground"
-                    )}
+                    sx={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 'normal', ...(!endDate && { color: 'text.secondary' }) }}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
                     {endDate ? format(endDate, "PPP") : "Select end date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent sx={{ width: 'auto', p: 0 }}>
                   <Calendar
                     mode="single"
                     selected={endDate}
                     onSelect={setEndDate}
                     initialFocus
-                    className="pointer-events-auto"
+                    style={{ pointerEvents: 'auto' }}
                   />
                 </PopoverContent>
               </Popover>
@@ -237,7 +231,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
               />
             </div>
 
-            <div className="md:col-span-2">
+            <Box sx={{ gridColumn: { md: 'span 2' } }}>
               <Label htmlFor="address">Address</Label>
               <Input
                 id="address"
@@ -245,18 +239,18 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 placeholder="Event address"
               />
-            </div>
+            </Box>
 
-            <div className="md:col-span-2">
-              <div className="flex items-center space-x-2">
+            <Box sx={{ gridColumn: { md: 'span 2' } }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Switch
                   id="is_free"
                   checked={formData.is_free}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_free: checked })}
                 />
                 <Label htmlFor="is_free">Free Event</Label>
-              </div>
-            </div>
+              </Box>
+            </Box>
 
             {!formData.is_free && (
               <>
@@ -351,26 +345,26 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 placeholder="https://tickets.example.com"
               />
             </div>
-          </div>
+          </Box>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => setOpen(false)}
               disabled={isCreating}
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isCreating || !startDate || !formData.title || !formData.city}
-              className="bg-gradient-primary hover:opacity-90"
+              sx={{ background: 'linear-gradient(to right, var(--gradient-primary))', '&:hover': { opacity: 0.9 } }}
             >
               {isCreating ? "Creating..." : "Create Event"}
             </Button>
-          </div>
-        </form>
+          </Box>
+        </Box>
       </DialogContent>
     </Dialog>
   );

@@ -16,6 +16,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 
 interface EmailTemplate {
   id: string;
@@ -57,13 +60,13 @@ export default function EmailTemplates() {
         .order('name');
 
       if (error) throw error;
-      
+
       // Ensure variables is always an array
       const processedTemplates = (data || []).map(template => ({
         ...template,
         variables: Array.isArray(template.variables) ? template.variables : []
       }));
-      
+
       setTemplates(processedTemplates);
     } catch (error) {
       console.error('Error fetching templates:', error);
@@ -181,98 +184,109 @@ export default function EmailTemplates() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <Loader2 style={{ height: 32, width: 32, animation: 'spin 1s linear infinite' }} />
+      </Box>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Email Templates</h1>
-          <p className="text-muted-foreground">Manage automated email templates sent by the system</p>
-        </div>
-      </div>
+    <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="h4">Email Templates</Typography>
+          <Typography color="text.secondary">Manage automated email templates sent by the system</Typography>
+        </Box>
+      </Box>
 
-      <div className="grid lg:grid-cols-12 gap-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '4fr 8fr' }, gap: 3 }}>
         {/* Templates List */}
-        <div className="lg:col-span-4">
+        <Box>
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
-                Templates
+              <CardTitle>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Mail style={{ height: 20, width: 20 }} />
+                  Templates
+                </Box>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {templates.map((template) => (
-                  <div
+                  <Box
                     key={template.id}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                      selectedTemplate?.id === template.id
-                        ? 'bg-primary/10 border-primary'
-                        : 'hover:bg-muted/50'
-                    }`}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      border: 1,
+                      borderColor: selectedTemplate?.id === template.id ? 'primary.main' : 'divider',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s',
+                      ...(selectedTemplate?.id === template.id
+                        ? { bgcolor: 'action.selected' }
+                        : { '&:hover': { bgcolor: 'action.hover' } }
+                      ),
+                    }}
                     onClick={() => {
                       setSelectedTemplate(template);
                       setEditingTemplate(null);
                     }}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-medium">{template.name}</h3>
-                        <p className="text-sm text-muted-foreground">{template.template_key}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontWeight: 500 }}>{template.name}</Typography>
+                        <Typography variant="body2" color="text.secondary">{template.template_key}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Badge variant={template.is_active ? 'default' : 'secondary'}>
                           {template.is_active ? 'Active' : 'Inactive'}
                         </Badge>
-                      </div>
-                    </div>
-                  </div>
+                      </Box>
+                    </Box>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             </CardContent>
           </Card>
-        </div>
+        </Box>
 
         {/* Template Details/Editor */}
-        <div className="lg:col-span-8">
+        <Box>
           {!selectedTemplate ? (
             <Card>
-              <CardContent className="flex items-center justify-center h-96">
-                <div className="text-center">
-                  <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">No Template Selected</h3>
-                  <p className="text-muted-foreground">Select a template from the list to view or edit</p>
-                </div>
+              <CardContent style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '24rem' }}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Mail style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px auto', display: 'block' }} />
+                  <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>No Template Selected</Typography>
+                  <Typography color="text.secondary">Select a template from the list to view or edit</Typography>
+                </Box>
               </CardContent>
             </Card>
           ) : editingTemplate ? (
             /* Edit Mode */
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Edit className="h-5 w-5" />
-                      Editing: {editingTemplate.name}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <CardTitle>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Edit style={{ height: 20, width: 20 }} />
+                        Editing: {editingTemplate.name}
+                      </Box>
                     </CardTitle>
                     <CardDescription>
                       Make changes to the email template
                     </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button
                       variant="outline"
                       onClick={() => {
                         setEditingTemplate(null);
                       }}
                     >
-                      <X className="h-4 w-4 mr-2" />
+                      <X style={{ height: 16, width: 16, marginRight: 8 }} />
                       Cancel
                     </Button>
                     <Button
@@ -280,167 +294,177 @@ export default function EmailTemplates() {
                       disabled={isSaving}
                     >
                       {isSaving ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
                       ) : (
-                        <Save className="h-4 w-4 mr-2" />
+                        <Save style={{ height: 16, width: 16, marginRight: 8 }} />
                       )}
                       Save
                     </Button>
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Template Name</Label>
-                    <Input
-                      id="name"
-                      value={editingTemplate.name}
-                      onChange={(e) =>
-                        setEditingTemplate({
-                          ...editingTemplate,
-                          name: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="active">Status</Label>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="active"
-                        checked={editingTemplate.is_active}
-                        onCheckedChange={(checked) =>
+              <CardContent>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="name">Template Name</Label>
+                      <Input
+                        id="name"
+                        value={editingTemplate.name}
+                        onChange={(e) =>
                           setEditingTemplate({
                             ...editingTemplate,
-                            is_active: checked,
+                            name: e.target.value,
                           })
                         }
                       />
-                      <Label htmlFor="active">
-                        {editingTemplate.is_active ? 'Active' : 'Inactive'}
-                      </Label>
-                    </div>
-                  </div>
-                </div>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Label htmlFor="active">Status</Label>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Switch
+                          id="active"
+                          checked={editingTemplate.is_active}
+                          onCheckedChange={(checked) =>
+                            setEditingTemplate({
+                              ...editingTemplate,
+                              is_active: checked,
+                            })
+                          }
+                        />
+                        <Label htmlFor="active">
+                          {editingTemplate.is_active ? 'Active' : 'Inactive'}
+                        </Label>
+                      </Box>
+                    </Box>
+                  </Box>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    value={editingTemplate.description || ''}
-                    onChange={(e) =>
-                      setEditingTemplate({
-                        ...editingTemplate,
-                        description: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="subject">Subject Line</Label>
-                  <Input
-                    id="subject"
-                    value={editingTemplate.subject}
-                    onChange={(e) =>
-                      setEditingTemplate({
-                        ...editingTemplate,
-                        subject: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <Tabs defaultValue="html" className="w-full">
-                  <TabsList>
-                    <TabsTrigger value="html">HTML Content</TabsTrigger>
-                    <TabsTrigger value="text">Text Content</TabsTrigger>
-                    <TabsTrigger value="variables">Variables</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="html" className="space-y-2">
-                    <Label htmlFor="html-content">HTML Content</Label>
-                    <Textarea
-                      id="html-content"
-                      value={editingTemplate.html_content}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      value={editingTemplate.description || ''}
                       onChange={(e) =>
                         setEditingTemplate({
                           ...editingTemplate,
-                          html_content: e.target.value,
+                          description: e.target.value,
                         })
                       }
-                      className="min-h-[300px] font-mono text-sm"
                     />
-                  </TabsContent>
+                  </Box>
 
-                  <TabsContent value="text" className="space-y-2">
-                    <Label htmlFor="text-content">Text Content (Optional)</Label>
-                    <Textarea
-                      id="text-content"
-                      value={editingTemplate.text_content || ''}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Label htmlFor="subject">Subject Line</Label>
+                    <Input
+                      id="subject"
+                      value={editingTemplate.subject}
                       onChange={(e) =>
                         setEditingTemplate({
                           ...editingTemplate,
-                          text_content: e.target.value,
+                          subject: e.target.value,
                         })
                       }
-                      className="min-h-[300px] font-mono text-sm"
-                      placeholder="Plain text version of the email..."
                     />
-                  </TabsContent>
+                  </Box>
 
-                  <TabsContent value="variables" className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-medium mb-2">Available Variables</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Use these variables in your email content by wrapping them in double curly braces: {`{{variable_name}}`}
-                      </p>
-                    </div>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Variable</TableHead>
-                          <TableHead>Description</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {editingTemplate.variables.map((variable, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-mono">
-                              {`{{${variable.name}}}`}
-                            </TableCell>
-                            <TableCell>{variable.description}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TabsContent>
-                </Tabs>
+                  <Tabs defaultValue="html" style={{ width: '100%' }}>
+                    <TabsList>
+                      <TabsTrigger value="html">HTML Content</TabsTrigger>
+                      <TabsTrigger value="text">Text Content</TabsTrigger>
+                      <TabsTrigger value="variables">Variables</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="html">
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Label htmlFor="html-content">HTML Content</Label>
+                        <Textarea
+                          id="html-content"
+                          value={editingTemplate.html_content}
+                          onChange={(e) =>
+                            setEditingTemplate({
+                              ...editingTemplate,
+                              html_content: e.target.value,
+                            })
+                          }
+                          style={{ minHeight: 300, fontFamily: 'monospace', fontSize: '0.875rem' }}
+                        />
+                      </Box>
+                    </TabsContent>
+
+                    <TabsContent value="text">
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Label htmlFor="text-content">Text Content (Optional)</Label>
+                        <Textarea
+                          id="text-content"
+                          value={editingTemplate.text_content || ''}
+                          onChange={(e) =>
+                            setEditingTemplate({
+                              ...editingTemplate,
+                              text_content: e.target.value,
+                            })
+                          }
+                          style={{ minHeight: 300, fontFamily: 'monospace', fontSize: '0.875rem' }}
+                          placeholder="Plain text version of the email..."
+                        />
+                      </Box>
+                    </TabsContent>
+
+                    <TabsContent value="variables">
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>Available Variables</Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            Use these variables in your email content by wrapping them in double curly braces: {`{{variable_name}}`}
+                          </Typography>
+                        </Box>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Variable</TableHead>
+                              <TableHead>Description</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {editingTemplate.variables.map((variable, index) => (
+                              <TableRow key={index}>
+                                <TableCell style={{ fontFamily: 'monospace' }}>
+                                  {`{{${variable.name}}}`}
+                                </TableCell>
+                                <TableCell>{variable.description}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </Box>
+                    </TabsContent>
+                  </Tabs>
+                </Box>
               </CardContent>
             </Card>
           ) : (
             /* View Mode */
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      {selectedTemplate.name}
-                      <Badge variant={selectedTemplate.is_active ? 'default' : 'secondary'}>
-                        {selectedTemplate.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <CardTitle>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <FileText style={{ height: 20, width: 20 }} />
+                        {selectedTemplate.name}
+                        <Badge variant={selectedTemplate.is_active ? 'default' : 'secondary'}>
+                          {selectedTemplate.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </Box>
                     </CardTitle>
                     <CardDescription>
-                      Template Key: <code className="text-xs">{selectedTemplate.template_key}</code>
+                      Template Key: <code style={{ fontSize: '0.75rem' }}>{selectedTemplate.template_key}</code>
                     </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
                     <Dialog open={showTestDialog} onOpenChange={setShowTestDialog}>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
-                          <TestTube className="h-4 w-4 mr-2" />
+                          <TestTube style={{ height: 16, width: 16, marginRight: 8 }} />
                           Test Email
                         </Button>
                       </DialogTrigger>
@@ -451,8 +475,8 @@ export default function EmailTemplates() {
                             Send a test email using this template to verify it works correctly.
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="space-y-2">
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                             <Label htmlFor="test-email">Recipient Email</Label>
                             <Input
                               id="test-email"
@@ -461,8 +485,8 @@ export default function EmailTemplates() {
                               onChange={(e) => setTestEmail(e.target.value)}
                               placeholder="test@example.com"
                             />
-                          </div>
-                          <div className="flex justify-end gap-2">
+                          </Box>
+                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
                             <Button variant="outline" onClick={() => setShowTestDialog(false)}>
                               Cancel
                             </Button>
@@ -471,151 +495,156 @@ export default function EmailTemplates() {
                               disabled={!testEmail || isSendingTest}
                             >
                               {isSendingTest ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                <Loader2 style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
                               ) : (
-                                <Mail className="h-4 w-4 mr-2" />
+                                <Mail style={{ height: 16, width: 16, marginRight: 8 }} />
                               )}
                               Send Test
                             </Button>
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
                       </DialogContent>
                     </Dialog>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowPreview(!showPreview)}
                     >
-                      <Eye className="h-4 w-4 mr-2" />
+                      <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
                       {showPreview ? 'Hide Preview' : 'Preview'}
                     </Button>
-                    
+
                     <Button
                       size="sm"
                       onClick={() => setEditingTemplate(selectedTemplate)}
                     >
-                      <Edit className="h-4 w-4 mr-2" />
+                      <Edit style={{ height: 16, width: 16, marginRight: 8 }} />
                       Edit
                     </Button>
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {selectedTemplate.description && (
-                  <Alert>
-                    <AlertDescription>{selectedTemplate.description}</AlertDescription>
-                  </Alert>
-                )}
+              <CardContent>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {selectedTemplate.description && (
+                    <Alert>
+                      <AlertDescription>{selectedTemplate.description}</AlertDescription>
+                    </Alert>
+                  )}
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <Label className="text-xs font-medium text-muted-foreground">Created</Label>
-                    <p>{formatDate(selectedTemplate.created_at)}</p>
-                  </div>
-                  <div>
-                    <Label className="text-xs font-medium text-muted-foreground">Last Updated</Label>
-                    <p>{formatDate(selectedTemplate.updated_at)}</p>
-                  </div>
-                </div>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                    <Box>
+                      <Label style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Created</Label>
+                      <Typography variant="body2">{formatDate(selectedTemplate.created_at)}</Typography>
+                    </Box>
+                    <Box>
+                      <Label style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Last Updated</Label>
+                      <Typography variant="body2">{formatDate(selectedTemplate.updated_at)}</Typography>
+                    </Box>
+                  </Box>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Subject Line</Label>
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <code className="text-sm">{selectedTemplate.subject}</code>
-                  </div>
-                </div>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Subject Line</Label>
+                    <Box sx={{ p: 1.5, bgcolor: 'grey.100', borderRadius: 2 }}>
+                      <code style={{ fontSize: '0.875rem' }}>{selectedTemplate.subject}</code>
+                    </Box>
+                  </Box>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Available Variables</Label>
-                  <div className="grid grid-cols-1 gap-2">
-                    {selectedTemplate.variables.map((variable, index) => (
-                      <div key={index} className="p-2 bg-muted/50 rounded text-sm">
-                        <code className="font-mono">{`{{${variable.name}}}`}</code>
-                        <span className="ml-2 text-muted-foreground">- {variable.description}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {showPreview && (
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-medium mb-4">Email Preview</h3>
-                    
-                    {/* Variable inputs for preview */}
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      {selectedTemplate.variables.map((variable) => (
-                        <div key={variable.name} className="space-y-1">
-                          <Label htmlFor={`preview-${variable.name}`} className="text-xs">
-                            {variable.name}
-                          </Label>
-                          <Input
-                            id={`preview-${variable.name}`}
-                            value={previewData[variable.name] || ''}
-                            onChange={(e) =>
-                              setPreviewData({
-                                ...previewData,
-                                [variable.name]: e.target.value,
-                              })
-                            }
-                            placeholder={variable.description}
-                          />
-                        </div>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Available Variables</Label>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {selectedTemplate.variables.map((variable, index) => (
+                        <Box key={index} sx={{ p: 1, bgcolor: 'grey.100', borderRadius: 1 }}>
+                          <Typography variant="body2" component="span">
+                            <code style={{ fontFamily: 'monospace' }}>{`{{${variable.name}}}`}</code>
+                            <Typography component="span" color="text.secondary" sx={{ ml: 1 }}>- {variable.description}</Typography>
+                          </Typography>
+                        </Box>
                       ))}
-                    </div>
+                    </Box>
+                  </Box>
 
-                    <Tabs defaultValue="html-preview" className="w-full">
-                      <TabsList>
-                        <TabsTrigger value="html-preview">HTML Preview</TabsTrigger>
-                        <TabsTrigger value="html-code">HTML Code</TabsTrigger>
-                        {selectedTemplate.text_content && (
-                          <TabsTrigger value="text-preview">Text Version</TabsTrigger>
-                        )}
-                      </TabsList>
-                      
-                      <TabsContent value="html-preview">
-                        <div className="border rounded-lg p-4 bg-background">
-                          <div className="border-b pb-2 mb-4">
-                            <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
-                          </div>
-                          <ContentSanitizer
-                            className="prose max-w-none"
-                            content={generatePreview(selectedTemplate, previewData).htmlContent}
-                            allowedTags={[
-                              'p','br','strong','em','u','a','ul','ol','li','blockquote','code','pre','h1','h2','h3','h4','h5','h6','img','table','thead','tbody','tr','th','td'
-                            ]}
-                          />
-                        </div>
-                      </TabsContent>
+                  {showPreview && (
+                    <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 3 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 2 }}>Email Preview</Typography>
 
-                      <TabsContent value="html-code">
-                        <div className="p-4 bg-muted/50 rounded-lg">
-                          <pre className="text-sm whitespace-pre-wrap font-mono">
-                            {generatePreview(selectedTemplate, previewData).htmlContent}
-                          </pre>
-                        </div>
-                      </TabsContent>
+                      {/* Variable inputs for preview */}
+                      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+                        {selectedTemplate.variables.map((variable) => (
+                          <Box key={variable.name} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                            <Label htmlFor={`preview-${variable.name}`} style={{ fontSize: '0.75rem' }}>
+                              {variable.name}
+                            </Label>
+                            <Input
+                              id={`preview-${variable.name}`}
+                              value={previewData[variable.name] || ''}
+                              onChange={(e) =>
+                                setPreviewData({
+                                  ...previewData,
+                                  [variable.name]: e.target.value,
+                                })
+                              }
+                              placeholder={variable.description}
+                            />
+                          </Box>
+                        ))}
+                      </Box>
 
-                      {selectedTemplate.text_content && (
-                        <TabsContent value="text-preview">
-                          <div className="p-4 bg-muted/50 rounded-lg">
-                            <div className="border-b pb-2 mb-4">
+                      <Tabs defaultValue="html-preview" style={{ width: '100%' }}>
+                        <TabsList>
+                          <TabsTrigger value="html-preview">HTML Preview</TabsTrigger>
+                          <TabsTrigger value="html-code">HTML Code</TabsTrigger>
+                          {selectedTemplate.text_content && (
+                            <TabsTrigger value="text-preview">Text Version</TabsTrigger>
+                          )}
+                        </TabsList>
+
+                        <TabsContent value="html-preview">
+                          <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2, bgcolor: 'background.default' }}>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: 1, mb: 2 }}>
                               <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
-                            </div>
-                            <pre className="text-sm whitespace-pre-wrap">
-                              {generatePreview(selectedTemplate, previewData).textContent}
-                            </pre>
-                          </div>
+                            </Box>
+                            <ContentSanitizer
+                              style={{ maxWidth: 'none' }}
+                              className="prose"
+                              content={generatePreview(selectedTemplate, previewData).htmlContent}
+                              allowedTags={[
+                                'p','br','strong','em','u','a','ul','ol','li','blockquote','code','pre','h1','h2','h3','h4','h5','h6','img','table','thead','tbody','tr','th','td'
+                              ]}
+                            />
+                          </Box>
                         </TabsContent>
-                      )}
-                    </Tabs>
-                  </div>
-                )}
+
+                        <TabsContent value="html-code">
+                          <Box sx={{ p: 2, bgcolor: 'grey.100', borderRadius: 2 }}>
+                            <pre style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+                              {generatePreview(selectedTemplate, previewData).htmlContent}
+                            </pre>
+                          </Box>
+                        </TabsContent>
+
+                        {selectedTemplate.text_content && (
+                          <TabsContent value="text-preview">
+                            <Box sx={{ p: 2, bgcolor: 'grey.100', borderRadius: 2 }}>
+                              <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: 1, mb: 2 }}>
+                                <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
+                              </Box>
+                              <pre style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
+                                {generatePreview(selectedTemplate, previewData).textContent}
+                              </pre>
+                            </Box>
+                          </TabsContent>
+                        )}
+                      </Tabs>
+                    </Box>
+                  )}
+                </Box>
               </CardContent>
             </Card>
           )}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Container>
   );
 }

@@ -7,6 +7,8 @@ import { Switch } from '@/components/ui/switch';
 import { MapPin, Loader2, Globe, Building2 } from 'lucide-react';
 import { PlacesCard } from './PlacesCard';
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface Country {
   id: string;
@@ -39,21 +41,21 @@ interface PlacesMapViewProps {
 
 type SelectedItem = Country | City | null;
 
-export function PlacesMapView({ 
-  countries, 
-  cities, 
-  loading = false, 
-  onCountryClick, 
+export function PlacesMapView({
+  countries,
+  cities,
+  loading = false,
+  onCountryClick,
   onCityClick,
-  className 
+  className
 }: PlacesMapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
   const [showCities, setShowCities] = useState(true);
   const [mapboxToken] = useState('');
-  
-  
+
+
   const { token: secureToken } = useSecureMapbox();
   // Use hook token by default, allow manual override
   const activeToken = mapboxToken || secureToken || '';
@@ -65,7 +67,7 @@ export function PlacesMapView({
     }
 
     mapboxgl.accessToken = activeToken;
-    
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/tmaeder/clvmrc8pj015p01o05wd581tt',
@@ -111,7 +113,7 @@ export function PlacesMapView({
       // Clear existing markers
       const markers = document.querySelectorAll('.mapboxgl-marker');
       markers.forEach(marker => marker.remove());
-      
+
       // Add markers based on switch state
       if (showCities) {
         // Show cities
@@ -119,7 +121,7 @@ export function PlacesMapView({
           if (city.latitude && city.longitude) {
             const isCapital = city.is_capital;
             const isMajor = city.is_major_city;
-            
+
             const marker = new mapboxgl.Marker({
               color: isCapital ? '#f59e0b' : isMajor ? '#3b82f6' : '#6b7280', // amber for capitals, blue for major cities, gray for others
               scale: isCapital ? 0.9 : isMajor ? 0.7 : 0.5
@@ -129,18 +131,18 @@ export function PlacesMapView({
 
             const popup = new mapboxgl.Popup({ offset: 25 })
               .setHTML(`
-                <div class="p-3">
-                  <h3 class="font-semibold flex items-center gap-2">
-                    <span class="text-blue-600">🏙️</span>
+                <div style="padding: 12px;">
+                  <h3 style="font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #2563eb;">&#127959;</span>
                     ${city.name}
                   </h3>
-                  <p class="text-sm text-muted-foreground">
+                  <p style="font-size: 0.875rem; color: var(--muted-foreground);">
                     ${isCapital ? 'Capital City' : isMajor ? 'Major City' : 'City'}
                   </p>
-                  ${city.population ? `<p class="text-xs">Population: ${city.population.toLocaleString()}</p>` : ''}
+                  ${city.population ? `<p style="font-size: 0.75rem;">Population: ${city.population.toLocaleString()}</p>` : ''}
                 </div>
               `);
-            
+
             marker.getElement().addEventListener('click', () => {
               setSelectedItem(city);
             });
@@ -161,16 +163,16 @@ export function PlacesMapView({
 
             const popup = new mapboxgl.Popup({ offset: 25 })
               .setHTML(`
-                <div class="p-3">
-                  <h3 class="font-semibold flex items-center gap-2">
-                    <span class="text-red-600">🏛️</span>
+                <div style="padding: 12px;">
+                  <h3 style="font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #dc2626;">&#127963;</span>
                     ${country.name}
                   </h3>
-                  <p class="text-sm text-muted-foreground">Country</p>
-                  ${country.capital ? `<p class="text-xs">Capital: ${country.capital}</p>` : ''}
+                  <p style="font-size: 0.875rem; color: var(--muted-foreground);">Country</p>
+                  ${country.capital ? `<p style="font-size: 0.75rem;">Capital: ${country.capital}</p>` : ''}
                 </div>
               `);
-            
+
             marker.getElement().addEventListener('click', () => {
               setSelectedItem(country);
             });
@@ -182,7 +184,7 @@ export function PlacesMapView({
 
       // Fit map to show all points
       const allCoordinates: [number, number][] = [];
-      
+
       if (showCities) {
         allCoordinates.push(
           ...cities
@@ -196,7 +198,7 @@ export function PlacesMapView({
             .map(c => [c.longitude!, c.latitude!] as [number, number])
         );
       }
-      
+
       if (allCoordinates.length > 0) {
         const bounds = new mapboxgl.LngLatBounds();
         allCoordinates.forEach(coord => bounds.extend(coord));
@@ -207,79 +209,79 @@ export function PlacesMapView({
 
 
   return (
-    <div className={className}>
+    <Box className={className}>
       <Card>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Geographic Map View</h3>
-            </div>
-            
-            
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-600"></div>
-                <span className="text-sm">Countries</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                <span className="text-sm">Capital Cities</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                <span className="text-sm">Major Cities</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-                <span className="text-sm">Other Cities</span>
-              </div>
-              
-              <div className="flex items-center gap-3 ml-auto">
-                <span className="text-sm font-medium">Countries</span>
-                <Switch 
+        <CardContent style={{ padding: 24 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>Geographic Map View</Typography>
+            </Box>
+
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#dc2626' }} />
+                <Typography variant="body2">Countries</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#f59e0b' }} />
+                <Typography variant="body2">Capital Cities</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#3b82f6' }} />
+                <Typography variant="body2">Major Cities</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#6b7280' }} />
+                <Typography variant="body2">Other Cities</Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 'auto' }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Countries</Typography>
+                <Switch
                   checked={showCities}
                   onCheckedChange={setShowCities}
                 />
-                <span className="text-sm font-medium">Cities</span>
-              </div>
-            </div>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Cities</Typography>
+              </Box>
+            </Box>
 
             {loading && (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                <span className="text-sm text-muted-foreground">Loading map data...</span>
-              </div>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
+                <Loader2 style={{ height: 20, width: 20, animation: 'spin 1s linear infinite', marginRight: 8 }} />
+                <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Loading map data...</Typography>
+              </Box>
             )}
 
             {!activeToken ? (
-              <div className="h-[600px] w-full rounded-lg border bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                  <Globe className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-muted-foreground">Map is unavailable right now.</p>
-                </div>
-              </div>
+              <Box sx={{ height: 600, width: '100%', borderRadius: 2, border: 1, borderColor: 'divider', bgcolor: 'grey.50', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Globe style={{ height: 48, width: 48, color: '#9ca3af', margin: '0 auto 16px' }} />
+                  <Typography sx={{ color: 'var(--muted-foreground)' }}>Map is unavailable right now.</Typography>
+                </Box>
+              </Box>
             ) : (
-              <div className="h-[600px] w-full rounded-lg overflow-hidden border">
-                <div ref={mapContainer} className="w-full h-full" />
-              </div>
+              <Box sx={{ height: 600, width: '100%', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
+                <Box ref={mapContainer} sx={{ width: '100%', height: '100%' }} />
+              </Box>
             )}
 
             {selectedItem && (
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold">
+              <Box sx={{ mt: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography sx={{ fontWeight: 600 }}>
                     Selected {isCity(selectedItem) ? 'City' : 'Country'}
-                  </h4>
-                  <Button 
-                    variant="ghost" 
+                  </Typography>
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={() => setSelectedItem(null)}
                   >
-                    ✕
+                    &#10005;
                   </Button>
-                </div>
-                <div className="max-w-md">
+                </Box>
+                <Box sx={{ maxWidth: 448 }}>
                   <PlacesCard
                     type={isCity(selectedItem) ? 'city' : 'country'}
                     name={selectedItem.name}
@@ -292,12 +294,12 @@ export function PlacesMapView({
                       }
                     }}
                   />
-                </div>
-              </div>
+                </Box>
+              </Box>
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

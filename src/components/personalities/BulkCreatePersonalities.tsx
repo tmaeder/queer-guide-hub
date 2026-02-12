@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Box, Typography } from '@mui/material';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,7 +30,7 @@ export const BulkCreatePersonalities = () => {
   const validateNames = (namesList: string[]) => {
     const validationErrors = [];
     const validNames = [];
-    
+
     for (const name of namesList) {
       if (name.length < 2) {
         validationErrors.push(`"${name}" is too short (minimum 2 characters) - skipped`);
@@ -41,14 +42,14 @@ export const BulkCreatePersonalities = () => {
         validNames.push(name);
       }
     }
-    
+
     return { validNames, validationErrors };
   };
 
   const handleBulkCreate = async () => {
     // Reset previous results
     setResults(null);
-    
+
     if (!names.trim()) {
       toast({
         title: "Validation Error",
@@ -77,14 +78,14 @@ export const BulkCreatePersonalities = () => {
 
       // Validate names
       const { validNames, validationErrors } = validateNames(namesList);
-      
+
       if (validNames.length === 0) {
         toast({
           title: "No Valid Names",
           description: "All provided names failed validation",
           variant: "destructive",
         });
-        
+
         setResults({
           created: [],
           errors: validationErrors.map(error => ({ name: 'Validation', error }))
@@ -108,7 +109,7 @@ export const BulkCreatePersonalities = () => {
       });
 
       console.log('Calling bulk-create-personalities with:', { names: validNames, sources });
-      
+
       let data, error;
       try {
         const response = await supabase.functions.invoke('bulk-create-personalities', {
@@ -138,7 +139,7 @@ export const BulkCreatePersonalities = () => {
 
       const createdCount = data.created || 0;
       const errorCount = Array.isArray(data.errorDetails) ? data.errorDetails.length : 0;
-      
+
       // Store results for display, including validation errors
       setResults({
         created: data.results || [],
@@ -168,18 +169,18 @@ export const BulkCreatePersonalities = () => {
           variant: "destructive",
         });
       }
-      
+
     } catch (error) {
       console.error('Error creating personalities:', error);
-      
+
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
+
       toast({
         title: "System Error",
         description: `Failed to process request: ${errorMessage}`,
         variant: "destructive",
       });
-      
+
       setResults({
         created: [],
         errors: [{ name: 'System Error', error: errorMessage }]
@@ -192,12 +193,12 @@ export const BulkCreatePersonalities = () => {
 
   const retryFailedItems = () => {
     if (!results?.errors) return;
-    
+
     const failedNames = results.errors
       .filter(err => err.name !== 'Validation' && err.name !== 'System Error')
       .map(err => err.name)
       .join('\n');
-      
+
     setNames(failedNames);
     setResults(null);
   };
@@ -211,32 +212,32 @@ export const BulkCreatePersonalities = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Plus sx={{ height: '20px', width: '20px' }} />
             Bulk Create Personalities
           </CardTitle>
           <CardDescription>
             Enter personality names (one per line) to automatically create entries enriched with Wikipedia data
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-4">
-            <div className="space-y-2">
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Textarea
                 placeholder="Albert Einstein&#10;Marie Curie&#10;Leonardo da Vinci&#10;..."
                 value={names}
                 onChange={(e) => setNames(e.target.value)}
                 rows={8}
-                className="resize-none"
+                sx={{ resize: 'none' }}
                 disabled={isLoading}
               />
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', color: 'text.secondary' }}>
+                <Typography component="span">
                   {names.split('\n').filter(name => name.trim().length > 0).length} names entered
-                </span>
+                </Typography>
                 {names.trim() && (
                   <Button
                     variant="ghost"
@@ -247,111 +248,111 @@ export const BulkCreatePersonalities = () => {
                     Clear
                   </Button>
                 )}
-              </div>
-            </div>
+              </Box>
+            </Box>
 
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Data Sources</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center space-x-2">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Data Sources</Label>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id="wikidata"
                     checked={sources.wikidata}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setSources(prev => ({ ...prev, wikidata: checked as boolean }))
                     }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="wikidata" className="text-sm">Wikidata (core data)</Label>
-                </div>
-                <div className="flex items-center space-x-2">
+                  <Label htmlFor="wikidata" sx={{ fontSize: '0.875rem' }}>Wikidata (core data)</Label>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id="wikipedia"
                     checked={sources.wikipedia}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setSources(prev => ({ ...prev, wikipedia: checked as boolean }))
                     }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="wikipedia" className="text-sm">Wikipedia (bio)</Label>
-                </div>
-                <div className="flex items-center space-x-2">
+                  <Label htmlFor="wikipedia" sx={{ fontSize: '0.875rem' }}>Wikipedia (bio)</Label>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id="openLibrary"
                     checked={sources.openLibrary}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setSources(prev => ({ ...prev, openLibrary: checked as boolean }))
                     }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="openLibrary" className="text-sm">Open Library (books)</Label>
-                </div>
-                <div className="flex items-center space-x-2">
+                  <Label htmlFor="openLibrary" sx={{ fontSize: '0.875rem' }}>Open Library (books)</Label>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id="bandsintown"
                     checked={sources.bandsintown}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setSources(prev => ({ ...prev, bandsintown: checked as boolean }))
                     }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="bandsintown" className="text-sm">Bandsintown (concerts)</Label>
-                </div>
-                <div className="flex items-center space-x-2">
+                  <Label htmlFor="bandsintown" sx={{ fontSize: '0.875rem' }}>Bandsintown (concerts)</Label>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id="pexelsImages"
                     checked={sources.pexelsImages}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setSources(prev => ({ ...prev, pexelsImages: checked as boolean }))
                     }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="pexelsImages" className="text-sm">Pexels (fallback images)</Label>
-                </div>
-              </div>
-            </div>
-          </div>
-          
+                  <Label htmlFor="pexelsImages" sx={{ fontSize: '0.875rem' }}>Pexels (fallback images)</Label>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+
           {isLoading && progress.total > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>Processing personalities...</span>
-                <span>{progress.current}/{progress.total}</span>
-              </div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                <Typography component="span">Processing personalities...</Typography>
+                <Typography component="span">{progress.current}/{progress.total}</Typography>
+              </Box>
               <Progress value={(progress.current / progress.total) * 100} />
-            </div>
+            </Box>
           )}
-          
-          <div className="flex gap-2">
-            <Button 
-              onClick={handleBulkCreate} 
+
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              onClick={handleBulkCreate}
               disabled={isLoading || !names.trim()}
-              className="flex-1"
+              sx={{ flex: 1 }}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 sx={{ mr: 1, height: '16px', width: '16px' }} />
                   Creating Personalities...
                 </>
               ) : (
                 <>
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus sx={{ mr: 1, height: '16px', width: '16px' }} />
                   Create Personalities
                 </>
               )}
             </Button>
-            
+
             {results?.errors && results.errors.length > 0 && (
               <Button
                 variant="outline"
                 onClick={retryFailedItems}
                 disabled={isLoading}
               >
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw sx={{ mr: 1, height: '16px', width: '16px' }} />
                 Retry Failed
               </Button>
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
@@ -359,66 +360,67 @@ export const BulkCreatePersonalities = () => {
       {results && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {results.created.length > 0 && results.errors.length === 0 && (
-                <CheckCircle className="h-5 w-5 text-green-500" />
+                <CheckCircle sx={{ height: '20px', width: '20px', color: 'success.main' }} />
               )}
               {results.created.length > 0 && results.errors.length > 0 && (
-                <AlertCircle className="h-5 w-5 text-yellow-500" />
+                <AlertCircle sx={{ height: '20px', width: '20px', color: 'warning.main' }} />
               )}
               {results.created.length === 0 && results.errors.length > 0 && (
-                <XCircle className="h-5 w-5 text-red-500" />
+                <XCircle sx={{ height: '20px', width: '20px', color: 'error.main' }} />
               )}
               Results Summary
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-4">
-              <Badge variant="outline" className="text-green-600 border-green-600">
-                <CheckCircle className="w-3 h-3 mr-1" />
+          <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Badge variant="outline" sx={{ color: 'success.main', borderColor: 'success.main' }}>
+                <CheckCircle sx={{ width: '12px', height: '12px', mr: 0.5 }} />
                 {results.created.length} Created
               </Badge>
               {results.errors.length > 0 && (
-                <Badge variant="outline" className="text-red-600 border-red-600">
-                  <XCircle className="w-3 h-3 mr-1" />
+                <Badge variant="outline" sx={{ color: 'error.main', borderColor: 'error.main' }}>
+                  <XCircle sx={{ width: '12px', height: '12px', mr: 0.5 }} />
                   {results.errors.length} Failed
                 </Badge>
               )}
-            </div>
+            </Box>
 
             {results.created.length > 0 && (
               <Collapsible>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                  <Button variant="ghost" sx={{ width: '100%', justifyContent: 'flex-start' }}>
+                    <CheckCircle sx={{ mr: 1, height: '16px', width: '16px', color: 'success.main' }} />
                     Successfully Created ({results.created.length})
                   </Button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-2 pt-2">
+                <CollapsibleContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1 }}>
                   {results.created.map((personality: any, index: number) => (
-                    <div key={index} className="text-sm p-2 bg-green-50 rounded border-l-4 border-green-500">
-                      <div className="flex items-start gap-3">
+                    <Box key={index} sx={{ fontSize: '0.875rem', p: 1, bgcolor: 'success.light', borderRadius: 1, borderLeft: 4, borderColor: 'success.main' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                         {personality.image_url && (
-                          <img 
-                            src={personality.image_url} 
+                          <Box
+                            component="img"
+                            src={personality.image_url}
                             alt={personality.name}
-                            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                            sx={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                             }}
                           />
                         )}
-                        <div className="flex-1">
-                          <div className="font-medium">{personality.name}</div>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>{personality.name}</Typography>
                           {personality.profession && (
-                            <div className="text-muted-foreground">{personality.profession}</div>
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{personality.profession}</Typography>
                           )}
                           {personality.nationality && (
-                            <div className="text-xs text-muted-foreground">{personality.nationality}</div>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>{personality.nationality}</Typography>
                           )}
-                        </div>
-                      </div>
-                    </div>
+                        </Box>
+                      </Box>
+                    </Box>
                   ))}
                 </CollapsibleContent>
               </Collapsible>
@@ -427,24 +429,24 @@ export const BulkCreatePersonalities = () => {
             {results.errors.length > 0 && (
               <Collapsible>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <XCircle className="mr-2 h-4 w-4 text-red-500" />
+                  <Button variant="ghost" sx={{ width: '100%', justifyContent: 'flex-start' }}>
+                    <XCircle sx={{ mr: 1, height: '16px', width: '16px', color: 'error.main' }} />
                     Failed Imports ({results.errors.length})
                   </Button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-2 pt-2">
+                <CollapsibleContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1 }}>
                   {results.errors.map((error: any, index: number) => (
-                    <div key={index} className="text-sm p-2 bg-red-50 rounded border-l-4 border-red-500">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="font-medium">{error.name}</div>
-                          <div className="text-muted-foreground mt-1">{error.error}</div>
-                        </div>
-                        <Badge variant="secondary" className="ml-2">
+                    <Box key={index} sx={{ fontSize: '0.875rem', p: 1, bgcolor: 'error.light', borderRadius: 1, borderLeft: 4, borderColor: 'error.main' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>{error.name}</Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>{error.error}</Typography>
+                        </Box>
+                        <Badge variant="secondary" sx={{ ml: 1 }}>
                           {getErrorCategory(error.error)}
                         </Badge>
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
                   ))}
                 </CollapsibleContent>
               </Collapsible>
@@ -455,17 +457,17 @@ export const BulkCreatePersonalities = () => {
 
       {/* Help Information */}
       <Alert>
-        <AlertCircle className="h-4 w-4" />
+        <AlertCircle sx={{ height: '16px', width: '16px' }} />
         <AlertDescription>
-          <strong>Tips for better results:</strong>
-          <ul className="mt-2 space-y-1 text-sm list-disc list-inside">
-            <li>Use full names (e.g., "Marie Curie" instead of just "Curie")</li>
-            <li>Include middle names or suffixes if the person is commonly known by them</li>
-            <li>For disambiguation, add context (e.g., "Peter Allen (musician)")</li>
-            <li>One name per line, avoid special characters except hyphens, periods, and parentheses</li>
-          </ul>
+          <Typography component="strong">Tips for better results:</Typography>
+          <Box component="ul" sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5, fontSize: '0.875rem', listStylePosition: 'inside' }}>
+            <Box component="li">Use full names (e.g., "Marie Curie" instead of just "Curie")</Box>
+            <Box component="li">Include middle names or suffixes if the person is commonly known by them</Box>
+            <Box component="li">For disambiguation, add context (e.g., "Peter Allen (musician)")</Box>
+            <Box component="li">One name per line, avoid special characters except hyphens, periods, and parentheses</Box>
+          </Box>
         </AlertDescription>
       </Alert>
-    </div>
+    </Box>
   );
 };

@@ -7,6 +7,8 @@ import { Clock, Calendar, Shield, Database, AlertCircle } from 'lucide-react';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface ScheduledTask {
   id: string;
@@ -91,11 +93,11 @@ export function AutomatedSecurityScheduler() {
   const toggleTask = async (taskId: string, enabled: boolean) => {
     try {
       setLoading(true);
-      
+
       // In a real implementation, this would call a Supabase function
       // to enable/disable the scheduled task
-      
-      setTasks(prev => prev.map(task => 
+
+      setTasks(prev => prev.map(task =>
         task.id === taskId ? { ...task, enabled } : task
       ));
 
@@ -124,8 +126,8 @@ export function AutomatedSecurityScheduler() {
       }
 
       // Update last run time
-      setTasks(prev => prev.map(task => 
-        task.id === taskId 
+      setTasks(prev => prev.map(task =>
+        task.id === taskId
           ? { ...task, lastRun: new Date().toISOString() }
           : task
       ));
@@ -151,24 +153,24 @@ export function AutomatedSecurityScheduler() {
       pending: 'secondary' as const,
       error: 'destructive' as const
     };
-    
+
     const labels = {
       active: 'Active',
       pending: 'Pending',
       error: 'Error'
     };
-    
+
     return <Badge variant={variants[status]}>{labels[status]}</Badge>;
   };
 
   const getStatusIcon = (status: ScheduledTask['status']) => {
     switch (status) {
       case 'active':
-        return <Shield className="h-4 w-4 text-green-600" />;
+        return <Shield style={{ height: 16, width: 16, color: '#16a34a' }} />;
       case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-600" />;
+        return <Clock style={{ height: 16, width: 16, color: '#ca8a04' }} />;
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
+        return <AlertCircle style={{ height: 16, width: 16, color: '#dc2626' }} />;
     }
   };
 
@@ -179,25 +181,27 @@ export function AutomatedSecurityScheduler() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Calendar className="h-5 w-5" />
-          <span>Automated Security Tasks</span>
+        <CardTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Calendar style={{ height: 20, width: 20 }} />
+            <span>Automated Security Tasks</span>
+          </Box>
         </CardTitle>
         <CardDescription>
           Manage scheduled security operations and maintenance tasks
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {tasks.map((task) => (
-            <div key={task.id} className="border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
+            <Box key={task.id} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {getStatusIcon(task.status)}
-                  <h4 className="font-medium">{task.name}</h4>
+                  <Typography sx={{ fontWeight: 500 }}>{task.name}</Typography>
                   {getStatusBadge(task.status)}
-                </div>
-                <div className="flex items-center space-x-2">
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Switch
                     checked={task.enabled}
                     onCheckedChange={(enabled) => toggleTask(task.id, enabled)}
@@ -211,45 +215,45 @@ export function AutomatedSecurityScheduler() {
                   >
                     Run Now
                   </Button>
-                </div>
-              </div>
-              
-              <p className="text-sm text-muted-foreground mb-3">
+                </Box>
+              </Box>
+
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
                 {task.description}
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-muted-foreground">
-                <div className="flex items-center">
-                  <Clock className="h-3 w-3 mr-1" />
+              </Typography>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Clock style={{ height: 12, width: 12, marginRight: 4 }} />
                   <span>Frequency: {task.frequency}</span>
-                </div>
+                </Box>
                 {task.lastRun && (
-                  <div className="flex items-center">
-                    <Database className="h-3 w-3 mr-1" />
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Database style={{ height: 12, width: 12, marginRight: 4 }} />
                     <span>Last Run: {new Date(task.lastRun).toLocaleString()}</span>
-                  </div>
+                  </Box>
                 )}
                 {task.nextRun && (
-                  <div className="flex items-center">
-                    <Calendar className="h-3 w-3 mr-1" />
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Calendar style={{ height: 12, width: 12, marginRight: 4 }} />
                     <span>Next Run: {new Date(task.nextRun).toLocaleString()}</span>
-                  </div>
+                  </Box>
                 )}
-              </div>
-            </div>
+              </Box>
+            </Box>
           ))}
-        </div>
-        
-        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-          <h4 className="font-medium mb-2 flex items-center">
-            <Shield className="h-4 w-4 mr-2" />
+        </Box>
+
+        <Box sx={{ mt: 3, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+          <Typography sx={{ fontWeight: 500, mb: 1, display: 'flex', alignItems: 'center' }}>
+            <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
             Security Automation Status
-          </h4>
-          <p className="text-sm text-muted-foreground">
-            All security tasks are running automatically to maintain data protection and compliance. 
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            All security tasks are running automatically to maintain data protection and compliance.
             Manual execution is available for immediate needs or testing purposes.
-          </p>
-        </div>
+          </Typography>
+        </Box>
       </CardContent>
     </Card>
   );

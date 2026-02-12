@@ -14,18 +14,18 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
   ArrowLeft,
   Calendar as CalendarIcon,
   MapPin,
@@ -40,7 +40,9 @@ import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { VenueCombobox } from "@/components/ui/venue-combobox";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 
 export default function AdminEvents() {
   const navigate = useNavigate();
@@ -86,7 +88,7 @@ export default function AdminEvents() {
   });
 
   const eventTypes = [
-    "concert", "festival", "conference", "workshop", "meetup", 
+    "concert", "festival", "conference", "workshop", "meetup",
     "party", "exhibition", "sports", "theater", "comedy", "other"
   ];
 
@@ -110,7 +112,7 @@ export default function AdminEvents() {
     let filtered = events;
 
     if (searchQuery) {
-      filtered = filtered.filter(event => 
+      filtered = filtered.filter(event =>
         event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         event.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         event.city.toLowerCase().includes(searchQuery.toLowerCase())
@@ -155,7 +157,7 @@ export default function AdminEvents() {
       if (editingEvent) {
         const { error } = await updateEvent(editingEvent.id, eventData);
         if (error) throw new Error(error);
-        
+
         toast({
           title: "Success",
           description: "Event updated successfully"
@@ -163,7 +165,7 @@ export default function AdminEvents() {
       } else {
         const { error } = await createEvent(eventData);
         if (error) throw new Error(error);
-        
+
         toast({
           title: "Success",
           description: "Event created successfully"
@@ -217,8 +219,8 @@ export default function AdminEvents() {
 
   const handleVenueSelect = (venueId: string) => {
     if (venueId === 'custom') {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData(prev => ({
+        ...prev,
         venue_id: "",
         venue_name: "",
         address: "",
@@ -230,7 +232,7 @@ export default function AdminEvents() {
       }));
     } else {
       setFormData(prev => ({ ...prev, venue_id: venueId }));
-      
+
       if (venueId) {
         const selectedVenue = venues.find(v => v.id === venueId);
         if (selectedVenue) {
@@ -299,7 +301,7 @@ export default function AdminEvents() {
 
     try {
       const { error } = await deleteEvent(eventId);
-      
+
       if (error) throw new Error(error);
 
       toast({
@@ -319,47 +321,48 @@ export default function AdminEvents() {
 
   if (rolesLoading || loading || venuesLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">Loading...</div>
-      </div>
+      <Container maxWidth="lg" sx={{ p: 3 }}>
+        <Box sx={{ textAlign: 'center' }}>Loading...</Box>
+      </Container>
     );
   }
 
   return (
-    <div className="w-full p-6">
+    <Box sx={{ width: '100%', p: 3 }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button variant="outline" onClick={() => navigate("/admin")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
             Back to Dashboard
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Events Management</h1>
-            <p className="text-muted-foreground">Create and manage events</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
+          <Box>
+            <Typography variant="h4">Events Management</Typography>
+            <Typography color="text.secondary">Create and manage events</Typography>
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <EventsCsvImport onImportComplete={refetch} />
           <EventbriteImport onImportComplete={refetch} />
           <TicketmasterImport onImportComplete={refetch} />
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={resetForm}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
                 Create Event
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent sx={{ maxWidth: 896, maxHeight: '90vh', overflowY: 'auto' }}>
             <DialogHeader>
               <DialogTitle>{editingEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Basic Info */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Event Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Event Details</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="title">Event Title</Label>
                     <Input
                       id="title"
@@ -367,8 +370,8 @@ export default function AdminEvents() {
                       onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                       required
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="event_type">Event Type</Label>
                     <Select
                       value={formData.event_type}
@@ -385,10 +388,10 @@ export default function AdminEvents() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
-                <div>
+                <Box>
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
@@ -396,85 +399,91 @@ export default function AdminEvents() {
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     rows={3}
                   />
-                </div>
-              </div>
+                </Box>
+              </Box>
 
               {/* Date & Time */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Date & Time</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Date & Time</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label>Start Date</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !startDate && "text-muted-foreground"
-                          )}
+                          sx={{
+                            width: '100%',
+                            justifyContent: 'flex-start',
+                            textAlign: 'left',
+                            fontWeight: 'normal',
+                            ...(!startDate && { color: 'text.secondary' })
+                          }}
                         >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
                           {startDate ? format(startDate, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent sx={{ width: 'auto', p: 0 }}>
                         <Calendar
                           mode="single"
                           selected={startDate}
                           onSelect={setStartDate}
                           initialFocus
-                          className="pointer-events-auto"
+                          style={{ pointerEvents: 'auto' }}
                         />
                       </PopoverContent>
                     </Popover>
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label>End Date (Optional)</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !endDate && "text-muted-foreground"
-                          )}
+                          sx={{
+                            width: '100%',
+                            justifyContent: 'flex-start',
+                            textAlign: 'left',
+                            fontWeight: 'normal',
+                            ...(!endDate && { color: 'text.secondary' })
+                          }}
                         >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
                           {endDate ? format(endDate, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent sx={{ width: 'auto', p: 0 }}>
                         <Calendar
                           mode="single"
                           selected={endDate}
                           onSelect={setEndDate}
                           initialFocus
-                          className="pointer-events-auto"
+                          style={{ pointerEvents: 'auto' }}
                         />
                       </PopoverContent>
                     </Popover>
-                  </div>
-                </div>
-              </div>
+                  </Box>
+                </Box>
+              </Box>
 
               {/* Location */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Location</h3>
-                <div className="space-y-4">
-                  <div>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Location</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="venue_id">Select Venue (Optional)</Label>
                     <VenueCombobox
                       venues={venues}
                       value={formData.venue_id}
                       onValueChange={handleVenueSelect}
                       placeholder="Search and select venue or choose custom location"
-                      className="w-full"
+                      sx={{ width: '100%' }}
                     />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
+                  </Box>
+
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                    <Box>
                       <Label htmlFor="venue_name">Venue Name</Label>
                       <Input
                         id="venue_name"
@@ -482,20 +491,20 @@ export default function AdminEvents() {
                         onChange={(e) => setFormData(prev => ({ ...prev, venue_name: e.target.value }))}
                         disabled={!!formData.venue_id}
                       />
-                    </div>
-                    <div>
+                    </Box>
+                    <Box>
                       <LocationAutocomplete
                         value={formData.address}
                         onChange={handleAddressChange}
                         placeholder={formData.venue_id ? "Address populated from venue" : "Search for an address..."}
                         disabled={!!formData.venue_id}
                         label="Address"
-                        className={formData.venue_id ? "opacity-50" : ""}
+                        style={{ opacity: formData.venue_id ? 0.5 : 1 }}
                       />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                    <Box>
                       <Label htmlFor="city">City</Label>
                       <Input
                         id="city"
@@ -504,8 +513,8 @@ export default function AdminEvents() {
                         required
                         disabled={!!formData.venue_id}
                       />
-                    </div>
-                    <div>
+                    </Box>
+                    <Box>
                       <Label htmlFor="state">State</Label>
                       <Input
                         id="state"
@@ -513,8 +522,8 @@ export default function AdminEvents() {
                         onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
                         disabled={!!formData.venue_id}
                       />
-                    </div>
-                    <div>
+                    </Box>
+                    <Box>
                       <Label htmlFor="country">Country</Label>
                       <Input
                         id="country"
@@ -522,26 +531,26 @@ export default function AdminEvents() {
                         onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
                         disabled={!!formData.venue_id}
                       />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
 
               {/* Pricing & Capacity */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Pricing & Capacity</h3>
-                <div className="flex items-center space-x-2 mb-4">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Pricing & Capacity</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <Checkbox
                     id="is_free"
                     checked={formData.is_free}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_free: checked as boolean }))}
                   />
                   <Label htmlFor="is_free">Free Event</Label>
-                </div>
-                
+                </Box>
+
                 {!formData.is_free && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                    <Box>
                       <Label htmlFor="price_min">Min Price</Label>
                       <Input
                         id="price_min"
@@ -550,8 +559,8 @@ export default function AdminEvents() {
                         value={formData.price_min}
                         onChange={(e) => setFormData(prev => ({ ...prev, price_min: e.target.value }))}
                       />
-                    </div>
-                    <div>
+                    </Box>
+                    <Box>
                       <Label htmlFor="price_max">Max Price</Label>
                       <Input
                         id="price_max"
@@ -560,12 +569,12 @@ export default function AdminEvents() {
                         value={formData.price_max}
                         onChange={(e) => setFormData(prev => ({ ...prev, price_max: e.target.value }))}
                       />
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="max_attendees">Max Attendees</Label>
                     <Input
                       id="max_attendees"
@@ -573,8 +582,8 @@ export default function AdminEvents() {
                       value={formData.max_attendees}
                       onChange={(e) => setFormData(prev => ({ ...prev, max_attendees: e.target.value }))}
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="age_restriction">Age Restriction</Label>
                     <Select
                       value={formData.age_restriction}
@@ -590,59 +599,59 @@ export default function AdminEvents() {
                         <SelectItem value="all_ages">All Ages</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
-              </div>
+                  </Box>
+                </Box>
+              </Box>
 
               {/* Additional Info */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Additional Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Additional Information</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="organizer_name">Organizer Name</Label>
                     <Input
                       id="organizer_name"
                       value={formData.organizer_name}
                       onChange={(e) => setFormData(prev => ({ ...prev, organizer_name: e.target.value }))}
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="organizer_contact">Organizer Contact</Label>
                     <Input
                       id="organizer_contact"
                       value={formData.organizer_contact}
                       onChange={(e) => setFormData(prev => ({ ...prev, organizer_contact: e.target.value }))}
                     />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box>
                     <Label htmlFor="website">Website</Label>
                     <Input
                       id="website"
                       value={formData.website}
                       onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
                     />
-                  </div>
-                  <div>
+                  </Box>
+                  <Box>
                     <Label htmlFor="ticket_url">Ticket URL</Label>
                     <Input
                       id="ticket_url"
                       value={formData.ticket_url}
                       onChange={(e) => setFormData(prev => ({ ...prev, ticket_url: e.target.value }))}
                     />
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id="featured"
                     checked={formData.featured}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked as boolean }))}
                   />
                   <Label htmlFor="featured">Featured Event</Label>
-                </div>
-              </div>
+                </Box>
+              </Box>
 
               {/* Event Images */}
               <EventImageUpload
@@ -651,32 +660,33 @@ export default function AdminEvents() {
                 maxImages={5}
               />
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" sx={{ width: '100%' }}>
                 {editingEvent ? 'Update Event' : 'Create Event'}
               </Button>
+              </Box>
             </form>
           </DialogContent>
           </Dialog>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Card sx={{ mb: 3 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+            <Box sx={{ flex: 1 }}>
+              <Box sx={{ position: 'relative' }}>
+                <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Input
                   placeholder="Search events..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  sx={{ pl: 5 }}
                 />
-              </div>
-            </div>
+              </Box>
+            </Box>
             <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger sx={{ width: 192 }}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -688,59 +698,59 @@ export default function AdminEvents() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 3, mb: 4 }}>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-2xl font-bold">{events.length}</p>
-                <p className="text-sm text-muted-foreground">Total Events</p>
-              </div>
-            </div>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CalendarIcon style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+              <Box>
+                <Typography variant="h5">{events.length}</Typography>
+                <Typography variant="body2" color="text.secondary">Total Events</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-2xl font-bold">
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Clock style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+              <Box>
+                <Typography variant="h5">
                   {events.filter(e => new Date(e.start_date) > new Date()).length}
-                </p>
-                <p className="text-sm text-muted-foreground">Upcoming</p>
-              </div>
-            </div>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">Upcoming</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-accent" />
-              <div>
-                <p className="text-2xl font-bold">{events.filter(e => e.featured).length}</p>
-                <p className="text-sm text-muted-foreground">Featured</p>
-              </div>
-            </div>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Users style={{ height: 20, width: 20, color: 'var(--accent)' }} />
+              <Box>
+                <Typography variant="h5">{events.filter(e => e.featured).length}</Typography>
+                <Typography variant="body2" color="text.secondary">Featured</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-secondary" />
-              <div>
-                <p className="text-2xl font-bold">{new Set(events.map(e => e.city)).size}</p>
-                <p className="text-sm text-muted-foreground">Cities</p>
-              </div>
-            </div>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <MapPin style={{ height: 20, width: 20, color: 'var(--secondary)' }} />
+              <Box>
+                <Typography variant="h5">{new Set(events.map(e => e.city)).size}</Typography>
+                <Typography variant="body2" color="text.secondary">Cities</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Events List */}
       <Card>
@@ -748,69 +758,69 @@ export default function AdminEvents() {
           <CardTitle>Events ({filteredEvents.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {filteredEvents.map((event) => (
-              <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-semibold">{event.title}</h3>
+              <Box key={event.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, border: 1, borderColor: 'divider', borderRadius: 2, '&:hover': { bgcolor: 'action.hover' } }}>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                    <Typography sx={{ fontWeight: 600 }}>{event.title}</Typography>
                     <Badge variant="outline">{event.event_type}</Badge>
                     {event.featured && (
-                      <Badge className="bg-secondary/10 text-secondary">Featured</Badge>
+                      <Badge sx={{ bgcolor: 'rgba(var(--secondary-rgb), 0.1)', color: 'secondary.main' }}>Featured</Badge>
                     )}
                     {event.is_free && (
-                      <Badge className="bg-accent/10 text-accent">Free</Badge>
+                      <Badge sx={{ bgcolor: 'rgba(var(--accent-rgb), 0.1)', color: 'secondary.main' }}>Free</Badge>
                     )}
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                    <div className="flex items-center gap-1">
-                      <CalendarIcon className="h-3 w-3" />
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <CalendarIcon style={{ height: 12, width: 12 }} />
                       {format(new Date(event.start_date), "MMM d, yyyy")}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <MapPin style={{ height: 12, width: 12 }} />
                       {event.city}, {event.state}
-                    </div>
+                    </Typography>
                     {event.venue_name && (
-                      <div>{event.venue_name}</div>
+                      <Typography variant="body2" color="text.secondary">{event.venue_name}</Typography>
                     )}
-                  </div>
+                  </Box>
 
                   {event.description && (
-                    <p className="text-sm text-muted-foreground">
+                    <Typography variant="body2" color="text.secondary">
                       {event.description.slice(0, 100)}...
-                    </p>
+                    </Typography>
                   )}
-                </div>
-                
-                <div className="flex items-center gap-2">
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleEditEvent(event)}
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit style={{ height: 16, width: 16 }} />
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDeleteEvent(event.id)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 style={{ height: 16, width: 16 }} />
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
             ))}
-            
+
             {filteredEvents.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No events found</p>
-              </div>
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography color="text.secondary">No events found</Typography>
+              </Box>
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

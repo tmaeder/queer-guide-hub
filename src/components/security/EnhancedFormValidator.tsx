@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { EnhancedContentValidator, useContentValidation } from './EnhancedContentValidator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import Box from '@mui/material/Box';
 
 interface EnhancedFormValidatorProps {
   children: React.ReactNode;
@@ -57,10 +58,10 @@ export function EnhancedFormValidator({
       // Validate content fields
       for (const fieldName of contentFields) {
         const value = isFormData ? formData.get(fieldName) : formData[fieldName];
-        
+
         if (value && typeof value === 'string') {
           const result = await validateContent(value, user?.id);
-          
+
           if (!result.isValid) {
             errors.push(...result.errors.map(error => `${fieldName}: ${error}`));
           }
@@ -116,16 +117,16 @@ export function EnhancedFormValidator({
       return React.cloneElement(child, {
         onSubmit: async (e: React.FormEvent) => {
           e.preventDefault();
-          
+
           if (isBlocked) {
             return;
           }
 
           const form = e.target as HTMLFormElement;
           const formData = new FormData(form);
-          
+
           const isValid = await validateForm(formData);
-          
+
           if (isValid && child.props.onSubmit) {
             child.props.onSubmit(e);
           }
@@ -136,28 +137,28 @@ export function EnhancedFormValidator({
   });
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {(validationErrors.length > 0 || isBlocked) && (
         <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangle style={{ height: 16, width: 16 }} />
           <AlertDescription>
             {isBlocked ? (
               <span>Form submission blocked due to too many invalid attempts. Please wait and try again.</span>
             ) : (
               <div>
                 <span>Please fix the following issues:</span>
-                <ul className="list-disc list-inside mt-2">
+                <Box component="ul" sx={{ listStyle: 'disc', listStylePosition: 'inside', mt: 1 }}>
                   {validationErrors.map((error, index) => (
                     <li key={index}>{error}</li>
                   ))}
-                </ul>
+                </Box>
               </div>
             )}
           </AlertDescription>
         </Alert>
       )}
       {enhancedChildren}
-    </div>
+    </Box>
   );
 }
 

@@ -3,6 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tag as TagIcon, Calendar, MapPin, ShoppingBag, Users } from "lucide-react";
 import { Tag } from "@/hooks/useTags";
 import { FavoriteButton } from "@/components/ui/favorite-button";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+
 interface TagCardProps {
   tag: Tag;
   category?: string;
@@ -36,41 +39,41 @@ export const TagCard = ({
   };
   const primaryCategory = getPrimaryCategory();
   const IconComponent = getCategoryIcon(primaryCategory);
-  return <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200" onClick={onClick}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <IconComponent className="h-4 w-4 text-primary" />
-            <Badge variant="outline" className="font-mono">
+  return <Card sx={{ cursor: 'pointer', '&:hover': { boxShadow: 2 }, transition: 'box-shadow 0.2s' }} onClick={onClick}>
+      <CardContent sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconComponent style={{ height: 16, width: 16, color: 'var(--primary)' }} />
+            <Badge variant="outline" sx={{ fontFamily: 'monospace' }}>
               #{tag.name}
             </Badge>
-          </div>
-          <div className="flex items-center gap-2">
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <FavoriteButton itemId={tag.id || tag.name} type="tag" size="sm" />
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
               {tag.total_count}
             </Badge>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
-        {tag.categories && tag.categories.length > 1 && <div className="flex flex-wrap gap-1 mb-3">
+        {tag.categories && tag.categories.length > 1 && <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1.5 }}>
             {tag.categories.map(cat => {
           const CatIcon = getCategoryIcon(cat);
           const usage = tag.usage_by_category?.find(u => u.category === cat);
-          return <div key={cat} className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <CatIcon className="h-3 w-3" />
-                  <span className="capitalize">{cat}</span>
+          return <Box key={cat} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.75rem', color: 'text.secondary' }}>
+                  <CatIcon style={{ height: 12, width: 12 }} />
+                  <Box component="span" sx={{ textTransform: 'capitalize' }}>{cat}</Box>
                   {usage && <span>({usage.count})</span>}
-                </div>;
+                </Box>;
         })}
-          </div>}
+          </Box>}
 
         {tag.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
             {tag.description}
-          </p>
+          </Typography>
         )}
-        
+
       </CardContent>
     </Card>;
 };

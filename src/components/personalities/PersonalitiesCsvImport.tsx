@@ -1,13 +1,14 @@
 import { useState, useRef } from "react";
+import { Box, Typography } from '@mui/material';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, FileText, Download, AlertCircle, CheckCircle } from "lucide-react";
@@ -77,14 +78,14 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
 
     } catch (error: any) {
       console.error('Import error:', error);
-      
+
       const errorMessage = error.message || 'Failed to import CSV file';
       toast({
         title: "Import error",
         description: errorMessage,
         variant: "destructive"
       });
-      
+
       setImportResult({
         success: false,
         imported: 0,
@@ -103,7 +104,7 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
     const csvContent = `name,description,birth_date,death_date,is_living,profession,nationality,birth_place,image_url,website_url,pronouns,verification_status,visibility,is_featured,fields
 "Elton John","British singer, songwriter and pianist","1947-03-25","","true","musician, singer","United Kingdom","Pinner","","https://en.wikipedia.org/wiki/Elton_John","he/him","verified","public","true","music,activism"
 "Freddie Mercury","British singer and songwriter","1946-09-05","1991-11-24","false","singer, songwriter","United Kingdom","Stone Town","","https://en.wikipedia.org/wiki/Freddie_Mercury","he/him","verified","public","true","music"`;
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -126,38 +127,38 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Upload className="h-4 w-4 mr-2" />
+          <Upload sx={{ height: '16px', width: '16px', mr: 1 }} />
           Import CSV
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent sx={{ maxWidth: '768px' }}>
         <DialogHeader>
           <DialogTitle>Import Personalities from CSV</DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-6">
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Instructions */}
           <Card>
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-2 flex items-center gap-2">
-                <FileText className="h-4 w-4" />
+            <CardContent sx={{ p: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <FileText sx={{ height: '16px', width: '16px' }} />
                 CSV Format Requirements
-              </h3>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• <strong>Required columns:</strong> name</li>
-                <li>• <strong>Optional columns:</strong> description, birth_date (YYYY-MM-DD), death_date (YYYY-MM-DD), is_living (true/false), profession, nationality, birth_place, image_url, website_url, pronouns, verification_status (verified/pending/disputed), visibility (public/private/draft), is_featured (true/false), fields (comma-separated)</li>
-                <li>• <strong>Fields:</strong> music, arts, entertainment, sports, politics, activism, science, business, literature, media</li>
-                <li>• <strong>Date format:</strong> YYYY-MM-DD (e.g., 1947-03-25)</li>
-                <li>• <strong>Boolean format:</strong> true/false</li>
-              </ul>
-              
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              </Typography>
+              <Box component="ul" sx={{ fontSize: '0.875rem', color: 'text.secondary', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Box component="li"><Typography component="strong">Required columns:</Typography> name</Box>
+                <Box component="li"><Typography component="strong">Optional columns:</Typography> description, birth_date (YYYY-MM-DD), death_date (YYYY-MM-DD), is_living (true/false), profession, nationality, birth_place, image_url, website_url, pronouns, verification_status (verified/pending/disputed), visibility (public/private/draft), is_featured (true/false), fields (comma-separated)</Box>
+                <Box component="li"><Typography component="strong">Fields:</Typography> music, arts, entertainment, sports, politics, activism, science, business, literature, media</Box>
+                <Box component="li"><Typography component="strong">Date format:</Typography> YYYY-MM-DD (e.g., 1947-03-25)</Box>
+                <Box component="li"><Typography component="strong">Boolean format:</Typography> true/false</Box>
+              </Box>
+
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={downloadTemplate}
-                className="mt-3"
+                sx={{ mt: 1.5 }}
               >
-                <Download className="h-4 w-4 mr-2" />
+                <Download sx={{ height: '16px', width: '16px', mr: 1 }} />
                 Download Template
               </Button>
             </CardContent>
@@ -165,8 +166,8 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
 
           {/* File Upload */}
           {!importResult && (
-            <div className="space-y-4">
-              <div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box>
                 <Label htmlFor="csv-file">Select CSV File</Label>
                 <Input
                   id="csv-file"
@@ -176,90 +177,90 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                   onChange={handleFileUpload}
                   disabled={isUploading}
                 />
-              </div>
-              
+              </Box>
+
               {isUploading && (
-                <div className="text-center py-4">
-                  <div className="inline-flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <Box sx={{ textAlign: 'center', py: 2 }}>
+                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ animation: 'spin 1s linear infinite', borderRadius: '50%', height: '16px', width: '16px', border: 2, borderColor: 'primary.main', borderTopColor: 'transparent' }} />
                     Uploading and processing CSV...
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
 
           {/* Import Results */}
           {importResult && (
             <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-3">
+              <CardContent sx={{ p: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                   {importResult.success ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <CheckCircle sx={{ height: '20px', width: '20px', color: 'success.main' }} />
                   ) : (
-                    <AlertCircle className="h-5 w-5 text-red-500" />
+                    <AlertCircle sx={{ height: '20px', width: '20px', color: 'error.main' }} />
                   )}
-                  <h3 className="font-semibold">
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
                     {importResult.success ? 'Import Successful' : 'Import Failed'}
-                  </h3>
-                </div>
-                
+                  </Typography>
+                </Box>
+
                 {importResult.success ? (
-                  <div className="space-y-2 text-sm">
-                    <p>✅ Successfully imported <strong>{importResult.imported}</strong> personalities</p>
-                    <p>📊 Total personalities processed: <strong>{importResult.total_parsed}</strong></p>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, fontSize: '0.875rem' }}>
+                    <Typography>✅ Successfully imported <Typography component="strong">{importResult.imported}</Typography> personalities</Typography>
+                    <Typography>📊 Total personalities processed: <Typography component="strong">{importResult.total_parsed}</Typography></Typography>
                     {importResult.errors && importResult.errors.length > 0 && (
-                      <div>
-                        <p className="text-amber-600">⚠️ Some rows had errors:</p>
-                        <ul className="list-disc list-inside text-amber-600 ml-4">
+                      <Box>
+                        <Typography sx={{ color: 'warning.main' }}>⚠️ Some rows had errors:</Typography>
+                        <Box component="ul" sx={{ listStylePosition: 'inside', color: 'warning.main', ml: 2 }}>
                           {importResult.errors.map((error, index) => (
-                            <li key={index}>{error}</li>
+                            <Box component="li" key={index}>{error}</Box>
                           ))}
-                        </ul>
-                      </div>
+                        </Box>
+                      </Box>
                     )}
-                  </div>
+                  </Box>
                 ) : (
-                  <div className="space-y-2 text-sm">
-                    <p className="text-red-600">❌ {importResult.error}</p>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, fontSize: '0.875rem' }}>
+                    <Typography sx={{ color: 'error.main' }}>❌ {importResult.error}</Typography>
                     {importResult.details && (
-                      <p className="text-muted-foreground">{importResult.details}</p>
+                      <Typography sx={{ color: 'text.secondary' }}>{importResult.details}</Typography>
                     )}
                     {importResult.hint && (
-                      <p className="text-blue-600">💡 {importResult.hint}</p>
+                      <Typography sx={{ color: 'info.main' }}>💡 {importResult.hint}</Typography>
                     )}
                     {importResult.errors && importResult.errors.length > 0 && (
-                      <div>
-                        <p className="text-red-600">Errors found:</p>
-                        <ul className="list-disc list-inside text-red-600 ml-4">
+                      <Box>
+                        <Typography sx={{ color: 'error.main' }}>Errors found:</Typography>
+                        <Box component="ul" sx={{ listStylePosition: 'inside', color: 'error.main', ml: 2 }}>
                           {importResult.errors.map((error, index) => (
-                            <li key={index}>{error}</li>
+                            <Box component="li" key={index}>{error}</Box>
                           ))}
-                        </ul>
-                      </div>
+                        </Box>
+                      </Box>
                     )}
-                  </div>
+                  </Box>
                 )}
-                
-                <div className="flex gap-2 mt-4">
-                  <Button 
+
+                <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                  <Button
                     onClick={resetImport}
                     variant="outline"
                     size="sm"
                   >
                     Import Another File
                   </Button>
-                  <Button 
+                  <Button
                     onClick={() => setIsOpen(false)}
                     size="sm"
                   >
                     Close
                   </Button>
-                </div>
+                </Box>
               </CardContent>
             </Card>
           )}
-        </div>
+        </Box>
       </DialogContent>
     </Dialog>
   );

@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Upload, Music, X, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +40,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const audioFiles = acceptedFiles.filter(file => file.type.startsWith('audio/'));
-    
+
     if (audioFiles.length === 0) {
       toast.error('Please upload audio files only');
       return;
@@ -78,14 +80,14 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
 
       // Upload to storage
       const filePath = `uploads/${audio.id}/${audio.file.name}`;
-      
+
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('audio')
         .upload(filePath, audio.file);
 
       if (uploadError) throw uploadError;
 
-      setAudios(prev => prev.map(a => 
+      setAudios(prev => prev.map(a =>
         a.id === audio.id ? { ...a, uploadProgress: 100 } : a
       ));
 
@@ -118,7 +120,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
 
       if (processError) throw processError;
 
-      setAudios(prev => prev.map(a => 
+      setAudios(prev => prev.map(a =>
         a.id === audio.id ? { ...a, status: 'processing' } : a
       ));
 
@@ -131,7 +133,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
     } catch (error) {
       console.error('Upload error:', error);
       toast.error(`Failed to upload "${audio.title}"`);
-      setAudios(prev => prev.map(a => 
+      setAudios(prev => prev.map(a =>
         a.id === audio.id ? { ...a, status: 'error' } : a
       ));
     } finally {
@@ -148,12 +150,12 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
 
         if (job?.job) {
           const { status, progress_percent } = job.job;
-          
-          setAudios(prev => prev.map(a => 
-            a.id === audioId ? { 
-              ...a, 
+
+          setAudios(prev => prev.map(a =>
+            a.id === audioId ? {
+              ...a,
               processingProgress: progress_percent,
-              status: status === 'completed' ? 'completed' : 
+              status: status === 'completed' ? 'completed' :
                       status === 'failed' ? 'error' : 'processing'
             } : a
           ));
@@ -175,13 +177,13 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
   };
 
   const updateAudioInfo = (id: string, field: keyof UploadedAudio, value: any) => {
-    setAudios(prev => prev.map(a => 
+    setAudios(prev => prev.map(a =>
       a.id === id ? { ...a, [field]: value } : a
     ));
   };
 
   const updateAudioConfig = (id: string, field: keyof UploadedAudio['config'], value: any) => {
-    setAudios(prev => prev.map(a => 
+    setAudios(prev => prev.map(a =>
       a.id === id ? { ...a, config: { ...a.config, [field]: value } } : a
     ));
   };
@@ -191,97 +193,104 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Upload Zone */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Music className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Music style={{ width: 20, height: 20 }} />
             Upload Audio Files
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div
+          <Box
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              isDragActive 
-                ? 'border-primary bg-primary/5' 
-                : 'border-muted-foreground/25 hover:border-primary/50'
-            }`}
+            sx={{
+              border: 2,
+              borderStyle: 'dashed',
+              borderRadius: 2,
+              p: 4,
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              borderColor: isDragActive ? 'primary.main' : 'divider',
+              bgcolor: isDragActive ? 'primary.light' : 'transparent',
+              '&:hover': { borderColor: 'primary.main' },
+            }}
           >
             <input {...getInputProps()} />
-            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <Upload style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
             {isDragActive ? (
-              <p className="text-lg">Drop audio files here...</p>
+              <Typography variant="subtitle1">Drop audio files here...</Typography>
             ) : (
-              <div>
-                <p className="text-lg mb-2">
+              <Box>
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>
                   Drag & drop audio files here, or click to select
-                </p>
-                <p className="text-sm text-muted-foreground">
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
                   Supports MP3, WAV, AAC, FLAC, OGG, M4A
-                </p>
-              </div>
+                </Typography>
+              </Box>
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Audio List */}
       {audios.length > 0 && (
-        <div className="space-y-4">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {audios.map((audio) => (
             <Card key={audio.id}>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                      <Music className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="text-sm font-medium">Title</label>
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <Box sx={{ flexShrink: 0 }}>
+                    <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Music style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Title</Typography>
                         <Input
                           value={audio.title}
                           onChange={(e) => updateAudioInfo(audio.id, 'title', e.target.value)}
                           placeholder="Track title"
                         />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium">Artist</label>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Artist</Typography>
                         <Input
                           value={audio.artist}
                           onChange={(e) => updateAudioInfo(audio.id, 'artist', e.target.value)}
                           placeholder="Artist name"
                         />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium">Album</label>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Album</Typography>
                         <Input
                           value={audio.album}
                           onChange={(e) => updateAudioInfo(audio.id, 'album', e.target.value)}
                           placeholder="Album name"
                         />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium">Description</label>
+                      </Box>
+                    </Box>
+
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Description</Typography>
                       <Textarea
                         value={audio.description}
                         onChange={(e) => updateAudioInfo(audio.id, 'description', e.target.value)}
                         placeholder="Track description"
                         rows={2}
                       />
-                    </div>
+                    </Box>
 
                     {/* Processing Options */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                      <div>
-                        <label className="text-sm font-medium">Quality</label>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Quality</Typography>
                         <Select
                           value={audio.config.quality}
                           onValueChange={(value: any) => updateAudioConfig(audio.id, 'quality', value)}
@@ -295,91 +304,89 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                             <SelectItem value="high">High Quality (Maximum)</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
+                      </Box>
+
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Checkbox
                           id={`transcript-${audio.id}`}
                           checked={audio.config.generateTranscript}
                           onCheckedChange={(checked) => updateAudioConfig(audio.id, 'generateTranscript', checked)}
                         />
-                        <label 
+                        <label
                           htmlFor={`transcript-${audio.id}`}
-                          className="text-sm font-medium"
                         >
-                          Generate transcript
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>Generate transcript</Typography>
                         </label>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
+                      </Box>
+
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Checkbox
                           id={`normalize-${audio.id}`}
                           checked={audio.config.normalizeLoudness}
                           onCheckedChange={(checked) => updateAudioConfig(audio.id, 'normalizeLoudness', checked)}
                         />
-                        <label 
+                        <label
                           htmlFor={`normalize-${audio.id}`}
-                          className="text-sm font-medium"
                         >
-                          Normalize loudness
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>Normalize loudness</Typography>
                         </label>
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
 
                     {/* Status & Progress */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${
-                          audio.status === 'completed' ? 'bg-green-500' :
-                          audio.status === 'error' ? 'bg-red-500' :
-                          'bg-yellow-500'
-                        }`} />
-                        <span className="text-sm capitalize">{audio.status}</span>
-                      </div>
-                      
-                      <div className="text-sm text-muted-foreground">
-                        Quality: {audio.config.quality} | 
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{
+                          width: 8, height: 8, borderRadius: '50%',
+                          bgcolor: audio.status === 'completed' ? 'success.main' :
+                                   audio.status === 'error' ? 'error.main' : 'warning.main'
+                        }} />
+                        <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{audio.status}</Typography>
+                      </Box>
+
+                      <Typography variant="body2" color="text.secondary">
+                        Quality: {audio.config.quality} |
                         {audio.config.generateTranscript ? ' +Transcript' : ''}
                         {audio.config.normalizeLoudness ? ' +Normalized' : ''}
-                      </div>
-                    </div>
+                      </Typography>
+                    </Box>
 
                     {/* Progress Bars */}
                     {audio.status === 'uploading' && (
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Uploading...</span>
-                          <span>{Math.round(audio.uploadProgress)}%</span>
-                        </div>
+                      <Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="body2">Uploading...</Typography>
+                          <Typography variant="body2">{Math.round(audio.uploadProgress)}%</Typography>
+                        </Box>
                         <Progress value={audio.uploadProgress} />
-                      </div>
+                      </Box>
                     )}
 
                     {audio.status === 'processing' && (
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Processing audio...</span>
-                          <span>{audio.processingProgress || 0}%</span>
-                        </div>
+                      <Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="body2">Processing audio...</Typography>
+                          <Typography variant="body2">{audio.processingProgress || 0}%</Typography>
+                        </Box>
                         <Progress value={audio.processingProgress || 0} />
-                      </div>
+                      </Box>
                     )}
-                  </div>
+                  </Box>
 
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => removeAudio(audio.id)}
-                    className="flex-shrink-0"
+                    sx={{ flexShrink: 0 }}
                   >
-                    <X className="h-4 w-4" />
+                    <X style={{ width: 16, height: 16 }} />
                   </Button>
-                </div>
+                </Box>
               </CardContent>
             </Card>
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

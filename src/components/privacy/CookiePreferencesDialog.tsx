@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useCookieConsent, CookiePreferences } from '@/hooks/useCookieConsent';
 import { Cookie, Shield, BarChart3, Target, Cog } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface CookiePreferencesDialogProps {
   open: boolean;
@@ -79,10 +81,10 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent style={{ maxWidth: 672, maxHeight: '80vh', overflowY: 'auto' }}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Cookie className="h-5 w-5" />
+          <DialogTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Cookie style={{ height: 20, width: 20 }} />
             Cookie Preferences
           </DialogTitle>
           <DialogDescription>
@@ -91,29 +93,29 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {cookieCategories.map((category) => {
             const Icon = category.icon;
             return (
-              <div key={category.id} className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4 text-muted-foreground" />
-                      <Label htmlFor={category.id} className="text-base font-medium">
+              <Box key={category.id} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Icon style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                      <Label htmlFor={category.id} style={{ fontSize: '1rem', fontWeight: 500 }}>
                         {category.title}
                       </Label>
                       {category.required && (
-                        <span className="text-xs bg-muted px-2 py-1 rounded">Required</span>
+                        <Typography component="span" sx={{ fontSize: '0.75rem', bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 1 }}>Required</Typography>
                       )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
+                    </Box>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                       {category.description}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                       {category.details}
-                    </p>
-                  </div>
+                    </Typography>
+                  </Box>
                   <Switch
                     id={category.id}
                     checked={localPreferences[category.id]}
@@ -127,28 +129,28 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
                     }}
                     disabled={category.required}
                   />
-                </div>
+                </Box>
                 {category.id !== 'marketing' && <Separator />}
-              </div>
+              </Box>
             );
           })}
-        </div>
+        </Box>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          <Button onClick={handleSave} className="flex-1">
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5, pt: 2 }}>
+          <Button onClick={handleSave} style={{ flex: 1 }}>
             Save Preferences
           </Button>
-          <Button onClick={handleAcceptAll} variant="outline" className="flex-1">
+          <Button onClick={handleAcceptAll} variant="outline" style={{ flex: 1 }}>
             Accept All
           </Button>
-          <Button onClick={handleNecessaryOnly} variant="ghost" className="flex-1">
+          <Button onClick={handleNecessaryOnly} variant="ghost" style={{ flex: 1 }}>
             Necessary Only
           </Button>
-        </div>
+        </Box>
 
-        <p className="text-xs text-muted-foreground text-center">
+        <Typography variant="caption" sx={{ color: 'text.secondary', textAlign: 'center' }}>
           You can change these settings at any time from our Privacy Policy page.
-        </p>
+        </Typography>
       </DialogContent>
     </Dialog>
   );

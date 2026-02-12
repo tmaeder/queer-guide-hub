@@ -5,48 +5,49 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Bell, 
-  BellOff, 
-  Check, 
-  CheckCheck, 
-  AtSign, 
-  Megaphone, 
+import {
+  Bell,
+  BellOff,
+  Check,
+  CheckCheck,
+  AtSign,
+  Megaphone,
   BarChart3,
   MessageSquare,
-  Heart 
+  Heart
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useGroupNotifications, GroupNotification } from '@/hooks/useGroupNotifications';
 import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export const GroupNotificationBell = () => {
-  const { 
-    notifications, 
-    unreadCount, 
-    isLoading, 
-    markAsRead, 
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    markAsRead,
     markAllAsRead,
-    isMarkingAsRead 
+    isMarkingAsRead
   } = useGroupNotifications();
-  
+
   const [open, setOpen] = useState(false);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'mention':
-        return <AtSign className="h-4 w-4 text-blue-500" />;
+        return <AtSign style={{ height: 16, width: 16, color: '#3b82f6' }} />;
       case 'new_announcement':
-        return <Megaphone className="h-4 w-4 text-orange-500" />;
+        return <Megaphone style={{ height: 16, width: 16, color: '#f97316' }} />;
       case 'new_poll':
-        return <BarChart3 className="h-4 w-4 text-purple-500" />;
+        return <BarChart3 style={{ height: 16, width: 16, color: '#a855f7' }} />;
       case 'post_liked':
-        return <Heart className="h-4 w-4 text-red-500" />;
+        return <Heart style={{ height: 16, width: 16, color: '#ef4444' }} />;
       case 'new_post':
       default:
-        return <MessageSquare className="h-4 w-4 text-green-500" />;
+        return <MessageSquare style={{ height: 16, width: 16, color: '#22c55e' }} />;
     }
   };
 
@@ -79,7 +80,7 @@ export const GroupNotificationBell = () => {
   if (isLoading) {
     return (
       <Button variant="ghost" size="sm" disabled>
-        <Bell className="h-5 w-5" />
+        <Bell style={{ height: 20, width: 20 }} />
       </Button>
     );
   }
@@ -87,16 +88,16 @@ export const GroupNotificationBell = () => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative">
+        <Button variant="ghost" size="sm" sx={{ position: 'relative' }}>
           {unreadCount > 0 ? (
-            <Bell className="h-5 w-5 fill-current text-primary" />
+            <Bell style={{ height: 20, width: 20, fill: 'currentColor', color: 'var(--primary)' }} />
           ) : (
-            <BellOff className="h-5 w-5" />
+            <BellOff style={{ height: 20, width: 20 }} />
           )}
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+            <Badge
+              variant="destructive"
+              sx={{ position: 'absolute', top: '-4px', right: '-4px', height: 20, width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0, fontSize: '0.75rem' }}
             >
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>
@@ -104,38 +105,38 @@ export const GroupNotificationBell = () => {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent align="end" className="w-96 p-0">
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Group Notifications</CardTitle>
+      <PopoverContent align="end" sx={{ width: 384, p: 0 }}>
+        <Card sx={{ border: 0, boxShadow: 6 }}>
+          <CardHeader sx={{ pb: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <CardTitle style={{ fontSize: '1.125rem' }}>Group Notifications</CardTitle>
               {unreadCount > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => markAllAsRead()}
                   disabled={isMarkingAsRead}
-                  className="text-xs"
+                  sx={{ fontSize: '0.75rem' }}
                 >
-                  <CheckCheck className="h-4 w-4 mr-1" />
+                  <CheckCheck style={{ height: 16, width: 16, marginRight: 4 }} />
                   Mark all read
                 </Button>
               )}
-            </div>
+            </Box>
           </CardHeader>
 
           <Separator />
 
-          <CardContent className="p-0">
+          <CardContent sx={{ p: 0 }}>
             {notifications.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No notifications yet</p>
-                <p className="text-xs">Group activity will appear here</p>
-              </div>
+              <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
+                <Bell style={{ width: 48, height: 48, margin: '0 auto', marginBottom: 16, opacity: 0.5 }} />
+                <Typography>No notifications yet</Typography>
+                <Typography variant="caption">Group activity will appear here</Typography>
+              </Box>
             ) : (
-              <ScrollArea className="h-96">
-                <div className="divide-y">
+              <ScrollArea sx={{ height: 384 }}>
+                <Box sx={{ '& > *:not(:last-child)': { borderBottom: 1, borderColor: 'divider' } }}>
                   {notifications.map((notification) => (
                     <Link
                       key={notification.id}
@@ -144,54 +145,51 @@ export const GroupNotificationBell = () => {
                         handleNotificationClick(notification);
                         setOpen(false);
                       }}
-                      className={cn(
-                        "block p-4 hover:bg-muted/50 transition-colors",
-                        !notification.read_at && "bg-primary/5 border-l-4 border-l-primary"
-                      )}
+                      style={{ display: 'block', padding: 16, transition: 'background-color 0.2s', textDecoration: 'none', color: 'inherit', ...(notification.read_at ? {} : { borderLeft: '4px solid var(--primary)' }) }}
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 mt-1">
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                        <Box sx={{ flexShrink: 0, mt: 0.5 }}>
                           {getNotificationIcon(notification.notification_type)}
-                        </div>
+                        </Box>
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Avatar className="h-6 w-6">
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                            <Avatar sx={{ height: 24, width: 24 }}>
                               <AvatarImage src={notification.triggered_by_profile?.avatar_url || undefined} />
-                              <AvatarFallback className="text-xs">
+                              <AvatarFallback sx={{ fontSize: '0.75rem' }}>
                                 {notification.triggered_by_profile?.display_name?.charAt(0) || 'U'}
                               </AvatarFallback>
                             </Avatar>
-                            
-                            {!notification.read_at && (
-                              <div className="w-2 h-2 bg-primary rounded-full" />
-                            )}
-                          </div>
 
-                          <p className="text-sm font-medium leading-tight mb-1">
+                            {!notification.read_at && (
+                              <Box sx={{ width: 8, height: 8, bgcolor: 'primary.main', borderRadius: '50%' }} />
+                            )}
+                          </Box>
+
+                          <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
                             {getNotificationText(notification)}
-                          </p>
+                          </Typography>
 
                           {notification.content && (
-                            <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                            <Typography variant="caption" sx={{ color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1 }}>
                               {notification.content}
-                            </p>
+                            </Typography>
                           )}
 
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                               {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                            </span>
+                            </Typography>
 
                             {notification.read_at && (
-                              <Check className="h-3 w-3 text-muted-foreground" />
+                              <Check style={{ width: 12, height: 12, color: 'var(--muted-foreground)' }} />
                             )}
-                          </div>
-                        </div>
-                      </div>
+                          </Box>
+                        </Box>
+                      </Box>
                     </Link>
                   ))}
-                </div>
+                </Box>
               </ScrollArea>
             )}
           </CardContent>

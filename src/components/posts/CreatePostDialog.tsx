@@ -186,18 +186,18 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
   const getPostTypeIcon = () => {
     switch (postType) {
-      case 'image': return <ImageIcon className="h-4 w-4" />;
-      case 'link': return <LinkIcon className="h-4 w-4" />;
-      case 'poll': return <BarChart3 className="h-4 w-4" />;
-      default: return <PenSquare className="h-4 w-4" />;
+      case 'image': return <ImageIcon style={{ height: 16, width: 16 }} />;
+      case 'link': return <LinkIcon style={{ height: 16, width: 16 }} />;
+      case 'poll': return <BarChart3 style={{ height: 16, width: 16 }} />;
+      default: return <PenSquare style={{ height: 16, width: 16 }} />;
     }
   };
 
   const getVisibilityIcon = () => {
     switch (visibility) {
-      case 'friends': return <Users className="h-4 w-4" />;
-      case 'private': return <Lock className="h-4 w-4" />;
-      default: return <Globe className="h-4 w-4" />;
+      case 'friends': return <Users style={{ height: 16, width: 16 }} />;
+      case 'private': return <Lock style={{ height: 16, width: 16 }} />;
+      default: return <Globe style={{ height: 16, width: 16 }} />;
     }
   };
 
@@ -208,48 +208,48 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
       <DialogTrigger asChild>
         {children || (
           <Button>
-            <PenSquare className="h-4 w-4 mr-2" />
+            <PenSquare style={{ height: 16, width: 16, marginRight: 8 }} />
             Create Post
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent sx={{ maxWidth: 672, maxHeight: '80vh', overflowY: 'auto' }}>
         <DialogHeader>
           <DialogTitle>Create a Post</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* User Info */}
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Avatar style={{ height: 40, width: 40 }}>
               <AvatarImage src={profile?.avatar_url || undefined} />
               <AvatarFallback>
                 {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <p className="font-medium">{profile?.display_name || 'User'}</p>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs">
+            <div sx={{ flex: 1 }}>
+              <p sx={{ fontWeight: 500 }}>{profile?.display_name || 'User'}</p>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                   {getVisibilityIcon()}
-                  <span className="ml-1 capitalize">{visibility}</span>
+                  <span sx={{ ml: 0.5, textTransform: 'capitalize' }}>{visibility}</span>
                 </Badge>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
                   {getPostTypeIcon()}
-                  <span className="ml-1 capitalize">{postType}</span>
+                  <span sx={{ ml: 0.5, textTransform: 'capitalize' }}>{postType}</span>
                 </Badge>
               </div>
             </div>
           </div>
 
           {/* Post Type Selection */}
-          <div className="grid grid-cols-4 gap-2">
+          <div sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
             <Button
               variant={postType === 'text' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setPostType('text')}
             >
-              <PenSquare className="h-4 w-4 mr-1" />
+              <PenSquare style={{ height: 16, width: 16, marginRight: 4 }} />
               Text
             </Button>
             <Button
@@ -257,7 +257,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('image')}
             >
-              <ImageIcon className="h-4 w-4 mr-1" />
+              <ImageIcon style={{ height: 16, width: 16, marginRight: 4 }} />
               Image
             </Button>
             <Button
@@ -265,7 +265,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('link')}
             >
-              <LinkIcon className="h-4 w-4 mr-1" />
+              <LinkIcon style={{ height: 16, width: 16, marginRight: 4 }} />
               Link
             </Button>
             <Button
@@ -273,29 +273,29 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('poll')}
             >
-              <BarChart3 className="h-4 w-4 mr-1" />
+              <BarChart3 style={{ height: 16, width: 16, marginRight: 4 }} />
               Poll
             </Button>
           </div>
 
           {/* Main Content */}
-          <div className="space-y-2">
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Textarea
               placeholder="What's on your mind? Use @ to mention users and # for tags..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="min-h-[120px] resize-none"
+              sx={{ minHeight: 120, resize: 'none' }}
               maxLength={5000}
             />
             
             {/* Mention and Tag Hints */}
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <AtSign className="h-3 w-3" />
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <AtSign style={{ height: 12, width: 12 }} />
                 <span>Type @ to mention users</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Hash className="h-3 w-3" />
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Hash style={{ height: 12, width: 12 }} />
                 <span>Type # to add tags</span>
               </div>
             </div>
@@ -304,7 +304,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
           {/* Post Type Specific Content */}
           {postType === 'image' && (
             <Card>
-              <CardContent className="p-4">
+              <CardContent sx={{ p: 2 }}>
                 <Label>Image URLs (one per line)</Label>
                 <Textarea
                   placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
@@ -318,7 +318,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
           {postType === 'link' && (
             <Card>
-              <CardContent className="p-4 space-y-3">
+              <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <div>
                   <Label htmlFor="link-url">Link URL</Label>
                   <Input
@@ -353,10 +353,10 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
           {postType === 'poll' && (
             <Card>
-              <CardContent className="p-4 space-y-3">
+              <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <Label>Poll Options</Label>
                 {pollOptions.map((option, index) => (
-                  <div key={index} className="flex items-center gap-2">
+                  <div key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Input
                       placeholder={`Option ${index + 1}`}
                       value={option}
@@ -368,14 +368,14 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
                         size="icon"
                         onClick={() => removePollOption(index)}
                       >
-                        <X className="h-4 w-4" />
+                        <X style={{ height: 16, width: 16 }} />
                       </Button>
                     )}
                   </div>
                 ))}
                 {pollOptions.length < 6 && (
                   <Button variant="outline" size="sm" onClick={addPollOption}>
-                    <Plus className="h-4 w-4 mr-1" />
+                    <Plus style={{ height: 16, width: 16, marginRight: 4 }} />
                     Add Option
                   </Button>
                 )}
@@ -384,7 +384,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
           )}
 
           {/* Visibility Selection */}
-          <div className="space-y-2">
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label>Post Visibility</Label>
             <Select value={visibility} onValueChange={(value: any) => setVisibility(value)}>
               <SelectTrigger>
@@ -392,20 +392,20 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="public">
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4" />
+                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Globe style={{ height: 16, width: 16 }} />
                     <span>Public - Anyone can see this post</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="friends">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Users style={{ height: 16, width: 16 }} />
                     <span>Friends - Only your connections</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="private">
-                  <div className="flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
+                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Lock style={{ height: 16, width: 16 }} />
                     <span>Private - Only you can see this</span>
                   </div>
                 </SelectItem>
@@ -414,12 +414,12 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
           </div>
 
           {/* Character count */}
-          <div className="text-right text-xs text-muted-foreground">
+          <div sx={{ textAlign: 'right', fontSize: '0.75rem', color: 'text.secondary' }}>
             {content.length}/5000 characters
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-2 pt-4">
+          <div sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
             <Button variant="outline" onClick={handleClose}>
               Cancel
             </Button>

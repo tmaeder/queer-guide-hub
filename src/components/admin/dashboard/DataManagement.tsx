@@ -7,14 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Box, Typography } from "@mui/material";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Database, 
-  RefreshCw, 
-  Trash2, 
-  Download, 
-  Upload, 
+import {
+  Database,
+  RefreshCw,
+  Trash2,
+  Download,
+  Upload,
   Search,
   AlertTriangle,
   CheckCircle,
@@ -233,19 +234,19 @@ export function DataManagement() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="text-2xl font-bold">Data Management</h2>
-          <p className="text-muted-foreground">Monitor and manage your database and storage</p>
+          <h2 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Data Management</h2>
+          <p style={{ color: 'var(--muted-foreground)' }}>Monitor and manage your database and storage</p>
         </div>
         <Button onClick={() => window.location.reload()} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
+          <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
           Refresh
         </Button>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="query">SQL Console</TabsTrigger>
@@ -253,38 +254,38 @@ export function DataManagement() {
           <TabsTrigger value="export">Export</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+        <TabsContent value="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div sx={{ display: 'grid', gap: 3, gridTemplateColumns: { md: '1fr 1fr' } }}>
             {dataManagementSections.map((section) => {
               const Icon = section.icon;
               return (
                 <Card key={section.title}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Icon className="h-5 w-5" />
+                    <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Icon style={{ height: 20, width: 20 }} />
                       {section.title}
                     </CardTitle>
-                    <p className="text-sm text-muted-foreground">{section.description}</p>
+                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{section.description}</p>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {section.stats.map((stat) => (
-                      <div key={stat.label} className="space-y-2">
-                        <div className="flex justify-between text-sm">
+                      <div key={stat.label} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <div sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                           <span>{stat.label}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{stat.value}</span>
+                          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <span sx={{ fontWeight: 500 }}>{stat.value}</span>
                             {'usage' in stat && (
                               <Badge variant={stat.usage < 80 ? "default" : "destructive"}>
                                 {stat.usage}%
                               </Badge>
                             )}
                             {'status' in stat && (
-                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
                             )}
                           </div>
                         </div>
                         {'usage' in stat && (
-                          <Progress value={stat.usage} className="h-2" />
+                          <Progress value={stat.usage} style={{ height: 8 }} />
                         )}
                       </div>
                     ))}
@@ -297,27 +298,27 @@ export function DataManagement() {
           {/* Quick Actions */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
+              <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Zap style={{ height: 20, width: 20 }} />
                 Quick Actions
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { sm: '1fr 1fr', lg: 'repeat(4, 1fr)' } }}>
                 <Button variant="outline" onClick={() => handleExportData('profiles')}>
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                   Export Users
                 </Button>
                 <Button variant="outline" onClick={() => handleExportData('events')}>
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                   Export Events
                 </Button>
                 <Button variant="outline" onClick={() => handleExportData('venues')}>
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                   Export Venues
                 </Button>
                 <Button variant="outline" disabled>
-                  <Upload className="h-4 w-4 mr-2" />
+                  <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
                   Import Data
                 </Button>
               </div>
@@ -325,19 +326,19 @@ export function DataManagement() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="query" className="space-y-6">
+        <TabsContent value="query" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="h-5 w-5" />
+              <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Search style={{ height: 20, width: 20 }} />
                 SQL Console
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 Execute read-only SQL queries. Only SELECT statements are allowed.
               </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label htmlFor="sql-query">SQL Query</Label>
                 <Textarea
                   id="sql-query"
@@ -348,15 +349,15 @@ export function DataManagement() {
                 />
               </div>
               <Button onClick={handleSqlQuery} disabled={loading}>
-                {loading ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+                {loading ? <RefreshCw style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} /> : <Search style={{ height: 16, width: 16, marginRight: 8 }} />}
                 Execute Query
               </Button>
               
               {queryResult && (
-                <div className="mt-6">
-                  <h4 className="font-medium mb-2">Query Results:</h4>
-                  <div className="bg-muted p-4 rounded-lg overflow-auto">
-                    <pre className="text-sm">
+                <div sx={{ mt: 3 }}>
+                  <h4 sx={{ fontWeight: 500, mb: 1 }}>Query Results:</h4>
+                  <div sx={{ bgcolor: 'action.hover', p: 2, borderRadius: 2, overflow: 'auto' }}>
+                    <pre sx={{ fontSize: '0.875rem' }}>
                       {JSON.stringify(queryResult, null, 2)}
                     </pre>
                   </div>
@@ -366,20 +367,20 @@ export function DataManagement() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="cleanup" className="space-y-6">
+        <TabsContent value="cleanup" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trash2 className="h-5 w-5" />
+              <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Trash2 style={{ height: 20, width: 20 }} />
                 Database Cleanup
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 Remove old and unnecessary data to optimize performance.
               </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <input
                     type="checkbox"
                     id="old-sessions"
@@ -388,7 +389,7 @@ export function DataManagement() {
                   />
                   <Label htmlFor="old-sessions">Remove old session data (30+ days)</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <input
                     type="checkbox"
                     id="expired-tokens"
@@ -397,7 +398,7 @@ export function DataManagement() {
                   />
                   <Label htmlFor="expired-tokens">Remove expired calendar tokens</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <input
                     type="checkbox"
                     id="old-logs"
@@ -408,12 +409,12 @@ export function DataManagement() {
                 </div>
               </div>
 
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                  <span className="font-medium text-yellow-800 dark:text-yellow-200">Warning</span>
+              <div sx={{ bgcolor: '#fefce8', p: 2, borderRadius: 2, border: 1, borderColor: '#fde047' }}>
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <AlertTriangle style={{ height: 16, width: 16, color: '#ca8a04' }} />
+                  <span sx={{ fontWeight: 500, color: '#854d0e' }}>Warning</span>
                 </div>
-                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                <p sx={{ fontSize: '0.875rem', color: '#a16207' }}>
                   This action cannot be undone. Make sure you have backups before proceeding.
                 </p>
               </div>
@@ -423,15 +424,15 @@ export function DataManagement() {
                 disabled={loading}
                 variant="destructive"
               >
-                {loading ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                {loading ? <RefreshCw style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} /> : <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />}
                 Start Cleanup
               </Button>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="export" className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <TabsContent value="export" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr', lg: 'repeat(3, 1fr)' } }}>
             {[
               { table: 'profiles', name: 'User Profiles', icon: FileText },
               { table: 'events', name: 'Events', icon: FileText },
@@ -441,9 +442,9 @@ export function DataManagement() {
               { table: 'news_articles', name: 'News Articles', icon: FileText }
             ].map(({ table, name, icon: Icon }) => (
               <Card key={table}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Icon className="h-4 w-4" />
+                <CardHeader sx={{ pb: 1.5 }}>
+                  <CardTitle sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Icon style={{ height: 16, width: 16 }} />
                     {name}
                   </CardTitle>
                 </CardHeader>
@@ -452,9 +453,9 @@ export function DataManagement() {
                     onClick={() => handleExportData(table)} 
                     disabled={loading}
                     size="sm"
-                    className="w-full"
+                    sx={{ width: '100%' }}
                   >
-                    <Download className="h-4 w-4 mr-2" />
+                    <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                     Export CSV
                   </Button>
                 </CardContent>

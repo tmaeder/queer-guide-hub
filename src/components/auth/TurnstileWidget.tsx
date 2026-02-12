@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSecureTurnstile } from '@/hooks/useSecureTurnstile';
 import { Loader2, Shield } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface TurnstileWidgetProps {
   onVerify: (token: string) => void;
@@ -32,11 +34,11 @@ export function TurnstileWidget({ onVerify, onError, action = 'login', className
   if (loading) {
     return (
       <Card className={className}>
-        <CardContent className="flex items-center justify-center p-6">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Loading security verification...</span>
-          </div>
+        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+            <Loader2 style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
+            <Typography component="span">Loading security verification...</Typography>
+          </Box>
         </CardContent>
       </Card>
     );
@@ -46,8 +48,8 @@ export function TurnstileWidget({ onVerify, onError, action = 'login', className
     return (
       <Card className={className}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Shield style={{ width: 20, height: 20 }} />
             Security Verification Unavailable
           </CardTitle>
           <CardDescription>
@@ -61,10 +63,10 @@ export function TurnstileWidget({ onVerify, onError, action = 'login', className
             </AlertDescription>
           </Alert>
           {error?.includes('Rate limit') && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={refreshConfig}
-              className="mt-3"
+              sx={{ mt: 1.5 }}
             >
               Try Again
             </Button>
@@ -75,7 +77,7 @@ export function TurnstileWidget({ onVerify, onError, action = 'login', className
   }
 
   return (
-    <div className={className}>
+    <Box className={className}>
       <Turnstile
         siteKey={config.siteKey}
         onSuccess={handleVerificationSuccess}
@@ -87,25 +89,25 @@ export function TurnstileWidget({ onVerify, onError, action = 'login', className
         }}
       />
       {verificationError && (
-        <Alert className="mt-2">
-          <AlertDescription className="text-sm text-destructive">
+        <Alert sx={{ mt: 1 }}>
+          <AlertDescription sx={{ fontSize: '0.875rem', color: 'error.main' }}>
             {verificationError}
           </AlertDescription>
         </Alert>
       )}
-      <div className="mt-2 flex justify-between items-center">
-        <span className="text-xs text-muted-foreground">
+      <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="caption" color="text.secondary">
           Security verification v{config.version}
-        </span>
+        </Typography>
         <Button
           variant="ghost"
           size="sm"
           onClick={refreshConfig}
-          className="text-xs text-muted-foreground"
+          sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
         >
           Refresh
         </Button>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

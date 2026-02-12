@@ -6,6 +6,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 // Step components
 import BasicInfoStep from './steps/BasicInfoStep';
@@ -19,26 +21,26 @@ export interface SignupData {
   email: string;
   password: string;
   confirmPassword: string;
-  
+
   // Personal Details (Step 2)
   displayName: string;
   firstName: string;
   lastName: string;
   dateOfBirth: string;
   location: string;
-  
+
   // Identity (Step 3)
   pronouns: string;
   genderIdentity: string;
   sexualOrientation: string;
   relationshipStatus: string;
-  
+
   // Preferences (Step 4)
   lookingFor: string[];
   interests: string[];
   ageRangePreference: string;
   locationRadius: string;
-  
+
   // Account Setup (Step 5)
   bio: string;
   profileVisibility: string;
@@ -84,14 +86,14 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
   const [data, setData] = useState<SignupData>(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { signUp } = useAuth();
   const { toast } = useToast();
 
   const totalSteps = 6;
   const stepTitles = [
     'Account Info',
-    'Personal Details', 
+    'Personal Details',
     'Identity',
     'Preferences',
     'Avatar & Setup',
@@ -159,7 +161,7 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
 
   const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
-    
+
     setIsLoading(true);
     setError(null);
 
@@ -176,7 +178,7 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
         avatar_url: data.avatarUrl,
         avatar_config: data.avatarConfig,
       });
-      
+
       if (error) {
         if (error.message.includes('User already registered')) {
           setError('An account with this email already exists. Please sign in instead.');
@@ -203,9 +205,9 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
     switch (currentStep) {
         case 1:
           return (
-            <BasicInfoStep 
-              data={data} 
-              updateData={updateData} 
+            <BasicInfoStep
+              data={data}
+              updateData={updateData}
             />
           );
       case 2:
@@ -226,88 +228,104 @@ export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   return (
-    <Card className="w-full">
-      <CardHeader className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <CardTitle className="text-2xl">Create Your Account</CardTitle>
-            <CardDescription>
-              Step {currentStep} of {totalSteps}: {stepTitles[currentStep - 1]}
-            </CardDescription>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onBack}
-            className="shrink-0"
-          >
-            Back to Login
-          </Button>
-        </div>
-        
-        <div className="space-y-3">
-          <Progress value={progressPercentage} className="w-full h-2" />
-          <div className="flex justify-between text-sm">
-            {stepTitles.map((title, index) => (
-              <div 
-                key={index}
-                className="flex flex-col items-center gap-1 text-center"
-              >
-                <span 
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                    currentStep > index 
-                      ? 'bg-primary text-primary-foreground' 
-                      : currentStep === index + 1
-                      ? 'bg-primary/20 text-primary border border-primary'
-                      : 'bg-muted text-muted-foreground'
-                  }`}
+    <Card>
+      <CardHeader>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography variant="h5">Create Your Account</Typography>
+              <CardDescription>
+                Step {currentStep} of {totalSteps}: {stepTitles[currentStep - 1]}
+              </CardDescription>
+            </Box>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onBack}
+              style={{ flexShrink: 0 }}
+            >
+              Back to Login
+            </Button>
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Progress value={progressPercentage} style={{ width: '100%', height: 8 }} />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              {stepTitles.map((title, index) => (
+                <Box
+                  key={index}
+                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, textAlign: 'center' }}
                 >
-                  {index + 1}
-                </span>
-                <span className={`text-xs ${
-                  currentStep >= index + 1 ? 'text-foreground' : 'text-muted-foreground'
-                }`}>
-                  {title}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+                  <Box
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      ...(currentStep > index
+                        ? { bgcolor: 'primary.main', color: 'primary.contrastText' }
+                        : currentStep === index + 1
+                        ? { bgcolor: 'rgba(var(--primary), 0.2)', color: 'primary.main', border: 1, borderColor: 'primary.main' }
+                        : { bgcolor: 'action.hover', color: 'text.secondary' }
+                      ),
+                    }}
+                  >
+                    {index + 1}
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: currentStep >= index + 1 ? 'text.primary' : 'text.secondary',
+                    }}
+                  >
+                    {title}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Box>
       </CardHeader>
 
-      <CardContent className="space-y-8">
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        <div className="min-h-[400px]">
-          {renderStep()}
-        </div>
-
-        <div className="flex justify-between pt-6 border-t">
-          <Button
-            variant="outline"
-            onClick={prevStep}
-            disabled={currentStep === 1 || isLoading}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Previous
-          </Button>
-
-          {currentStep < totalSteps ? (
-            <Button onClick={nextStep} disabled={isLoading}>
-              Next
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          ) : (
-            <Button onClick={handleSubmit} disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Account
-            </Button>
+      <CardContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
-        </div>
+
+          <Box sx={{ minHeight: 400 }}>
+            {renderStep()}
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 3, borderTop: 1, borderColor: 'divider' }}>
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 1 || isLoading}
+            >
+              <ChevronLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+              Previous
+            </Button>
+
+            {currentStep < totalSteps ? (
+              <Button onClick={nextStep} disabled={isLoading}>
+                Next
+                <ChevronRight style={{ width: 16, height: 16, marginLeft: 8 }} />
+              </Button>
+            ) : (
+              <Button onClick={handleSubmit} disabled={isLoading}>
+                {isLoading && <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />}
+                Create Account
+              </Button>
+            )}
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

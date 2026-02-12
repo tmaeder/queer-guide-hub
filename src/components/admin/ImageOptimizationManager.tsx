@@ -221,11 +221,11 @@ export function ImageOptimizationManager() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'processing': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
-      case 'failed': return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case 'pending': return <Clock className="h-4 w-4 text-yellow-500" />;
-      default: return <FileImage className="h-4 w-4 text-muted-foreground" />;
+      case 'completed': return <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />;
+      case 'processing': return <RefreshCw style={{ height: 16, width: 16, color: '#3b82f6', animation: 'spin 1s linear infinite' }} />;
+      case 'failed': return <AlertCircle style={{ height: 16, width: 16, color: '#ef4444' }} />;
+      case 'pending': return <Clock style={{ height: 16, width: 16, color: '#eab308' }} />;
+      default: return <FileImage style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />;
     }
   };
 
@@ -239,27 +239,27 @@ export function ImageOptimizationManager() {
   }
 
   return (
-    <div className="space-y-6">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="text-2xl font-bold">🖼️ Image Optimization Manager</h2>
-          <p className="text-muted-foreground">Optimize all existing images for better performance</p>
+          <h2 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>🖼️ Image Optimization Manager</h2>
+          <p style={{ color: 'var(--muted-foreground)' }}>Optimize all existing images for better performance</p>
         </div>
-        <div className="flex gap-2">
+        <div sx={{ display: 'flex', gap: 1 }}>
           <Button 
             variant="outline" 
             onClick={scanForImages}
             disabled={isScanning}
           >
-            <FolderOpen className="h-4 w-4 mr-2" />
+            <FolderOpen style={{ height: 16, width: 16, marginRight: 8 }} />
             {isScanning ? 'Scanning...' : 'Scan Images'}
           </Button>
           <Button 
             onClick={startOptimizationJob}
             disabled={currentJob?.status === 'processing'}
           >
-            <Server className="h-4 w-4 mr-2" />
+            <Server style={{ height: 16, width: 16, marginRight: 8 }} />
             Start Background Optimization
           </Button>
         </div>
@@ -268,14 +268,14 @@ export function ImageOptimizationManager() {
       {/* Current Job Progress */}
       {currentJob && (currentJob.status === 'pending' || currentJob.status === 'processing') && (
         <Card>
-          <CardContent className="p-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
+          <CardContent sx={{ p: 3 }}>
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                 <span>Processing {currentJob.total_images} images in background...</span>
                 <span>{getJobProgress(currentJob)}%</span>
               </div>
-              <Progress value={getJobProgress(currentJob)} className="h-2" />
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <Progress value={getJobProgress(currentJob)} style={{ height: 8 }} />
+              <div sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'text.secondary' }}>
                 <span>{currentJob.processed_images} processed</span>
                 <span>{currentJob.successful_images} successful</span>
                 <span>{currentJob.failed_images} failed</span>
@@ -285,77 +285,77 @@ export function ImageOptimizationManager() {
         </Card>
       )}
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+      <Tabs value={selectedTab} onValueChange={setSelectedTab} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <TabsList>
           <TabsTrigger value="scan">Images Found ({images.length})</TabsTrigger>
           <TabsTrigger value="jobs">Background Jobs ({jobs.length})</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="scan" className="space-y-4">
+        <TabsContent value="scan" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {images.length === 0 ? (
             <Card>
-              <CardContent className="p-8 text-center">
-                <FileImage className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No Images Found</h3>
-                <p className="text-muted-foreground mb-4">Click "Scan Images" to find images in your project</p>
+              <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                <FileImage style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+                <h3 sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No Images Found</h3>
+                <p sx={{ color: 'text.secondary', mb: 2 }}>Click "Scan Images" to find images in your project</p>
                 <Button onClick={scanForImages} disabled={isScanning}>
-                  <FolderOpen className="h-4 w-4 mr-2" />
+                  <FolderOpen style={{ height: 16, width: 16, marginRight: 8 }} />
                   {isScanning ? 'Scanning...' : 'Scan for Images'}
                 </Button>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {/* Summary Cards */}
-              <div className="grid md:grid-cols-4 gap-4">
+              <div sx={{ display: 'grid', gridTemplateColumns: { md: 'repeat(4, 1fr)' }, gap: 2 }}>
                 <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2">
-                      <FileImage className="h-5 w-5 text-blue-500" />
+                  <CardContent sx={{ p: 3 }}>
+                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <FileImage style={{ height: 20, width: 20, color: '#3b82f6' }} />
                       <div>
-                        <p className="text-2xl font-bold">{images.length}</p>
-                        <p className="text-sm text-muted-foreground">Total Images</p>
+                        <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{images.length}</p>
+                        <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Total Images</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
                 
                 <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2">
-                      <HardDrive className="h-5 w-5 text-purple-500" />
+                  <CardContent sx={{ p: 3 }}>
+                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <HardDrive style={{ height: 20, width: 20, color: '#a855f7' }} />
                       <div>
-                        <p className="text-2xl font-bold">
+                        <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
                           {formatFileSize(images.reduce((sum, img) => sum + img.originalSize, 0))}
                         </p>
-                        <p className="text-sm text-muted-foreground">Total Size</p>
+                        <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Total Size</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
                 
                 <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2">
-                      <Server className="h-5 w-5 text-green-500" />
+                  <CardContent sx={{ p: 3 }}>
+                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Server style={{ height: 20, width: 20, color: '#22c55e' }} />
                       <div>
-                        <p className="text-2xl font-bold">
+                        <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
                           {jobs.filter(job => job.status === 'completed').length}
                         </p>
-                        <p className="text-sm text-muted-foreground">Completed Jobs</p>
+                        <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Completed Jobs</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
                 
                 <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-orange-500" />
+                  <CardContent sx={{ p: 3 }}>
+                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Zap style={{ height: 20, width: 20, color: '#f97316' }} />
                       <div>
-                        <p className="text-2xl font-bold">21</p>
-                        <p className="text-sm text-muted-foreground">Files per Image</p>
+                        <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>21</p>
+                        <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Files per Image</p>
                       </div>
                     </div>
                   </CardContent>
@@ -369,22 +369,22 @@ export function ImageOptimizationManager() {
                   <CardDescription>Images found in storage buckets ready for optimization</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-96">
-                    <div className="space-y-3">
+                  <ScrollArea sx={{ height: 384 }}>
+                    <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                       {images.map((image, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-3">
+                        <div key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             {getStatusIcon(image.status)}
                             <div>
-                              <p className="font-medium">{image.fileName}</p>
-                              <p className="text-sm text-muted-foreground">
+                              <p sx={{ fontWeight: 500 }}>{image.fileName}</p>
+                              <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                                 {formatFileSize(image.originalSize)} • {image.bucket}
                               </p>
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="capitalize">
+                          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
                               Ready
                             </Badge>
                           </div>
@@ -398,28 +398,28 @@ export function ImageOptimizationManager() {
           )}
         </TabsContent>
 
-        <TabsContent value="jobs" className="space-y-4">
+        <TabsContent value="jobs" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {jobs.length === 0 ? (
             <Card>
-              <CardContent className="p-8 text-center">
-                <Server className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No Background Jobs</h3>
-                <p className="text-muted-foreground mb-4">Start an optimization job to see it here</p>
+              <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                <Server style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+                <h3 sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No Background Jobs</h3>
+                <p sx={{ color: 'text.secondary', mb: 2 }}>Start an optimization job to see it here</p>
                 <Button onClick={startOptimizationJob}>
-                  <Server className="h-4 w-4 mr-2" />
+                  <Server style={{ height: 16, width: 16, marginRight: 8 }} />
                   Start Background Optimization
                 </Button>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {jobs.map((job, index) => (
                 <Card key={index}>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                    <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {getStatusIcon(job.status)}
-                        <CardTitle className="text-lg">Job {job.id.slice(0, 8)}</CardTitle>
+                        <CardTitle sx={{ fontSize: '1.125rem' }}>Job {job.id.slice(0, 8)}</CardTitle>
                       </div>
                       <Badge variant={
                         job.status === 'completed' ? 'default' :
@@ -434,51 +434,51 @@ export function ImageOptimizationManager() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
+                    <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       {/* Progress bar for active jobs */}
                       {(job.status === 'processing' || job.status === 'pending') && (
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
+                        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <div sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                             <span>Processing {job.total_images} images...</span>
                             <span>{getJobProgress(job)}%</span>
                           </div>
-                          <Progress value={getJobProgress(job)} className="h-2" />
+                          <Progress value={getJobProgress(job)} style={{ height: 8 }} />
                         </div>
                       )}
                       
                       {/* Stats */}
-                      <div className="grid grid-cols-4 gap-4 text-center">
+                      <div sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, textAlign: 'center' }}>
                         <div>
-                          <p className="text-2xl font-bold">{job.total_images}</p>
-                          <p className="text-xs text-muted-foreground">Total</p>
+                          <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{job.total_images}</p>
+                          <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Total</p>
                         </div>
                         <div>
-                          <p className="text-2xl font-bold text-blue-600">{job.processed_images}</p>
-                          <p className="text-xs text-muted-foreground">Processed</p>
+                          <p sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#2563eb' }}>{job.processed_images}</p>
+                          <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Processed</p>
                         </div>
                         <div>
-                          <p className="text-2xl font-bold text-green-600">{job.successful_images}</p>
-                          <p className="text-xs text-muted-foreground">Success</p>
+                          <p sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a' }}>{job.successful_images}</p>
+                          <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Success</p>
                         </div>
                         <div>
-                          <p className="text-2xl font-bold text-red-600">{job.failed_images}</p>
-                          <p className="text-xs text-muted-foreground">Failed</p>
+                          <p sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#dc2626' }}>{job.failed_images}</p>
+                          <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Failed</p>
                         </div>
                       </div>
 
                       {/* Actions */}
-                      <div className="flex gap-2">
+                      <div sx={{ display: 'flex', gap: 1 }}>
                         <Button 
                           variant="outline" 
                           size="sm"
                           onClick={() => checkJobStatus(job.id)}
                         >
-                          <RefreshCw className="h-4 w-4 mr-2" />
+                          <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
                           Refresh
                         </Button>
                         {job.status === 'completed' && (
                           <Button variant="outline" size="sm">
-                            <Download className="h-4 w-4 mr-2" />
+                            <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                             Download Report
                           </Button>
                         )}
@@ -491,42 +491,42 @@ export function ImageOptimizationManager() {
           )}
         </TabsContent>
 
-        <TabsContent value="settings" className="space-y-4">
+        <TabsContent value="settings" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Card>
             <CardHeader>
               <CardTitle>Background Processing Settings</CardTitle>
               <CardDescription>Configure server-side optimization parameters</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Alert>
-                <Server className="h-4 w-4" />
+                <Server style={{ height: 16, width: 16 }} />
                 <AlertDescription>
                   Optimization runs on the server and continues even if you close this page or refresh.
                   Jobs process images in batches of 10 to prevent system overload.
                 </AlertDescription>
               </Alert>
               
-              <div className="grid md:grid-cols-2 gap-4">
+              <div sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
                 <div>
-                  <label className="text-sm font-medium">AVIF Quality</label>
-                  <input type="range" min="20" max="80" defaultValue="50" className="w-full" />
-                  <p className="text-xs text-muted-foreground">Lower = smaller files, higher = better quality</p>
+                  <label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>AVIF Quality</label>
+                  <input type="range" min="20" max="80" defaultValue="50" sx={{ width: '100%' }} />
+                  <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Lower = smaller files, higher = better quality</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">WebP Quality</label>
-                  <input type="range" min="50" max="90" defaultValue="75" className="w-full" />
-                  <p className="text-xs text-muted-foreground">Lower = smaller files, higher = better quality</p>
+                  <label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>WebP Quality</label>
+                  <input type="range" min="50" max="90" defaultValue="75" sx={{ width: '100%' }} />
+                  <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Lower = smaller files, higher = better quality</p>
                 </div>
               </div>
               
               <div>
-                <label className="text-sm font-medium block mb-2">Responsive Breakpoints</label>
-                <p className="text-sm text-muted-foreground mb-2">
+                <label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'block', mb: 1 }}>Responsive Breakpoints</label>
+                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
                   Current: 320px, 640px, 768px, 1024px, 1280px, 1440px, 1920px (21 files per image)
                 </p>
               </div>
               
-              <Button className="w-full">Save Settings</Button>
+              <Button sx={{ width: '100%' }}>Save Settings</Button>
             </CardContent>
           </Card>
         </TabsContent>

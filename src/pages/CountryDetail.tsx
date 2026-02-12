@@ -23,64 +23,66 @@ import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
 import { useNews } from "@/hooks/useNews";
 import { NewsCard } from "@/components/news/NewsCard";
 import { supabase } from "@/integrations/supabase/client";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export default function CountryDetail() {
   const { id: countryId } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const [weatherData, setWeatherData] = useState<any>(null);
-  
+
   if (!countryId) {
-    return <div>Country not found</div>;
+    return <Box>Country not found</Box>;
   }
 
   const { country, loading: countryLoading } = useOptimizedCountry(countryId);
-  const { cities, loading: citiesLoading } = useOptimizedCities({ 
+  const { cities, loading: citiesLoading } = useOptimizedCities({
     countryId,
-    limit: 12 
+    limit: 12
   });
-  
+
   // Filter venues by country name to match the current country
-  const { venues, loading: venuesLoading } = useOptimizedVenues({ 
+  const { venues, loading: venuesLoading } = useOptimizedVenues({
     city: country?.name, // Use country name as filter since venues might have country in city field
-    limit: 12 
+    limit: 12
   });
-  
+
   // Also try filtering by actual cities in this country
   const cityNames = cities.map(city => city.name);
-  const { venues: cityVenues, loading: cityVenuesLoading } = useOptimizedVenues({ 
-    limit: 12 
+  const { venues: cityVenues, loading: cityVenuesLoading } = useOptimizedVenues({
+    limit: 12
   });
-  
+
   // Filter city venues to only include venues from cities in this country
   const filteredCityVenues = useMemo(() => {
     if (!cityVenues || cityNames.length === 0) return [];
-    return cityVenues.filter(venue => 
-      cityNames.some(cityName => 
+    return cityVenues.filter(venue =>
+      cityNames.some(cityName =>
         venue.city?.toLowerCase().includes(cityName.toLowerCase()) ||
         venue.address?.toLowerCase().includes(cityName.toLowerCase())
       )
     );
   }, [cityVenues, cityNames]);
-  
+
   // Combine and deduplicate venues
   const countryVenues = useMemo(() => {
     const allVenues = [...(venues || []), ...filteredCityVenues];
-    const uniqueVenues = allVenues.filter((venue, index, self) => 
+    const uniqueVenues = allVenues.filter((venue, index, self) =>
       index === self.findIndex(v => v.id === venue.id)
     );
     return uniqueVenues.slice(0, 12); // Limit to 12 venues
   }, [venues, filteredCityVenues]);
 
-  const { events, loading: eventsLoading } = useOptimizedEvents({ 
+  const { events, loading: eventsLoading } = useOptimizedEvents({
     city: country?.name, // Use country name as city filter
-    limit: 12 
+    limit: 12
   });
 
   // Fetch local news for this country
   const { articles: localNews, loading: newsLoading, incrementViews } = useNews();
   const countryNews = useMemo(() => {
     if (!localNews || !country) return [];
-    return localNews.filter(article => 
+    return localNews.filter(article =>
       article.country_ids?.includes(country.id) ||
       article.title.toLowerCase().includes(country.name.toLowerCase()) ||
       article.content?.toLowerCase().includes(country.name.toLowerCase())
@@ -128,368 +130,368 @@ export default function CountryDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-pulse">
-            <Globe className="h-12 w-12 mx-auto text-primary/60" />
-          </div>
-          <p className="text-muted-foreground">Loading country details...</p>
-        </div>
-      </div>
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+            <Globe style={{ height: 48, width: 48, margin: '0 auto', color: 'var(--primary)', opacity: 0.6 }} />
+          </Box>
+          <Typography sx={{ color: 'var(--muted-foreground)' }}>Loading country details...</Typography>
+        </Box>
+      </Box>
     );
   }
 
   // Helper: inline loading skeleton for tab sections
   const SectionLoader = ({ label }: { label: string }) => (
-    <div className="flex flex-col items-center justify-center py-12 gap-3">
-      <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-      <p className="text-sm text-muted-foreground">Loading {label}...</p>
-    </div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, gap: 1.5 }}>
+      <Box sx={{ animation: 'spin 1s linear infinite', height: 24, width: 24, border: '2px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%' }} />
+      <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Loading {label}...</Typography>
+    </Box>
   );
 
   if (!country) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold">Country not found</h1>
-          <p className="text-muted-foreground">The country you're looking for doesn't exist.</p>
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Typography variant="h4" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Country not found</Typography>
+          <Typography sx={{ color: 'var(--muted-foreground)' }}>The country you're looking for doesn't exist.</Typography>
           <Button asChild>
             <Link to="/users">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
               Back to Directory
             </Link>
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(to bottom right, var(--background), var(--muted)/20, var(--background))' }}>
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
+      <Box sx={{ position: 'relative', overflow: 'hidden' }}>
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        
-        <div className="relative mx-auto max-w-7xl px-6 py-8 lg:py-16">
+        <Box sx={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--grid-white-02) 1px, transparent 1px), linear-gradient(90deg, var(--grid-white-02) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+        <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom right, rgba(var(--primary-rgb), 0.05), transparent, rgba(var(--accent-rgb), 0.05))' }} />
+
+        <Box sx={{ position: 'relative', mx: 'auto', maxWidth: 1280, px: 3, py: { xs: 4, lg: 8 } }}>
           {/* Navigation */}
-          <div className="mb-8">
-            <Button variant="ghost" asChild className="mb-6 hover:bg-white/10">
+          <Box sx={{ mb: 4 }}>
+            <Button variant="ghost" asChild sx={{ mb: 3, '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
               <Link to="/users">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
                 Back to Directory
               </Link>
             </Button>
-            
+
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-              <Link to="/users" className="hover:text-primary transition-colors">
+            <Box component="nav" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'var(--muted-foreground)', mb: 4 }}>
+              <Link to="/users" style={{ transition: 'color 0.2s' }}>
                 Directory
               </Link>
               <span>/</span>
-              <span className="text-foreground font-medium">{country.name}</span>
-            </nav>
-          </div>
+              <Box component="span" sx={{ color: 'var(--foreground)', fontWeight: 500 }}>{country.name}</Box>
+            </Box>
+          </Box>
 
           {/* Country Header */}
-          <div className="space-y-8 mb-16">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, mb: 8 }}>
             {/* Country Images */}
-            <div className="relative">
+            <Box sx={{ position: 'relative' }}>
               <CountryHeroImages countryName={country.name} />
-            </div>
-            
-            <div className="text-center space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-4 flex-wrap">
-                  <h1 className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
+            </Box>
+
+            <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+                  <Typography variant="h1" sx={{ fontSize: { xs: '3rem', lg: '4.5rem' }, fontWeight: 700, background: 'linear-gradient(to right, var(--primary), rgba(var(--primary-rgb), 0.8), var(--accent))', backgroundClip: 'text', WebkitBackgroundClip: 'text', color: 'transparent' }}>
                     {country.flag_emoji} {country.name}
-                  </h1>
-                  
+                  </Typography>
+
                   {/* Weather Indicator */}
                   {weatherData?.current && (
-                    <div className="flex items-center gap-2 bg-muted/20 backdrop-blur-sm rounded-full px-4 py-2 border border-muted/30">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(var(--muted-rgb), 0.2)', backdropFilter: 'blur(4px)', borderRadius: '9999px', px: 2, py: 1, border: '1px solid rgba(var(--muted-rgb), 0.3)' }}>
                       {(() => {
                         const WeatherIcon = getWeatherIcon(weatherData.current.condition);
-                        return <WeatherIcon className="h-5 w-5 text-primary" />;
+                        return <WeatherIcon style={{ height: 20, width: 20, color: 'var(--primary)' }} />;
                       })()}
-                      <span className="text-lg font-semibold">
+                      <Box component="span" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
                         {Math.round(weatherData.current.temperature)}°C
-                      </span>
-                      <span className="text-sm text-muted-foreground hidden sm:inline">
+                      </Box>
+                      <Box component="span" sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', display: { xs: 'none', sm: 'inline' } }}>
                         {country.capital || country.name}
-                      </span>
-                    </div>
+                      </Box>
+                    </Box>
                   )}
-                </div>
-                
-                <p className="text-xl lg:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+                </Box>
+
+                <Typography sx={{ fontSize: { xs: '1.25rem', lg: '1.5rem' }, color: 'var(--muted-foreground)', maxWidth: 896, mx: 'auto', lineHeight: 1.75 }}>
                   {country.description || `Discover everything about ${country.name} - from major cities and cultural landmarks to local venues and upcoming events.`}
-                </p>
-              </div>
-            </div>
-            
+                </Typography>
+              </Box>
+            </Box>
+
             {/* Country Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2, maxWidth: 896, mx: 'auto' }}>
               {country.capital && (
-                <Card className="border-muted/50 hover:border-primary/50 transition-colors">
-                  <CardContent className="flex items-center gap-3 p-4">
-                    <div className="p-2 bg-yellow-500/10 rounded-lg">
-                      <Star className="h-5 w-5 text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Capital</p>
-                      <p className="font-semibold">{country.capital}</p>
-                    </div>
+                <Card sx={{ borderColor: 'divider', '&:hover': { borderColor: 'primary.main' }, transition: 'border-color 0.2s' }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2 }}>
+                    <Box sx={{ p: 1, bgcolor: 'rgba(234, 179, 8, 0.1)', borderRadius: 2 }}>
+                      <Star style={{ height: 20, width: 20, color: '#ca8a04' }} />
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Capital</Typography>
+                      <Typography sx={{ fontWeight: 600 }}>{country.capital}</Typography>
+                    </Box>
                   </CardContent>
                 </Card>
               )}
               {country.population && (
-                <Card className="border-muted/50 hover:border-primary/50 transition-colors">
-                  <CardContent className="flex items-center gap-3 p-4">
-                    <div className="p-2 bg-blue-500/10 rounded-lg">
-                      <Users className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Population</p>
-                      <p className="font-semibold">{country.population.toLocaleString()}</p>
-                    </div>
+                <Card sx={{ borderColor: 'divider', '&:hover': { borderColor: 'primary.main' }, transition: 'border-color 0.2s' }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2 }}>
+                    <Box sx={{ p: 1, bgcolor: 'rgba(59, 130, 246, 0.1)', borderRadius: 2 }}>
+                      <Users style={{ height: 20, width: 20, color: '#2563eb' }} />
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Population</Typography>
+                      <Typography sx={{ fontWeight: 600 }}>{country.population.toLocaleString()}</Typography>
+                    </Box>
                   </CardContent>
                 </Card>
               )}
               {country.area_km2 && (
-                <Card className="border-muted/50 hover:border-primary/50 transition-colors">
-                  <CardContent className="flex items-center gap-3 p-4">
-                    <div className="p-2 bg-green-500/10 rounded-lg">
-                      <MapIcon className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Area</p>
-                      <p className="font-semibold">{country.area_km2.toLocaleString()} km²</p>
-                    </div>
+                <Card sx={{ borderColor: 'divider', '&:hover': { borderColor: 'primary.main' }, transition: 'border-color 0.2s' }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2 }}>
+                    <Box sx={{ p: 1, bgcolor: 'rgba(34, 197, 94, 0.1)', borderRadius: 2 }}>
+                      <MapIcon style={{ height: 20, width: 20, color: '#16a34a' }} />
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Area</Typography>
+                      <Typography sx={{ fontWeight: 600 }}>{country.area_km2.toLocaleString()} km²</Typography>
+                    </Box>
                   </CardContent>
                 </Card>
               )}
               {cities.length > 0 && (
-                <Card className="border-muted/50 hover:border-primary/50 transition-colors">
-                  <CardContent className="flex items-center gap-3 p-4">
-                    <div className="p-2 bg-purple-500/10 rounded-lg">
-                      <Building2 className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Cities</p>
-                      <p className="font-semibold">{cities.length} cities</p>
-                    </div>
+                <Card sx={{ borderColor: 'divider', '&:hover': { borderColor: 'primary.main' }, transition: 'border-color 0.2s' }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2 }}>
+                    <Box sx={{ p: 1, bgcolor: 'rgba(168, 85, 247, 0.1)', borderRadius: 2 }}>
+                      <Building2 style={{ height: 20, width: 20, color: '#9333ea' }} />
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Cities</Typography>
+                      <Typography sx={{ fontWeight: 600 }}>{cities.length} cities</Typography>
+                    </Box>
                   </CardContent>
                 </Card>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6 pb-16">
+      <Box sx={{ mx: 'auto', maxWidth: 1280, px: 3, pb: 8 }}>
         {/* Quick Info Cards */}
-        <div className="grid gap-6 lg:grid-cols-2 mb-12 -mt-8">
-          <Card className="border-muted/50 shadow-lg bg-card/80 backdrop-blur-sm">
-            <CardContent className="p-0">
+        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, mb: 6, mt: -4 }}>
+          <Card sx={{ borderColor: 'divider', boxShadow: 6, bgcolor: 'background.paper', backdropFilter: 'blur(8px)' }}>
+            <CardContent sx={{ p: 0 }}>
               <LocationInfo
                 name={country.name}
                 type="country"
-                className="h-full border-0 bg-transparent"
+                style={{ height: '100%', border: 0, backgroundColor: 'transparent' }}
               />
             </CardContent>
           </Card>
 
-          <Card className="border-muted/30 shadow-sm bg-card/60 backdrop-blur-sm">
-            <CardContent className="p-0">
+          <Card sx={{ borderColor: 'divider', boxShadow: 1, bgcolor: 'background.paper', backdropFilter: 'blur(8px)' }}>
+            <CardContent sx={{ p: 0 }}>
               <LGBTJurisdictionInfo
                 countryName={country.name}
                 countryCode={country.code}
-                className="h-full border-0 bg-transparent"
+                style={{ height: '100%', border: 0, backgroundColor: 'transparent' }}
               />
             </CardContent>
           </Card>
-        </div>
+        </Box>
 
         {/* Content Tabs */}
-        <Card className="border-muted/30 shadow-sm">
-          <CardContent className="p-6">
-            <Tabs defaultValue="cities" className="space-y-8">
-              <TabsList className="grid w-full max-w-3xl grid-cols-7 mx-auto h-12 bg-muted/50">
-                <TabsTrigger value="cities" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                  <Building2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Cities</span>
+        <Card sx={{ borderColor: 'divider', boxShadow: 1 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Tabs defaultValue="cities" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+              <TabsList sx={{ display: 'grid', width: '100%', maxWidth: 768, gridTemplateColumns: 'repeat(7, 1fr)', mx: 'auto', height: 48, bgcolor: 'action.hover' }}>
+                <TabsTrigger value="cities" sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'background.paper', boxShadow: 1 } }}>
+                  <Building2 style={{ height: 16, width: 16 }} />
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cities</Box>
                 </TabsTrigger>
-                <TabsTrigger value="venues" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                  <MapPin className="h-4 w-4" />
-                  <span className="hidden sm:inline">Venues</span>
+                <TabsTrigger value="venues" sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'background.paper', boxShadow: 1 } }}>
+                  <MapPin style={{ height: 16, width: 16 }} />
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Venues</Box>
                 </TabsTrigger>
-                <TabsTrigger value="events" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                  <Calendar className="h-4 w-4" />
-                  <span className="hidden sm:inline">Events</span>
+                <TabsTrigger value="events" sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'background.paper', boxShadow: 1 } }}>
+                  <Calendar style={{ height: 16, width: 16 }} />
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Events</Box>
                 </TabsTrigger>
-                <TabsTrigger value="flights" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                  <Plane className="h-4 w-4" />
-                  <span className="hidden sm:inline">Flights</span>
+                <TabsTrigger value="flights" sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'background.paper', boxShadow: 1 } }}>
+                  <Plane style={{ height: 16, width: 16 }} />
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Flights</Box>
                 </TabsTrigger>
-                <TabsTrigger value="activities" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                  <Activity className="h-4 w-4" />
-                  <span className="hidden sm:inline">Tours</span>
+                <TabsTrigger value="activities" sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'background.paper', boxShadow: 1 } }}>
+                  <Activity style={{ height: 16, width: 16 }} />
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Tours</Box>
                 </TabsTrigger>
-                <TabsTrigger value="news" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                  <Newspaper className="h-4 w-4" />
-                  <span className="hidden sm:inline">News</span>
+                <TabsTrigger value="news" sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'background.paper', boxShadow: 1 } }}>
+                  <Newspaper style={{ height: 16, width: 16 }} />
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>News</Box>
                 </TabsTrigger>
-                <TabsTrigger value="info" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                  <Globe className="h-4 w-4" />
-                  <span className="hidden sm:inline">Info</span>
+                <TabsTrigger value="info" sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'background.paper', boxShadow: 1 } }}>
+                  <Globe style={{ height: 16, width: 16 }} />
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Info</Box>
                 </TabsTrigger>
               </TabsList>
 
               {/* Cities Tab */}
-              <TabsContent value="cities" className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Major Cities</h2>
-                    <p className="text-muted-foreground mt-1">Explore the most important cities in {country.name}</p>
-                  </div>
-                  <Badge variant="secondary" className="text-sm px-3 py-1">
+              <TabsContent value="cities" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography variant="h2" sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}>Major Cities</Typography>
+                    <Typography sx={{ color: 'var(--muted-foreground)', mt: 0.5 }}>Explore the most important cities in {country.name}</Typography>
+                  </Box>
+                  <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
                     {cities.length} cities
                   </Badge>
-                </div>
+                </Box>
 
                 {citiesLoading ? (
                   <SectionLoader label="cities" />
                 ) : cities.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
                     {cities.map((city) => (
-                      <div key={city.id} className="group cursor-pointer transform transition-all duration-200 hover:scale-105">
+                      <Box key={city.id} sx={{ cursor: 'pointer', transform: 'scale(1)', transition: 'all 0.2s', '&:hover': { transform: 'scale(1.05)' } }}>
                         <DirectoryCard
                           type="city"
                           name={city.name}
                           data={city}
                           onClick={() => window.location.href = `/city/${city.id}`}
                         />
-                      </div>
+                      </Box>
                     ))}
-                  </div>
+                  </Box>
                 ) : (
-                  <Card className="border-dashed border-2 border-muted/50">
-                    <CardContent className="text-center py-16">
-                      <div className="space-y-4">
-                        <div className="p-4 bg-muted/30 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
-                          <Building2 className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold">No cities found</h3>
-                          <p className="text-muted-foreground">No cities are currently listed for this country.</p>
-                        </div>
-                      </div>
+                  <Card sx={{ borderStyle: 'dashed', border: 2, borderColor: 'divider' }}>
+                    <CardContent sx={{ textAlign: 'center', py: 8 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{ p: 2, bgcolor: 'rgba(var(--muted-rgb), 0.3)', borderRadius: '50%', width: 80, height: 80, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Building2 style={{ height: 40, width: 40, color: 'var(--muted-foreground)' }} />
+                        </Box>
+                        <Box>
+                          <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>No cities found</Typography>
+                          <Typography sx={{ color: 'var(--muted-foreground)' }}>No cities are currently listed for this country.</Typography>
+                        </Box>
+                      </Box>
                     </CardContent>
                   </Card>
                 )}
               </TabsContent>
 
               {/* Venues Tab */}
-              <TabsContent value="venues" className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Local Venues</h2>
-                    <p className="text-muted-foreground mt-1">Discover amazing places to visit in {country.name}</p>
-                  </div>
-                  <Badge variant="secondary" className="text-sm px-3 py-1">
+              <TabsContent value="venues" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography variant="h2" sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}>Local Venues</Typography>
+                    <Typography sx={{ color: 'var(--muted-foreground)', mt: 0.5 }}>Discover amazing places to visit in {country.name}</Typography>
+                  </Box>
+                  <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
                     {countryVenues.length} venues
                   </Badge>
-                </div>
+                </Box>
 
                 {(venuesLoading || cityVenuesLoading) ? (
                   <SectionLoader label="venues" />
                 ) : countryVenues.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
                      {countryVenues.map((venue) => (
-                       <div key={venue.id} className="group transform transition-all duration-200 hover:scale-105">
+                       <Box key={venue.id} sx={{ transform: 'scale(1)', transition: 'all 0.2s', '&:hover': { transform: 'scale(1.05)' } }}>
                          <VenueCard
                            venue={venue}
                          />
-                       </div>
+                       </Box>
                      ))}
-                  </div>
+                  </Box>
                 ) : (
-                  <Card className="border-dashed border-2 border-muted/50">
-                    <CardContent className="text-center py-16">
-                      <div className="space-y-4">
-                        <div className="p-4 bg-muted/30 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
-                          <MapPin className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold">No venues found yet</h3>
-                          <p className="text-muted-foreground">Be the first to add venues from {country.name}!</p>
-                        </div>
-                      </div>
+                  <Card sx={{ borderStyle: 'dashed', border: 2, borderColor: 'divider' }}>
+                    <CardContent sx={{ textAlign: 'center', py: 8 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{ p: 2, bgcolor: 'rgba(var(--muted-rgb), 0.3)', borderRadius: '50%', width: 80, height: 80, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <MapPin style={{ height: 40, width: 40, color: 'var(--muted-foreground)' }} />
+                        </Box>
+                        <Box>
+                          <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>No venues found yet</Typography>
+                          <Typography sx={{ color: 'var(--muted-foreground)' }}>Be the first to add venues from {country.name}!</Typography>
+                        </Box>
+                      </Box>
                     </CardContent>
                   </Card>
                 )}
               </TabsContent>
 
               {/* Events Tab */}
-              <TabsContent value="events" className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Upcoming Events</h2>
-                    <p className="text-muted-foreground mt-1">Don't miss out on exciting events happening in {country.name}</p>
-                  </div>
-                  <Badge variant="secondary" className="text-sm px-3 py-1">
+              <TabsContent value="events" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography variant="h2" sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}>Upcoming Events</Typography>
+                    <Typography sx={{ color: 'var(--muted-foreground)', mt: 0.5 }}>Don't miss out on exciting events happening in {country.name}</Typography>
+                  </Box>
+                  <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
                     {events.length} events
                   </Badge>
-                </div>
+                </Box>
 
                 {eventsLoading ? (
                   <SectionLoader label="events" />
                 ) : events.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
                      {events.map((event) => (
-                       <div key={event.id} className="group transform transition-all duration-200 hover:scale-105">
+                       <Box key={event.id} sx={{ transform: 'scale(1)', transition: 'all 0.2s', '&:hover': { transform: 'scale(1.05)' } }}>
                          <EventCard
                            event={event}
                          />
-                       </div>
+                       </Box>
                      ))}
-                  </div>
+                  </Box>
                 ) : (
-                  <Card className="border-dashed border-2 border-muted/50">
-                    <CardContent className="text-center py-16">
-                      <div className="space-y-4">
-                        <div className="p-4 bg-muted/30 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
-                          <Calendar className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold">No upcoming events</h3>
-                          <p className="text-muted-foreground">No events are currently scheduled for this country.</p>
-                        </div>
-                      </div>
+                  <Card sx={{ borderStyle: 'dashed', border: 2, borderColor: 'divider' }}>
+                    <CardContent sx={{ textAlign: 'center', py: 8 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{ p: 2, bgcolor: 'rgba(var(--muted-rgb), 0.3)', borderRadius: '50%', width: 80, height: 80, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Calendar style={{ height: 40, width: 40, color: 'var(--muted-foreground)' }} />
+                        </Box>
+                        <Box>
+                          <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>No upcoming events</Typography>
+                          <Typography sx={{ color: 'var(--muted-foreground)' }}>No events are currently scheduled for this country.</Typography>
+                        </Box>
+                      </Box>
                     </CardContent>
                   </Card>
                 )}
               </TabsContent>
 
               {/* Flights Tab */}
-              <TabsContent value="flights" className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Flight Deals</h2>
-                    <p className="text-muted-foreground mt-1">Find the best flight deals to {country.capital || country.name}</p>
-                  </div>
-                  <Badge variant="secondary" className="text-sm px-3 py-1 flex items-center gap-1">
-                    <Plane className="h-3 w-3" />
+              <TabsContent value="flights" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography variant="h2" sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}>Flight Deals</Typography>
+                    <Typography sx={{ color: 'var(--muted-foreground)', mt: 0.5 }}>Find the best flight deals to {country.capital || country.name}</Typography>
+                  </Box>
+                  <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Plane style={{ height: 12, width: 12 }} />
                     Travel
                   </Badge>
-                </div>
-                
-                <Card className="border-muted/50">
-                  <CardContent className="p-6">
-                    <FlightsWidget 
+                </Box>
+
+                <Card sx={{ borderColor: 'divider' }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <FlightsWidget
                       destination={country.capital || country.name}
                       countryCode={country.code}
                     />
@@ -498,21 +500,21 @@ export default function CountryDetail() {
               </TabsContent>
 
               {/* Activities Tab */}
-              <TabsContent value="activities" className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Activities & Tours</h2>
-                    <p className="text-muted-foreground mt-1">Discover amazing experiences in {country.name}</p>
-                  </div>
-                  <Badge variant="secondary" className="text-sm px-3 py-1 flex items-center gap-1">
-                    <Activity className="h-3 w-3" />
+              <TabsContent value="activities" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography variant="h2" sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}>Activities & Tours</Typography>
+                    <Typography sx={{ color: 'var(--muted-foreground)', mt: 0.5 }}>Discover amazing experiences in {country.name}</Typography>
+                  </Box>
+                  <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Activity style={{ height: 12, width: 12 }} />
                     Popular Tours
                   </Badge>
-                </div>
-                
-                <Card className="border-muted/50">
-                  <CardContent className="p-6">
-                    <ActivitiesWidget 
+                </Box>
+
+                <Card sx={{ borderColor: 'divider' }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <ActivitiesWidget
                       destination={country.capital || country.name}
                       countryCode={country.code}
                     />
@@ -521,162 +523,162 @@ export default function CountryDetail() {
               </TabsContent>
 
               {/* News Tab */}
-              <TabsContent value="news" className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Local News</h2>
-                    <p className="text-muted-foreground mt-1">Stay updated with the latest news from {country.name}</p>
-                  </div>
-                  <Badge variant="secondary" className="text-sm px-3 py-1">
+              <TabsContent value="news" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography variant="h2" sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}>Local News</Typography>
+                    <Typography sx={{ color: 'var(--muted-foreground)', mt: 0.5 }}>Stay updated with the latest news from {country.name}</Typography>
+                  </Box>
+                  <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
                     {countryNews.length} articles
                   </Badge>
-                </div>
+                </Box>
 
                 {newsLoading ? (
                   <SectionLoader label="news" />
                 ) : countryNews.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
                      {countryNews.map((article) => (
-                       <div key={article.id} className="group transform transition-all duration-200 hover:scale-105">
+                       <Box key={article.id} sx={{ transform: 'scale(1)', transition: 'all 0.2s', '&:hover': { transform: 'scale(1.05)' } }}>
                          <NewsCard
                            article={article}
                            onViewArticle={incrementViews}
                          />
-                       </div>
+                       </Box>
                      ))}
-                  </div>
+                  </Box>
                 ) : (
-                  <Card className="border-dashed border-2 border-muted/50">
-                    <CardContent className="text-center py-16">
-                      <div className="space-y-4">
-                        <div className="p-4 bg-muted/30 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
-                          <Newspaper className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold">No local news found</h3>
-                          <p className="text-muted-foreground">No news articles are currently available for {country.name}.</p>
-                        </div>
-                      </div>
+                  <Card sx={{ borderStyle: 'dashed', border: 2, borderColor: 'divider' }}>
+                    <CardContent sx={{ textAlign: 'center', py: 8 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{ p: 2, bgcolor: 'rgba(var(--muted-rgb), 0.3)', borderRadius: '50%', width: 80, height: 80, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Newspaper style={{ height: 40, width: 40, color: 'var(--muted-foreground)' }} />
+                        </Box>
+                        <Box>
+                          <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>No local news found</Typography>
+                          <Typography sx={{ color: 'var(--muted-foreground)' }}>No news articles are currently available for {country.name}.</Typography>
+                        </Box>
+                      </Box>
                     </CardContent>
                   </Card>
                 )}
               </TabsContent>
 
               {/* Info Tab */}
-              <TabsContent value="info" className="space-y-8">
-                <div>
-                  <h2 className="text-3xl font-bold tracking-tight mb-2">Country Information</h2>
-                  <p className="text-muted-foreground">Detailed statistics and information about {country.name}</p>
-                </div>
+              <TabsContent value="info" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+                <Box>
+                  <Typography variant="h2" sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em', mb: 1 }}>Country Information</Typography>
+                  <Typography sx={{ color: 'var(--muted-foreground)' }}>Detailed statistics and information about {country.name}</Typography>
+                </Box>
 
                 {/* Weather Forecast */}
-                <Card className="border-muted/50">
-                  <CardContent className="p-0">
+                <Card sx={{ borderColor: 'divider' }}>
+                  <CardContent sx={{ p: 0 }}>
                     <WeatherForecast
                       latitude={country.latitude}
                       longitude={country.longitude}
                       cityName={country.capital || country.name}
-                      className="h-full border-0 bg-transparent"
+                      style={{ height: '100%', border: 0, backgroundColor: 'transparent' }}
                     />
                   </CardContent>
                 </Card>
 
-                <div className="grid gap-8 md:grid-cols-2">
+                <Box sx={{ display: 'grid', gap: 4, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
                   {/* Basic Information */}
-                  <Card className="border-muted/50">
+                  <Card sx={{ borderColor: 'divider' }}>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Globe className="h-5 w-5 text-primary" />
+                      <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                         Basic Information
                       </CardTitle>
                       <CardDescription>
                         Essential details about {country.name}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       {country.capital && (
-                        <div className="flex justify-between items-center py-2 border-b border-muted/30">
-                          <span className="text-muted-foreground font-medium">Capital:</span>
-                          <span className="font-semibold">{country.capital}</span>
-                        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid rgba(var(--muted-rgb), 0.3)' }}>
+                          <Box component="span" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>Capital:</Box>
+                          <Box component="span" sx={{ fontWeight: 600 }}>{country.capital}</Box>
+                        </Box>
                       )}
                       {country.currency && (
-                        <div className="flex justify-between items-center py-2 border-b border-muted/30">
-                          <span className="text-muted-foreground font-medium">Currency:</span>
-                          <span className="font-semibold">{country.currency}</span>
-                        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid rgba(var(--muted-rgb), 0.3)' }}>
+                          <Box component="span" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>Currency:</Box>
+                          <Box component="span" sx={{ fontWeight: 600 }}>{country.currency}</Box>
+                        </Box>
                       )}
                       {country.languages && (
-                        <div className="flex justify-between items-center py-2 border-b border-muted/30">
-                          <span className="text-muted-foreground font-medium">Languages:</span>
-                          <span className="font-semibold">{country.languages.join(', ')}</span>
-                        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid rgba(var(--muted-rgb), 0.3)' }}>
+                          <Box component="span" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>Languages:</Box>
+                          <Box component="span" sx={{ fontWeight: 600 }}>{country.languages.join(', ')}</Box>
+                        </Box>
                       )}
                       {country.timezone && (
-                        <div className="flex justify-between items-center py-2 border-b border-muted/30">
-                          <span className="text-muted-foreground font-medium">Timezone:</span>
-                          <span className="font-semibold">{country.timezone}</span>
-                        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid rgba(var(--muted-rgb), 0.3)' }}>
+                          <Box component="span" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>Timezone:</Box>
+                          <Box component="span" sx={{ fontWeight: 600 }}>{country.timezone}</Box>
+                        </Box>
                       )}
                       {country.calling_code && (
-                        <div className="flex justify-between items-center py-2">
-                          <span className="text-muted-foreground font-medium">Calling Code:</span>
-                          <span className="font-semibold">{country.calling_code}</span>
-                        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+                          <Box component="span" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>Calling Code:</Box>
+                          <Box component="span" sx={{ fontWeight: 600 }}>{country.calling_code}</Box>
+                        </Box>
                       )}
                     </CardContent>
                   </Card>
 
                   {/* Demographics & Economy */}
-                  <Card className="border-muted/50">
+                  <Card sx={{ borderColor: 'divider' }}>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-primary" />
+                      <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <TrendingUp style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                         Demographics & Economy
                       </CardTitle>
                       <CardDescription>
                         Population statistics and economic indicators
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       {country.population && (
-                        <div className="flex justify-between items-center py-2 border-b border-muted/30">
-                          <span className="text-muted-foreground font-medium">Population:</span>
-                          <span className="font-semibold">{country.population.toLocaleString()}</span>
-                        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid rgba(var(--muted-rgb), 0.3)' }}>
+                          <Box component="span" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>Population:</Box>
+                          <Box component="span" sx={{ fontWeight: 600 }}>{country.population.toLocaleString()}</Box>
+                        </Box>
                       )}
                       {country.area_km2 && (
-                        <div className="flex justify-between items-center py-2 border-b border-muted/30">
-                          <span className="text-muted-foreground font-medium">Area:</span>
-                          <span className="font-semibold">{country.area_km2.toLocaleString()} km²</span>
-                        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid rgba(var(--muted-rgb), 0.3)' }}>
+                          <Box component="span" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>Area:</Box>
+                          <Box component="span" sx={{ fontWeight: 600 }}>{country.area_km2.toLocaleString()} km²</Box>
+                        </Box>
                       )}
                       {country.gdp_per_capita_usd && (
-                        <div className="flex justify-between items-center py-2 border-b border-muted/30">
-                          <span className="text-muted-foreground font-medium">GDP per capita:</span>
-                          <span className="font-semibold">${country.gdp_per_capita_usd.toLocaleString()}</span>
-                        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid rgba(var(--muted-rgb), 0.3)' }}>
+                          <Box component="span" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>GDP per capita:</Box>
+                          <Box component="span" sx={{ fontWeight: 600 }}>${country.gdp_per_capita_usd.toLocaleString()}</Box>
+                        </Box>
                       )}
                       {country.life_expectancy && (
-                        <div className="flex justify-between items-center py-2 border-b border-muted/30">
-                          <span className="text-muted-foreground font-medium">Life Expectancy:</span>
-                          <span className="font-semibold">{country.life_expectancy} years</span>
-                        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid rgba(var(--muted-rgb), 0.3)' }}>
+                          <Box component="span" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>Life Expectancy:</Box>
+                          <Box component="span" sx={{ fontWeight: 600 }}>{country.life_expectancy} years</Box>
+                        </Box>
                       )}
                       {country.human_development_index && (
-                        <div className="flex justify-between items-center py-2">
-                          <span className="text-muted-foreground font-medium">HDI:</span>
-                          <span className="font-semibold">{country.human_development_index}</span>
-                        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+                          <Box component="span" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>HDI:</Box>
+                          <Box component="span" sx={{ fontWeight: 600 }}>{country.human_development_index}</Box>
+                        </Box>
                       )}
                     </CardContent>
                   </Card>
-                </div>
+                </Box>
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

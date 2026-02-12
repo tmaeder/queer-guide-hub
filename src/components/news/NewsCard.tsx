@@ -8,6 +8,8 @@ import { Link } from "react-router-dom";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 type NewsArticle = Tables<'news_articles'> & {
   news_sources: Tables<'news_sources'>;
@@ -28,7 +30,7 @@ export const NewsCard = ({
   useEffect(() => {
     const fetchTags = async () => {
       if (!article.id) return;
-      
+
       setIsLoadingTags(true);
       try {
         const { data, error } = await supabase
@@ -74,85 +76,86 @@ export const NewsCard = ({
     };
     return colors[category] || 'hsl(var(--muted))';
   };
-  return <Card className="group shadow-card hover:shadow-card-hover border-border/50 transition-all duration-300 hover:-translate-y-0.5">
-      <CardHeader className="space-y-3">
-        {article.image_url && <div className="relative overflow-hidden rounded-lg">
-            <img src={article.image_url} alt={article.title} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105" />
-            {article.is_featured && <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">
+  return <Card style={{ boxShadow: 'var(--shadow-card)', transition: 'all 0.3s', borderColor: 'rgba(var(--border-rgb, 0,0,0), 0.5)' }}>
+      <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {article.image_url && <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
+            <img src={article.image_url} alt={article.title} style={{ width: '100%', height: 192, objectFit: 'cover', transition: 'transform 0.3s' }} />
+            {article.is_featured && <Badge style={{ position: 'absolute', top: 8, left: 8, backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}>
                 Featured
               </Badge>}
-          </div>}
-        
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-            {article.title}
-          </h3>
-        </div>
+          </Box>}
 
-        <div className="flex items-center gap-2">
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.125rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {article.title}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Badge style={{
-          backgroundColor: getCategoryColor(article.category)
-        }} className="text-primary-foreground">
+          backgroundColor: getCategoryColor(article.category),
+          color: 'hsl(var(--primary-foreground))'
+        }}>
             {article.category.replace('-', ' ')}
           </Badge>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
             {article.news_sources.name}
           </Badge>
-        </div>
+        </Box>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {article.excerpt && <p className="text-muted-foreground text-sm line-clamp-3">
+      <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {article.excerpt && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
             {article.excerpt}
-          </p>}
+          </Typography>}
 
-        {showFullContent && article.content && <div className="prose prose-sm max-w-none text-foreground">
-            
-          </div>}
+        {showFullContent && article.content && <Box sx={{ maxWidth: 'none', color: 'var(--foreground)' }}>
+
+          </Box>}
 
         {/* Tags */}
         {isLoadingTags ? (
-          <div className="flex items-center gap-2">
-            <Tag className="h-4 w-4 text-muted-foreground" />
-            <div className="flex space-x-1">
-              <div className="h-4 w-16 bg-muted animate-pulse rounded-full"></div>
-              <div className="h-4 w-12 bg-muted animate-pulse rounded-full"></div>
-            </div>
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Tag style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
+              <Box sx={{ height: 16, width: 64, bgcolor: 'var(--muted)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', borderRadius: '9999px' }} />
+              <Box sx={{ height: 16, width: 48, bgcolor: 'var(--muted)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', borderRadius: '9999px' }} />
+            </Box>
+          </Box>
         ) : tags.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <Tag className="h-4 w-4 text-muted-foreground" />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Tag style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
             {tags.slice(0, 5).map(tag => (
-              <Badge key={tag} variant="outline" className="text-xs">
+              <Badge key={tag} variant="outline" style={{ fontSize: '0.75rem' }}>
                 {tag}
               </Badge>
             ))}
             {tags.length > 5 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
                 +{tags.length - 5} more
               </Badge>
             )}
-          </div>
+          </Box>
         )}
 
-        {(article.country_ids?.length > 0 || article.city_ids?.length > 0) && <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4" />
+        {(article.country_ids?.length > 0 || article.city_ids?.length > 0) && <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+            <MapPin style={{ height: 16, width: 16 }} />
             <span>Location-based article</span>
-          </div>}
+          </Box>}
 
-        {article.author && <div className="text-sm text-muted-foreground">
+        {article.author && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
             By {article.author}
-          </div>}
+          </Typography>}
 
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-2">
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <FavoriteButton itemId={article.id} type="news" />
-          </div>
-          <Button onClick={handleViewClick} className="flex items-center gap-2" size="sm">
+          </Box>
+          <Button onClick={handleViewClick} style={{ display: 'flex', alignItems: 'center', gap: 8 }} size="sm">
             Read Full Article
-            <ExternalLink className="h-4 w-4" />
+            <ExternalLink style={{ height: 16, width: 16 }} />
           </Button>
-        </div>
+        </Box>
       </CardContent>
     </Card>;
 };

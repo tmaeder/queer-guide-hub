@@ -4,6 +4,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface LocationPrivacyGuardProps {
   children: React.ReactNode;
@@ -21,8 +23,8 @@ interface LocationPrivacyGuardProps {
  * LocationPrivacyGuard - Enhanced location privacy protection
  * Implements privacy-by-design for location data with user controls
  */
-export function LocationPrivacyGuard({ 
-  children, 
+export function LocationPrivacyGuard({
+  children,
   locationData,
   showWarning = true,
   allowPreciseLocation = false
@@ -30,7 +32,7 @@ export function LocationPrivacyGuard({
   const { user } = useAuth();
 
   // Check if location data is older than 30 days (anonymization threshold)
-  const isLocationAnonymized = locationData?.created_at && 
+  const isLocationAnonymized = locationData?.created_at &&
     new Date(locationData.created_at) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
   // Privacy-preserving location display
@@ -53,29 +55,29 @@ export function LocationPrivacyGuard({
   const privacyLocation = getPrivacyPreservingLocation();
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {showWarning && locationData && (
-        <Alert className="border-warning">
-          <Shield className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between">
-            <span>Location data is protected by privacy controls</span>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>Auto-anonymized after 30 days</span>
-            </div>
+        <Alert sx={{ borderColor: 'warning.main' }}>
+          <Shield style={{ height: 16, width: 16 }} />
+          <AlertDescription sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box component="span">Location data is protected by privacy controls</Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'text.secondary' }}>
+              <Clock style={{ height: 12, width: 12 }} />
+              <Box component="span">Auto-anonymized after 30 days</Box>
+            </Box>
           </AlertDescription>
         </Alert>
       )}
 
       {isLocationAnonymized && (
-        <Card className="bg-muted/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
+        <Card sx={{ bgcolor: 'action.hover' }}>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <MapPin style={{ height: 16, width: 16 }} />
               Location Privacy Protection Active
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
+          <CardContent sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
             This location data has been automatically anonymized for privacy protection.
             Only general area information is available.
           </CardContent>
@@ -87,11 +89,11 @@ export function LocationPrivacyGuard({
       })}
 
       {locationData && !allowPreciseLocation && (
-        <div className="text-xs text-muted-foreground flex items-center gap-1">
-          <AlertTriangle className="h-3 w-3" />
+        <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <AlertTriangle style={{ height: 12, width: 12 }} />
           Precise location coordinates are hidden for privacy
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

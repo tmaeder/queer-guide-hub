@@ -4,6 +4,8 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface CountryData {
   country: string;
@@ -208,16 +210,18 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            Geographic Distribution
+          <CardTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <MapPin style={{ height: 16, width: 16 }} />
+              Geographic Distribution
+            </Box>
           </CardTitle>
           <CardDescription>Visitor locations worldwide</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-96 bg-muted rounded animate-pulse flex items-center justify-center">
-            <div className="text-muted-foreground">Loading map...</div>
-          </div>
+          <Box sx={{ height: 384, bgcolor: 'action.hover', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' , animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+            <Typography color="text.secondary">Loading map...</Typography>
+          </Box>
         </CardContent>
       </Card>
     );
@@ -226,29 +230,31 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-4 w-4" />
-          Geographic Distribution
+        <CardTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <MapPin style={{ height: 16, width: 16 }} />
+            Geographic Distribution
+          </Box>
         </CardTitle>
         <CardDescription>
-          Visitor locations worldwide • Hover over markers for details
+          Visitor locations worldwide - Hover over markers for details
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div ref={mapContainer} className="h-96 rounded-lg overflow-hidden border" />
-        <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-          <div>Showing top {countryData.length} countries</div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-primary/60"></div>
-              <span>Low traffic</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-primary"></div>
-              <span>High traffic</span>
-            </div>
-          </div>
-        </div>
+        <Box ref={mapContainer} sx={{ height: 384, borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }} />
+        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', color: 'text.secondary' }}>
+          <Typography variant="body2" color="text.secondary">Showing top {countryData.length} countries</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'primary.main', opacity: 0.6 }} />
+              <Typography variant="body2" color="text.secondary">Low traffic</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ width: 16, height: 16, borderRadius: '50%', bgcolor: 'primary.main' }} />
+              <Typography variant="body2" color="text.secondary">High traffic</Typography>
+            </Box>
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

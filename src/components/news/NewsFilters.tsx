@@ -166,20 +166,20 @@ export const NewsFilters = ({
   const hasActiveFilters = source || selectedTags.length > 0 || selectedCountries.length > 0 || selectedCities.length > 0 || nearMe || dateRange;
 
   return (
-    <Card className="sticky top-4">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Filter className="h-5 w-5" />
+    <Card sx={{ position: 'sticky', top: 16 }}>
+      <CardHeader sx={{ pb: 2 }}>
+        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '1.125rem' }}>
+          <Filter style={{ height: 20, width: 20 }} />
           Filters
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Near Me */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              <span className="text-sm font-medium">Location</span>
+        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <MapPin style={{ height: 16, width: 16 }} />
+              <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Location</span>
             </div>
             <Switch
               checked={nearMe}
@@ -188,7 +188,7 @@ export const NewsFilters = ({
             />
           </div>
           {nearMe && (
-            <p className="text-xs text-muted-foreground">
+            <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
               Showing news relevant to your location
             </p>
           )}
@@ -198,16 +198,16 @@ export const NewsFilters = ({
 
         {/* Countries Filter */}
         {countries.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4" />
-              <span className="text-sm font-medium">Countries</span>
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Globe style={{ height: 16, width: 16 }} />
+              <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Countries</span>
             </div>
             <Select onValueChange={handleCountryToggle}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger sx={{ width: '100%' }}>
                 <SelectValue placeholder="Select countries" />
               </SelectTrigger>
-              <SelectContent className="max-h-48 overflow-y-auto">
+              <SelectContent sx={{ maxHeight: 192, overflowY: 'auto' }}>
                 {countries.map((country) => (
                   <SelectItem key={country.id} value={country.id}>
                     {country.name}
@@ -216,18 +216,18 @@ export const NewsFilters = ({
               </SelectContent>
             </Select>
             {selectedCountries.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {selectedCountries.map(countryId => {
                   const country = countries.find(c => c.id === countryId);
                   return country ? (
                     <Badge
                       key={countryId}
                       variant="default"
-                      className="cursor-pointer text-xs"
+                      sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
                       onClick={() => handleCountryToggle(countryId)}
                     >
                       {country.name}
-                      <X className="h-3 w-3 ml-1" />
+                      <X style={{ height: 12, width: 12, marginLeft: 4 }} />
                     </Badge>
                   ) : null;
                 })}
@@ -238,16 +238,16 @@ export const NewsFilters = ({
 
         {/* Cities Filter */}
         {cities.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Map className="h-4 w-4" />
-              <span className="text-sm font-medium">Cities</span>
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Map style={{ height: 16, width: 16 }} />
+              <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Cities</span>
             </div>
             <Select onValueChange={handleCityToggle}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger sx={{ width: '100%' }}>
                 <SelectValue placeholder="Select cities" />
               </SelectTrigger>
-              <SelectContent className="max-h-48 overflow-y-auto">
+              <SelectContent sx={{ maxHeight: 192, overflowY: 'auto' }}>
                 {cities.map((city) => (
                   <SelectItem key={city.id} value={city.id}>
                     {city.name}
@@ -256,18 +256,18 @@ export const NewsFilters = ({
               </SelectContent>
             </Select>
             {selectedCities.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {selectedCities.map(cityId => {
                   const city = cities.find(c => c.id === cityId);
                   return city ? (
                     <Badge
                       key={cityId}
                       variant="default"
-                      className="cursor-pointer text-xs"
+                      sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
                       onClick={() => handleCityToggle(cityId)}
                     >
                       {city.name}
-                      <X className="h-3 w-3 ml-1" />
+                      <X style={{ height: 12, width: 12, marginLeft: 4 }} />
                     </Badge>
                   ) : null;
                 })}
@@ -277,7 +277,7 @@ export const NewsFilters = ({
         )}
 
         {/* Tags Filter */}
-        <div className="space-y-3">
+        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <TagSelector
             selectedTags={selectedTags}
             onTagsChange={(tags) => {
@@ -287,19 +287,19 @@ export const NewsFilters = ({
             placeholder="Select news tags..."
             maxTags={10}
             categories={['news', 'politics', 'culture', 'business', 'education', 'health']}
-            className="space-y-2"
+            sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
           />
         </div>
 
         {/* Source Filter */}
         {sources.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Building className="h-4 w-4" />
-              <span className="text-sm font-medium">Source</span>
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Building style={{ height: 16, width: 16 }} />
+              <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Source</span>
             </div>
             <Select value={source} onValueChange={handleSourceChange}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger sx={{ width: '100%' }}>
                 <SelectValue placeholder="All sources" />
               </SelectTrigger>
               <SelectContent>
@@ -315,13 +315,13 @@ export const NewsFilters = ({
         )}
 
         {/* Date Range Filter */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            <span className="text-sm font-medium">Published Date</span>
+        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Calendar style={{ height: 16, width: 16 }} />
+            <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Published Date</span>
           </div>
           <Select value={dateRange} onValueChange={handleDateRangeChange}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger sx={{ width: '100%' }}>
               <SelectValue placeholder="All dates" />
             </SelectTrigger>
             <SelectContent>
@@ -341,14 +341,14 @@ export const NewsFilters = ({
         {trendingTags.length > 0 && (
           <>
             <Separator />
-            <div className="space-y-3">
-              <span className="text-sm font-medium">Trending Tags</span>
-              <div className="flex flex-wrap gap-2">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Trending Tags</span>
+              <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {trendingTags.slice(0, 8).map(({ tag, count }) => (
                   <Badge
                     key={tag}
                     variant={selectedTags.includes(tag) ? "default" : "outline"}
-                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs"
+                    sx={{ cursor: 'pointer', fontSize: '0.75rem', transition: 'all 0.2s', '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText' } }}
                     onClick={() => {
                       const newTags = selectedTags.includes(tag) 
                         ? selectedTags.filter(t => t !== tag) 
@@ -369,7 +369,7 @@ export const NewsFilters = ({
         {hasActiveFilters && (
           <>
             <Separator />
-            <Button variant="outline" onClick={clearFilters} className="w-full">
+            <Button variant="outline" onClick={clearFilters} sx={{ width: '100%' }}>
               Clear All Filters
             </Button>
           </>

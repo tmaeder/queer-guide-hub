@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Box from '@mui/material/Box';
 
 interface UserRelationshipActionsProps {
   targetUserId: string;
@@ -47,9 +48,9 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
         size={compact ? "sm" : "default"}
         onClick={handleRemove}
         disabled={loading}
-        className="gap-2"
+        sx={{ gap: 1 }}
       >
-        <ShieldCheck className="h-4 w-4" />
+        <ShieldCheck style={{ height: 16, width: 16 }} />
         Unblock
       </Button>
     );
@@ -63,9 +64,9 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
         size={compact ? "sm" : "default"}
         onClick={handleRemove}
         disabled={loading}
-        className="gap-2"
+        sx={{ gap: 1 }}
       >
-        <UserMinus className="h-4 w-4" />
+        <UserMinus style={{ height: 16, width: 16 }} />
         Cancel Request
       </Button>
     );
@@ -75,14 +76,14 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
   if (relationshipStatus?.type === 'friend' && relationshipStatus.direction === 'received' && relationshipStatus.status === 'pending') {
     if (compact) {
       return (
-        <div className="flex gap-1">
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
           <Button
             variant="default"
             size="sm"
             onClick={handleAccept}
             disabled={loading}
           >
-            <Check className="h-4 w-4" />
+            <Check style={{ height: 16, width: 16 }} />
           </Button>
           <Button
             variant="outline"
@@ -90,33 +91,33 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
             onClick={handleReject}
             disabled={loading}
           >
-            <X className="h-4 w-4" />
+            <X style={{ height: 16, width: 16 }} />
           </Button>
-        </div>
+        </Box>
       );
     }
 
     return (
-      <div className="flex gap-2">
+      <Box sx={{ display: 'flex', gap: 1 }}>
         <Button
           variant="default"
           onClick={handleAccept}
           disabled={loading}
-          className="gap-2"
+          sx={{ gap: 1 }}
         >
-          <Check className="h-4 w-4" />
+          <Check style={{ height: 16, width: 16 }} />
           Accept
         </Button>
         <Button
           variant="outline"
           onClick={handleReject}
           disabled={loading}
-          className="gap-2"
+          sx={{ gap: 1 }}
         >
-          <X className="h-4 w-4" />
+          <X style={{ height: 16, width: 16 }} />
           Reject
         </Button>
-      </div>
+      </Box>
     );
   }
 
@@ -129,19 +130,19 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
             variant="outline"
             size={compact ? "sm" : "default"}
             disabled={loading}
-            className="gap-2"
+            sx={{ gap: 1 }}
           >
-            <UserMinus className="h-4 w-4" />
+            <UserMinus style={{ height: 16, width: 16 }} />
             Friends
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onClick={handleRemove}>
-            <UserMinus className="h-4 w-4 mr-2" />
+            <UserMinus style={{ height: 16, width: 16, marginRight: 8 }} />
             Unfriend
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleBlock}>
-            <Shield className="h-4 w-4 mr-2" />
+            <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
             Block
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -157,19 +158,19 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
           variant="default"
           size={compact ? "sm" : "default"}
           disabled={loading}
-          className="gap-2"
+          sx={{ gap: 1 }}
         >
-          <UserPlus className="h-4 w-4" />
+          <UserPlus style={{ height: 16, width: 16 }} />
           Add Friend
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={handleAddFriend}>
-          <UserPlus className="h-4 w-4 mr-2" />
+          <UserPlus style={{ height: 16, width: 16, marginRight: 8 }} />
           Send Friend Request
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleBlock}>
-          <Shield className="h-4 w-4 mr-2" />
+          <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
           Block User
         </DropdownMenuItem>
       </DropdownMenuContent>

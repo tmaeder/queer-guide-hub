@@ -1,5 +1,6 @@
 import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { Filter } from "lucide-react";
+import Box from '@mui/material/Box';
 
 const quickFilters = [
   { label: "Featured only", value: "featured", icon: Filter },
@@ -20,12 +21,12 @@ export function SearchFilters({ onAddFilter }: SearchFiltersProps) {
       {quickFilters.map((filter) => {
         const Icon = filter.icon;
         return (
-          <CommandItem 
+          <CommandItem
             key={filter.value}
             onSelect={() => onAddFilter(filter.value)}
-            className="cursor-pointer hover:bg-muted/50 transition-colors"
+            style={{ cursor: 'pointer' }}
           >
-            <Icon className="h-4 w-4 mr-3 text-muted-foreground" />
+            <Box component={Icon} sx={{ height: 16, width: 16, mr: 1.5, color: 'text.secondary' }} />
             {filter.label}
           </CommandItem>
         );

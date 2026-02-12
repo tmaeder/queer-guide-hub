@@ -46,35 +46,35 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     localStorage.setItem('accessibility-settings', JSON.stringify(settings));
-    
+
     // Apply settings to document
     const root = document.documentElement;
-    
+
     // Font size
     root.className = root.className.replace(/font-size-\w+/g, '');
     root.classList.add(`font-size-${settings.fontSize}`);
-    
+
     // High contrast
     if (settings.highContrast) {
       root.classList.add('high-contrast');
     } else {
       root.classList.remove('high-contrast');
     }
-    
+
     // Reduce motion
     if (settings.reduceMotion) {
       root.classList.add('reduce-motion');
     } else {
       root.classList.remove('reduce-motion');
     }
-    
+
     // Focus indicators
     if (settings.focusIndicators) {
       root.classList.add('enhanced-focus');
     } else {
       root.classList.remove('enhanced-focus');
     }
-    
+
     // Screen reader optimization
     if (settings.screenReaderOptimized) {
       root.classList.add('screen-reader-optimized');

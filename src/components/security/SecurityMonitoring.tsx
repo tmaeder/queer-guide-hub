@@ -7,6 +7,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Shield, AlertTriangle, Activity, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface SecurityEvent {
   id: string;
@@ -61,11 +63,11 @@ export function SecurityMonitoring() {
     switch (severity) {
       case 'critical':
       case 'high':
-        return <AlertTriangle className="h-4 w-4" />;
+        return <AlertTriangle style={{ height: 16, width: 16 }} />;
       case 'medium':
-        return <Shield className="h-4 w-4" />;
+        return <Shield style={{ height: 16, width: 16 }} />;
       default:
-        return <Activity className="h-4 w-4" />;
+        return <Activity style={{ height: 16, width: 16 }} />;
     }
   };
 
@@ -76,7 +78,7 @@ export function SecurityMonitoring() {
   if (!user || !isAdmin) {
     return (
       <Alert>
-        <Shield className="h-4 w-4" />
+        <Shield style={{ height: 16, width: 16 }} />
         <AlertTitle>Access Denied</AlertTitle>
         <AlertDescription>
           You need administrator privileges to access security monitoring.
@@ -86,81 +88,83 @@ export function SecurityMonitoring() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Security Monitoring</h2>
-          <p className="text-muted-foreground">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700, letterSpacing: '-0.025em' }}>Security Monitoring</Typography>
+          <Typography sx={{ color: 'var(--muted-foreground)' }}>
             Monitor security events and potential threats
-          </p>
-        </div>
+          </Typography>
+        </Box>
         <Button onClick={fetchSecurityEvents} disabled={loading} size="sm">
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw style={{ height: 16, width: 16, marginRight: 8, ...(loading ? { animation: 'spin 1s linear infinite' } : {}) }} />
           Refresh
         </Button>
-      </div>
+      </Box>
 
       {error && (
         <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangle style={{ height: 16, width: 16 }} />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      <div className="grid gap-4">
+      <Box sx={{ display: 'grid', gap: 2 }}>
         {events.map((event) => (
           <Card key={event.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  {getSeverityIcon(event.severity)}
-                  {event.event_type.replace(/_/g, ' ')}
+            <CardHeader style={{ paddingBottom: 12 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <CardTitle style={{ fontSize: '1.125rem' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {getSeverityIcon(event.severity)}
+                    {event.event_type.replace(/_/g, ' ')}
+                  </Box>
                 </CardTitle>
-                <div className="flex items-center gap-2">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Badge variant={getSeverityColor(event.severity)}>
                     {event.severity.toUpperCase()}
                   </Badge>
-                  <span className="text-sm text-muted-foreground">
+                  <Typography component="span" sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
                     {new Date(event.created_at).toLocaleString()}
-                  </span>
-                </div>
-              </div>
+                  </Typography>
+                </Box>
+              </Box>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {event.user_id && (
-                  <div className="text-sm">
-                    <span className="font-medium">User ID:</span> {event.user_id}
-                  </div>
+                  <Typography variant="body2">
+                    <Typography component="span" sx={{ fontWeight: 500 }}>User ID:</Typography> {event.user_id}
+                  </Typography>
                 )}
                 {event.ip_address && (
-                  <div className="text-sm">
-                    <span className="font-medium">IP Address:</span> {String(event.ip_address)}
-                  </div>
+                  <Typography variant="body2">
+                    <Typography component="span" sx={{ fontWeight: 500 }}>IP Address:</Typography> {String(event.ip_address)}
+                  </Typography>
                 )}
                 {Object.keys(event.metadata).length > 0 && (
-                  <div className="text-sm">
-                    <span className="font-medium">Details:</span>
-                    <pre className="mt-1 text-xs bg-muted p-2 rounded overflow-x-auto">
+                  <Typography variant="body2" component="div">
+                    <Typography component="span" sx={{ fontWeight: 500 }}>Details:</Typography>
+                    <pre style={{ marginTop: 4, fontSize: '0.75rem', backgroundColor: 'var(--muted)', padding: 8, borderRadius: 4, overflowX: 'auto' }}>
                       {JSON.stringify(event.metadata, null, 2)}
                     </pre>
-                  </div>
+                  </Typography>
                 )}
-              </div>
+              </Box>
             </CardContent>
           </Card>
         ))}
 
         {events.length === 0 && !loading && (
           <Card>
-            <CardContent className="text-center py-6">
-              <Shield className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No security events found</p>
+            <CardContent style={{ textAlign: 'center', paddingTop: 24, paddingBottom: 24 }}>
+              <Shield style={{ height: 48, width: 48, margin: '0 auto 16px auto', display: 'block', color: 'var(--muted-foreground)' }} />
+              <Typography sx={{ color: 'var(--muted-foreground)' }}>No security events found</Typography>
             </CardContent>
           </Card>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

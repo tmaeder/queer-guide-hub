@@ -314,17 +314,17 @@ export default function AdminNewsSources() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">Loading...</div>
+      <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+        <div sx={{ textAlign: 'center' }}>Loading...</div>
       </div>
     );
   }
 
   if (!canManageContent()) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+      <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+        <div sx={{ textAlign: 'center' }}>
+          <h1 sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Access Denied</h1>
           <p>You don't have permission to access this page.</p>
         </div>
       </div>
@@ -332,49 +332,49 @@ export default function AdminNewsSources() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/admin')}
-            className="flex items-center gap-2"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft style={{ height: 16, width: 16 }} />
             Back to Admin
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">News Sources Management</h1>
-            <p className="text-muted-foreground">
+            <h1 sx={{ fontSize: '1.875rem', fontWeight: 700 }}>News Sources Management</h1>
+            <p style={{ color: 'var(--muted-foreground)' }}>
               Manage RSS feeds and API sources for the news hub
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div sx={{ display: 'flex', gap: 1 }}>
           <Button
             disabled={true} // Manual trigger disabled - automatic cron job is now active
             variant="outline"
-            className="flex items-center gap-2"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw style={{ height: 16, width: 16, ...(isLoading ? { animation: 'spin 1s linear infinite' } : {}) }} />
             Fetch News
           </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={resetForm}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
                 Add Source
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent sx={{ maxWidth: { sm: 500 } }}>
               <DialogHeader>
                 <DialogTitle>
                   {editingSource ? 'Edit News Source' : 'Add News Source'}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <div>
                   <Label htmlFor="name">Source Name</Label>
                   <Input
@@ -398,7 +398,7 @@ export default function AdminNewsSources() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                   <div>
                     <Label htmlFor="source_type">Source Type</Label>
                     <Select
@@ -456,7 +456,7 @@ export default function AdminNewsSources() {
                     </Select>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Switch
                     id="is_active"
                     checked={formData.is_active}
@@ -465,7 +465,7 @@ export default function AdminNewsSources() {
                   <Label htmlFor="is_active">Active</Label>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-4">
+                <div sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancel
                   </Button>
@@ -480,44 +480,44 @@ export default function AdminNewsSources() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Sources</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Total Sources</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{sources.length}</div>
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{sources.length}</div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active Sources</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Active Sources</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a' }}>
               {sources.filter(s => s.is_active).length}
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">RSS Feeds</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>RSS Feeds</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {sources.filter(s => s.source_type === 'rss').length}
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">API Sources</CardTitle>
+          <CardHeader sx={{ pb: 1 }}>
+            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>API Sources</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {sources.filter(s => s.source_type === 'api').length}
             </div>
           </CardContent>
@@ -531,9 +531,9 @@ export default function AdminNewsSources() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8">Loading sources...</div>
+            <div sx={{ textAlign: 'center', py: 4 }}>Loading sources...</div>
           ) : sources.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
               No news sources configured yet.
             </div>
           ) : (
@@ -552,30 +552,30 @@ export default function AdminNewsSources() {
               <TableBody>
                 {sources.map((source) => (
                   <TableRow key={source.id}>
-                    <TableCell className="font-medium">{source.name}</TableCell>
+                    <TableCell sx={{ fontWeight: 500 }}>{source.name}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
+                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {source.source_type === 'rss' ? (
-                          <Rss className="h-4 w-4" />
+                          <Rss style={{ height: 16, width: 16 }} />
                         ) : (
-                          <Globe className="h-4 w-4" />
+                          <Globe style={{ height: 16, width: 16 }} />
                         )}
                         {source.source_type.toUpperCase()}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
+                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {source.status === 'error' ? (
-                          <AlertCircle className="h-4 w-4 text-red-500" />
+                          <AlertCircle style={{ height: 16, width: 16, color: '#ef4444' }} />
                         ) : (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
                         )}
                         <div>
                           <Badge variant={source.status === 'error' ? 'destructive' : 'default'}>
                             {source.is_active ? (source.status || 'Active') : 'Inactive'}
                           </Badge>
                           {source.last_error && (
-                            <div className="text-xs text-red-500 mt-1" title={source.last_error}>
+                            <div sx={{ fontSize: '0.75rem', color: '#ef4444', mt: 0.5 }} title={source.last_error}>
                               {source.last_error.length > 30 ? source.last_error.substring(0, 30) + '...' : source.last_error}
                             </div>
                           )}
@@ -583,33 +583,33 @@ export default function AdminNewsSources() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">
-                        <div className="font-medium">{source.articles_fetched || 0}</div>
-                        <div className="text-muted-foreground">articles</div>
+                      <div sx={{ fontSize: '0.875rem' }}>
+                        <div sx={{ fontWeight: 500 }}>{source.articles_fetched || 0}</div>
+                        <div style={{ color: 'var(--muted-foreground)' }}>articles</div>
                       </div>
                     </TableCell>
                     <TableCell>
                       {source.source_type === 'api' && (
-                        <div className="flex items-center gap-2">
-                          <div className="text-xs">
+                        <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <div sx={{ fontSize: '0.75rem' }}>
                             {source.keywords ? source.keywords.slice(0, 2).join(', ') + (source.keywords.length > 2 ? '...' : '') : 'None'}
                           </div>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleKeywordsEdit(source)}
-                            className="h-6 w-6 p-0"
+                            sx={{ height: 24, width: 24, p: 0 }}
                           >
-                            <Tags className="h-3 w-3" />
+                            <Tags style={{ height: 12, width: 12 }} />
                           </Button>
                         </div>
                       )}
                       {source.source_type === 'rss' && (
-                        <span className="text-muted-foreground text-xs">N/A</span>
+                        <span sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>N/A</span>
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="text-xs">
+                      <div sx={{ fontSize: '0.75rem' }}>
                         {source.last_fetched_at ? 
                           new Date(source.last_fetched_at).toLocaleString() : 
                           'Never'
@@ -617,13 +617,13 @@ export default function AdminNewsSources() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
+                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(source)}
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit style={{ height: 16, width: 16 }} />
                         </Button>
                          <Button
                            variant="ghost"
@@ -631,19 +631,19 @@ export default function AdminNewsSources() {
                            onClick={() => triggerIndividualFetch(source.id, source.name)}
                            title={`Fetch news from ${source.name}`}
                          >
-                           <RefreshCw className="h-4 w-4" />
+                           <RefreshCw style={{ height: 16, width: 16 }} />
                          </Button>
                          <Button
                            variant="ghost"
                            size="sm"
                            onClick={() => window.open(source.url, '_blank')}
                          >
-                           <ExternalLink className="h-4 w-4" />
+                           <ExternalLink style={{ height: 16, width: 16 }} />
                          </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 style={{ height: 16, width: 16 }} />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -657,7 +657,7 @@ export default function AdminNewsSources() {
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDelete(source.id)}
-                                className="bg-red-600 hover:bg-red-700"
+                                sx={{ bgcolor: '#dc2626', '&:hover': { bgcolor: '#b91c1c' } }}
                               >
                                 Delete
                               </AlertDialogAction>
@@ -676,21 +676,21 @@ export default function AdminNewsSources() {
 
       {/* Keywords Management Dialog */}
       <Dialog open={keywordsDialogOpen} onOpenChange={setKeywordsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent sx={{ maxWidth: { sm: 500 } }}>
           <DialogHeader>
             <DialogTitle>Manage Keywords - {editingSource?.name}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <div>
               <Label>Current Keywords</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
                 {editingKeywords.map((keyword, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  <Badge key={index} variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     {keyword}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-4 w-4 p-0 hover:bg-red-100"
+                      sx={{ height: 16, width: 16, p: 0, '&:hover': { bgcolor: '#fee2e2' } }}
                       onClick={() => removeKeyword(keyword)}
                     >
                       ×
@@ -702,7 +702,7 @@ export default function AdminNewsSources() {
             
             <div>
               <Label htmlFor="newKeyword">Add New Keyword</Label>
-              <div className="flex gap-2 mt-2">
+              <div sx={{ display: 'flex', gap: 1, mt: 1 }}>
                 <Input
                   id="newKeyword"
                   value={newKeyword}
@@ -716,7 +716,7 @@ export default function AdminNewsSources() {
               </div>
             </div>
             
-            <div className="flex justify-end gap-2 pt-4">
+            <div sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
               <Button type="button" variant="outline" onClick={() => setKeywordsDialogOpen(false)}>
                 Cancel
               </Button>

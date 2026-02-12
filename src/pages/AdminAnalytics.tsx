@@ -4,17 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { UmamiAnalyticsDashboard } from "@/components/analytics/UmamiAnalyticsDashboard";
-import { 
-  Users, 
-  Calendar, 
-  MapPin, 
-  Building, 
-  MessageSquare, 
+import {
+  Users,
+  Calendar,
+  MapPin,
+  Building,
+  MessageSquare,
   Star,
   BarChart3,
   TrendingUp,
   Activity
 } from "lucide-react";
+import Container from '@mui/material/Container';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export default function AdminAnalytics() {
   const [stats, setStats] = useState({
@@ -60,126 +63,126 @@ export default function AdminAnalytics() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>Analytics Dashboard</Typography>
+          <Typography variant="body2" color="text.secondary">
             Monitor platform performance and user engagement
-          </p>
-        </div>
-        <Badge variant="outline" className="gap-2">
-          <Activity className="h-3 w-3" />
+          </Typography>
+        </Box>
+        <Badge variant="outline" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <Activity style={{ height: 12, width: 12 }} />
           Live Data
         </Badge>
-      </div>
+      </Box>
 
-      <Tabs defaultValue="platform" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="platform" className="gap-2">
-            <BarChart3 className="h-4 w-4" />
+      <Tabs defaultValue="platform" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr' }}>
+          <TabsTrigger value="platform" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <BarChart3 style={{ height: 16, width: 16 }} />
             Platform Analytics
           </TabsTrigger>
-          <TabsTrigger value="umami" className="gap-2">
-            <TrendingUp className="h-4 w-4" />
+          <TabsTrigger value="umami" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <TrendingUp style={{ height: 16, width: 16 }} />
             Website Analytics
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="platform" className="space-y-6">
+        <TabsContent value="platform" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' }, gap: 3 }}>
               {[...Array(4)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader className="space-y-2">
-                    <div className="h-4 bg-muted rounded w-3/4"></div>
-                    <div className="h-8 bg-muted rounded w-1/2"></div>
+                <Card key={i}>
+                  <CardHeader>
+                    <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }} />
+                    <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '50%' }} />
                   </CardHeader>
                 </Card>
               ))}
-            </div>
+            </Box>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' }, gap: 3 }}>
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                  <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+                    <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Total Users</CardTitle>
+                    <Users style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">Registered community members</p>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>{stats.totalUsers.toLocaleString()}</Typography>
+                    <Typography variant="caption" color="text.secondary">Registered community members</Typography>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Active Events</CardTitle>
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+                    <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Active Events</CardTitle>
+                    <Calendar style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalEvents.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">Community events</p>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>{stats.totalEvents.toLocaleString()}</Typography>
+                    <Typography variant="caption" color="text.secondary">Community events</Typography>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Venues</CardTitle>
-                    <Building className="h-4 w-4 text-muted-foreground" />
+                  <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+                    <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Total Venues</CardTitle>
+                    <Building style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalVenues.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">Queer-friendly locations</p>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>{stats.totalVenues.toLocaleString()}</Typography>
+                    <Typography variant="caption" color="text.secondary">Queer-friendly locations</Typography>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Community Groups</CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                  <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+                    <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Community Groups</CardTitle>
+                    <Users style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalGroups.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">Active community groups</p>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>{stats.totalGroups.toLocaleString()}</Typography>
+                    <Typography variant="caption" color="text.secondary">Active community groups</Typography>
                   </CardContent>
                 </Card>
-              </div>
+              </Box>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Marketplace Items</CardTitle>
-                    <Star className="h-4 w-4 text-muted-foreground" />
+                  <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+                    <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Marketplace Items</CardTitle>
+                    <Star style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.marketplaceItems.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">Products & services listed</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">News Articles</CardTitle>
-                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.newsArticles.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">Community news & updates</p>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>{stats.marketplaceItems.toLocaleString()}</Typography>
+                    <Typography variant="caption" color="text.secondary">Products & services listed</Typography>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Engagement</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+                    <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>News Articles</CardTitle>
+                    <MessageSquare style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalEngagement.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">Combined platform activity</p>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>{stats.newsArticles.toLocaleString()}</Typography>
+                    <Typography variant="caption" color="text.secondary">Community news & updates</Typography>
                   </CardContent>
                 </Card>
-              </div>
+
+                <Card>
+                  <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+                    <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Total Engagement</CardTitle>
+                    <TrendingUp style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                  </CardHeader>
+                  <CardContent>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>{stats.totalEngagement.toLocaleString()}</Typography>
+                    <Typography variant="caption" color="text.secondary">Combined platform activity</Typography>
+                  </CardContent>
+                </Card>
+              </Box>
             </>
           )}
         </TabsContent>
@@ -188,6 +191,6 @@ export default function AdminAnalytics() {
           <UmamiAnalyticsDashboard />
         </TabsContent>
       </Tabs>
-    </div>
+    </Container>
   );
 }

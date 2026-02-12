@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RefreshCw, Save } from "lucide-react";
 import { BigHead } from "@bigheads/core";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface AvatarBuilderProps {
   onSave: (avatarConfig: AvatarConfig) => void;
@@ -87,80 +89,88 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Avatar Builder
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h6">Avatar Builder</Typography>
           <Button variant="outline" onClick={randomize} size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
             Randomize
           </Button>
-        </CardTitle>
+        </Box>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="flex justify-center mb-6">
-          <div className="w-32 h-32">
-            <BigHead
-              accessory={config.accessory}
-              body={config.body}
-              clothing={config.clothing}
-              clothingColor={config.clothingColor}
-              eyebrows={config.eyebrows}
-              eyes={config.eyes}
-              facialHair={config.facialHair}
-              graphic={config.graphic}
-              hair={config.hair}
-              hairColor={config.hairColor}
-              hat={config.hat}
-              hatColor={config.hatColor}
-              lashes={config.lashes}
-              lipColor={config.lipColor}
-              mask={config.mask}
-              mouth={config.mouth}
-              skinTone={config.skinTone}
-              circleColor={config.circleColor}
-            />
-          </div>
-        </div>
+      <CardContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <Box sx={{ width: 128, height: 128 }}>
+              <BigHead
+                accessory={config.accessory}
+                body={config.body}
+                clothing={config.clothing}
+                clothingColor={config.clothingColor}
+                eyebrows={config.eyebrows}
+                eyes={config.eyes}
+                facialHair={config.facialHair}
+                graphic={config.graphic}
+                hair={config.hair}
+                hairColor={config.hairColor}
+                hat={config.hat}
+                hatColor={config.hatColor}
+                lashes={config.lashes}
+                lipColor={config.lipColor}
+                mask={config.mask}
+                mouth={config.mouth}
+                skinTone={config.skinTone}
+                circleColor={config.circleColor}
+              />
+            </Box>
+          </Box>
 
-        <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-          {Object.entries(avatarOptions).map(([key, options]) => (
-            <div key={key}>
-              <label className="text-sm font-medium capitalize mb-2 block">
-                {key.replace(/([A-Z])/g, ' $1').trim()}
-              </label>
-              <Select
-                value={String(config[key as keyof AvatarConfig])}
-                onValueChange={(value) => {
-                  const parsedValue = key === 'lashes' || key === 'mask' ? value === 'true' : value;
-                  updateConfig(key as keyof AvatarConfig, parsedValue);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {options.map((option: any) => (
-                    <SelectItem key={String(option)} value={String(option)}>
-                      <div className="flex items-center gap-2">
-                        {key.includes('Color') && typeof option === 'string' && (
-                          <div
-                            className="w-4 h-4 rounded border"
-                            style={{ backgroundColor: option }}
-                          />
-                        )}
-                        {String(option)}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
-        </div>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, maxHeight: 384, overflowY: 'auto' }}>
+            {Object.entries(avatarOptions).map(([key, options]) => (
+              <Box key={key}>
+                <Typography variant="body2" sx={{ fontWeight: 500, textTransform: 'capitalize', mb: 1, display: 'block' }}>
+                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                </Typography>
+                <Select
+                  value={String(config[key as keyof AvatarConfig])}
+                  onValueChange={(value) => {
+                    const parsedValue = key === 'lashes' || key === 'mask' ? value === 'true' : value;
+                    updateConfig(key as keyof AvatarConfig, parsedValue);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.map((option: any) => (
+                      <SelectItem key={String(option)} value={String(option)}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {key.includes('Color') && typeof option === 'string' && (
+                            <Box
+                              sx={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: 1,
+                                border: 1,
+                                borderColor: 'divider',
+                              }}
+                              style={{ backgroundColor: option }}
+                            />
+                          )}
+                          {String(option)}
+                        </Box>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Box>
+            ))}
+          </Box>
 
-        <Button onClick={() => onSave(config)} className="w-full">
-          <Save className="h-4 w-4 mr-2" />
-          Save Avatar
-        </Button>
+          <Button onClick={() => onSave(config)} style={{ width: '100%' }}>
+            <Save style={{ width: 16, height: 16, marginRight: 8 }} />
+            Save Avatar
+          </Button>
+        </Box>
       </CardContent>
     </Card>
   );

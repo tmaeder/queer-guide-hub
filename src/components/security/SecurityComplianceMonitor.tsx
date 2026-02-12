@@ -104,11 +104,11 @@ export function SecurityComplianceMonitor() {
   const getStatusIcon = (status: SecurityMetric['status']) => {
     switch (status) {
       case 'compliant':
-        return <CheckCircle className="h-4 w-4 text-success" />;
+        return <CheckCircle style={{ height: 16, width: 16, color: 'var(--success)' }} />;
       case 'warning':
-        return <AlertCircle className="h-4 w-4 text-warning" />;
+        return <AlertCircle style={{ height: 16, width: 16, color: 'var(--warning)' }} />;
       case 'critical':
-        return <AlertCircle className="h-4 w-4 text-destructive" />;
+        return <AlertCircle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />;
     }
   };
 
@@ -120,7 +120,7 @@ export function SecurityComplianceMonitor() {
     } as const;
 
     return (
-      <Badge variant={variants[status]} className="capitalize">
+      <Badge variant={variants[status]} sx={{ textTransform: 'capitalize' }}>
         {status}
       </Badge>
     );
@@ -129,9 +129,9 @@ export function SecurityComplianceMonitor() {
   if (loading) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center p-8">
-          <div className="animate-pulse flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
+          <div sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Shield style={{ height: 20, width: 20 }} />
             <span>Loading security status...</span>
           </div>
         </CardContent>
@@ -143,26 +143,26 @@ export function SecurityComplianceMonitor() {
   const warningCount = metrics.filter(m => m.status === 'warning').length;
 
   return (
-    <div className="space-y-6">
+    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Overall Status */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Shield style={{ height: 20, width: 20 }} />
             Security Compliance Overview
           </CardTitle>
         </CardHeader>
         <CardContent>
           {criticalCount === 0 && warningCount === 0 ? (
             <Alert>
-              <CheckCircle className="h-4 w-4" />
+              <CheckCircle style={{ height: 16, width: 16 }} />
               <AlertDescription>
                 All security measures are compliant. Your data is protected according to privacy-by-design principles.
               </AlertDescription>
             </Alert>
           ) : (
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle style={{ height: 16, width: 16 }} />
               <AlertDescription>
                 {criticalCount > 0 && `${criticalCount} critical security issues detected. `}
                 {warningCount > 0 && `${warningCount} warnings require attention.`}
@@ -173,29 +173,29 @@ export function SecurityComplianceMonitor() {
       </Card>
 
       {/* Security Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
         {metrics.map((metric, index) => (
           <Card key={index}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm flex items-center gap-2">
+            <CardHeader sx={{ pb: 1.5 }}>
+              <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <CardTitle sx={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 1 }}>
                   {getStatusIcon(metric.status)}
                   {metric.name}
                 </CardTitle>
                 {getStatusBadge(metric.status)}
               </div>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-sm text-muted-foreground">
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 {metric.description}
               </p>
               {metric.details && (
-                <p className="text-xs text-muted-foreground bg-muted p-2 rounded">
+                <p sx={{ fontSize: '0.75rem', color: 'text.secondary', bgcolor: 'action.hover', p: 1, borderRadius: 1 }}>
                   {metric.details}
                 </p>
               )}
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3" />
+              <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.75rem', color: 'text.secondary' }}>
+                <Clock style={{ height: 12, width: 12 }} />
                 Last checked: {new Date(metric.lastChecked).toLocaleTimeString()}
               </div>
             </CardContent>
@@ -207,22 +207,22 @@ export function SecurityComplianceMonitor() {
       {recentEvents.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="h-4 w-4" />
+            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Eye style={{ height: 16, width: 16 }} />
               Recent Security Events
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {recentEvents.map((event, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-muted rounded text-sm">
+                <div key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1, bgcolor: 'action.hover', borderRadius: 1, fontSize: '0.875rem' }}>
                   <div>
-                    <span className="font-medium">{event.event_type}</span>
-                    <span className="text-muted-foreground ml-2">
+                    <span sx={{ fontWeight: 500 }}>{event.event_type}</span>
+                    <span sx={{ color: 'text.secondary', ml: 1 }}>
                       Severity: {event.severity}
                     </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">
+                  <span sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                     {new Date(event.created_at).toLocaleString()}
                   </span>
                 </div>
@@ -232,16 +232,16 @@ export function SecurityComplianceMonitor() {
         </Card>
       )}
 
-      <div className="flex justify-center">
+      <div sx={{ display: 'flex', justifyContent: 'center' }}>
         <Button 
           variant="outline" 
           onClick={() => {
             loadSecurityMetrics();
             loadRecentSecurityEvents();
           }}
-          className="flex items-center gap-2"
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
         >
-          <Shield className="h-4 w-4" />
+          <Shield style={{ height: 16, width: 16 }} />
           Refresh Security Status
         </Button>
       </div>

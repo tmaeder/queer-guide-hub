@@ -8,6 +8,8 @@ import { AvatarDisplay } from "./AvatarDisplay";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface AvatarManagerProps {
   currentAvatarUrl?: string;
@@ -106,84 +108,107 @@ export const AvatarManager = ({ currentAvatarUrl, currentAvatarConfig }: AvatarM
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          Avatar Settings
-        </CardTitle>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <User style={{ width: 20, height: 20 }} />
+          <Typography variant="h6">Avatar Settings</Typography>
+        </Box>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-center mb-6">
-          <AvatarDisplay 
-            avatarUrl={currentAvatarUrl} 
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+          <AvatarDisplay
+            avatarUrl={currentAvatarUrl}
             avatarConfig={currentAvatarConfig}
             email={user?.email}
             size="lg"
           />
-        </div>
+        </Box>
 
-        <Tabs defaultValue="upload" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="upload" style={{ width: '100%' }}>
+          <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr 1fr' }}>
             <TabsTrigger value="upload">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Upload style={{ width: 16, height: 16 }} />
+                Upload
+              </Box>
             </TabsTrigger>
             <TabsTrigger value="build">
-              <Palette className="h-4 w-4 mr-2" />
-              Build
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Palette style={{ width: 16, height: 16 }} />
+                Build
+              </Box>
             </TabsTrigger>
             <TabsTrigger value="random">
-              <User className="h-4 w-4 mr-2" />
-              Random
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <User style={{ width: 16, height: 16 }} />
+                Random
+              </Box>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upload" className="mt-4">
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+          <TabsContent value="upload">
+            <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 Upload a custom image to use as your avatar
-              </p>
-              <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground rounded-lg cursor-pointer hover:bg-muted/50">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                    <p className="mb-2 text-sm text-muted-foreground">
-                      <span className="font-semibold">Click to upload</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
-                  </div>
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                <Box
+                  component="label"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: 128,
+                    border: '2px dashed',
+                    borderColor: 'text.secondary',
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    '&:hover': { bgcolor: 'action.hover' },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pt: 2.5, pb: 3 }}>
+                    <Upload style={{ width: 32, height: 32, marginBottom: 16 }} />
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
+                      <Box component="span" sx={{ fontWeight: 600 }}>Click to upload</Box>
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>PNG, JPG up to 5MB</Typography>
+                  </Box>
                   <input
                     type="file"
-                    className="hidden"
+                    style={{ display: 'none' }}
                     accept="image/*"
                     onChange={handleFileUpload}
                     disabled={isUploading}
                   />
-                </label>
-              </div>
-            </div>
+                </Box>
+              </Box>
+            </Box>
           </TabsContent>
 
-          <TabsContent value="build" className="mt-4">
-            <AvatarBuilder 
-              onSave={handleSaveAvatar}
-              initialConfig={currentAvatarConfig}
-            />
+          <TabsContent value="build">
+            <Box sx={{ mt: 2 }}>
+              <AvatarBuilder
+                onSave={handleSaveAvatar}
+                initialConfig={currentAvatarConfig}
+              />
+            </Box>
           </TabsContent>
 
-          <TabsContent value="random" className="mt-4">
-            <div className="space-y-4 text-center">
-              <p className="text-sm text-muted-foreground">
+          <TabsContent value="random">
+            <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'center' }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 Generate a random avatar instantly
-              </p>
-              <Button 
+              </Typography>
+              <Button
                 onClick={generateRandomAvatar}
                 disabled={isSaving}
                 size="lg"
-                className="w-full"
+                style={{ width: '100%' }}
               >
                 {isSaving ? "Generating..." : "Generate Random Avatar"}
               </Button>
-            </div>
+            </Box>
           </TabsContent>
         </Tabs>
       </CardContent>

@@ -233,7 +233,7 @@ export const UniversalSearchBar = () => {
   };
   const getResultIcon = (type: SearchResult['type']) => {
     const Icon = contentTypeIcons[type];
-    return <Icon className="h-4 w-4" />;
+    return <Icon style={{ height: 16, width: 16 }} />;
   };
   const formatResultSubtitle = (result: SearchResult) => {
     const parts = [];
@@ -251,19 +251,19 @@ export const UniversalSearchBar = () => {
       setTimeout(() => inputRef.current?.focus(), 0);
     }
   }, [isOpen]);
-  return <div className={`${isMobile ? 'w-full' : 'flex-1 max-w-2xl mx-4'}`}>
+  return <div style={isMobile ? { width: '100%' } : { flex: 1, maxWidth: '42rem', marginLeft: 16, marginRight: 16 }}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <div className="relative">
-            <div className={`flex items-center transition-all duration-200 rounded-lg border cursor-text ${isFocused ? 'bg-background shadow-lg ring-2 ring-ring/20 border-ring' : 'bg-background/50 backdrop-blur-sm hover:bg-background/80'}`} onClick={() => {
+          <div sx={{ position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', transition: 'all 0.2s', borderRadius: 8, border: '1px solid', cursor: 'text', ...(isFocused ? { backgroundColor: 'var(--background)', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', outline: '2px solid rgba(var(--ring-rgb), 0.2)', borderColor: 'var(--ring)' } : { backgroundColor: 'rgba(var(--background-rgb), 0.5)', backdropFilter: 'blur(4px)' }) }} onClick={() => {
             setIsOpen(true);
             setTimeout(() => inputRef.current?.focus(), 0);
           }}>
-              <Button variant="ghost" size="sm" className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} rounded-l-lg text-muted-foreground hover:text-foreground pointer-events-none flex-shrink-0`}>
-                <Search className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+              <Button variant="ghost" size="sm" style={{ height: isMobile ? 48 : 40, paddingLeft: isMobile ? 16 : 12, paddingRight: isMobile ? 16 : 12, borderRadius: '8px 0 0 8px', color: 'var(--muted-foreground)', pointerEvents: 'none', flexShrink: 0 }}>
+                <Search style={{ height: isMobile ? 20 : 16, width: isMobile ? 20 : 16 }} />
               </Button>
               
-              <div className="flex-1 relative">
+              <div sx={{ flex: 1, position: 'relative' }}>
                 <SearchInputTyped 
                   ref={inputRef} 
                   placeholders={isMobile ? 
@@ -285,21 +285,21 @@ export const UniversalSearchBar = () => {
                     setIsOpen(true);
                   }} 
                   onBlur={() => setIsFocused(false)} 
-                  className={`w-full border-0 bg-transparent focus-visible:ring-0 shadow-none ${isMobile ? 'text-base placeholder:text-muted-foreground/60' : 'text-sm placeholder:text-muted-foreground/60'}`} 
+                  style={{ width: '100%', border: 0, backgroundColor: 'transparent', boxShadow: 'none', outline: 'none', fontSize: isMobile ? '1rem' : '0.875rem' }}
                   autoComplete="off" 
                 />
                 
-                {query && <Button variant="ghost" size="sm" aria-label="Clear search" className={`absolute right-2 top-1/2 -translate-y-1/2 ${isMobile ? 'h-8 w-8' : 'h-6 w-6'} p-0 text-muted-foreground hover:text-foreground`} onClick={() => {
+                {query && <Button variant="ghost" size="sm" aria-label="Clear search" style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', height: isMobile ? 32 : 24, width: isMobile ? 32 : 24, padding: 0, color: 'var(--muted-foreground)' }} onClick={() => {
                   setQuery("");
                   inputRef.current?.focus();
                 }}>
-                    <X className={`${isMobile ? 'h-4 w-4' : 'h-3 w-3'}`} />
+                    <X style={{ height: isMobile ? 16 : 12, width: isMobile ? 16 : 12 }} />
                   </Button>}
               </div>
               
-              <Button variant="ghost" size="sm" aria-label="Search filters" className={`${isMobile ? 'h-12 px-4' : 'h-10 px-3'} text-muted-foreground hover:text-foreground relative flex-shrink-0 ${activeFiltersCount > 0 ? 'text-primary' : ''}`} onClick={() => setShowFilters(!showFilters)}>
-                <SlidersHorizontal className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
-                {activeFiltersCount > 0 && <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center">
+              <Button variant="ghost" size="sm" aria-label="Search filters" style={{ height: isMobile ? 48 : 40, paddingLeft: isMobile ? 16 : 12, paddingRight: isMobile ? 16 : 12, color: activeFiltersCount > 0 ? 'hsl(var(--primary))' : 'var(--muted-foreground)', position: 'relative', flexShrink: 0 }} onClick={() => setShowFilters(!showFilters)}>
+                <SlidersHorizontal style={{ height: isMobile ? 20 : 16, width: isMobile ? 20 : 16 }} />
+                {activeFiltersCount > 0 && <Badge variant="destructive" sx={{ position: 'absolute', top: -4, right: -4, height: 20, width: 20, p: 0, fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {activeFiltersCount}
                   </Badge>}
               </Button>
@@ -307,8 +307,8 @@ export const UniversalSearchBar = () => {
           </div>
         </PopoverTrigger>
         
-        <PopoverContent className={`${isMobile ? 'w-[calc(100vw-2rem)]' : 'w-[600px]'} p-0 z-50 bg-background/95 backdrop-blur-sm border shadow-xl`} align="start">
-          <Command shouldFilter={false} className="bg-transparent">
+        <PopoverContent style={{ width: isMobile ? 'calc(100vw - 2rem)' : 600, padding: 0, zIndex: 50, backgroundColor: 'rgba(var(--background-rgb), 0.95)', backdropFilter: 'blur(4px)', border: '1px solid', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)' }} align="start">
+          <Command shouldFilter={false} sx={{ bgcolor: 'transparent' }}>
             {showFilters && (
               <>
                 <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
@@ -316,23 +316,23 @@ export const UniversalSearchBar = () => {
               </>
             )}
             
-            <CommandList className="max-h-96">
+            <CommandList sx={{ maxHeight: 384 }}>
               {!query && recentSearches.length > 0 && <>
                   <CommandGroup heading="Recent searches">
-                    {recentSearches.map((search, index) => <CommandItem key={index} onSelect={() => handleRecentSearch(search)} className="cursor-pointer">
-                        <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span className="flex-1">{search}</span>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 ml-2" onClick={e => {
+                    {recentSearches.map((search, index) => <CommandItem key={index} onSelect={() => handleRecentSearch(search)} sx={{ cursor: 'pointer' }}>
+                        <Clock style={{ height: 16, width: 16, marginRight: 8, color: 'var(--muted-foreground)' }} />
+                        <span sx={{ flex: 1 }}>{search}</span>
+                        <Button variant="ghost" size="sm" sx={{ height: 24, width: 24, p: 0, ml: 1 }} onClick={e => {
                     e.stopPropagation();
                     const updated = recentSearches.filter((_, i) => i !== index);
                     setRecentSearches(updated);
                     localStorage.setItem('recent-searches', JSON.stringify(updated));
                   }}>
-                          <X className="h-3 w-3" />
+                          <X style={{ height: 12, width: 12 }} />
                         </Button>
                       </CommandItem>)}
-                    <CommandItem onSelect={clearRecentSearches} className="cursor-pointer text-muted-foreground">
-                      <X className="h-4 w-4 mr-2" />
+                    <CommandItem onSelect={clearRecentSearches} sx={{ cursor: 'pointer', color: 'text.secondary' }}>
+                      <X style={{ height: 16, width: 16, marginRight: 8 }} />
                       Clear recent searches
                     </CommandItem>
                   </CommandGroup>
@@ -352,18 +352,18 @@ export const UniversalSearchBar = () => {
                         <CommandItem
                           key={`${suggestion.type}-${suggestion.id}`}
                           onSelect={() => handleSelectSuggestion(suggestion)}
-                          className="cursor-pointer hover:bg-muted/50 transition-colors p-3"
+                          sx={{ cursor: 'pointer', transition: 'background-color 0.2s', p: 1.5, '&:hover': { bgcolor: 'action.hover' } }}
                         >
-                          <Icon className="h-4 w-4 mr-3 text-muted-foreground flex-shrink-0" />
-                          <div className="flex flex-col items-start flex-1 min-w-0">
-                            <span className="font-medium text-sm truncate w-full">{displayName}</span>
+                          <Icon style={{ height: 16, width: 16, marginRight: 12, color: 'var(--muted-foreground)', flexShrink: 0 }} />
+                          <div sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
+                            <span sx={{ fontWeight: 500, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{displayName}</span>
                             {subtitle && (
-                              <span className="text-xs text-muted-foreground truncate w-full">{subtitle}</span>
+                              <span sx={{ fontSize: '0.75rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{subtitle}</span>
                             )}
                           </div>
                           <Badge 
                             variant="outline" 
-                            className="ml-2 text-xs capitalize bg-background/50 border-muted flex-shrink-0"
+                            sx={{ ml: 1, fontSize: '0.75rem', textTransform: 'capitalize', bgcolor: 'rgba(var(--background-rgb), 0.5)', borderColor: 'divider', flexShrink: 0 }}
                           >
                             {suggestion.type}
                           </Badge>
@@ -381,51 +381,51 @@ export const UniversalSearchBar = () => {
               acc[result.type].push(result);
               return acc;
             }, {} as Record<string, SearchResult[]>)).map(([type, typeResults]) => <CommandGroup key={type} heading={contentTypeLabels[type as keyof typeof contentTypeLabels]}>
-                  {typeResults.map(result => <CommandItem key={`${result.type}-${result.objectID}`} onSelect={() => handleSelectResult(result)} className="cursor-pointer p-3">
-                      <div className="flex items-start gap-3 w-full">
-                        <div className="flex-shrink-0 mt-1">
+                  {typeResults.map(result => <CommandItem key={`${result.type}-${result.objectID}`} onSelect={() => handleSelectResult(result)} sx={{ cursor: 'pointer', p: 1.5 }}>
+                      <div sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, width: '100%' }}>
+                        <div sx={{ flexShrink: 0, mt: 0.5 }}>
                           {getResultIcon(result.type)}
                         </div>
-                        {result.imageUrl && <div className="flex-shrink-0">
-                            <img src={result.imageUrl} alt={result.title} className="w-12 h-12 object-cover rounded" />
+                        {result.imageUrl && <div sx={{ flexShrink: 0 }}>
+                            <img src={result.imageUrl} alt={result.title} sx={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 1 }} />
                           </div>}
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm truncate">{result.title}</div>
-                          {result.description && <div className="text-xs text-muted-foreground line-clamp-1">
+                        <div sx={{ flex: 1, minWidth: 0 }}>
+                          <div sx={{ fontWeight: 500, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{result.title}</div>
+                          {result.description && <div sx={{ fontSize: '0.75rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {result.description}
                             </div>}
-                          <div className="text-xs text-muted-foreground">
+                          <div sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                             {formatResultSubtitle(result)}
                           </div>
                         </div>
-                        {result.rating && <div className="flex-shrink-0 text-xs text-muted-foreground">
+                        {result.rating && <div sx={{ flexShrink: 0, fontSize: '0.75rem', color: 'text.secondary' }}>
                             ⭐ {result.rating}
                           </div>}
                       </div>
                     </CommandItem>)}
                 </CommandGroup>)}
 
-              {suggestions.length === 0 && searchResults.length === 0 && query.length >= 2 && !loading && !suggestionsLoading && <CommandEmpty className="py-6 text-center text-muted-foreground">
-                  <div className="flex flex-col items-center gap-2">
-                    <Search className="h-8 w-8 opacity-50" />
+              {suggestions.length === 0 && searchResults.length === 0 && query.length >= 2 && !loading && !suggestionsLoading && <CommandEmpty sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
+                  <div sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                    <Search style={{ height: 32, width: 32, opacity: 0.5 }} />
                     <p>No results found for "{query}"</p>
-                    <p className="text-xs">Try different keywords or adjust your filters</p>
+                    <p sx={{ fontSize: '0.75rem' }}>Try different keywords or adjust your filters</p>
                   </div>
                 </CommandEmpty>}
 
-              {(loading || suggestionsLoading) && <div className="py-6 text-center text-muted-foreground">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-                    <p className="text-sm">Searching...</p>
+              {(loading || suggestionsLoading) && <div sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
+                  <div sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                    <div sx={{ animation: 'spin 1s linear infinite', height: 24, width: 24, border: 2, borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%' }} />
+                    <p sx={{ fontSize: '0.875rem' }}>Searching...</p>
                   </div>
                 </div>}
 
               {/* Search Action */}
               {query && <>
                   <CommandSeparator />
-                  <div className="p-3">
-                    <Button onClick={() => handleSearch()} className="w-full bg-primary hover:opacity-90 text-primary-foreground" size="sm">
-                      <Search className="h-4 w-4 mr-2" />
+                  <div sx={{ p: 1.5 }}>
+                    <Button onClick={() => handleSearch()} sx={{ width: '100%', bgcolor: 'primary.main', color: 'primary.contrastText', '&:hover': { opacity: 0.9 } }} size="sm">
+                      <Search style={{ height: 16, width: 16, marginRight: 8 }} />
                       Search for "{query.length > 20 ? query.slice(0, 20) + '...' : query}"
                     </Button>
                   </div>

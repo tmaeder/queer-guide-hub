@@ -19,6 +19,10 @@ import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
 import { CurrentWeather } from "@/components/weather/CurrentWeather";
 import { PageLoading, InlineLoading } from "@/components/ui/loading";
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
 type CityWithCountry = {
   id: string;
   name: string;
@@ -172,390 +176,390 @@ export default function CityDetail() {
   };
   const renderLGBTRating = () => {
     if (!city?.lgbt_friendly_rating) return null;
-    return <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">LGBTQ+ Friendly:</span>
-        <div className="flex">
+    return <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>LGBTQ+ Friendly:</Typography>
+        <Box sx={{ display: 'flex' }}>
           {Array.from({
           length: 5
-        }, (_, i) => <Star key={i} className={`h-4 w-4 ${i < city.lgbt_friendly_rating! ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />)}
-        </div>
-        <span className="text-sm text-muted-foreground">
+        }, (_, i) => <Star key={i} style={{ height: 16, width: 16, ...(i < city.lgbt_friendly_rating! ? { fill: 'currentColor', color: 'var(--primary)' } : { color: 'var(--muted-foreground)' }) }} />)}
+        </Box>
+        <Typography component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
           ({city.lgbt_friendly_rating}/5)
-        </span>
-      </div>;
+        </Typography>
+      </Box>;
   };
   if (loading) {
     return <PageLoading text="Loading city details..." />;
   }
   if (!city) {
-    return <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">City Not Found</h1>
+    return <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>City Not Found</Typography>
             <Button onClick={() => navigate('/directory')}>Back to Directory</Button>
-          </div>
-        </div>
-      </div>;
+          </Box>
+        </Box>
+      </Box>;
   }
-  return <div className="container mx-auto px-4 py-8 max-w-6xl">
+  return <Box sx={{ maxWidth: 1152, mx: 'auto', px: 2, py: 4 }}>
       {/* Header */}
-      <div className="mb-8">
-        <Link to="/places" className="inline-flex items-center text-muted-foreground hover:text-primary mb-6">
-          <ArrowLeft className="h-4 w-4 mr-2" />
+      <Box sx={{ mb: 4 }}>
+        <Link to="/places" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--muted-foreground)', marginBottom: 24 }}>
+          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
           Back to Places
         </Link>
-        
+
         {/* Hero Section */}
-        {imageUrl && <div className="relative mb-8">
-            <div className="aspect-[21/9] rounded-2xl overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20">
-              <img src={imageUrl} alt={city.name} className="w-full h-full object-cover" onError={e => {
+        {imageUrl && <Box sx={{ position: 'relative', mb: 4 }}>
+            <Box sx={{ aspectRatio: '21/9', borderRadius: 4, overflow: 'hidden', background: 'linear-gradient(to right, rgba(var(--primary-rgb), 0.2), rgba(var(--accent-rgb), 0.2))' }}>
+              <Box component="img" src={imageUrl} alt={city.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
             const target = e.target as HTMLImageElement;
             target.style.display = 'none';
           }} />
-            </div>
-          </div>}
+            </Box>
+          </Box>}
 
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-          <div className="flex-1">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  {city.countries?.flag_emoji && <span className="text-4xl">{city.countries.flag_emoji}</span>}  
-                  <h1 className="text-4xl font-bold">{city.name}</h1>
-                </div>
-                <p className="text-xl text-muted-foreground mb-4">
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: { lg: 'flex-start' }, justifyContent: { lg: 'space-between' }, gap: 3 }}>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                  {city.countries?.flag_emoji && <Typography component="span" sx={{ fontSize: '2.25rem' }}>{city.countries.flag_emoji}</Typography>}
+                  <Typography variant="h3" sx={{ fontWeight: 700 }}>{city.name}</Typography>
+                </Box>
+                <Typography sx={{ fontSize: '1.25rem', color: 'text.secondary', mb: 2 }}>
                   {city.region_name && `${city.region_name}, `}{city.countries?.name}
-                </p>
-                <div className="flex items-center gap-3 mb-4">
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
                   {city.is_capital && <Badge variant="secondary">
-                      <Building className="h-3 w-3 mr-1" />
+                      <Building style={{ height: 12, width: 12, marginRight: 4 }} />
                       Capital City
                     </Badge>}
                   {city.is_major_city && <Badge variant="outline">
-                      <MapPin className="h-3 w-3 mr-1" />
+                      <MapPin style={{ height: 12, width: 12, marginRight: 4 }} />
                       Major City
                     </Badge>}
                   {renderLGBTRating()}
-                </div>
-              </div>
-              
+                </Box>
+              </Box>
+
               {/* Current Weather in Header */}
               {city.latitude && city.longitude && (
-                <div className="flex-shrink-0">
-                  <CurrentWeather 
-                    latitude={city.latitude} 
-                    longitude={city.longitude} 
+                <Box sx={{ flexShrink: 0 }}>
+                  <CurrentWeather
+                    latitude={city.latitude}
+                    longitude={city.longitude}
                     cityName={city.name}
                   />
-                </div>
+                </Box>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className="flex gap-2">
+          <Box sx={{ display: 'flex', gap: 1 }}>
             <Button variant="outline" onClick={handleFavoriteToggle}>
-              <Heart className={`h-4 w-4 mr-2 ${isFavorited(city.id) ? 'fill-current text-primary' : ''}`} />
+              <Heart style={{ height: 16, width: 16, marginRight: 8, ...(isFavorited(city.id) ? { fill: 'currentColor', color: 'var(--primary)' } : {}) }} />
               {isFavorited(city.id) ? 'Favorited' : 'Favorite'}
             </Button>
             {city.official_website && <Button variant="outline" asChild>
                 <a href={city.official_website} target="_blank" rel="noopener noreferrer">
-                  <Globe className="h-4 w-4 mr-2" />
+                  <Globe style={{ height: 16, width: 16, marginRight: 8 }} />
                   Website
                 </a>
               </Button>}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
-      <div className="w-full">
+      <Box sx={{ width: '100%' }}>
         {/* Main Content */}
-        <div className="space-y-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Description Card */}
           {city.description && <Card>
               <CardHeader>
                 <CardTitle>About {city.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground leading-relaxed">{city.description}</p>
+                <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>{city.description}</Typography>
               </CardContent>
             </Card>}
 
           {/* Enhanced Tabs */}
-          <Tabs defaultValue="overview" className="w-full space-y-6">
-            <TabsList className="grid w-full grid-cols-5 bg-muted/50">
-              <TabsTrigger value="overview" className="text-sm">
-                <Info className="h-4 w-4 mr-2" />
+          <Tabs defaultValue="overview" style={{ width: '100%' }}>
+            <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(5, 1fr)', backgroundColor: 'rgba(var(--muted-rgb), 0.5)' }}>
+              <TabsTrigger value="overview" style={{ fontSize: '0.875rem' }}>
+                <Info style={{ height: 16, width: 16, marginRight: 8 }} />
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="travel" className="text-sm">
-                <Plane className="h-4 w-4 mr-2" />
+              <TabsTrigger value="travel" style={{ fontSize: '0.875rem' }}>
+                <Plane style={{ height: 16, width: 16, marginRight: 8 }} />
                 Travel
               </TabsTrigger>
-              <TabsTrigger value="news" className="text-sm">
-                <FileText className="h-4 w-4 mr-2" />
+              <TabsTrigger value="news" style={{ fontSize: '0.875rem' }}>
+                <FileText style={{ height: 16, width: 16, marginRight: 8 }} />
                 News
               </TabsTrigger>
-              <TabsTrigger value="venues" className="text-sm">
-                <Building className="h-4 w-4 mr-2" />
+              <TabsTrigger value="venues" style={{ fontSize: '0.875rem' }}>
+                <Building style={{ height: 16, width: 16, marginRight: 8 }} />
                 Venues
               </TabsTrigger>
-              <TabsTrigger value="events" className="text-sm">
-                <Calendar className="h-4 w-4 mr-2" />
+              <TabsTrigger value="events" style={{ fontSize: '0.875rem' }}>
+                <Calendar style={{ height: 16, width: 16, marginRight: 8 }} />
                 Events
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <TabsContent value="overview" style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
                 {/* Basic Information */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Info className="h-5 w-5 text-primary" />
+                    <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Info style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                       Basic Information
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    {city.population && <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Population</span>
-                        </div>
-                        <span className="font-bold">{city.population.toLocaleString()}</span>
-                      </div>}
-                    {city.founded_year && <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Founded</span>
-                        </div>
-                        <span className="font-bold">{city.founded_year}</span>
-                      </div>}
-                    {city.area_km2 && <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2">
-                          <Mountain className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Area</span>
-                        </div>
-                        <span className="font-bold">{city.area_km2} km²</span>
-                      </div>}
-                    {city.elevation_m && <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2">
-                          <Mountain className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Elevation</span>
-                        </div>
-                        <span className="font-bold">{city.elevation_m} m</span>
-                      </div>}
-                    {city.timezone && <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Timezone</span>
-                        </div>
-                        <span className="font-bold">{city.timezone}</span>
-                      </div>}
+                  <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {city.population && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Users style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Population</Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.population.toLocaleString()}</Typography>
+                      </Box>}
+                    {city.founded_year && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Calendar style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Founded</Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.founded_year}</Typography>
+                      </Box>}
+                    {city.area_km2 && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Mountain style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Area</Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.area_km2} km2</Typography>
+                      </Box>}
+                    {city.elevation_m && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Mountain style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Elevation</Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.elevation_m} m</Typography>
+                      </Box>}
+                    {city.timezone && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Clock style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Timezone</Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.timezone}</Typography>
+                      </Box>}
                   </CardContent>
                 </Card>
 
                 {/* Climate & Geography */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Thermometer className="h-5 w-5 text-primary" />
+                    <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Thermometer style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                       Climate & Geography
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    {city.climate_type && <div className="p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Thermometer className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Climate</span>
-                        </div>
-                        <span className="font-bold">{city.climate_type}</span>
-                      </div>}
-                    {city.latitude && city.longitude && <div className="p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2 mb-1">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Coordinates</span>
-                        </div>
-                        <span className="font-mono text-sm">{city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}</span>
-                      </div>}
-                    {city.best_time_to_visit && <div className="p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Best Time to Visit</span>
-                        </div>
-                        <span className="text-sm">{city.best_time_to_visit}</span>
-                      </div>}
+                  <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {city.climate_type && <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          <Thermometer style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Climate</Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.climate_type}</Typography>
+                      </Box>}
+                    {city.latitude && city.longitude && <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          <MapPin style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Coordinates</Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>{city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}</Typography>
+                      </Box>}
+                    {city.best_time_to_visit && <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          <Calendar style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Best Time to Visit</Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontSize: '0.875rem' }}>{city.best_time_to_visit}</Typography>
+                      </Box>}
                   </CardContent>
                 </Card>
 
                 {/* Contact Information */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Phone className="h-5 w-5 text-primary" />
+                    <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Phone style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                       Contact & Codes
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    {city.postal_codes && city.postal_codes.length > 0 && <div>
-                        <span className="text-sm font-medium mb-2 block">Postal Codes</span>
-                        <div className="flex flex-wrap gap-1">
-                          {city.postal_codes.slice(0, 3).map((code, index) => <Badge key={index} variant="outline" className="text-xs">{code}</Badge>)}
-                          {city.postal_codes.length > 3 && <Badge variant="outline" className="text-xs">+{city.postal_codes.length - 3} more</Badge>}
-                        </div>
-                      </div>}
-                    {city.area_codes && city.area_codes.length > 0 && <div>
-                        <span className="text-sm font-medium mb-2 block">Area Codes</span>
-                        <div className="flex flex-wrap gap-1">
-                          {city.area_codes.map((code, index) => <Badge key={index} variant="outline" className="text-xs">
-                              <Phone className="h-3 w-3 mr-1" />
+                  <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {city.postal_codes && city.postal_codes.length > 0 && <Box>
+                        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1, display: 'block' }}>Postal Codes</Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {city.postal_codes.slice(0, 3).map((code, index) => <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>{code}</Badge>)}
+                          {city.postal_codes.length > 3 && <Badge variant="outline" style={{ fontSize: '0.75rem' }}>+{city.postal_codes.length - 3} more</Badge>}
+                        </Box>
+                      </Box>}
+                    {city.area_codes && city.area_codes.length > 0 && <Box>
+                        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1, display: 'block' }}>Area Codes</Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {city.area_codes.map((code, index) => <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
+                              <Phone style={{ height: 12, width: 12, marginRight: 4 }} />
                               {code}
                             </Badge>)}
-                        </div>
-                      </div>}
-                    {city.major_airport_code && <div className="p-3 rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Plane className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">Major Airport</span>
-                        </div>
+                        </Box>
+                      </Box>}
+                    {city.major_airport_code && <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          <Plane style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Major Airport</Typography>
+                        </Box>
                         <Badge variant="outline">{city.major_airport_code}</Badge>
-                      </div>}
+                      </Box>}
                   </CardContent>
                 </Card>
-              </div>
+              </Box>
 
               {/* Demographics Section */}
               {city.demographics && Object.keys(city.demographics).length > 0 && <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5 text-primary" />
+                    <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Users style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                       Demographics & Population
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {Object.entries(city.demographics).map(([key, value]) => <div key={key} className="p-3 rounded-lg bg-muted/50">
-                          <span className="text-sm font-medium capitalize block mb-1">
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
+                      {Object.entries(city.demographics).map(([key, value]) => <Box key={key} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, textTransform: 'capitalize', display: 'block', mb: 0.5 }}>
                             {key.replace(/_/g, ' ')}
-                          </span>
-                          <span className="font-bold">{String(value)}</span>
-                        </div>)}
-                    </div>
+                          </Typography>
+                          <Typography component="span" sx={{ fontWeight: 700 }}>{String(value)}</Typography>
+                        </Box>)}
+                    </Box>
                   </CardContent>
                 </Card>}
 
               {/* Economy Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
                 {/* Economy Sectors */}
                 {city.economy_sectors && city.economy_sectors.length > 0 && <Card>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <DollarSign className="h-5 w-5 text-primary" />
+                      <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <DollarSign style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                         Economy Sectors
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {city.economy_sectors.map((sector, index) => <Badge key={index} variant="outline" className="text-xs">
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {city.economy_sectors.map((sector, index) => <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
                             {sector}
                           </Badge>)}
-                      </div>
+                      </Box>
                     </CardContent>
                   </Card>}
 
                 {/* Cost of Living */}
                 {city.cost_of_living && Object.keys(city.cost_of_living).length > 0 && <Card>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <DollarSign className="h-5 w-5 text-primary" />
+                      <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <DollarSign style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                         Cost of Living
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
-                        {Object.entries(city.cost_of_living).map(([key, value]) => <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                            <span className="text-sm font-medium capitalize">
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        {Object.entries(city.cost_of_living).map(([key, value]) => <Box key={key} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                            <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, textTransform: 'capitalize' }}>
                               {key.replace(/_/g, ' ')}
-                            </span>
-                            <span className="font-bold">{String(value)}</span>
-                          </div>)}
-                      </div>
+                            </Typography>
+                            <Typography component="span" sx={{ fontWeight: 700 }}>{String(value)}</Typography>
+                          </Box>)}
+                      </Box>
                     </CardContent>
                   </Card>}
-              </div>
+              </Box>
 
               {/* Universities */}
               {city.universities && city.universities.length > 0 && <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <GraduationCap className="h-5 w-5 text-primary" />
+                    <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <GraduationCap style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                       Universities & Education
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {city.universities.map((university, index) => <div key={index} className="p-3 rounded-lg bg-muted/50">
-                          <div className="flex items-center gap-2">
-                            <GraduationCap className="h-4 w-4 text-primary" />
-                            <span className="font-medium text-sm">{university}</span>
-                          </div>
-                        </div>)}
-                    </div>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 1.5 }}>
+                      {city.universities.map((university, index) => <Box key={index} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <GraduationCap style={{ height: 16, width: 16, color: 'var(--primary)' }} />
+                            <Typography component="span" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{university}</Typography>
+                          </Box>
+                        </Box>)}
+                    </Box>
                   </CardContent>
                 </Card>}
-              
+
               {/* Culture Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
                 {/* Notable Landmarks */}
                 {city.notable_landmarks && city.notable_landmarks.length > 0 && <Card>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Landmark className="h-5 w-5 text-primary" />
+                      <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Landmark style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                         Notable Landmarks
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid gap-3">
-                        {city.notable_landmarks.map((landmark, index) => <div key={index} className="p-3 rounded-lg bg-muted/50">
-                            <div className="flex items-center gap-2">
-                              <Landmark className="h-4 w-4 text-primary" />
-                              <span className="font-medium">{landmark}</span>
-                            </div>
-                          </div>)}
-                      </div>
+                      <Box sx={{ display: 'grid', gap: 1.5 }}>
+                        {city.notable_landmarks.map((landmark, index) => <Box key={index} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Landmark style={{ height: 16, width: 16, color: 'var(--primary)' }} />
+                              <Typography component="span" sx={{ fontWeight: 500 }}>{landmark}</Typography>
+                            </Box>
+                          </Box>)}
+                      </Box>
                     </CardContent>
                   </Card>}
 
                 {/* Sister Cities */}
                 {city.sister_cities && city.sister_cities.length > 0 && <Card>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Globe className="h-5 w-5 text-primary" />
+                      <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                         Sister Cities
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid gap-3">
-                        {city.sister_cities.map((sisterCity, index) => <div key={index} className="p-3 rounded-lg bg-muted/50">
-                            <div className="flex items-center gap-2">
-                              <Globe className="h-4 w-4 text-primary" />
-                              <span className="font-medium">{sisterCity}</span>
-                            </div>
-                          </div>)}
-                      </div>
+                      <Box sx={{ display: 'grid', gap: 1.5 }}>
+                        {city.sister_cities.map((sisterCity, index) => <Box key={index} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Globe style={{ height: 16, width: 16, color: 'var(--primary)' }} />
+                              <Typography component="span" sx={{ fontWeight: 500 }}>{sisterCity}</Typography>
+                            </Box>
+                          </Box>)}
+                      </Box>
                     </CardContent>
                   </Card>}
-              </div>
+              </Box>
 
               {/* Local Customs */}
               {city.local_customs && <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Info className="h-5 w-5 text-primary" />
+                    <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Info style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                       Local Customs & Culture
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">{city.local_customs}</p>
+                    <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>{city.local_customs}</Typography>
                   </CardContent>
                 </Card>}
 
@@ -565,140 +569,140 @@ export default function CityDetail() {
               {/* Quick Stats */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Info className="h-5 w-5 text-primary" />
+                  <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Info style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                     Quick Stats
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {city.population && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Population</span>
-                      <span className="font-bold">{city.population.toLocaleString()}</span>
-                    </div>}
-                  {city.countries?.currency && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Currency</span>
-                      <span className="font-bold">{city.countries.currency}</span>
-                    </div>}
-                  {city.timezone && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Timezone</span>
-                      <span className="font-bold">{city.timezone}</span>
-                    </div>}
-                  {city.major_airport_code && <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Major Airport</span>
+                <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {city.population && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Population</Typography>
+                      <Typography component="span" sx={{ fontWeight: 700 }}>{city.population.toLocaleString()}</Typography>
+                    </Box>}
+                  {city.countries?.currency && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Currency</Typography>
+                      <Typography component="span" sx={{ fontWeight: 700 }}>{city.countries.currency}</Typography>
+                    </Box>}
+                  {city.timezone && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Timezone</Typography>
+                      <Typography component="span" sx={{ fontWeight: 700 }}>{city.timezone}</Typography>
+                    </Box>}
+                  {city.major_airport_code && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Major Airport</Typography>
                       <Badge variant="outline">{city.major_airport_code}</Badge>
-                    </div>}
-                  {city.best_time_to_visit && <div>
-                      <span className="text-sm text-muted-foreground block mb-1">Best Time to Visit</span>
-                      <p className="text-sm font-medium">{city.best_time_to_visit}</p>
-                    </div>}
+                    </Box>}
+                  {city.best_time_to_visit && <Box>
+                      <Typography component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary', display: 'block', mb: 0.5 }}>Best Time to Visit</Typography>
+                      <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{city.best_time_to_visit}</Typography>
+                    </Box>}
                 </CardContent>
               </Card>
             </TabsContent>
 
 
-            <TabsContent value="travel">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <TabsContent value="travel" style={{ marginTop: 24 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
                 {/* Airport Information */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Plane className="h-5 w-5 text-primary" />
+                    <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Plane style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                       Airports
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {city.major_airport_code && <div className="p-3 rounded-lg bg-muted/50 mb-4">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Plane className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-medium">Major Airport</span>
-                        </div>
-                        <span className="font-bold">{city.major_airport_code}</span>
-                      </div>}
-                    {city.airport_codes && city.airport_codes.length > 0 && <div>
-                        <span className="text-sm font-medium mb-3 block">All Airport Codes</span>
-                        <div className="flex flex-wrap gap-2">
+                    {city.major_airport_code && <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover', mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          <Plane style={{ height: 16, width: 16, color: 'var(--primary)' }} />
+                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Major Airport</Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.major_airport_code}</Typography>
+                      </Box>}
+                    {city.airport_codes && city.airport_codes.length > 0 && <Box>
+                        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1.5, display: 'block' }}>All Airport Codes</Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                           {city.airport_codes.map((code, index) => <Badge key={index} variant="outline">
-                              <Plane className="h-3 w-3 mr-1" />
+                              <Plane style={{ height: 12, width: 12, marginRight: 4 }} />
                               {code}
                             </Badge>)}
-                        </div>
-                      </div>}
+                        </Box>
+                      </Box>}
                   </CardContent>
                 </Card>
 
                 {/* Transportation */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Bus className="h-5 w-5 text-primary" />
+                    <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Bus style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                       Transportation
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {city.transportation_info && Object.keys(city.transportation_info).length > 0 ? <div className="space-y-3">
-                        {Object.entries(city.transportation_info).map(([key, value]) => <div key={key} className="p-3 rounded-lg bg-muted/50">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Bus className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm font-medium capitalize">{key.replace(/_/g, ' ')}</span>
-                            </div>
-                            <span className="text-sm">{String(value)}</span>
-                          </div>)}
-                      </div> : <p className="text-muted-foreground text-center py-4">No transportation information available.</p>}
+                    {city.transportation_info && Object.keys(city.transportation_info).length > 0 ? <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        {Object.entries(city.transportation_info).map(([key, value]) => <Box key={key} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                              <Bus style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                              <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, textTransform: 'capitalize' }}>{key.replace(/_/g, ' ')}</Typography>
+                            </Box>
+                            <Typography component="span" sx={{ fontSize: '0.875rem' }}>{String(value)}</Typography>
+                          </Box>)}
+                      </Box> : <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 2 }}>No transportation information available.</Typography>}
                   </CardContent>
                 </Card>
-              </div>
+              </Box>
             </TabsContent>
 
 
-            <TabsContent value="venues">
+            <TabsContent value="venues" style={{ marginTop: 24 }}>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building className="h-5 w-5 text-primary" />
+                  <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Building style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                     Popular Venues
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {venuesLoading ? <InlineLoading text="Loading venues..." size="md" /> : venues.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {venuesLoading ? <InlineLoading text="Loading venues..." size="md" /> : venues.length > 0 ? <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
                       {venues.map(venue => <VenueCard key={venue.id} venue={venue} />)}
-                    </div> : <p className="text-muted-foreground text-center py-8">No venues available for this city.</p>}
+                    </Box> : <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>No venues available for this city.</Typography>}
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="news">
+            <TabsContent value="news" style={{ marginTop: 24 }}>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-primary" />
+                  <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <FileText style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                     Latest News
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {newsLoading ? <InlineLoading text="Loading news..." size="md" /> : articles.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {newsLoading ? <InlineLoading text="Loading news..." size="md" /> : articles.length > 0 ? <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
                       {articles.slice(0, 6).map(article => <NewsCard key={article.id} article={article} />)}
-                    </div> : <p className="text-muted-foreground text-center py-8">No news available for this city.</p>}
+                    </Box> : <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>No news available for this city.</Typography>}
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="events">
+            <TabsContent value="events" style={{ marginTop: 24 }}>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-primary" />
+                  <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Calendar style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                     Upcoming Events
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {eventsLoading ? <InlineLoading text="Loading events..." size="md" /> : events.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {eventsLoading ? <InlineLoading text="Loading events..." size="md" /> : events.length > 0 ? <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
                       {events.map(event => <EventCard key={event.id} event={event} />)}
-                    </div> : <p className="text-muted-foreground text-center py-8">No events available for this city.</p>}
+                    </Box> : <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>No events available for this city.</Typography>}
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
-    </div>;
+        </Box>
+      </Box>
+    </Box>;
 }
