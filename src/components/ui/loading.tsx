@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import React from "react";
 
 interface LoadingProps {
   size?: "sm" | "md" | "lg";
@@ -6,38 +6,31 @@ interface LoadingProps {
   className?: string;
 }
 
-export function Loading({ size = "md", text, className }: LoadingProps) {
-  const sizeClasses = {
-    sm: "h-6 w-6",
-    md: "h-8 w-8", 
-    lg: "h-12 w-12"
-  };
+const dotPixels = { sm: 6, md: 8, lg: 12 } as const;
+const spinnerPixels = { sm: 16, md: 24, lg: 32 } as const;
 
-  const dotSizes = {
-    sm: "h-1.5 w-1.5",
-    md: "h-2 w-2",
-    lg: "h-3 w-3"
-  };
+export function Loading({ size = "md", text }: LoadingProps) {
+  const d = dotPixels[size];
 
   return (
-    <div className={cn("flex flex-col items-center justify-center gap-4", className)}>
-      <div className="flex items-center gap-1">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className={cn(
-              "rounded-full bg-primary animate-pulse",
-              dotSizes[size]
-            )}
             style={{
+              width: d,
+              height: d,
+              borderRadius: '50%',
+              backgroundColor: '#333333',
+              animation: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               animationDelay: `${i * 0.2}s`,
-              animationDuration: "1s"
             }}
           />
         ))}
       </div>
       {text && (
-        <p className="text-sm text-muted-foreground animate-fade-in">
+        <p style={{ fontSize: '0.875rem', color: '#666666', margin: 0 }}>
           {text}
         </p>
       )}
@@ -50,20 +43,19 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-export function LoadingSpinner({ size = "md", className }: LoadingSpinnerProps) {
-  const sizeClasses = {
-    sm: "h-4 w-4",
-    md: "h-6 w-6",
-    lg: "h-8 w-8"
-  };
+export function LoadingSpinner({ size = "md" }: LoadingSpinnerProps) {
+  const s = spinnerPixels[size];
 
   return (
     <div
-      className={cn(
-        "animate-spin rounded-full border-2 border-muted border-t-primary",
-        sizeClasses[size],
-        className
-      )}
+      style={{
+        width: s,
+        height: s,
+        borderRadius: '50%',
+        border: '2px solid #e5e5e5',
+        borderTopColor: '#333333',
+        animation: 'spin 1s linear infinite',
+      }}
     />
   );
 }
@@ -74,36 +66,48 @@ interface PageLoadingProps {
 
 export function PageLoading({ text = "Loading..." }: PageLoadingProps) {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center space-y-6 animate-fade-in">
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Main loading animation */}
-        <div className="relative">
-          <div className="flex items-center justify-center gap-2">
+        <div style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             {[0, 1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="h-3 w-3 rounded-full bg-primary animate-bounce"
                 style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  backgroundColor: '#333333',
+                  animation: 'bounce 0.8s ease-in-out infinite',
                   animationDelay: `${i * 0.1}s`,
-                  animationDuration: "0.8s"
                 }}
               />
             ))}
           </div>
-          {/* Subtle glow effect */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-8 w-20 bg-primary/20 rounded-full blur-sm animate-pulse" />
-          </div>
         </div>
-        
-        <div className="space-y-2">
-          <h2 className="text-lg font-semibold">{text}</h2>
-          <div className="flex items-center justify-center gap-1">
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <h2 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>{text}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
             <LoadingSpinner size="sm" />
-            <span className="text-sm text-muted-foreground ml-2">Please wait</span>
+            <span style={{ fontSize: '0.875rem', color: '#666666', marginLeft: 8 }}>Please wait</span>
           </div>
         </div>
       </div>
+
+      {/* Keyframes injected via style tag */}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -115,12 +119,12 @@ interface InlineLoadingProps {
 
 export function InlineLoading({ text = "Loading...", size = "md" }: InlineLoadingProps) {
   return (
-    <div className="flex items-center justify-center gap-3 py-8">
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '32px 0' }}>
       <LoadingSpinner size={size} />
-      <span className={cn(
-        "text-muted-foreground animate-fade-in",
-        size === "sm" ? "text-sm" : "text-base"
-      )}>
+      <span style={{
+        color: '#666666',
+        fontSize: size === "sm" ? '0.875rem' : '1rem',
+      }}>
         {text}
       </span>
     </div>

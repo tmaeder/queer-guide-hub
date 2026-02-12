@@ -142,7 +142,6 @@ export function ImageUpload({
 
       if (error) {
         console.error('Delete error:', error);
-        // Don't show error to user as file might already be deleted
       }
     } catch (error) {
       console.error('Error parsing URL for deletion:', error);
@@ -157,42 +156,65 @@ export function ImageUpload({
   };
 
   return (
-    <div className="space-y-2">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {label && (
-        <Label htmlFor={id} className="flex items-center gap-2">
-          <ImageIcon className="h-4 w-4" />
+        <Label htmlFor={id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <ImageIcon style={{ height: 16, width: 16 }} />
           {label}
-          {required && <span className="text-destructive">*</span>}
+          {required && <span style={{ color: '#dc2626' }}>*</span>}
         </Label>
       )}
-      
+
       <input
         ref={fileInputRef}
         type="file"
         accept={accept}
         onChange={handleFileSelect}
-        className="hidden"
+        style={{ display: 'none' }}
         id={id}
       />
 
       {preview ? (
-        <Card className="relative">
-          <CardContent className="p-4">
-            <div className="relative group">
+        <Card style={{ position: 'relative' }}>
+          <CardContent style={{ padding: 16 }}>
+            <div
+              style={{ position: 'relative' }}
+              onMouseEnter={(e) => {
+                const overlay = e.currentTarget.querySelector('[data-overlay]') as HTMLElement;
+                if (overlay) overlay.style.opacity = '1';
+              }}
+              onMouseLeave={(e) => {
+                const overlay = e.currentTarget.querySelector('[data-overlay]') as HTMLElement;
+                if (overlay) overlay.style.opacity = '0';
+              }}
+            >
               <img
                 src={preview}
                 alt="Preview"
-                className="w-full h-48 object-cover rounded-md"
+                style={{ width: '100%', height: 192, objectFit: 'cover', borderRadius: 6 }}
               />
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
-                <div className="flex gap-2">
+              <div
+                data-overlay=""
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  opacity: 0,
+                  transition: 'opacity 0.2s',
+                  borderRadius: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <div style={{ display: 'flex', gap: 8 }}>
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={handleClick}
                     disabled={uploading}
                   >
-                    <Upload className="h-4 w-4 mr-2" />
+                    <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
                     Replace
                   </Button>
                   <Button
@@ -200,7 +222,7 @@ export function ImageUpload({
                     size="sm"
                     onClick={handleRemove}
                   >
-                    <X className="h-4 w-4 mr-2" />
+                    <X style={{ height: 16, width: 16, marginRight: 8 }} />
                     Remove
                   </Button>
                 </div>
@@ -209,23 +231,23 @@ export function ImageUpload({
           </CardContent>
         </Card>
       ) : (
-        <Card 
-          className="border-dashed cursor-pointer hover:bg-muted/50 transition-colors"
+        <Card
+          style={{ borderStyle: 'dashed', cursor: 'pointer', transition: 'background-color 0.2s' }}
           onClick={handleClick}
         >
-          <CardContent className="p-8 text-center">
+          <CardContent style={{ padding: 32, textAlign: 'center' }}>
             {uploading ? (
-              <div className="flex flex-col items-center gap-2">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Uploading...</p>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <Loader2 style={{ height: 32, width: 32, color: '#999999', animation: 'spin 1s linear infinite' }} />
+                <p style={{ fontSize: '0.875rem', color: '#999999', margin: 0 }}>Uploading...</p>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-2">
-                <Upload className="h-8 w-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <Upload style={{ height: 32, width: 32, color: '#999999' }} />
+                <p style={{ fontSize: '0.875rem', color: '#999999', margin: 0 }}>
                   Click to upload an image
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p style={{ fontSize: '0.75rem', color: '#999999', margin: 0 }}>
                   Max size: {maxSize}MB
                 </p>
               </div>
@@ -233,6 +255,10 @@ export function ImageUpload({
           </CardContent>
         </Card>
       )}
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }

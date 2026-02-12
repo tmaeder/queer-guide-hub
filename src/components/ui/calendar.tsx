@@ -2,61 +2,177 @@ import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
-
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
+const calendarStyles: Record<string, React.CSSProperties> = {
+  months: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  },
+  month: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  },
+  caption: {
+    display: 'flex',
+    justifyContent: 'center',
+    paddingTop: 4,
+    position: 'relative',
+    alignItems: 'center',
+  },
+  caption_label: {
+    fontSize: '0.875rem',
+    fontWeight: 500,
+  },
+  nav: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+  },
+  nav_button: {
+    height: 28,
+    width: 28,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    border: '1px solid #e5e5e5',
+    background: 'transparent',
+    padding: 0,
+    opacity: 0.5,
+    cursor: 'pointer',
+  },
+  nav_button_previous: {
+    position: 'absolute',
+    left: 4,
+  },
+  nav_button_next: {
+    position: 'absolute',
+    right: 4,
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+  },
+  head_row: {
+    display: 'flex',
+  },
+  head_cell: {
+    color: '#999999',
+    width: 36,
+    fontWeight: 400,
+    fontSize: '0.8rem',
+    textAlign: 'center',
+  },
+  row: {
+    display: 'flex',
+    width: '100%',
+    marginTop: 8,
+  },
+  cell: {
+    height: 36,
+    width: 36,
+    textAlign: 'center',
+    fontSize: '0.875rem',
+    padding: 0,
+    position: 'relative',
+  },
+  day: {
+    height: 36,
+    width: 36,
+    padding: 0,
+    fontWeight: 400,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    border: 'none',
+    background: 'transparent',
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+  },
+  day_selected: {
+    backgroundColor: '#333333',
+    color: '#ffffff',
+  },
+  day_today: {
+    backgroundColor: '#f5f5f5',
+    color: '#333333',
+    fontWeight: 600,
+  },
+  day_outside: {
+    color: '#999999',
+    opacity: 0.5,
+  },
+  day_disabled: {
+    color: '#999999',
+    opacity: 0.5,
+  },
+  day_range_middle: {
+    backgroundColor: '#f5f5f5',
+    color: '#333333',
+  },
+  day_hidden: {
+    visibility: 'hidden',
+  },
+};
+
 function Calendar({
-  className,
-  classNames,
   showOutsideDays = true,
+  style,
+  styles: propStyles,
   ...props
 }: CalendarProps) {
   return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
-        caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
-        nav: "space-x-1 flex items-center",
-        nav_button: cn(
-          buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-        ),
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
-        head_row: "flex",
-        head_cell:
-          "text-muted-foreground w-9 font-normal text-[0.8rem]",
-        row: "flex w-full mt-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent focus-within:relative focus-within:z-20",
-        day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
-        ),
-        day_range_end: "day-range-end",
-        day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
-        day_outside:
-          "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "aria-selected:bg-accent aria-selected:text-accent-foreground",
-        day_hidden: "invisible",
-        ...classNames,
-      }}
-      components={{
-        IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
-      }}
-      {...props}
-    />
+    <>
+      <DayPicker
+        showOutsideDays={showOutsideDays}
+        style={{ padding: 12, ...style }}
+        styles={{
+          ...calendarStyles,
+          ...propStyles,
+        }}
+        components={{
+          IconLeft: ({ ..._props }) => <ChevronLeft style={{ height: 16, width: 16 }} />,
+          IconRight: ({ ..._props }) => <ChevronRight style={{ height: 16, width: 16 }} />,
+        }}
+        {...props}
+      />
+      <style>{`
+        .rdp-day:hover:not([disabled]):not(.rdp-day_selected) {
+          background-color: #f5f5f5;
+        }
+        .rdp-day_selected {
+          background-color: #333333 !important;
+          color: #ffffff !important;
+        }
+        .rdp-day_selected:hover {
+          background-color: #333333 !important;
+          color: #ffffff !important;
+        }
+        .rdp-day_selected:focus {
+          background-color: #333333 !important;
+          color: #ffffff !important;
+        }
+        .rdp-nav_button:hover {
+          opacity: 1;
+        }
+        .rdp-day_range_start {
+          background-color: #333333 !important;
+          color: #ffffff !important;
+        }
+        .rdp-day_range_end {
+          background-color: #333333 !important;
+          color: #ffffff !important;
+        }
+        .rdp-day_range_middle {
+          background-color: #f5f5f5 !important;
+          color: #333333 !important;
+        }
+      `}</style>
+    </>
   );
 }
 Calendar.displayName = "Calendar";
