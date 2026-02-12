@@ -110,10 +110,10 @@ const App = () => {
                <Box sx={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
                  <Suspense fallback={null}>
                    <Aurora
-                     colorStops={["#A855F7", "#EC4899", "#6366F1"]}
-                     blend={0.3}
+                     colorStops={["#EF4444", "#22C55E", "#8B5CF6"]}
+                     blend={0.35}
                      amplitude={1.0}
-                     speed={0.3}
+                     speed={0.25}
                    />
                  </Suspense>
                </Box>

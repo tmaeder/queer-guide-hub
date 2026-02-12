@@ -12,6 +12,13 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 
+const decodeHtmlEntities = (text: string) => {
+  if (typeof document === 'undefined') return text;
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = text;
+  return textarea.value;
+};
+
 const LatestNewsSlider = React.memo(() => {
   const {
     articles,
@@ -114,7 +121,7 @@ const LatestNewsSlider = React.memo(() => {
 
 
                     <Typography variant={isMobile ? 'body1' : 'subtitle1'} sx={{ fontWeight: 600, mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', transition: 'color 0.2s' }}>
-                      {article.title}
+                      {decodeHtmlEntities(article.title)}
                     </Typography>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>

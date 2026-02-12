@@ -127,10 +127,10 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
           </Box>
         </Box>
       ) : (
-        <Box sx={{ position: 'relative', height: 224, bgcolor: 'primary.main', opacity: 0.1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ position: 'relative', height: 224, bgcolor: 'grey.100', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Box sx={{ width: 64, height: 64, mx: 'auto', bgcolor: 'primary.main', opacity: 0.2, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Calendar style={{ height: 32, width: 32, color: 'var(--primary)' }} />
+            <Box sx={{ width: 64, height: 64, mx: 'auto', bgcolor: 'grey.200', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Calendar style={{ height: 32, width: 32, color: '#666666' }} />
             </Box>
             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
               {event.featured && (

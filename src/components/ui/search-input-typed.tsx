@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import TextType from "./TextType";
-import { cn } from "@/lib/utils";
 
 interface SearchInputTypedProps extends React.InputHTMLAttributes<HTMLInputElement> {
   placeholders: string[];
@@ -23,6 +22,7 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
     onValueChange,
     value,
     onChange,
+    style: externalStyle,
     ...props
   }, ref) => {
     const [inputValue, setInputValue] = useState(value || "");
@@ -60,14 +60,15 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
     const showTypedPlaceholder = !inputValue && !isFocused;
 
     return (
-      <div className="relative">
+      <div style={{ position: 'relative' }}>
         <Input
           ref={inputRef}
-          className={cn(
-            "relative z-10 bg-transparent",
-            showTypedPlaceholder && "placeholder:text-transparent",
-            className
-          )}
+          style={{
+            position: 'relative',
+            zIndex: 10,
+            background: 'transparent',
+            ...externalStyle,
+          }}
           value={inputValue}
           onChange={handleChange}
           onFocus={handleFocus}
@@ -75,9 +76,17 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
           placeholder={showTypedPlaceholder ? "" : props.placeholder || "Search..."}
           {...props}
         />
-        
+
         {showTypedPlaceholder && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-0 text-muted-foreground">
+          <div style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+            zIndex: 0,
+            color: '#999999',
+          }}>
             <TextType
               text={placeholders}
               typingSpeed={typingSpeed}
@@ -86,7 +95,7 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
               cursorCharacter={cursorCharacter}
               loop={true}
               as="span"
-              className="text-sm"
+              style={{ fontSize: '0.875rem' }}
             />
           </div>
         )}

@@ -61,40 +61,34 @@ export const NewsCard = ({
     onViewArticle?.(article.id);
     window.open(article.url, '_blank');
   };
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      'rights-legal': 'hsl(var(--destructive))',
-      'health-wellness': 'hsl(var(--success))',
-      'politics': 'hsl(var(--primary))',
-      'culture-arts': 'hsl(var(--secondary))',
-      'business-economy': 'hsl(var(--warning))',
-      'education': 'hsl(var(--info))',
-      'community': 'hsl(var(--accent))',
-      'international': 'hsl(var(--muted))',
-      'technology': 'hsl(var(--primary))',
-      'sports': 'hsl(var(--warning))'
-    };
-    return colors[category] || 'hsl(var(--muted))';
+  const decodeHtmlEntities = (text: string) => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+  };
+
+  const getCategoryColor = (_category: string) => {
+    return '#555555';
   };
   return <Card style={{ boxShadow: 'var(--shadow-card)', transition: 'all 0.3s', borderColor: 'rgba(var(--border-rgb, 0,0,0), 0.5)' }}>
       <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {article.image_url && <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
             <img src={article.image_url} alt={article.title} style={{ width: '100%', height: 192, objectFit: 'cover', transition: 'transform 0.3s' }} />
-            {article.is_featured && <Badge style={{ position: 'absolute', top: 8, left: 8, backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}>
+            {article.is_featured && <Badge style={{ position: 'absolute', top: 8, left: 8, backgroundColor: '#333333', color: '#ffffff' }}>
                 Featured
               </Badge>}
           </Box>}
 
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5 }}>
           <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.125rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {article.title}
+            {decodeHtmlEntities(article.title)}
           </Typography>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Badge style={{
           backgroundColor: getCategoryColor(article.category),
-          color: 'hsl(var(--primary-foreground))'
+          color: '#ffffff'
         }}>
             {article.category.replace('-', ' ')}
           </Badge>

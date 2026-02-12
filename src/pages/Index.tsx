@@ -30,7 +30,7 @@ const Index = React.memo(() => {
     icon: MapPin,
     title: 'Venues',
     description: 'Find verified queer-friendly venues where you can be yourself',
-    color: 'primary.main',
+    color: 'text.primary',
     link: '/venues'
   }, {
     icon: Calendar,
@@ -42,13 +42,13 @@ const Index = React.memo(() => {
     icon: Store,
     title: 'Marketplace',
     description: 'Support queer-owned businesses and creators',
-    color: 'secondary.main',
+    color: 'text.primary',
     link: '/marketplace'
   }, {
     icon: Plane,
     title: 'Places',
     description: 'Explore queer-friendly cities and countries worldwide',
-    color: 'primary.main',
+    color: 'text.primary',
     link: '/places'
   }, {
     icon: Users,
@@ -60,7 +60,7 @@ const Index = React.memo(() => {
     icon: BookOpen,
     title: 'Resources',
     description: 'Learn about rights, culture, and community topics',
-    color: 'secondary.main',
+    color: 'text.primary',
     link: '/resources'
   }];
   const formatNumber = (num: number) => {
@@ -129,13 +129,11 @@ const Index = React.memo(() => {
                   <Card style={{ height: '100%' }}>
                     <CardContent style={{ padding: 20 }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, textAlign: 'center' }}>
-                        <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: 'primary.main', opacity: 0.1, position: 'relative' }}>
-                          <Box sx={{ bgcolor: 'transparent', p: 1.25, borderRadius: 2 }}>
-                            <Icon
-                              style={{ width: 24, height: 24 }}
-                              aria-hidden="true"
-                            />
-                          </Box>
+                        <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                          <Icon
+                            style={{ width: 24, height: 24, color: 'inherit' }}
+                            aria-hidden="true"
+                          />
                         </Box>
                         <Typography
                           variant="body2"
@@ -159,33 +157,34 @@ const Index = React.memo(() => {
       {/* Community Stats */}
       <Box component="section" sx={{ py: { xs: 6, md: 8 } }}>
         <Container maxWidth="lg">
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-              gap: { xs: 2, md: 4 },
-            }}
-          >
-            {stats.map((stat, index) => (
-              <Box key={index} sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 700,
-                    fontFamily: 'Montserrat, sans-serif',
-                    fontSize: { xs: '1.875rem', md: '2.25rem' },
-                    backgroundImage: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  {stat.number}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">{stat.label}</Typography>
+          <Card style={{ padding: 0 }}>
+            <CardContent style={{ padding: '32px 24px' }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+                  gap: { xs: 2, md: 4 },
+                }}
+              >
+                {stats.map((stat, index) => (
+                  <Box key={index} sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 700,
+                        fontFamily: 'Montserrat, sans-serif',
+                        fontSize: { xs: '1.875rem', md: '2.25rem' },
+                        color: 'text.primary',
+                      }}
+                    >
+                      {stat.number}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>{stat.label}</Typography>
+                  </Box>
+                ))}
               </Box>
-            ))}
-          </Box>
+            </CardContent>
+          </Card>
         </Container>
       </Box>
 

@@ -175,30 +175,30 @@ export default function News() {
   return <Box sx={{ minHeight: '100vh' }}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: { lg: 'center' }, justifyContent: { lg: 'space-between' }, gap: 3, mb: 4 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography variant="h3" sx={{ fontWeight: 700 }}>
-              News
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary">
-              Stay informed with the latest news and stories from the LGBTQ+ community worldwide
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Newspaper style={{ width: 16, height: 16 }} />
-                <Typography variant="body2" color="text.secondary">{articles.length} articles</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <TrendingUp style={{ width: 16, height: 16 }} />
-                <Typography variant="body2" color="text.secondary">{sources.length} sources</Typography>
+        <Card style={{ marginBottom: 24 }}>
+          <CardContent style={{ padding: '24px 32px' }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: { lg: 'center' }, justifyContent: { lg: 'space-between' }, gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 700 }}>
+                  News
+                </Typography>
+                <Typography variant="subtitle1" color="text.secondary">
+                  Stay informed with the latest news and stories from the LGBTQ+ community worldwide
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Newspaper style={{ width: 16, height: 16 }} />
+                    <Typography variant="body2" color="text.secondary">{articles.length} articles</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <TrendingUp style={{ width: 16, height: 16 }} />
+                    <Typography variant="body2" color="text.secondary">{sources.length} sources</Typography>
+                  </Box>
+                </Box>
               </Box>
             </Box>
-          </Box>
-
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
-
-          </Box>
-        </Box>
+          </CardContent>
+        </Card>
 
         {/* Quick Search & Controls */}
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2, mb: 3 }}>
