@@ -40,7 +40,6 @@ export function ModernAudioPlayer({
   autoplay = false,
   muted = false,
   controls = true,
-  className = '',
   onTimeUpdate,
   onEnded
 }: ModernAudioPlayerProps) {
@@ -57,7 +56,7 @@ export function ModernAudioPlayer({
     if (!audioRef.current || !audio.renditions.length) return;
 
     const audioElement = audioRef.current;
-    
+
     // Find renditions by preference: Opus > AAC > MP3
     const opusRendition = audio.renditions.find(r => r.codec === 'opus');
     const aacRendition = audio.renditions.find(r => r.codec === 'aac');
@@ -67,7 +66,7 @@ export function ModernAudioPlayer({
     while (audioElement.firstChild) {
       audioElement.removeChild(audioElement.firstChild);
     }
-    
+
     // Add sources in order of preference
     if (opusRendition && supportsCodec('opus')) {
       addSource(opusRendition, 'audio/webm; codecs=opus');
@@ -88,7 +87,7 @@ export function ModernAudioPlayer({
 
     function supportsCodec(codec: string): boolean {
       const audio = document.createElement('audio');
-      return codec === 'opus' ? 
+      return codec === 'opus' ?
         audio.canPlayType('audio/webm; codecs="opus"') !== '' :
         audio.canPlayType('audio/mp4') !== '';
     }
@@ -193,7 +192,12 @@ export function ModernAudioPlayer({
   };
 
   return (
-    <div className={`bg-card border rounded-lg overflow-hidden ${className}`}>
+    <div style={{
+      backgroundColor: '#ffffff',
+      border: '1px solid #e5e5e5',
+      borderRadius: 8,
+      overflow: 'hidden',
+    }}>
       <audio
         ref={audioRef}
         autoPlay={autoplay}
@@ -207,7 +211,7 @@ export function ModernAudioPlayer({
           const currentTime = audioRef.current?.currentTime || 0;
           setCurrentTime(currentTime);
           onTimeUpdate?.(currentTime);
-          
+
           // Update Media Session position
           if ('mediaSession' in navigator && 'setPositionState' in navigator.mediaSession) {
             navigator.mediaSession.setPositionState({
@@ -233,9 +237,9 @@ export function ModernAudioPlayer({
         <p>
           Your browser doesn't support audio playback.
           {getBestQualityDownload() && (
-            <a 
+            <a
               href={getAudioUrl(getBestQualityDownload()!.file_path)}
-              className="text-blue-400 underline ml-2"
+              style={{ color: '#3b82f6', textDecoration: 'underline', marginLeft: 8 }}
               download
             >
               Download MP3
@@ -246,86 +250,86 @@ export function ModernAudioPlayer({
 
       {/* Album Art / Poster */}
       {audio.poster_image_path && (
-        <div className="aspect-square w-full max-w-xs mx-auto p-4">
+        <div style={{ aspectRatio: '1/1', width: '100%', maxWidth: 320, margin: '0 auto', padding: 16 }}>
           <img
             src={getAudioUrl(audio.poster_image_path)}
             alt={`${audio.title} artwork`}
-            className="w-full h-full object-cover rounded-lg shadow-lg"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
           />
         </div>
       )}
 
       {/* Track Info */}
-      <div className="p-4 text-center">
-        <h3 className="font-semibold text-lg mb-1">{audio.title}</h3>
+      <div style={{ padding: 16, textAlign: 'center' }}>
+        <h3 style={{ fontWeight: 600, fontSize: '1.125rem', marginBottom: 4, margin: 0 }}>{audio.title}</h3>
         {audio.artist && (
-          <p className="text-muted-foreground mb-2">{audio.artist}</p>
+          <p style={{ color: '#999999', marginBottom: 8, margin: '4px 0' }}>{audio.artist}</p>
         )}
         {audio.album && (
-          <p className="text-sm text-muted-foreground">{audio.album}</p>
+          <p style={{ fontSize: '0.875rem', color: '#999999', margin: 0 }}>{audio.album}</p>
         )}
       </div>
 
       {/* Controls */}
       {controls && !isLoading && (
-        <div className="p-4 space-y-4">
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Progress Bar */}
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Slider
               value={[currentTime]}
               max={duration}
               step={1}
               onValueChange={handleSeek}
-              className="w-full"
+              style={{ width: '100%' }}
             />
-            <div className="flex justify-between text-sm text-muted-foreground">
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: '#999999' }}>
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
           </div>
 
           {/* Playback Controls */}
-          <div className="flex items-center justify-center gap-4">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
             <Button
               variant="ghost"
               size="sm"
               onClick={skipBackward}
-              className="rounded-full"
+              style={{ borderRadius: '50%' }}
             >
-              <SkipBack className="h-5 w-5" />
+              <SkipBack style={{ height: 20, width: 20 }} />
             </Button>
-            
+
             <Button
               variant="default"
               size="lg"
               onClick={togglePlay}
-              className="rounded-full w-12 h-12"
+              style={{ borderRadius: '50%', width: 48, height: 48 }}
             >
-              {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+              {isPlaying ? <Pause style={{ height: 24, width: 24 }} /> : <Play style={{ height: 24, width: 24 }} />}
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
               onClick={skipForward}
-              className="rounded-full"
+              style={{ borderRadius: '50%' }}
             >
-              <SkipForward className="h-5 w-5" />
+              <SkipForward style={{ height: 20, width: 20 }} />
             </Button>
           </div>
 
           {/* Volume & Download */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 flex-1">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleMute}
               >
                 {isMuted || volume === 0 ? (
-                  <VolumeX className="h-4 w-4" />
+                  <VolumeX style={{ height: 16, width: 16 }} />
                 ) : (
-                  <Volume2 className="h-4 w-4" />
+                  <Volume2 style={{ height: 16, width: 16 }} />
                 )}
               </Button>
               <Slider
@@ -333,7 +337,7 @@ export function ModernAudioPlayer({
                 max={1}
                 step={0.05}
                 onValueChange={handleVolumeChange}
-                className="w-20"
+                style={{ width: 80 }}
               />
             </div>
 
@@ -347,14 +351,14 @@ export function ModernAudioPlayer({
                   href={getAudioUrl(getBestQualityDownload()!.file_path)}
                   download={`${audio.title}.mp3`}
                 >
-                  <Download className="h-4 w-4" />
+                  <Download style={{ height: 16, width: 16 }} />
                 </a>
               </Button>
             )}
           </div>
 
           {/* Format Info */}
-          <div className="text-xs text-muted-foreground text-center">
+          <div style={{ fontSize: '0.75rem', color: '#999999', textAlign: 'center' }}>
             Available: {audio.renditions.map(r => r.codec.toUpperCase()).join(', ')}
           </div>
         </div>

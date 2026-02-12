@@ -1,5 +1,4 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
 
 export interface ResponsiveImageProps {
   src: string; // Base filename without extension (e.g., "hero")
@@ -13,6 +12,7 @@ export interface ResponsiveImageProps {
   sizes?: string; // Custom sizes attribute
   fallbackFormat?: 'jpg' | 'png';
   objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+  style?: React.CSSProperties;
 }
 
 const defaultSizes = "(max-width: 320px) 280px, (max-width: 640px) 600px, (max-width: 768px) 728px, (max-width: 1024px) 984px, (max-width: 1280px) 1240px, (max-width: 1440px) 1400px, 1880px";
@@ -24,17 +24,17 @@ export function ResponsiveImage({
   alt,
   width = 1440,
   height = 960,
-  className,
   loading = 'lazy',
   decoding = 'async',
   priority = false,
   sizes = defaultSizes,
   fallbackFormat = 'jpg',
-  objectFit = 'cover'
+  objectFit = 'cover',
+  style,
 }: ResponsiveImageProps) {
   // Override loading for priority images (LCP)
   const actualLoading = priority ? 'eager' : loading;
-  
+
   // Generate srcset for each format
   const generateSrcSet = (format: string) => {
     return breakpoints
@@ -45,21 +45,21 @@ export function ResponsiveImage({
   const fallbackSrc = `/images/optimized/${src}-${width}.${fallbackFormat}`;
 
   return (
-    <picture className={cn("block", className)}>
+    <picture style={{ display: 'block', ...style }}>
       {/* AVIF - Most modern and efficient */}
       <source
         type="image/avif"
         srcSet={generateSrcSet('avif')}
         sizes={sizes}
       />
-      
+
       {/* WebP - Widely supported fallback */}
       <source
         type="image/webp"
         srcSet={generateSrcSet('webp')}
         sizes={sizes}
       />
-      
+
       {/* JPEG/PNG - Universal fallback */}
       <img
         src={fallbackSrc}
@@ -70,16 +70,11 @@ export function ResponsiveImage({
         loading={actualLoading}
         decoding={decoding}
         sizes={sizes}
-        className={cn(
-          "max-w-full h-auto",
-          objectFit === 'cover' && "object-cover",
-          objectFit === 'contain' && "object-contain",
-          objectFit === 'fill' && "object-fill",
-          objectFit === 'none' && "object-none",
-          objectFit === 'scale-down' && "object-scale-down"
-        )}
         style={{
-          aspectRatio: `${width} / ${height}`
+          maxWidth: '100%',
+          height: 'auto',
+          objectFit,
+          aspectRatio: `${width} / ${height}`,
         }}
       />
     </picture>
@@ -93,7 +88,7 @@ export function HeroImage(props: Omit<ResponsiveImageProps, 'priority' | 'loadin
       {...props}
       priority={true}
       loading="eager"
-      className={cn("w-full h-auto", props.className)}
+      style={{ width: '100%', height: 'auto', ...props.style }}
     />
   );
 }
@@ -103,7 +98,7 @@ export function CardImage(props: ResponsiveImageProps) {
   return (
     <ResponsiveImage
       {...props}
-      className={cn("rounded-lg", props.className)}
+      style={{ borderRadius: 8, ...props.style }}
       objectFit="cover"
     />
   );
@@ -114,7 +109,7 @@ export function AvatarImage(props: Omit<ResponsiveImageProps, 'objectFit'>) {
   return (
     <ResponsiveImage
       {...props}
-      className={cn("rounded-full", props.className)}
+      style={{ borderRadius: '50%', ...props.style }}
       objectFit="cover"
       width={props.width || 128}
       height={props.height || 128}

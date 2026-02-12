@@ -2,9 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
 import { Check, Globe, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -25,7 +23,7 @@ interface LanguageSwitcherProps {
   className?: string;
 }
 
-export function LanguageSwitcher({ variant = "default", className }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ variant = "default" }: LanguageSwitcherProps) {
   const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -43,30 +41,33 @@ export function LanguageSwitcher({ variant = "default", className }: LanguageSwi
           <Button
             variant="ghost"
             size="sm"
-            className={cn("gap-2 text-sm", className)}
+            style={{ display: 'flex', gap: 8, fontSize: '0.875rem', alignItems: 'center' }}
           >
-            <Globe className="h-4 w-4" />
-            <span className="hidden sm:inline">{currentLanguage.flag}</span>
-            <ChevronDown className="h-3 w-3" />
+            <Globe style={{ height: 16, width: 16 }} />
+            <span>{currentLanguage.flag}</span>
+            <ChevronDown style={{ height: 12, width: 12 }} />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-48 p-2">
-          <div className="grid gap-1">
+        <PopoverContent align="end" style={{ width: 192, padding: 8 }}>
+          <div style={{ display: 'grid', gap: 4 }}>
             {languages.map((language) => (
               <Button
                 key={language.code}
                 variant="ghost"
                 size="sm"
-                className={cn(
-                  "justify-start gap-2 text-sm",
-                  currentLanguage.code === language.code && "bg-accent"
-                )}
+                style={{
+                  justifyContent: 'flex-start',
+                  gap: 8,
+                  fontSize: '0.875rem',
+                  width: '100%',
+                  ...(currentLanguage.code === language.code ? { backgroundColor: '#f5f5f5' } : {}),
+                }}
                 onClick={() => handleLanguageChange(language.code)}
               >
-                <span className="text-base">{language.flag}</span>
-                <span className="flex-1 text-left">{language.name}</span>
+                <span style={{ fontSize: '1rem' }}>{language.flag}</span>
+                <span style={{ flex: 1, textAlign: 'left' }}>{language.name}</span>
                 {currentLanguage.code === language.code && (
-                  <Check className="h-3 w-3" />
+                  <Check style={{ height: 12, width: 12 }} />
                 )}
               </Button>
             ))}
@@ -77,40 +78,42 @@ export function LanguageSwitcher({ variant = "default", className }: LanguageSwi
   }
 
   return (
-    <div className={cn("space-y-2", className)}>
-      <div className="flex items-center gap-2">
-        <Globe className="h-4 w-4" />
-        <span className="text-sm font-medium">{t('common.language')}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Globe style={{ height: 16, width: 16 }} />
+        <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{t('common.language')}</span>
       </div>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="w-full justify-between"
+            style={{ width: '100%', justifyContent: 'space-between' }}
           >
-            <div className="flex items-center gap-2">
-              <span className="text-base">{currentLanguage.flag}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: '1rem' }}>{currentLanguage.flag}</span>
               <span>{currentLanguage.name}</span>
             </div>
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown style={{ height: 16, width: 16 }} />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-56 p-2">
-          <div className="grid gap-1">
+        <PopoverContent style={{ width: 224, padding: 8 }}>
+          <div style={{ display: 'grid', gap: 4 }}>
             {languages.map((language) => (
               <Button
                 key={language.code}
                 variant="ghost"
-                className={cn(
-                  "justify-start gap-2",
-                  currentLanguage.code === language.code && "bg-accent"
-                )}
+                style={{
+                  justifyContent: 'flex-start',
+                  gap: 8,
+                  width: '100%',
+                  ...(currentLanguage.code === language.code ? { backgroundColor: '#f5f5f5' } : {}),
+                }}
                 onClick={() => handleLanguageChange(language.code)}
               >
-                <span className="text-base">{language.flag}</span>
-                <span className="flex-1 text-left">{language.name}</span>
+                <span style={{ fontSize: '1rem' }}>{language.flag}</span>
+                <span style={{ flex: 1, textAlign: 'left' }}>{language.name}</span>
                 {currentLanguage.code === language.code && (
-                  <Check className="h-4 w-4" />
+                  <Check style={{ height: 16, width: 16 }} />
                 )}
               </Button>
             ))}

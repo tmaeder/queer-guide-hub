@@ -13,11 +13,11 @@ interface SecurityCardProps {
   className?: string;
 }
 
-const statusColors = {
-  active: 'bg-green-50 text-green-700 border-green-200',
-  inactive: 'bg-gray-50 text-gray-700 border-gray-200',
-  warning: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  error: 'bg-red-50 text-red-700 border-red-200'
+const statusStyleMap: Record<string, React.CSSProperties> = {
+  active: { backgroundColor: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0' },
+  inactive: { backgroundColor: '#f9fafb', color: '#374151', borderColor: '#e5e7eb' },
+  warning: { backgroundColor: '#fefce8', color: '#a16207', borderColor: '#fef08a' },
+  error: { backgroundColor: '#fef2f2', color: '#b91c1c', borderColor: '#fecaca' },
 };
 
 export function SecurityCard({
@@ -27,18 +27,20 @@ export function SecurityCard({
   status = 'active',
   badge,
   children,
-  className = ''
 }: SecurityCardProps) {
   return (
-    <Card className={`hover:shadow-md transition-shadow ${className}`}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            {Icon && <Icon className="h-5 w-5" />}
+    <Card style={{ transition: 'box-shadow 0.2s' }}>
+      <CardHeader style={{ paddingBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <CardTitle style={{ fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+            {Icon && <Icon style={{ height: 20, width: 20 }} />}
             {title}
           </CardTitle>
           {badge && (
-            <Badge variant="outline" className={statusColors[status]}>
+            <Badge
+              variant="outline"
+              style={statusStyleMap[status]}
+            >
               {badge}
             </Badge>
           )}

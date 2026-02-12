@@ -1,6 +1,6 @@
+import React from "react";
 import { Heart } from "lucide-react";
 import { Button } from "./button";
-import { cn } from "@/lib/utils";
 import { useFavorites, FavoriteType } from "@/hooks/useFavorites";
 
 interface FavoriteButtonProps {
@@ -11,10 +11,21 @@ interface FavoriteButtonProps {
   size?: "sm" | "md" | "lg";
 }
 
-export const FavoriteButton = ({ 
-  itemId, 
-  type, 
-  className,
+const sizeStyles: Record<string, React.CSSProperties> = {
+  sm: { height: 32, width: 32 },
+  md: { height: 40, width: 40 },
+  lg: { height: 48, width: 48 },
+};
+
+const iconPixels: Record<string, number> = {
+  sm: 16,
+  md: 20,
+  lg: 24,
+};
+
+export const FavoriteButton = ({
+  itemId,
+  type,
   variant = "ghost",
   size = "sm"
 }: FavoriteButtonProps) => {
@@ -27,37 +38,26 @@ export const FavoriteButton = ({
     toggleFavorite(itemId);
   };
 
-  const sizeClasses = {
-    sm: "h-8 w-8",
-    md: "h-10 w-10", 
-    lg: "h-12 w-12"
-  };
-
-  const iconSizes = {
-    sm: "h-4 w-4",
-    md: "h-5 w-5",
-    lg: "h-6 w-6"
-  };
+  const iconSize = iconPixels[size];
 
   return (
     <Button
       variant={variant}
       size="icon"
       onClick={handleClick}
-      className={cn(
-        sizeClasses[size],
-        "transition-colors duration-200",
-        favorited && "text-red-500 hover:text-red-600",
-        !favorited && "text-muted-foreground hover:text-foreground",
-        className
-      )}
+      style={{
+        ...sizeStyles[size],
+        color: favorited ? '#ef4444' : '#999999',
+        transition: 'color 0.2s',
+      }}
       aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
     >
-      <Heart 
-        className={cn(
-          iconSizes[size],
-          favorited && "fill-current"
-        )} 
+      <Heart
+        style={{
+          height: iconSize,
+          width: iconSize,
+          fill: favorited ? 'currentColor' : 'none',
+        }}
       />
     </Button>
   );
