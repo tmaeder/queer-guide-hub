@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { calculateDistanceKm } from '@/utils/calculateDistance';
+import { queryWithRetry } from '@/utils/fetchWithRetry';
 
 export type Continent = Tables<"continents">;
 export type Region = Tables<"regions">;
@@ -18,13 +19,25 @@ export const usePlaces = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTimedOut(true), 15000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const fetchContinents = async () => {
     try {
-      const { data, error } = await supabase
-        .from("continents")
-        .select("*")
-        .order("name");
+      const { data, error } = await queryWithRetry(() =>
+        supabase
+          .from("continents")
+          .select("*")
+          .order("name")
+      );
 
       if (error) throw error;
       setContinents(data || []);
@@ -35,14 +48,16 @@ export const usePlaces = () => {
 
   const fetchCountriesByContinent = async (continentId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("countries")
-        .select(`
-          *,
-          regions (*)
-        `)
-        .eq("continent_id", continentId)
-        .order("name");
+      const { data, error } = await queryWithRetry(() =>
+        supabase
+          .from("countries")
+          .select(`
+            *,
+            regions (*)
+          `)
+          .eq("continent_id", continentId)
+          .order("name")
+      );
 
       if (error) throw error;
       return data || [];
@@ -54,13 +69,15 @@ export const usePlaces = () => {
 
   const fetchAllCountries = async () => {
     try {
-      const { data, error } = await supabase
-        .from("countries")
-        .select(`
-          *,
-          regions (*)
-        `)
-        .order("name");
+      const { data, error } = await queryWithRetry(() =>
+        supabase
+          .from("countries")
+          .select(`
+            *,
+            regions (*)
+          `)
+          .order("name")
+      );
 
       if (error) throw error;
       setCountries(data || []);
@@ -71,14 +88,16 @@ export const usePlaces = () => {
 
   const fetchCitiesByCountry = async (countryId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("cities")
-        .select(`
-          *,
-          countries (*)
-        `)
-        .eq("country_id", countryId)
-        .order("population", { ascending: false });
+      const { data, error } = await queryWithRetry(() =>
+        supabase
+          .from("cities")
+          .select(`
+            *,
+            countries (*)
+          `)
+          .eq("country_id", countryId)
+          .order("population", { ascending: false })
+      );
 
       if (error) throw error;
       return data || [];
@@ -90,14 +109,16 @@ export const usePlaces = () => {
 
   const fetchMajorCities = async () => {
     try {
-      const { data, error } = await supabase
-        .from("cities")
-        .select(`
-          *,
-          countries (*)
-        `)
-        .eq("is_major_city", true)
-        .order("population", { ascending: false });
+      const { data, error } = await queryWithRetry(() =>
+        supabase
+          .from("cities")
+          .select(`
+            *,
+            countries (*)
+          `)
+          .eq("is_major_city", true)
+          .order("population", { ascending: false })
+      );
 
       if (error) throw error;
       setCities(data || []);
@@ -109,27 +130,34 @@ export const usePlaces = () => {
   const searchLocations = async (query: string) => {
     try {
       setLoading(true);
-      
+      setLoadingTimedOut(false);
+
       const [continentsResult, countriesResult, citiesResult] = await Promise.all([
-        supabase
-          .from("continents")
-          .select("*")
-          .ilike("name", `%${query}%`),
-        supabase
-          .from("countries")
-          .select(`
-            *,
-            regions (*)
-          `)
-          .ilike("name", `%${query}%`),
-        supabase
-          .from("cities")
-          .select(`
-            *,
-            countries (*)
-          `)
-          .ilike("name", `%${query}%`)
-          .limit(20)
+        queryWithRetry(() =>
+          supabase
+            .from("continents")
+            .select("*")
+            .ilike("name", `%${query}%`)
+        ),
+        queryWithRetry(() =>
+          supabase
+            .from("countries")
+            .select(`
+              *,
+              regions (*)
+            `)
+            .ilike("name", `%${query}%`)
+        ),
+        queryWithRetry(() =>
+          supabase
+            .from("cities")
+            .select(`
+              *,
+              countries (*)
+            `)
+            .ilike("name", `%${query}%`)
+            .limit(20)
+        )
       ]);
 
       return {
@@ -148,16 +176,19 @@ export const usePlaces = () => {
   const findNearbyCities = async (userLocation: { latitude: number; longitude: number }) => {
     try {
       setLoading(true);
-      
+      setLoadingTimedOut(false);
+
       // Fetch all cities with coordinates
-      const { data, error } = await supabase
-        .from("cities")
-        .select(`
-          *,
-          countries (*)
-        `)
-        .not('latitude', 'is', null)
-        .not('longitude', 'is', null);
+      const { data, error } = await queryWithRetry(() =>
+        supabase
+          .from("cities")
+          .select(`
+            *,
+            countries (*)
+          `)
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null)
+      );
 
       if (error) throw error;
 
@@ -190,6 +221,7 @@ export const usePlaces = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
+      setLoadingTimedOut(false);
       await Promise.all([
         fetchContinents(),
         fetchAllCountries(),
@@ -206,6 +238,7 @@ export const usePlaces = () => {
     countries,
     cities,
     loading,
+    loadingTimedOut,
     error,
     fetchCountriesByContinent,
     fetchCitiesByCountry,

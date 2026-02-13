@@ -92,6 +92,8 @@ const SearchResults = lazy(() => import("./pages/SearchResults"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 
 const Sitemap = lazy(() => import("./pages/Sitemap"));
+const SubmitVenue = lazy(() => import("./pages/SubmitVenue"));
+const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
 
 const queryClient = createOptimizedQueryClient();
 
@@ -302,6 +304,8 @@ const App = () => {
                      <Route path="/profile/settings" element={<ProfileSettings />} />
                      <Route path="/user/:userId" element={<UserProfile />} />
                      <Route path="/sitemap" element={<Sitemap />} />
+                    <Route path="/submit/venue" element={<SubmitVenue />} />
+                    <Route path="/submit/event" element={<SubmitEvent />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>

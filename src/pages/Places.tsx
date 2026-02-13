@@ -1,4 +1,4 @@
-import { useState, useMemo, Suspense, lazy, useEffect } from "react";
+import { useState, useMemo, Suspense, lazy, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useOptimizedCountries, useOptimizedCities } from "@/hooks/useOptimizedPlaces";
 import { usePlaces } from "@/hooks/usePlaces";
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Crown } from "lucide-react";
 
 // Lazy load the map component
@@ -21,11 +22,24 @@ type ViewMode = "overview" | "country" | "city" | "search";
 
 export default function Places() {
   const { t } = useTranslation();
-  const { countries, loading: countriesLoading } = useOptimizedCountries();
-  const { cities, loading: citiesLoading } = useOptimizedCities();
+  const { countries, loading: countriesLoading, error: countriesError } = useOptimizedCountries();
+  const { cities, loading: citiesLoading, error: citiesError } = useOptimizedCities();
   const { fetchCitiesByCountry, searchLocations, findNearbyCities } = usePlaces();
   const loading = countriesLoading || citiesLoading;
-  const error = null;
+  const error = countriesError || citiesError || null;
+
+  // Local loading timeout tracker
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (loading) {
+      loadingTimerRef.current = setTimeout(() => setLoadingTimedOut(true), 10000);
+    } else {
+      setLoadingTimedOut(false);
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    }
+    return () => { if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current); };
+  }, [loading]);
 
   // Fetch continents for grouping countries
   const [continents, setContinents] = useState<any[]>([]);
@@ -175,11 +189,12 @@ export default function Places() {
   if (loading) {
     return (
       <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 480, mx: 'auto' }}>
           <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
             <Globe style={{ height: 48, width: 48, margin: '0 auto', color: '#555555', opacity: 0.6 }} />
           </Box>
           <Typography sx={{ color: 'var(--muted-foreground)' }}>Loading places...</Typography>
+          {loadingTimedOut && <LoadingTimeout onRetry={() => window.location.reload()} />}
         </Box>
       </Box>
     );
@@ -188,11 +203,8 @@ export default function Places() {
   if (error) {
     return (
       <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box sx={{ color: 'error.main' }}>
-            <MapPin style={{ height: 48, width: 48, margin: '0 auto' }} />
-          </Box>
-          <Typography sx={{ color: 'error.main' }}>Something went wrong while loading places. Please try again later.</Typography>
+        <Box sx={{ maxWidth: 480, mx: 'auto' }}>
+          <ErrorState message={error} onRetry={() => window.location.reload()} />
         </Box>
       </Box>
     );
@@ -616,10 +628,12 @@ export default function Places() {
               )}
 
               {(!searchResults.countries?.length && !searchResults.cities?.length) && (
-                <Box sx={{ textAlign: 'center', py: 6, color: 'var(--muted-foreground)' }}>
-                  <Globe style={{ height: 48, width: 48, margin: '0 auto 16px', opacity: 0.5 }} />
-                  <Typography>No places found matching your search</Typography>
-                </Box>
+                <EmptyState
+                  icon={Globe}
+                  title="No places found"
+                  description="Explore our featured destinations or try different search terms."
+                  primaryAction={{ label: 'Explore All', onClick: () => { setViewMode("overview"); setSearchResults({ countries: [], cities: [] }); } }}
+                />
               )}
             </Box>
           )}

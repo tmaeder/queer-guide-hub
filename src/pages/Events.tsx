@@ -13,6 +13,7 @@ import { SearchInputTyped } from '@/components/ui/search-input-typed';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { Calendar, Plus, Loader, Search, Filter, X, CalendarIcon, Check, ChevronDown, Grid, List, MapPin } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,7 +35,8 @@ const Events = () => {
     error,
     hasMore,
     fetchEvents,
-    updateAttendance
+    updateAttendance,
+    loadingTimedOut
   } = useEvents(false);
   const {
     user
@@ -201,18 +203,6 @@ const Events = () => {
     console.log('View event details:', event);
   };
   const hasActiveFilters = search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe;
-  if (error) {
-    return <Box sx={{ minHeight: '100vh' }}>
-        <Box sx={{ width: '100%', px: 2, py: 4 }}>
-          <Card>
-            <CardContent sx={{ p: 4, textAlign: 'center' }}>
-              <Typography color="error" sx={{ mb: 2 }}>Something went wrong while loading events. Please try again.</Typography>
-              <Button onClick={() => fetchEvents()}>Try Again</Button>
-            </CardContent>
-          </Card>
-        </Box>
-      </Box>;
-  }
   useEffect(() => {
     (async () => {
       setPage(1);
@@ -248,10 +238,10 @@ const Events = () => {
                     <CalendarIcon style={{ width: 16, height: 16 }} />
                   </Button>
                 </Box>
-                {user && <Button onClick={() => navigate('/admin/events')} style={{ display: 'flex', gap: 8 }}>
+                <Button onClick={() => navigate('/submit/event')} style={{ display: 'flex', gap: 8 }}>
                     <Plus style={{ width: 16, height: 16 }} />
-                    Create Event
-                  </Button>}
+                    Submit Event
+                  </Button>
               </Box>
             </Box>
           </CardContent>
@@ -400,6 +390,9 @@ const Events = () => {
             </Box>}
         </Box>
 
+        {/* Error State */}
+        {error && !loading && <ErrorState message={error} onRetry={() => fetchEvents()} />}
+
         {/* Loading State */}
         {loading && <Card sx={{ p: 4 }}>
             <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
@@ -407,20 +400,16 @@ const Events = () => {
               <Typography color="text.secondary" sx={{ ml: 1 }}>Loading events...</Typography>
             </CardContent>
           </Card>}
+        {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchEvents()} />}
 
         {/* Empty State */}
-        {!loading && events.length === 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
-            <CardContent>
-              <Calendar style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No events found</Typography>
-              <Typography color="text.secondary" sx={{ mb: 2 }}>
-                We couldn't find any events matching your criteria. Try adjusting your filters or be the first to create an event!
-              </Typography>
-              {user && <Button onClick={() => navigate('/admin/events')}>
-                  Create the First Event
-                </Button>}
-            </CardContent>
-          </Card>}
+        {!loading && !error && events.length === 0 && <EmptyState
+            icon={Calendar}
+            title="No events found"
+            description="We couldn't find any events matching your criteria. Try adjusting your filters or be the first to submit an event!"
+            primaryAction={{ label: 'Submit an Event', onClick: () => navigate('/submit/event') }}
+            secondaryAction={{ label: 'Clear Filters', onClick: clearFilters }}
+          />}
 
         {/* Event Content */}
         {!loading && events.length > 0 && <>

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ChevronUp, FileText, Shield, Lock, Cookie, Copyright, Scale, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -9,7 +9,15 @@ import Typography from "@mui/material/Typography";
 
 export function Footer() {
   const navigate = useNavigate();
+  const location = useLocation();
   const currentYear = new Date().getFullYear();
+
+  const getSubmitCta = () => {
+    if (location.pathname.startsWith('/events')) return { label: 'Submit Event', route: '/submit/event' };
+    if (location.pathname.startsWith('/venues')) return { label: 'Submit Venue', route: '/submit/venue' };
+    return { label: 'Submit a Space', route: '/submit/venue' };
+  };
+  const submitCta = getSubmitCta();
 
   const legalLinks = [
     { href: "/legal", label: "Legal", icon: Shield },
@@ -67,10 +75,10 @@ export function Footer() {
               variant="default"
               size="sm"
               style={{ height: 32, fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600 }}
-              onClick={() => navigate("/admin/venues")}
+              onClick={() => navigate(submitCta.route)}
             >
               <Plus style={{ width: 14, height: 14 }} />
-              Submit a Space
+              {submitCta.label}
             </Button>
             <Separator orientation="vertical" style={{ height: 24 }} />
             <Button

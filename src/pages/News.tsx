@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { Newspaper, Loader, Search, Grid3X3, List, SortAsc, SortDesc, Filter, X, Calendar, Eye, Clock, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -76,7 +77,8 @@ export default function News() {
     fetchArticles,
     incrementViews,
     getFeaturedArticles,
-    getTrendingTags
+    getTrendingTags,
+    loadingTimedOut
   } = useNews();
   const [featuredArticles, setFeaturedArticles] = useState<any[]>([]);
   const [trendingTags, setTrendingTags] = useState<{
@@ -163,15 +165,6 @@ export default function News() {
     fetchArticles({});
   };
   const hasActiveFilters = quickSearch || Object.keys(currentFilters).length > 0;
-  if (error) {
-    return <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Card style={{ borderColor: 'var(--destructive)', borderWidth: 1, opacity: 0.8 }}>
-          <CardContent sx={{ pt: 3 }}>
-            <Typography color="error">Something went wrong while loading news. Please try again later.</Typography>
-          </CardContent>
-        </Card>
-      </Container>;
-  }
   return <Box sx={{ minHeight: '100vh' }}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
@@ -267,23 +260,22 @@ export default function News() {
 
           {/* Main Content */}
           <Box sx={{ gridColumn: showFilters ? { lg: 'span 3' } : { lg: 'span 4' } }}>
+            {/* Error State */}
+            {error && !loading && <ErrorState message={error} onRetry={() => fetchArticles()} />}
+
             {/* Loading State */}
             {loading && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
                 <Loader style={{ width: 32, height: 32, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
                 <Typography color="text.secondary" sx={{ ml: 1 }}>Loading articles...</Typography>
               </Box>}
+            {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchArticles()} />}
 
             {/* Empty State */}
-            {!loading && getSortedArticles().length === 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
-                <CardContent>
-
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No articles found</Typography>
-
-                  <Typography variant="body2" color="text.secondary">
-                    News is automatically imported every 2 hours via cron job
-                  </Typography>
-                </CardContent>
-              </Card>}
+            {!loading && !error && getSortedArticles().length === 0 && <EmptyState
+                icon={Newspaper}
+                title="No articles found"
+                description="News articles are automatically imported regularly. Check back soon for the latest LGBTQ+ news and updates."
+              />}
 
             {/* Articles */}
             {!loading && getSortedArticles().length > 0 && <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

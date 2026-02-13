@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { MapPin, Plus, Loader, Grid, Map, SortAsc, SortDesc, Filter } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import Container from '@mui/material/Container';
@@ -22,7 +23,7 @@ type Venue = Database['public']['Tables']['venues']['Row'];
 const Venues = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { venues, loading, error, hasMore, fetchVenues } = useVenues(false);
+  const { venues, loading, error, hasMore, fetchVenues, loadingTimedOut } = useVenues(false);
 
   useMeta({
     title: 'Venues',
@@ -163,21 +164,6 @@ const Venues = () => {
     observer.observe(el);
     return () => observer.unobserve(el);
   }, [page, loading, hasMore, currentFilters, autoLoadedCount]);
-  if (error) {
-    return (
-      <Box sx={{ minHeight: '100vh' }}>
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Card>
-            <CardContent sx={{ p: 4, textAlign: 'center' }}>
-              <Typography color="error" sx={{ mb: 2 }}>Something went wrong while loading venues. Please try again.</Typography>
-              <Button onClick={() => fetchVenues()}>Try Again</Button>
-            </CardContent>
-          </Card>
-        </Container>
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ minHeight: '100vh' }}>
       <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -190,15 +176,13 @@ const Venues = () => {
             <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: '42rem', mx: 'auto' }}>
               Discover queer-friendly venues, businesses, and organizations in your area
             </Typography>
-            {user && (
-              <Button
+            <Button
                 style={{ display: 'inline-flex', gap: 8, paddingLeft: 24, paddingRight: 24, paddingTop: 12, paddingBottom: 12, fontSize: '1.125rem' }}
-                onClick={() => navigate('/admin/venues')}
+                onClick={() => navigate('/submit/venue')}
               >
                 <Plus style={{ width: 20, height: 20 }} />
-                Add Your Business
+                Submit a Venue
               </Button>
-            )}
           </CardContent>
         </Card>
 
@@ -265,6 +249,9 @@ const Venues = () => {
 
           <TabsContent value="grid">
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {/* Error State */}
+              {error && !loading && <ErrorState message={error} onRetry={() => fetchVenues()} />}
+
               {/* Loading State */}
               {loading && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10 }}>
@@ -272,26 +259,17 @@ const Venues = () => {
                   <Typography variant="subtitle1" color="text.secondary">Finding amazing places for you...</Typography>
                 </Box>
               )}
+              {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchVenues()} />}
 
               {/* Empty State */}
-              {!loading && venues.length === 0 && (
-                <Card>
-                  <CardContent sx={{ p: 6, textAlign: 'center' }}>
-                    <MapPin style={{ width: 64, height: 64, margin: '0 auto 24px', color: 'var(--muted-foreground)' }} />
-                    <Typography variant="h5" sx={{ fontWeight: 600, mb: 1.5 }}>No venues found</Typography>
-                    <Typography color="text.secondary" sx={{ mb: 3, maxWidth: '28rem', mx: 'auto' }}>
-                      We couldn't find any venues matching your criteria. Try adjusting your filters or be the first to add a venue in this area!
-                    </Typography>
-                    {user && (
-                      <Button
-                        style={{ paddingLeft: 24, paddingRight: 24, paddingTop: 12, paddingBottom: 12 }}
-                        onClick={() => navigate('/admin/venues')}
-                      >
-                        Add the First Venue
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
+              {!loading && !error && venues.length === 0 && (
+                <EmptyState
+                  icon={MapPin}
+                  title="No venues found"
+                  description="We couldn't find any venues matching your criteria. Try adjusting your filters or be the first to submit a venue in this area!"
+                  primaryAction={{ label: 'Submit a Venue', onClick: () => navigate('/submit/venue') }}
+                  secondaryAction={{ label: 'Clear Filters', onClick: () => handleFiltersChange({}) }}
+                />
               )}
 
               {/* Venues Grid */}

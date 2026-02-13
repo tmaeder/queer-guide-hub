@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { decodeHtmlEntities } from '@/utils/htmlDecode';
 
 type NewsArticle = Tables<'news_articles'> & {
   news_sources: Tables<'news_sources'>;
@@ -61,12 +62,6 @@ export const NewsCard = ({
     onViewArticle?.(article.id);
     window.open(article.url, '_blank');
   };
-  const decodeHtmlEntities = (text: string) => {
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = text;
-    return textarea.value;
-  };
-
   const getCategoryColor = (_category: string) => {
     return '#555555';
   };
@@ -90,7 +85,7 @@ export const NewsCard = ({
           backgroundColor: getCategoryColor(article.category),
           color: '#ffffff'
         }}>
-            {article.category.replace('-', ' ')}
+            {decodeHtmlEntities(article.category.replace('-', ' '))}
           </Badge>
           <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
             {article.news_sources.name}
@@ -100,7 +95,7 @@ export const NewsCard = ({
 
       <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {article.excerpt && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {article.excerpt}
+            {decodeHtmlEntities(article.excerpt)}
           </Typography>}
 
         {showFullContent && article.content && <Box sx={{ maxWidth: 'none', color: 'var(--foreground)' }}>

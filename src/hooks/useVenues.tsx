@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
+import { queryWithRetry } from '@/utils/fetchWithRetry';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type VenueInsert = Database['public']['Tables']['venues']['Insert'];
@@ -11,8 +12,16 @@ export function useVenues(autoFetch: boolean = true) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  let _fetchedCount = 0;
-  let _totalCount: number | null = null;
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTimedOut(true), 15000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const fetchVenues = async (
     filters?: {
@@ -33,6 +42,7 @@ export function useVenues(autoFetch: boolean = true) {
     let totalCount: number | null = null;
     try {
       setLoading(true);
+      setLoadingTimedOut(false);
       const page = options?.page;
       const pageSize = options?.pageSize ?? 24;
 
@@ -80,7 +90,7 @@ export function useVenues(autoFetch: boolean = true) {
         query = query.range(from, to);
       }
 
-      const { data, error, count } = await query;
+      const { data, error, count } = await queryWithRetry(() => query) as any;
 
       if (error) throw error;
       
@@ -197,6 +207,7 @@ export function useVenues(autoFetch: boolean = true) {
   return {
     venues,
     loading,
+    loadingTimedOut,
     error,
     hasMore,
     fetchVenues,

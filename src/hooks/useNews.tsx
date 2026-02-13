@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { queryWithRetry } from '@/utils/fetchWithRetry';
 
 // Simplified type definitions to avoid TypeScript recursion issues
 type NewsArticle = any;
@@ -28,11 +29,22 @@ export const useNews = () => {
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTimedOut(true), 15000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const fetchArticles = useCallback(async (filters?: NewsFilters) => {
     setLoading(true);
+    setLoadingTimedOut(false);
     setError(null);
-    
+
     try {
       // Build the query step by step to avoid TypeScript issues
       let queryBuilder = supabase
@@ -93,7 +105,7 @@ export const useNews = () => {
       }
 
       // Execute the query
-      const { data, error: fetchError } = await (queryBuilder as any).limit(50);
+      const { data, error: fetchError } = await queryWithRetry(() => (queryBuilder as any).limit(50));
 
       if (fetchError) {
         console.error('Error fetching articles:', fetchError);
@@ -206,6 +218,7 @@ export const useNews = () => {
     articles,
     sources,
     loading,
+    loadingTimedOut,
     error,
     fetchArticles,
     incrementViews,

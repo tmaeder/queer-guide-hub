@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
+import { queryWithRetry } from '@/utils/fetchWithRetry';
 
 type Event = Database['public']['Tables']['events']['Row'];
 type EventInsert = Database['public']['Tables']['events']['Insert'];
@@ -11,6 +12,16 @@ export function useEvents(autoFetch: boolean = true) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTimedOut(true), 15000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const fetchEvents = async (
     filters?: {
@@ -29,6 +40,7 @@ export function useEvents(autoFetch: boolean = true) {
     let totalCount: number | null = null;
     try {
       setLoading(true);
+      setLoadingTimedOut(false);
       const page = options?.page;
       const pageSize = options?.pageSize ?? 24;
 
@@ -90,7 +102,7 @@ export function useEvents(autoFetch: boolean = true) {
         query = query.range(from, to);
       }
 
-      const { data, error, count } = await query as any;
+      const { data, error, count } = await queryWithRetry(() => query) as any;
 
       if (error) throw error;
       
@@ -236,6 +248,7 @@ export function useEvents(autoFetch: boolean = true) {
   return {
     events,
     loading,
+    loadingTimedOut,
     error,
     hasMore,
     fetchEvents,

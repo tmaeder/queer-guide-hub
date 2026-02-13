@@ -26,6 +26,13 @@ export function Header() {
   const location = useLocation();
   const isMobile = useIsMobile();
 
+  const getSubmitCta = () => {
+    if (location.pathname.startsWith('/events')) return { label: 'Submit Event', route: '/submit/event' };
+    if (location.pathname.startsWith('/venues')) return { label: 'Submit Venue', route: '/submit/venue' };
+    return { label: 'Submit a Space', route: '/submit/venue' };
+  };
+  const submitCta = getSubmitCta();
+
   const isActiveRoute = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
@@ -183,7 +190,7 @@ export function Header() {
               variant="default"
               size="sm"
               style={{ display: undefined }}
-              onClick={() => navigate('/admin/venues')}
+              onClick={() => navigate(submitCta.route)}
             >
               <Box
                 component="span"
@@ -195,7 +202,7 @@ export function Header() {
                 }}
               >
                 <Plus style={{ width: 16, height: 16 }} />
-                Submit a Space
+                {submitCta.label}
               </Box>
             </Button>
 
@@ -333,10 +340,10 @@ export function Header() {
                     variant="default"
                     size="sm"
                     style={{ width: '100%', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
-                    onClick={() => handleMenuItemClick('/admin/venues')}
+                    onClick={() => handleMenuItemClick(submitCta.route)}
                   >
                     <Plus style={{ width: 16, height: 16 }} />
-                    Submit a Space
+                    {submitCta.label}
                   </Button>
                 </Box>
               </DropdownMenuContent>

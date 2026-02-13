@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDebounce } from "./useDebounce";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeWithRetry } from '@/utils/fetchWithRetry';
 
 export interface SearchResult {
   objectID: string;
@@ -32,6 +33,16 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTimedOut(true), 15000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const debouncedQuery = useDebounce(query, 300);
 
@@ -43,8 +54,9 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
     }
 
     setLoading(true);
+    setLoadingTimedOut(false);
     try {
-      const { data, error } = await supabase.functions.invoke('search', {
+      const { data, error } = await invokeWithRetry('search', {
         body: {
           query: searchQuery,
           filters,
@@ -80,6 +92,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
     results,
     suggestions,
     loading,
+    loadingTimedOut,
     performSearch,
   };
 };
