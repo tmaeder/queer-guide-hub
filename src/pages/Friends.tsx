@@ -149,8 +149,7 @@ export default function Friends() {
                               <Box>
                                 <Link
                                   to={`/users/${friendId}`}
-                                  style={{ fontWeight: 500 }}
-                                  style={{ transition: 'color 0.2s' }}
+                                  style={{ fontWeight: 500, transition: 'color 0.2s' }}
                                 >
                                   {profile?.display_name || "Unknown User"}
                                 </Link>
@@ -218,8 +217,7 @@ export default function Friends() {
                               <Box>
                                 <Link
                                   to={`/users/${request.user_id}`}
-                                  style={{ fontWeight: 500 }}
-                                  style={{ transition: 'color 0.2s' }}
+                                  style={{ fontWeight: 500, transition: 'color 0.2s' }}
                                 >
                                   {profile?.display_name || "Unknown User"}
                                 </Link>
