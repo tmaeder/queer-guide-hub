@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ModernVideoPlayer } from '@/components/ui/modern-video-player';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface Video {
   id: string;
@@ -115,21 +117,21 @@ export function VideoManager() {
 
   if (loading) {
     return (
-      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
-        <div sx={{ textAlign: 'center' }}>
-          <div sx={{ animation: 'spin 1s linear infinite', borderRadius: '50%', height: 32, width: 32, borderBottom: 2, borderColor: 'primary.main', mx: 'auto', mb: 2 }}></div>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <Box sx={{ animation: 'spin 1s linear infinite', borderRadius: '50%', height: 32, width: 32, borderBottom: 2, borderColor: 'primary.main', mx: 'auto', mb: 2 }}></Box>
           <p>Loading videos...</p>
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Video Library</h2>
-        <div sx={{ position: 'relative', width: 256 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Video Library</Typography>
+        <Box sx={{ position: 'relative', width: 256 }}>
           <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           <Input
             placeholder="Search videos..."
@@ -137,16 +139,17 @@ export function VideoManager() {
             onChange={(e) => setSearchTerm(e.target.value)}
             sx={{ pl: 5 }}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Video Grid */}
-      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
         {filteredVideos.map((video) => (
           <Card key={video.id} sx={{ overflow: 'hidden' }}>
-            <div sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <Box sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
               {video.poster_image_path ? (
-                <img
+                <Box
+                  component="img"
                   src={`https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/public/videos/${video.poster_image_path}`}
                   alt={video.title}
                   sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -154,40 +157,40 @@ export function VideoManager() {
               ) : (
                 <Play style={{ height: 48, width: 48, color: 'var(--muted-foreground)' }} />
               )}
-              
-              <div sx={{ position: 'absolute', top: 8, right: 8 }}>
+
+              <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
                 <Badge style={{ backgroundColor: getStatusColor(video.status), color: 'white' }}>
                   {video.status}
                 </Badge>
-              </div>
-              
+              </Box>
+
               {video.duration_seconds && (
-                <div sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: 'rgba(0,0,0,0.75)', color: 'white', px: 1, py: 0.5, borderRadius: 1, fontSize: '0.75rem' }}>
+                <Box sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: 'rgba(0,0,0,0.75)', color: 'white', px: 1, py: 0.5, borderRadius: 1, fontSize: '0.75rem' }}>
                   {formatDuration(video.duration_seconds)}
-                </div>
+                </Box>
               )}
-            </div>
-            
+            </Box>
+
             <CardContent sx={{ p: 2 }}>
-              <h3 sx={{ fontWeight: 600, mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{video.title}</h3>
-              
+              <Typography variant="h3" sx={{ fontWeight: 600, mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{video.title}</Typography>
+
               {video.description && (
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {video.description}
-                </p>
+                </Typography>
               )}
-              
-              <div sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1.5 }}>
+
+              <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1.5 }}>
                 <div>Renditions: {video.renditions.length}</div>
                 <div>Created: {new Date(video.created_at).toLocaleDateString()}</div>
-              </div>
-              
-              <div sx={{ display: 'flex', gap: 1 }}>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 1 }}>
                 {video.status === 'completed' && video.renditions.length > 0 && (
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => setSelectedVideo(video)}
                       >
@@ -198,8 +201,8 @@ export function VideoManager() {
                       <DialogHeader>
                         <DialogTitle>{video.title}</DialogTitle>
                       </DialogHeader>
-                      <div sx={{ aspectRatio: '16/9' }}>
-                        <ModernVideoPlayer 
+                      <Box sx={{ aspectRatio: '16/9' }}>
+                        <ModernVideoPlayer
                           video={{
                             id: video.id,
                             title: video.title,
@@ -220,11 +223,11 @@ export function VideoManager() {
                           controls={true}
                           sx={{ width: '100%', height: '100%' }}
                         />
-                      </div>
+                      </Box>
                     </DialogContent>
                   </Dialog>
                 )}
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -233,21 +236,21 @@ export function VideoManager() {
                 >
                   <Trash2 style={{ height: 16, width: 16 }} />
                 </Button>
-              </div>
+              </Box>
             </CardContent>
           </Card>
         ))}
-      </div>
+      </Box>
 
       {filteredVideos.length === 0 && (
-        <div sx={{ textAlign: 'center', py: 6 }}>
+        <Box sx={{ textAlign: 'center', py: 6 }}>
           <Play style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
-          <h3 sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No videos found</h3>
+          <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No videos found</Typography>
           <p style={{ color: 'var(--muted-foreground)' }}>
             {searchTerm ? 'Try adjusting your search terms' : 'Upload some videos to get started'}
           </p>
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

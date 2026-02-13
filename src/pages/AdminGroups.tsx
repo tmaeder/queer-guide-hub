@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { useGroups } from "@/hooks/useGroups";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -176,8 +178,8 @@ export default function AdminGroups() {
   };
 
   return (
-    <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <div sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+    <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <Button
           variant="ghost"
           onClick={() => navigate("/admin")}
@@ -186,23 +188,23 @@ export default function AdminGroups() {
           <ArrowLeft style={{ height: 16, width: 16 }} />
           Back to Admin
         </Button>
-        <div>
-          <h1 sx={{ fontSize: '1.875rem', fontWeight: 700 }}>Groups Management</h1>
+        <Box>
+          <Typography variant="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>Groups Management</Typography>
           <p style={{ color: 'var(--muted-foreground)' }}>Manage community groups and their settings</p>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Stats Cards */}
-      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(5, 1fr)' }, gap: 2, mb: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(5, 1fr)' }, gap: 2, mb: 3 }}>
         <Card>
           <CardHeader sx={{ pb: 1 }}>
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Total Groups</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{groups?.length || 0}</div>
-            <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{groups?.length || 0}</Box>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
               {filteredGroups.length !== groups?.length && `${filteredGroups.length} filtered`}
-            </p>
+            </Typography>
           </CardContent>
         </Card>
         <Card>
@@ -210,9 +212,9 @@ export default function AdminGroups() {
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Public Groups</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {groups?.filter(g => !g.is_private).length || 0}
-            </div>
+            </Box>
           </CardContent>
         </Card>
         <Card>
@@ -220,9 +222,9 @@ export default function AdminGroups() {
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Private Groups</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {groups?.filter(g => g.is_private).length || 0}
-            </div>
+            </Box>
           </CardContent>
         </Card>
         <Card>
@@ -230,9 +232,9 @@ export default function AdminGroups() {
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Total Members</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {groups?.reduce((sum, g) => sum + (g.member_count || 0), 0) || 0}
-            </div>
+            </Box>
           </CardContent>
         </Card>
         <Card>
@@ -240,22 +242,22 @@ export default function AdminGroups() {
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Total Posts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {Object.values(groupStats).reduce((sum, stats) => sum + stats.posts, 0)}
-            </div>
-            <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            </Box>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
               {Object.values(groupStats).reduce((sum, stats) => sum + stats.events, 0)} events
-            </p>
+            </Typography>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Filters and Bulk Actions */}
       <Card>
         <CardHeader>
-          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <CardTitle>Manage Groups</CardTitle>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {selectedGroups.length > 0 && (
                 <>
                   <Badge variant="secondary">{selectedGroups.length} selected</Badge>
@@ -279,12 +281,12 @@ export default function AdminGroups() {
                 <Filter style={{ height: 16, width: 16, marginRight: 4 }} />
                 Filters
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </CardHeader>
         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <div sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-            <div sx={{ flex: 1, position: 'relative' }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+            <Box sx={{ flex: 1, position: 'relative' }}>
               <Search style={{ position: 'absolute', left: 12, top: 12, height: 16, width: 16, color: 'var(--muted-foreground)' }} />
               <Input
                 placeholder="Search by name, description, or tags..."
@@ -292,7 +294,7 @@ export default function AdminGroups() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 sx={{ pl: 5 }}
               />
-            </div>
+            </Box>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger sx={{ width: 200 }}>
                 <SelectValue placeholder="Filter by type" />
@@ -303,14 +305,14 @@ export default function AdminGroups() {
                 <SelectItem value="private">Private Groups</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </Box>
           
           {showFilters && (
-            <div sx={{ borderTop: 1, borderColor: 'divider', pt: 2 }}>
-              <h4 sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1 }}>Additional Filters</h4>
-              <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-                <div>
-                  <label sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Activity Level</label>
+            <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 2 }}>
+              <Typography variant="h4" sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1 }}>Additional Filters</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+                <Box>
+                  <Box component="label" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Activity Level</Box>
                   <Select>
                     <SelectTrigger>
                       <SelectValue placeholder="Any activity" />
@@ -323,9 +325,9 @@ export default function AdminGroups() {
                       <SelectItem value="inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div>
-                  <label sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Member Count</label>
+                </Box>
+                <Box>
+                  <Box component="label" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Member Count</Box>
                   <Select>
                     <SelectTrigger>
                       <SelectValue placeholder="Any size" />
@@ -337,9 +339,9 @@ export default function AdminGroups() {
                       <SelectItem value="large">Large (50+)</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div>
-                  <label sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Created</label>
+                </Box>
+                <Box>
+                  <Box component="label" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Created</Box>
                   <Select>
                     <SelectTrigger>
                       <SelectValue placeholder="Any time" />
@@ -351,9 +353,9 @@ export default function AdminGroups() {
                       <SelectItem value="quarter">Last Quarter</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
-            </div>
+                </Box>
+              </Box>
+            </Box>
           )}
         </CardContent>
       </Card>
@@ -365,13 +367,13 @@ export default function AdminGroups() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div sx={{ textAlign: 'center', py: 2 }}>Loading groups...</div>
+            <Box sx={{ textAlign: 'center', py: 2 }}>Loading groups...</Box>
           ) : filteredGroups.length === 0 ? (
-            <div sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+            <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
               No groups found matching your criteria.
-            </div>
+            </Box>
           ) : (
-            <div sx={{ overflowX: 'auto' }}>
+            <Box sx={{ overflowX: 'auto' }}>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -412,49 +414,49 @@ export default function AdminGroups() {
                         />
                       </TableCell>
                       <TableCell>
-                        <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <div sx={{ height: 40, width: 40, borderRadius: 2, background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'primary.contrastText', fontWeight: 500 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{ height: 40, width: 40, borderRadius: 2, background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'primary.contrastText', fontWeight: 500 }}>
                             {group.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div sx={{ fontWeight: 500 }}>{group.name}</div>
+                          </Box>
+                          <Box>
+                            <Box sx={{ fontWeight: 500 }}>{group.name}</Box>
                             {group.description && (
-                              <div sx={{ fontSize: '0.875rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {group.description}
-                              </div>
+                              </Box>
                             )}
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
                       </TableCell>
                       <TableCell>{getStatusBadge(group)}</TableCell>
                       <TableCell>
-                        <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Users style={{ height: 16, width: 16 }} />
                           {group.member_count || 0}
-                        </div>
+                        </Box>
                       </TableCell>
                       <TableCell>
-                        <div sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                           {getActivityBadge(group.id)}
-                          <div sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                          <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                             {groupStats[group.id] && (
                               <>
-                                <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                   <MessageSquare style={{ height: 12, width: 12 }} />
                                   {groupStats[group.id].posts} posts
-                                </div>
-                                <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                   <Calendar style={{ height: 12, width: 12 }} />
                                   {groupStats[group.id].events} events
-                                </div>
+                                </Box>
                               </>
                             )}
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
                       </TableCell>
                       <TableCell>
                         {group.tags && group.tags.length > 0 ? (
-                          <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxWidth: 200 }}>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxWidth: 200 }}>
                             {group.tags.slice(0, 2).map((tag) => (
                               <Badge key={tag} variant="outline" sx={{ fontSize: '0.75rem' }}>
                                 {tag}
@@ -465,19 +467,19 @@ export default function AdminGroups() {
                                 +{group.tags.length - 2}
                               </Badge>
                             )}
-                          </div>
+                          </Box>
                         ) : (
-                          <span sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>No tags</span>
+                          <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>No tags</Box>
                         )}
                       </TableCell>
                       <TableCell>
-                        <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Calendar style={{ height: 16, width: 16 }} />
                           {new Date(group.created_at).toLocaleDateString()}
-                        </div>
+                        </Box>
                       </TableCell>
                       <TableCell>
-                        <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -496,43 +498,43 @@ export default function AdminGroups() {
                               <DialogHeader>
                                 <DialogTitle>{group.name} - Details</DialogTitle>
                               </DialogHeader>
-                              <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <div>
-                                  <h4 sx={{ fontWeight: 500, mb: 1 }}>Description</h4>
-                                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Box>
+                                  <Typography variant="h4" sx={{ fontWeight: 500, mb: 1 }}>Description</Typography>
+                                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                                     {group.description || "No description"}
-                                  </p>
-                                </div>
+                                  </Typography>
+                                </Box>
                                 {group.rules && (
-                                  <div>
-                                    <h4 sx={{ fontWeight: 500, mb: 1 }}>Rules</h4>
-                                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary', whiteSpace: 'pre-wrap' }}>
+                                  <Box>
+                                    <Typography variant="h4" sx={{ fontWeight: 500, mb: 1 }}>Rules</Typography>
+                                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', whiteSpace: 'pre-wrap' }}>
                                       {group.rules}
-                                    </p>
-                                  </div>
+                                    </Typography>
+                                  </Box>
                                 )}
                                 {group.tags && group.tags.length > 0 && (
-                                  <div>
-                                    <h4 sx={{ fontWeight: 500, mb: 1 }}>Tags</h4>
-                                    <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                  <Box>
+                                    <Typography variant="h4" sx={{ fontWeight: 500, mb: 1 }}>Tags</Typography>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                       {group.tags.map((tag) => (
                                         <Badge key={tag} variant="outline">
                                           {tag}
                                         </Badge>
                                       ))}
-                                    </div>
-                                  </div>
+                                    </Box>
+                                  </Box>
                                 )}
-                                <div>
-                                  <h4 sx={{ fontWeight: 500, mb: 1 }}>Statistics</h4>
-                                  <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, fontSize: '0.875rem' }}>
-                                    <div>Members: {group.member_count || 0}</div>
-                                    <div>Posts: {groupStats[group.id]?.posts || 0}</div>
-                                    <div>Events: {groupStats[group.id]?.events || 0}</div>
-                                    <div>Activity: {getActivityLevel(group.id)}</div>
-                                  </div>
-                                </div>
-                              </div>
+                                <Box>
+                                  <Typography variant="h4" sx={{ fontWeight: 500, mb: 1 }}>Statistics</Typography>
+                                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, fontSize: '0.875rem' }}>
+                                    <Box>Members: {group.member_count || 0}</Box>
+                                    <Box>Posts: {groupStats[group.id]?.posts || 0}</Box>
+                                    <Box>Events: {groupStats[group.id]?.events || 0}</Box>
+                                    <Box>Activity: {getActivityLevel(group.id)}</Box>
+                                  </Box>
+                                </Box>
+                              </Box>
                             </DialogContent>
                           </Dialog>
                           {isAdmin && (
@@ -546,16 +548,16 @@ export default function AdminGroups() {
                               <Trash2 style={{ height: 16, width: 16 }} />
                             </Button>
                           )}
-                        </div>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
+            </Box>
           )}
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

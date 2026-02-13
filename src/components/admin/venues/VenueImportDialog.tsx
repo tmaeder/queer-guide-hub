@@ -195,7 +195,7 @@ export function VenueImportDialog({
       <DialogContent sx={{ maxWidth: 896, maxHeight: '90vh', overflowY: 'auto' }}>
         <DialogHeader>
           <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <span sx={{ fontSize: '1.5rem' }}>{getProviderIcon()}</span>
+            <Box component="span" sx={{ fontSize: '1.5rem' }}>{getProviderIcon()}</Box>
             Import from {getProviderName()}
           </DialogTitle>
           <DialogDescription>
@@ -222,7 +222,7 @@ export function VenueImportDialog({
                 </CardDescription>
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {config.locations.map((location) => (
                     <Badge key={location} variant="secondary" sx={{ gap: 0.5 }}>
                       {location}
@@ -236,9 +236,9 @@ export function VenueImportDialog({
                       </Button>
                     </Badge>
                   ))}
-                </div>
+                </Box>
 
-                <div sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
                   <Input
                     placeholder="Add location (e.g., Miami, FL)"
                     value={newLocation}
@@ -248,11 +248,11 @@ export function VenueImportDialog({
                   <Button onClick={addLocation} disabled={!newLocation.trim()}>
                     <Plus style={{ height: 16, width: 16 }} />
                   </Button>
-                </div>
+                </Box>
 
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Quick Add Popular Locations:</Label>
-                  <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {DEFAULT_LOCATIONS
                       .filter(loc => !config.locations.includes(loc))
                       .slice(0, 5)
@@ -267,24 +267,24 @@ export function VenueImportDialog({
                           {location}
                         </Button>
                       ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
 
-            <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
               <Card>
                 <CardHeader>
                   <CardTitle>Import Limits</CardTitle>
                 </CardHeader>
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label htmlFor="limit">Venues per Location (Optional)</Label>
                     <Select
                       value={config.limit?.toString() || "default"}
-                      onValueChange={(value) => setConfig(prev => ({ 
-                        ...prev, 
-                        limit: value === "default" ? undefined : parseInt(value) 
+                      onValueChange={(value) => setConfig(prev => ({
+                        ...prev,
+                        limit: value === "default" ? undefined : parseInt(value)
                       }))}
                     >
                       <SelectTrigger>
@@ -298,15 +298,15 @@ export function VenueImportDialog({
                         <SelectItem value="50">50 venues</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </Box>
 
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label htmlFor="radius">Search Radius (Optional)</Label>
                     <Select
                       value={config.radius?.toString() || "default"}
-                      onValueChange={(value) => setConfig(prev => ({ 
-                        ...prev, 
-                        radius: value === "default" ? undefined : parseInt(value) 
+                      onValueChange={(value) => setConfig(prev => ({
+                        ...prev,
+                        radius: value === "default" ? undefined : parseInt(value)
                       }))}
                     >
                       <SelectTrigger>
@@ -320,7 +320,7 @@ export function VenueImportDialog({
                         <SelectItem value="50000">50 km</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </Box>
                 </CardContent>
               </Card>
 
@@ -329,41 +329,41 @@ export function VenueImportDialog({
                   <CardTitle>Import Options</CardTitle>
                 </CardHeader>
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Checkbox
                       id="reimport"
                       checked={config.isReimport}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         setConfig(prev => ({ ...prev, isReimport: checked as boolean }))
                       }
                     />
                     <Label htmlFor="reimport">Update existing venues</Label>
-                  </div>
+                  </Box>
 
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Checkbox
                       id="images"
                       checked={config.includeImages}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         setConfig(prev => ({ ...prev, includeImages: checked as boolean }))
                       }
                     />
                     <Label htmlFor="images">Include images</Label>
-                  </div>
+                  </Box>
 
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Checkbox
                       id="reviews"
                       checked={config.includeReviews}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         setConfig(prev => ({ ...prev, includeReviews: checked as boolean }))
                       }
                     />
                     <Label htmlFor="reviews">Include review data</Label>
-                  </div>
+                  </Box>
                 </CardContent>
               </Card>
-            </div>
+            </Box>
           </TabsContent>
 
           <TabsContent value="search" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -378,7 +378,7 @@ export function VenueImportDialog({
                 </CardDescription>
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {config.searchTerms.map((term) => (
                     <Badge key={term} variant="secondary" sx={{ gap: 0.5 }}>
                       {term}
@@ -392,9 +392,9 @@ export function VenueImportDialog({
                       </Button>
                     </Badge>
                   ))}
-                </div>
+                </Box>
 
-                <div sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
                   <Input
                     placeholder="Add search term (e.g., drag bar, queer bookstore)"
                     value={newSearchTerm}
@@ -404,11 +404,11 @@ export function VenueImportDialog({
                   <Button onClick={addSearchTerm} disabled={!newSearchTerm.trim()}>
                     <Plus style={{ height: 16, width: 16 }} />
                   </Button>
-                </div>
+                </Box>
 
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Popular LGBTQ+ Search Terms:</Label>
-                  <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {DEFAULT_SEARCH_TERMS[provider]
                       .filter(term => !config.searchTerms.includes(term))
                       .map((term) => (
@@ -422,8 +422,8 @@ export function VenueImportDialog({
                           {term}
                         </Button>
                       ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
 
@@ -436,9 +436,9 @@ export function VenueImportDialog({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 1 }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 1 }}>
                     {CATEGORIES[provider].map((category) => (
-                      <div key={category} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box key={category} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Checkbox
                           id={`category-${category}`}
                           checked={config.categories.includes(category)}
@@ -459,9 +459,9 @@ export function VenueImportDialog({
                         <Label htmlFor={`category-${category}`} sx={{ fontSize: '0.875rem' }}>
                           {category}
                         </Label>
-                      </div>
+                      </Box>
                     ))}
-                  </div>
+                  </Box>
                 </CardContent>
               </Card>
             )}
@@ -479,8 +479,8 @@ export function VenueImportDialog({
                 </CardDescription>
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label htmlFor="minRating">Minimum Rating</Label>
                     <Select
                       value={config.filters.minRating?.toString() || ''}
@@ -502,14 +502,14 @@ export function VenueImportDialog({
                         <SelectItem value="4.5">4.5+</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </Box>
 
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Checkbox
                         id="openNow"
                         checked={config.filters.openNow || false}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           setConfig(prev => ({
                             ...prev,
                             filters: { ...prev.filters, openNow: checked as boolean }
@@ -517,9 +517,9 @@ export function VenueImportDialog({
                         }
                       />
                       <Label htmlFor="openNow">Only venues open now</Label>
-                    </div>
-                  </div>
-                </div>
+                    </Box>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
           </TabsContent>
@@ -527,19 +527,19 @@ export function VenueImportDialog({
 
         <Separator />
 
-        <div sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
             This will search {config.locations.length} location(s) with {config.searchTerms.length} search term(s)
-          </div>
-          <div sx={{ display: 'flex', gap: 1 }}>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button onClick={handleImport} disabled={isImporting || config.locations.length === 0}>
               {isImporting ? 'Importing...' : 'Start Import'}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </DialogContent>
     </Dialog>
   );

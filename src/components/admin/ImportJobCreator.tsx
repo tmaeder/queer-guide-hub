@@ -10,14 +10,16 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { useImportHub } from '@/hooks/useImportHub';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Upload, FileText, Globe, Database, AlertTriangle, Info, Eye, 
+import {
+  Upload, FileText, Globe, Database, AlertTriangle, Info, Eye,
   Settings, Filter, CheckCircle, X, Plus, RefreshCw, MapPin, Calendar,
   Users, Building, Shield, Tag, ShoppingCart, BookOpen, Newspaper
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { VenueImportDialog } from './venues/VenueImportDialog';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 const IMPORT_TYPES = {
   // Venues
@@ -56,7 +58,7 @@ const IMPORT_TYPES = {
     optionalFields: ['limit', 'radius', 'categories', 'filters'],
     icon: 'MapPin'
   },
-  
+
   // Events
   'events-csv': {
     label: 'Events CSV',
@@ -86,7 +88,7 @@ const IMPORT_TYPES = {
     optionalFields: ['date_range', 'categories', 'filters'],
     icon: 'Calendar'
   },
-  
+
   // Personalities
   'personalities-csv': {
     label: 'Personalities CSV',
@@ -109,7 +111,7 @@ const IMPORT_TYPES = {
     optionalFields: ['locations', 'attributes'],
     icon: 'Users'
   },
-  
+
   // Geographic Data
   'cities-data': {
     label: 'Cities Data',
@@ -132,7 +134,7 @@ const IMPORT_TYPES = {
     optionalFields: ['countries', 'force_update'],
     icon: 'Shield'
   },
-  
+
   // Tags & Categories
   'tags-csv': {
     label: 'Tags CSV',
@@ -155,7 +157,7 @@ const IMPORT_TYPES = {
     optionalFields: ['categories', 'force_recategorize'],
     icon: 'Tag'
   },
-  
+
   // Resources & Marketplace
   'marketplace-awin': {
     label: 'AWIN Products',
@@ -164,7 +166,7 @@ const IMPORT_TYPES = {
     optionalFields: ['categories', 'regions', 'filters'],
     icon: 'ShoppingCart'
   },
-  
+
   // Restrooms & Accessibility
   'restrooms-refuge': {
     label: 'Refuge Restrooms',
@@ -173,7 +175,7 @@ const IMPORT_TYPES = {
     optionalFields: ['locations', 'accessibility_filters'],
     icon: 'MapPin'
   },
-  
+
   // Wikipedia Data
   'wikipedia-data': {
     label: 'Wikipedia Data',
@@ -182,7 +184,7 @@ const IMPORT_TYPES = {
     optionalFields: ['languages', 'extract_images'],
     icon: 'BookOpen'
   },
-  
+
   // News
   'news-sources': {
     label: 'News Sources',
@@ -211,7 +213,7 @@ const DUPLICATE_STRATEGIES = {
 export const ImportJobCreator = () => {
   const { createImportJob, parseCSVPreview, loading } = useImportHub();
   const { toast } = useToast();
-  
+
   const [importType, setImportType] = useState<string>('');
   const [sourceType, setSourceType] = useState<'csv' | 'api' | 'web_scraping'>('csv');
   const [duplicateStrategy, setDuplicateStrategy] = useState<'skip' | 'overwrite' | 'create_new'>('skip');
@@ -224,7 +226,7 @@ export const ImportJobCreator = () => {
   const [fileName, setFileName] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showVenueImportDialog, setShowVenueImportDialog] = useState(false);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isVenueApiImport = importType.startsWith('venues-') && !importType.endsWith('-csv');
@@ -260,26 +262,26 @@ export const ImportJobCreator = () => {
     }
 
     setFileName(file.name);
-    
+
     try {
       const text = await file.text();
       setCsvData(text);
-      
+
       // Generate preview
       const preview = parseCSVPreview(text, 5);
       setCsvPreview(preview);
-      
+
       // Auto-suggest unique key fields based on import type
       if (importType && IMPORT_TYPES[importType as keyof typeof IMPORT_TYPES]) {
         const typeConfig = IMPORT_TYPES[importType as keyof typeof IMPORT_TYPES];
-        const suggestedKeys = typeConfig.requiredFields.filter(field => 
-          preview.headers.some(header => 
+        const suggestedKeys = typeConfig.requiredFields.filter(field =>
+          preview.headers.some(header =>
             header.toLowerCase().includes(field.toLowerCase())
           )
         );
         setUniqueKeyFields(suggestedKeys.slice(0, 2)); // Max 2 key fields
       }
-      
+
     } catch (error) {
       toast({
         title: 'File Read Error',
@@ -405,7 +407,7 @@ export const ImportJobCreator = () => {
   const typeConfig = importType ? IMPORT_TYPES[importType as keyof typeof IMPORT_TYPES] : null;
 
   return (
-    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Card>
         <CardHeader>
           <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -418,7 +420,7 @@ export const ImportJobCreator = () => {
         </CardHeader>
         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Import Type Selection */}
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Label>Import Type</Label>
             <Select value={importType} onValueChange={setImportType}>
               <SelectTrigger>
@@ -430,42 +432,42 @@ export const ImportJobCreator = () => {
                     MapPin, Calendar, Users, Building, Globe, Shield, Tag, ShoppingCart, BookOpen, Newspaper
                   };
                   const IconComponent = iconMap[config.icon];
-                  
+
                   return (
                     <SelectItem key={key} value={key}>
-                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.5 }}>
                         {IconComponent && <IconComponent style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />}
                         <div>
-                          <div sx={{ fontWeight: 500 }}>{config.label}</div>
-                          <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{config.description}</div>
+                          <Box sx={{ fontWeight: 500 }}>{config.label}</Box>
+                          <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{config.description}</Box>
                         </div>
-                      </div>
+                      </Box>
                     </SelectItem>
                   );
                 })}
               </SelectContent>
             </Select>
-            
+
             {typeConfig && (
               <Alert>
                 <Info style={{ height: 16, width: 16 }} />
                 <AlertDescription>
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <div>
                       <strong>Required fields:</strong> {typeConfig.requiredFields.join(', ')}
                     </div>
                     <div>
                       <strong>Optional fields:</strong> {typeConfig.optionalFields.join(', ')}
                     </div>
-                  </div>
+                  </Box>
                 </AlertDescription>
               </Alert>
             )}
-          </div>
+          </Box>
 
           {/* Source Type */}
           {!isVenueApiImport && (
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Label>Data Source</Label>
               <Tabs value={sourceType} onValueChange={(value) => setSourceType(value as any)}>
                 <TabsList sx={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -484,7 +486,7 @@ export const ImportJobCreator = () => {
               </TabsList>
 
               <TabsContent value="csv" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="csv-file">CSV File (Max 50MB)</Label>
                   <Input
                     id="csv-file"
@@ -495,11 +497,11 @@ export const ImportJobCreator = () => {
                     disabled={loading}
                   />
                   {fileName && (
-                    <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                    <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Selected file: {fileName}
-                    </div>
+                    </Box>
                   )}
-                </div>
+                </Box>
 
                 {csvPreview && (
                   <Card>
@@ -513,37 +515,37 @@ export const ImportJobCreator = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div sx={{ overflowX: 'auto' }}>
-                        <table sx={{ width: '100%', borderCollapse: 'collapse', border: 1, borderColor: 'divider' }}>
+                      <Box sx={{ overflowX: 'auto' }}>
+                        <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', border: 1, borderColor: 'divider' }}>
                           <thead>
-                            <tr sx={{ bgcolor: 'action.hover' }}>
+                            <Box component="tr" sx={{ bgcolor: 'action.hover' }}>
                               {csvPreview.headers.map((header, index) => (
-                                <th key={index} sx={{ border: 1, borderColor: 'divider', p: 1, textAlign: 'left', fontWeight: 500 }}>
+                                <Box component="th" key={index} sx={{ border: 1, borderColor: 'divider', p: 1, textAlign: 'left', fontWeight: 500 }}>
                                   {header}
-                                </th>
+                                </Box>
                               ))}
-                            </tr>
+                            </Box>
                           </thead>
                           <tbody>
                             {csvPreview.rows.map((row, index) => (
                               <tr key={index} style={{ backgroundColor: index % 2 === 0 ? 'var(--background)' : 'rgba(var(--muted-rgb), 0.5)' }}>
                                 {csvPreview.headers.map((header, colIndex) => (
-                                  <td key={colIndex} sx={{ border: 1, borderColor: 'divider', p: 1, fontSize: '0.875rem' }}>
+                                  <Box component="td" key={colIndex} sx={{ border: 1, borderColor: 'divider', p: 1, fontSize: '0.875rem' }}>
                                     {row[header] || '-'}
-                                  </td>
+                                  </Box>
                                 ))}
                               </tr>
                             ))}
                           </tbody>
-                        </table>
-                      </div>
+                        </Box>
+                      </Box>
                     </CardContent>
                   </Card>
                 )}
               </TabsContent>
 
               <TabsContent value="api" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label htmlFor="api-endpoint">API Endpoint URL</Label>
                   <Input
                     id="api-endpoint"
@@ -552,8 +554,8 @@ export const ImportJobCreator = () => {
                     onChange={(e) => setApiEndpoint(e.target.value)}
                     placeholder="https://api.example.com/data"
                   />
-                </div>
-                
+                </Box>
+
                 <Alert>
                   <Info style={{ height: 16, width: 16 }} />
                   <AlertDescription>
@@ -571,11 +573,11 @@ export const ImportJobCreator = () => {
                 </Alert>
               </TabsContent>
             </Tabs>
-          </div>
+          </Box>
           )}
 
           {/* Duplicate Handling */}
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Label>Duplicate Handling Strategy</Label>
             <Select value={duplicateStrategy} onValueChange={(value) => setDuplicateStrategy(value as any)}>
               <SelectTrigger>
@@ -585,24 +587,24 @@ export const ImportJobCreator = () => {
                 {Object.entries(DUPLICATE_STRATEGIES).map(([key, config]) => (
                   <SelectItem key={key} value={key}>
                     <div>
-                      <div sx={{ fontWeight: 500 }}>{config.label}</div>
-                      <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{config.description}</div>
+                      <Box sx={{ fontWeight: 500 }}>{config.label}</Box>
+                      <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{config.description}</Box>
                     </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
 
           {/* Unique Key Fields */}
           {csvPreview && (
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Label>Unique Key Fields</Label>
-              <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                   Select fields that uniquely identify records for duplicate detection
-                </p>
-                <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {uniqueKeyFields.map((field) => (
                     <Badge key={field} variant="secondary" sx={{ gap: 0.5 }}>
                       {field}
@@ -616,7 +618,7 @@ export const ImportJobCreator = () => {
                       </Button>
                     </Badge>
                   ))}
-                </div>
+                </Box>
                 <Select onValueChange={addUniqueKeyField}>
                   <SelectTrigger sx={{ width: 192 }}>
                     <SelectValue placeholder="Add field" />
@@ -631,8 +633,8 @@ export const ImportJobCreator = () => {
                       ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
 
           {/* Advanced Configuration */}
@@ -693,7 +695,7 @@ export const ImportJobCreator = () => {
             </Alert>
           )}
 
-          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 3 }}>
             <Button
               onClick={createImport}
               disabled={loading}
@@ -711,7 +713,7 @@ export const ImportJobCreator = () => {
                 </>
               )}
             </Button>
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
@@ -725,6 +727,6 @@ export const ImportJobCreator = () => {
           isImporting={loading}
         />
       )}
-    </div>
+    </Box>
   );
 };

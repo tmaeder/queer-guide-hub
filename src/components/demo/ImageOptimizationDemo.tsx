@@ -49,46 +49,46 @@ export function ImageOptimizationDemo() {
   const breakpoints = [320, 640, 768, 1024, 1280, 1440, 1920];
 
   return (
-    <div sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       {/* Header */}
-      <div sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <h2 sx={{ fontSize: '1.875rem', fontWeight: 700 }}>🚀 Image Optimization System</h2>
-        <p sx={{ color: 'text.secondary', maxWidth: 672, mx: 'auto' }}>
+      <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Typography variant="h2" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>🚀 Image Optimization System</Typography>
+        <Typography sx={{ color: 'text.secondary', maxWidth: 672, mx: 'auto' }}>
           Automatic AVIF/WebP conversion with JPEG fallback, responsive breakpoints, and lazy loading for optimal Core Web Vitals.
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
       {/* Benefits Cards */}
-      <div sx={{ display: 'grid', gridTemplateColumns: { md: 'repeat(4, 1fr)' }, gap: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { md: 'repeat(4, 1fr)' }, gap: 2 }}>
         <Card>
           <CardContent sx={{ p: 3, textAlign: 'center' }}>
             <Zap style={{ height: 32, width: 32, margin: '0 auto 8px', color: '#3b82f6' }} />
-            <h3 sx={{ fontWeight: 600 }}>90% Smaller</h3>
-            <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>AVIF vs JPEG compression</p>
+            <Typography variant="h3" sx={{ fontWeight: 600 }}>90% Smaller</Typography>
+            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>AVIF vs JPEG compression</Typography>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 3, textAlign: 'center' }}>
             <Monitor style={{ height: 32, width: 32, margin: '0 auto 8px', color: '#22c55e' }} />
-            <h3 sx={{ fontWeight: 600 }}>Responsive</h3>
-            <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>7 breakpoints automatic</p>
+            <Typography variant="h3" sx={{ fontWeight: 600 }}>Responsive</Typography>
+            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>7 breakpoints automatic</Typography>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 3, textAlign: 'center' }}>
             <Globe style={{ height: 32, width: 32, margin: '0 auto 8px', color: '#555555' }} />
-            <h3 sx={{ fontWeight: 600 }}>Universal</h3>
-            <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>JPEG/PNG fallback</p>
+            <Typography variant="h3" sx={{ fontWeight: 600 }}>Universal</Typography>
+            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>JPEG/PNG fallback</Typography>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 3, textAlign: 'center' }}>
             <ImageIcon style={{ height: 32, width: 32, margin: '0 auto 8px', color: '#f97316' }} />
-            <h3 sx={{ fontWeight: 600 }}>Smart Loading</h3>
-            <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Lazy + priority support</p>
+            <Typography variant="h3" sx={{ fontWeight: 600 }}>Smart Loading</Typography>
+            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Lazy + priority support</Typography>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       <Tabs defaultValue="demo" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <TabsList sx={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -107,7 +107,7 @@ export function ImageOptimizationDemo() {
               </CardDescription>
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <div sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: 'flex', gap: 1 }}>
                 {(['avif', 'webp', 'jpg'] as const).map((format) => (
                   <Button
                     key={format}
@@ -118,12 +118,12 @@ export function ImageOptimizationDemo() {
                     {format}
                   </Button>
                 ))}
-              </div>
-              
-              <div sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
+              </Box>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
                 <div>
-                  <h4 sx={{ fontWeight: 500, mb: 1 }}>Size Selector</h4>
-                  <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 500, mb: 1 }}>Size Selector</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {breakpoints.map((size) => (
                       <Button
                         key={size}
@@ -134,37 +134,37 @@ export function ImageOptimizationDemo() {
                         {size}w
                       </Button>
                     ))}
-                  </div>
+                  </Box>
                 </div>
-                
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <p sx={{ fontSize: '0.875rem' }}>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography sx={{ fontSize: '0.875rem' }}>
                     <strong>Current:</strong> {selectedFormat.toUpperCase()} @ {selectedSize}px width
-                  </p>
-                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                    URL: <code sx={{ fontSize: '0.75rem' }}>/images/optimized/sample-{selectedSize}.{selectedFormat}</code>
-                  </p>
-                </div>
-              </div>
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                    URL: <Box component="code" sx={{ fontSize: '0.75rem' }}>/images/optimized/sample-{selectedSize}.{selectedFormat}</Box>
+                  </Typography>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
 
           {/* Component Examples */}
-          <div sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
             <Card>
               <CardHeader>
                 <CardTitle sx={{ fontSize: '1.125rem' }}>Hero Image</CardTitle>
                 <CardDescription>Priority loading, no lazy loading</CardDescription>
               </CardHeader>
               <CardContent>
-                <div sx={{ background: 'linear-gradient(to right, #dbeafe, #f3e8ff)', borderRadius: 2, p: 4, textAlign: 'center' }}>
-                  <h3 sx={{ fontSize: '1.25rem', fontWeight: 700, mb: 1 }}>Sample Hero</h3>
-                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Would use HeroImage component</p>
+                <Box sx={{ background: 'linear-gradient(to right, #dbeafe, #f3e8ff)', borderRadius: 2, p: 4, textAlign: 'center' }}>
+                  <Typography variant="h3" sx={{ fontSize: '1.25rem', fontWeight: 700, mb: 1 }}>Sample Hero</Typography>
+                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Would use HeroImage component</Typography>
                   <Badge sx={{ mt: 1 }}>Priority Loading</Badge>
-                </div>
-                <div sx={{ mt: 2, fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                </Box>
+                <Box sx={{ mt: 2, fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   <code>&lt;HeroImage src="hero-banner" alt="..." /&gt;</code>
-                </div>
+                </Box>
               </CardContent>
             </Card>
 
@@ -174,15 +174,15 @@ export function ImageOptimizationDemo() {
                 <CardDescription>Lazy loaded, rounded corners</CardDescription>
               </CardHeader>
               <CardContent>
-                <div sx={{ background: 'linear-gradient(to right, #dcfce7, #dbeafe)', borderRadius: 2, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div sx={{ textAlign: 'center' }}>
+                <Box sx={{ background: 'linear-gradient(to right, #dcfce7, #dbeafe)', borderRadius: 2, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Box sx={{ textAlign: 'center' }}>
                     <ImageIcon style={{ height: 32, width: 32, margin: '0 auto 8px', color: 'var(--muted-foreground)' }} />
-                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Sample Card</p>
-                  </div>
-                </div>
-                <div sx={{ mt: 2, fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Sample Card</Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ mt: 2, fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   <code>&lt;CardImage src="product" alt="..." /&gt;</code>
-                </div>
+                </Box>
               </CardContent>
             </Card>
 
@@ -192,17 +192,17 @@ export function ImageOptimizationDemo() {
                 <CardDescription>Circular crop, small sizes</CardDescription>
               </CardHeader>
               <CardContent>
-                <div sx={{ display: 'flex', justifyContent: 'center' }}>
-                  <div sx={{ width: 96, height: 96, background: 'linear-gradient(to right, #f3e8ff, #fce7f3)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <Box sx={{ width: 96, height: 96, background: 'linear-gradient(to right, #f3e8ff, #fce7f3)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <ImageIcon style={{ height: 32, width: 32, color: 'var(--muted-foreground)' }} />
-                  </div>
-                </div>
-                <div sx={{ mt: 2, fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  </Box>
+                </Box>
+                <Box sx={{ mt: 2, fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   <code>&lt;AvatarImage src="profile" alt="..." /&gt;</code>
-                </div>
+                </Box>
               </CardContent>
             </Card>
-          </div>
+          </Box>
         </TabsContent>
 
         <TabsContent value="stats" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -214,39 +214,39 @@ export function ImageOptimizationDemo() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {sampleImages.map((image) => (
-                  <div key={image.name} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}>
-                    <div sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+                  <Box key={image.name} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
                       <div>
-                        <h4 sx={{ fontWeight: 600 }}>{image.title}</h4>
-                        <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{image.description}</p>
+                        <Typography variant="h4" sx={{ fontWeight: 600 }}>{image.title}</Typography>
+                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{image.description}</Typography>
                       </div>
                       <Badge variant="secondary" sx={{ bgcolor: '#dcfce7', color: '#166534' }}>
                         {image.savings} smaller
                       </Badge>
-                    </div>
-                    <div sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, fontSize: '0.875rem' }}>
+                    </Box>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, fontSize: '0.875rem' }}>
                       <div>
-                        <p sx={{ fontWeight: 500, color: '#dc2626' }}>Original</p>
+                        <Typography sx={{ fontWeight: 500, color: '#dc2626' }}>Original</Typography>
                         <p>{image.originalSize}</p>
                       </div>
                       <div>
-                        <p sx={{ fontWeight: 500, color: '#16a34a' }}>AVIF</p>
+                        <Typography sx={{ fontWeight: 500, color: '#16a34a' }}>AVIF</Typography>
                         <p>{image.avifSize}</p>
                       </div>
                       <div>
-                        <p sx={{ fontWeight: 500, color: '#2563eb' }}>WebP</p>
+                        <Typography sx={{ fontWeight: 500, color: '#2563eb' }}>WebP</Typography>
                         <p>{image.webpSize}</p>
                       </div>
                       <div>
-                        <p sx={{ fontWeight: 500, color: '#ea580c' }}>JPEG</p>
+                        <Typography sx={{ fontWeight: 500, color: '#ea580c' }}>JPEG</Typography>
                         <p>{image.jpegSize}</p>
                       </div>
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             </CardContent>
           </Card>
         </TabsContent>
@@ -261,39 +261,39 @@ export function ImageOptimizationDemo() {
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <div>
-                <h4 sx={{ fontWeight: 600, mb: 1 }}>1. Add Source Images</h4>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
+                <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>1. Add Source Images</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
                   Place your original high-quality images in <code>src/assets/images/</code>
-                </p>
-                <div sx={{ bgcolor: 'action.hover', p: 1.5, borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace' }}>
+                </Typography>
+                <Box sx={{ bgcolor: 'action.hover', p: 1.5, borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace' }}>
                   src/assets/images/<br />
                   ├── hero-banner.jpg<br />
                   ├── product-showcase.png<br />
                   └── team-photo.webp
-                </div>
+                </Box>
               </div>
 
               <div>
-                <h4 sx={{ fontWeight: 600, mb: 1 }}>2. Generate Optimized Images</h4>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
+                <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>2. Generate Optimized Images</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
                   Run the build script to generate all formats and sizes
-                </p>
-                <div sx={{ bgcolor: 'action.hover', p: 1.5, borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace' }}>
+                </Typography>
+                <Box sx={{ bgcolor: 'action.hover', p: 1.5, borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace' }}>
                   npm run build:images
-                </div>
+                </Box>
               </div>
 
               <div>
-                <h4 sx={{ fontWeight: 600, mb: 1 }}>3. Use in Components</h4>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
+                <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>3. Use in Components</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
                   Import and use the responsive image components
-                </p>
-                <div sx={{ bgcolor: 'action.hover', p: 1.5, borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace' }}>
+                </Typography>
+                <Box sx={{ bgcolor: 'action.hover', p: 1.5, borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace' }}>
                   {`import { ResponsiveImage, HeroImage } from '@/components/ui/responsive-image';
 
 // Hero image (priority loading)
-<HeroImage 
-  src="hero-banner" 
+<HeroImage
+  src="hero-banner"
   alt="Main hero banner"
   width={1920}
   height={1080}
@@ -305,17 +305,17 @@ export function ImageOptimizationDemo() {
   alt="Product showcase"
   loading="lazy"
 />`}
-                </div>
+                </Box>
               </div>
 
               <div>
-                <h4 sx={{ fontWeight: 600, mb: 1 }}>4. Build & Deploy</h4>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
+                <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>4. Build & Deploy</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
                   The build process automatically optimizes images before deployment
-                </p>
-                <div sx={{ bgcolor: 'action.hover', p: 1.5, borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace' }}>
+                </Typography>
+                <Box sx={{ bgcolor: 'action.hover', p: 1.5, borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace' }}>
                   npm run build  # Runs image optimization + Vite build
-                </div>
+                </Box>
               </div>
             </CardContent>
           </Card>
@@ -325,29 +325,29 @@ export function ImageOptimizationDemo() {
               <CardTitle>📊 Performance Benefits</CardTitle>
             </CardHeader>
             <CardContent>
-              <div sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2, fontSize: '0.875rem' }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2, fontSize: '0.875rem' }}>
                 <div>
-                  <h5 sx={{ fontWeight: 600, mb: 1 }}>Core Web Vitals</h5>
-                  <ul sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, color: 'text.secondary' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>Core Web Vitals</Typography>
+                  <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, color: 'text.secondary' }}>
                     <li>• Faster LCP (Largest Contentful Paint)</li>
                     <li>• Better CLS (Cumulative Layout Shift)</li>
                     <li>• Improved FID (First Input Delay)</li>
-                  </ul>
+                  </Box>
                 </div>
                 <div>
-                  <h5 sx={{ fontWeight: 600, mb: 1 }}>User Experience</h5>
-                  <ul sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, color: 'text.secondary' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>User Experience</Typography>
+                  <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, color: 'text.secondary' }}>
                     <li>• 90% smaller file sizes</li>
                     <li>• Faster page load times</li>
                     <li>• Reduced bandwidth usage</li>
                     <li>• Universal browser support</li>
-                  </ul>
+                  </Box>
                 </div>
-              </div>
+              </Box>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </Box>
   );
 }

@@ -11,6 +11,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApiKeys, ApiKey, CreateApiKeyRequest } from '@/hooks/useApiKeys';
 import { Plus, Key, Edit, Trash2, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 const PREDEFINED_SERVICES = [
   { value: 'openai', label: 'OpenAI' },
@@ -131,16 +133,16 @@ export const ApiKeysManager = () => {
   };
 
   return (
-    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 sx={{ fontSize: '1.875rem', fontWeight: 700, color: 'text.primary' }}>API Keys Management</h2>
+          <Typography variant="h2" sx={{ fontSize: '1.875rem', fontWeight: 700, color: 'text.primary' }}>API Keys Management</Typography>
           <p style={{ color: 'var(--muted-foreground)' }}>
             Securely manage API keys for external services
           </p>
         </div>
-        <div sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outline"
             onClick={refreshKeys}
@@ -165,7 +167,7 @@ export const ApiKeysManager = () => {
                     Store an API key securely for use in import operations
                   </DialogDescription>
                 </DialogHeader>
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 2 }}>
                   <div>
                     <Label htmlFor="service">Service</Label>
                     <Select
@@ -190,7 +192,7 @@ export const ApiKeysManager = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   {createForm.service_name && (
                     <div>
                       <Label htmlFor="key_name">Key Name</Label>
@@ -234,7 +236,7 @@ export const ApiKeysManager = () => {
                       rows={3}
                     />
                   </div>
-                </div>
+                </Box>
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
                     Cancel
@@ -246,8 +248,8 @@ export const ApiKeysManager = () => {
               </form>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* API Keys List */}
       {loading ? (
@@ -261,10 +263,10 @@ export const ApiKeysManager = () => {
         <Card>
           <CardContent sx={{ p: 6, textAlign: 'center' }}>
             <Key style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-            <h3 sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No API Keys</h3>
-            <p sx={{ color: 'text.secondary', mb: 2 }}>
+            <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No API Keys</Typography>
+            <Typography sx={{ color: 'text.secondary', mb: 2 }}>
               Add your first API key to enable external service integrations
-            </p>
+            </Typography>
             <Button onClick={() => setShowCreateDialog(true)}>
               <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
               Add API Key
@@ -272,25 +274,25 @@ export const ApiKeysManager = () => {
           </CardContent>
         </Card>
       ) : (
-        <div sx={{ display: 'grid', gap: 2 }}>
+        <Box sx={{ display: 'grid', gap: 2 }}>
           {keys.map((key) => (
             <Card key={key.id}>
               <CardHeader sx={{ pb: 1.5 }}>
-                <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <div sx={{ p: 1, bgcolor: 'primary.main' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ p: 1, bgcolor: 'primary.main' }}>
                       <Key style={{ height: 16, width: 16, color: 'var(--primary-foreground)' }} />
-                    </div>
+                    </Box>
                     <div>
                       <CardTitle sx={{ fontSize: '1.125rem' }}>{key.service_name}</CardTitle>
                       <CardDescription>{key.key_name}</CardDescription>
                     </div>
-                  </div>
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Badge variant={key.is_active ? "default" : "secondary"}>
                       {key.is_active ? "Active" : "Inactive"}
                     </Badge>
-                    <div sx={{ display: 'flex', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
                       <Button
                         variant="outline"
                         size="sm"
@@ -322,31 +324,31 @@ export const ApiKeysManager = () => {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
-                    </div>
-                  </div>
-                </div>
+                    </Box>
+                  </Box>
+                </Box>
               </CardHeader>
               <CardContent>
                 {key.description && (
-                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5 }}>{key.description}</p>
+                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5 }}>{key.description}</Typography>
                 )}
-                <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, fontSize: '0.875rem' }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, fontSize: '0.875rem' }}>
                   <div>
-                    <span sx={{ fontWeight: 500 }}>Created:</span> {formatDate(key.created_at)}
+                    <Box component="span" sx={{ fontWeight: 500 }}>Created:</Box> {formatDate(key.created_at)}
                   </div>
                   <div>
-                    <span sx={{ fontWeight: 500 }}>Updated:</span> {formatDate(key.updated_at)}
+                    <Box component="span" sx={{ fontWeight: 500 }}>Updated:</Box> {formatDate(key.updated_at)}
                   </div>
                   {key.last_used_at && (
-                    <div sx={{ gridColumn: 'span 2' }}>
-                      <span sx={{ fontWeight: 500 }}>Last Used:</span> {formatDate(key.last_used_at)}
-                    </div>
+                    <Box sx={{ gridColumn: 'span 2' }}>
+                      <Box component="span" sx={{ fontWeight: 500 }}>Last Used:</Box> {formatDate(key.last_used_at)}
+                    </Box>
                   )}
-                </div>
+                </Box>
               </CardContent>
             </Card>
           ))}
-        </div>
+        </Box>
       )}
 
       {/* Edit Dialog */}
@@ -359,14 +361,14 @@ export const ApiKeysManager = () => {
                 Update the API key details. Leave the key value empty to keep the current key.
               </DialogDescription>
             </DialogHeader>
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 2 }}>
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Switch
                   checked={editForm.is_active}
                   onCheckedChange={(checked) => setEditForm(prev => ({ ...prev, is_active: checked }))}
                 />
                 <Label>Active</Label>
-              </div>
+              </Box>
 
               <div>
                 <Label htmlFor="edit_service">Service</Label>
@@ -409,7 +411,7 @@ export const ApiKeysManager = () => {
                   rows={3}
                 />
               </div>
-            </div>
+            </Box>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setEditingKey(null)}>
                 Cancel
@@ -421,6 +423,6 @@ export const ApiKeysManager = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </Box>
   );
 };

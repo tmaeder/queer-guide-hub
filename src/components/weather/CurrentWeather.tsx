@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Cloud, Sun, CloudRain, CloudSnow, Wind, Thermometer, Droplets, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface CurrentWeatherData {
   success: boolean;
@@ -106,9 +108,9 @@ export function CurrentWeather({ latitude, longitude, cityName, className }: Cur
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
             <div style={{ color: 'var(--muted-foreground)' }}>Loading weather data...</div>
-          </div>
+          </Box>
         </CardContent>
       </Card>
     );
@@ -130,56 +132,56 @@ export function CurrentWeather({ latitude, longitude, cityName, className }: Cur
       </CardHeader>
       <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {/* Main weather display */}
-        <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {getWeatherIcon(current.icon)}
             <div>
-              <div sx={{ fontSize: '1.875rem', fontWeight: 700 }}>{Math.round(current.temp)}°C</div>
-              <div sx={{ fontSize: '0.875rem', color: 'text.secondary', textTransform: 'capitalize' }}>
+              <Box sx={{ fontSize: '1.875rem', fontWeight: 700 }}>{Math.round(current.temp)}°C</Box>
+              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary', textTransform: 'capitalize' }}>
                 {current.description}
-              </div>
+              </Box>
             </div>
-          </div>
-          <div sx={{ textAlign: 'right' }}>
-            <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Feels like</div>
-            <div sx={{ fontSize: '1.125rem', fontWeight: 600 }}>{Math.round(current.feels_like)}°C</div>
-          </div>
-        </div>
+          </Box>
+          <Box sx={{ textAlign: 'right' }}>
+            <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Feels like</Box>
+            <Box sx={{ fontSize: '1.125rem', fontWeight: 600 }}>{Math.round(current.feels_like)}°C</Box>
+          </Box>
+        </Box>
 
         {/* Weather details */}
-        <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Droplets style={{ height: 16, width: 16, color: '#3b82f6' }} />
             <div>
-              <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Humidity</div>
-              <div sx={{ fontWeight: 600 }}>{current.humidity}%</div>
+              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Humidity</Box>
+              <Box sx={{ fontWeight: 600 }}>{current.humidity}%</Box>
             </div>
-          </div>
-          
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Wind style={{ height: 16, width: 16, color: '#6b7280' }} />
             <div>
-              <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Wind</div>
-              <div sx={{ fontWeight: 600 }}>{current.windSpeed} m/s</div>
+              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Wind</Box>
+              <Box sx={{ fontWeight: 600 }}>{current.windSpeed} m/s</Box>
             </div>
-          </div>
-          
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Eye style={{ height: 16, width: 16, color: '#6b7280' }} />
             <div>
-              <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Visibility</div>
-              <div sx={{ fontWeight: 600 }}>{(current.visibility / 1000).toFixed(1)} km</div>
+              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Visibility</Box>
+              <Box sx={{ fontWeight: 600 }}>{(current.visibility / 1000).toFixed(1)} km</Box>
             </div>
-          </div>
-          
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Thermometer style={{ height: 16, width: 16, color: '#6b7280' }} />
             <div>
-              <div sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Pressure</div>
-              <div sx={{ fontWeight: 600 }}>{current.pressure} hPa</div>
+              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Pressure</Box>
+              <Box sx={{ fontWeight: 600 }}>{current.pressure} hPa</Box>
             </div>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

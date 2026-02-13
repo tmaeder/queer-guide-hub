@@ -497,16 +497,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
     if (readonly) {
       return (
-        <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Label sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {icon}
             {label}
             <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>Read-only</Badge>
           </Label>
-          <div sx={{ px: 1.5, py: 1, bgcolor: 'action.hover', borderRadius: 1, fontSize: '0.875rem' }}>
+          <Box sx={{ px: 1.5, py: 1, bgcolor: 'action.hover', borderRadius: 1, fontSize: '0.875rem' }}>
             {fieldValue?.toLocaleString() || 'N/A'}
-          </div>
-        </div>
+          </Box>
+        </Box>
       );
     }
 
@@ -516,11 +516,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         // Special handling for profession field
         if (key === 'profession') {
           return (
-            <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {icon}
                 {label}
-                {required && <span sx={{ color: 'error.main' }}>*</span>}
+                {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
               </Label>
               <ProfessionAutocomplete
                 id={key}
@@ -529,18 +529,18 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
                 placeholder="Select or type a profession..."
                 required={required}
               />
-            </div>
+            </Box>
           );
         }
         
         // Special handling for nationality field
         if (key === 'nationality') {
           return (
-            <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {icon}
                 {label}
-                {required && <span sx={{ color: 'error.main' }}>*</span>}
+                {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
               </Label>
               <CountryAutocomplete
                 id={key}
@@ -549,16 +549,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
                 placeholder="Select a country..."
                 required={required}
               />
-            </div>
+            </Box>
           );
         }
         
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Input
               id={key}
@@ -566,16 +566,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               onChange={(e) => handleFieldChange(key, e.target.value)}
               required={required}
             />
-          </div>
+          </Box>
         );
 
       case 'textarea':
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Textarea
               id={key}
@@ -584,16 +584,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               sx={{ minHeight: 96 }}
               required={required}
             />
-          </div>
+          </Box>
         );
 
       case 'number':
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Input
               id={key}
@@ -602,16 +602,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               onChange={(e) => handleFieldChange(key, e.target.value ? Number(e.target.value) : null)}
               required={required}
             />
-          </div>
+          </Box>
         );
 
       case 'email':
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Input
               id={key}
@@ -620,16 +620,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               onChange={(e) => handleFieldChange(key, e.target.value)}
               required={required}
             />
-          </div>
+          </Box>
         );
 
       case 'tel':
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Input
               id={key}
@@ -638,14 +638,14 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               onChange={(e) => handleFieldChange(key, e.target.value)}
               required={required}
             />
-          </div>
+          </Box>
         );
 
       case 'url':
         // Special handling for image URLs
         if (key === 'image_url' || key.includes('image')) {
           return (
-            <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <ImageUpload
                 id={key}
                 value={fieldValue || ''}
@@ -654,16 +654,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
                 required={required}
                 maxSize={5}
               />
-            </div>
+            </Box>
           );
         }
         
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Input
               id={key}
@@ -672,16 +672,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               onChange={(e) => handleFieldChange(key, e.target.value)}
               required={required}
             />
-          </div>
+          </Box>
         );
 
       case 'date':
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Input
               id={key}
@@ -690,16 +690,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               onChange={(e) => handleFieldChange(key, e.target.value ? new Date(e.target.value).toISOString() : null)}
               required={required}
             />
-          </div>
+          </Box>
         );
 
       case 'datetime':
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Input
               id={key}
@@ -708,12 +708,12 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               onChange={(e) => handleFieldChange(key, e.target.value ? new Date(e.target.value).toISOString() : null)}
               required={required}
             />
-          </div>
+          </Box>
         );
 
       case 'boolean':
         return (
-          <div key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Switch
               id={key}
               checked={fieldValue || false}
@@ -723,16 +723,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               {icon}
               {label}
             </Label>
-          </div>
+          </Box>
         );
 
       case 'select':
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Select value={fieldValue || ''} onValueChange={(value) => handleFieldChange(key, value)}>
               <SelectTrigger>
@@ -746,7 +746,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
         );
 
       case 'array':
@@ -775,11 +775,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         }
         
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Textarea
               id={key}
@@ -792,11 +792,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               sx={{ minHeight: 96 }}
             />
             {displayValue && (
-              <div sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+              <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                 Current: {displayValue.split(',').length} item(s)
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         );
 
       case 'json':
@@ -820,11 +820,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         }
         
         return (
-          <div key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {icon}
               {label}
-              {required && <span sx={{ color: 'error.main' }}>*</span>}
+              {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
             </Label>
             <Textarea
               id={key}
@@ -842,11 +842,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               placeholder="Enter JSON data"
             />
             {jsonDisplayValue && (
-              <div sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+              <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                 {jsonDisplayValue.length > 100 ? `${jsonDisplayValue.length} characters` : 'Valid JSON'}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         );
 
       default:
@@ -900,15 +900,15 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
   }
 
   return (
-    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button variant="ghost" onClick={onClose}>
             <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
             Back
           </Button>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {content.image_url && (
               <Avatar style={{ height: 48, width: 48 }}>
                 <AvatarImage src={content.image_url} alt={content.title} />
@@ -922,18 +922,18 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               </Avatar>
             )}
             <div>
-              <h1 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{content.title || content.name || 'Edit Content'}</h1>
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+              <Typography variant="h1" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{content.title || content.name || 'Edit Content'}</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
                 <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
                   {content.content_type.replace('_', ' ')}
                 </Badge>
-                <span sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>ID: {content.id}</span>
-              </div>
+                <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>ID: {content.id}</Box>
+              </Box>
             </div>
-          </div>
-        </div>
+          </Box>
+        </Box>
         
-        <div sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button variant="outline" disabled>
             <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
             Preview
@@ -942,14 +942,14 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <Save style={{ height: 16, width: 16, marginRight: 8 }} />
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       <Separator />
 
       {/* Content Form with Tabs */}
-      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
-        <div sx={{ gridColumn: { lg: 'span 3' } }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
+        <Box sx={{ gridColumn: { lg: 'span 3' } }}>
           <Card>
             <CardHeader>
               <CardTitle>Content Details</CardTitle>
@@ -979,17 +979,17 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
                 {tabs.map(tab => (
                   <TabsContent key={tab} value={tab} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 3 }}>
-                    <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                       {fieldGroups[tab]?.map(field => renderField(field))}
-                    </div>
+                    </Box>
                   </TabsContent>
                 ))}
               </Tabs>
             </CardContent>
           </Card>
-        </div>
+        </Box>
 
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Content Info */}
           <Card>
             <CardHeader>
@@ -998,23 +998,23 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div>
                 <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Content Type</Label>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', textTransform: 'capitalize' }}>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', textTransform: 'capitalize' }}>
                   {content.content_type.replace('_', ' ')}
-                </p>
+                </Typography>
               </div>
               
               <div>
                 <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Created</Label>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                   {new Date(content.created_at).toLocaleString()}
-                </p>
+                </Typography>
               </div>
               
               <div>
                 <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Last Updated</Label>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                   {new Date(content.updated_at).toLocaleString()}
-                </p>
+                </Typography>
               </div>
 
               {content.status && (
@@ -1059,14 +1059,14 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             </CardHeader>
             <CardContent>
               <ScrollArea sx={{ height: 192 }}>
-                <pre sx={{ fontSize: '0.75rem', bgcolor: 'action.hover', p: 1, borderRadius: 1, overflow: 'auto' }}>
+                <Box component="pre" sx={{ fontSize: '0.75rem', bgcolor: 'action.hover', p: 1, borderRadius: 1, overflow: 'auto' }}>
                   {JSON.stringify(content, null, 2)}
-                </pre>
+                </Box>
               </ScrollArea>
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

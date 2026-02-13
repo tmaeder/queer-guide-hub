@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
+import Box from '@mui/material/Box';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -93,10 +94,10 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
   };
 
   return (
-    <div sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, bgcolor: 'background.paper' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, bgcolor: 'background.paper' }}>
       {/* Search Bar */}
-      <div sx={{ display: 'flex', gap: 1 }}>
-        <div sx={{ position: 'relative', flex: 1 }}>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ position: 'relative', flex: 1 }}>
           <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           <Input
             placeholder="Search products and services..."
@@ -105,7 +106,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             sx={{ pl: 4.5 }}
           />
-        </div>
+        </Box>
         <Button onClick={handleSearch} sx={{ bgcolor: 'primary.main' }} size="icon" aria-label="Search">
           <Search style={{ height: 16, width: 16 }} />
         </Button>
@@ -117,13 +118,13 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
         >
           <Filter style={{ height: 16, width: 16 }} />
         </Button>
-      </div>
+      </Box>
 
       {/* Extended Filters */}
       {showAllFilters && (
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-          <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="category">Category</Label>
               <Select value={category} onValueChange={handleCategoryChange}>
                 <SelectTrigger>
@@ -138,9 +139,9 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Box>
 
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="subcategory">Subcategory</Label>
               <Select value={subcategory} onValueChange={setSubcategory} disabled={!category}>
                 <SelectTrigger>
@@ -155,9 +156,9 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Box>
 
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="businessType">Business Type</Label>
               <Select value={businessType} onValueChange={setBusinessType}>
                 <SelectTrigger>
@@ -172,11 +173,11 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
@@ -184,9 +185,9 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
               />
-            </div>
+            </Box>
 
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="minPrice">Min Price</Label>
               <Input
                 id="minPrice"
@@ -195,9 +196,9 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
               />
-            </div>
+            </Box>
 
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Label htmlFor="maxPrice">Max Price</Label>
               <Input
                 id="maxPrice"
@@ -206,8 +207,8 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {/* Tags */}
           <TagSelector
@@ -220,7 +221,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
           />
 
           {/* Action Buttons */}
-          <div sx={{ display: 'flex', gap: 1, pt: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
             <Button onClick={handleSearch} sx={{ bgcolor: 'primary.main', gap: 1 }}>
               <Sliders style={{ height: 16, width: 16 }} />
               Apply Filters
@@ -231,14 +232,14 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                 Clear All
               </Button>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
       {/* Active Filters Display */}
       {hasActiveFilters && !showAllFilters && (
-        <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-          <span sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Active filters:</span>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+          <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Active filters:</Box>
           {search && (
             <Badge variant="secondary" sx={{ gap: 0.5 }}>
               Search: {search}
@@ -284,8 +285,8 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
                />
              </Badge>
            ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

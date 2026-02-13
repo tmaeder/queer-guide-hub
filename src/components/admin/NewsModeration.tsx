@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Check, Eye, ExternalLink, Filter, RefreshCw, Search, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface NewsArticle {
   id: string;
@@ -177,7 +179,7 @@ export function NewsModeration() {
   const fetchCronStatus = async () => {
     try {
       const { data, error } = await supabase.rpc('get_news_cron_status');
-      
+
       if (error) {
         console.error('Error fetching cron status:', error);
         return;
@@ -194,7 +196,7 @@ export function NewsModeration() {
   const triggerNewsFetch = async () => {
     try {
       const { error } = await supabase.functions.invoke('fetch-news');
-      
+
       if (error) {
         throw error;
       }
@@ -220,37 +222,37 @@ export function NewsModeration() {
 
 
   return (
-    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header & Stats */}
-      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>News Moderation</h2>
+          <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>News Moderation</Typography>
           <p style={{ color: 'var(--muted-foreground)' }}>Manage and moderate news articles</p>
         </div>
-        <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button onClick={triggerNewsFetch}>
             <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
             Fetch Latest News
           </Button>
-          
+
           {cronStatus && (
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
               <div style={{ width: 8, height: 8, borderRadius: 8, backgroundColor: cronStatus.status === 'active' ? 'var(--success)' : 'var(--destructive)' }}></div>
               <span style={{ color: 'var(--muted-foreground)' }}>
                 Auto-fetch: {cronStatus.status} (Last: {new Date(cronStatus.last_run).toLocaleString()})
               </span>
-            </div>
+            </Box>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
         <Card>
           <CardHeader sx={{ pb: 1.5 }}>
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Total Articles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.total}</div>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.total}</Box>
           </CardContent>
         </Card>
         <Card>
@@ -258,7 +260,7 @@ export function NewsModeration() {
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Featured Articles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.featured}</div>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.featured}</Box>
           </CardContent>
         </Card>
         <Card>
@@ -266,10 +268,10 @@ export function NewsModeration() {
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Latest Articles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{articles.length}</div>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{articles.length}</Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Filters */}
       <Card>
@@ -280,10 +282,10 @@ export function NewsModeration() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
             <div>
               <Label>Search</Label>
-              <div sx={{ position: 'relative' }}>
+              <Box sx={{ position: 'relative' }}>
                 <Search style={{ position: 'absolute', left: 12, top: 12, height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Input
                   placeholder="Search articles..."
@@ -291,7 +293,7 @@ export function NewsModeration() {
                   onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                   sx={{ pl: 4.5 }}
                 />
-              </div>
+              </Box>
             </div>
             <div>
               <Label>Featured</Label>
@@ -306,7 +308,7 @@ export function NewsModeration() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
@@ -317,25 +319,25 @@ export function NewsModeration() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div sx={{ textAlign: 'center', py: 4 }}>Loading articles...</div>
+            <Box sx={{ textAlign: 'center', py: 4 }}>Loading articles...</Box>
           ) : articles.length === 0 ? (
-            <div sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>No articles found</div>
+            <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>No articles found</Box>
           ) : (
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {articles.map((article) => (
-                <div key={article.id} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}>
-                  <div sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                    <div sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <h3 sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{article.title}</h3>
+                <Box key={article.id} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="h3" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{article.title}</Typography>
                         {article.is_featured && <Badge>Featured</Badge>}
-                      </div>
-                      
-                      <p sx={{ fontSize: '0.875rem', color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      </Box>
+
+                      <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {article.excerpt}
-                      </p>
-                      
-                      <div sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
+                      </Typography>
+
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
                         <span>By {article.author || 'Unknown'}</span>
                         <span>•</span>
                         <span>{article.news_sources?.name}</span>
@@ -343,10 +345,10 @@ export function NewsModeration() {
                         <span>{formatDistanceToNow(new Date(article.published_at))} ago</span>
                         <span>•</span>
                         <span>{article.views_count} views</span>
-                      </div>
-                    </div>
-                    
-                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
+                      </Box>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
                       <Button
                         variant="outline"
                         size="sm"
@@ -354,7 +356,7 @@ export function NewsModeration() {
                       >
                         <Eye style={{ height: 16, width: 16 }} />
                       </Button>
-                      
+
                       <Button
                         variant={article.is_featured ? "default" : "outline"}
                         size="sm"
@@ -362,7 +364,7 @@ export function NewsModeration() {
                       >
                         {article.is_featured ? "Unfeature" : "Feature"}
                       </Button>
-                      
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -370,11 +372,11 @@ export function NewsModeration() {
                       >
                         <ExternalLink style={{ height: 16, width: 16 }} />
                       </Button>
-                    </div>
-                  </div>
-                </div>
+                    </Box>
+                  </Box>
+                </Box>
               ))}
-            </div>
+            </Box>
           )}
         </CardContent>
       </Card>
@@ -385,21 +387,21 @@ export function NewsModeration() {
           <DialogHeader>
             <DialogTitle>Article Details</DialogTitle>
           </DialogHeader>
-          
+
           {selectedArticle && (
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <div>
                 <Label>Title</Label>
-                <Input 
-                  value={selectedArticle.title} 
+                <Input
+                  value={selectedArticle.title}
                   onChange={(e) => setSelectedArticle({...selectedArticle, title: e.target.value})}
                 />
               </div>
 
               <div>
                 <Label>Excerpt</Label>
-                <Textarea 
-                  value={selectedArticle.excerpt || ''} 
+                <Textarea
+                  value={selectedArticle.excerpt || ''}
                   onChange={(e) => setSelectedArticle({...selectedArticle, excerpt: e.target.value})}
                   rows={3}
                 />
@@ -407,30 +409,31 @@ export function NewsModeration() {
 
               <div>
                 <Label>Content Preview</Label>
-                <div sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2, maxHeight: 240, overflowY: 'auto', bgcolor: 'action.hover' }}>
-                  <p sx={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
+                <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2, maxHeight: 240, overflowY: 'auto', bgcolor: 'action.hover' }}>
+                  <Typography sx={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
                     {selectedArticle.content.substring(0, 1000)}
                     {selectedArticle.content.length > 1000 && '...'}
-                  </p>
-                </div>
+                  </Typography>
+                </Box>
               </div>
 
               {selectedArticle.image_url && (
                 <div>
                   <Label>Article Image</Label>
-                  <img 
-                    src={selectedArticle.image_url} 
+                  <Box
+                    component="img"
+                    src={selectedArticle.image_url}
                     alt={selectedArticle.title}
                     sx={{ width: '100%', maxWidth: 448, borderRadius: 2, border: 1, borderColor: 'divider' }}
-                    onError={(e) => {
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                       e.currentTarget.style.display = 'none';
                     }}
                   />
                 </div>
               )}
 
-              <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Button
                     variant={selectedArticle.is_featured ? "default" : "outline"}
                     onClick={() => {
@@ -441,7 +444,7 @@ export function NewsModeration() {
                   >
                     {selectedArticle.is_featured ? "Unfeature" : "Feature"}
                   </Button>
-                  
+
                   <Button
                     variant="outline"
                     onClick={() => window.open(selectedArticle.url, '_blank')}
@@ -449,9 +452,9 @@ export function NewsModeration() {
                     <ExternalLink style={{ height: 16, width: 16, marginRight: 8 }} />
                     View Original
                   </Button>
-                </div>
+                </Box>
 
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Button
                     onClick={() => {
                       updateArticle(selectedArticle.id, {
@@ -463,7 +466,7 @@ export function NewsModeration() {
                     <Check style={{ height: 16, width: 16, marginRight: 8 }} />
                     Save Changes
                   </Button>
-                  
+
                   <Button
                     variant="destructive"
                     onClick={() => {
@@ -475,12 +478,12 @@ export function NewsModeration() {
                     <X style={{ height: 16, width: 16, marginRight: 8 }} />
                     Delete
                   </Button>
-                </div>
-              </div>
-            </div>
+                </Box>
+              </Box>
+            </Box>
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </Box>
   );
 }

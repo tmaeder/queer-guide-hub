@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ExternalLink, Shield, Heart, Scale, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useILGAData, LGBTJurisdiction } from "@/hooks/useILGAData";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface LGBTJurisdictionInfoProps {
   countryName: string;
@@ -62,11 +64,11 @@ export default function LGBTJurisdictionInfo({ countryName, countryCode, classNa
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <div sx={{ height: 16, bgcolor: '#e5e7eb', borderRadius: 1, width: '75%' }}></div>
-            <div sx={{ height: 16, bgcolor: '#e5e7eb', borderRadius: 1, width: '50%' }}></div>
-            <div sx={{ height: 16, bgcolor: '#e5e7eb', borderRadius: 1, width: '66%' }}></div>
-          </div>
+          <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ height: 16, bgcolor: '#e5e7eb', borderRadius: 1, width: '75%' }} />
+            <Box sx={{ height: 16, bgcolor: '#e5e7eb', borderRadius: 1, width: '50%' }} />
+            <Box sx={{ height: 16, bgcolor: '#e5e7eb', borderRadius: 1, width: '66%' }} />
+          </Box>
         </CardContent>
       </Card>
     );
@@ -99,143 +101,144 @@ export default function LGBTJurisdictionInfo({ countryName, countryCode, classNa
           <Shield style={{ height: 20, width: 20, color: 'hsl(var(--primary))' }} />
           LGBT+ Rights & Legal Status
         </CardTitle>
-        <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
           Based on data from ILGA World Database • Last updated: {jurisdictionData.lastUpdated}
-        </p>
+        </Typography>
       </CardHeader>
       <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Criminalization Status */}
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Scale style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-            <h4 sx={{ fontWeight: 600 }}>Same-Sex Activity</h4>
-          </div>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h4" sx={{ fontWeight: 600 }}>Same-Sex Activity</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {getStatusIcon(jurisdictionData.criminalisation.status)}
             <Badge variant="outline" style={getStatusStyle(jurisdictionData.criminalisation.status)}>
               {jurisdictionData.criminalisation.status}
             </Badge>
-          </div>
-          <p sx={{ fontSize: '0.875rem', color: 'text.secondary', pl: 3 }}>
+          </Box>
+          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', pl: 3 }}>
             {jurisdictionData.criminalisation.description}
-          </p>
+          </Typography>
           {jurisdictionData.criminalisation.penalty !== "None" && jurisdictionData.criminalisation.penalty !== "Unknown" && (
-            <p sx={{ fontSize: '0.875rem', color: '#dc2626', pl: 3, fontWeight: 500 }}>
+            <Typography sx={{ fontSize: '0.875rem', color: '#dc2626', pl: 3, fontWeight: 500 }}>
               Penalty: {jurisdictionData.criminalisation.penalty}
-            </p>
+            </Typography>
           )}
-        </div>
+        </Box>
 
         <Separator />
 
         {/* Same-Sex Marriage */}
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Heart style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-            <h4 sx={{ fontWeight: 600 }}>Same-Sex Marriage</h4>
-          </div>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h4" sx={{ fontWeight: 600 }}>Same-Sex Marriage</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {getStatusIcon(jurisdictionData.sameSeMarriage.status)}
             <Badge variant="outline" style={getStatusStyle(jurisdictionData.sameSeMarriage.status)}>
               {jurisdictionData.sameSeMarriage.status}
             </Badge>
             {jurisdictionData.sameSeMarriage.date && (
-              <span sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+              <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 (Since {new Date(jurisdictionData.sameSeMarriage.date).getFullYear()})
-              </span>
+              </Box>
             )}
-          </div>
-          <p sx={{ fontSize: '0.875rem', color: 'text.secondary', pl: 3 }}>
+          </Box>
+          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', pl: 3 }}>
             {jurisdictionData.sameSeMarriage.description}
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         <Separator />
 
         {/* Anti-Discrimination */}
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Shield style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-            <h4 sx={{ fontWeight: 600 }}>Anti-Discrimination Protection</h4>
-          </div>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h4" sx={{ fontWeight: 600 }}>Anti-Discrimination Protection</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {getStatusIcon(jurisdictionData.antidiscrimination.status)}
             <Badge variant="outline" style={getStatusStyle(jurisdictionData.antidiscrimination.status)}>
               {jurisdictionData.antidiscrimination.status}
             </Badge>
-          </div>
-          <p sx={{ fontSize: '0.875rem', color: 'text.secondary', pl: 3 }}>
+          </Box>
+          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', pl: 3 }}>
             {jurisdictionData.antidiscrimination.description}
-          </p>
+          </Typography>
           {jurisdictionData.antidiscrimination.scope.length > 0 && (
-            <div sx={{ pl: 3 }}>
-              <p sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1 }}>Protected areas:</p>
-              <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            <Box sx={{ pl: 3 }}>
+              <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1 }}>Protected areas:</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                 {jurisdictionData.antidiscrimination.scope.map((area) => (
                   <Badge key={area} variant="secondary" sx={{ fontSize: '0.75rem' }}>
                     {area}
                   </Badge>
                 ))}
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
-        </div>
+        </Box>
 
         <Separator />
 
         {/* Additional Protections */}
-        <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <h5 sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Constitutional Protection</h5>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="h5" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Constitutional Protection</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {jurisdictionData.constitutionalProtection ? (
                 <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
               ) : (
                 <XCircle style={{ height: 16, width: 16, color: '#ef4444' }} />
               )}
-              <span sx={{ fontSize: '0.875rem' }}>
+              <Box component="span" sx={{ fontSize: '0.875rem' }}>
                 {jurisdictionData.constitutionalProtection ? 'Yes' : 'No'}
-              </span>
-            </div>
-          </div>
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <h5 sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Hate Crime Laws</h5>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              </Box>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="h5" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Hate Crime Laws</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {jurisdictionData.hateClimeLaws ? (
                 <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
               ) : (
                 <XCircle style={{ height: 16, width: 16, color: '#ef4444' }} />
               )}
-              <span sx={{ fontSize: '0.875rem' }}>
+              <Box component="span" sx={{ fontSize: '0.875rem' }}>
                 {jurisdictionData.hateClimeLaws ? 'Yes' : 'No'}
-              </span>
-            </div>
-          </div>
-        </div>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
 
         {/* Sources */}
-        <div sx={{ pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <Box sx={{ pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
             <ExternalLink style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-            <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Sources:</span>
-          </div>
-          <div sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Sources:</Box>
+          </Box>
+          <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             {jurisdictionData.sources.map((source, index) => (
               <div key={index}>• {source}</div>
             ))}
-            <div sx={{ pt: 1 }}>
-              <a 
-                href="https://database.ilga.org/" 
-                target="_blank" 
+            <Box sx={{ pt: 1 }}>
+              <Box
+                component="a"
+                href="https://database.ilga.org/"
+                target="_blank"
                 rel="noopener noreferrer"
                 sx={{ color: 'primary.main', '&:hover': { textDecoration: 'underline' }, display: 'flex', alignItems: 'center', gap: 0.5 }}
               >
                 View full ILGA World Database
                 <ExternalLink style={{ height: 12, width: 12 }} />
-              </a>
-            </div>
-          </div>
-        </div>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

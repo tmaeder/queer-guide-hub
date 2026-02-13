@@ -25,6 +25,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminRoleRequest } from './AdminRoleRequest';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface ImageFile {
   fileName: string;
@@ -239,14 +241,14 @@ export function ImageOptimizationManager() {
   }
 
   return (
-    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>🖼️ Image Optimization Manager</h2>
+          <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>🖼️ Image Optimization Manager</Typography>
           <p style={{ color: 'var(--muted-foreground)' }}>Optimize all existing images for better performance</p>
         </div>
-        <div sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button 
             variant="outline" 
             onClick={scanForImages}
@@ -262,25 +264,25 @@ export function ImageOptimizationManager() {
             <Server style={{ height: 16, width: 16, marginRight: 8 }} />
             Start Background Optimization
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Current Job Progress */}
       {currentJob && (currentJob.status === 'pending' || currentJob.status === 'processing') && (
         <Card>
           <CardContent sx={{ p: 3 }}>
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <div sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                 <span>Processing {currentJob.total_images} images in background...</span>
                 <span>{getJobProgress(currentJob)}%</span>
-              </div>
+              </Box>
               <Progress value={getJobProgress(currentJob)} style={{ height: 8 }} />
-              <div sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'text.secondary' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'text.secondary' }}>
                 <span>{currentJob.processed_images} processed</span>
                 <span>{currentJob.successful_images} successful</span>
                 <span>{currentJob.failed_images} failed</span>
-              </div>
-            </div>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
       )}
@@ -297,8 +299,8 @@ export function ImageOptimizationManager() {
             <Card>
               <CardContent sx={{ p: 4, textAlign: 'center' }}>
                 <FileImage style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                <h3 sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No Images Found</h3>
-                <p sx={{ color: 'text.secondary', mb: 2 }}>Click "Scan Images" to find images in your project</p>
+                <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No Images Found</Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 2 }}>Click "Scan Images" to find images in your project</Typography>
                 <Button onClick={scanForImages} disabled={isScanning}>
                   <FolderOpen style={{ height: 16, width: 16, marginRight: 8 }} />
                   {isScanning ? 'Scanning...' : 'Scan for Images'}
@@ -306,61 +308,61 @@ export function ImageOptimizationManager() {
               </CardContent>
             </Card>
           ) : (
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {/* Summary Cards */}
-              <div sx={{ display: 'grid', gridTemplateColumns: { md: 'repeat(4, 1fr)' }, gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { md: 'repeat(4, 1fr)' }, gap: 2 }}>
                 <Card>
                   <CardContent sx={{ p: 3 }}>
-                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <FileImage style={{ height: 20, width: 20, color: '#3b82f6' }} />
                       <div>
-                        <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{images.length}</p>
-                        <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Total Images</p>
+                        <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{images.length}</Typography>
+                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Total Images</Typography>
                       </div>
-                    </div>
+                    </Box>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent sx={{ p: 3 }}>
-                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <HardDrive style={{ height: 20, width: 20, color: '#555555' }} />
                       <div>
-                        <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                        <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
                           {formatFileSize(images.reduce((sum, img) => sum + img.originalSize, 0))}
-                        </p>
-                        <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Total Size</p>
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Total Size</Typography>
                       </div>
-                    </div>
+                    </Box>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent sx={{ p: 3 }}>
-                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Server style={{ height: 20, width: 20, color: '#22c55e' }} />
                       <div>
-                        <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                        <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
                           {jobs.filter(job => job.status === 'completed').length}
-                        </p>
-                        <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Completed Jobs</p>
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Completed Jobs</Typography>
                       </div>
-                    </div>
+                    </Box>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent sx={{ p: 3 }}>
-                    <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Zap style={{ height: 20, width: 20, color: '#f97316' }} />
                       <div>
-                        <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>21</p>
-                        <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Files per Image</p>
+                        <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>21</Typography>
+                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Files per Image</Typography>
                       </div>
-                    </div>
+                    </Box>
                   </CardContent>
                 </Card>
-              </div>
+              </Box>
 
               {/* Images List */}
               <Card>
@@ -370,31 +372,31 @@ export function ImageOptimizationManager() {
                 </CardHeader>
                 <CardContent>
                   <ScrollArea sx={{ height: 384 }}>
-                    <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                       {images.map((image, index) => (
-                        <div key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
-                          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             {getStatusIcon(image.status)}
                             <div>
-                              <p sx={{ fontWeight: 500 }}>{image.fileName}</p>
-                              <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                              <Typography sx={{ fontWeight: 500 }}>{image.fileName}</Typography>
+                              <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                                 {formatFileSize(image.originalSize)} • {image.bucket}
-                              </p>
+                              </Typography>
                             </div>
-                          </div>
-                          
-                          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          </Box>
+
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
                               Ready
                             </Badge>
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
                       ))}
-                    </div>
+                    </Box>
                   </ScrollArea>
                 </CardContent>
               </Card>
-            </div>
+            </Box>
           )}
         </TabsContent>
 
@@ -403,8 +405,8 @@ export function ImageOptimizationManager() {
             <Card>
               <CardContent sx={{ p: 4, textAlign: 'center' }}>
                 <Server style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                <h3 sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No Background Jobs</h3>
-                <p sx={{ color: 'text.secondary', mb: 2 }}>Start an optimization job to see it here</p>
+                <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No Background Jobs</Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 2 }}>Start an optimization job to see it here</Typography>
                 <Button onClick={startOptimizationJob}>
                   <Server style={{ height: 16, width: 16, marginRight: 8 }} />
                   Start Background Optimization
@@ -412,15 +414,15 @@ export function ImageOptimizationManager() {
               </CardContent>
             </Card>
           ) : (
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {jobs.map((job, index) => (
                 <Card key={index}>
                   <CardHeader>
-                    <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {getStatusIcon(job.status)}
                         <CardTitle sx={{ fontSize: '1.125rem' }}>Job {job.id.slice(0, 8)}</CardTitle>
-                      </div>
+                      </Box>
                       <Badge variant={
                         job.status === 'completed' ? 'default' :
                         job.status === 'processing' ? 'secondary' :
@@ -428,46 +430,46 @@ export function ImageOptimizationManager() {
                       }>
                         {job.status}
                       </Badge>
-                    </div>
+                    </Box>
                     <CardDescription>
                       Started {new Date(job.created_at).toLocaleString()}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       {/* Progress bar for active jobs */}
                       {(job.status === 'processing' || job.status === 'pending') && (
-                        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                          <div sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                             <span>Processing {job.total_images} images...</span>
                             <span>{getJobProgress(job)}%</span>
-                          </div>
+                          </Box>
                           <Progress value={getJobProgress(job)} style={{ height: 8 }} />
-                        </div>
+                        </Box>
                       )}
-                      
+
                       {/* Stats */}
-                      <div sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, textAlign: 'center' }}>
+                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, textAlign: 'center' }}>
                         <div>
-                          <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{job.total_images}</p>
-                          <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Total</p>
+                          <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{job.total_images}</Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Total</Typography>
                         </div>
                         <div>
-                          <p sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#2563eb' }}>{job.processed_images}</p>
-                          <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Processed</p>
+                          <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#2563eb' }}>{job.processed_images}</Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Processed</Typography>
                         </div>
                         <div>
-                          <p sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a' }}>{job.successful_images}</p>
-                          <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Success</p>
+                          <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a' }}>{job.successful_images}</Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Success</Typography>
                         </div>
                         <div>
-                          <p sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#dc2626' }}>{job.failed_images}</p>
-                          <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Failed</p>
+                          <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#dc2626' }}>{job.failed_images}</Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Failed</Typography>
                         </div>
-                      </div>
+                      </Box>
 
                       {/* Actions */}
-                      <div sx={{ display: 'flex', gap: 1 }}>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
                         <Button 
                           variant="outline" 
                           size="sm"
@@ -482,12 +484,12 @@ export function ImageOptimizationManager() {
                             Download Report
                           </Button>
                         )}
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
                   </CardContent>
                 </Card>
               ))}
-            </div>
+            </Box>
           )}
         </TabsContent>
 
@@ -506,24 +508,24 @@ export function ImageOptimizationManager() {
                 </AlertDescription>
               </Alert>
               
-              <div sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
                 <div>
-                  <label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>AVIF Quality</label>
-                  <input type="range" min="20" max="80" defaultValue="50" sx={{ width: '100%' }} />
-                  <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Lower = smaller files, higher = better quality</p>
+                  <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>AVIF Quality</Box>
+                  <Box component="input" type="range" min="20" max="80" defaultValue="50" sx={{ width: '100%' }} />
+                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Lower = smaller files, higher = better quality</Typography>
                 </div>
                 <div>
-                  <label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>WebP Quality</label>
-                  <input type="range" min="50" max="90" defaultValue="75" sx={{ width: '100%' }} />
-                  <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Lower = smaller files, higher = better quality</p>
+                  <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>WebP Quality</Box>
+                  <Box component="input" type="range" min="50" max="90" defaultValue="75" sx={{ width: '100%' }} />
+                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Lower = smaller files, higher = better quality</Typography>
                 </div>
-              </div>
-              
+              </Box>
+
               <div>
-                <label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'block', mb: 1 }}>Responsive Breakpoints</label>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
+                <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'block', mb: 1 }}>Responsive Breakpoints</Box>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
                   Current: 320px, 640px, 768px, 1024px, 1280px, 1440px, 1920px (21 files per image)
-                </p>
+                </Typography>
               </div>
               
               <Button sx={{ width: '100%' }}>Save Settings</Button>
@@ -531,6 +533,6 @@ export function ImageOptimizationManager() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </Box>
   );
 }

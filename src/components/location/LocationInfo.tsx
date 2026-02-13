@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -113,11 +115,11 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
             <Skeleton sx={{ height: 24, width: 192 }} />
           </CardHeader>
           <CardContent>
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Skeleton sx={{ height: 16, width: '100%' }} />
               <Skeleton sx={{ height: 16, width: '100%' }} />
               <Skeleton sx={{ height: 16, width: '75%' }} />
-            </div>
+            </Box>
           </CardContent>
         </Card>
         
@@ -172,9 +174,9 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
               </a>
               
               {wikipediaInfo.coordinates && (
-                <span sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                   {wikipediaInfo.coordinates.lat.toFixed(4)}°, {wikipediaInfo.coordinates.lon.toFixed(4)}°
-                </span>
+                </Box>
               )}
             </div>
           </CardContent>
@@ -200,63 +202,65 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                   onClick={() => openModal(index)}
                 >
                   <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
-                    <img
+                    <Box
+                      component="img"
                       src={image.thumbnail}
                       alt={image.alt || `Photo of ${name}`}
                       sx={{ transition: 'transform 0.2s' }}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.5s' }}
                       loading="lazy"
                     />
-                    <div
+                    <Box
                       sx={{ transition: 'opacity 0.2s' }}
                       style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent, transparent)', opacity: 0, transition: 'opacity 0.3s' }}
                     />
                   </div>
                   
-                  <div
+                  <Box
                     sx={{ transition: 'transform 0.2s' }}
                     style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0.75rem', color: 'white', transform: 'translateY(100%)', transition: 'transform 0.3s' }}
                   >
-                    <p sx={{ fontSize: '0.75rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       Photo by {image.photographer}
-                    </p>
-                  </div>
+                    </Typography>
+                  </Box>
                   
                   {/* Hover overlay */}
-                  <div
+                  <Box
                     sx={{ transition: 'opacity 0.2s' }}
                     style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(var(--primary-rgb), 0.1)', opacity: 0, transition: 'opacity 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
-                    <div
+                    <Box
                       sx={{ transition: 'transform 0.2s' }}
                       style={{ backgroundColor: 'rgba(var(--background-rgb), 0.9)', backdropFilter: 'blur(4px)', borderRadius: '9999px', padding: '0.5rem', transform: 'scale(0)', transition: 'transform 0.3s' }}
                     >
                       <ImageIcon style={{ height: 20, width: 20, color: 'var(--primary)' }} />
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 </div>
               ))}
             </div>
             
             <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--muted)' }}>
-              <p sx={{ fontSize: '0.75rem', color: 'text.secondary', textAlign: 'center' }}>
+              <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', textAlign: 'center' }}>
                 Photos provided by{' '}
-                <a
+                <Box
+                  component="a"
                   href="https://www.pexels.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{ color: 'primary.main', '&:hover': { textDecoration: 'underline' }, transition: 'color 0.2s' }}
                 >
                   Pexels
-                </a>
-              </p>
+                </Box>
+              </Typography>
             </div>
             
             {/* Enhanced Photo Modal */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogContent sx={{ maxWidth: 1024, p: 0, bgcolor: 'rgba(0,0,0,0.95)', border: 'none' }}>
                 {selectedImage && (
-                  <div sx={{ position: 'relative' }}>
+                  <Box sx={{ position: 'relative' }}>
                     {/* Close button */}
                     <Button
                       variant="ghost"
@@ -290,24 +294,23 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                     )}
                     
                     {/* Main image */}
-                    <div sx={{ position: 'relative' }}>
+                    <Box sx={{ position: 'relative' }}>
                       <img
                         src={selectedImage.url}
                         alt={selectedImage.alt || `Photo of ${name}`}
-                        className="animate-fade-in"
                         style={{ width: '100%', maxHeight: '80vh', objectFit: 'contain' }}
                       />
-                      
+
                       {/* Image info overlay */}
                       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)', padding: '1.5rem' }}>
-                        <div sx={{ color: 'white', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                          <p sx={{ fontSize: '0.875rem', opacity: 0.8 }}>
+                        <Box sx={{ color: 'white', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <Typography sx={{ fontSize: '0.875rem', opacity: 0.8 }}>
                             {selectedImageIndex !== null && `${selectedImageIndex + 1} of ${images.length}`}
-                          </p>
-                          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div>
-                              <p sx={{ fontWeight: 500 }}>Photo by {selectedImage.photographer}</p>
-                              <p sx={{ fontSize: '0.875rem', opacity: 0.8 }}>{selectedImage.alt || `Photo of ${name}`}</p>
+                              <Typography sx={{ fontWeight: 500 }}>Photo by {selectedImage.photographer}</Typography>
+                              <Typography sx={{ fontSize: '0.875rem', opacity: 0.8 }}>{selectedImage.alt || `Photo of ${name}`}</Typography>
                             </div>
                             <a
                               href={selectedImage.photographer_url}
@@ -318,11 +321,11 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                               <ExternalLink style={{ height: 16, width: 16 }} />
                               View Profile
                             </a>
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
                       </div>
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
               </DialogContent>
             </Dialog>
@@ -333,7 +336,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
       {error && (
         <Card>
           <CardContent sx={{ pt: 3 }}>
-            <p sx={{ textAlign: 'center', color: 'text.secondary' }}>{error}</p>
+            <Typography sx={{ textAlign: 'center', color: 'text.secondary' }}>{error}</Typography>
           </CardContent>
         </Card>
       )}

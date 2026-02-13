@@ -1,5 +1,7 @@
 import { Search, Filter, X, MapPin, Tag, Grid3X3 } from "lucide-react";
 import { useState, useEffect } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
@@ -102,11 +104,11 @@ export function VenuesFilters({
   return (
     <Card>
       <CardContent sx={{ p: 3 }}>
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Search and basic filters */}
-          <div sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2, alignItems: { lg: 'center' } }}>
-            <div sx={{ flex: 1 }}>
-              <div sx={{ position: 'relative' }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2, alignItems: { lg: 'center' } }}>
+            <Box sx={{ flex: 1 }}>
+              <Box sx={{ position: 'relative' }}>
                 <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Input
                   placeholder="Search venues by name, description, or city..."
@@ -114,12 +116,12 @@ export function VenuesFilters({
                   onChange={(e) => onSearchChange(e.target.value)}
                   sx={{ pl: 5 }}
                 />
-              </div>
-            </div>
-            
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               {/* Category Filter */}
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Grid3X3 style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Select value={selectedCategory} onValueChange={onCategoryChange}>
                   <SelectTrigger sx={{ width: 160, bgcolor: 'background.default' }}>
@@ -134,10 +136,10 @@ export function VenuesFilters({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </Box>
 
               {/* City Filter */}
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <MapPin style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Select value={selectedCity} onValueChange={onCityChange}>
                   <SelectTrigger sx={{ width: 128, bgcolor: 'background.default' }}>
@@ -152,7 +154,7 @@ export function VenuesFilters({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </Box>
 
               {/* Advanced Filters Toggle */}
               <Button
@@ -173,31 +175,31 @@ export function VenuesFilters({
               <Badge variant="outline" sx={{ fontSize: '0.875rem' }}>
                 {totalResults} results
               </Badge>
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {/* Advanced Filters */}
           {showAdvancedFilters && (
-            <div sx={{ borderTop: 1, borderColor: 'divider', pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h4 sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Advanced Filters</h4>
+            <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="h4" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Advanced Filters</Typography>
                 <Button variant="ghost" size="sm" onClick={clearAllFilters}>
                   Clear All
                 </Button>
-              </div>
+              </Box>
 
-              <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 {/* Tags Filter */}
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Tag style={{ height: 16, width: 16 }} />
                     Tags
-                  </label>
+                  </Box>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" sx={{ width: '100%', justifyContent: 'space-between' }}>
-                        {selectedTags.length === 0 
-                          ? "Select tags..." 
+                        {selectedTags.length === 0
+                          ? "Select tags..."
                           : `${selectedTags.length} selected`}
                         <Filter style={{ marginLeft: 8, height: 16, width: 16 }} />
                       </Button>
@@ -229,19 +231,19 @@ export function VenuesFilters({
                       </Command>
                     </PopoverContent>
                   </Popover>
-                </div>
+                </Box>
 
                 {/* Amenities Filter */}
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Grid3X3 style={{ height: 16, width: 16 }} />
                     Amenities
-                  </label>
+                  </Box>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" sx={{ width: '100%', justifyContent: 'space-between' }}>
-                        {selectedAmenities.length === 0 
-                          ? "Select amenities..." 
+                        {selectedAmenities.length === 0
+                          ? "Select amenities..."
                           : `${selectedAmenities.length} selected`}
                         <Filter style={{ marginLeft: 8, height: 16, width: 16 }} />
                       </Button>
@@ -273,19 +275,19 @@ export function VenuesFilters({
                       </Command>
                     </PopoverContent>
                   </Popover>
-                </div>
-              </div>
+                </Box>
+              </Box>
 
               {/* Active Filters Display */}
               {(selectedTags.length > 0 || selectedAmenities.length > 0) && (
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Active Filters:</label>
-                  <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Active Filters:</Box>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {selectedTags.map(tag => (
                       <Badge key={`tag-${tag}`} variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         {tag}
-                        <X 
-                          style={{ height: 12, width: 12, cursor: 'pointer' }} 
+                        <X
+                          style={{ height: 12, width: 12, cursor: 'pointer' }}
                           onClick={() => onTagsChange(selectedTags.filter(t => t !== tag))}
                         />
                       </Badge>
@@ -293,18 +295,18 @@ export function VenuesFilters({
                     {selectedAmenities.map(amenity => (
                       <Badge key={`amenity-${amenity}`} variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         {amenity}
-                        <X 
-                          style={{ height: 12, width: 12, cursor: 'pointer' }} 
+                        <X
+                          style={{ height: 12, width: 12, cursor: 'pointer' }}
                           onClick={() => onAmenitiesChange(selectedAmenities.filter(a => a !== amenity))}
                         />
                       </Badge>
                     ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
       </CardContent>
     </Card>
   );

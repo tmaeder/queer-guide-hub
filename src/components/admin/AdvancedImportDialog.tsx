@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -183,23 +185,23 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                 </CardDescription>
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div sx={{ display: 'grid', gap: 2 }}>
+                <Box sx={{ display: 'grid', gap: 2 }}>
                   {DUPLICATE_STRATEGIES.map((strategy) => (
                     <div
                       key={strategy.value}
                       style={{ padding: 16, borderRadius: 8, cursor: 'pointer', transition: 'opacity 0.2s', backgroundColor: config.duplicateStrategy === strategy.value ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--muted)' }}
                       onClick={() => setConfig(prev => ({ ...prev, duplicateStrategy: strategy.value as any }))}
                     >
-                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <div style={{ height: 16, width: 16, borderRadius: 4, backgroundColor: config.duplicateStrategy === strategy.value ? 'hsl(var(--primary))' : 'var(--muted)' }} />
-                        <div>
-                          <p sx={{ fontWeight: 500 }}>{strategy.label}</p>
-                          <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{strategy.description}</p>
-                        </div>
-                      </div>
+                        <Box>
+                          <Typography sx={{ fontWeight: 500 }}>{strategy.label}</Typography>
+                          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{strategy.description}</Typography>
+                        </Box>
+                      </Box>
                     </div>
                   ))}
-                </div>
+                </Box>
               </CardContent>
             </Card>
           </TabsContent>
@@ -213,47 +215,47 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                 </CardDescription>
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div sx={{ display: 'grid', gap: 2 }}>
+                <Box sx={{ display: 'grid', gap: 2 }}>
                   {ERROR_STRATEGIES.map((strategy) => (
                     <div
                       key={strategy.value}
                       style={{ padding: 16, borderRadius: 8, cursor: 'pointer', transition: 'opacity 0.2s', backgroundColor: config.errorStrategy === strategy.value ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--muted)' }}
                       onClick={() => setConfig(prev => ({ ...prev, errorStrategy: strategy.value as any }))}
                     >
-                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <div style={{ height: 16, width: 16, borderRadius: 4, backgroundColor: config.errorStrategy === strategy.value ? 'hsl(var(--primary))' : 'var(--muted)' }} />
-                        <div>
-                          <p sx={{ fontWeight: 500 }}>{strategy.label}</p>
-                          <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{strategy.description}</p>
-                        </div>
-                      </div>
+                        <Box>
+                          <Typography sx={{ fontWeight: 500 }}>{strategy.label}</Typography>
+                          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{strategy.description}</Typography>
+                        </Box>
+                      </Box>
                     </div>
                   ))}
-                </div>
+                </Box>
 
                 <Separator />
 
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Checkbox 
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Checkbox
                       id="strict"
                       checked={config.validation.strict}
-                      onCheckedChange={(checked) => 
-                        setConfig(prev => ({ 
-                          ...prev, 
+                      onCheckedChange={(checked) =>
+                        setConfig(prev => ({
+                          ...prev,
                           validation: { ...prev.validation, strict: checked as boolean }
                         }))
                       }
                     />
                     <Label htmlFor="strict">Strict Validation</Label>
-                  </div>
-                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                  </Box>
+                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                     Enable strict validation to ensure all data meets quality standards before import
-                  </p>
+                  </Typography>
 
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label>Required Fields</Label>
-                    <div sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
                       <Input
                         placeholder="Add required field..."
                         value={newRequiredField}
@@ -261,20 +263,20 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                         onKeyPress={(e) => e.key === 'Enter' && addRequiredField()}
                       />
                       <Button onClick={addRequiredField} size="sm">Add</Button>
-                    </div>
-                    <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {requiredFields.map((field) => (
                         <Badge key={field} variant="secondary" sx={{ cursor: 'pointer' }}>
                           {field}
-                          <X 
-                            style={{ height: 12, width: 12, marginLeft: 4 }} 
+                          <X
+                            style={{ height: 12, width: 12, marginLeft: 4 }}
                             onClick={() => deleteRequiredField(field)}
                           />
                         </Badge>
                       ))}
-                    </div>
-                  </div>
-                </div>
+                    </Box>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
           </TabsContent>
@@ -288,38 +290,38 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                 </CardDescription>
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <div sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr' } }}>
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr' } }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label htmlFor="location">Location</Label>
                     <Input
                       id="location"
                       placeholder="e.g., San Francisco, CA"
                       value={config.filters.location || ''}
-                      onChange={(e) => setConfig(prev => ({ 
-                        ...prev, 
+                      onChange={(e) => setConfig(prev => ({
+                        ...prev,
                         filters: { ...prev.filters, location: e.target.value }
                       }))}
                     />
-                  </div>
+                  </Box>
 
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label htmlFor="limit">Import Limit</Label>
                     <Input
                       id="limit"
                       type="number"
                       placeholder="1000"
                       value={config.filters.limit || ''}
-                      onChange={(e) => setConfig(prev => ({ 
-                        ...prev, 
+                      onChange={(e) => setConfig(prev => ({
+                        ...prev,
                         filters: { ...prev.filters, limit: parseInt(e.target.value) || undefined }
                       }))}
                     />
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label>Keywords</Label>
-                  <div sx={{ display: 'flex', gap: 1 }}>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
                     <Input
                       placeholder="Add keyword..."
                       value={newKeyword}
@@ -327,25 +329,25 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       onKeyPress={(e) => e.key === 'Enter' && addKeyword()}
                     />
                     <Button onClick={addKeyword} size="sm">Add</Button>
-                  </div>
-                  <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {keywords.map((keyword) => (
                       <Badge key={keyword} variant="secondary" sx={{ cursor: 'pointer' }}>
                         {keyword}
-                        <X 
-                          style={{ height: 12, width: 12, marginLeft: 4 }} 
+                        <X
+                          style={{ height: 12, width: 12, marginLeft: 4 }}
                           onClick={() => deleteKeyword(keyword)}
                         />
                       </Badge>
                     ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Label>Categories</Label>
-                  <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {COMMON_CATEGORIES.map((category) => (
-                      <Badge 
+                      <Badge
                         key={category}
                         variant={categories.includes(category) ? "default" : "outline"}
                         sx={{ cursor: 'pointer' }}
@@ -354,49 +356,49 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                         {category}
                       </Badge>
                     ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
-                <div sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr' } }}>
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr' } }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label htmlFor="start-date">Start Date</Label>
                     <Input
                       id="start-date"
                       type="date"
                       value={config.filters.date_range?.start || ''}
-                      onChange={(e) => setConfig(prev => ({ 
-                        ...prev, 
-                        filters: { 
-                          ...prev.filters, 
-                          date_range: { 
-                            ...prev.filters.date_range, 
+                      onChange={(e) => setConfig(prev => ({
+                        ...prev,
+                        filters: {
+                          ...prev.filters,
+                          date_range: {
+                            ...prev.filters.date_range,
                             start: e.target.value,
                             end: prev.filters.date_range?.end || ''
                           }
                         }
                       }))}
                     />
-                  </div>
+                  </Box>
 
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label htmlFor="end-date">End Date</Label>
                     <Input
                       id="end-date"
                       type="date"
                       value={config.filters.date_range?.end || ''}
-                      onChange={(e) => setConfig(prev => ({ 
-                        ...prev, 
-                        filters: { 
-                          ...prev.filters, 
-                          date_range: { 
+                      onChange={(e) => setConfig(prev => ({
+                        ...prev,
+                        filters: {
+                          ...prev.filters,
+                          date_range: {
                             start: prev.filters.date_range?.start || '',
                             end: e.target.value
                           }
                         }
                       }))}
                     />
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
           </TabsContent>
@@ -410,68 +412,68 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                 </CardDescription>
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Checkbox 
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Checkbox
                       id="geocoding"
                       checked={config.advanced.enable_geocoding}
-                      onCheckedChange={(checked) => 
-                        setConfig(prev => ({ 
-                          ...prev, 
+                      onCheckedChange={(checked) =>
+                        setConfig(prev => ({
+                          ...prev,
                           advanced: { ...prev.advanced, enable_geocoding: checked as boolean }
                         }))
                       }
                     />
                     <Label htmlFor="geocoding">Enable Geocoding</Label>
-                  </div>
-                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary', ml: 3 }}>
+                  </Box>
+                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', ml: 3 }}>
                     Automatically geocode addresses to get latitude/longitude coordinates
-                  </p>
+                  </Typography>
 
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Checkbox 
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Checkbox
                       id="image-processing"
                       checked={config.advanced.enable_image_processing}
-                      onCheckedChange={(checked) => 
-                        setConfig(prev => ({ 
-                          ...prev, 
+                      onCheckedChange={(checked) =>
+                        setConfig(prev => ({
+                          ...prev,
                           advanced: { ...prev.advanced, enable_image_processing: checked as boolean }
                         }))
                       }
                     />
                     <Label htmlFor="image-processing">Enable Image Processing</Label>
-                  </div>
-                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary', ml: 3 }}>
+                  </Box>
+                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', ml: 3 }}>
                     Download and process images during import
-                  </p>
+                  </Typography>
 
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Checkbox 
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Checkbox
                       id="ai-enhancement"
                       checked={config.advanced.enable_ai_enhancement}
-                      onCheckedChange={(checked) => 
-                        setConfig(prev => ({ 
-                          ...prev, 
+                      onCheckedChange={(checked) =>
+                        setConfig(prev => ({
+                          ...prev,
                           advanced: { ...prev.advanced, enable_ai_enhancement: checked as boolean }
                         }))
                       }
                     />
                     <Label htmlFor="ai-enhancement">Enable AI Enhancement</Label>
-                  </div>
-                  <p sx={{ fontSize: '0.875rem', color: 'text.secondary', ml: 3 }}>
+                  </Box>
+                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', ml: 3 }}>
                     Use AI to enhance and validate imported data
-                  </p>
-                </div>
+                  </Typography>
+                </Box>
 
                 <Separator />
 
-                <div sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr' } }}>
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr' } }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label htmlFor="concurrent-limit">Concurrent Processing Limit</Label>
-                    <Select 
+                    <Select
                       value={config.advanced.concurrent_limit.toString()}
-                      onValueChange={(value) => setConfig(prev => ({ 
-                        ...prev, 
+                      onValueChange={(value) => setConfig(prev => ({
+                        ...prev,
                         advanced: { ...prev.advanced, concurrent_limit: parseInt(value) }
                       }))}
                     >
@@ -485,14 +487,14 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                         <SelectItem value="10">10 (Fastest, Less Reliable)</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </Box>
 
-                  <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label htmlFor="timeout">Timeout (seconds)</Label>
-                    <Select 
+                    <Select
                       value={config.advanced.timeout_seconds.toString()}
-                      onValueChange={(value) => setConfig(prev => ({ 
-                        ...prev, 
+                      onValueChange={(value) => setConfig(prev => ({
+                        ...prev,
                         advanced: { ...prev.advanced, timeout_seconds: parseInt(value) }
                       }))}
                     >
@@ -506,21 +508,21 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                         <SelectItem value="300">5 minutes</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
 
-        <div sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }}>
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button onClick={handleImport}>
             Start Advanced Import
           </Button>
-        </div>
+        </Box>
       </DialogContent>
     </Dialog>
   );

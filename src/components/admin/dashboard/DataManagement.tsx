@@ -234,17 +234,17 @@ export function DataManagement() {
   };
 
   return (
-    <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Data Management</h2>
+          <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Data Management</Typography>
           <p style={{ color: 'var(--muted-foreground)' }}>Monitor and manage your database and storage</p>
         </div>
         <Button onClick={() => window.location.reload()} variant="outline" size="sm">
           <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
           Refresh
         </Button>
-      </div>
+      </Box>
 
       <Tabs defaultValue="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <TabsList>
@@ -255,7 +255,7 @@ export function DataManagement() {
         </TabsList>
 
         <TabsContent value="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <div sx={{ display: 'grid', gap: 3, gridTemplateColumns: { md: '1fr 1fr' } }}>
+          <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { md: '1fr 1fr' } }}>
             {dataManagementSections.map((section) => {
               const Icon = section.icon;
               return (
@@ -265,15 +265,15 @@ export function DataManagement() {
                       <Icon style={{ height: 20, width: 20 }} />
                       {section.title}
                     </CardTitle>
-                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{section.description}</p>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>{section.description}</Typography>
                   </CardHeader>
                   <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {section.stats.map((stat) => (
-                      <div key={stat.label} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <div sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                      <Box key={stat.label} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                           <span>{stat.label}</span>
-                          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <span sx={{ fontWeight: 500 }}>{stat.value}</span>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box component="span" sx={{ fontWeight: 500 }}>{stat.value}</Box>
                             {'usage' in stat && (
                               <Badge variant={stat.usage < 80 ? "default" : "destructive"}>
                                 {stat.usage}%
@@ -282,18 +282,18 @@ export function DataManagement() {
                             {'status' in stat && (
                               <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
                             )}
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
                         {'usage' in stat && (
                           <Progress value={stat.usage} style={{ height: 8 }} />
                         )}
-                      </div>
+                      </Box>
                     ))}
                   </CardContent>
                 </Card>
               );
             })}
-          </div>
+          </Box>
 
           {/* Quick Actions */}
           <Card>
@@ -304,7 +304,7 @@ export function DataManagement() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { sm: '1fr 1fr', lg: 'repeat(4, 1fr)' } }}>
+              <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { sm: '1fr 1fr', lg: 'repeat(4, 1fr)' } }}>
                 <Button variant="outline" onClick={() => handleExportData('profiles')}>
                   <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                   Export Users
@@ -321,7 +321,7 @@ export function DataManagement() {
                   <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
                   Import Data
                 </Button>
-              </div>
+              </Box>
             </CardContent>
           </Card>
         </TabsContent>
@@ -333,12 +333,12 @@ export function DataManagement() {
                 <Search style={{ height: 20, width: 20 }} />
                 SQL Console
               </CardTitle>
-              <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+              <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 Execute read-only SQL queries. Only SELECT statements are allowed.
-              </p>
+              </Typography>
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label htmlFor="sql-query">SQL Query</Label>
                 <Textarea
                   id="sql-query"
@@ -347,21 +347,21 @@ export function DataManagement() {
                   onChange={(e) => setSqlQuery(e.target.value)}
                   rows={4}
                 />
-              </div>
+              </Box>
               <Button onClick={handleSqlQuery} disabled={loading}>
                 {loading ? <RefreshCw style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} /> : <Search style={{ height: 16, width: 16, marginRight: 8 }} />}
                 Execute Query
               </Button>
-              
+
               {queryResult && (
-                <div sx={{ mt: 3 }}>
-                  <h4 sx={{ fontWeight: 500, mb: 1 }}>Query Results:</h4>
-                  <div sx={{ bgcolor: 'action.hover', p: 2, borderRadius: 2, overflow: 'auto' }}>
-                    <pre sx={{ fontSize: '0.875rem' }}>
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 500, mb: 1 }}>Query Results:</Typography>
+                  <Box sx={{ bgcolor: 'action.hover', p: 2, borderRadius: 2, overflow: 'auto' }}>
+                    <Box component="pre" sx={{ fontSize: '0.875rem' }}>
                       {JSON.stringify(queryResult, null, 2)}
-                    </pre>
-                  </div>
-                </div>
+                    </Box>
+                  </Box>
+                </Box>
               )}
             </CardContent>
           </Card>
@@ -374,13 +374,13 @@ export function DataManagement() {
                 <Trash2 style={{ height: 20, width: 20 }} />
                 Database Cleanup
               </CardTitle>
-              <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+              <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 Remove old and unnecessary data to optimize performance.
-              </p>
+              </Typography>
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <input
                     type="checkbox"
                     id="old-sessions"
@@ -388,8 +388,8 @@ export function DataManagement() {
                     onChange={(e) => setCleanupOptions(prev => ({ ...prev, oldSessions: e.target.checked }))}
                   />
                   <Label htmlFor="old-sessions">Remove old session data (30+ days)</Label>
-                </div>
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <input
                     type="checkbox"
                     id="expired-tokens"
@@ -397,8 +397,8 @@ export function DataManagement() {
                     onChange={(e) => setCleanupOptions(prev => ({ ...prev, expiredTokens: e.target.checked }))}
                   />
                   <Label htmlFor="expired-tokens">Remove expired calendar tokens</Label>
-                </div>
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <input
                     type="checkbox"
                     id="old-logs"
@@ -406,21 +406,21 @@ export function DataManagement() {
                     onChange={(e) => setCleanupOptions(prev => ({ ...prev, oldLogs: e.target.checked }))}
                   />
                   <Label htmlFor="old-logs">Remove old security logs (90+ days)</Label>
-                </div>
-              </div>
+                </Box>
+              </Box>
 
-              <div sx={{ bgcolor: '#fefce8', p: 2, borderRadius: 2, border: 1, borderColor: '#fde047' }}>
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Box sx={{ bgcolor: '#fefce8', p: 2, borderRadius: 2, border: 1, borderColor: '#fde047' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                   <AlertTriangle style={{ height: 16, width: 16, color: '#ca8a04' }} />
-                  <span sx={{ fontWeight: 500, color: '#854d0e' }}>Warning</span>
-                </div>
-                <p sx={{ fontSize: '0.875rem', color: '#a16207' }}>
+                  <Box component="span" sx={{ fontWeight: 500, color: '#854d0e' }}>Warning</Box>
+                </Box>
+                <Typography sx={{ fontSize: '0.875rem', color: '#a16207' }}>
                   This action cannot be undone. Make sure you have backups before proceeding.
-                </p>
-              </div>
+                </Typography>
+              </Box>
 
-              <Button 
-                onClick={handleDatabaseCleanup} 
+              <Button
+                onClick={handleDatabaseCleanup}
                 disabled={loading}
                 variant="destructive"
               >
@@ -432,7 +432,7 @@ export function DataManagement() {
         </TabsContent>
 
         <TabsContent value="export" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <div sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr', lg: 'repeat(3, 1fr)' } }}>
+          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr', lg: 'repeat(3, 1fr)' } }}>
             {[
               { table: 'profiles', name: 'User Profiles', icon: FileText },
               { table: 'events', name: 'Events', icon: FileText },
@@ -449,8 +449,8 @@ export function DataManagement() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Button 
-                    onClick={() => handleExportData(table)} 
+                  <Button
+                    onClick={() => handleExportData(table)}
                     disabled={loading}
                     size="sm"
                     sx={{ width: '100%' }}
@@ -461,9 +461,9 @@ export function DataManagement() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </Box>
         </TabsContent>
       </Tabs>
-    </div>
+    </Box>
   );
 }
