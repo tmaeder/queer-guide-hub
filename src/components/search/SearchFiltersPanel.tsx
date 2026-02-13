@@ -54,7 +54,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
     const newTypes = currentTypes.includes(type)
       ? currentTypes.filter(t => t !== type)
       : [...currentTypes, type];
-    
+
     onFiltersChange({ ...filters, types: newTypes });
   };
 
@@ -63,8 +63,8 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
   };
 
   const updatePriceRange = (range: number[]) => {
-    onFiltersChange({ 
-      ...filters, 
+    onFiltersChange({
+      ...filters,
       priceRange: [range[0], range[1]]
     });
   };
@@ -76,8 +76,8 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
   const addCategory = (category: string) => {
     const categories = filters.categories || [];
     if (!categories.includes(category)) {
-      onFiltersChange({ 
-        ...filters, 
+      onFiltersChange({
+        ...filters,
         categories: [...categories, category]
       });
     }
@@ -85,8 +85,8 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
 
   const removeCategory = (category: string) => {
     const categories = filters.categories || [];
-    onFiltersChange({ 
-      ...filters, 
+    onFiltersChange({
+      ...filters,
       categories: categories.filter(c => c !== category)
     });
   };
@@ -104,30 +104,30 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
   };
 
   return (
-    <div sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 2 }}>
       {/* Content Types */}
-      <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Content Types</Label>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Content Types</Label>
           {(filters.types && filters.types.length > 0) && (
             <Button
               variant="ghost"
               size="sm"
-              sx={{ height: 24, fontSize: '0.75rem' }}
+              style={{ height: 24, fontSize: '0.75rem' }}
               onClick={() => onFiltersChange({ ...filters, types: [] })}
             >
               Clear
             </Button>
           )}
-        </div>
-        <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        </Box>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {contentTypes.map((type) => {
             const IconComponent = type.icon;
             return (
               <Badge
                 key={type.id}
                 variant={(filters.types && filters.types.includes(type.id)) ? "default" : "outline"}
-                sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'rgba(var(--primary-rgb), 0.8)' } }}
+                style={{ cursor: 'pointer' }}
                 onClick={() => toggleContentType(type.id)}
               >
                 <IconComponent style={{ height: 12, width: 12, marginRight: 4 }} />
@@ -135,47 +135,47 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
               </Badge>
             );
           })}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Location Filter */}
-      <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
           <MapPin style={{ height: 12, width: 12 }} />
           Location
         </Label>
-        <div sx={{ position: 'relative' }}>
+        <Box sx={{ position: 'relative' }}>
           <Input
             placeholder="Enter city, state, or country..."
             value={filters.location || ''}
             onChange={(e) => updateLocation(e.target.value)}
-            sx={{ fontSize: '0.875rem' }}
+            style={{ fontSize: '0.875rem' }}
           />
           {filters.location && (
             <Button
               variant="ghost"
               size="sm"
-              sx={{ position: 'absolute', right: 4, top: 4, height: 24, width: 24, p: 0 }}
+              style={{ position: 'absolute', right: 4, top: 4, height: 24, width: 24, padding: 0 }}
               onClick={() => updateLocation('')}
             >
               <X style={{ height: 12, width: 12 }} />
             </Button>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Quick Categories */}
       {getRelevantCategories().length > 0 && (
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Popular Categories</Label>
-          <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Popular Categories</Label>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {getRelevantCategories().map((category) => (
               <Badge
                 key={category}
                 variant={filters.categories?.includes(category) ? "default" : "secondary"}
-                sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
-                onClick={() => 
-                  filters.categories?.includes(category) 
+                style={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                onClick={() =>
+                  filters.categories?.includes(category)
                     ? removeCategory(category)
                     : addCategory(category)
                 }
@@ -183,40 +183,40 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 {category}
               </Badge>
             ))}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
       {/* Advanced Filters Toggle */}
-      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
         <Button
           variant="ghost"
           size="sm"
-          sx={{ fontSize: '0.75rem' }}
+          style={{ fontSize: '0.75rem' }}
           onClick={() => setShowAdvanced(!showAdvanced)}
         >
           <Filter style={{ height: 12, width: 12, marginRight: 4 }} />
           {showAdvanced ? 'Hide' : 'Show'} Advanced Filters
         </Button>
-        
+
         {(filters.location || filters.priceRange || filters.rating || (filters.categories && filters.categories.length > 0)) && (
           <Button
             variant="ghost"
             size="sm"
-            sx={{ fontSize: '0.75rem', color: 'error.main' }}
+            style={{ fontSize: '0.75rem', color: '#ef4444' }}
             onClick={clearAllFilters}
           >
             Clear All
           </Button>
         )}
-      </div>
+      </Box>
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, borderTop: 1, borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, borderTop: 1, borderColor: 'divider' }}>
           {/* Date Range */}
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
               <CalendarIcon style={{ height: 12, width: 12 }} />
               Date Range
             </Label>
@@ -233,76 +233,76 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 }
               }}
             />
-          </div>
+          </Box>
 
           {/* Price Range */}
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
               <DollarSign style={{ height: 12, width: 12 }} />
               Price Range
             </Label>
-            <div sx={{ px: 1 }}>
+            <Box sx={{ px: 1 }}>
               <Slider
                 value={filters.priceRange || [0, 1000]}
                 onValueChange={updatePriceRange}
                 max={1000}
                 step={10}
-                sx={{ width: '100%' }}
+                style={{ width: '100%' }}
               />
-              <div sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>
                 <span>${filters.priceRange?.[0] || 0}</span>
                 <span>${filters.priceRange?.[1] || 1000}</span>
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
 
           {/* Rating Filter */}
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
               <Star style={{ height: 12, width: 12 }} />
               Minimum Rating
             </Label>
-            <div sx={{ display: 'flex', gap: 0.5 }}>
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
               {[1, 2, 3, 4, 5].map((rating) => (
                 <Button
                   key={rating}
                   variant={filters.rating === rating ? "default" : "outline"}
                   size="sm"
-                  sx={{ height: 32, width: 32, p: 0 }}
+                  style={{ height: 32, width: 32, padding: 0 }}
                   onClick={() => updateRating(rating)}
                 >
                   <Star style={{ height: 12, width: 12 }} />
                 </Button>
               ))}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {/* Featured/Verified Toggle */}
-          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Switch
                 id="featured"
                 checked={filters.featured || false}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   onFiltersChange({ ...filters, featured: checked })
                 }
               />
-              <Label htmlFor="featured" sx={{ fontSize: '0.875rem' }}>Featured only</Label>
-            </div>
-            
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Label htmlFor="featured" style={{ fontSize: '0.875rem' }}>Featured only</Label>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Switch
                 id="verified"
                 checked={filters.verified || false}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   onFiltersChange({ ...filters, verified: checked })
                 }
               />
-              <Label htmlFor="verified" sx={{ fontSize: '0.875rem' }}>Verified only</Label>
-            </div>
-          </div>
-        </div>
+              <Label htmlFor="verified" style={{ fontSize: '0.875rem' }}>Verified only</Label>
+            </Box>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };

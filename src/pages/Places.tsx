@@ -206,11 +206,11 @@ export default function Places() {
           {/* Navigation Header */}
           <Box sx={{ mb: 3 }}>
             {viewMode !== "overview" && (
-              <Box className="animate-fade-in">
+              <Box>
                 <Button
                   variant="ghost"
                   onClick={handleBack}
-                  sx={{ mb: 2, '&:hover': { bgcolor: 'action.hover' }, transition: 'all 200ms' }}
+                  style={{ marginBottom: 16, transition: 'all 200ms' }}
                 >
                   <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
                   Back
@@ -254,7 +254,7 @@ export default function Places() {
       <Box sx={{ mx: 'auto', maxWidth: 1280, px: 3, pb: 6 }}>
         {/* Breadcrumb Navigation */}
         {viewMode !== "overview" && viewMode !== "search" && (
-          <Box sx={{ mb: 3 }} className="animate-fade-in">
+          <Box sx={{ mb: 3 }}>
             <Box component="nav" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
               <Box
                 component="button"
@@ -286,32 +286,23 @@ export default function Places() {
         )}
 
         {/* Content based on view mode */}
-        <Box className="animate-fade-in">
+        <Box>
           {viewMode === "overview" && (
-            <Tabs defaultValue="countries" sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Tabs defaultValue="countries" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
               {/* Enhanced Tab Navigation */}
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <TabsList sx={{ display: 'grid', width: '100%', maxWidth: 448, gridTemplateColumns: 'repeat(3, 1fr)', bgcolor: 'rgba(var(--muted), 0.5)' }}>
-                  <TabsTrigger
-                    value="countries"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'rgba(var(--background), 0.8)', boxShadow: 1 }, transition: 'all 150ms' }}
-                  >
+                <TabsList style={{ display: 'grid', width: '100%', maxWidth: 448, gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                  <TabsTrigger value="countries">
                     <MapPin style={{ height: 16, width: 16 }} />
-                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Countries</Box>
+                    <span>Countries</span>
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="cities"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'rgba(var(--background), 0.8)', boxShadow: 1 }, transition: 'all 150ms' }}
-                  >
+                  <TabsTrigger value="cities">
                     <Building2 style={{ height: 16, width: 16 }} />
-                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cities</Box>
+                    <span>Cities</span>
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="map"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'rgba(var(--background), 0.8)', boxShadow: 1 }, transition: 'all 150ms' }}
-                  >
+                  <TabsTrigger value="map">
                     <Map style={{ height: 16, width: 16 }} />
-                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Map</Box>
+                    <span>Map</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -328,11 +319,11 @@ export default function Places() {
                 </Box>
               </Box>
 
-              <TabsContent value="countries" className="animate-fade-in" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <TabsContent value="countries" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Typography variant="h5" sx={{ fontWeight: 600 }}>Explore Countries</Typography>
-                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                    <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                       {filteredCountries.length} found
                     </Badge>
                   </Box>
@@ -371,8 +362,7 @@ export default function Places() {
                             {continentCountries.map((country, index) => (
                               <Box
                                 key={country.id}
-                                className="animate-fade-in"
-                                style={{ animationDelay: `${index * 50}ms` }}
+                                                                style={{ animationDelay: `${index * 50}ms` }}
                               >
                                 <PlacesCard
                                   type="country"
@@ -391,8 +381,7 @@ export default function Places() {
                       {filteredCountries.map((country, index) => (
                         <Box
                           key={country.id}
-                          className="animate-fade-in"
-                          style={{ animationDelay: `${index * 50}ms` }}
+                                                    style={{ animationDelay: `${index * 50}ms` }}
                         >
                           <PlacesCard
                             type="country"
@@ -407,11 +396,11 @@ export default function Places() {
                 </Box>
               </TabsContent>
 
-              <TabsContent value="cities" className="animate-fade-in" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <TabsContent value="cities" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Typography variant="h5" sx={{ fontWeight: 600 }}>Discover Cities</Typography>
-                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                    <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                       {filteredCities.length} found
                     </Badge>
                   </Box>
@@ -447,8 +436,7 @@ export default function Places() {
                           {continentCities.map((city, index) => (
                             <Box
                               key={city.id}
-                              className="animate-fade-in"
-                              style={{ animationDelay: `${index * 50}ms` }}
+                                                            style={{ animationDelay: `${index * 50}ms` }}
                             >
                               <PlacesCard
                                 type="city"
@@ -465,7 +453,7 @@ export default function Places() {
                 </Box>
               </TabsContent>
 
-              <TabsContent value="map" className="animate-fade-in">
+              <TabsContent value="map">
                 <Suspense
                   fallback={
                     <Box sx={{ height: 600, bgcolor: 'rgba(var(--muted), 0.5)', borderRadius: 2, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -516,7 +504,7 @@ export default function Places() {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Typography variant="h5" sx={{ fontWeight: 600 }}>Cities in {selectedCountry.name}</Typography>
-                  <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                  <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                     {countryCities.length} cities
                   </Badge>
                 </Box>
@@ -526,8 +514,7 @@ export default function Places() {
                     {countryCities.map((city, index) => (
                       <Box
                         key={city.id}
-                        className="animate-fade-in"
-                        style={{ animationDelay: `${index * 50}ms` }}
+                                                style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <PlacesCard
                           type="city"
@@ -580,7 +567,7 @@ export default function Places() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Typography variant="h5" sx={{ fontWeight: 600 }}>Countries</Typography>
-                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                    <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                       {searchResults.countries.length} found
                     </Badge>
                   </Box>
@@ -588,8 +575,7 @@ export default function Places() {
                     {searchResults.countries.map((country: any, index: number) => (
                       <Box
                         key={country.id}
-                        className="animate-fade-in"
-                        style={{ animationDelay: `${index * 50}ms` }}
+                                                style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <PlacesCard
                           type="country"
@@ -607,7 +593,7 @@ export default function Places() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Typography variant="h5" sx={{ fontWeight: 600 }}>Cities</Typography>
-                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                    <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                       {searchResults.cities.length} found
                     </Badge>
                   </Box>
@@ -615,8 +601,7 @@ export default function Places() {
                     {searchResults.cities.map((city: any, index: number) => (
                       <Box
                         key={city.id}
-                        className="animate-fade-in"
-                        style={{ animationDelay: `${index * 50}ms` }}
+                                                style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <PlacesCard
                           type="city"

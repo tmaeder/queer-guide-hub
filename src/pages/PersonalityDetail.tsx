@@ -10,6 +10,8 @@ import { usePersonalities, type Personality } from '@/hooks/usePersonalities';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export default function PersonalityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -27,7 +29,7 @@ export default function PersonalityDetail() {
     const fetchPersonality = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch from Supabase
         const { supabase } = await import('@/integrations/supabase/client');
         const { data, error } = await supabase
@@ -73,7 +75,7 @@ export default function PersonalityDetail() {
 
         // Set page title for SEO
         document.title = `${transformedData.name} - Queer Guide`;
-        
+
         // Set meta description
         const metaDescription = transformedData.description || transformedData.bio?.substring(0, 160) || `Learn about ${transformedData.name}, a notable LGBTQ+ personality.`;
         const existingMeta = document.querySelector('meta[name="description"]');
@@ -114,7 +116,7 @@ export default function PersonalityDetail() {
     const end = deathDate ? new Date(deathDate) : new Date();
     const age = end.getFullYear() - birth.getFullYear();
     const monthDiff = end.getMonth() - birth.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && end.getDate() < birth.getDate())) {
       return age - 1;
     }
@@ -133,9 +135,9 @@ export default function PersonalityDetail() {
   const getVerificationBadge = () => {
     switch (personality?.verification_status) {
       case 'verified':
-        return <Badge variant="secondary" sx={{ gap: 0.5 }}><Verified style={{ height: 12, width: 12 }} />Verified</Badge>;
+        return <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Verified style={{ height: 12, width: 12 }} />Verified</Badge>;
       case 'disputed':
-        return <Badge variant="secondary" sx={{ gap: 0.5, bgcolor: 'rgba(234,179,8,0.1)', color: '#a16207' }}>Disputed</Badge>;
+        return <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(234,179,8,0.1)', color: '#a16207' }}>Disputed</Badge>;
       default:
         return null;
     }
@@ -164,93 +166,93 @@ export default function PersonalityDetail() {
 
   if (loading) {
     return (
-      <div sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4 }}>
+      <Box sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4 }}>
         <div style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-          <div sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%', mb: 3 }}></div>
-          <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 4 }}>
-            <div sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <div sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }}></div>
-              <div sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }}></div>
-            </div>
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <div sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }}></div>
-              <div sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }}></div>
-            </div>
-          </div>
+          <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%', mb: 3 }} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 4 }}>
+            <Box sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }} />
+              <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }} />
+              <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
+            </Box>
+          </Box>
         </div>
-      </div>
+      </Box>
     );
   }
 
   if (!personality) {
     return (
-      <div sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
-        <h1 sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Personality Not Found</h1>
-        <p sx={{ color: 'text.secondary', mb: 3 }}>The personality you're looking for doesn't exist.</p>
+      <Box sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
+        <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Personality Not Found</Typography>
+        <Typography sx={{ color: 'text.secondary', mb: 3 }}>The personality you're looking for doesn't exist.</Typography>
         <Button onClick={() => navigate('/personalities')}>
           <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
           Back to Personalities
         </Button>
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div sx={{ maxWidth: 1152, mx: 'auto', px: 2, py: 4 }}>
+    <Box sx={{ maxWidth: 1152, mx: 'auto', px: 2, py: 4 }}>
       {/* Header */}
-      <div sx={{ mb: 3 }}>
-        <Button 
-          variant="ghost" 
+      <Box sx={{ mb: 3 }}>
+        <Button
+          variant="ghost"
           onClick={() => navigate('/personalities')}
-          sx={{ mb: 2 }}
+          style={{ marginBottom: '16px' }}
         >
           <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
           Back to Personalities
         </Button>
-        
-        <div sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { md: 'flex-start' }, justifyContent: { md: 'space-between' }, gap: 2 }}>
-          <div sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-            <Avatar sx={{ height: 96, width: 96 }}>
-              <AvatarImage 
-                src={personality.image_url || ''} 
+
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { md: 'flex-start' }, justifyContent: { md: 'space-between' }, gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+            <Avatar style={{ height: 96, width: 96 }}>
+              <AvatarImage
+                src={personality.image_url || ''}
                 alt={personality.name}
-                sx={{ objectFit: 'cover' }}
+                style={{ objectFit: 'cover' }}
               />
-              <AvatarFallback sx={{ fontSize: '1.25rem', fontWeight: 600 }}>
+              <AvatarFallback style={{ fontSize: '1.25rem', fontWeight: 600 }}>
                 {getInitials(personality.name)}
               </AvatarFallback>
             </Avatar>
-            
+
             <div>
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                <h1 sx={{ fontSize: '1.875rem', fontWeight: 700 }}>{personality.name}</h1>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>{personality.name}</Typography>
                 {personality.is_featured && (
-                  <Badge variant="secondary" sx={{ gap: 0.5 }}>
+                  <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Star style={{ height: 12, width: 12 }} />
                     Featured
                   </Badge>
                 )}
                 {getVerificationBadge()}
-              </div>
-              
+              </Box>
+
               {personality.pronouns && (
-                <p sx={{ color: 'text.secondary', mb: 1 }}>({personality.pronouns})</p>
+                <Typography sx={{ color: 'text.secondary', mb: 1 }}>({personality.pronouns})</Typography>
               )}
-              
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', mb: 1.5 }}>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', mb: 1.5 }}>
                 {personality.profession && (
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Briefcase style={{ height: 16, width: 16 }} />
                     <span>{personality.profession}</span>
-                  </div>
+                  </Box>
                 )}
                 {personality.nationality && (
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <MapPin style={{ height: 16, width: 16 }} />
                     <span>{personality.nationality}</span>
-                  </div>
+                  </Box>
                 )}
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   {personality.is_living ? (
                     <>
                       <Heart style={{ height: 16, width: 16, color: '#16a34a' }} />
@@ -262,33 +264,33 @@ export default function PersonalityDetail() {
                       <span>Historical</span>
                     </>
                   )}
-                </div>
-              </div>
-              
+                </Box>
+              </Box>
+
               {personality.birth_date && (
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5 }}>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5 }}>
                   Age: {calculateAge(personality.birth_date, personality.death_date || undefined)}
                   {personality.is_living ? ' years old' : ' years'}
-                </p>
+                </Typography>
               )}
 
               {personality.fields.length > 0 && (
-                <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {personality.fields.map((field, index) => (
-                    <Badge key={index} variant="outline" sx={{ fontSize: '0.75rem' }}>
+                    <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
                       {field}
                     </Badge>
                   ))}
-                </div>
+                </Box>
               )}
             </div>
-          </div>
+          </Box>
 
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
               <Eye style={{ height: 16, width: 16 }} />
-              <span sx={{ fontSize: '0.875rem' }}>{personality.view_count.toLocaleString()}</span>
-            </div>
+              <Box component="span" sx={{ fontSize: '0.875rem' }}>{personality.view_count.toLocaleString()}</Box>
+            </Box>
             <Button variant="outline" size="sm" onClick={handleShare}>
               <Share2 style={{ height: 16, width: 16, marginRight: 8 }} />
               Share
@@ -301,13 +303,13 @@ export default function PersonalityDetail() {
                 </a>
               </Button>
             )}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
-      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 4 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 4 }}>
         {/* Main Content */}
-        <div sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Description */}
           {personality.description && (
             <Card>
@@ -315,7 +317,7 @@ export default function PersonalityDetail() {
                 <CardTitle>About</CardTitle>
               </CardHeader>
               <CardContent>
-                <p style={{ color: 'var(--muted-foreground)' }}>{personality.description}</p>
+                <p style={{ color: '#999999' }}>{personality.description}</p>
               </CardContent>
             </Card>
           )}
@@ -327,15 +329,15 @@ export default function PersonalityDetail() {
                 <CardTitle>Biography</CardTitle>
               </CardHeader>
               <CardContent>
-                <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {personality.bio.split('\n').map((paragraph, index) => (
                     paragraph.trim() && (
-                      <p key={index} style={{ color: 'var(--muted-foreground)' }}>
+                      <p key={index} style={{ color: '#999999' }}>
                         {paragraph}
                       </p>
                     )
                   ))}
-                </div>
+                </Box>
               </CardContent>
             </Card>
           )}
@@ -347,66 +349,66 @@ export default function PersonalityDetail() {
                 <CardTitle>Notable Achievements</CardTitle>
               </CardHeader>
               <CardContent>
-                <ul sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {personality.achievements.map((achievement, index) => (
-                    <li key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                      <div sx={{ height: 8, width: 8, bgcolor: 'primary.main', borderRadius: '50%', mt: 1, flexShrink: 0 }} />
-                      <span style={{ color: 'var(--muted-foreground)' }}>{achievement}</span>
-                    </li>
+                    <Box component="li" key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                      <Box sx={{ height: 8, width: 8, bgcolor: 'primary.main', borderRadius: '50%', mt: 1, flexShrink: 0 }} />
+                      <span style={{ color: '#999999' }}>{achievement}</span>
+                    </Box>
                   ))}
-                </ul>
+                </Box>
               </CardContent>
             </Card>
           )}
-        </div>
+        </Box>
 
         {/* Sidebar */}
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Personal Information */}
           <Card>
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {personality.birth_date && (
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Calendar style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Calendar style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
-                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Born</p>
-                    <p sx={{ fontWeight: 500 }}>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Born</Typography>
+                    <Typography sx={{ fontWeight: 500 }}>
                       {new Date(personality.birth_date).toLocaleDateString()}
-                    </p>
+                    </Typography>
                   </div>
-                </div>
+                </Box>
               )}
               {personality.death_date && (
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Calendar style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Calendar style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
-                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Died</p>
-                    <p sx={{ fontWeight: 500 }}>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Died</Typography>
+                    <Typography sx={{ fontWeight: 500 }}>
                       {new Date(personality.death_date).toLocaleDateString()}
-                    </p>
+                    </Typography>
                   </div>
-                </div>
+                </Box>
               )}
               {personality.nationality && (
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <MapPin style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <MapPin style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
-                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Nationality</p>
-                    <p sx={{ fontWeight: 500 }}>{personality.nationality}</p>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Nationality</Typography>
+                    <Typography sx={{ fontWeight: 500 }}>{personality.nationality}</Typography>
                   </div>
-                </div>
+                </Box>
               )}
               {personality.profession && (
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Briefcase style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Briefcase style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
-                    <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Profession</p>
-                    <p sx={{ fontWeight: 500 }}>{personality.profession}</p>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Profession</Typography>
+                    <Typography sx={{ fontWeight: 500 }}>{personality.profession}</Typography>
                   </div>
-                </div>
+                </Box>
               )}
             </CardContent>
           </Card>
@@ -418,8 +420,8 @@ export default function PersonalityDetail() {
                 <CardTitle>Social Links</CardTitle>
               </CardHeader>
               <CardContent>
-                <SocialLinksDisplay 
-                  socialLinks={personality.social_links} 
+                <SocialLinksDisplay
+                  socialLinks={personality.social_links}
                   size="sm"
                 />
               </CardContent>
@@ -433,30 +435,30 @@ export default function PersonalityDetail() {
                 <CardTitle>Tags</CardTitle>
               </CardHeader>
               <CardContent>
-                <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {personality.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" sx={{ fontSize: '0.75rem' }}>
+                    <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
                       {tag}
                     </Badge>
                   ))}
-                </div>
+                </Box>
               </CardContent>
             </Card>
           )}
 
           {/* View Count */}
           <Card>
-            <CardContent sx={{ pt: 3 }}>
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+            <CardContent style={{ paddingTop: '24px' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
                 <Eye style={{ height: 16, width: 16 }} />
-                <span sx={{ fontSize: '0.875rem' }}>
+                <Box component="span" sx={{ fontSize: '0.875rem' }}>
                   {personality.view_count.toLocaleString()} profile views
-                </span>
-              </div>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

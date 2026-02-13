@@ -23,13 +23,13 @@ import { SecurityMonitoringDashboard } from '@/components/admin/SecurityMonitori
 import { UmamiAnalyticsDashboard } from '@/components/analytics/UmamiAnalyticsDashboard';
 import { CloudflareDashboard } from '@/components/admin/CloudflareDashboard';
 
-import { 
-  Shield, 
-  Calendar, 
-  MapPin, 
-  ShoppingBag, 
-  Building, 
-  MessageSquare, 
+import {
+  Shield,
+  Calendar,
+  MapPin,
+  ShoppingBag,
+  Building,
+  MessageSquare,
   Star,
   BarChart3,
   TrendingUp,
@@ -41,6 +41,9 @@ import {
   Settings,
   Filter
 } from "lucide-react";
+
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface DashboardStats {
   totalContent: number;
@@ -83,7 +86,7 @@ export default function AdminDashboard() {
   const { user } = useAuth();
   const { isAdmin, isModerator, canManageContent, loading } = useAdminRoles();
   const { toast } = useToast();
-  
+
   const [stats, setStats] = useState<DashboardStats>({
     totalContent: 0,
     activeVenues: 0,
@@ -99,7 +102,7 @@ export default function AdminDashboard() {
     avgSessionTime: 0,
     conversionRate: 0
   });
-  
+
   const [statsLoading, setStatsLoading] = useState(true);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [systemHealth, setSystemHealth] = useState<SystemHealth>({
@@ -111,7 +114,7 @@ export default function AdminDashboard() {
     storageUsed: 0,
     apiCalls: 0
   });
-  
+
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(30);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -152,7 +155,7 @@ export default function AdminDashboard() {
     try {
       const daysAgo = filterPeriod === '7d' ? 7 : filterPeriod === '30d' ? 30 : 90;
       const dateFilter = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
-      
+
       const results = await Promise.allSettled([
         supabase.from('venues').select('id', { count: 'exact', head: true }),
         supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'active'),
@@ -165,14 +168,14 @@ export default function AdminDashboard() {
         supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', dateFilter),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
       ]);
-      
+
       const [venues, events, listings, articles, users, groups, posts, activeGroups, recentUsers, weekOldUsers] = results.map(
         result => result.status === 'fulfilled' ? result.value : { count: 0 }
       );
 
       const totalContentCount = (articles.count || 0) + (events.count || 0) + (listings.count || 0) + (posts.count || 0);
       const weeklyGrowth = ((recentUsers.count || 0) / Math.max(weekOldUsers.count || 1, 1)) * 100;
-      
+
       setStats({
         totalContent: totalContentCount,
         activeVenues: venues.count || 0,
@@ -199,7 +202,7 @@ export default function AdminDashboard() {
     try {
       const now = new Date();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      
+
       const results = await Promise.allSettled([
         supabase
           .from('group_posts')
@@ -207,14 +210,14 @@ export default function AdminDashboard() {
           .gte('created_at', sevenDaysAgo)
           .order('created_at', { ascending: false })
           .limit(3),
-        
+
         supabase
           .from('events')
           .select('id, title, created_at, event_type, city, country')
           .gte('created_at', sevenDaysAgo)
           .order('created_at', { ascending: false })
           .limit(3),
-        
+
         supabase
           .from('marketplace_listings')
           .select('id, title, created_at, status')
@@ -237,7 +240,7 @@ export default function AdminDashboard() {
           .order('created_at', { ascending: false })
           .limit(3)
       ]);
-      
+
       const [
         recentPostsResult,
         recentEventsResult,
@@ -245,13 +248,13 @@ export default function AdminDashboard() {
         recentUsersResult,
         recentVenuesResult
       ] = results;
-      
+
       const recentPosts = recentPostsResult.status === 'fulfilled' ? recentPostsResult.value.data : [];
       const recentEvents = recentEventsResult.status === 'fulfilled' ? recentEventsResult.value.data : [];
       const recentListings = recentListingsResult.status === 'fulfilled' ? recentListingsResult.value.data : [];
       const recentUsers = recentUsersResult.status === 'fulfilled' ? recentUsersResult.value.data : [];
       const recentVenues = recentVenuesResult.status === 'fulfilled' ? recentVenuesResult.value.data : [];
-      
+
       const activities: ActivityItem[] = [
         ...(recentPosts?.map(post => ({
           id: post.id,
@@ -299,7 +302,7 @@ export default function AdminDashboard() {
           badge: 'Venues'
         })) || [])
       ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10);
-      
+
       setRecentActivity(activities);
     } catch (error) {
       console.error('Error fetching recent activity:', error);
@@ -312,7 +315,7 @@ export default function AdminDashboard() {
       const { error } = await supabase.from('profiles').select('id').limit(1);
       const endTime = performance.now();
       const dbLatency = Math.round(endTime - startTime);
-      
+
       if (error) {
         setSystemHealth({
           status: 'error',
@@ -360,60 +363,60 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
-        <div sx={{ textAlign: 'center' }}>Loading admin dashboard...</div>
-      </div>
+      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+        <Box sx={{ textAlign: 'center' }}>Loading admin dashboard...</Box>
+      </Box>
     );
   }
 
   if (!canManageContent()) {
     return (
-      <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
-        <div sx={{ textAlign: 'center' }}>
-          <h1 sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Access Denied</h1>
+      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Access Denied</Typography>
           <p>You don't have permission to access the admin dashboard.</p>
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div sx={{ maxWidth: 1280, mx: 'auto', px: 3, py: 4 }}>
+    <Box sx={{ maxWidth: 1280, mx: 'auto', px: 3, py: 4 }}>
       {/* Header Section */}
-      <header sx={{ mb: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box component="header" sx={{ mb: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Title & Role */}
-        <div sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <div sx={{ p: 1.5, bgcolor: 'primary.main', borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ p: 1.5, bgcolor: 'primary.main', borderRadius: 2 }}>
               <Shield style={{ height: 32, width: 32, color: 'var(--primary-foreground)' }} />
-            </div>
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <h1 sx={{ fontSize: '1.875rem', fontWeight: 700, color: 'text.primary' }}>Admin Dashboard</h1>
-              <p style={{ color: 'var(--muted-foreground)' }}>Monitor and manage your platform</p>
-            </div>
-          </div>
-          
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Badge variant={isAdmin ? "default" : "secondary"} sx={{ fontWeight: 500 }}>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700, color: 'text.primary' }}>Admin Dashboard</Typography>
+              <p style={{ color: '#999999' }}>Monitor and manage your platform</p>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Badge variant={isAdmin ? "default" : "secondary"} style={{ fontWeight: 500 }}>
               {isAdmin ? "Administrator" : isModerator ? "Moderator" : "Staff"}
             </Badge>
             {lastUpdate && (
-              <span sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+              <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 Updated: {lastUpdate.toLocaleTimeString()}
-              </span>
+              </Box>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Controls Bar */}
-        <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             {/* Time Period Filter */}
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Filter style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-              <span sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>Period:</span>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Filter style={{ height: 16, width: 16, color: '#999999' }} />
+              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>Period:</Box>
               <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-                <SelectTrigger sx={{ width: 128 }}>
+                <SelectTrigger style={{ width: 128 }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -422,17 +425,17 @@ export default function AdminDashboard() {
                   <SelectItem value="90d">Last 90 days</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Box>
 
             {/* View Mode Toggle */}
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <span sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>View:</span>
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 2, p: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>View:</Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 2, p: 0.5 }}>
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  sx={{ height: 28, width: 28, p: 0 }}
+                  style={{ height: 28, width: 28, padding: 0 }}
                 >
                   <Grid3X3 style={{ height: 16, width: 16 }} />
                 </Button>
@@ -440,34 +443,34 @@ export default function AdminDashboard() {
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  sx={{ height: 28, width: 28, p: 0 }}
+                  style={{ height: 28, width: 28, padding: 0 }}
                 >
                   <List style={{ height: 16, width: 16 }} />
                 </Button>
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
 
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {/* Auto Refresh Toggle */}
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Switch
                 id="auto-refresh"
                 checked={autoRefresh}
                 onCheckedChange={setAutoRefresh}
               />
-              <Label htmlFor="auto-refresh" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+              <Label htmlFor="auto-refresh" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
                 Auto-refresh
               </Label>
-            </div>
+            </Box>
 
             {/* Action Buttons */}
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleRefresh}
-                sx={{ gap: 1 }}
+                style={{ display: 'flex', gap: '8px' }}
               >
                 <RefreshCw style={{ height: 16, width: 16 }} />
                 Refresh
@@ -475,49 +478,49 @@ export default function AdminDashboard() {
               <Button variant="outline" size="sm">
                 <Settings style={{ height: 16, width: 16 }} />
               </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-      
-      <Tabs defaultValue="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <TabsList sx={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <TabsTrigger value="overview" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+
+      <Tabs defaultValue="overview" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+          <TabsTrigger value="overview" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <BarChart3 style={{ height: 16, width: 16 }} />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="analytics" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TabsTrigger value="analytics" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Activity style={{ height: 16, width: 16 }} />
             Analytics
           </TabsTrigger>
-          <TabsTrigger value="security" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TabsTrigger value="security" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Shield style={{ height: 16, width: 16 }} />
             Security
           </TabsTrigger>
-          <TabsTrigger value="cloudflare" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TabsTrigger value="cloudflare" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <TrendingUp style={{ height: 16, width: 16 }} />
             Cloudflare
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <div sx={{ display: 'grid', gap: { xs: 3, xl: 4 }, gridTemplateColumns: { lg: 'repeat(12, 1fr)' } }}>
-            <div sx={{ gridColumn: { lg: 'span 8', xl: 'span 9' } }}>
+        <TabsContent value="overview" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <Box sx={{ display: 'grid', gap: { xs: 3, xl: 4 }, gridTemplateColumns: { lg: 'repeat(12, 1fr)' } }}>
+            <Box sx={{ gridColumn: { lg: 'span 8', xl: 'span 9' } }}>
               <DashboardOverview
                 stats={stats}
                 systemHealth={systemHealth}
                 statsLoading={statsLoading}
               />
-            </div>
-            <div sx={{ gridColumn: { lg: 'span 4', xl: 'span 3' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            </Box>
+            <Box sx={{ gridColumn: { lg: 'span 4', xl: 'span 3' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
               <QuickActions />
-              <RecentActivity 
+              <RecentActivity
                 activities={recentActivity}
                 loading={statsLoading}
                 onRefresh={fetchRecentActivity}
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
         </TabsContent>
 
         <TabsContent value="analytics">
@@ -532,6 +535,6 @@ export default function AdminDashboard() {
           <CloudflareDashboard />
         </TabsContent>
       </Tabs>
-    </div>
+    </Box>
   );
 }

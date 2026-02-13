@@ -13,14 +13,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  ExternalLink, 
-  RefreshCw, 
-  Globe, 
-  Rss, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  ExternalLink,
+  RefreshCw,
+  Globe,
+  Rss,
   Activity,
   Calendar,
   ArrowLeft,
@@ -30,6 +30,8 @@ import {
   Tags
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface NewsSource {
   id: string;
@@ -53,7 +55,7 @@ export default function AdminNewsSources() {
   const { user } = useAuth();
   const { isAdmin, isModerator, canManageContent, loading } = useAdminRoles();
   const { toast } = useToast();
-  
+
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -61,7 +63,7 @@ export default function AdminNewsSources() {
   const [editingSource, setEditingSource] = useState<NewsSource | null>(null);
   const [editingKeywords, setEditingKeywords] = useState<string[]>([]);
   const [newKeyword, setNewKeyword] = useState('');
-  
+
   const [formData, setFormData] = useState({
     name: '',
     url: '',
@@ -72,7 +74,7 @@ export default function AdminNewsSources() {
   });
 
   const categories = [
-    'general', 'rights', 'politics', 'health', 'community', 
+    'general', 'rights', 'politics', 'health', 'community',
     'business', 'sports', 'entertainment', 'technology'
   ];
 
@@ -138,7 +140,7 @@ export default function AdminNewsSources() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingSource) {
         const { error } = await supabase
@@ -204,7 +206,7 @@ export default function AdminNewsSources() {
         title: "Success",
         description: "News source deleted successfully",
       });
-      
+
       fetchSources();
     } catch (error) {
       console.error('Error deleting news source:', error);
@@ -229,7 +231,7 @@ export default function AdminNewsSources() {
         title: "Success",
         description: `News source ${!isActive ? 'activated' : 'deactivated'}`,
       });
-      
+
       fetchSources();
     } catch (error) {
       console.error('Error updating news source:', error);
@@ -248,7 +250,7 @@ export default function AdminNewsSources() {
       const { error } = await supabase.functions.invoke('fetch-news', {
         body: { sourceId }
       });
-      
+
       if (error) throw error;
 
       toast({
@@ -284,7 +286,7 @@ export default function AdminNewsSources() {
 
   const saveKeywords = async () => {
     if (!editingSource) return;
-    
+
     try {
       const { error } = await supabase
         .from('news_sources')
@@ -297,7 +299,7 @@ export default function AdminNewsSources() {
         title: "Success",
         description: "Keywords updated successfully",
       });
-      
+
       setKeywordsDialogOpen(false);
       setEditingSource(null);
       setEditingKeywords([]);
@@ -314,49 +316,49 @@ export default function AdminNewsSources() {
 
   if (loading) {
     return (
-      <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
-        <div sx={{ textAlign: 'center' }}>Loading...</div>
-      </div>
+      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+        <Box sx={{ textAlign: 'center' }}>Loading...</Box>
+      </Box>
     );
   }
 
   if (!canManageContent()) {
     return (
-      <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
-        <div sx={{ textAlign: 'center' }}>
-          <h1 sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Access Denied</h1>
+      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Access Denied</Typography>
           <p>You don't have permission to access this page.</p>
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/admin')}
-            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             <ArrowLeft style={{ height: 16, width: 16 }} />
             Back to Admin
           </Button>
           <div>
-            <h1 sx={{ fontSize: '1.875rem', fontWeight: 700 }}>News Sources Management</h1>
-            <p style={{ color: 'var(--muted-foreground)' }}>
+            <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>News Sources Management</Typography>
+            <p style={{ color: '#999999' }}>
               Manage RSS feeds and API sources for the news hub
             </p>
           </div>
-        </div>
-        <div sx={{ display: 'flex', gap: 1 }}>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
-            disabled={true} // Manual trigger disabled - automatic cron job is now active
+            disabled={true}
             variant="outline"
-            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             <RefreshCw style={{ height: 16, width: 16, ...(isLoading ? { animation: 'spin 1s linear infinite' } : {}) }} />
             Fetch News
@@ -368,13 +370,13 @@ export default function AdminNewsSources() {
                 Add Source
               </Button>
             </DialogTrigger>
-            <DialogContent sx={{ maxWidth: { sm: 500 } }}>
+            <DialogContent style={{ maxWidth: 500 }}>
               <DialogHeader>
                 <DialogTitle>
                   {editingSource ? 'Edit News Source' : 'Add News Source'}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <div>
                   <Label htmlFor="name">Source Name</Label>
                   <Input
@@ -385,7 +387,7 @@ export default function AdminNewsSources() {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="url">URL</Label>
                   <Input
@@ -398,12 +400,12 @@ export default function AdminNewsSources() {
                   />
                 </div>
 
-                <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                   <div>
                     <Label htmlFor="source_type">Source Type</Label>
                     <Select
                       value={formData.source_type}
-                      onValueChange={(value: 'rss' | 'api') => 
+                      onValueChange={(value: 'rss' | 'api') =>
                         setFormData({ ...formData, source_type: value })
                       }
                     >
@@ -435,7 +437,7 @@ export default function AdminNewsSources() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
+                </Box>
 
                 <div>
                   <Label htmlFor="frequency">Fetch Frequency</Label>
@@ -456,73 +458,73 @@ export default function AdminNewsSources() {
                     </Select>
                 </div>
 
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Switch
                     id="is_active"
                     checked={formData.is_active}
                     onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                   />
                   <Label htmlFor="is_active">Active</Label>
-                </div>
+                </Box>
 
-                <div sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancel
                   </Button>
                   <Button type="submit">
                     {editingSource ? 'Update' : 'Create'}
                   </Button>
-                </div>
-              </form>
+                </Box>
+              </Box>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Stats Cards */}
-      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Total Sources</CardTitle>
+          <CardHeader style={{ paddingBottom: '8px' }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>Total Sources</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{sources.length}</div>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{sources.length}</Box>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Active Sources</CardTitle>
+          <CardHeader style={{ paddingBottom: '8px' }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>Active Sources</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a' }}>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a' }}>
               {sources.filter(s => s.is_active).length}
-            </div>
+            </Box>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>RSS Feeds</CardTitle>
+          <CardHeader style={{ paddingBottom: '8px' }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>RSS Feeds</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {sources.filter(s => s.source_type === 'rss').length}
-            </div>
+            </Box>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>API Sources</CardTitle>
+          <CardHeader style={{ paddingBottom: '8px' }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>API Sources</CardTitle>
           </CardHeader>
           <CardContent>
-            <div sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
               {sources.filter(s => s.source_type === 'api').length}
-            </div>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Sources Table */}
       <Card>
@@ -531,11 +533,11 @@ export default function AdminNewsSources() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div sx={{ textAlign: 'center', py: 4 }}>Loading sources...</div>
+            <Box sx={{ textAlign: 'center', py: 4 }}>Loading sources...</Box>
           ) : sources.length === 0 ? (
-            <div sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+            <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
               No news sources configured yet.
-            </div>
+            </Box>
           ) : (
             <Table>
               <TableHeader>
@@ -552,19 +554,19 @@ export default function AdminNewsSources() {
               <TableBody>
                 {sources.map((source) => (
                   <TableRow key={source.id}>
-                    <TableCell sx={{ fontWeight: 500 }}>{source.name}</TableCell>
+                    <TableCell style={{ fontWeight: 500 }}>{source.name}</TableCell>
                     <TableCell>
-                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {source.source_type === 'rss' ? (
                           <Rss style={{ height: 16, width: 16 }} />
                         ) : (
                           <Globe style={{ height: 16, width: 16 }} />
                         )}
                         {source.source_type.toUpperCase()}
-                      </div>
+                      </Box>
                     </TableCell>
                     <TableCell>
-                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {source.status === 'error' ? (
                           <AlertCircle style={{ height: 16, width: 16, color: '#ef4444' }} />
                         ) : (
@@ -575,49 +577,49 @@ export default function AdminNewsSources() {
                             {source.is_active ? (source.status || 'Active') : 'Inactive'}
                           </Badge>
                           {source.last_error && (
-                            <div sx={{ fontSize: '0.75rem', color: '#ef4444', mt: 0.5 }} title={source.last_error}>
+                            <Box sx={{ fontSize: '0.75rem', color: '#ef4444', mt: 0.5 }} title={source.last_error}>
                               {source.last_error.length > 30 ? source.last_error.substring(0, 30) + '...' : source.last_error}
-                            </div>
+                            </Box>
                           )}
                         </div>
-                      </div>
+                      </Box>
                     </TableCell>
                     <TableCell>
-                      <div sx={{ fontSize: '0.875rem' }}>
-                        <div sx={{ fontWeight: 500 }}>{source.articles_fetched || 0}</div>
-                        <div style={{ color: 'var(--muted-foreground)' }}>articles</div>
-                      </div>
+                      <Box sx={{ fontSize: '0.875rem' }}>
+                        <Box sx={{ fontWeight: 500 }}>{source.articles_fetched || 0}</Box>
+                        <span style={{ color: '#999999' }}>articles</span>
+                      </Box>
                     </TableCell>
                     <TableCell>
                       {source.source_type === 'api' && (
-                        <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <div sx={{ fontSize: '0.75rem' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ fontSize: '0.75rem' }}>
                             {source.keywords ? source.keywords.slice(0, 2).join(', ') + (source.keywords.length > 2 ? '...' : '') : 'None'}
-                          </div>
+                          </Box>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleKeywordsEdit(source)}
-                            sx={{ height: 24, width: 24, p: 0 }}
+                            style={{ height: 24, width: 24, padding: 0 }}
                           >
                             <Tags style={{ height: 12, width: 12 }} />
                           </Button>
-                        </div>
+                        </Box>
                       )}
                       {source.source_type === 'rss' && (
-                        <span sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>N/A</span>
+                        <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>N/A</Box>
                       )}
                     </TableCell>
                     <TableCell>
-                      <div sx={{ fontSize: '0.75rem' }}>
-                        {source.last_fetched_at ? 
-                          new Date(source.last_fetched_at).toLocaleString() : 
+                      <Box sx={{ fontSize: '0.75rem' }}>
+                        {source.last_fetched_at ?
+                          new Date(source.last_fetched_at).toLocaleString() :
                           'Never'
                         }
-                      </div>
+                      </Box>
                     </TableCell>
                     <TableCell>
-                      <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -657,14 +659,14 @@ export default function AdminNewsSources() {
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDelete(source.id)}
-                                sx={{ bgcolor: '#dc2626', '&:hover': { bgcolor: '#b91c1c' } }}
+                                style={{ backgroundColor: '#dc2626' }}
                               >
                                 Delete
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      </div>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -676,33 +678,33 @@ export default function AdminNewsSources() {
 
       {/* Keywords Management Dialog */}
       <Dialog open={keywordsDialogOpen} onOpenChange={setKeywordsDialogOpen}>
-        <DialogContent sx={{ maxWidth: { sm: 500 } }}>
+        <DialogContent style={{ maxWidth: 500 }}>
           <DialogHeader>
             <DialogTitle>Manage Keywords - {editingSource?.name}</DialogTitle>
           </DialogHeader>
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <div>
               <Label>Current Keywords</Label>
-              <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
                 {editingKeywords.map((keyword, index) => (
-                  <Badge key={index} variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Badge key={index} variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {keyword}
                     <Button
                       variant="ghost"
                       size="sm"
-                      sx={{ height: 16, width: 16, p: 0, '&:hover': { bgcolor: '#fee2e2' } }}
+                      style={{ height: 16, width: 16, padding: 0 }}
                       onClick={() => removeKeyword(keyword)}
                     >
-                      ×
+                      x
                     </Button>
                   </Badge>
                 ))}
-              </div>
+              </Box>
             </div>
-            
+
             <div>
               <Label htmlFor="newKeyword">Add New Keyword</Label>
-              <div sx={{ display: 'flex', gap: 1, mt: 1 }}>
+              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                 <Input
                   id="newKeyword"
                   value={newKeyword}
@@ -713,20 +715,20 @@ export default function AdminNewsSources() {
                 <Button onClick={addKeyword} disabled={!newKeyword.trim()}>
                   Add
                 </Button>
-              </div>
+              </Box>
             </div>
-            
-            <div sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
               <Button type="button" variant="outline" onClick={() => setKeywordsDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={saveKeywords}>
                 Save Keywords
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </DialogContent>
       </Dialog>
-    </div>
+    </Box>
   );
 }

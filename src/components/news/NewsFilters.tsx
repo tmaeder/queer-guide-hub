@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -97,16 +99,16 @@ export const NewsFilters = ({
 
 
   const handleCountryToggle = (countryId: string) => {
-    const newCountries = selectedCountries.includes(countryId) 
-      ? selectedCountries.filter(c => c !== countryId) 
+    const newCountries = selectedCountries.includes(countryId)
+      ? selectedCountries.filter(c => c !== countryId)
       : [...selectedCountries, countryId];
     setSelectedCountries(newCountries);
     setTimeout(triggerFiltersChange, 0);
   };
 
   const handleCityToggle = (cityId: string) => {
-    const newCities = selectedCities.includes(cityId) 
-      ? selectedCities.filter(c => c !== cityId) 
+    const newCities = selectedCities.includes(cityId)
+      ? selectedCities.filter(c => c !== cityId)
       : [...selectedCities, cityId];
     setSelectedCities(newCities);
     setTimeout(triggerFiltersChange, 0);
@@ -166,48 +168,48 @@ export const NewsFilters = ({
   const hasActiveFilters = source || selectedTags.length > 0 || selectedCountries.length > 0 || selectedCities.length > 0 || nearMe || dateRange;
 
   return (
-    <Card sx={{ position: 'sticky', top: 16 }}>
-      <CardHeader sx={{ pb: 2 }}>
-        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '1.125rem' }}>
+    <Card style={{ position: 'sticky', top: 16 }}>
+      <CardHeader style={{ paddingBottom: 16 }}>
+        <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.125rem' }}>
           <Filter style={{ height: 20, width: 20 }} />
           Filters
         </CardTitle>
       </CardHeader>
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Near Me */}
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <MapPin style={{ height: 16, width: 16 }} />
-              <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Location</span>
-            </div>
+              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Location</Box>
+            </Box>
             <Switch
               checked={nearMe}
               onCheckedChange={handleNearMe}
               disabled={locationLoading}
             />
-          </div>
+          </Box>
           {nearMe && (
-            <p sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
               Showing news relevant to your location
-            </p>
+            </Typography>
           )}
-        </div>
+        </Box>
 
         <Separator />
 
         {/* Countries Filter */}
         {countries.length > 0 && (
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Globe style={{ height: 16, width: 16 }} />
-              <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Countries</span>
-            </div>
+              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Countries</Box>
+            </Box>
             <Select onValueChange={handleCountryToggle}>
-              <SelectTrigger sx={{ width: '100%' }}>
+              <SelectTrigger style={{ width: '100%' }}>
                 <SelectValue placeholder="Select countries" />
               </SelectTrigger>
-              <SelectContent sx={{ maxHeight: 192, overflowY: 'auto' }}>
+              <SelectContent style={{ maxHeight: 192, overflowY: 'auto' }}>
                 {countries.map((country) => (
                   <SelectItem key={country.id} value={country.id}>
                     {country.name}
@@ -216,14 +218,14 @@ export const NewsFilters = ({
               </SelectContent>
             </Select>
             {selectedCountries.length > 0 && (
-              <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {selectedCountries.map(countryId => {
                   const country = countries.find(c => c.id === countryId);
                   return country ? (
                     <Badge
                       key={countryId}
                       variant="default"
-                      sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                      style={{ cursor: 'pointer', fontSize: '0.75rem' }}
                       onClick={() => handleCountryToggle(countryId)}
                     >
                       {country.name}
@@ -231,23 +233,23 @@ export const NewsFilters = ({
                     </Badge>
                   ) : null;
                 })}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
 
         {/* Cities Filter */}
         {cities.length > 0 && (
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Map style={{ height: 16, width: 16 }} />
-              <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Cities</span>
-            </div>
+              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Cities</Box>
+            </Box>
             <Select onValueChange={handleCityToggle}>
-              <SelectTrigger sx={{ width: '100%' }}>
+              <SelectTrigger style={{ width: '100%' }}>
                 <SelectValue placeholder="Select cities" />
               </SelectTrigger>
-              <SelectContent sx={{ maxHeight: 192, overflowY: 'auto' }}>
+              <SelectContent style={{ maxHeight: 192, overflowY: 'auto' }}>
                 {cities.map((city) => (
                   <SelectItem key={city.id} value={city.id}>
                     {city.name}
@@ -256,14 +258,14 @@ export const NewsFilters = ({
               </SelectContent>
             </Select>
             {selectedCities.length > 0 && (
-              <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {selectedCities.map(cityId => {
                   const city = cities.find(c => c.id === cityId);
                   return city ? (
                     <Badge
                       key={cityId}
                       variant="default"
-                      sx={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                      style={{ cursor: 'pointer', fontSize: '0.75rem' }}
                       onClick={() => handleCityToggle(cityId)}
                     >
                       {city.name}
@@ -271,13 +273,13 @@ export const NewsFilters = ({
                     </Badge>
                   ) : null;
                 })}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
 
         {/* Tags Filter */}
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <TagSelector
             selectedTags={selectedTags}
             onTagsChange={(tags) => {
@@ -287,19 +289,19 @@ export const NewsFilters = ({
             placeholder="Select news tags..."
             maxTags={10}
             categories={['news', 'politics', 'culture', 'business', 'education', 'health']}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
           />
-        </div>
+        </Box>
 
         {/* Source Filter */}
         {sources.length > 0 && (
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Building style={{ height: 16, width: 16 }} />
-              <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Source</span>
-            </div>
+              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Source</Box>
+            </Box>
             <Select value={source} onValueChange={handleSourceChange}>
-              <SelectTrigger sx={{ width: '100%' }}>
+              <SelectTrigger style={{ width: '100%' }}>
                 <SelectValue placeholder="All sources" />
               </SelectTrigger>
               <SelectContent>
@@ -311,17 +313,17 @@ export const NewsFilters = ({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
         )}
 
         {/* Date Range Filter */}
-        <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Calendar style={{ height: 16, width: 16 }} />
-            <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Published Date</span>
-          </div>
+            <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Published Date</Box>
+          </Box>
           <Select value={dateRange} onValueChange={handleDateRangeChange}>
-            <SelectTrigger sx={{ width: '100%' }}>
+            <SelectTrigger style={{ width: '100%' }}>
               <SelectValue placeholder="All dates" />
             </SelectTrigger>
             <SelectContent>
@@ -335,23 +337,23 @@ export const NewsFilters = ({
               <SelectItem value="2022">2022</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </Box>
 
         {/* Trending Tags */}
         {trendingTags.length > 0 && (
           <>
             <Separator />
-            <div sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Trending Tags</span>
-              <div sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Trending Tags</Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {trendingTags.slice(0, 8).map(({ tag, count }) => (
                   <Badge
                     key={tag}
                     variant={selectedTags.includes(tag) ? "default" : "outline"}
-                    sx={{ cursor: 'pointer', fontSize: '0.75rem', transition: 'all 0.2s', '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText' } }}
+                    style={{ cursor: 'pointer', fontSize: '0.75rem', transition: 'all 0.2s' }}
                     onClick={() => {
-                      const newTags = selectedTags.includes(tag) 
-                        ? selectedTags.filter(t => t !== tag) 
+                      const newTags = selectedTags.includes(tag)
+                        ? selectedTags.filter(t => t !== tag)
                         : [...selectedTags, tag];
                       setSelectedTags(newTags);
                       setTimeout(triggerFiltersChange, 0);
@@ -360,8 +362,8 @@ export const NewsFilters = ({
                     {tag} ({count})
                   </Badge>
                 ))}
-              </div>
-            </div>
+              </Box>
+            </Box>
           </>
         )}
 
@@ -369,7 +371,7 @@ export const NewsFilters = ({
         {hasActiveFilters && (
           <>
             <Separator />
-            <Button variant="outline" onClick={clearFilters} sx={{ width: '100%' }}>
+            <Button variant="outline" onClick={clearFilters} style={{ width: '100%' }}>
               Clear All Filters
             </Button>
           </>

@@ -10,6 +10,8 @@ import { Users, Plus, Crown, UserCheck, Clock, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export default function MyGroups() {
   const { user } = useAuth();
@@ -21,7 +23,7 @@ export default function MyGroups() {
     leaveGroup,
     isLeaving
   } = useGroups();
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("recent");
 
@@ -31,7 +33,7 @@ export default function MyGroups() {
 
     // Search filter
     if (searchQuery) {
-      filtered = filtered.filter(group => 
+      filtered = filtered.filter(group =>
         group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         group.description?.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -57,39 +59,39 @@ export default function MyGroups() {
     const ownedGroups = userGroups.filter(group => group.created_by === user?.id).length;
     const memberGroups = total - ownedGroups;
     const privateGroups = userGroups.filter(group => group.is_private).length;
-    
+
     return { total, ownedGroups, memberGroups, privateGroups };
   }, [userGroups, user?.id]);
 
   if (!user) {
     return (
-      <div sx={{ display: 'flex', flexDirection: 'column', gap: 4, py: 4 }}>
-        <div sx={{ textAlign: 'center' }}>
-          <h1 sx={{ fontSize: '2.25rem', fontWeight: 700, mb: 2 }}>My Groups</h1>
-          <p sx={{ fontSize: '1.125rem', color: 'text.secondary', mb: 4 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, py: 4 }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h3" component="h1" sx={{ fontSize: '2.25rem', fontWeight: 700, mb: 2 }}>My Groups</Typography>
+          <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary', mb: 4 }}>
             Please sign in to view your groups
-          </p>
-          <Button asChild sx={{ background: 'var(--gradient-primary)', '&:hover': { opacity: 0.9 } }}>
+          </Typography>
+          <Button asChild style={{ background: 'var(--gradient-primary)' }}>
             <Link to="/auth">Sign In</Link>
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div sx={{ display: 'flex', flexDirection: 'column', gap: 4, py: 4 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, py: 4 }}>
       {/* Header */}
-      <div sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { sm: 'center' }, justifyContent: { sm: 'space-between' }, gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { sm: 'center' }, justifyContent: { sm: 'space-between' }, gap: 2 }}>
         <div>
-          <h1 sx={{ fontSize: '2.25rem', fontWeight: 700, mb: 1, backgroundImage: 'var(--gradient-primary)', backgroundClip: 'text', WebkitBackgroundClip: 'text', color: '#020617' }}>
+          <Typography variant="h3" component="h1" sx={{ fontSize: '2.25rem', fontWeight: 700, mb: 1, color: '#020617' }}>
             My Groups
-          </h1>
-          <p style={{ color: 'var(--muted-foreground)' }}>
+          </Typography>
+          <p style={{ color: '#999999' }}>
             Manage and explore your community groups
           </p>
         </div>
-        <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
           <Button variant="outline" asChild>
             <Link to="/groups">
@@ -97,72 +99,72 @@ export default function MyGroups() {
               Discover Groups
             </Link>
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Statistics Cards */}
-      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Total Groups</CardTitle>
+          <CardHeader style={{ paddingBottom: '8px' }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>Total Groups</CardTitle>
           </CardHeader>
-          <CardContent sx={{ pt: 0 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Users style={{ height: 16, width: 16, color: 'var(--primary)' }} />
-              <span sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.total}</span>
-            </div>
+          <CardContent style={{ paddingTop: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Users style={{ height: 16, width: 16, color: '#333333' }} />
+              <Box component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.total}</Box>
+            </Box>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Owned</CardTitle>
+          <CardHeader style={{ paddingBottom: '8px' }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>Owned</CardTitle>
           </CardHeader>
-          <CardContent sx={{ pt: 0 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardContent style={{ paddingTop: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Crown style={{ height: 16, width: 16, color: '#eab308' }} />
-              <span sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.ownedGroups}</span>
-            </div>
+              <Box component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.ownedGroups}</Box>
+            </Box>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Member Of</CardTitle>
+          <CardHeader style={{ paddingBottom: '8px' }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>Member Of</CardTitle>
           </CardHeader>
-          <CardContent sx={{ pt: 0 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardContent style={{ paddingTop: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <UserCheck style={{ height: 16, width: 16, color: '#22c55e' }} />
-              <span sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.memberGroups}</span>
-            </div>
+              <Box component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.memberGroups}</Box>
+            </Box>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Private</CardTitle>
+          <CardHeader style={{ paddingBottom: '8px' }}>
+            <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>Private</CardTitle>
           </CardHeader>
-          <CardContent sx={{ pt: 0 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardContent style={{ paddingTop: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Settings style={{ height: 16, width: 16, color: '#3b82f6' }} />
-              <span sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.privateGroups}</span>
-            </div>
+              <Box component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.privateGroups}</Box>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Search and Sort Controls */}
-      <div sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-        <div sx={{ flex: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+        <Box sx={{ flex: 1 }}>
           <Input
             placeholder="Search your groups..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ width: '100%' }}
+            style={{ width: '100%' }}
           />
-        </div>
+        </Box>
         <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger sx={{ width: { xs: '100%', sm: 192 } }}>
+          <SelectTrigger style={{ width: 192 }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -171,41 +173,41 @@ export default function MyGroups() {
             <SelectItem value="members">Most Members</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </Box>
 
       {/* Groups Grid */}
       {isLoading ? (
         <Card>
-          <CardContent sx={{ p: 4, textAlign: 'center' }}>
-            <div sx={{ animation: 'spin 1s linear infinite', height: 32, width: 32, border: 2, borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%', mx: 'auto', mb: 2 }} />
-            <p style={{ color: 'var(--muted-foreground)' }}>Loading your groups...</p>
+          <CardContent style={{ padding: '32px', textAlign: 'center' }}>
+            <Box sx={{ animation: 'spin 1s linear infinite', height: 32, width: 32, border: 2, borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%', mx: 'auto', mb: 2 }} />
+            <p style={{ color: '#999999' }}>Loading your groups...</p>
           </CardContent>
         </Card>
       ) : filteredAndSortedGroups.length === 0 ? (
         <Card>
-          <CardContent sx={{ p: 4, textAlign: 'center' }}>
-            <Users style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-            <h3 sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
+          <CardContent style={{ padding: '32px', textAlign: 'center' }}>
+            <Users style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }} />
+            <Typography variant="h6" component="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
               {searchQuery ? "No groups found" : "You haven't joined any groups yet"}
-            </h3>
-            <p sx={{ color: 'text.secondary', mb: 2 }}>
-              {searchQuery 
-                ? "Try adjusting your search query" 
+            </Typography>
+            <Typography sx={{ color: 'text.secondary', mb: 2 }}>
+              {searchQuery
+                ? "Try adjusting your search query"
                 : "Start by joining existing groups or create your own!"
               }
-            </p>
+            </Typography>
             {!searchQuery && (
-              <div sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                 <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
                 <Button variant="outline" asChild>
                   <Link to="/groups">Browse Groups</Link>
                 </Button>
-              </div>
+              </Box>
             )}
           </CardContent>
         </Card>
       ) : (
-        <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
           {filteredAndSortedGroups.map(group => (
             <GroupCard
               key={group.id}
@@ -214,8 +216,8 @@ export default function MyGroups() {
               isLeaving={isLeaving}
             />
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

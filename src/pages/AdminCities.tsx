@@ -9,24 +9,26 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
   ArrowLeft,
   MapPin,
   Building
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export default function AdminCities() {
   const navigate = useNavigate();
@@ -72,7 +74,7 @@ export default function AdminCities() {
     let filtered = cities;
 
     if (searchQuery) {
-      filtered = filtered.filter(city => 
+      filtered = filtered.filter(city =>
         city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         city.region_name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -121,7 +123,7 @@ export default function AdminCities() {
         if (error) throw error;
 
         toast({
-          title: "Success", 
+          title: "Success",
           description: "City created successfully"
         });
       }
@@ -170,7 +172,7 @@ export default function AdminCities() {
           title: "Success",
           description: "City deleted successfully"
         });
-        
+
         // Refresh cities list by re-mounting the component via navigation
         navigate("/admin/cities", { replace: true });
       } catch (error) {
@@ -200,26 +202,26 @@ export default function AdminCities() {
 
   if (rolesLoading || loading) {
     return (
-      <div sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
-        <div sx={{ textAlign: 'center' }}>Loading...</div>
-      </div>
+      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+        <Box sx={{ textAlign: 'center' }}>Loading...</Box>
+      </Box>
     );
   }
 
   return (
-    <div sx={{ width: '100%', p: 3 }}>
+    <Box sx={{ width: '100%', p: 3 }}>
       {/* Header */}
-      <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
-        <div sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button variant="outline" onClick={() => navigate("/admin")}>
             <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
             Back to Dashboard
           </Button>
           <div>
-            <h1 sx={{ fontSize: '1.875rem', fontWeight: 700 }}>Cities Management</h1>
+            <Typography variant="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>Cities Management</Typography>
             <p style={{ color: 'var(--muted-foreground)' }}>Manage cities in the directory</p>
           </div>
-        </div>
+        </Box>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
@@ -231,8 +233,8 @@ export default function AdminCities() {
             <DialogHeader>
               <DialogTitle>{editingCity ? "Edit City" : "Add New City"}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <div>
                   <Label htmlFor="name">City Name</Label>
                   <Input
@@ -260,9 +262,9 @@ export default function AdminCities() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
+              </Box>
 
-              <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <div>
                   <Label htmlFor="region_name">Region/State</Label>
                   <Input
@@ -282,9 +284,9 @@ export default function AdminCities() {
                     placeholder="Optional"
                   />
                 </div>
-              </div>
+              </Box>
 
-              <div sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <div>
                   <Label htmlFor="latitude">Latitude</Label>
                   <Input
@@ -307,7 +309,7 @@ export default function AdminCities() {
                     placeholder="Optional"
                   />
                 </div>
-              </div>
+              </Box>
 
               <div>
                 <Label htmlFor="timezone">Timezone</Label>
@@ -319,39 +321,39 @@ export default function AdminCities() {
                 />
               </div>
 
-              <div sx={{ display: 'flex', gap: 2 }}>
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id="is_capital"
                     checked={formData.is_capital}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_capital: checked as boolean }))}
                   />
                   <Label htmlFor="is_capital">Capital City</Label>
-                </div>
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
                     id="is_major_city"
                     checked={formData.is_major_city}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_major_city: checked as boolean }))}
                   />
                   <Label htmlFor="is_major_city">Major City</Label>
-                </div>
-              </div>
+                </Box>
+              </Box>
 
               <Button type="submit" sx={{ width: '100%' }}>
                 {editingCity ? "Update City" : "Add City"}
               </Button>
-            </form>
+            </Box>
           </DialogContent>
         </Dialog>
-      </div>
+      </Box>
 
       {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent sx={{ p: 3 }}>
-          <div sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
-            <div sx={{ flex: 1 }}>
-              <div sx={{ position: 'relative' }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+            <Box sx={{ flex: 1 }}>
+              <Box sx={{ position: 'relative' }}>
                 <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Input
                   placeholder="Search cities..."
@@ -359,8 +361,8 @@ export default function AdminCities() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{ pl: 5 }}
                 />
-              </div>
-            </div>
+              </Box>
+            </Box>
             <Select value={selectedCountry} onValueChange={setSelectedCountry}>
               <SelectTrigger sx={{ width: 192 }}>
                 <SelectValue />
@@ -374,57 +376,57 @@ export default function AdminCities() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Stats */}
-      <div sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
         <Card>
           <CardContent sx={{ p: 3 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <MapPin style={{ height: 20, width: 20, color: 'var(--primary)' }} />
               <div>
-                <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{cities.length}</p>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Total Cities</p>
+                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{cities.length}</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Total Cities</Typography>
               </div>
-            </div>
+            </Box>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 3 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Building style={{ height: 20, width: 20, color: 'var(--accent)' }} />
               <div>
-                <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{cities.filter(c => c.is_capital).length}</p>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Capital Cities</p>
+                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{cities.filter(c => c.is_capital).length}</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Capital Cities</Typography>
               </div>
-            </div>
+            </Box>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 3 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Building style={{ height: 20, width: 20, color: 'var(--primary)' }} />
               <div>
-                <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{cities.filter(c => c.is_major_city).length}</p>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Major Cities</p>
+                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{cities.filter(c => c.is_major_city).length}</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Major Cities</Typography>
               </div>
-            </div>
+            </Box>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 3 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <MapPin style={{ height: 20, width: 20, color: 'var(--secondary)' }} />
               <div>
-                <p sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{countries.length}</p>
-                <p sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Countries</p>
+                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{countries.length}</Typography>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Countries</Typography>
               </div>
-            </div>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       {/* Cities List */}
       <Card>
@@ -432,25 +434,25 @@ export default function AdminCities() {
           <CardTitle>Cities ({filteredCities.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {filteredCities.map((city) => (
-              <div key={city.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, border: 1, borderColor: 'divider', borderRadius: 2, '&:hover': { bgcolor: 'action.hover' } }}>
-                <div sx={{ flex: 1 }}>
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                    <h3 sx={{ fontWeight: 600 }}>{city.name}</h3>
+              <Box key={city.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, border: 1, borderColor: 'divider', borderRadius: 2, '&:hover': { bgcolor: 'action.hover' } }}>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 600 }}>{city.name}</Typography>
                     {city.is_capital && (
-                      <span sx={{ fontSize: '0.75rem', px: 1, py: 0.5, bgcolor: 'rgba(var(--secondary-rgb), 0.1)', color: 'secondary.main', borderRadius: 1 }}>
+                      <Box component="span" sx={{ fontSize: '0.75rem', px: 1, py: 0.5, bgcolor: 'rgba(var(--secondary-rgb), 0.1)', color: 'secondary.main', borderRadius: 1 }}>
                         Capital
-                      </span>
+                      </Box>
                     )}
                     {city.is_major_city && (
-                      <span sx={{ fontSize: '0.75rem', px: 1, py: 0.5, bgcolor: 'rgba(var(--primary-rgb), 0.1)', color: 'primary.main', borderRadius: 1 }}>
+                      <Box component="span" sx={{ fontSize: '0.75rem', px: 1, py: 0.5, bgcolor: 'rgba(var(--primary-rgb), 0.1)', color: 'primary.main', borderRadius: 1 }}>
                         Major City
-                      </span>
+                      </Box>
                     )}
-                  </div>
-                  
-                  <div sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'text.secondary' }}>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'text.secondary' }}>
                     <div>
                       Country: {countries.find(c => c.id === city.country_id)?.name}
                     </div>
@@ -460,10 +462,10 @@ export default function AdminCities() {
                     {city.population && (
                       <div>Population: {city.population.toLocaleString()}</div>
                     )}
-                  </div>
-                </div>
-                
-                <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Button
                     variant="outline"
                     size="sm"
@@ -478,18 +480,18 @@ export default function AdminCities() {
                   >
                     <Trash2 style={{ height: 16, width: 16 }} />
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
             ))}
-            
+
             {filteredCities.length === 0 && (
-              <div sx={{ textAlign: 'center', py: 4 }}>
+              <Box sx={{ textAlign: 'center', py: 4 }}>
                 <p style={{ color: 'var(--muted-foreground)' }}>No cities found</p>
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

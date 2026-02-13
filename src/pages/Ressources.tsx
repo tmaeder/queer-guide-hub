@@ -452,7 +452,7 @@ export default function Ressources() {
   if (error) {
     return <Container maxWidth="lg" sx={{ p: 3 }}>
         <Card style={{ borderColor: 'var(--destructive)' }}>
-          <CardContent sx={{ p: 3, textAlign: 'center' }}>
+          <CardContent style={{ padding: 24, textAlign: 'center' }}>
             <Typography color="error">Something went wrong while loading resources. Please try again later.</Typography>
           </CardContent>
         </Card>
@@ -542,9 +542,9 @@ export default function Ressources() {
   return <Box sx={{ minHeight: '100vh' }}>
       <Container maxWidth="xl" sx={{ px: 2, py: 4 }}>
         {/* Header */}
-        <Card sx={{ mb: 4 }}>
-          <CardContent sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant="h3" sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }} className="animate-fade-in">
+        <Card style={{ marginBottom: 32 }}>
+          <CardContent style={{ padding: 32, textAlign: 'center' }}>
+            <Typography variant="h3" sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
               Resources
             </Typography>
             <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: '42rem', mx: 'auto' }}>
@@ -563,14 +563,14 @@ export default function Ressources() {
 
         {/* Content */}
         <Box sx={{ width: '100%' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} className="animate-fade-in">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Categories Overview */}
             {viewMode === "overview" && (
-              <Card sx={{ mb: 4 }}>
+              <Card style={{ marginBottom: 32 }}>
                 <CardHeader>
                   <CardTitle>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Grid3X3 style={{ width: 24, height: 24 }} sx={{ color: 'primary.main' }} />
+                      <Grid3X3 style={{ width: 24, height: 24, color: '#333333' }} />
                       <Typography variant="h5" component="span">Browse by Category</Typography>
                     </Box>
                   </CardTitle>
@@ -586,16 +586,16 @@ export default function Ressources() {
                       return (
                         <Card
                           key={category}
-                          sx={{ cursor: 'pointer', transition: 'all 0.2s', '&:hover': { bgcolor: 'rgba(var(--accent-rgb), 0.1)' } }}
+                          style={{ cursor: 'pointer', transition: 'all 0.2s' }}
                           onClick={() => {
                             setFilterCategory(category);
                             setViewMode("category");
                             setSelectedCategory(category);
                           }}
                         >
-                          <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                          <CardContent style={{ padding: 24, textAlign: 'center' }}>
                             <Box sx={{ mb: 2 }}>
-                              <Icon style={{ width: 48, height: 48, margin: '0 auto' }} sx={{ color: 'primary.main' }} />
+                              <Icon style={{ width: 48, height: 48, margin: '0 auto', color: '#333333' }} />
                             </Box>
                             <Typography sx={{ fontWeight: 600, fontSize: '1rem', mb: 1, textTransform: 'capitalize', transition: 'color 0.2s' }}>
                               {category}
@@ -610,14 +610,14 @@ export default function Ressources() {
 
                     {/* Professions Category */}
                     <Card
-                      sx={{ cursor: 'pointer', transition: 'all 0.2s', '&:hover': { bgcolor: 'rgba(var(--accent-rgb), 0.1)' } }}
+                      style={{ cursor: 'pointer', transition: 'all 0.2s' }}
                       onClick={() => {
                         setViewMode("professions");
                       }}
                     >
-                      <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                      <CardContent style={{ padding: 24, textAlign: 'center' }}>
                         <Box sx={{ mb: 2 }}>
-                          <Briefcase style={{ width: 48, height: 48, margin: '0 auto' }} sx={{ color: 'primary.main' }} />
+                          <Briefcase style={{ width: 48, height: 48, margin: '0 auto', color: '#333333' }} />
                         </Box>
                         <Typography sx={{ fontWeight: 600, fontSize: '1rem', mb: 1, textTransform: 'capitalize', transition: 'color 0.2s' }}>
                           Professions
@@ -634,7 +634,7 @@ export default function Ressources() {
 
             {/* Category View with Subcategories */}
             {viewMode === "category" && selectedCategory && (
-              <Card sx={{ mb: 4 }}>
+              <Card style={{ marginBottom: 32 }}>
                 <CardHeader>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button variant="outline" onClick={handleBack}>
@@ -646,7 +646,7 @@ export default function Ressources() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, textTransform: 'capitalize' }}>
                           {(() => {
                             const IconComponent = getCategoryIcon(selectedCategory);
-                            return <IconComponent style={{ width: 24, height: 24 }} sx={{ color: 'primary.main' }} />;
+                            return <IconComponent style={{ width: 24, height: 24, color: '#333333' }} />;
                           })()}
                           <Typography variant="h5" component="span">{selectedCategory} Subcategories</Typography>
                         </Box>
@@ -662,13 +662,13 @@ export default function Ressources() {
                     {Object.entries(subcategories[selectedCategory] || {}).map(([subCategory, tagNames]) => (
                       <Card
                         key={subCategory}
-                        sx={{ cursor: 'pointer', transition: 'all 0.2s', '&:hover': { bgcolor: 'rgba(var(--accent-rgb), 0.1)', boxShadow: 6 } }}
+                        style={{ cursor: 'pointer', transition: 'all 0.2s' }}
                         onClick={() => {
                           setSelectedSubcategory(subCategory);
                           setViewMode("subcategory");
                         }}
                       >
-                        <CardContent sx={{ p: 3 }}>
+                        <CardContent style={{ padding: 24 }}>
                           <Typography sx={{ fontWeight: 600, fontSize: '1.125rem', mb: 1, transition: 'color 0.2s' }}>
                             {subCategory}
                           </Typography>
@@ -691,7 +691,7 @@ export default function Ressources() {
 
             {/* Subcategory View */}
             {viewMode === "subcategory" && selectedCategory && selectedSubcategory && (
-              <Card sx={{ mb: 4 }}>
+              <Card style={{ marginBottom: 32 }}>
                 <CardHeader>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button variant="outline" onClick={handleBack}>
@@ -701,7 +701,7 @@ export default function Ressources() {
                     <Box>
                       <CardTitle>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Tag style={{ width: 24, height: 24 }} sx={{ color: 'primary.main' }} />
+                          <Tag style={{ width: 24, height: 24, color: '#333333' }} />
                           <Typography variant="h5" component="span">{selectedSubcategory}</Typography>
                         </Box>
                       </CardTitle>
@@ -720,8 +720,7 @@ export default function Ressources() {
                       return (
                         <Card
                           key={tag.id}
-                          sx={{ cursor: 'pointer', transition: 'all 0.3s', '&:hover': { boxShadow: 6, transform: 'scale(1.05)' } }}
-                          style={{ overflow: 'hidden' }}
+                          style={{ cursor: 'pointer', transition: 'all 0.3s', overflow: 'hidden' }}
                           onClick={() => handleTagClick(tag)}
                         >
                           <Box sx={{ aspectRatio: '4/3', width: '100%', overflow: 'hidden', position: 'relative' }}>
@@ -737,12 +736,12 @@ export default function Ressources() {
                               />
                             ) : (
                               <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover' }}>
-                                <Tag style={{ width: 48, height: 48, opacity: 0.6 }} sx={{ color: 'text.secondary', transition: 'transform 0.3s' }} />
+                                <Tag style={{ width: 48, height: 48, opacity: 0.6, color: '#999999' }} />
                               </Box>
                             )}
                             <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.2), transparent)', opacity: 0, transition: 'opacity 0.2s' }} />
                           </Box>
-                          <CardContent sx={{ p: 2 }}>
+                          <CardContent style={{ padding: 16 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                               <Box
                                 sx={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0, transition: 'transform 0.2s' }}
@@ -757,7 +756,7 @@ export default function Ressources() {
                                 {selectedSubcategory}
                               </Typography>
                               {tagUsageCounts[tag.name] > 0 && (
-                                <Badge variant="outline" sx={{ transition: 'color 0.2s, background-color 0.2s' }}>
+                                <Badge variant="outline" style={{ transition: 'color 0.2s, background-color 0.2s' }}>
                                   {tagUsageCounts[tag.name]} uses
                                 </Badge>
                               )}
@@ -773,7 +772,7 @@ export default function Ressources() {
 
             {/* Professions View */}
             {viewMode === "professions" && (
-              <Card sx={{ mb: 4 }}>
+              <Card style={{ marginBottom: 32 }}>
                 <CardHeader>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Button variant="outline" onClick={handleBack}>
@@ -783,7 +782,7 @@ export default function Ressources() {
                     <Box>
                       <CardTitle>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Briefcase style={{ width: 24, height: 24 }} sx={{ color: 'primary.main' }} />
+                          <Briefcase style={{ width: 24, height: 24, color: '#333333' }} />
                           <Typography variant="h5" component="span">LGBTQ+ Personalities by Profession</Typography>
                         </Box>
                       </CardTitle>
@@ -799,8 +798,7 @@ export default function Ressources() {
                       <Button
                         key={profession}
                         variant={selectedProfession === profession ? "default" : "outline"}
-                        sx={{ height: 'auto', p: 2, textAlign: 'left', justifyContent: 'flex-start', transition: 'all 0.3s', '&:hover': { transform: 'scale(1.05)', boxShadow: 6 } }}
-                        style={{ animationDelay: `${index * 30}ms` }}
+                        style={{ height: 'auto', padding: 16, textAlign: 'left', justifyContent: 'flex-start', transition: 'all 0.3s', animationDelay: `${index * 30}ms` }}
                         onClick={() => {
                           if (selectedProfession === profession) {
                             setSelectedProfession("");
@@ -822,28 +820,28 @@ export default function Ressources() {
             )}
 
             {/* Search and Filters */}
-            <Card sx={{ mb: 4 }}>
-              <CardContent sx={{ p: 3 }}>
+            <Card style={{ marginBottom: 32 }}>
+              <CardContent style={{ padding: 24 }}>
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
                   <Box sx={{ position: 'relative', flex: 1 }}>
-                    <Search style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 20, height: 20, color: 'var(--muted-foreground)' }} />
+                    <Search style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 20, height: 20, color: '#999999' }} />
                     <Input
                       placeholder="Search tags, categories, descriptions..."
                       value={searchQuery}
                       onChange={e => handleSearch(e.target.value)}
-                      sx={{ pl: 6, height: 48, fontSize: '1rem' }}
+                      style={{ paddingLeft: 48, height: 48, fontSize: '1rem' }}
                     />
                   </Box>
                   <Box sx={{ display: 'flex', gap: 1.5 }}>
                     <Select value={filterCategory} onValueChange={setFilterCategory}>
-                      <SelectTrigger sx={{ width: 192, height: 48 }}>
+                      <SelectTrigger style={{ width: 192, height: 48 }}>
                         <Filter style={{ width: 16, height: 16, marginRight: 8 }} />
                         <SelectValue placeholder="Filter by category" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
                         {categories.map(category => (
-                          <SelectItem key={category} value={category} sx={{ textTransform: 'capitalize' }}>
+                          <SelectItem key={category} value={category} style={{ textTransform: 'capitalize' }}>
                             {category}
                           </SelectItem>
                         ))}
@@ -851,7 +849,7 @@ export default function Ressources() {
                     </Select>
 
                     <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                      <SelectTrigger sx={{ width: 192, height: 48 }}>
+                      <SelectTrigger style={{ width: 192, height: 48 }}>
                         <TrendingUp style={{ width: 16, height: 16, marginRight: 8 }} />
                         <SelectValue placeholder="Sort by" />
                       </SelectTrigger>
@@ -871,11 +869,11 @@ export default function Ressources() {
 
         {/* Admin Controls with enhanced design */}
         {viewMode === "overview" && (
-          <Card sx={{ border: 0, boxShadow: 3 }}>
+          <Card style={{ border: 0, boxShadow: '0px 3px 5px -1px rgba(0,0,0,0.2), 0px 6px 10px 0px rgba(0,0,0,0.14), 0px 1px 18px 0px rgba(0,0,0,0.12)' }}>
             <CardHeader>
               <CardTitle>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Brain style={{ width: 24, height: 24 }} sx={{ color: 'primary.main' }} />
+                  <Brain style={{ width: 24, height: 24, color: '#333333' }} />
                   <Typography variant="h6" component="span">Admin Controls</Typography>
                 </Box>
               </CardTitle>
@@ -887,7 +885,7 @@ export default function Ressources() {
                   disabled={processingImages}
                   variant="outline"
                   size="lg"
-                  sx={{ transition: 'all 0.2s' }}
+                  style={{ transition: 'all 0.2s' }}
                 >
                   <Upload style={{ width: 16, height: 16, marginRight: 8 }} />
                   {processingImages ? 'Processing...' : 'Reimport All Images'}
@@ -897,7 +895,7 @@ export default function Ressources() {
                   disabled={categorizingTags}
                   variant="outline"
                   size="lg"
-                  sx={{ transition: 'all 0.2s' }}
+                  style={{ transition: 'all 0.2s' }}
                 >
                   <Brain style={{ width: 16, height: 16, marginRight: 8 }} />
                   {categorizingTags ? 'Categorizing...' : 'AI Auto-Categorize'}
@@ -926,8 +924,9 @@ export default function Ressources() {
           {filteredAndSortedTags.map((tag, index) => (
             <Card
               key={`${tag.id}-${index}`}
-              sx={{ cursor: 'pointer', transition: 'all 0.3s', '&:hover': { boxShadow: 10, transform: 'scale(1.05) translateY(-8px)' } }}
               style={{
+                cursor: 'pointer',
+                transition: 'all 0.3s',
                 animationDelay: `${index * 20}ms`,
                 overflow: displayMode === "grid" ? 'hidden' : undefined,
                 ...(displayMode === "list" ? { display: 'flex', alignItems: 'center', padding: 16 } : {})
@@ -949,12 +948,12 @@ export default function Ressources() {
                       />
                     ) : (
                       <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover' }}>
-                        <Tag style={{ width: 48, height: 48, opacity: 0.6 }} sx={{ color: 'text.secondary', transition: 'transform 0.3s' }} />
+                        <Tag style={{ width: 48, height: 48, opacity: 0.6, color: '#999999' }} />
                       </Box>
                     )}
                     <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.2), transparent)', opacity: 0, transition: 'opacity 0.2s' }} />
                   </Box>
-                  <CardContent sx={{ p: 2 }}>
+                  <CardContent style={{ padding: 16 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                       <Box
                         sx={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0, transition: 'transform 0.2s' }}
@@ -969,7 +968,7 @@ export default function Ressources() {
                         {tag.category || 'Uncategorized'}
                       </Typography>
                       {tagUsageCounts[tag.name] > 0 && (
-                        <Badge variant="outline" sx={{ transition: 'color 0.2s, background-color 0.2s' }}>
+                        <Badge variant="outline" style={{ transition: 'color 0.2s, background-color 0.2s' }}>
                           {tagUsageCounts[tag.name]} uses
                         </Badge>
                       )}
@@ -988,7 +987,7 @@ export default function Ressources() {
                       />
                     ) : (
                       <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Tag style={{ width: 32, height: 32, opacity: 0.6, color: 'var(--muted-foreground)' }} />
+                        <Tag style={{ width: 32, height: 32, opacity: 0.6, color: '#999999' }} />
                       </Box>
                     )}
                   </Box>
@@ -1007,7 +1006,7 @@ export default function Ressources() {
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flexShrink: 0 }}>
-                    <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
+                    <Badge variant="outline" style={{ textTransform: 'capitalize' }}>
                       {tag.category || 'Uncategorized'}
                     </Badge>
                     {tagUsageCounts[tag.name] > 0 && (
@@ -1024,9 +1023,9 @@ export default function Ressources() {
 
         {filteredAndSortedTags.length === 0 && (
           <Card style={{ borderWidth: 2, borderStyle: 'dashed' }}>
-            <CardContent sx={{ p: 8, textAlign: 'center' }}>
+            <CardContent style={{ padding: 64, textAlign: 'center' }}>
               <Box sx={{ mx: 'auto', mb: 3, width: 80, height: 80, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Tag style={{ width: 40, height: 40, opacity: 0.5, color: 'var(--muted-foreground)' }} />
+                <Tag style={{ width: 40, height: 40, opacity: 0.5, color: '#999999' }} />
               </Box>
               <Typography variant="h5" sx={{ fontWeight: 600, mb: 1.5 }} color="text.secondary">No tags found</Typography>
               <Typography color="text.secondary" sx={{ maxWidth: '28rem', mx: 'auto' }}>

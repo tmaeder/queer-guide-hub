@@ -7,6 +7,8 @@ import { Switch } from '@/components/ui/switch';
 import { MapPin, Loader2, Globe, Building2 } from 'lucide-react';
 import { DirectoryCard } from './DirectoryCard';
 import { useSecureMapbox } from '@/hooks/useSecureMapbox';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface Country {
   id: string;
@@ -39,21 +41,21 @@ interface DirectoryMapViewProps {
 
 type SelectedItem = Country | City | null;
 
-export function DirectoryMapView({ 
-  countries, 
-  cities, 
-  loading = false, 
-  onCountryClick, 
+export function DirectoryMapView({
+  countries,
+  cities,
+  loading = false,
+  onCountryClick,
   onCityClick,
-  className 
+  className
 }: DirectoryMapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
   const [showCities, setShowCities] = useState(true);
   const [mapboxToken] = useState('');
-  
-  
+
+
   const { token: secureToken } = useSecureMapbox();
   // Use hook token by default, allow manual override
   const activeToken = mapboxToken || secureToken || '';
@@ -65,7 +67,7 @@ export function DirectoryMapView({
     }
 
     mapboxgl.accessToken = activeToken;
-    
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/tmaeder/clvmrc8pj015p01o05wd581tt',
@@ -111,7 +113,7 @@ export function DirectoryMapView({
       // Clear existing markers
       const markers = document.querySelectorAll('.mapboxgl-marker');
       markers.forEach(marker => marker.remove());
-      
+
       // Add markers based on switch state
       if (showCities) {
         // Show cities
@@ -119,7 +121,7 @@ export function DirectoryMapView({
           if (city.latitude && city.longitude) {
             const isCapital = city.is_capital;
             const isMajor = city.is_major_city;
-            
+
             const marker = new mapboxgl.Marker({
               color: isCapital ? '#f59e0b' : isMajor ? '#3b82f6' : '#6b7280', // amber for capitals, blue for major cities, gray for others
               scale: isCapital ? 0.9 : isMajor ? 0.7 : 0.5
@@ -140,7 +142,7 @@ export function DirectoryMapView({
                   ${city.population ? `<p class="text-xs">Population: ${city.population.toLocaleString()}</p>` : ''}
                 </div>
               `);
-            
+
             marker.getElement().addEventListener('click', () => {
               setSelectedItem(city);
             });
@@ -170,7 +172,7 @@ export function DirectoryMapView({
                   ${country.capital ? `<p class="text-xs">Capital: ${country.capital}</p>` : ''}
                 </div>
               `);
-            
+
             marker.getElement().addEventListener('click', () => {
               setSelectedItem(country);
             });
@@ -182,7 +184,7 @@ export function DirectoryMapView({
 
       // Fit map to show all points
       const allCoordinates: [number, number][] = [];
-      
+
       if (showCities) {
         allCoordinates.push(
           ...cities
@@ -196,7 +198,7 @@ export function DirectoryMapView({
             .map(c => [c.longitude!, c.latitude!] as [number, number])
         );
       }
-      
+
       if (allCoordinates.length > 0) {
         const bounds = new mapboxgl.LngLatBounds();
         allCoordinates.forEach(coord => bounds.extend(coord));
@@ -209,77 +211,77 @@ export function DirectoryMapView({
   return (
     <div className={className}>
       <Card>
-        <CardContent sx={{ p: 3 }}>
-          <div sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Globe style={{ height: 20, width: 20, color: 'var(--primary)' }} />
-              <h3 sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Geographic Map View</h3>
-            </div>
-            
-            
-            <div sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <div sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#dc2626' }}></div>
-                <span sx={{ fontSize: '0.875rem' }}>Countries</span>
-              </div>
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <div sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#f59e0b' }}></div>
-                <span sx={{ fontSize: '0.875rem' }}>Capital Cities</span>
-              </div>
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <div sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#3b82f6' }}></div>
-                <span sx={{ fontSize: '0.875rem' }}>Major Cities</span>
-              </div>
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <div sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#6b7280' }}></div>
-                <span sx={{ fontSize: '0.875rem' }}>Other Cities</span>
-              </div>
-              
-              <div sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 'auto' }}>
-                <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Countries</span>
-                <Switch 
+        <CardContent style={{ padding: 24 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Globe style={{ height: 20, width: 20, color: '#333333' }} />
+              <Typography variant="h3" component="h3" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Geographic Map View</Typography>
+            </Box>
+
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#dc2626' }} />
+                <Box component="span" sx={{ fontSize: '0.875rem' }}>Countries</Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#f59e0b' }} />
+                <Box component="span" sx={{ fontSize: '0.875rem' }}>Capital Cities</Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#3b82f6' }} />
+                <Box component="span" sx={{ fontSize: '0.875rem' }}>Major Cities</Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#6b7280' }} />
+                <Box component="span" sx={{ fontSize: '0.875rem' }}>Other Cities</Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 'auto' }}>
+                <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Countries</Box>
+                <Switch
                   checked={showCities}
                   onCheckedChange={setShowCities}
                 />
-                <span sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Cities</span>
-              </div>
-            </div>
+                <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Cities</Box>
+              </Box>
+            </Box>
 
             {loading && (
-              <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
                 <Loader2 style={{ height: 20, width: 20, animation: 'spin 1s linear infinite', marginRight: 8 }} />
-                <span sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Loading map data...</span>
-              </div>
+                <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Loading map data...</Box>
+              </Box>
             )}
 
             {!activeToken ? (
-              <div sx={{ height: 600, width: '100%', borderRadius: 2, border: 1, borderColor: 'divider', bgcolor: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div sx={{ textAlign: 'center' }}>
+              <Box sx={{ height: 600, width: '100%', borderRadius: 2, border: 1, borderColor: 'divider', bgcolor: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ textAlign: 'center' }}>
                   <Globe style={{ height: 48, width: 48, color: '#9ca3af', margin: '0 auto 16px' }} />
-                  <p style={{ color: 'var(--muted-foreground)' }}>Map is unavailable right now.</p>
-                </div>
-              </div>
+                  <p style={{ color: '#999999' }}>Map is unavailable right now.</p>
+                </Box>
+              </Box>
             ) : (
-              <div sx={{ height: 600, width: '100%', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
-                <div ref={mapContainer} sx={{ width: '100%', height: '100%' }} />
-              </div>
+              <Box sx={{ height: 600, width: '100%', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
+                <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
+              </Box>
             )}
 
             {selectedItem && (
-              <div sx={{ mt: 2 }}>
-                <div sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <h4 sx={{ fontWeight: 600 }}>
+              <Box sx={{ mt: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="h4" component="h4" sx={{ fontWeight: 600 }}>
                     Selected {isCity(selectedItem) ? 'City' : 'Country'}
-                  </h4>
-                  <Button 
-                    variant="ghost" 
+                  </Typography>
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={() => setSelectedItem(null)}
                   >
                     ✕
                   </Button>
-                </div>
-                <div sx={{ maxWidth: 448 }}>
+                </Box>
+                <Box sx={{ maxWidth: 448 }}>
                   <DirectoryCard
                     type={isCity(selectedItem) ? 'city' : 'country'}
                     name={selectedItem.name}
@@ -292,10 +294,10 @@ export function DirectoryMapView({
                       }
                     }}
                   />
-                </div>
-              </div>
+                </Box>
+              </Box>
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
     </div>

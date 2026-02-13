@@ -206,11 +206,11 @@ export default function Directory() {
           {/* Navigation Header */}
           <Box sx={{ mb: 4 }}>
             {viewMode !== "overview" && (
-              <Box className="animate-fade-in">
+              <Box>
                 <Button
                   variant="ghost"
                   onClick={handleBack}
-                  sx={{ mb: 2, '&:hover': { bgcolor: 'action.hover' }, transition: 'all 0.2s' }}
+                  style={{ marginBottom: 16, transition: 'all 0.2s' }}
                 >
                   <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
                   {t('directory.back')}
@@ -256,12 +256,12 @@ export default function Directory() {
       <Container maxWidth="xl" sx={{ px: 3, pb: 6 }}>
         {/* Breadcrumb Navigation */}
         {viewMode !== "overview" && viewMode !== "search" && (
-          <Box sx={{ mb: 3 }} className="animate-fade-in">
+          <Box sx={{ mb: 3 }}>
             <Box component="nav" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
               <Box
                 component="button"
                 onClick={() => setViewMode("overview")}
-                sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' }, transition: 'colors', px: 1, py: 0.5, borderRadius: 1.5, '&:hover': { bgcolor: 'action.hover' }, cursor: 'pointer', border: 'none', background: 'none' }}
+                sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary', bgcolor: 'action.hover' }, transition: 'colors', px: 1, py: 0.5, borderRadius: 1.5, cursor: 'pointer', border: 'none', background: 'none' }}
               >
                 Directory
               </Box>
@@ -271,7 +271,7 @@ export default function Directory() {
                   <Box
                     component="button"
                     onClick={() => setViewMode("country")}
-                    sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' }, transition: 'colors', px: 1, py: 0.5, borderRadius: 1.5, '&:hover': { bgcolor: 'action.hover' }, cursor: 'pointer', border: 'none', background: 'none' }}
+                    sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary', bgcolor: 'action.hover' }, transition: 'colors', px: 1, py: 0.5, borderRadius: 1.5, cursor: 'pointer', border: 'none', background: 'none' }}
                   >
                     {selectedCountry.name}
                   </Box>
@@ -288,32 +288,23 @@ export default function Directory() {
         )}
 
         {/* Content based on view mode */}
-        <Box className="animate-fade-in">
+        <Box>
           {viewMode === "overview" && (
-            <Tabs defaultValue="countries" sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Tabs defaultValue="countries" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
               {/* Enhanced Tab Navigation */}
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <TabsList sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '100%', maxWidth: '28rem', bgcolor: 'action.hover' }}>
-                  <TabsTrigger
-                    value="countries"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'background.paper', boxShadow: 1 }, transition: 'all' }}
-                  >
+                <TabsList>
+                  <TabsTrigger value="countries">
                     <MapPin style={{ width: 16, height: 16 }} />
-                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Countries</Box>
+                    <span>Countries</span>
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="cities"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'background.paper', boxShadow: 1 }, transition: 'all' }}
-                  >
+                  <TabsTrigger value="cities">
                     <Building2 style={{ width: 16, height: 16 }} />
-                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cities</Box>
+                    <span>Cities</span>
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="map"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1, '&[data-state=active]': { bgcolor: 'background.paper', boxShadow: 1 }, transition: 'all' }}
-                  >
+                  <TabsTrigger value="map">
                     <Map style={{ width: 16, height: 16 }} />
-                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Map</Box>
+                    <span>Map</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -330,12 +321,12 @@ export default function Directory() {
                 </Box>
               </Box>
 
-              <TabsContent value="countries" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} className="animate-fade-in">
+              <TabsContent value="countries" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {/* Section Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Typography variant="h5">Explore Countries</Typography>
-                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                    <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                       {filteredCountries.length} found
                     </Badge>
                   </Box>
@@ -377,7 +368,7 @@ export default function Directory() {
                           {continentCountries.map((country, index) => (
                             <Box
                               key={country.id}
-                                                           sx={{ animationDelay: `${index * 50}ms` }}
+                              sx={{ animationDelay: `${index * 50}ms` }}
                             >
                               <DirectoryCard
                                 type="country"
@@ -396,7 +387,7 @@ export default function Directory() {
                      {filteredCountries.map((country, index) => (
                        <Box
                          key={country.id}
-                                                 sx={{ animationDelay: `${index * 50}ms` }}
+                         sx={{ animationDelay: `${index * 50}ms` }}
                        >
                          <DirectoryCard
                            type="country"
@@ -411,12 +402,12 @@ export default function Directory() {
                </Box>
               </TabsContent>
 
-              <TabsContent value="cities" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} className="animate-fade-in">
+              <TabsContent value="cities" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {/* Section Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Typography variant="h5">Discover Cities</Typography>
-                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                    <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                       {filteredCities.length} found
                     </Badge>
                   </Box>
@@ -465,7 +456,7 @@ export default function Directory() {
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                                   <MapPin style={{ width: 16, height: 16 }} color="var(--mui-palette-text-secondary)" />
                                   <Typography variant="body1" sx={{ fontWeight: 500 }}>{country.name}</Typography>
-                                  <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
+                                  <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
                                     {countryCities.length} cities
                                   </Badge>
                                 </Box>
@@ -475,7 +466,7 @@ export default function Directory() {
                                   {countryCities.map((city, index) => (
                                     <Box
                                       key={city.id}
-                                                                           sx={{ animationDelay: `${index * 30}ms` }}
+                                      sx={{ animationDelay: `${index * 30}ms` }}
                                     >
                                       <DirectoryCard
                                         type="city"
@@ -496,12 +487,12 @@ export default function Directory() {
                 </Box>
               </TabsContent>
 
-              <TabsContent value="map" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} className="animate-fade-in">
+              <TabsContent value="map" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {/* Section Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Typography variant="h5">Interactive World Map</Typography>
-                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                    <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                       {countries.length} countries, {cities.length} cities
                     </Badge>
                   </Box>
@@ -533,12 +524,12 @@ export default function Directory() {
           )}
 
           {viewMode === "country" && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }} className="animate-fade-in">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Country Header */}
               <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700 }}>{selectedCountry?.name}</Typography>
-                  <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                  <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                     {countryCities.length} cities
                   </Badge>
                 </Box>
@@ -550,18 +541,20 @@ export default function Directory() {
 
               {/* Country Information Grid */}
               <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { lg: '1fr 1fr' } }}>
-                <LocationInfo
-                  name={selectedCountry?.name}
-                  type="country"
-                  sx={{ height: 'fit-content' }}
-                />
+                <Box style={{ height: 'fit-content' }}>
+                  <LocationInfo
+                    name={selectedCountry?.name}
+                    type="country"
+                  />
+                </Box>
 
-                <WeatherForecast
-                  latitude={selectedCountry?.latitude}
-                  longitude={selectedCountry?.longitude}
-                  cityName={selectedCountry?.capital || selectedCountry?.name}
-                  sx={{ height: 'fit-content' }}
-                />
+                <Box style={{ height: 'fit-content' }}>
+                  <WeatherForecast
+                    latitude={selectedCountry?.latitude}
+                    longitude={selectedCountry?.longitude}
+                    cityName={selectedCountry?.capital || selectedCountry?.name}
+                  />
+                </Box>
               </Box>
 
               {/* Cities Grid */}
@@ -571,7 +564,7 @@ export default function Directory() {
                   {countryCities.map((city, index) => (
                     <Box
                       key={city.id}
-                                           sx={{ animationDelay: `${index * 50}ms` }}
+                      sx={{ animationDelay: `${index * 50}ms` }}
                     >
                       <DirectoryCard
                         type="city"
@@ -587,20 +580,20 @@ export default function Directory() {
           )}
 
           {viewMode === "city" && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }} className="animate-fade-in">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* City Hero Section */}
               <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, flexWrap: 'wrap' }}>
                     <Typography variant="h3" sx={{ fontWeight: 700 }}>{selectedCity?.name}</Typography>
                     {selectedCity?.is_capital && (
-                      <Badge variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Crown style={{ width: 12, height: 12 }} />
                         Capital
                       </Badge>
                     )}
                     {selectedCity?.is_major_city && (
-                      <Badge variant="outline" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Badge variant="outline" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Building2 style={{ width: 12, height: 12 }} />
                         Major City
                       </Badge>
@@ -637,24 +630,26 @@ export default function Directory() {
 
               {/* City Information Grid */}
               <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { lg: '1fr 1fr' } }}>
-                <LocationInfo
-                  name={selectedCity?.name}
-                  type="city"
-                  sx={{ height: 'fit-content' }}
-                />
+                <Box style={{ height: 'fit-content' }}>
+                  <LocationInfo
+                    name={selectedCity?.name}
+                    type="city"
+                  />
+                </Box>
 
-                <WeatherForecast
-                  latitude={selectedCity?.latitude}
-                  longitude={selectedCity?.longitude}
-                  cityName={selectedCity?.name}
-                  sx={{ height: 'fit-content' }}
-                />
+                <Box style={{ height: 'fit-content' }}>
+                  <WeatherForecast
+                    latitude={selectedCity?.latitude}
+                    longitude={selectedCity?.longitude}
+                    cityName={selectedCity?.name}
+                  />
+                </Box>
               </Box>
             </Box>
           )}
 
           {viewMode === "search" && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }} className="animate-fade-in">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Search Results Header */}
               <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <Typography variant="h4" sx={{ fontWeight: 700 }}>Search Results</Typography>
@@ -669,7 +664,7 @@ export default function Directory() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <MapPin style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
                     <Typography variant="h5" sx={{ fontWeight: 600 }}>Countries</Typography>
-                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                    <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                       {searchResults.countries.length} found
                     </Badge>
                   </Box>
@@ -677,7 +672,7 @@ export default function Directory() {
                     {searchResults.countries.map((country: any, index: number) => (
                       <Box
                         key={country.id}
-                                               sx={{ animationDelay: `${index * 50}ms` }}
+                        sx={{ animationDelay: `${index * 50}ms` }}
                       >
                         <DirectoryCard
                           type="country"
@@ -697,7 +692,7 @@ export default function Directory() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Building2 style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
                     <Typography variant="h5" sx={{ fontWeight: 600 }}>Cities</Typography>
-                    <Badge variant="secondary" sx={{ px: 1.5, py: 0.5, fontWeight: 500 }}>
+                    <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
                       {searchResults.cities.length} found
                     </Badge>
                   </Box>
@@ -705,7 +700,7 @@ export default function Directory() {
                     {searchResults.cities.map((city: any, index: number) => (
                       <Box
                         key={city.id}
-                                               sx={{ animationDelay: `${(searchResults.countries?.length || 0) * 50 + index * 50}ms` }}
+                        sx={{ animationDelay: `${(searchResults.countries?.length || 0) * 50 + index * 50}ms` }}
                       >
                         <DirectoryCard
                           type="city"
