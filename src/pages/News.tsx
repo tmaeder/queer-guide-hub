@@ -103,29 +103,38 @@ export default function News() {
     }
   }, [loading]);
   const handleFiltersChange = (filters: any) => {
-    setCurrentFilters(filters);
-    fetchArticles(filters);
+    const option = sortOptions.find(opt => opt.value === sortBy);
+    const filtersWithSort = {
+      ...filters,
+      sortField: option?.field || 'published_at',
+      sortOrder: option?.order || 'desc',
+    };
+    setCurrentFilters(filtersWithSort);
+    fetchArticles(filtersWithSort);
   };
   const handleQuickSearch = (value: string) => {
     setQuickSearch(value);
+    const option = sortOptions.find(opt => opt.value === sortBy);
     const filters = {
       ...currentFilters,
-      search: value || undefined
+      search: value || undefined,
+      sortField: option?.field || 'published_at',
+      sortOrder: option?.order || 'desc',
     };
     setCurrentFilters(filters);
     fetchArticles(filters);
   };
   const handleSortChange = (value: string) => {
     setSortBy(value);
-    // Note: Sorting would need to be implemented in the useNews hook
-    // For now, we'll sort locally
     const option = sortOptions.find(opt => opt.value === value);
     if (option) {
-      // Local sorting implementation
-      setCurrentFilters((prev: any) => ({
-        ...prev,
-        sortBy: value
-      }));
+      const newFilters = {
+        ...currentFilters,
+        sortField: option.field,
+        sortOrder: option.order,
+      };
+      setCurrentFilters(newFilters);
+      fetchArticles(newFilters);
     }
   };
   const handleViewArticle = (articleId: string) => {
@@ -198,7 +207,7 @@ export default function News() {
           {/* Quick Search */}
           <Box sx={{ position: 'relative', flex: 1, maxWidth: '28rem' }}>
             <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--muted-foreground)' }} />
-            <Input placeholder="Quick search articles..." value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} />
+            <Input placeholder="Quick search articles..." value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} aria-label="Search articles" />
             {quickSearch && <Button variant="ghost" size="sm" onClick={() => handleQuickSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', height: 24, width: 24, padding: 0 }}>
                 <X style={{ width: 16, height: 16 }} />
               </Button>}
@@ -208,7 +217,7 @@ export default function News() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {/* Sort */}
             <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger style={{ width: 180 }}>
+              <SelectTrigger style={{ width: 180 }} aria-label="Sort articles">
                 <SortAsc style={{ width: 16, height: 16, marginRight: 8 }} />
                 <SelectValue />
               </SelectTrigger>
@@ -221,16 +230,16 @@ export default function News() {
 
             {/* View Mode */}
             <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2, p: 0.5 }}>
-              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }}>
+              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Grid view">
                 <Grid3X3 style={{ width: 16, height: 16 }} />
               </Button>
-              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} style={{ height: 32, width: 32, padding: 0 }}>
+              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} style={{ height: 32, width: 32, padding: 0 }} aria-label="List view">
                 <List style={{ width: 16, height: 16 }} />
               </Button>
             </Box>
 
             {/* Advanced Filters Toggle */}
-            <Button variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', gap: 8 }}>
+            <Button variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', gap: 8 }} aria-label="Toggle filters">
               <Filter style={{ width: 16, height: 16 }} />
               Filters
               {hasActiveFilters && <Badge variant="secondary" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>
@@ -246,8 +255,16 @@ export default function News() {
               <Filter style={{ width: 16, height: 16 }} />
               <Typography variant="body2" color="text.secondary">Active filters applied</Typography>
               {quickSearch && <Badge variant="outline">Search: {quickSearch}</Badge>}
+              {sortBy !== 'date-desc' && (
+                <Badge variant="outline">
+                  Sort: {sortOptions.find(o => o.value === sortBy)?.label}
+                </Badge>
+              )}
+              {currentFilters.featured !== undefined && (
+                <Badge variant="outline">Featured only</Badge>
+              )}
             </Box>
-            <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+            <Button variant="ghost" size="sm" onClick={clearAllFilters} aria-label="Clear all filters">
               Clear All
             </Button>
           </Box>}

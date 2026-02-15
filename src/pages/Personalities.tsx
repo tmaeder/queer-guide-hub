@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import Container from '@mui/material/Container';
 
 export default function Personalities() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   useMeta({
@@ -53,23 +54,9 @@ export default function Personalities() {
 
   const { personalities, totalCount, loading, error } = usePersonalities(filters);
 
-  // Randomize the order of personalities on each render
-  const randomizedPersonalities = useMemo(() => {
-    if (!personalities || personalities.length === 0) return [];
-
-    const shuffled = [...personalities];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }, [personalities]);
-
-
   const handlePersonalityClick = (personality: any) => {
     setSelectedPersonality(personality);
-    // Here you would typically navigate to a detail page or open a modal
-    console.log('Selected personality:', personality);
+    navigate(`/personalities/${personality.id}`);
   };
 
   const handleFiltersChange = (newFilters: PersonalityFilters) => {
@@ -137,7 +124,7 @@ export default function Personalities() {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'var(--card)', borderRadius: 2, border: '1px solid var(--border)' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Typography sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>
-                Found {personalities.length} result{personalities.length !== 1 ? 's' : ''}
+                Found {totalCount} result{totalCount !== 1 ? 's' : ''}
               </Typography>
               {filters.search && (
                 <Badge variant="secondary">
@@ -153,7 +140,7 @@ export default function Personalities() {
           </Box>
         )}
 
-        {randomizedPersonalities.length === 0 ? (
+        {personalities.length === 0 ? (
           <Card>
             <CardContent style={{ paddingTop: 48, paddingBottom: 48 }}>
               <Box sx={{ textAlign: 'center' }}>
@@ -167,7 +154,7 @@ export default function Personalities() {
           </Card>
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
-            {randomizedPersonalities.map((personality) => (
+            {personalities.map((personality) => (
               <PersonalityCard
                 key={personality.id}
                 personality={personality}

@@ -38,8 +38,37 @@ const SubmitVenue = () => {
     _hp: '',
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateField = (field: string, value: string) => {
+    const newErrors = { ...errors };
+    switch (field) {
+      case 'name':
+        if (!value.trim()) newErrors.name = 'Venue name is required';
+        else if (value.trim().length < 2) newErrors.name = 'Name must be at least 2 characters';
+        else delete newErrors.name;
+        break;
+      case 'email':
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) newErrors.email = 'Please enter a valid email address';
+        else delete newErrors.email;
+        break;
+      case 'website':
+        if (value && !/^https?:\/\/.+\..+/.test(value)) newErrors.website = 'Please enter a valid URL starting with http:// or https://';
+        else delete newErrors.website;
+        break;
+      case 'phone':
+        if (value && !/^[+\d\s\-()]{7,20}$/.test(value)) newErrors.phone = 'Please enter a valid phone number';
+        else delete newErrors.phone;
+        break;
+      default:
+        break;
+    }
+    setErrors(newErrors);
+  };
+
   const updateField = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    validateField(field, value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,6 +79,20 @@ const SubmitVenue = () => {
 
     if (!form.name.trim()) {
       toast({ title: 'Name is required', variant: 'destructive' });
+      return;
+    }
+
+    // Validate all fields
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      toast({ title: 'Invalid email format', variant: 'destructive' });
+      return;
+    }
+    if (form.website && !/^https?:\/\/.+\..+/.test(form.website)) {
+      toast({ title: 'Invalid website URL', description: 'URL must start with http:// or https://', variant: 'destructive' });
+      return;
+    }
+    if (Object.keys(errors).length > 0) {
+      toast({ title: 'Please fix form errors', variant: 'destructive' });
       return;
     }
 
@@ -174,14 +217,22 @@ const SubmitVenue = () => {
 
               <Box>
                 <Label style={{ marginBottom: 4, display: 'block' }}>
-                  Venue Name <span style={{ color: '#d32f2f' }}>*</span>
+                  Venue Name <span style={{ color: '#d32f2f' }} aria-label="required">*</span>
                 </Label>
                 <Input
                   placeholder="e.g., The Rainbow Lounge"
                   value={form.name}
                   onChange={(e) => updateField('name', e.target.value)}
                   required
+                  aria-required="true"
+                  aria-invalid={!!errors.name}
+                  aria-describedby={errors.name ? 'name-error' : undefined}
                 />
+                {errors.name && (
+                  <Typography variant="caption" sx={{ color: '#d32f2f', mt: 0.5, display: 'block' }} role="alert" id="name-error">
+                    {errors.name}
+                  </Typography>
+                )}
               </Box>
 
               <Box>

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Eye, Calendar, MapPin, Tag, Newspaper } from "lucide-react";
+import { ExternalLink, Eye, Clock, Calendar, MapPin, Tag, Newspaper } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Tables } from "@/integrations/supabase/types";
 import { Link } from "react-router-dom";
@@ -62,8 +62,20 @@ export const NewsCard = ({
     onViewArticle?.(article.id);
     window.open(article.url, '_blank');
   };
-  const getCategoryColor = (_category: string) => {
-    return '#555555';
+  const getCategoryColor = (category: string) => {
+    const map: Record<string, string> = {
+      politics: '#1a73e8',
+      'human-rights': '#e53935',
+      entertainment: '#8e24aa',
+      culture: '#6d4c41',
+      health: '#43a047',
+      sports: '#fb8c00',
+      business: '#546e7a',
+      technology: '#00897b',
+      lifestyle: '#d81b60',
+      education: '#5c6bc0',
+    };
+    return map[category?.toLowerCase()] || '#555555';
   };
   return <Card style={{ boxShadow: 'var(--shadow-card)', transition: 'all 0.3s', borderColor: 'rgba(var(--border-rgb, 0,0,0), 0.5)' }}>
       <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -97,6 +109,26 @@ export const NewsCard = ({
         {article.excerpt && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
             {decodeHtmlEntities(article.excerpt)}
           </Typography>}
+
+        {/* Published date & views */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {article.published_at && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Clock style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
+                {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
+              </Typography>
+            </Box>
+          )}
+          {article.views_count > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Eye style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
+                {article.views_count} view{article.views_count !== 1 ? 's' : ''}
+              </Typography>
+            </Box>
+          )}
+        </Box>
 
         {showFullContent && article.content && <Box sx={{ maxWidth: 'none', color: 'var(--foreground)' }}>
 

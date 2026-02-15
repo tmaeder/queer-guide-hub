@@ -39,8 +39,37 @@ const SubmitEvent = () => {
     _hp: '',
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateField = (field: string, value: string) => {
+    const newErrors = { ...errors };
+    switch (field) {
+      case 'title':
+        if (!value.trim()) newErrors.title = 'Event title is required';
+        else if (value.trim().length < 2) newErrors.title = 'Title must be at least 2 characters';
+        else delete newErrors.title;
+        break;
+      case 'website':
+        if (value && !/^https?:\/\/.+\..+/.test(value)) newErrors.website = 'Please enter a valid URL starting with http:// or https://';
+        else delete newErrors.website;
+        break;
+      case 'end_date':
+        if (value && form.start_date && value < form.start_date) newErrors.end_date = 'End date must be after start date';
+        else delete newErrors.end_date;
+        break;
+      case 'start_date':
+        if (form.end_date && form.end_date < value) newErrors.end_date = 'End date must be after start date';
+        else delete newErrors.end_date;
+        break;
+      default:
+        break;
+    }
+    setErrors(newErrors);
+  };
+
   const updateField = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    validateField(field, value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,6 +80,21 @@ const SubmitEvent = () => {
 
     if (!form.title.trim()) {
       toast({ title: 'Event title is required', variant: 'destructive' });
+      return;
+    }
+
+    if (form.website && !/^https?:\/\/.+\..+/.test(form.website)) {
+      toast({ title: 'Invalid website URL', description: 'URL must start with http:// or https://', variant: 'destructive' });
+      return;
+    }
+
+    if (form.end_date && form.start_date && form.end_date < form.start_date) {
+      toast({ title: 'Invalid dates', description: 'End date must be after start date', variant: 'destructive' });
+      return;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      toast({ title: 'Please fix form errors', variant: 'destructive' });
       return;
     }
 
@@ -175,14 +219,22 @@ const SubmitEvent = () => {
 
               <Box>
                 <Label style={{ marginBottom: 4, display: 'block' }}>
-                  Event Title <span style={{ color: '#d32f2f' }}>*</span>
+                  Event Title <span style={{ color: '#d32f2f' }} aria-label="required">*</span>
                 </Label>
                 <Input
                   placeholder="e.g., Pride Parade Berlin 2026"
                   value={form.title}
                   onChange={(e) => updateField('title', e.target.value)}
                   required
+                  aria-required="true"
+                  aria-invalid={!!errors.title}
+                  aria-describedby={errors.title ? 'title-error' : undefined}
                 />
+                {errors.title && (
+                  <Typography variant="caption" sx={{ color: '#d32f2f', mt: 0.5, display: 'block' }} role="alert" id="title-error">
+                    {errors.title}
+                  </Typography>
+                )}
               </Box>
 
               <Box>
@@ -226,7 +278,15 @@ const SubmitEvent = () => {
                     type="datetime-local"
                     value={form.end_date}
                     onChange={(e) => updateField('end_date', e.target.value)}
+                    min={form.start_date || undefined}
+                    aria-invalid={!!errors.end_date}
+                    aria-describedby={errors.end_date ? 'end-date-error' : undefined}
                   />
+                  {errors.end_date && (
+                    <Typography variant="caption" sx={{ color: '#d32f2f', mt: 0.5, display: 'block' }} role="alert" id="end-date-error">
+                      {errors.end_date}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
 
@@ -265,7 +325,14 @@ const SubmitEvent = () => {
                   type="url"
                   value={form.website}
                   onChange={(e) => updateField('website', e.target.value)}
+                  aria-invalid={!!errors.website}
+                  aria-describedby={errors.website ? 'website-error' : undefined}
                 />
+                {errors.website && (
+                  <Typography variant="caption" sx={{ color: '#d32f2f', mt: 0.5, display: 'block' }} role="alert" id="website-error">
+                    {errors.website}
+                  </Typography>
+                )}
               </Box>
 
               <Button

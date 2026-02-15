@@ -22,6 +22,8 @@ interface NewsFilters {
   };
   countryIds?: string[];
   cityIds?: string[];
+  sortField?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export const useNews = () => {
@@ -47,6 +49,9 @@ export const useNews = () => {
 
     try {
       // Build the query step by step to avoid TypeScript issues
+      const sortField = filters?.sortField || 'published_at';
+      const sortOrder = filters?.sortOrder === 'asc';
+
       let queryBuilder = supabase
         .from('news_articles')
         .select(`
@@ -59,7 +64,7 @@ export const useNews = () => {
           )
         `)
         .not('published_at', 'is', null)
-        .order('published_at', { ascending: false });
+        .order(sortField, { ascending: sortOrder });
 
       // Apply city filtering if provided
       if (filters?.cityIds && filters.cityIds.length > 0) {
@@ -105,7 +110,7 @@ export const useNews = () => {
       }
 
       // Execute the query
-      const { data, error: fetchError } = await queryWithRetry(() => (queryBuilder as any).limit(50));
+      const { data, error: fetchError } = await queryWithRetry(() => (queryBuilder as any).limit(200));
 
       if (fetchError) {
         console.error('Error fetching articles:', fetchError);
@@ -114,7 +119,15 @@ export const useNews = () => {
       }
 
       if (data) {
-        setArticles(data);
+        // Deduplicate by URL (same article from different sources)
+        const seen = new Set<string>();
+        const deduped = data.filter((article: any) => {
+          const key = article.url || article.id;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        setArticles(deduped);
       }
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -162,7 +175,19 @@ export const useNews = () => {
 
   const getFeaturedArticles = useCallback(async () => {
     try {
-      return [];
+      const { data, error: fetchError } = await supabase
+        .from('news_articles')
+        .select('*, news_sources(id, name, url, is_active)')
+        .eq('is_featured', true)
+        .not('published_at', 'is', null)
+        .order('published_at', { ascending: false })
+        .limit(5);
+
+      if (fetchError) {
+        console.warn('Error fetching featured articles:', fetchError);
+        return [];
+      }
+      return data || [];
     } catch (err) {
       console.warn('Error fetching featured articles:', err);
       return [];

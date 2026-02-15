@@ -168,13 +168,17 @@ export function MarketplaceCard({
               </Button>
             )}
             {listing.contact_phone && (
-              <Button size="sm" variant="ghost" sx={{ height: 28, width: 28, p: 0 }} aria-label="Call phone number">
-                <Phone style={{ height: 12, width: 12 }} />
+              <Button size="sm" variant="ghost" sx={{ height: 28, width: 28, p: 0 }} aria-label={`Call ${listing.contact_phone}`} asChild>
+                <a href={`tel:${listing.contact_phone}`} onClick={(e) => e.stopPropagation()}>
+                  <Phone style={{ height: 12, width: 12 }} />
+                </a>
               </Button>
             )}
             {listing.contact_email && (
-              <Button size="sm" variant="ghost" sx={{ height: 28, width: 28, p: 0 }} aria-label="Send email">
-                <Mail style={{ height: 12, width: 12 }} />
+              <Button size="sm" variant="ghost" sx={{ height: 28, width: 28, p: 0 }} aria-label={`Email ${listing.contact_email}`} asChild>
+                <a href={`mailto:${listing.contact_email}`} onClick={(e) => e.stopPropagation()}>
+                  <Mail style={{ height: 12, width: 12 }} />
+                </a>
               </Button>
             )}
 

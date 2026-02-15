@@ -7,7 +7,9 @@ import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Store, Plus, Loader, Heart, Grid, List } from 'lucide-react';
+import { Store, Plus, Loader, Heart, Grid, List, Grid3X3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +18,7 @@ import Typography from '@mui/material/Typography';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 const Marketplace = () => {
+  const navigate = useNavigate();
   const {
     listings,
     loading,
@@ -129,12 +132,20 @@ const Marketplace = () => {
                   Discover and support local businesses offering products and services
                 </Typography>
               </Box>
-              {user && (
-                <Button style={{ display: 'flex', gap: 8 }}>
-                  <Plus style={{ width: 16, height: 16 }} />
-                  List Your Business
-                </Button>
-              )}
+              <Button
+                style={{ display: 'flex', gap: 8 }}
+                onClick={() => {
+                  if (!user) {
+                    toast({ title: 'Sign in required', description: 'Create a free account to list your business.', variant: 'default' });
+                    navigate('/auth');
+                    return;
+                  }
+                  navigate('/marketplace/submit');
+                }}
+              >
+                <Plus style={{ width: 16, height: 16 }} aria-hidden="true" />
+                List Your Business
+              </Button>
             </Box>
           </CardContent>
         </Card>
@@ -155,10 +166,10 @@ const Marketplace = () => {
             </TabsList>
 
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')}>
+              <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
                 <Grid style={{ width: 16, height: 16 }} />
               </Button>
-              <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')}>
+              <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view">
                 <List style={{ width: 16, height: 16 }} />
               </Button>
             </Box>
@@ -178,11 +189,17 @@ const Marketplace = () => {
                 <Typography color="text.secondary" sx={{ mb: 2 }}>
                   We couldn't find any listings matching your criteria. Try adjusting your filters or be the first to add your business!
                 </Typography>
-                {user && (
-                  <Button>
-                    List Your Business
-                  </Button>
-                )}
+                <Button onClick={() => {
+                  if (!user) {
+                    toast({ title: 'Sign in required', description: 'Create a free account to list your business.', variant: 'default' });
+                    navigate('/auth');
+                    return;
+                  }
+                  navigate('/marketplace/submit');
+                }}>
+                  <Plus style={{ width: 16, height: 16, marginRight: 8 }} aria-hidden="true" />
+                  List Your Business
+                </Button>
               </CardContent>
             </Card>}
 
@@ -228,12 +245,6 @@ const Marketplace = () => {
             </TabsContent>)}
         </Tabs>
 
-        {/* Load More */}
-        {!loading && listings.length > 0 && <Box sx={{ textAlign: 'center', mt: 6 }}>
-            <Button variant="outline" size="lg">
-              Load More Listings
-            </Button>
-          </Box>}
       </Box>
     </Box>;
 };
