@@ -131,6 +131,7 @@ const ToastClose = React.forwardRef<
     ref={ref}
     style={{ ...toastCloseStyle, ...style }}
     toast-close=""
+    aria-label="Close notification"
     {...props}
   >
     <X style={{ height: 16, width: 16 }} />

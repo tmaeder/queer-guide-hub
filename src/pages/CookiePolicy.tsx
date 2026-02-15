@@ -1,20 +1,36 @@
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 import { CookieSettingsButton } from '@/components/privacy/CookieSettingsButton';
+import { LegalPageLayout } from '@/components/ui/LegalPageLayout';
+
+const sections = [
+  { id: 'what-are-cookies', title: 'What Are Cookies' },
+  { id: 'how-we-use', title: 'How We Use Cookies' },
+  { id: 'types', title: 'Types of Cookies We Use' },
+  { id: 'third-party', title: 'Third-Party Cookies' },
+  { id: 'duration', title: 'Cookie Duration' },
+  { id: 'managing', title: 'Managing Cookies' },
+  { id: 'disabling-impact', title: 'Impact of Disabling Cookies' },
+  { id: 'local-storage', title: 'Local Storage' },
+  { id: 'updates', title: 'Updates to Cookie Policy' },
+  { id: 'preferences', title: 'Manage Your Cookie Preferences' },
+  { id: 'contact', title: 'Contact Us' },
+];
 
 export default function CookiePolicy() {
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>Cookie Policy</Typography>
+    <LegalPageLayout
+      title="Cookie Policy"
+      lastUpdated={new Date().toLocaleDateString()}
+      sections={sections}
+    >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Typography color="text.secondary">Last updated: {new Date().toLocaleDateString()}</Typography>
-
-        <section>
+        <section id="what-are-cookies">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>1. What Are Cookies</Typography>
           <Typography>Cookies are small text files that are stored on your device when you visit our website. They help us provide you with a better experience by remembering your preferences and analyzing how you use our service.</Typography>
         </section>
 
-        <section>
+        <section id="how-we-use">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>2. How We Use Cookies</Typography>
           <Typography>We use cookies for several purposes:</Typography>
           <Box component="ul" sx={{ listStyleType: 'disc', pl: 3 }}>
@@ -26,7 +42,7 @@ export default function CookiePolicy() {
           </Box>
         </section>
 
-        <section>
+        <section id="types">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>3. Types of Cookies We Use</Typography>
 
           <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>Essential Cookies</Typography>
@@ -55,7 +71,7 @@ export default function CookiePolicy() {
           </Box>
         </section>
 
-        <section>
+        <section id="third-party">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>4. Third-Party Cookies</Typography>
           <Typography>Some cookies are set by third-party services we use:</Typography>
           <Box component="ul" sx={{ listStyleType: 'disc', pl: 3 }}>
@@ -65,7 +81,7 @@ export default function CookiePolicy() {
           </Box>
         </section>
 
-        <section>
+        <section id="duration">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>5. Cookie Duration</Typography>
           <Typography>Cookies may be:</Typography>
           <Box component="ul" sx={{ listStyleType: 'disc', pl: 3 }}>
@@ -74,7 +90,7 @@ export default function CookiePolicy() {
           </Box>
         </section>
 
-        <section>
+        <section id="managing">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>6. Managing Cookies</Typography>
 
           <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>Browser Settings</Typography>
@@ -95,7 +111,7 @@ export default function CookiePolicy() {
           </Box>
         </section>
 
-        <section>
+        <section id="disabling-impact">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>7. Impact of Disabling Cookies</Typography>
           <Typography>Disabling cookies may affect your experience:</Typography>
           <Box component="ul" sx={{ listStyleType: 'disc', pl: 3 }}>
@@ -106,7 +122,7 @@ export default function CookiePolicy() {
           </Box>
         </section>
 
-        <section>
+        <section id="local-storage">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>8. Local Storage</Typography>
           <Typography>In addition to cookies, we may use local storage technologies to:</Typography>
           <Box component="ul" sx={{ listStyleType: 'disc', pl: 3 }}>
@@ -116,12 +132,12 @@ export default function CookiePolicy() {
           </Box>
         </section>
 
-        <section>
+        <section id="updates">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>9. Updates to Cookie Policy</Typography>
           <Typography>We may update this Cookie Policy to reflect changes in our practices or for other operational, legal, or regulatory reasons. Please review this policy periodically.</Typography>
         </section>
 
-        <section>
+        <section id="preferences">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>10. Manage Your Cookie Preferences</Typography>
           <Typography>You can customize your cookie settings at any time using the button below. This will allow you to enable or disable different types of cookies according to your preferences.</Typography>
           <Box sx={{ mt: 2 }}>
@@ -129,11 +145,11 @@ export default function CookiePolicy() {
           </Box>
         </section>
 
-        <section>
+        <section id="contact">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>11. Contact Us</Typography>
-          <Typography>If you have questions about our use of cookies, please contact us at privacy@queer.guide or through our Contact page.</Typography>
+          <Typography>If you have questions about our use of cookies, please contact us at <a href="mailto:privacy@queer.guide" style={{ color: '#333333', textDecoration: 'underline' }}>privacy@queer.guide</a> or through our Contact page.</Typography>
         </section>
       </Box>
-    </Box>
+    </LegalPageLayout>
   );
 }

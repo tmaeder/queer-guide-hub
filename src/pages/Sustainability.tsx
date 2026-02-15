@@ -42,7 +42,7 @@ export default function Sustainability() {
       </Box>
 
       {/* Our Commitment */}
-      <Box component="section" sx={{ py: 8, px: 2 }}>
+      <Box component="section" id="commitments" sx={{ py: 8, px: 2 }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>Our Environmental Commitment</Typography>
@@ -148,10 +148,10 @@ export default function Sustainability() {
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center' }}>
-            <Button>
+            <Button onClick={() => document.getElementById('commitments')?.scrollIntoView({ behavior: 'smooth' })}>
               Join Green Initiatives
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => document.getElementById('impact-stats')?.scrollIntoView({ behavior: 'smooth' })}>
               Learn More About Our Impact
             </Button>
           </Box>
@@ -159,7 +159,7 @@ export default function Sustainability() {
       </Box>
 
       {/* Environmental Impact */}
-      <Box component="section" sx={{ py: 8, px: 2 }}>
+      <Box component="section" id="impact-stats" sx={{ py: 8, px: 2 }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>Our Environmental Impact</Typography>

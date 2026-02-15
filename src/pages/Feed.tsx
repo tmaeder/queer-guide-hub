@@ -15,6 +15,7 @@ import { PostCard } from '@/components/posts/PostCard';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -22,6 +23,7 @@ import Skeleton from '@mui/material/Skeleton';
 
 export default function Feed() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('recent');
 
@@ -100,7 +102,26 @@ export default function Feed() {
         </CardContent>
       </Card>
 
+      {/* Auth gate for logged-out users */}
+      {!user && (
+        <Card sx={{ mt: 4 }}>
+          <CardContent sx={{ p: 6, textAlign: 'center' }}>
+            <Users style={{ width: 48, height: 48, margin: '0 auto 16px', color: '#999999' }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+              Join the Conversation
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: '28rem', mx: 'auto' }}>
+              Sign in to share posts, connect with the community, and discover what's happening around you.
+            </Typography>
+            <Button onClick={() => navigate('/auth')} style={{ paddingLeft: 24, paddingRight: 24 }}>
+              Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Stats */}
+      {user && (
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mb: 4 }}>
         <Card>
           <CardContent style={{ padding: 16, textAlign: 'center' }}>
@@ -128,6 +149,7 @@ export default function Feed() {
           </CardContent>
         </Card>
       </Box>
+      )}
 
       {/* Create Post */}
       {user && (
@@ -145,6 +167,9 @@ export default function Feed() {
         </Card>
       )}
 
+      {/* Search + Tabs + Posts (only for logged-in users) */}
+      {user && (
+      <>
       {/* Search */}
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 3 }}>
         <Box sx={{ position: 'relative', flex: 1 }}>
@@ -210,21 +235,7 @@ export default function Feed() {
           ))
         )}
       </Box>
-
-      {/* Join CTA */}
-      {!user && (
-        <Card sx={{ mt: 4 }}>
-          <CardContent style={{ padding: 32, textAlign: 'center' }}>
-            <Heart style={{ height: 48, width: 48, color: '#333333', margin: '0 auto 16px' }} />
-            <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>Join the Feed</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Sign up to share your thoughts, connect with others, and be part of our growing community.
-            </Typography>
-            <Button asChild>
-              <a href="/auth">Join Now</a>
-            </Button>
-          </CardContent>
-        </Card>
+      </>
       )}
     </Container>
   );

@@ -131,7 +131,7 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
         {(isOwnComment || user) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" sx={{ height: 24, width: 24, p: 0 }}>
+              <Button variant="ghost" size="sm" sx={{ height: 24, width: 24, p: 0 }} aria-label="Comment actions">
                 <MoreHorizontal style={{ width: 12, height: 12 }} />
               </Button>
             </DropdownMenuTrigger>

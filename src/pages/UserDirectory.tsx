@@ -18,7 +18,8 @@ import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, 
 import { StartConversationButton } from "@/components/messaging/StartConversationButton";
 import { UserModeBadge } from "@/components/profile/UserModeBadge";
 import { Tables } from "@/integrations/supabase/types";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import useScreenSize from "@/hooks/use-screen-size";
 import Gravity, { MatterBody } from "@/fancy/components/physics/cursor-attractor-and-gravity";
 
@@ -42,6 +43,8 @@ interface UserFilters {
 }
 
 const UserDirectory = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const screenSize = useScreenSize();
   const [filters, setFilters] = useState<UserFilters>({
     searchQuery: "",
@@ -345,6 +348,23 @@ const UserDirectory = () => {
           </CardContent>
         </Card>
 
+        {/* Privacy notice for logged-out users */}
+        {!user && (
+          <Card sx={{ mb: 4, bgcolor: '#f5f5f5' }}>
+            <CardContent sx={{ p: 3, textAlign: 'center' }}>
+              <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
+                Community Directory
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Member profiles are visible to signed-in members to protect privacy. Sign in to browse the full directory, see detailed profiles, and connect.
+              </Typography>
+              <Button onClick={() => navigate('/auth')} style={{ paddingLeft: 24, paddingRight: 24 }}>
+                Sign In to Browse
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Search and Filter Section */}
         <Card style={{ background: 'linear-gradient(to right, var(--card), rgba(var(--card-rgb), 0.9))', border: '2px solid', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
           <CardContent style={{ padding: 24 }}>
@@ -390,7 +410,7 @@ const UserDirectory = () => {
               </Box>
 
               {/* Advanced Filters */}
-              {showFilters && (
+              {showFilters && user && (
                 <Box>
                   <Card style={{ backgroundColor: 'rgba(var(--background-rgb), 0.8)', backdropFilter: 'blur(8px)', border: '2px dashed', borderColor: 'var(--border)' }}>
                     <CardContent style={{ padding: 24 }}>
@@ -765,6 +785,7 @@ const UserDirectory = () => {
                         <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.125rem', color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {profile.display_name || "Anonymous User"}
                         </Typography>
+                        {user && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
                           {profile.pronouns && <Typography component="span" sx={{ fontWeight: 500, fontSize: 'inherit', color: 'inherit' }}>{profile.pronouns}</Typography>}
                           {profile.age_range && (
@@ -774,6 +795,7 @@ const UserDirectory = () => {
                             </>
                           )}
                         </Box>
+                        )}
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {(profile as any)?.user_mode && (
                             <UserModeBadge mode={(profile as any).user_mode} size="sm" />
@@ -794,12 +816,13 @@ const UserDirectory = () => {
                       </Box>
                     </Box>
 
-                    {profile.bio && (
+                    {user && profile.bio && (
                       <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 2, lineHeight: 1.75, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {profile.bio}
                       </Typography>
                     )}
 
+                    {user && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
                       {profile.location && (
                         <Box sx={{ display: 'flex', alignItems: 'center', fontSize: '0.875rem', color: 'text.secondary' }}>
@@ -827,8 +850,10 @@ const UserDirectory = () => {
                         Joined {new Date(profile.created_at).toLocaleDateString()}
                       </Box>
                     </Box>
+                    )}
 
                     {/* Profile Tags */}
+                    {user && (
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
                       {profile.relationship_status && (
                         <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: 'rgba(236,72,153,0.1)', borderColor: '#fbcfe8', color: '#be185d' }}>
@@ -852,6 +877,7 @@ const UserDirectory = () => {
                         </Badge>
                       )}
                     </Box>
+                    )}
 
                     {/* Action Footer */}
                     <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2, borderTop: 1, borderColor: 'divider' }}>

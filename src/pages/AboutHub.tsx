@@ -355,11 +355,11 @@ export default function AboutHub() {
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
             <Box>
               <Typography sx={{ fontWeight: 500, mb: 1 }}>General Inquiries</Typography>
-              <Typography variant="body2" color="text.secondary">hello@queer.guide</Typography>
+              <Typography variant="body2" color="text.secondary"><a href="mailto:hello@queer.guide" style={{ color: '#333333', textDecoration: 'underline' }}>hello@queer.guide</a></Typography>
             </Box>
             <Box>
               <Typography sx={{ fontWeight: 500, mb: 1 }}>Values & Feedback</Typography>
-              <Typography variant="body2" color="text.secondary">values@queer.guide</Typography>
+              <Typography variant="body2" color="text.secondary"><a href="mailto:values@queer.guide" style={{ color: '#333333', textDecoration: 'underline' }}>values@queer.guide</a></Typography>
             </Box>
           </Box>
         </CardContent>

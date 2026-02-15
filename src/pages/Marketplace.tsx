@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useState } from 'react';
 import { useMarketplace } from '@/hooks/useMarketplace';
 import { useMeta } from '@/hooks/useMeta';
@@ -7,6 +7,7 @@ import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Store, Plus, Loader, Heart, Grid, List, Grid3X3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -51,6 +52,26 @@ const Marketplace = () => {
   const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState('all');
+  const [sortBy, setSortBy] = useState<string>('newest');
+
+  const sortOptions = [
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+    { value: 'az', label: 'A\u2013Z' },
+    { value: 'za', label: 'Z\u2013A' },
+  ];
+
+  const sortedListings = useMemo(() => {
+    const sorted = [...listings];
+    switch (sortBy) {
+      case 'newest': return sorted.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
+      case 'oldest': return sorted.sort((a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime());
+      case 'az': return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+      case 'za': return sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+      default: return sorted;
+    }
+  }, [listings, sortBy]);
+
   const handleFiltersChange = (filters: any) => {
     fetchListings(filters);
   };
@@ -90,21 +111,21 @@ const Marketplace = () => {
 
   // Filter listings by category for tabs
   const getFilteredListings = (category?: string) => {
-    if (!category || category === 'all') return listings;
-    return listings.filter(listing => listing.category === category);
+    if (!category || category === 'all') return sortedListings;
+    return sortedListings.filter(listing => listing.category === category);
   };
   const categories = [{
     id: 'all',
     label: 'All',
-    count: listings.length
+    count: sortedListings.length
   }, {
     id: 'products',
     label: 'Products',
-    count: listings.filter(l => l.category === 'products').length
+    count: sortedListings.filter(l => l.category === 'products').length
   }, {
     id: 'services',
     label: 'Services',
-    count: listings.filter(l => l.category === 'services').length
+    count: sortedListings.filter(l => l.category === 'services').length
   }];
   if (error) {
     return <Box sx={{ minHeight: '100vh' }}>
@@ -165,7 +186,17 @@ const Marketplace = () => {
                 </TabsTrigger>)}
             </TabsList>
 
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger style={{ width: 160 }} aria-label="Sort listings">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
                 <Grid style={{ width: 16, height: 16 }} />
               </Button>
@@ -182,7 +213,7 @@ const Marketplace = () => {
             </Box>}
 
           {/* Empty State */}
-          {!loading && listings.length === 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
+          {!loading && sortedListings.length === 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
               <CardContent>
                 <Store style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No listings found</Typography>
@@ -230,7 +261,7 @@ const Marketplace = () => {
                 </>}
 
               {/* Category-specific empty state */}
-              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length === 0 && listings.length > 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
+              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length === 0 && sortedListings.length > 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
                   <CardContent>
                     <Store style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No {category.label.toLowerCase()} found</Typography>

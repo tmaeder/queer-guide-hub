@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ const contentTypeIcons = {
 
 export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTab, setSelectedTab] = useState('all');
   const initialSort = searchParams.get('sort') || 'relevance';
@@ -471,16 +472,88 @@ export default function SearchResults() {
           </Box>
         </Box>
       ) : results.length === 0 ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, textAlign: 'center' }}>
-          <Search style={{ width: 48, height: 48, color: 'var(--muted-foreground)', marginBottom: 16 }} />
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No results found</Typography>
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
-            Try adjusting your search query or filters
-          </Typography>
-          <Button variant="outline" onClick={() => setShowFilters(true)}>
-            Adjust Filters
-          </Button>
-        </Box>
+        <>
+          {/* Search Suggestions -- shown when query is empty */}
+          {(!query || query.trim() === '') && (
+            <Card sx={{ p: 4 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                  Try searching for...
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+                  {['Berlin venues', 'Pride events', 'Drag shows', 'LGBTQ+ history', 'Queer artists', 'Safe spaces'].map((suggestion) => (
+                    <Button
+                      key={suggestion}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const params = new URLSearchParams(searchParams);
+                        params.set('q', suggestion);
+                        setSearchParams(params);
+                      }}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Or browse by category:
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {[
+                    { label: 'Venues', path: '/venues' },
+                    { label: 'Events', path: '/events' },
+                    { label: 'Personalities', path: '/personalities' },
+                    { label: 'News', path: '/news' },
+                    { label: 'Places', path: '/places' },
+                    { label: 'Resources', path: '/resources' },
+                  ].map((cat) => (
+                    <Button key={cat.label} variant="ghost" size="sm" onClick={() => navigate(cat.path)}>
+                      {cat.label}
+                    </Button>
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* No results -- shown when there IS a query but no results */}
+          {query && query.trim() !== '' && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, textAlign: 'center' }}>
+              <Search style={{ width: 48, height: 48, color: 'var(--muted-foreground)', marginBottom: 16 }} />
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No results found</Typography>
+              <Typography color="text.secondary" sx={{ mb: 2 }}>
+                Try adjusting your search query or filters
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1.5 }}>
+                <Button variant="outline" onClick={() => setShowFilters(true)}>
+                  Adjust Filters
+                </Button>
+              </Box>
+              <Box sx={{ mt: 4 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Or try one of these searches:
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
+                  {['Berlin venues', 'Pride events', 'Drag shows', 'LGBTQ+ history', 'Queer artists', 'Safe spaces'].map((suggestion) => (
+                    <Button
+                      key={suggestion}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const params = new URLSearchParams(searchParams);
+                        params.set('q', suggestion);
+                        setSearchParams(params);
+                      }}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </Box>
+              </Box>
+            </Box>
+          )}
+        </>
       ) : (
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList style={{ marginBottom: 24 }}>

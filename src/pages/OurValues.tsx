@@ -268,7 +268,7 @@ export default function OurValues() {
           <CardContent sx={{ p: 3 }}>
             <Typography color="text.secondary">
               Have feedback about how we're living up to our values? We want to hear from you.
-              Contact us at values@queer.guide
+              Contact us at <a href="mailto:values@queer.guide" style={{ color: '#333333', textDecoration: 'underline' }}>values@queer.guide</a>
             </Typography>
           </CardContent>
         </Card>

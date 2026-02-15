@@ -195,6 +195,7 @@ export function ModernVideoPlayer({
               size="sm"
               onClick={togglePlay}
               style={{ color: '#ffffff' }}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? <Pause style={{ height: 20, width: 20 }} /> : <Play style={{ height: 20, width: 20 }} />}
             </Button>
@@ -213,6 +214,7 @@ export function ModernVideoPlayer({
                 <a
                   href={getVideoUrl(video.renditions.find(r => r.codec === 'h264')!.file_path)}
                   download={video.title || 'video.mp4'}
+                  aria-label="Download video"
                 >
                   <Download style={{ height: 20, width: 20 }} />
                 </a>

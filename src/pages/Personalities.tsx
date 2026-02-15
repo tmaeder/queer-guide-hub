@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PersonalityCard } from "@/components/personalities/PersonalityCard";
 import { PersonalitiesFilters } from "@/components/personalities/PersonalitiesFilters";
 import { AddPersonalityDialog } from "@/components/personalities/AddPersonalityDialog";
@@ -53,6 +54,17 @@ export default function Personalities() {
   }, [searchParams, filters.profession]);
 
   const { personalities, totalCount, loading, error } = usePersonalities(filters);
+
+  const [sortBy, setSortBy] = useState<string>('az');
+
+  const sortedPersonalities = useMemo(() => {
+    const sorted = [...personalities];
+    switch (sortBy) {
+      case 'az': return sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      case 'za': return sorted.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+      default: return sorted;
+    }
+  }, [personalities, sortBy]);
 
   const handlePersonalityClick = (personality: any) => {
     setSelectedPersonality(personality);
@@ -120,7 +132,7 @@ export default function Personalities() {
         </Box>
 
         {/* Results */}
-        {!loading && personalities.length > 0 && (
+        {!loading && sortedPersonalities.length > 0 && (
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'var(--card)', borderRadius: 2, border: '1px solid var(--border)' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Typography sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>
@@ -137,10 +149,19 @@ export default function Personalities() {
                 </Badge>
               )}
             </Box>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger style={{ width: 140 }} aria-label="Sort personalities">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="az">A{'\u2013'}Z</SelectItem>
+                <SelectItem value="za">Z{'\u2013'}A</SelectItem>
+              </SelectContent>
+            </Select>
           </Box>
         )}
 
-        {personalities.length === 0 ? (
+        {sortedPersonalities.length === 0 ? (
           <Card>
             <CardContent style={{ paddingTop: 48, paddingBottom: 48 }}>
               <Box sx={{ textAlign: 'center' }}>
@@ -154,7 +175,7 @@ export default function Personalities() {
           </Card>
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
-            {personalities.map((personality) => (
+            {sortedPersonalities.map((personality) => (
               <PersonalityCard
                 key={personality.id}
                 personality={personality}

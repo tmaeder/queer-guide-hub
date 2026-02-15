@@ -295,6 +295,7 @@ export function ModernAudioPlayer({
               size="sm"
               onClick={skipBackward}
               style={{ borderRadius: '50%' }}
+              aria-label="Skip backward"
             >
               <SkipBack style={{ height: 20, width: 20 }} />
             </Button>
@@ -304,6 +305,7 @@ export function ModernAudioPlayer({
               size="lg"
               onClick={togglePlay}
               style={{ borderRadius: '50%', width: 48, height: 48 }}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? <Pause style={{ height: 24, width: 24 }} /> : <Play style={{ height: 24, width: 24 }} />}
             </Button>
@@ -313,6 +315,7 @@ export function ModernAudioPlayer({
               size="sm"
               onClick={skipForward}
               style={{ borderRadius: '50%' }}
+              aria-label="Skip forward"
             >
               <SkipForward style={{ height: 20, width: 20 }} />
             </Button>
@@ -325,6 +328,7 @@ export function ModernAudioPlayer({
                 variant="ghost"
                 size="sm"
                 onClick={toggleMute}
+                aria-label={isMuted || volume === 0 ? 'Unmute' : 'Mute'}
               >
                 {isMuted || volume === 0 ? (
                   <VolumeX style={{ height: 16, width: 16 }} />
@@ -350,6 +354,7 @@ export function ModernAudioPlayer({
                 <a
                   href={getAudioUrl(getBestQualityDownload()!.file_path)}
                   download={`${audio.title}.mp3`}
+                  aria-label="Download audio"
                 >
                   <Download style={{ height: 16, width: 16 }} />
                 </a>
