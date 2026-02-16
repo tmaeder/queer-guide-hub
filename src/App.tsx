@@ -34,21 +34,14 @@ const Resources = lazy(() => import("./pages/Ressources"));
 const UserDirectory = lazy(() => import("./pages/UserDirectory"));
 const Personalities = lazy(() => import("./pages/Personalities"));
 const PersonalityDetail = lazy(() => import("./pages/PersonalityDetail"));
-const About = lazy(() => import("./pages/About"));
-const AboutHub = lazy(() => import("./pages/AboutHub"));
-const Contact = lazy(() => import("./pages/Contact"));
-const OurVision = lazy(() => import("./pages/OurVision"));
-const OurValues = lazy(() => import("./pages/OurValues"));
-const Press = lazy(() => import("./pages/Press"));
-const Blog = lazy(() => import("./pages/Blog"));
-const Sustainability = lazy(() => import("./pages/Sustainability"));
-const TermsOfService = lazy(() => import("./pages/TermsOfService"));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
-const DMCA = lazy(() => import("./pages/DMCA"));
-const LegalHub = lazy(() => import("./pages/LegalHub"));
+// CMS-managed pages (content from cms_pages table)
+const CMSRoutePage = lazy(() => import("./pages/CMSRoutePage"));
 const Auth = lazy(() => import("./pages/Auth"));
-const AdminCMS = lazy(() => import("./pages/AdminCMS"));
+
+// Unified Admin Shell (wraps all /admin/* routes)
+const AdminShell = lazy(() => import("./components/admin/shell/AdminShell").then(m => ({ default: m.AdminShell })));
+
+// Admin page components (rendered inside AdminShell via Outlet)
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
@@ -58,6 +51,7 @@ const AdminCities = lazy(() => import("./pages/AdminCities"));
 const AdminGroups = lazy(() => import("./pages/AdminGroups"));
 const CityDetail = lazy(() => import("./pages/CityDetail"));
 const CountryDetail = lazy(() => import("./pages/CountryDetail"));
+const Travel = lazy(() => import("./pages/Travel"));
 const AdminVenues = lazy(() => import("./pages/AdminVenues"));
 const AdminVenueCategories = lazy(() => import("./pages/AdminVenueCategories"));
 const AdminVenueAmenities = lazy(() => import("./pages/AdminVenueAmenities"));
@@ -73,6 +67,27 @@ const AdminNewsSources = lazy(() => import("./pages/AdminNewsSources"));
 const EmailTemplates = lazy(() => import("./pages/admin/EmailTemplates"));
 const AdminPersonalities = lazy(() => import("./pages/AdminPersonalities"));
 const AdminImportHub = lazy(() => import("./pages/AdminImportHub"));
+const AdminRedirects = lazy(() => import("./pages/AdminRedirects"));
+
+// CMS components rendered as admin views
+const AdminCMS = lazy(() => import("./pages/AdminCMS"));
+const ContentListPanel = lazy(() => import("./components/cms/ContentListPanel").then(m => ({ default: m.ContentListPanel })));
+const CMSOverview = lazy(() => import("./components/cms/CMSOverview").then(m => ({ default: m.CMSOverview })));
+const ReviewQueue = lazy(() => import("./components/cms/ReviewQueue").then(m => ({ default: m.ReviewQueue })));
+const MediaLibrary = lazy(() => import("./components/cms/MediaLibrary").then(m => ({ default: m.MediaLibrary })));
+const AuditLog = lazy(() => import("./components/cms/AuditLog").then(m => ({ default: m.AuditLog })));
+
+// Import Hub components rendered as admin views
+const ImportJobCreator = lazy(() => import("./components/admin/ImportJobCreator").then(m => ({ default: m.ImportJobCreator })));
+const NewsSourcesManager = lazy(() => import("./components/admin/NewsSourcesManager").then(m => ({ default: m.NewsSourcesManager })));
+const PipelineMonitor = lazy(() => import("./components/admin/PipelineMonitor").then(m => ({ default: m.PipelineMonitor })));
+const VenueImportQuickActions = lazy(() => import("./components/admin/VenueImportQuickActions").then(m => ({ default: m.VenueImportQuickActions })));
+const ApiKeysManager = lazy(() => import("./components/admin/ApiKeysManager").then(m => ({ default: m.ApiKeysManager })));
+
+// Dashboard sub-views
+const SecurityMonitoringDashboard = lazy(() => import("./components/admin/SecurityMonitoringDashboard").then(m => ({ default: m.SecurityMonitoringDashboard })));
+const CloudflareDashboard = lazy(() => import("./components/admin/CloudflareDashboard").then(m => ({ default: m.CloudflareDashboard })));
+const UmamiAnalyticsDashboard = lazy(() => import("./components/analytics/UmamiAnalyticsDashboard").then(m => ({ default: m.UmamiAnalyticsDashboard })));
 const ProfessionDetail = lazy(() => import("./pages/ProfessionDetail"));
 const News = lazy(() => import("./pages/News"));
 
@@ -86,7 +101,6 @@ const Friends = lazy(() => import("./pages/Friends"));
 const Groups = lazy(() => import("./pages/Groups"));
 const GroupDetail = lazy(() => import("./pages/GroupDetail"));
 const MyGroups = lazy(() => import("./pages/MyGroups"));
-const AccessibilityHub = lazy(() => import("./pages/AccessibilityHub"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SearchResults = lazy(() => import("./pages/SearchResults"));
 const Favorites = lazy(() => import("./pages/Favorites"));
@@ -94,6 +108,7 @@ const Favorites = lazy(() => import("./pages/Favorites"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
 const SubmitVenue = lazy(() => import("./pages/SubmitVenue"));
 const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
+const CMSPage = lazy(() => import("./pages/Page"));
 
 const queryClient = createOptimizedQueryClient();
 
@@ -144,6 +159,8 @@ const App = () => {
                   <Route path="/marketplace/:id" element={<MarketplaceItemDetail />} />
 
                   <Route path="/places" element={<Places />} />
+                  <Route path="/travel" element={<Travel />} />
+                  <Route path="/flights" element={<Navigate to="/travel" replace />} />
                   <Route path="/city/:id" element={<CityDetail />} />
                   <Route path="/country/:id" element={<CountryDetail />} />
                   <Route path="/users" element={<UserDirectory />} />
@@ -157,144 +174,99 @@ const App = () => {
                    <Route path="/tags" element={<Navigate to="/resources" replace />} />
                    <Route path="/tags/:tagName" element={<Navigate to="/resources" replace />} />
 
-                   <Route path="/about-hub" element={<AboutHub />} />
-                   <Route path="/about" element={<About />} />
-                   <Route path="/contact" element={<Contact />} />
-                   <Route path="/vision" element={<OurVision />} />
-                   <Route path="/values" element={<OurValues />} />
-                   <Route path="/press" element={<Press />} />
-                   <Route path="/blog" element={<Blog />} />
-                   <Route path="/sustainability" element={<Sustainability />} />
-                   <Route path="/legal" element={<LegalHub />} />
-                   <Route path="/terms" element={<TermsOfService />} />
-                   <Route path="/privacy" element={<PrivacyPolicy />} />
-                   <Route path="/cookies" element={<CookiePolicy />} />
-                   <Route path="/dmca" element={<DMCA />} />
+                   {/* CMS-managed pages (content from cms_pages table) */}
+                   <Route path="/about-hub" element={<CMSRoutePage slug="about-hub" />} />
+                   <Route path="/about" element={<CMSRoutePage slug="about" />} />
+                   <Route path="/contact" element={<CMSRoutePage slug="contact" />} />
+                   <Route path="/vision" element={<CMSRoutePage slug="vision" />} />
+                   <Route path="/values" element={<CMSRoutePage slug="values" />} />
+                   <Route path="/press" element={<CMSRoutePage slug="press" />} />
+                   <Route path="/blog" element={<CMSRoutePage slug="blog" />} />
+                   <Route path="/sustainability" element={<CMSRoutePage slug="sustainability" />} />
+                   <Route path="/legal" element={<CMSRoutePage slug="legal" />} />
+                   <Route path="/terms" element={<CMSRoutePage slug="terms" />} />
+                   <Route path="/privacy" element={<CMSRoutePage slug="privacy" />} />
+                   <Route path="/cookies" element={<CMSRoutePage slug="cookies" />} />
+                   <Route path="/dmca" element={<CMSRoutePage slug="dmca" />} />
                   <Route path="/auth" element={<Auth />} />
+                  {/* ── Unified Admin Console ── */}
+                  {/* All /admin/* routes wrapped in AdminShell layout with sidebar */}
                   <Route path="/admin" element={
                     <AdminRouteGuard>
-                      <AdminDashboard />
+                      <AdminShell />
                     </AdminRouteGuard>
-                   } />
+                  }>
+                    {/* Dashboard section */}
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="analytics" element={<AdminAnalytics />} />
+                    <Route path="security" element={<SecurityMonitoringDashboard />} />
+                    <Route path="cloudflare" element={<CloudflareDashboard />} />
 
-                   <Route path="/admin/cms" element={
-                     <AdminRouteGuard>
-                       <AdminCMS />
-                     </AdminRouteGuard>
-                   } />
+                    {/* Content section — unified list + per-type views */}
+                    <Route path="content" element={<ContentListPanel />} />
+                    <Route path="content/:type" element={<ContentListPanel />} />
+                    <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
+                    <Route path="media" element={<MediaLibrary />} />
 
-                  <Route path="/admin/tags" element={
-                    <AdminRouteGuard>
-                      <AdminTags />
-                    </AdminRouteGuard>
-                  } />
-                  <Route path="/admin/cities" element={
-                    <AdminRouteGuard>
-                      <AdminCities />
-                    </AdminRouteGuard>
-                  } />
-                   <Route path="/admin/venues" element={
-                     <AdminRouteGuard>
-                       <AdminVenues />
-                     </AdminRouteGuard>
-                   } />
-                   <Route path="/admin/venue-categories" element={
-                     <AdminRouteGuard>
-                       <AdminVenueCategories />
-                     </AdminRouteGuard>
-                   } />
-                   <Route path="/admin/venue-amenities" element={
-                     <AdminRouteGuard>
-                       <AdminVenueAmenities />
-                     </AdminRouteGuard>
-                   } />
-                   <Route path="/admin/venue-services" element={
-                     <AdminRouteGuard>
-                       <AdminVenueServices />
-                     </AdminRouteGuard>
-                   } />
-                   <Route path="/admin/events" element={
-                     <AdminRouteGuard>
-                       <AdminEvents />
-                     </AdminRouteGuard>
-                   } />
-                   <Route path="/admin/event-types" element={
-                     <AdminRouteGuard>
-                       <AdminEventTypes />
-                     </AdminRouteGuard>
-                   } />
-                   <Route path="/admin/event-amenities" element={
-                     <AdminRouteGuard>
-                       <AdminEventAmenities />
-                     </AdminRouteGuard>
-                   } />
-                    <Route path="/admin/event-services" element={
-                      <AdminRouteGuard>
-                        <AdminEventServices />
-                      </AdminRouteGuard>
-                    } />
-                    <Route path="/admin/accessibility-attributes" element={
-                      <AdminRouteGuard>
-                        <AdminAccessibilityAttributes />
-                      </AdminRouteGuard>
-                    } />
-                    <Route path="/admin/target-groups" element={
-                      <AdminRouteGuard>
-                        <AdminTargetGroups />
-                      </AdminRouteGuard>
-                    } />
-                   <Route path="/admin/marketplace" element={
-                     <AdminRouteGuard>
-                       <AdminMarketplace />
-                     </AdminRouteGuard>
-                   } />
-                   <Route path="/admin/news-sources" element={
-                     <AdminRouteGuard>
-                       <AdminNewsSources />
-                     </AdminRouteGuard>
-                   } />
-                  <Route path="/admin/groups" element={
-                    <AdminRouteGuard>
-                      <AdminGroups />
-                    </AdminRouteGuard>
-                  } />
-                  <Route path="/admin/analytics" element={
-                    <AdminRouteGuard requiredRole="admin">
-                      <AdminAnalytics />
-                    </AdminRouteGuard>
-                  } />
-                  <Route path="/admin/users" element={
-                    <AdminRouteGuard requiredRole="admin">
-                      <AdminUsers />
-                    </AdminRouteGuard>
-                  } />
-                   <Route path="/admin/countries" element={
-                     <AdminRouteGuard>
-                       <AdminCountries />
-                     </AdminRouteGuard>
-                   } />
-                   <Route path="/admin/email-templates" element={
-                     <AdminRouteGuard requiredRole="admin">
-                       <EmailTemplates />
-                     </AdminRouteGuard>
-                    } />
-                    <Route path="/admin/personalities" element={
-                      <AdminRouteGuard>
-                        <AdminPersonalities />
-                      </AdminRouteGuard>
-                    } />
-                    <Route path="/admin/import-hub" element={
-                     <AdminRouteGuard>
-                       <AdminImportHub />
-                     </AdminRouteGuard>
-                   } />
+                    {/* Imports & Data section */}
+                    <Route path="imports" element={<AdminImportHub />} />
+                    <Route path="imports/create" element={<ImportJobCreator />} />
+                    <Route path="imports/news-sources" element={<NewsSourcesManager />} />
+                    <Route path="imports/pipeline" element={<PipelineMonitor />} />
+                    <Route path="imports/venues" element={<VenueImportQuickActions />} />
+                    <Route path="imports/history" element={<AdminImportHub />} />
+
+                    {/* Review & Workflow section */}
+                    <Route path="review" element={<ReviewQueue />} />
+                    <Route path="audit" element={<AuditLog />} />
+
+                    {/* System section */}
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="api-keys" element={<ApiKeysManager />} />
+                    <Route path="redirects" element={<AdminRedirects />} />
+                    <Route path="email-templates" element={<EmailTemplates />} />
+
+                    {/* Settings — taxonomy management pages */}
+                    <Route path="settings" element={<AdminTags />} />
+                    <Route path="settings/venue-categories" element={<AdminVenueCategories />} />
+                    <Route path="settings/venue-amenities" element={<AdminVenueAmenities />} />
+                    <Route path="settings/venue-services" element={<AdminVenueServices />} />
+                    <Route path="settings/event-types" element={<AdminEventTypes />} />
+                    <Route path="settings/event-amenities" element={<AdminEventAmenities />} />
+                    <Route path="settings/event-services" element={<AdminEventServices />} />
+                    <Route path="settings/accessibility" element={<AdminAccessibilityAttributes />} />
+                    <Route path="settings/target-groups" element={<AdminTargetGroups />} />
+
+                    {/* Legacy routes — old standalone pages still accessible via sidebar */}
+                    <Route path="venues" element={<AdminVenues />} />
+                    <Route path="events" element={<AdminEvents />} />
+                    <Route path="tags" element={<AdminTags />} />
+                    <Route path="cities" element={<AdminCities />} />
+                    <Route path="countries" element={<AdminCountries />} />
+                    <Route path="personalities" element={<AdminPersonalities />} />
+                    <Route path="marketplace" element={<AdminMarketplace />} />
+                    <Route path="groups" element={<AdminGroups />} />
+                    <Route path="news-sources" element={<AdminNewsSources />} />
+                    <Route path="cms" element={<AdminCMS />} />
+                    <Route path="import-hub" element={<AdminImportHub />} />
+
+                    {/* Legacy taxonomy routes — redirect to settings */}
+                    <Route path="venue-categories" element={<Navigate to="/admin/settings/venue-categories" replace />} />
+                    <Route path="venue-amenities" element={<Navigate to="/admin/settings/venue-amenities" replace />} />
+                    <Route path="venue-services" element={<Navigate to="/admin/settings/venue-services" replace />} />
+                    <Route path="event-types" element={<Navigate to="/admin/settings/event-types" replace />} />
+                    <Route path="event-amenities" element={<Navigate to="/admin/settings/event-amenities" replace />} />
+                    <Route path="event-services" element={<Navigate to="/admin/settings/event-services" replace />} />
+                    <Route path="accessibility-attributes" element={<Navigate to="/admin/settings/accessibility" replace />} />
+                    <Route path="target-groups" element={<Navigate to="/admin/settings/target-groups" replace />} />
+                  </Route>
                    <Route path="/news" element={<News />} />
                    <Route path="/search" element={<SearchResults />} />
 
                     <Route path="/groups" element={<Groups />} />
                     <Route path="/groups/:groupId" element={<GroupDetail />} />
                     <Route path="/my-groups" element={<MyGroups />} />
-                   <Route path="/accessibility" element={<AccessibilityHub />} />
+                   <Route path="/accessibility" element={<CMSRoutePage slug="accessibility" />} />
                    <Route path="/messages" element={<Messages />} />
                    <Route path="/friends" element={<Friends />} />
 
@@ -306,6 +278,7 @@ const App = () => {
                      <Route path="/sitemap" element={<Sitemap />} />
                     <Route path="/submit/venue" element={<SubmitVenue />} />
                     <Route path="/submit/event" element={<SubmitEvent />} />
+                    <Route path="/p/:slug" element={<CMSPage />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
