@@ -267,18 +267,17 @@ async function handleRedirect(
     locationUrl = `https://queer.guide${finalUrl}`;
   }
 
-  // Record click asynchronously (don't block the redirect)
+  // Record click — must await so Deno runtime doesn't exit before it completes
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-  // Fire and forget — don't await
   const db = createClient(supabaseUrl, serviceRoleKey);
   const ip = req.headers.get("cf-connecting-ip") ||
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "unknown";
 
-  hashIp(ip).then((ipHash) => {
-    db.rpc("record_redirect_click", {
+  try {
+    const ipHash = await hashIp(ip);
+    await db.rpc("record_redirect_click", {
       p_redirect_id: redirect.id,
       p_path: `/go/${slug}`,
       p_query: incomingQuery,
@@ -287,8 +286,10 @@ async function handleRedirect(
       p_country: req.headers.get("cf-ipcountry"),
       p_ip_hash: ipHash,
       p_status: redirect.status_code,
-    }).catch(() => {/* analytics failure is non-critical */});
-  });
+    });
+  } catch {
+    // Analytics failure is non-critical — don't block the redirect
+  }
 
   return new Response(null, {
     status: redirect.status_code,
