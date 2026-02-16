@@ -15,7 +15,7 @@ import { EventCard } from "@/components/events/EventCard";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import CountryHeroImages from "@/components/country/CountryHeroImages";
 import LGBTJurisdictionInfo from "@/components/country/LGBTJurisdictionInfo";
-import { FlightsWidget } from "@/components/flights/FlightsWidget";
+import { TravelDealsSection } from "@/components/travel/TravelDealsSection";
 import { ActivitiesWidget } from "@/components/activities/ActivitiesWidget";
 import { useOptimizedCountry, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
 import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
@@ -489,14 +489,10 @@ export default function CountryDetail() {
                   </Badge>
                 </Box>
 
-                <Card sx={{ borderColor: 'divider' }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <FlightsWidget
-                      destination={country.capital || country.name}
-                      countryCode={country.code}
-                    />
-                  </CardContent>
-                </Card>
+                <TravelDealsSection
+                  destinationCity={country.capital || country.name}
+                  destinationCountryCode={country.code}
+                />
               </TabsContent>
 
               {/* Activities Tab */}

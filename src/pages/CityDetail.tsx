@@ -19,6 +19,7 @@ import { VenueCard } from "@/components/venues/VenueCard";
 import { EventCard } from "@/components/events/EventCard";
 import { CurrentWeather } from "@/components/weather/CurrentWeather";
 import { PageLoading, InlineLoading } from "@/components/ui/loading";
+import { TravelDealsSection } from "@/components/travel/TravelDealsSection";
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -59,6 +60,7 @@ type CityWithCountry = {
   countries?: {
     id: string;
     name: string;
+    code?: string;
     flag_emoji?: string;
     currency?: string;
   };
@@ -132,6 +134,7 @@ export default function CityDetail() {
           countries (
             id,
             name,
+            code,
             flag_emoji,
             currency
           )
@@ -601,6 +604,13 @@ export default function CityDetail() {
 
 
             <TabsContent value="travel" style={{ marginTop: 24 }}>
+              <Box sx={{ mb: 3 }}>
+                <TravelDealsSection
+                  destinationIata={city.major_airport_code}
+                  destinationCity={city.name}
+                  destinationCountryCode={city.countries?.code}
+                />
+              </Box>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
                 {/* Airport Information */}
                 <Card>

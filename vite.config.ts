@@ -16,6 +16,12 @@ function cfRocketLoaderBypass(): Plugin {
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    setupFiles: [],
+  },
   server: {
     host: "::",
     port: 8080,
@@ -34,11 +40,24 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          mui: ['@mui/material', '@emotion/react', '@emotion/styled'],
-          utils: ['date-fns'],
+        manualChunks(id) {
+          // React core MUST be in its own chunk to avoid circular deps
+          if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) {
+            return 'vendor';
+          }
+          if (id.includes('node_modules/react-router-dom/') || id.includes('node_modules/react-router/') || id.includes('node_modules/@remix-run/')) {
+            return 'router';
+          }
+          if (id.includes('node_modules/@mui/') || id.includes('node_modules/@emotion/')) {
+            return 'mui';
+          }
+          if (id.includes('node_modules/date-fns/')) {
+            return 'utils';
+          }
+          // Keep scheduler with React
+          if (id.includes('node_modules/scheduler/')) {
+            return 'vendor';
+          }
         },
         // Optimize for Cloudflare Pages
         assetFileNames: (assetInfo) => {

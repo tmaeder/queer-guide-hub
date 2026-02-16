@@ -1,64 +1,71 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const MARKER = '452012';
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { 
-      origin,
-      destination,
-      departureDate,
-      returnDate,
-      passengers,
-      class: cabinClass = 'economy'
-    } = await req.json();
+    let origin: string, destination: string, departureDate: string,
+        returnDate: string | undefined, passengers: number, cabinClass: string;
+
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      origin = url.searchParams.get('origin') || '';
+      destination = url.searchParams.get('destination') || '';
+      departureDate = url.searchParams.get('departureDate') || '';
+      returnDate = url.searchParams.get('returnDate') || undefined;
+      passengers = parseInt(url.searchParams.get('passengers') || '1');
+      cabinClass = url.searchParams.get('class') || 'economy';
+    } else {
+      const body = await req.json();
+      origin = body.origin || '';
+      destination = body.destination || '';
+      departureDate = body.departureDate || '';
+      returnDate = body.returnDate;
+      passengers = body.passengers || 1;
+      cabinClass = body.class || 'economy';
+    }
+
+    if (!origin || !destination) {
+      return new Response(
+        JSON.stringify({ error: 'origin and destination are required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     console.log('Searching flights:', { origin, destination, departureDate, returnDate, passengers });
 
     const apiToken = Deno.env.get('TRAVELPAYOUTS_API_TOKEN');
     if (!apiToken) {
-      console.error('TRAVELPAYOUTS_API_TOKEN not found');
       return new Response(
         JSON.stringify({ error: 'API token not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Search for flights using Travelpayouts API
     const searchUrl = new URL('https://api.travelpayouts.com/aviasales/v3/prices_for_dates');
     searchUrl.searchParams.append('origin', origin);
     searchUrl.searchParams.append('destination', destination);
-    searchUrl.searchParams.append('departure_at', departureDate);
-    if (returnDate) {
-      searchUrl.searchParams.append('return_at', returnDate);
-    }
+    if (departureDate) searchUrl.searchParams.append('departure_at', departureDate);
+    if (returnDate) searchUrl.searchParams.append('return_at', returnDate);
     searchUrl.searchParams.append('unique', 'false');
     searchUrl.searchParams.append('sorting', 'price');
     searchUrl.searchParams.append('limit', '20');
     searchUrl.searchParams.append('token', apiToken);
 
-    console.log('Making request to Travelpayouts API:', searchUrl.toString());
-
-    const response = await fetch(searchUrl.toString(), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
+    const response = await fetch(searchUrl.toString());
 
     if (!response.ok) {
-      console.error('Travelpayouts API error:', response.status, response.statusText);
       const errorText = await response.text();
-      console.error('Error response:', errorText);
+      console.error('Travelpayouts API error:', response.status, errorText);
       return new Response(
         JSON.stringify({ error: 'Failed to search flights', details: errorText }),
         { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -66,80 +73,46 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('Travelpayouts API response:', data);
 
-    // Transform the data to a more usable format
-    const flights = data.data?.map((flight: any) => ({
-      id: `${flight.origin}-${flight.destination}-${flight.departure_at}`,
-      origin: flight.origin,
-      destination: flight.destination,
-      departureDate: flight.departure_at,
-      returnDate: flight.return_at,
-      price: flight.price,
-      currency: data.currency,
-      airline: flight.airline,
-      flightNumber: flight.flight_number,
-      duration: flight.duration,
-      stops: flight.transfers || 0,
-      link: flight.link
-    })) || [];
+    const flights = (data.data || []).map((flight: any) => {
+      const affiliateUrl = new URL('https://search.aviasales.com/flights/');
+      affiliateUrl.searchParams.set('origin_iata', flight.origin);
+      affiliateUrl.searchParams.set('destination_iata', flight.destination);
+      if (flight.departure_at) affiliateUrl.searchParams.set('depart_date', flight.departure_at.split('T')[0]);
+      if (flight.return_at) affiliateUrl.searchParams.set('return_date', flight.return_at.split('T')[0]);
+      affiliateUrl.searchParams.set('adults', String(passengers));
+      affiliateUrl.searchParams.set('marker', MARKER);
 
-    // If no flights found, provide mock data for demonstration
-    const finalFlights = flights.length > 0 ? flights : [
-      {
-        id: `${origin}-${destination}-${departureDate}-1`,
-        origin: origin.toUpperCase(),
-        destination: destination.toUpperCase(),
-        departureDate,
-        returnDate,
-        price: 299,
-        currency: 'USD',
-        airline: 'American Airlines',
-        flightNumber: 'AA1234',
-        duration: 360,
-        stops: 0,
-        link: '#'
-      },
-      {
-        id: `${origin}-${destination}-${departureDate}-2`,
-        origin: origin.toUpperCase(),
-        destination: destination.toUpperCase(),
-        departureDate,
-        returnDate,
-        price: 359,
-        currency: 'USD',
-        airline: 'Delta Air Lines',
-        flightNumber: 'DL5678',
-        duration: 420,
-        stops: 1,
-        link: '#'
-      },
-      {
-        id: `${origin}-${destination}-${departureDate}-3`,
-        origin: origin.toUpperCase(),
-        destination: destination.toUpperCase(),
-        departureDate,
-        returnDate,
-        price: 189,
-        currency: 'USD',
-        airline: 'Southwest Airlines',
-        flightNumber: 'WN9012',
-        duration: 480,
-        stops: 1,
-        link: '#'
-      }
-    ];
+      return {
+        id: `${flight.origin}-${flight.destination}-${flight.departure_at}`,
+        origin: flight.origin,
+        destination: flight.destination,
+        departureDate: flight.departure_at,
+        returnDate: flight.return_at,
+        price: flight.price,
+        currency: data.currency,
+        airline: flight.airline,
+        flightNumber: flight.flight_number,
+        duration: flight.duration,
+        stops: flight.transfers || 0,
+        link: affiliateUrl.toString(),
+      };
+    });
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        flights: finalFlights,
-        currency: 'USD',
+      JSON.stringify({
+        success: true,
+        flights,
+        currency: data.currency || 'EUR',
         searchParams: { origin, destination, departureDate, returnDate, passengers }
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=1800',
+        }
       }
     );
 

@@ -6,30 +6,59 @@ import Typography from '@mui/material/Typography';
 
 interface Props {
   children: ReactNode;
+  /** Optional custom fallback UI */
   fallback?: ReactNode;
+  /** Identifier for which section this boundary protects (for logging) */
+  section?: string;
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
+  errorInfo: ErrorInfo | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, errorInfo);
+    this.setState({ errorInfo });
+
+    // Structured error logging (no PII)
+    const route = typeof window !== 'undefined' ? window.location.pathname : 'unknown';
+    const section = this.props.section || 'app';
+
+    console.error(`[ErrorBoundary:${section}] Uncaught error on ${route}:`, {
+      message: error.message,
+      name: error.name,
+      componentStack: errorInfo.componentStack?.slice(0, 500),
+    });
+
+    // Report to Umami if available
+    try {
+      const umami = (window as any).umami;
+      if (umami?.track) {
+        umami.track('error_boundary_caught', {
+          section,
+          route,
+          error_name: error.name,
+          error_message: error.message?.slice(0, 200),
+        });
+      }
+    } catch {
+      // Never throw from error reporting
+    }
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false, error: null, errorInfo: null });
   };
 
   render() {
@@ -46,6 +75,20 @@ export class ErrorBoundary extends Component<Props, State> {
             <Typography variant="body2" color="text.secondary">
               An unexpected error occurred. Please try refreshing the page.
             </Typography>
+            {import.meta.env.DEV && this.state.error && (
+              <Typography variant="caption" sx={{
+                fontFamily: 'monospace',
+                textAlign: 'left',
+                p: 1.5,
+                bgcolor: 'action.hover',
+                borderRadius: 1,
+                maxHeight: 120,
+                overflow: 'auto',
+                wordBreak: 'break-all',
+              }}>
+                {this.state.error.message}
+              </Typography>
+            )}
             <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
               <Button onClick={this.handleRetry} variant="outline" size="sm">
                 <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
