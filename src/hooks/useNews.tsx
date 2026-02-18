@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { queryWithRetry } from '@/utils/fetchWithRetry';
 
 // Simplified type definitions to avoid TypeScript recursion issues
 type NewsArticle = any;
@@ -22,6 +21,8 @@ interface NewsFilters {
   };
   countryIds?: string[];
   cityIds?: string[];
+  sourceId?: string;
+  category?: string;
   sortField?: string;
   sortOrder?: 'asc' | 'desc';
 }
@@ -29,7 +30,7 @@ interface NewsFilters {
 export const useNews = () => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [sources, setSources] = useState<NewsSource[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
 
@@ -38,7 +39,7 @@ export const useNews = () => {
       setLoadingTimedOut(false);
       return;
     }
-    const timer = setTimeout(() => setLoadingTimedOut(true), 15000);
+    const timer = setTimeout(() => setLoadingTimedOut(true), 30000);
     return () => clearTimeout(timer);
   }, [loading]);
 
@@ -55,13 +56,9 @@ export const useNews = () => {
       let queryBuilder = supabase
         .from('news_articles')
         .select(`
-          *,
-          news_sources (
-            id,
-            name,
-            url,
-            is_active
-          )
+          id, title, excerpt, url, image_url, author,
+          published_at, source_id, views_count, is_featured,
+          country_ids, city_ids, tags, category
         `)
         .not('published_at', 'is', null)
         .order(sortField, { ascending: sortOrder });
@@ -90,6 +87,16 @@ export const useNews = () => {
         queryBuilder = (queryBuilder as any).or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
       }
 
+      // Apply source filtering if provided
+      if (filters?.sourceId) {
+        queryBuilder = (queryBuilder as any).eq('source_id', filters.sourceId);
+      }
+
+      // Apply category filtering if provided
+      if (filters?.category) {
+        queryBuilder = (queryBuilder as any).eq('category', filters.category);
+      }
+
       // Apply featured filtering if provided
       if (filters?.featured !== undefined) {
         queryBuilder = (queryBuilder as any).eq('is_featured', filters.featured);
@@ -109,8 +116,8 @@ export const useNews = () => {
         queryBuilder = (queryBuilder as any).overlaps('tags', filters.tags);
       }
 
-      // Execute the query
-      const { data, error: fetchError } = await queryWithRetry(() => (queryBuilder as any).limit(200));
+      // Execute the query directly (no retry wrapper — simpler and more reliable)
+      const { data, error: fetchError } = await (queryBuilder as any).limit(200);
 
       if (fetchError) {
         console.error('Error fetching articles:', fetchError);
@@ -177,7 +184,11 @@ export const useNews = () => {
     try {
       const { data, error: fetchError } = await supabase
         .from('news_articles')
-        .select('*, news_sources(id, name, url, is_active)')
+        .select(`
+          id, title, excerpt, url, image_url, author,
+          published_at, source_id, views_count, is_featured,
+          country_ids, city_ids, tags, category
+        `)
         .eq('is_featured', true)
         .not('published_at', 'is', null)
         .order('published_at', { ascending: false })
@@ -197,17 +208,11 @@ export const useNews = () => {
   const getTrendingTags = useCallback(async () => {
     try {
       const { data, error: fetchError } = await supabase
-        .from('unified_tag_assignments')
-        .select(`
-          unified_tags!inner(
-            name,
-            color,
-            usage_count
-          )
-        `)
-        .eq('entity_type', 'news')
-        .order('unified_tags(usage_count)', { ascending: false })
-        .limit(10);
+        .from('unified_tags')
+        .select('name, color, usage_count')
+        .gt('usage_count', 0)
+        .order('usage_count', { ascending: false })
+        .limit(12);
 
       if (fetchError) {
         console.warn('Error fetching trending tags:', fetchError);
@@ -215,8 +220,8 @@ export const useNews = () => {
       }
 
       return data?.map((item: any) => ({
-        tag: item.unified_tags.name,
-        count: item.unified_tags.usage_count || 0
+        tag: item.name,
+        count: item.usage_count || 0
       })) || [];
     } catch (err) {
       console.warn('Error fetching trending tags:', err);
@@ -231,13 +236,11 @@ export const useNews = () => {
     ]);
   }, [fetchArticles, fetchSources]);
 
+  // Initialize on mount — fetchArticles/fetchSources have [] deps so are stable
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const initializeData = async () => {
-      await Promise.all([fetchArticles(), fetchSources()]);
-    };
-
-    initializeData();
-  }, [fetchArticles, fetchSources]);
+    Promise.all([fetchArticles(), fetchSources()]);
+  }, []);
 
   return {
     articles,

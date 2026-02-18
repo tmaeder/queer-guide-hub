@@ -56,43 +56,78 @@ async function autoApplyTags(title: string, content: string, supabaseClient: any
   }
 }
 
-// Extract geographic information from article content
-async function extractGeoInfo(title: string, content: string, sourceUrl: string, supabaseClient: any) {
+// Names that are too ambiguous for substring/regex matching (common English words)
+const AMBIGUOUS_GEO_NAMES = new Set([
+  'nice', 'bath', 'reading', 'male', 'split', 'mobile', 'victoria',
+  'orange', 'buffalo', 'long', 'deal', 'bury', 'hope', 'sale',
+  'march', 'spring', 'douglas', 'ross', 'hamilton', 'jackson',
+  'lincoln', 'madison', 'monroe', 'tyler', 'pierce', 'grant',
+  'hayes', 'arthur', 'harrison', 'cleveland', 'wilson', 'ford',
+  'clinton', 'warren', 'trinity', 'florence', 'georgia', 'jordan',
+  'chad', 'mali', 'niger', 'togo', 'oman', 'iran', 'iraq', 'cuba',
+  'guinea', 'benin', 'congo', 'gabon', 'samoa', 'nauru', 'palau',
+  'dominica', 'grenada', 'monaco', 'malta', 'laos',
+]);
+
+function escapeRegexStr(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Extract geographic information from article title only (not full content)
+async function extractGeoInfo(title: string, _content: string, _sourceUrl: string, supabaseClient: any) {
   const countryIds: string[] = [];
   const cityIds: string[] = [];
-  
+
   try {
-    const text = `${title} ${content}`.toLowerCase();
-    
-    // Check for country mentions
+    // Only match against title + first 200 chars of content (excerpt-like)
+    const excerpt = _content ? _content.substring(0, 200) : '';
+    const text = `${title}. ${excerpt}`;
+
+    if (text.length < 5) return { countryIds, cityIds };
+
+    // Check for country mentions — require word boundaries + min 5 char name
     const { data: countries } = await supabaseClient
       .from('countries')
       .select('id, name');
-    
+
+    const foundCountryIds = new Set<string>();
     if (countries) {
       for (const country of countries) {
-        if (text.includes(country.name.toLowerCase())) {
-          countryIds.push(country.id);
+        if (country.name.length < 5) continue;
+        if (AMBIGUOUS_GEO_NAMES.has(country.name.toLowerCase())) continue;
+        const regex = new RegExp(`\\b${escapeRegexStr(country.name)}\\b`, 'i');
+        if (regex.test(text)) {
+          foundCountryIds.add(country.id);
         }
       }
     }
-    
-    // Check for city mentions
+
+    // Check for city mentions — require word boundaries + min 5 char name + pop > 100k
     const { data: cities } = await supabaseClient
       .from('cities')
-      .select('id, name');
-    
+      .select('id, name, country_id, population');
+
+    const foundCityIds = new Set<string>();
     if (cities) {
       for (const city of cities) {
-        if (text.includes(city.name.toLowerCase())) {
-          cityIds.push(city.id);
+        if (city.name.length < 5) continue;
+        if (!city.population || city.population < 100000) continue;
+        if (AMBIGUOUS_GEO_NAMES.has(city.name.toLowerCase())) continue;
+        const regex = new RegExp(`\\b${escapeRegexStr(city.name)}\\b`, 'i');
+        if (regex.test(text)) {
+          foundCityIds.add(city.id);
+          // Also add the city's country
+          if (city.country_id) foundCountryIds.add(city.country_id);
         }
       }
     }
+
+    countryIds.push(...foundCountryIds);
+    cityIds.push(...foundCityIds);
   } catch (error) {
     console.error('Error extracting geo info:', error);
   }
-  
+
   return { countryIds, cityIds };
 }
 

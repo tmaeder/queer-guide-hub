@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Eye, Clock, Calendar, MapPin, Tag, Newspaper } from "lucide-react";
+import { ExternalLink, Eye, Clock, MapPin, Tag, Newspaper } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Tables } from "@/integrations/supabase/types";
 import { Link } from "react-router-dom";
@@ -10,20 +10,39 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { decodeHtmlEntities } from '@/utils/htmlDecode';
+import { decodeHtmlEntities, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
 
 type NewsArticle = Tables<'news_articles'> & {
-  news_sources: Tables<'news_sources'>;
+  news_sources?: Tables<'news_sources'>;
 };
+
 interface NewsCardProps {
   article: NewsArticle;
   onViewArticle?: (articleId: string) => void;
+  onFilterByTag?: (tag: string) => void;
+  onFilterBySource?: (sourceId: string, sourceName: string) => void;
+  onFilterByCategory?: (category: string) => void;
+  onFilterByAuthor?: (author: string) => void;
   showFullContent?: boolean;
+  /** Pre-resolved city names for city_ids */
+  cityNames?: Record<string, string>;
+  /** Pre-resolved country names for country_ids */
+  countryNames?: Record<string, string>;
+  /** Pre-resolved sources map (source_id → {id, name, url}) */
+  sourcesMap?: Record<string, { id: string; name: string; url?: string }>;
 }
+
 export const NewsCard = ({
   article,
   onViewArticle,
-  showFullContent = false
+  onFilterByTag,
+  onFilterBySource,
+  onFilterByCategory,
+  onFilterByAuthor,
+  showFullContent = false,
+  cityNames = {},
+  countryNames = {},
+  sourcesMap = {},
 }: NewsCardProps) => {
   const [tags, setTags] = useState<string[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
@@ -58,10 +77,12 @@ export const NewsCard = ({
 
     fetchTags();
   }, [article.id]);
+
   const handleViewClick = () => {
     onViewArticle?.(article.id);
     window.open(article.url, '_blank');
   };
+
   const getCategoryColor = (category: string) => {
     const map: Record<string, string> = {
       politics: '#1a73e8',
@@ -74,17 +95,88 @@ export const NewsCard = ({
       technology: '#00897b',
       lifestyle: '#d81b60',
       education: '#5c6bc0',
+      legislation: '#5c6bc0',
+      transgender: '#7b1fa2',
+      rights: '#c62828',
+      advocacy: '#ff6f00',
+      news: '#37474f',
     };
     return map[category?.toLowerCase()] || '#555555';
   };
-  return <Card style={{ boxShadow: 'var(--shadow-card)', transition: 'all 0.3s', borderColor: 'rgba(var(--border-rgb, 0,0,0), 0.5)' }}>
+
+  const getCategoryLabel = (category: string) => {
+    const labels: Record<string, string> = {
+      'human-rights': 'Human Rights',
+      politics: 'Politics',
+      legislation: 'Legislation',
+      transgender: 'Transgender',
+      culture: 'Culture',
+      health: 'Health',
+      sports: 'Sports',
+      education: 'Education',
+      lifestyle: 'Lifestyle',
+      rights: 'Rights',
+      advocacy: 'Advocacy',
+      entertainment: 'Entertainment',
+      business: 'Business',
+      technology: 'Technology',
+      news: 'News',
+    };
+    return labels[category?.toLowerCase()] || category?.replace(/-/g, ' ');
+  };
+
+  // Clean author name
+  const authorName = cleanAuthor(article.author || '');
+
+  // Clean excerpt
+  const excerptText = cleanExcerpt(article.excerpt || '');
+
+  // Don't show the category badge for "general" — use the first tag instead
+  const displayCategory = article.category !== 'general' ? article.category : null;
+  const fallbackCategoryFromTag = !displayCategory && tags.length > 0 ? tags[0] : null;
+
+  // Resolve city/country names from IDs
+  const linkedCities = (article.city_ids || [])
+    .map((id: string) => ({ id, name: cityNames[id] }))
+    .filter((c: any) => c.name);
+  const linkedCountries = (article.country_ids || [])
+    .map((id: string) => ({ id, name: countryNames[id] }))
+    .filter((c: any) => c.name);
+  const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
+
+  return (
+    <Card style={{ boxShadow: 'var(--shadow-card)', transition: 'all 0.3s', borderColor: 'rgba(var(--border-rgb, 0,0,0), 0.5)' }}>
       <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {article.image_url && <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
-            <img src={article.image_url} alt={article.title} style={{ width: '100%', height: 192, objectFit: 'cover', transition: 'transform 0.3s' }} />
-            {article.is_featured && <Badge style={{ position: 'absolute', top: 8, left: 8, backgroundColor: '#333333', color: '#ffffff' }}>
-                Featured
-              </Badge>}
-          </Box>}
+        <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
+          {article.image_url ? (
+            <img
+              src={article.image_url}
+              alt={decodeHtmlEntities(article.title)}
+              style={{ width: '100%', height: 192, objectFit: 'cover', transition: 'transform 0.3s' }}
+              onError={(e) => {
+                const target = e.currentTarget;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent && !parent.querySelector('.news-img-fallback')) {
+                  const fallback = document.createElement('div');
+                  fallback.className = 'news-img-fallback';
+                  fallback.style.cssText = 'width:100%;height:192px;display:flex;align-items:center;justify-content:center;background:#f3f4f6';
+                  fallback.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>';
+                  parent.insertBefore(fallback, target);
+                }
+              }}
+            />
+          ) : (
+            <Box sx={{ width: '100%', height: 192, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover' }}>
+              <Newspaper style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
+            </Box>
+          )}
+          {article.is_featured && (
+            <Badge style={{ position: 'absolute', top: 8, left: 8, backgroundColor: '#333333', color: '#ffffff' }}>
+              Featured
+            </Badge>
+          )}
+        </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5 }}>
           <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.125rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
@@ -92,23 +184,55 @@ export const NewsCard = ({
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Badge style={{
-          backgroundColor: getCategoryColor(article.category),
-          color: '#ffffff'
-        }}>
-            {decodeHtmlEntities(article.category.replace('-', ' '))}
-          </Badge>
-          <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
-            {article.news_sources.name}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          {displayCategory && (
+            <Badge
+              style={{
+                backgroundColor: getCategoryColor(displayCategory),
+                color: '#ffffff',
+                textTransform: 'capitalize',
+                cursor: onFilterByCategory ? 'pointer' : 'default',
+              }}
+              onClick={() => onFilterByCategory?.(displayCategory)}
+            >
+              {getCategoryLabel(displayCategory)}
+            </Badge>
+          )}
+          {!displayCategory && fallbackCategoryFromTag && (
+            <Badge
+              style={{
+                backgroundColor: '#555555',
+                color: '#ffffff',
+                cursor: onFilterByCategory ? 'pointer' : 'default',
+              }}
+              onClick={() => onFilterByCategory?.(fallbackCategoryFromTag)}
+            >
+              {fallbackCategoryFromTag}
+            </Badge>
+          )}
+          {/* Clickable source badge */}
+          <Badge
+            variant="outline"
+            style={{ fontSize: '0.75rem', cursor: onFilterBySource ? 'pointer' : 'default' }}
+            onClick={() => {
+              const src = sourcesMap[article.source_id];
+              if (onFilterBySource && src?.id) {
+                onFilterBySource(src.id, src.name);
+              }
+            }}
+          >
+            {sourcesMap[article.source_id]?.name || 'Unknown'}
           </Badge>
         </Box>
       </CardHeader>
 
       <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {article.excerpt && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {decodeHtmlEntities(article.excerpt)}
-          </Typography>}
+        {/* Clean excerpt */}
+        {excerptText && (
+          <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {excerptText}
+          </Typography>
+        )}
 
         {/* Published date & views */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -130,43 +254,81 @@ export const NewsCard = ({
           )}
         </Box>
 
-        {showFullContent && article.content && <Box sx={{ maxWidth: 'none', color: 'var(--foreground)' }}>
+        {showFullContent && article.content && (
+          <Box sx={{ maxWidth: 'none', color: 'var(--foreground)' }} />
+        )}
 
-          </Box>}
-
-        {/* Tags */}
-        {isLoadingTags ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tag style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <Box sx={{ height: 16, width: 64, bgcolor: 'var(--muted)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', borderRadius: '9999px' }} />
-              <Box sx={{ height: 16, width: 48, bgcolor: 'var(--muted)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', borderRadius: '9999px' }} />
+        {/* Tags — clickable, skip the tag used as fallback category */}
+        {(() => {
+          const displayTags = tags.filter(t => t !== fallbackCategoryFromTag);
+          if (isLoadingTags) return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Tag style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                <Box sx={{ height: 16, width: 64, bgcolor: 'var(--muted)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', borderRadius: '9999px' }} />
+              </Box>
             </Box>
-          </Box>
-        ) : tags.length > 0 && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <Tag style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-            {tags.slice(0, 5).map(tag => (
-              <Badge key={tag} variant="outline" style={{ fontSize: '0.75rem' }}>
-                {tag}
-              </Badge>
+          );
+          if (displayTags.length === 0) return null;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+              <Tag style={{ height: 14, width: 14, color: 'var(--muted-foreground)', flexShrink: 0 }} />
+              {displayTags.slice(0, 4).map(tag => (
+                <Badge
+                  key={tag}
+                  variant="outline"
+                  style={{ fontSize: '0.7rem', padding: '2px 8px', cursor: onFilterByTag ? 'pointer' : 'default' }}
+                  onClick={() => onFilterByTag?.(tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
+              {displayTags.length > 4 && (
+                <Badge variant="outline" style={{ fontSize: '0.7rem', padding: '2px 8px' }}>
+                  +{displayTags.length - 4} more
+                </Badge>
+              )}
+            </Box>
+          );
+        })()}
+
+        {/* Location — show linked city/country names */}
+        {hasLocation && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>
+            <MapPin style={{ height: 14, width: 14, flexShrink: 0 }} />
+            {linkedCities.map((city: any, i: number) => (
+              <span key={city.id}>
+                <Link to={`/city/${city.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                  {city.name}
+                </Link>
+                {(i < linkedCities.length - 1 || linkedCountries.length > 0) && ', '}
+              </span>
             ))}
-            {tags.length > 5 && (
-              <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
-                +{tags.length - 5} more
-              </Badge>
-            )}
+            {linkedCountries.map((country: any, i: number) => (
+              <span key={country.id}>
+                <Link to={`/country/${country.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                  {country.name}
+                </Link>
+                {i < linkedCountries.length - 1 && ', '}
+              </span>
+            ))}
           </Box>
         )}
 
-        {(article.country_ids?.length > 0 || article.city_ids?.length > 0) && <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
-            <MapPin style={{ height: 16, width: 16 }} />
-            <span>Location-based article</span>
-          </Box>}
-
-        {article.author && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
-            By {article.author}
-          </Typography>}
+        {/* Clickable author */}
+        {authorName && (
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'var(--muted-foreground)',
+              cursor: onFilterByAuthor ? 'pointer' : 'default',
+              '&:hover': onFilterByAuthor ? { color: 'var(--primary)' } : {},
+            }}
+            onClick={() => onFilterByAuthor?.(authorName)}
+          >
+            By {authorName}
+          </Typography>
+        )}
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -178,5 +340,6 @@ export const NewsCard = ({
           </Button>
         </Box>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
