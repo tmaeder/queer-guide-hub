@@ -64,7 +64,7 @@ const getToastStyle = (variant: ToastVariant = 'default'): React.CSSProperties =
   return {
     ...base,
     backgroundColor: '#ffffff',
-    color: '#333333',
+    color: 'inherit',
   };
 };
 

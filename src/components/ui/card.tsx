@@ -15,10 +15,8 @@ const Card = React.forwardRef<
     style={style}
     variant="outlined"
     sx={{
-      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-      '&:hover': {
-        backdropFilter: 'blur(8px)',
-      },
+      transition: 'box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      bgcolor: 'background.paper',
     }}
     {...(props as any)}
   >

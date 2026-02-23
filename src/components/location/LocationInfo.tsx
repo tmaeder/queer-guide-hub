@@ -193,7 +193,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
               {images.map((image, index) => (
                 <div 
                   key={image.id} 

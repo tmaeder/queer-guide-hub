@@ -1,4 +1,5 @@
 import { ArrowLeft, Plus, Download, ChevronDown, RefreshCw, Search } from "lucide-react";
+import { ExportExcelButton } from "@/components/admin/ExportExcelButton";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,6 +21,7 @@ interface VenuesHeaderProps {
   onTomTomImport: (config: any) => void;
   onGooglePlacesImport: (config: any) => void;
   onImportComplete: () => void;
+  onExport?: () => Promise<void>;
   isImporting: boolean;
   isImportingTripAdvisor: boolean;
   isImportingTomTom: boolean;
@@ -34,6 +36,7 @@ export function VenuesHeader({
   onTomTomImport,
   onGooglePlacesImport,
   onImportComplete,
+  onExport,
   isImporting,
   isImportingTripAdvisor,
   isImportingTomTom,
@@ -123,6 +126,7 @@ export function VenuesHeader({
 
         <Box sx={{ display: 'flex', gap: 1 }}>
           <VenuesCsvImport onImportComplete={onImportComplete} />
+          {onExport && <ExportExcelButton onExport={onExport} />}
           <Button onClick={onAddVenue}>
             <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
             Add Venue

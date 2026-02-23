@@ -1,12 +1,11 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, UserPlus, Clock, Check, X, MessageCircle } from 'lucide-react';
+import { Users, Clock, Check, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,8 +13,12 @@ import { StartConversationButton } from '@/components/messaging/StartConversatio
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import { AuthGate } from '@/components/layout/AuthGate';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function Friends() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const {
     acceptFriendRequest,
@@ -64,208 +67,185 @@ export default function Friends() {
     enabled: !!user && pendingRequests.length > 0
   });
 
-  if (!user) {
-    return (
-      <Container maxWidth="lg" sx={{ p: 3 }}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Authentication Required</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Typography color="text.secondary">Please log in to view your friends.</Typography>
-          </CardContent>
-        </Card>
-      </Container>
-    );
-  }
-
   return (
-    <Container maxWidth="lg" sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>Friends</Typography>
-            <Typography color="text.secondary">Manage your connections</Typography>
-          </Box>
-          <Badge variant="secondary">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Users style={{ width: 16, height: 16 }} />
-              {friends.length} Friends
-            </Box>
-          </Badge>
+    <AuthGate title="Friends" description="Please sign in to view your friends.">
+      <Container maxWidth="lg" sx={{ py: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <PageHeader
+            title="Friends"
+            subtitle="Manage your connections"
+            actions={
+              <Badge variant="secondary">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Users style={{ width: 16, height: 16 }} />
+                  {friends.length} Friends
+                </Box>
+              </Badge>
+            }
+          />
+
+          <Tabs defaultValue="friends" style={{ width: '100%' }}>
+            <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr' }}>
+              <TabsTrigger value="friends">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Users style={{ width: 16, height: 16 }} />
+                  Friends ({friends.length})
+                </Box>
+              </TabsTrigger>
+              <TabsTrigger value="requests">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Clock style={{ width: 16, height: 16 }} />
+                  Requests ({pendingRequests.length})
+                </Box>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="friends">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {friends.length === 0 ? (
+                  <EmptyState
+                    icon={Users}
+                    title="No friends yet"
+                    description="Start connecting with people in your community"
+                    primaryAction={{
+                      label: 'Find People',
+                      onClick: () => navigate('/users'),
+                    }}
+                  />
+                ) : (
+                  <Box sx={{ display: 'grid', gap: 2 }}>
+                    {friends.map((friendship) => {
+                      const friendId = friendship.user_id === user!.id ? friendship.target_user_id : friendship.user_id;
+                      const profile = friendProfiles?.find(p => p.user_id === friendId);
+
+                      return (
+                        <Card key={friendship.id}>
+                          <CardContent sx={{ p: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Avatar style={{ width: 48, height: 48 }}>
+                                  <AvatarImage src={profile?.avatar_url || undefined} />
+                                  <AvatarFallback>
+                                    {profile?.display_name?.charAt(0)?.toUpperCase() || "U"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <Box>
+                                  <Link
+                                    to={`/users/${friendId}`}
+                                    style={{ fontWeight: 500, transition: 'color 0.2s' }}
+                                  >
+                                    {profile?.display_name || "Unknown User"}
+                                  </Link>
+                                  {profile?.location && (
+                                    <Typography variant="body2" color="text.secondary">
+                                      {profile.location}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              </Box>
+                              <Box sx={{ display: 'flex', gap: 1 }}>
+                                <StartConversationButton
+                                  userId={friendId}
+                                  userName={profile?.display_name || "User"}
+                                  variant="outline"
+                                  size="sm"
+                                />
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => removeRelationship(friendId)}
+                                  disabled={loading}
+                                >
+                                  Remove
+                                </Button>
+                              </Box>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </Box>
+                )}
+              </Box>
+            </TabsContent>
+
+            <TabsContent value="requests">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {pendingRequests.length === 0 ? (
+                  <EmptyState
+                    icon={Clock}
+                    title="No pending requests"
+                    description="Friend requests will appear here"
+                  />
+                ) : (
+                  <Box sx={{ display: 'grid', gap: 2 }}>
+                    {pendingRequests.map((request) => {
+                      const profile = requestProfiles?.find(p => p.user_id === request.user_id);
+
+                      return (
+                        <Card key={request.id}>
+                          <CardContent sx={{ p: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Avatar style={{ width: 48, height: 48 }}>
+                                  <AvatarImage src={profile?.avatar_url || undefined} />
+                                  <AvatarFallback>
+                                    {profile?.display_name?.charAt(0)?.toUpperCase() || "U"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <Box>
+                                  <Link
+                                    to={`/users/${request.user_id}`}
+                                    style={{ fontWeight: 500, transition: 'color 0.2s' }}
+                                  >
+                                    {profile?.display_name || "Unknown User"}
+                                  </Link>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Sent you a friend request
+                                  </Typography>
+                                  {profile?.location && (
+                                    <Typography variant="body2" color="text.secondary">
+                                      {profile.location}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              </Box>
+                              <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => acceptFriendRequest(request.id)}
+                                  disabled={loading}
+                                >
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Check style={{ width: 16, height: 16 }} />
+                                    Accept
+                                  </Box>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => rejectFriendRequest(request.id)}
+                                  disabled={loading}
+                                >
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <X style={{ width: 16, height: 16 }} />
+                                    Decline
+                                  </Box>
+                                </Button>
+                              </Box>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </Box>
+                )}
+              </Box>
+            </TabsContent>
+          </Tabs>
         </Box>
-
-        <Tabs defaultValue="friends" style={{ width: '100%' }}>
-          <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr' }}>
-            <TabsTrigger value="friends">
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Users style={{ width: 16, height: 16 }} />
-                Friends ({friends.length})
-              </Box>
-            </TabsTrigger>
-            <TabsTrigger value="requests">
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Clock style={{ width: 16, height: 16 }} />
-                Requests ({pendingRequests.length})
-              </Box>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="friends">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {friends.length === 0 ? (
-                <Card>
-                  <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                    <Users style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                    <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>No friends yet</Typography>
-                    <Typography color="text.secondary" sx={{ mb: 2 }}>
-                      Start connecting with people in your community
-                    </Typography>
-                    <Button asChild>
-                      <Link to="/users">
-                        <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
-                        Find People
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Box sx={{ display: 'grid', gap: 2 }}>
-                  {friends.map((friendship) => {
-                    const friendId = friendship.user_id === user.id ? friendship.target_user_id : friendship.user_id;
-                    const profile = friendProfiles?.find(p => p.user_id === friendId);
-
-                    return (
-                      <Card key={friendship.id}>
-                        <CardContent sx={{ p: 2 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Avatar style={{ width: 48, height: 48 }}>
-                                <AvatarImage src={profile?.avatar_url || undefined} />
-                                <AvatarFallback>
-                                  {profile?.display_name?.charAt(0)?.toUpperCase() || "U"}
-                                </AvatarFallback>
-                              </Avatar>
-                              <Box>
-                                <Link
-                                  to={`/users/${friendId}`}
-                                  style={{ fontWeight: 500, transition: 'color 0.2s' }}
-                                >
-                                  {profile?.display_name || "Unknown User"}
-                                </Link>
-                                {profile?.location && (
-                                  <Typography variant="body2" color="text.secondary">
-                                    {profile.location}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Box>
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                              <StartConversationButton
-                                userId={friendId}
-                                userName={profile?.display_name || "User"}
-                                variant="outline"
-                                size="sm"
-                              />
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => removeRelationship(friendId)}
-                                disabled={loading}
-                              >
-                                Remove
-                              </Button>
-                            </Box>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </Box>
-              )}
-            </Box>
-          </TabsContent>
-
-          <TabsContent value="requests">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {pendingRequests.length === 0 ? (
-                <Card>
-                  <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                    <Clock style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                    <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>No pending requests</Typography>
-                    <Typography color="text.secondary">
-                      Friend requests will appear here
-                    </Typography>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Box sx={{ display: 'grid', gap: 2 }}>
-                  {pendingRequests.map((request) => {
-                    const profile = requestProfiles?.find(p => p.user_id === request.user_id);
-
-                    return (
-                      <Card key={request.id}>
-                        <CardContent sx={{ p: 2 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Avatar style={{ width: 48, height: 48 }}>
-                                <AvatarImage src={profile?.avatar_url || undefined} />
-                                <AvatarFallback>
-                                  {profile?.display_name?.charAt(0)?.toUpperCase() || "U"}
-                                </AvatarFallback>
-                              </Avatar>
-                              <Box>
-                                <Link
-                                  to={`/users/${request.user_id}`}
-                                  style={{ fontWeight: 500, transition: 'color 0.2s' }}
-                                >
-                                  {profile?.display_name || "Unknown User"}
-                                </Link>
-                                <Typography variant="body2" color="text.secondary">
-                                  Sent you a friend request
-                                </Typography>
-                                {profile?.location && (
-                                  <Typography variant="body2" color="text.secondary">
-                                    {profile.location}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Box>
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => acceptFriendRequest(request.id)}
-                                disabled={loading}
-                              >
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Check style={{ width: 16, height: 16 }} />
-                                  Accept
-                                </Box>
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => rejectFriendRequest(request.id)}
-                                disabled={loading}
-                              >
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <X style={{ width: 16, height: 16 }} />
-                                  Decline
-                                </Box>
-                              </Button>
-                            </Box>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </Box>
-              )}
-            </Box>
-          </TabsContent>
-        </Tabs>
-      </Box>
-    </Container>
+      </Container>
+    </AuthGate>
   );
 }

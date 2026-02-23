@@ -19,6 +19,89 @@ interface NewsArticle {
   source_id: string;
 }
 
+/**
+ * Clean article content for storage:
+ * - Decode common HTML entities
+ * - Remove &nbsp; / non-breaking spaces
+ * - Remove trailing RSS/CMS junk
+ * - Normalize paragraph breaks (3+ newlines → 2)
+ * - Trim whitespace from each line
+ */
+function cleanContentText(raw: string): string {
+  if (!raw) return '';
+  let text = raw;
+
+  // Decode common HTML entities (no DOM in Deno)
+  text = text
+    .replace(/&#8217;|&#x2019;/g, '\u2019') // right single quote
+    .replace(/&#8216;|&#x2018;/g, '\u2018') // left single quote
+    .replace(/&#8220;|&#x201C;/g, '\u201C') // left double quote
+    .replace(/&#8221;|&#x201D;/g, '\u201D') // right double quote
+    .replace(/&#8230;|&#x2026;/g, '\u2026') // ellipsis
+    .replace(/&#8211;|&#x2013;/g, '\u2013') // en dash
+    .replace(/&#8212;|&#x2014;/g, '\u2014') // em dash
+    .replace(/&#8594;|&#x2192;/g, '\u2192') // right arrow
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;|&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_m, code) => String.fromCharCode(parseInt(code)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_m, code) => String.fromCharCode(parseInt(code, 16)));
+
+  // Replace &nbsp; / non-breaking spaces
+  text = text.replace(/&nbsp;/gi, ' ').replace(/\u00A0/g, ' ');
+
+  // Remove trailing RSS/CMS junk
+  text = text.replace(/\n*The post\s.+appeared first on\s.+\.?\s*$/i, '');
+  text = text.replace(/\s*…?\s*Continue reading\s.+[→\u2192]?\s*$/i, '');
+  text = text.replace(/\n*Share your thoughts[!.]?\s*Let us know in the comments.*/i, '');
+  text = text.replace(/\n*Subscribe to the\s.+newsletter.{0,100}$/i, '');
+  text = text.replace(/\n+\s*Related\s*$/i, '');
+  text = text.replace(/\n*The rest of this article can be read on.+$/i, '');
+
+  // Trim each line
+  text = text.split('\n').map(l => l.trim()).join('\n');
+
+  // Collapse 3+ consecutive newlines → 2
+  text = text.replace(/\n{3,}/g, '\n\n');
+
+  return text.trim();
+}
+
+/**
+ * Clean excerpt for storage — single-line, no HTML, no junk
+ */
+function cleanExcerptText(raw: string): string {
+  if (!raw) return '';
+  let text = raw;
+  // Same entity decoding
+  text = text
+    .replace(/&#8217;|&#x2019;/g, '\u2019')
+    .replace(/&#8216;|&#x2018;/g, '\u2018')
+    .replace(/&#8220;|&#x201C;/g, '\u201C')
+    .replace(/&#8221;|&#x201D;/g, '\u201D')
+    .replace(/&#8230;|&#x2026;/g, '\u2026')
+    .replace(/&#8211;|&#x2013;/g, '\u2013')
+    .replace(/&#8212;|&#x2014;/g, '\u2014')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;|&apos;/g, "'")
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&#(\d+);/g, (_m, code) => String.fromCharCode(parseInt(code)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_m, code) => String.fromCharCode(parseInt(code, 16)));
+
+  // Remove trailing junk
+  text = text.replace(/\s*…?\s*Continue reading\s.+[→\u2192]?\s*$/i, '');
+  text = text.replace(/The post\s.+appeared first on.+$/i, '');
+
+  // Collapse all whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+  return text;
+}
+
 // Auto-apply tags by matching keywords
 async function autoApplyTags(title: string, content: string, supabaseClient: any): Promise<string[]> {
   try {
@@ -482,8 +565,8 @@ Deno.serve(async (req) => {
             .upsert(
               articles.map(article => ({
                 title: article.title,
-                content: article.content,
-                excerpt: article.excerpt,
+                content: cleanContentText(article.content),
+                excerpt: cleanExcerptText(article.excerpt),
                 url: article.url,
                 image_url: article.image_url,
                 author: article.author,

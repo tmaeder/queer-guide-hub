@@ -12,8 +12,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
 
-const FrontPageVenueMap = React.lazy(() => import('@/components/home/FrontPageVenueMap'));
-const VenueMapSearch = React.lazy(() => import('@/components/venues/VenueMapSearch').then(m => ({ default: m.VenueMapSearch })));
+const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
 const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider'));
 const RegionalEventsCalendar = React.lazy(() => import('@/components/home/RegionalEventsCalendar'));
@@ -96,21 +95,27 @@ const Index = React.memo(() => {
   }], [loading, realStats, formatNumber]);
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      {/* Find Venues & Restrooms Near You */}
+      {/* Explore Map */}
       <Box component="section">
         <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-          <VenueMapSearch />
+          <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
+            Explore Venues & Events Near You
+          </Typography>
+          <React.Suspense fallback={<Box sx={{ height: 480, bgcolor: 'action.hover', borderRadius: 2 }} />}>
+            <ExploreMap
+              height={480}
+              defaultLayers={['venues', 'events']}
+              showFilters
+              showLayerToggles
+              linkToFullMap="/map"
+            />
+          </React.Suspense>
         </Container>
-      </Box>
-
-      {/* Hero Section */}
-      <Box component="section">
-        <FrontPageVenueMap fullWidth heightClass="h-[60vh]" />
       </Box>
 
       {/* Features Grid */}
       <Box component="section">
-        <Container maxWidth="lg" sx={{ py: { xs: 8, md: 10 } }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 5 } }}>
           <Box
             sx={{
               display: 'grid',
@@ -155,10 +160,10 @@ const Index = React.memo(() => {
       </Box>
 
       {/* Community Stats */}
-      <Box component="section" sx={{ py: { xs: 6, md: 8 } }}>
+      <Box component="section" sx={{ py: { xs: 3, md: 4 } }}>
         <Container maxWidth="lg">
           <Card style={{ padding: 0 }}>
-            <CardContent style={{ padding: '32px 24px' }}>
+            <CardContent style={{ padding: '20px 24px' }}>
               <Box
                 sx={{
                   display: 'grid',

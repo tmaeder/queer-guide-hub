@@ -25,9 +25,9 @@ export default function Sustainability() {
   }, []);
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box>
       {/* Hero Section */}
-      <Box sx={{ position: 'relative', py: 10, px: 2 }}>
+      <Box sx={{ py: 6 }}>
         <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
             <Leaf style={{ width: 64, height: 64 }} color="var(--mui-palette-primary-main)" />
@@ -42,7 +42,7 @@ export default function Sustainability() {
       </Box>
 
       {/* Our Commitment */}
-      <Box component="section" id="commitments" sx={{ py: 8, px: 2 }}>
+      <Box component="section" id="commitments" sx={{ py: 6 }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>Our Environmental Commitment</Typography>
@@ -140,7 +140,7 @@ export default function Sustainability() {
       </Box>
 
       {/* Take Action */}
-      <Box component="section" sx={{ py: 8, px: 2, bgcolor: 'action.hover' }}>
+      <Box component="section" sx={{ py: 6, bgcolor: 'action.hover' }}>
         <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
           <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>Take Action with Us</Typography>
           <Typography color="text.secondary" sx={{ mb: 4, maxWidth: '42rem', mx: 'auto' }}>
@@ -159,7 +159,7 @@ export default function Sustainability() {
       </Box>
 
       {/* Environmental Impact */}
-      <Box component="section" id="impact-stats" sx={{ py: 8, px: 2 }}>
+      <Box component="section" id="impact-stats" sx={{ py: 6 }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>Our Environmental Impact</Typography>

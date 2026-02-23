@@ -1,17 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { Heart, MapPin, Calendar, Star, ShoppingBag, Newspaper, Users, Eye, ExternalLink, Grid, List, Download, Link as LinkIcon, CalendarDays } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Heart, MapPin, Calendar, Star, ShoppingBag, Newspaper, ExternalLink, Grid, List, Download, Link as LinkIcon, CalendarDays } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';
+import { AuthGate } from '@/components/layout/AuthGate';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { EmptyState } from '@/components/ui/EmptyState';
+
 interface FavoriteItem {
   id: string;
   title: string;
@@ -24,10 +31,10 @@ interface FavoriteItem {
   category?: string;
   type: 'venue' | 'event' | 'marketplace' | 'news';
 }
+
 export default function Favorites() {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const {
     loading: calendarLoading,
     copyCalendarFeedUrl,
@@ -45,11 +52,13 @@ export default function Favorites() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [activeTab, setActiveTab] = useState('all');
+
   useEffect(() => {
     if (user) {
       fetchAllFavorites();
     }
   }, [user]);
+
   const fetchAllFavorites = async () => {
     if (!user) return;
     setLoading(true);
@@ -148,12 +157,15 @@ export default function Favorites() {
       setLoading(false);
     }
   };
+
   const getAllFavorites = () => {
     return Object.values(favorites).flat();
   };
+
   const getEventCount = () => {
     return favorites.event.length;
   };
+
   const handleCalendarSubscription = async () => {
     const url = await getCalendarFeedUrl();
     if (url) {
@@ -161,13 +173,16 @@ export default function Favorites() {
       setCalendarDialogOpen(true);
     }
   };
+
   const getTotalCount = () => {
     return Object.values(favorites).reduce((total, items) => total + items.length, 0);
   };
+
   const getTabCount = (type: string) => {
     if (type === 'all') return getTotalCount();
     return favorites[type as keyof typeof favorites]?.length || 0;
   };
+
   const renderFavoriteCard = (item: FavoriteItem) => {
     const getItemUrl = () => {
       switch (item.type) {
@@ -201,15 +216,15 @@ export default function Favorites() {
             {item.image_url ? <Box sx={{ aspectRatio: '16/9', position: 'relative', overflow: 'hidden', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
                 <Box component="img" src={item.image_url} alt={item.title} sx={{ width: '100%', height: '100%', objectFit: 'cover', '.group:hover &': { transform: 'scale(1.05)' }, transition: 'transform 200ms' }} />
                 <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
-                  <Badge variant="secondary" sx={{ fontSize: '0.75rem', backdropFilter: 'blur(4px)', bgcolor: 'rgba(var(--background), 0.8)' }}>
+                  <Badge variant="secondary" sx={{ fontSize: '0.75rem', bgcolor: 'background.paper' }}>
                     {getIcon()}
                     <Box component="span" sx={{ ml: 0.5, textTransform: 'capitalize' }}>{item.type}</Box>
                   </Badge>
                 </Box>
                 <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
-                  <FavoriteButton itemId={item.id} type={item.type} variant="ghost" sx={{ bgcolor: 'rgba(var(--background), 0.8)', backdropFilter: 'blur(4px)', '&:hover': { bgcolor: 'var(--background)' } }} />
+                  <FavoriteButton itemId={item.id} type={item.type} variant="ghost" sx={{ bgcolor: 'background.paper', '&:hover': { bgcolor: 'action.hover' } }} />
                 </Box>
-              </Box> : <Box sx={{ aspectRatio: '16/9', bgcolor: 'var(--muted)', borderTopLeftRadius: 8, borderTopRightRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              </Box> : <Box sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', borderTopLeftRadius: 8, borderTopRightRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 {getIcon()}
                 <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
                   <FavoriteButton itemId={item.id} type={item.type} variant="ghost" />
@@ -220,10 +235,10 @@ export default function Favorites() {
             <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.125rem', mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', '.group:hover &': { color: 'primary.main' }, transition: 'color 150ms' }}>
               {item.title}
             </Typography>
-            {item.description && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {item.description && <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {item.description}
               </Typography>}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, fontSize: '0.75rem', color: 'var(--muted-foreground)', mb: 1.5 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, fontSize: '0.75rem', color: 'text.secondary', mb: 1.5 }}>
               {item.location && <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <MapPin style={{ height: 12, width: 12 }} />
                   {item.location}
@@ -250,7 +265,7 @@ export default function Favorites() {
           </CardContent>
         </Card>;
     }
-    return <Card key={`${item.type}-${item.id}`} sx={{ '&:hover': { boxShadow: 3, borderColor: 'rgba(var(--primary), 0.5)' }, transition: 'all 200ms' }}>
+    return <Card key={`${item.type}-${item.id}`} sx={{ '&:hover': { boxShadow: 3 }, transition: 'all 200ms' }}>
         <CardContent sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             {item.image_url && <Box sx={{ flexShrink: 0 }}>
@@ -271,10 +286,10 @@ export default function Favorites() {
                   <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.25rem', lineHeight: 'tight', mb: 1, '.group:hover &': { color: 'primary.main' }, transition: 'color 150ms' }}>
                     {item.title}
                   </Typography>
-                  {item.description && <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1.5 }}>
+                  {item.description && <Typography variant="body2" sx={{ color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1.5 }}>
                       {item.description}
                     </Typography>}
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'text.secondary' }}>
                     {item.location && <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <MapPin style={{ height: 12, width: 12 }} />
                         {item.location}
@@ -307,55 +322,41 @@ export default function Favorites() {
         </CardContent>
       </Card>;
   };
-  if (!user) {
-    return <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, textAlign: 'center' }}>
-          <Heart style={{ height: 64, width: 64, color: 'var(--muted-foreground)', marginBottom: 16 }} />
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Sign In Required</Typography>
-          <Typography sx={{ color: 'var(--muted-foreground)', mb: 3 }}>
-            Please sign in to view your favorites
-          </Typography>
-          <Button asChild>
-            <Link to="/auth">Sign In</Link>
+
+  const headerSubtitle = loading
+    ? 'Loading your favorites...'
+    : `${getTotalCount()} items in your favorites`;
+
+  const headerActions = !loading && getTotalCount() > 0 ? (
+    <>
+      {getEventCount() > 0 && (
+        <Button variant="outline" onClick={handleCalendarSubscription} disabled={calendarLoading} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CalendarDays style={{ height: 16, width: 16 }} />
+          Subscribe to Events Calendar
+        </Button>
+      )}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>View:</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2 }}>
+          <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} sx={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}>
+            <List style={{ height: 16, width: 16 }} />
+          </Button>
+          <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} sx={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
+            <Grid style={{ height: 16, width: 16 }} />
           </Button>
         </Box>
-      </Box>;
-  }
-  return <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, lg: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, mb: 3 }}>
-          <Box>
+      </Box>
+    </>
+  ) : undefined;
 
-            <Typography sx={{ color: 'var(--muted-foreground)', fontSize: '1.125rem' }}>
-              {loading ? <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ animation: 'spin 1s linear infinite', height: 16, width: 16, border: '2px solid', borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%' }} />
-                  Loading your favorites...
-                </Box> : <>
-                  <Box component="span" sx={{ fontWeight: 600, color: 'var(--foreground)' }}>{getTotalCount()}</Box> items in your favorites
-                </>}
-            </Typography>
-          </Box>
-
-          {!loading && getTotalCount() > 0 && <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              {getEventCount() > 0 && <Button variant="outline" onClick={handleCalendarSubscription} disabled={calendarLoading} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CalendarDays style={{ height: 16, width: 16 }} />
-                  Subscribe to Events Calendar
-                </Button>}
-
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>View:</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2 }}>
-                  <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} sx={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}>
-                    <List style={{ height: 16, width: 16 }} />
-                  </Button>
-                  <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} sx={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
-                    <Grid style={{ height: 16, width: 16 }} />
-                  </Button>
-                </Box>
-              </Box>
-            </Box>}
-        </Box>
+  return (
+    <AuthGate title="Favorites" description="Please sign in to view your favorites">
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <PageHeader
+          title="Favorites"
+          subtitle={headerSubtitle}
+          actions={headerActions}
+        />
 
         {/* Calendar Subscription Dialog */}
         <Dialog open={calendarDialogOpen} onOpenChange={setCalendarDialogOpen}>
@@ -371,10 +372,10 @@ export default function Favorites() {
             </DialogHeader>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ p: 2, bgcolor: 'var(--muted)', borderRadius: 2 }}>
+              <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
                 <Typography sx={{ fontWeight: 500, mb: 1 }}>Calendar Subscription URL:</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box component="code" sx={{ flex: 1, p: 1, bgcolor: 'var(--background)', borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                  <Box component="code" sx={{ flex: 1, p: 1, bgcolor: 'background.paper', borderRadius: 1, fontSize: '0.875rem', fontFamily: 'monospace', wordBreak: 'break-all' }}>
                     {calendarUrl}
                   </Box>
                   <Button variant="outline" size="sm" onClick={copyCalendarFeedUrl} disabled={calendarLoading}>
@@ -389,7 +390,7 @@ export default function Favorites() {
                     <CardTitle sx={{ fontSize: '1.125rem' }}>Subscribe in Calendar App</CardTitle>
                   </CardHeader>
                   <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+                    <Typography variant="body2" color="text.secondary">
                       Copy the URL above and add it as a new calendar subscription in your preferred calendar app.
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, fontSize: '0.875rem' }}>
@@ -409,10 +410,10 @@ export default function Favorites() {
                     <CardTitle sx={{ fontSize: '1.125rem' }}>Download Calendar File</CardTitle>
                   </CardHeader>
                   <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+                    <Typography variant="body2" color="text.secondary">
                       Download a one-time .ics file that you can import into any calendar application.
                     </Typography>
-                    <Typography sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       Note: Downloaded files won't automatically update when you add new favorites. Use the subscription URL for automatic updates.
                     </Typography>
                     <Button variant="outline" size="sm" onClick={downloadCalendarFile} disabled={calendarLoading} sx={{ width: '100%' }}>
@@ -423,7 +424,7 @@ export default function Favorites() {
                 </Card>
               </Box>
 
-              <Box sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+              <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                 <Typography sx={{ fontSize: 'inherit', color: 'inherit' }}>&bull; Only future events from your favorites will appear in the calendar</Typography>
                 <Typography sx={{ fontSize: 'inherit', color: 'inherit' }}>&bull; The calendar updates automatically when you add or remove event favorites</Typography>
                 <Typography sx={{ fontSize: 'inherit', color: 'inherit' }}>&bull; Calendar subscriptions are cached for up to 1 hour for better performance</Typography>
@@ -431,62 +432,65 @@ export default function Favorites() {
             </Box>
           </DialogContent>
         </Dialog>
-      </Box>
 
-      {/* Content */}
-      {loading ? <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ animation: 'spin 1s linear infinite', height: 32, width: 32, border: '2px solid', borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%' }} />
-            <Typography sx={{ color: 'var(--muted-foreground)' }}>Loading your favorites...</Typography>
-          </Box>
-        </Box> : getTotalCount() === 0 ? <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, textAlign: 'center' }}>
-          <Heart style={{ height: 64, width: 64, color: 'var(--muted-foreground)', marginBottom: 16 }} />
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>No favorites yet</Typography>
-          <Typography sx={{ color: 'var(--muted-foreground)', mb: 3, maxWidth: 448 }}>
-            Start exploring and save your favorite venues, events, marketplace items, and news articles
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <Button asChild variant="outline">
-              <Link to="/venues">Browse Venues</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/events">Browse Events</Link>
-            </Button>
-          </Box>
-        </Box> : <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList sx={{ mb: 3 }}>
-            <TabsTrigger value="all" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              All ({getTabCount('all')})
-            </TabsTrigger>
-            <TabsTrigger value="venue" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <MapPin style={{ height: 12, width: 12 }} />
-              Venues ({getTabCount('venue')})
-            </TabsTrigger>
-            <TabsTrigger value="event" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Calendar style={{ height: 12, width: 12 }} />
-              Events ({getTabCount('event')})
-            </TabsTrigger>
-            <TabsTrigger value="marketplace" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <ShoppingBag style={{ height: 12, width: 12 }} />
-              Marketplace ({getTabCount('marketplace')})
-            </TabsTrigger>
-            <TabsTrigger value="news" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Newspaper style={{ height: 12, width: 12 }} />
-              News ({getTabCount('news')})
-            </TabsTrigger>
-          </TabsList>
+        {/* Content */}
+        {loading ? (
+          <PageLoadingState count={4} variant={viewMode === 'grid' ? 'card' : 'list'} />
+        ) : getTotalCount() === 0 ? (
+          <EmptyState
+            icon={Heart}
+            title="No favorites yet"
+            description="Start exploring and save your favorite venues, events, marketplace items, and news articles"
+            primaryAction={{
+              label: 'Browse Events',
+              onClick: () => navigate('/events'),
+            }}
+            secondaryAction={{
+              label: 'Browse Venues',
+              onClick: () => navigate('/venues'),
+              variant: 'outline',
+            }}
+          />
+        ) : (
+          <Paper elevation={0} sx={{ bgcolor: 'background.paper', borderRadius: 2, p: 3 }}>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList sx={{ mb: 3 }}>
+                <TabsTrigger value="all" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  All ({getTabCount('all')})
+                </TabsTrigger>
+                <TabsTrigger value="venue" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <MapPin style={{ height: 12, width: 12 }} />
+                  Venues ({getTabCount('venue')})
+                </TabsTrigger>
+                <TabsTrigger value="event" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Calendar style={{ height: 12, width: 12 }} />
+                  Events ({getTabCount('event')})
+                </TabsTrigger>
+                <TabsTrigger value="marketplace" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <ShoppingBag style={{ height: 12, width: 12 }} />
+                  Marketplace ({getTabCount('marketplace')})
+                </TabsTrigger>
+                <TabsTrigger value="news" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Newspaper style={{ height: 12, width: 12 }} />
+                  News ({getTabCount('news')})
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="all">
-            <Box sx={viewMode === 'grid' ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 } : { display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {getAllFavorites().map(renderFavoriteCard)}
-            </Box>
-          </TabsContent>
+              <TabsContent value="all">
+                <Box sx={viewMode === 'grid' ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 } : { display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {getAllFavorites().map(renderFavoriteCard)}
+                </Box>
+              </TabsContent>
 
-          {Object.entries(favorites).map(([type, items]) => <TabsContent key={type} value={type}>
-              <Box sx={viewMode === 'grid' ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 } : { display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {items.map(renderFavoriteCard)}
-              </Box>
-            </TabsContent>)}
-        </Tabs>}
-    </Box>;
+              {Object.entries(favorites).map(([type, items]) => <TabsContent key={type} value={type}>
+                  <Box sx={viewMode === 'grid' ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 } : { display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {items.map(renderFavoriteCard)}
+                  </Box>
+                </TabsContent>)}
+            </Tabs>
+          </Paper>
+        )}
+      </Container>
+    </AuthGate>
+  );
 }

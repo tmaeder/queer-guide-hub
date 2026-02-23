@@ -28,21 +28,21 @@ export function QuickActions() {
       title: "Add New Event",
       description: "Create a new event",
       icon: Plus,
-      action: () => navigate("/admin/events"),
+      action: () => navigate("/admin/content/events"),
       variant: "default" as const
     },
     {
       title: "Add New Venue",
       description: "Register a new venue",
       icon: Building,
-      action: () => navigate("/admin/venues"),
+      action: () => navigate("/admin/content/venues"),
       variant: "outline" as const
     },
     {
       title: "Import Data",
       description: "Bulk import content",
       icon: Upload,
-      action: () => navigate("/admin/import-hub"),
+      action: () => navigate("/admin/imports"),
       variant: "outline" as const
     },
     {
@@ -58,27 +58,27 @@ export function QuickActions() {
     {
       title: "Content Management",
       items: [
-        { label: "Events", icon: Calendar, path: "/admin/events" },
-        { label: "Venues", icon: Building, path: "/admin/venues" },
-        { label: "Marketplace", icon: ShoppingBag, path: "/admin/marketplace" },
-        { label: "Groups", icon: Users, path: "/admin/groups" }
+        { label: "Events", icon: Calendar, path: "/admin/content/events" },
+        { label: "Venues", icon: Building, path: "/admin/content/venues" },
+        { label: "Marketplace", icon: ShoppingBag, path: "/admin/content/marketplace_listings" },
+        { label: "Groups", icon: Users, path: "/admin/content/community_groups" }
       ]
     },
     {
       title: "System Management",
       items: [
-        { label: "Tags", icon: Tags, path: "/admin/tags" },
-        { label: "Countries", icon: Globe, path: "/admin/countries" },
-        { label: "Cities", icon: MapPin, path: "/admin/cities" },
+        { label: "Tags", icon: Tags, path: "/admin/content/unified_tags" },
+        { label: "Countries", icon: Globe, path: "/admin/content/countries" },
+        { label: "Cities", icon: MapPin, path: "/admin/content/cities" },
         { label: "Email Templates", icon: FileText, path: "/admin/email-templates" }
       ]
     },
     {
       title: "Tools & Utilities",
       items: [
-        { label: "CMS", icon: FileEdit, path: "/admin/cms" },
-        { label: "Import Hub", icon: Upload, path: "/admin/import-hub" },
-        { label: "News Sources", icon: Newspaper, path: "/admin/news-sources" },
+        { label: "CMS", icon: FileEdit, path: "/admin/content" },
+        { label: "Import Hub", icon: Upload, path: "/admin/imports" },
+        { label: "News Sources", icon: Newspaper, path: "/admin/imports/news-sources" },
         { label: "Analytics", icon: Zap, path: "/admin/analytics" },
         { label: "Settings", icon: Settings, path: "/admin/settings" }
       ]
@@ -96,7 +96,7 @@ export function QuickActions() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+          <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: '1fr 1fr' }}>
             {quickActions.map((action) => {
               const Icon = action.icon;
               return (
@@ -104,13 +104,12 @@ export function QuickActions() {
                   key={action.title}
                   variant={action.variant}
                   onClick={action.action}
-                  style={{ height: 'auto', padding: 16, justifyContent: 'flex-start' }}
+                  style={{ height: 'auto', padding: '10px 12px', justifyContent: 'flex-start' }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Icon style={{ height: 20, width: 20 }} />
-                    <Box sx={{ textAlign: 'left' }}>
-                      <Box sx={{ fontWeight: 500 }}>{action.title}</Box>
-                      <Box sx={{ fontSize: '0.75rem', opacity: 0.7 }}>{action.description}</Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Icon style={{ height: 18, width: 18, flexShrink: 0 }} />
+                    <Box sx={{ textAlign: 'left', minWidth: 0 }}>
+                      <Box sx={{ fontWeight: 500, fontSize: '0.8125rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{action.title}</Box>
                     </Box>
                   </Box>
                 </Button>
@@ -121,13 +120,13 @@ export function QuickActions() {
       </Card>
 
       {/* Management Sections */}
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {managementSections.map((section) => (
           <Card key={section.title}>
-            <CardHeader style={{ paddingBottom: 12 }}>
-              <CardTitle style={{ fontSize: '0.875rem' }}>{section.title}</CardTitle>
+            <CardHeader style={{ paddingBottom: 8 }}>
+              <CardTitle style={{ fontSize: '0.8125rem' }}>{section.title}</CardTitle>
             </CardHeader>
-            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 2, paddingTop: 0 }}>
               {section.items.map((item) => {
                 const Icon = item.icon;
                 return (

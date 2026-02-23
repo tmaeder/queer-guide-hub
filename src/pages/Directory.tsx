@@ -16,7 +16,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 
 // Lazy load the map component
-const DirectoryMapView = lazy(() => import("@/components/directory/DirectoryMapView").then(m => ({ default: m.DirectoryMapView })));
+const ExploreMap = lazy(() => import("@/components/map/ExploreMap"));
 
 type ViewMode = "overview" | "country" | "city" | "search";
 
@@ -267,7 +267,7 @@ export default function Directory() {
               </Box>
               {selectedCountry && (
                 <>
-                  <Typography component="span" color="text.secondary" sx={{ opacity: 0.5 }}>/</Typography>
+                  <Typography component="span" sx={{ color: 'text.disabled' }}>/</Typography>
                   <Box
                     component="button"
                     onClick={() => setViewMode("country")}
@@ -279,7 +279,7 @@ export default function Directory() {
               )}
               {selectedCity && (
                 <>
-                  <Typography component="span" color="text.secondary" sx={{ opacity: 0.5 }}>/</Typography>
+                  <Typography component="span" sx={{ color: 'text.disabled' }}>/</Typography>
                   <Typography component="span" sx={{ px: 1, py: 0.5, fontWeight: 500 }}>{selectedCity.name}</Typography>
                 </>
               )}
@@ -353,8 +353,8 @@ export default function Directory() {
                           {/* Continent Header */}
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'primary.main', opacity: 0.1 }}>
-                                <Globe style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
+                              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover' }}>
+                                <Globe style={{ width: 20, height: 20, color: '#7c3aed' }} />
                               </Box>
                               <Box>
                                 <Typography variant="h6" sx={{ fontWeight: 600 }}>{continent.name}</Typography>
@@ -431,8 +431,8 @@ export default function Directory() {
                         {/* Continent Header */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'primary.main', opacity: 0.1 }}>
-                              <Globe style={{ width: 20, height: 20 }} color="var(--mui-palette-primary-main)" />
+                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover' }}>
+                              <Globe style={{ width: 20, height: 20, color: '#7c3aed' }} />
                             </Box>
                             <Box>
                               <Typography variant="h6" sx={{ fontWeight: 600 }}>{continent.name}</Typography>
@@ -499,23 +499,22 @@ export default function Directory() {
                 </Box>
 
                 {/* Map Container */}
-                <Box sx={{ borderRadius: 3, overflow: 'hidden', border: 1, borderColor: 'divider', opacity: 0.5, boxShadow: 3 }}>
+                <Box sx={{ borderRadius: 3, overflow: 'hidden', border: 1, borderColor: 'divider', boxShadow: 3 }}>
                   <Suspense
                     fallback={
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 384, bgcolor: 'action.hover' }}>
                         <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                          <Map style={{ width: 48, height: 48, margin: '0 auto', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} color="var(--mui-palette-primary-main)" opacity={0.6} />
+                          <Map style={{ width: 48, height: 48, margin: '0 auto', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', color: '#999999' }} />
                           <Typography color="text.secondary">Loading interactive map...</Typography>
                         </Box>
                       </Box>
                     }
                   >
-                    <DirectoryMapView
-                      countries={countries}
-                      cities={cities}
-                      loading={loading}
-                      onCountryClick={handleCountryClick}
-                      onCityClick={handleCityClick}
+                    <ExploreMap
+                      height={600}
+                      defaultLayers={['cities', 'countries']}
+                      showLayerToggles
+                      showFilters={false}
                     />
                   </Suspense>
                 </Box>

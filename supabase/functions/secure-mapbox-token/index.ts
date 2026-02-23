@@ -1,136 +1,27 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-const ALLOWED_ORIGINS = new Set<string>([
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'https://queer.guide',
-  'https://www.queer.guide'
-]);
-
-const getOrigin = (req: Request): string | null => {
-  const origin = req.headers.get('Origin');
-  if (origin) return origin;
-  const referer = req.headers.get('Referer');
-  if (!referer) return null;
-  try { return new URL(referer).origin; } catch { return null; }
 };
 
-Deno.serve(async (req) => {
-  // Handle CORS preflight requests
+/**
+ * DEPRECATED: Mapbox has been replaced with self-hosted MapLibre + Protomaps tiles.
+ * This endpoint is kept as a 410 Gone stub for backward compatibility.
+ */
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const mapboxToken = Deno.env.get('MAPBOX_ACCESS_TOKEN') || Deno.env.get('MAPBOX_PUBLIC_TOKEN');
-
-    if (!mapboxToken) {
-      throw new Error('Mapbox access token not configured (set MAPBOX_ACCESS_TOKEN or MAPBOX_PUBLIC_TOKEN)');
+  return new Response(
+    JSON.stringify({
+      error: 'Gone',
+      message: 'Mapbox token endpoint has been retired. Maps now use self-hosted MapLibre + Protomaps tiles.',
+    }),
+    {
+      status: 410,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     }
-
-    // Create Supabase client only if service key is available
-    let supabase: ReturnType<typeof createClient> | null = null;
-    if (supabaseUrl && supabaseServiceKey) {
-      supabase = createClient(supabaseUrl, supabaseServiceKey);
-    }
-
-    // Enforce origin allowlist
-    const origin = getOrigin(req);
-    if (origin && !ALLOWED_ORIGINS.has(origin)) {
-      if (supabase) {
-        await supabase.rpc('log_enhanced_security_event', {
-          p_event_type: 'DISALLOWED_ORIGIN_MAPBOX_TOKEN',
-          p_user_id: null,
-          p_metadata: { origin },
-          p_severity: 'medium'
-        });
-      }
-      return new Response(JSON.stringify({ error: 'Forbidden origin' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // For public access, JWT is optional; proceed without user verification
-    const authHeader = req.headers.get('Authorization');
-    let userId: string | null = null;
-    try {
-      if (authHeader && supabase) {
-        const { data: { user }, error: authError } = await supabase.auth.getUser(
-          authHeader.replace('Bearer ', '')
-        );
-        if (!authError && user) userId = user.id;
-      }
-    } catch (_) {
-      // ignore auth errors for public endpoint
-    }
-
-    // Check rate limiting using requester IP when available
-    const requesterIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-                        req.headers.get('x-real-ip') ||
-                        req.headers.get('cf-connecting-ip') ||
-                        '0.0.0.0';
-
-    if (supabase) {
-      try {
-        const { error: rateLimitError } = await supabase.rpc('check_rate_limit', {
-          identifier: requesterIp,
-          max_attempts: 60,
-          time_window_minutes: 15
-        });
-        // If the RPC exists and explicitly signals an error unrelated to missing function, log it
-        if (rateLimitError && !`${rateLimitError.message}`.toLowerCase().includes('function check_rate_limit')) {
-          throw new Error('Rate limit exceeded');
-        }
-      } catch (e) {
-        // If rate limit RPC is missing or fails, proceed without blocking but log for observability
-        console.warn('Rate limit check skipped:', (e as any)?.message || e);
-      }
-    }
-
-    // Log security event (best-effort)
-    if (supabase) {
-      await supabase.rpc('log_enhanced_security_event', {
-        p_event_type: 'MAPBOX_TOKEN_ACCESS',
-        p_user_id: userId,
-        p_metadata: {
-          timestamp: new Date().toISOString(),
-          user_agent: req.headers.get('User-Agent')
-        },
-        p_severity: 'low'
-      });
-    }
-
-    return new Response(
-      JSON.stringify({ token: mapboxToken }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        } 
-      }
-    );
-
-  } catch (error) {
-    console.error('Mapbox token error:', error);
-    
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: error.message.includes('Rate limit') ? 429 : 
-                error.message.includes('Authentication') ? 401 : 500,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        } 
-      }
-    );
-  }
+  );
 });

@@ -1,6 +1,7 @@
 import { Heart, Target, Globe, Users, Lightbulb, Shield } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 
@@ -52,7 +53,7 @@ export default function OurVision() {
   ];
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Hero Section */}
       <Box sx={{ textAlign: 'center', mb: 8 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 3 }}>
@@ -67,7 +68,7 @@ export default function OurVision() {
 
       {/* Vision Statement */}
       <Box component="section" sx={{ mb: 8 }}>
-        <Box sx={{ background: 'linear-gradient(to right, rgba(var(--mui-palette-primary-mainChannel) / 0.1), rgba(var(--mui-palette-secondary-mainChannel) / 0.1))', borderRadius: 2, p: 4, mb: 4 }}>
+        <Box sx={{ bgcolor: 'action.hover', borderRadius: 2, p: 4, mb: 4 }}>
           <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 3 }}>The Future We're Building</Typography>
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="subtitle1" sx={{ lineHeight: 1.8 }}>
@@ -216,6 +217,6 @@ export default function OurVision() {
           </Card>
         </Box>
       </Paper>
-    </Box>
+    </Container>
   );
 }

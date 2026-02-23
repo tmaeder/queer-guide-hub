@@ -32,12 +32,15 @@ import {
   Clock,
   Users
 } from "lucide-react";
+import { ExportExcelButton } from "@/components/admin/ExportExcelButton";
+import { exportToExcel, fetchAllRows, formatDateTime, formatArray, formatBoolean, generateFilename, type ExportColumnDef } from "@/utils/excelExport";
 import { EventsCsvImport } from "@/components/events/EventsCsvImport";
 import { EventImageUpload } from "@/components/events/EventImageUpload";
 import { EventbriteImport } from "@/components/events/EventbriteImport";
 import { TicketmasterImport } from "@/components/events/TicketmasterImport";
-import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
+import { LocationAutocomplete, type AddressComponents } from "@/components/ui/location-autocomplete";
 import { VenueCombobox } from "@/components/ui/venue-combobox";
+import { useAddressResolver } from "@/hooks/useAddressResolver";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import Box from '@mui/material/Box';
@@ -51,6 +54,7 @@ export default function AdminEvents() {
   const { events, loading, createEvent, updateEvent, deleteEvent, refetch } = useEvents();
   const { venues, loading: venuesLoading } = useVenues();
   const { toast } = useToast();
+  const { resolveAddress } = useAddressResolver();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
@@ -244,20 +248,44 @@ export default function AdminEvents() {
             longitude: selectedVenue.longitude || null,
             city: selectedVenue.city,
             state: selectedVenue.state || "",
-            country: selectedVenue.country
+            country: selectedVenue.country,
+            city_id: (selectedVenue as any).city_id || "",
+            country_id: (selectedVenue as any).country_id || "",
           }));
         }
       }
     }
   };
 
-  const handleAddressChange = (address: string, coordinates?: { lat: number; lng: number }) => {
+  const handleAddressChange = async (address: string, coordinates?: { lat: number; lng: number }, components?: AddressComponents) => {
     setFormData(prev => ({
       ...prev,
       address,
       latitude: coordinates?.lat || null,
-      longitude: coordinates?.lng || null
+      longitude: coordinates?.lng || null,
+      ...(components?.city ? { city: components.city } : {}),
+      ...(components?.state ? { state: components.state } : {}),
+      ...(components?.country ? { country: components.country } : {}),
     }));
+
+    // Resolve to FK IDs
+    if (components?.country) {
+      const resolved = await resolveAddress(
+        components.city,
+        components.country,
+        coordinates?.lat,
+        coordinates?.lng,
+      );
+      if (resolved) {
+        setFormData(prev => ({
+          ...prev,
+          ...(resolved.city_id ? { city_id: resolved.city_id } : {}),
+          ...(resolved.country_id ? { country_id: resolved.country_id } : {}),
+          ...(resolved.city_name ? { city: resolved.city_name } : {}),
+          ...(resolved.country_name ? { country: resolved.country_name } : {}),
+        }));
+      }
+    }
   };
 
   const handleEditEvent = (event: any) => {
@@ -327,6 +355,29 @@ export default function AdminEvents() {
     );
   }
 
+  const handleExportExcel = async () => {
+    const columns: ExportColumnDef<any>[] = [
+      { header: 'Title', accessor: r => r.title },
+      { header: 'Event Type', accessor: r => r.event_type },
+      { header: 'Start Date', accessor: r => formatDateTime(r.start_date) },
+      { header: 'End Date', accessor: r => formatDateTime(r.end_date) },
+      { header: 'Venue Name', accessor: r => r.venue_name },
+      { header: 'City', accessor: r => r.city },
+      { header: 'Country', accessor: r => r.country },
+      { header: 'Organizer', accessor: r => r.organizer_name },
+      { header: 'Is Free', accessor: r => formatBoolean(r.is_free) },
+      { header: 'Price Min', accessor: r => r.price_min },
+      { header: 'Price Max', accessor: r => r.price_max },
+      { header: 'Ticket URL', accessor: r => r.ticket_url },
+      { header: 'Website', accessor: r => r.website },
+      { header: 'Featured', accessor: r => formatBoolean(r.featured) },
+      { header: 'Tags', accessor: r => formatArray(r.tags) },
+      { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
+    ];
+    const allData = await fetchAllRows('events', '*', { column: 'title', ascending: true });
+    await exportToExcel(allData, columns, generateFilename('events'));
+  };
+
   return (
     <Box sx={{ width: '100%', p: 3 }}>
       {/* Header */}
@@ -345,6 +396,7 @@ export default function AdminEvents() {
           <EventsCsvImport onImportComplete={refetch} />
           <EventbriteImport onImportComplete={refetch} />
           <TicketmasterImport onImportComplete={refetch} />
+          <ExportExcelButton onExport={handleExportExcel} />
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={resetForm}>

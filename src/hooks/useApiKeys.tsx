@@ -13,6 +13,18 @@ export interface ApiKey {
   last_used_at?: string;
 }
 
+export interface RequiredKeyStatus {
+  key_name: string;
+  status: 'configured' | 'missing' | 'error';
+  hint: string;
+  used_by: {
+    name: string;
+    slug: string;
+    source_type: string;
+    is_enabled: boolean;
+  }[];
+}
+
 export interface CreateApiKeyRequest {
   service_name: string;
   key_name: string;
@@ -30,24 +42,26 @@ export interface UpdateApiKeyRequest {
 
 export function useApiKeys() {
   const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [requiredKeys, setRequiredKeys] = useState<RequiredKeyStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const loadApiKeys = async () => {
+  const loadKeyStatus = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('manage-api-keys', {
+      const { data, error } = await supabase.functions.invoke('manage-api-keys?action=status', {
         method: 'GET'
       });
 
       if (error) throw error;
 
-      setKeys(data.keys || []);
+      setRequiredKeys(data.required_keys || []);
+      setKeys(data.custom_keys || []);
     } catch (error) {
-      console.error('Error loading API keys:', error);
+      console.error('Error loading API key status:', error);
       toast({
         title: "Error",
-        description: "Failed to load API keys",
+        description: "Failed to load API key status",
         variant: "destructive",
       });
     } finally {
@@ -64,7 +78,7 @@ export function useApiKeys() {
 
       if (error) throw error;
 
-      await loadApiKeys(); // Refresh the list
+      await loadKeyStatus();
       toast({
         title: "Success",
         description: "API key created successfully",
@@ -91,7 +105,7 @@ export function useApiKeys() {
 
       if (error) throw error;
 
-      await loadApiKeys(); // Refresh the list
+      await loadKeyStatus();
       toast({
         title: "Success",
         description: "API key updated successfully",
@@ -118,7 +132,7 @@ export function useApiKeys() {
 
       if (error) throw error;
 
-      await loadApiKeys(); // Refresh the list
+      await loadKeyStatus();
       toast({
         title: "Success",
         description: "API key deleted successfully",
@@ -138,22 +152,22 @@ export function useApiKeys() {
     try {
       await updateApiKey(id, { is_active });
     } catch (error) {
-      // Error handling is done in updateApiKey
       throw error;
     }
   };
 
   useEffect(() => {
-    loadApiKeys();
+    loadKeyStatus();
   }, []);
 
   return {
     keys,
+    requiredKeys,
     loading,
     createApiKey,
     updateApiKey,
     deleteApiKey,
     toggleApiKey,
-    refreshKeys: loadApiKeys
+    refreshKeys: loadKeyStatus
   };
 }

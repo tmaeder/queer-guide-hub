@@ -75,7 +75,7 @@ interface TabsTriggerProps extends React.HTMLAttributes<HTMLButtonElement> {
 
 const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
   ({ className, value, children, disabled, ...props }, ref) => (
-    <MuiTab ref={ref as any} value={value} label={children} disabled={disabled} className={className} />
+    <MuiTab ref={ref as any} value={value} label={children} disabled={disabled} className={className} {...props} />
   )
 );
 TabsTrigger.displayName = "TabsTrigger"

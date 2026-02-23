@@ -23,8 +23,10 @@ import { VenuesFilters } from "@/components/admin/venues/VenuesFilters";
 import { VenuesStats } from "@/components/admin/venues/VenuesStats";
 import { VenuesList } from "@/components/admin/venues/VenuesList";
 import { VenueEnrichmentPreview } from "@/components/admin/venues/VenueEnrichmentPreview";
-import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
+import { LocationAutocomplete, type AddressComponents } from "@/components/ui/location-autocomplete";
+import { useAddressResolver } from "@/hooks/useAddressResolver";
 import { supabase } from "@/integrations/supabase/client";
+import { exportToExcel, fetchAllRows, formatDateTime, formatArray, formatBoolean, generateFilename, type ExportColumnDef } from "@/utils/excelExport";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -35,6 +37,7 @@ export default function AdminVenues() {
   const { canManageContent, loading: rolesLoading } = useAdminRoles();
   const { venues, loading, createVenue, updateVenue, deleteVenue, refetch } = useVenues();
   const { toast } = useToast();
+  const { resolveAddress, resolving: resolvingAddress } = useAddressResolver();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -151,7 +154,7 @@ export default function AdminVenues() {
         return;
       }
 
-      const venueData = {
+      const venueData: Record<string, any> = {
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         address: formData.address.trim() || null,
@@ -174,6 +177,9 @@ export default function AdminVenues() {
         verified: formData.verified,
         created_by: user?.id
       };
+      // Include resolved FK IDs if available
+      if ((formData as any).city_id) venueData.city_id = (formData as any).city_id;
+      if ((formData as any).country_id) venueData.country_id = (formData as any).country_id;
 
       let result;
       if (editingVenue) {
@@ -412,29 +418,45 @@ export default function AdminVenues() {
     }
   };
 
-  const parseAddressComponents = (address: string) => {
-    // Simple address parsing - can be enhanced based on Mapbox response format
-    const parts = address.split(', ');
-    if (parts.length >= 3) {
-      const city = parts[parts.length - 3] || '';
-      const stateCountry = parts[parts.length - 2] || '';
-      const country = parts[parts.length - 1] || '';
+  const handleAddressComponentsAndResolve = async (
+    components: AddressComponents | undefined,
+    coordinates?: { lat: number; lng: number }
+  ) => {
+    if (!components) return;
 
-      // Extract state from "State ZIP" format
-      const stateMatch = stateCountry.match(/^([A-Z]{2})\s+\d+/);
-      const state = stateMatch ? stateMatch[1] : stateCountry;
+    // Fill text fields from structured components
+    setFormData(prev => ({
+      ...prev,
+      city: components.city || prev.city,
+      state: components.state || prev.state,
+      country: components.country || prev.country,
+      postal_code: components.postcode || prev.postal_code,
+    }));
 
-      // Extract postal code
-      const postalMatch = stateCountry.match(/\d{5}(-\d{4})?$/);
-      const postal_code = postalMatch ? postalMatch[0] : '';
-
-      setFormData(prev => ({
-        ...prev,
-        city: city || prev.city,
-        state: state || prev.state,
-        country: country || prev.country,
-        postal_code: postal_code || prev.postal_code
-      }));
+    // Resolve to FK IDs
+    if (components.country) {
+      const resolved = await resolveAddress(
+        components.city,
+        components.country,
+        coordinates?.lat,
+        coordinates?.lng,
+      );
+      if (resolved) {
+        setFormData(prev => ({
+          ...prev,
+          ...(resolved.city_id ? { city_id: resolved.city_id } : {}),
+          ...(resolved.country_id ? { country_id: resolved.country_id } : {}),
+          // Use canonical names from DB if available
+          ...(resolved.city_name ? { city: resolved.city_name } : {}),
+          ...(resolved.country_name ? { country: resolved.country_name } : {}),
+        }));
+        if (resolved.created) {
+          toast({
+            title: "New City Created",
+            description: `"${resolved.city_name}" was added to the database.`,
+          });
+        }
+      }
     }
   };
 
@@ -528,6 +550,32 @@ export default function AdminVenues() {
     setIsAddressValidated(false);
   };
 
+  const handleExportExcel = async () => {
+    const columns: ExportColumnDef<any>[] = [
+      { header: 'Name', accessor: r => r.name },
+      { header: 'Category', accessor: r => r.category },
+      { header: 'Address', accessor: r => r.address },
+      { header: 'City', accessor: r => r.city },
+      { header: 'State', accessor: r => r.state },
+      { header: 'Country', accessor: r => r.country },
+      { header: 'Phone', accessor: r => r.phone },
+      { header: 'Email', accessor: r => r.email },
+      { header: 'Website', accessor: r => r.website },
+      { header: 'Instagram', accessor: r => r.instagram },
+      { header: 'Featured', accessor: r => formatBoolean(r.featured) },
+      { header: 'Verified', accessor: r => formatBoolean(r.verified) },
+      { header: 'Rating', accessor: r => r.foursquare_rating },
+      { header: 'Price Range', accessor: r => r.price_range },
+      { header: 'Tags', accessor: r => formatArray(r.tags) },
+      { header: 'Amenities', accessor: r => formatArray(r.amenities) },
+      { header: 'Latitude', accessor: r => r.latitude },
+      { header: 'Longitude', accessor: r => r.longitude },
+      { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
+    ];
+    const allData = await fetchAllRows('venues', '*', { column: 'name', ascending: true });
+    await exportToExcel(allData, columns, generateFilename('venues'));
+  };
+
   if (rolesLoading || loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -550,6 +598,7 @@ export default function AdminVenues() {
         onTomTomImport={handleTomTomImport}
         onGooglePlacesImport={handleGooglePlacesImport}
         onImportComplete={refetch}
+        onExport={handleExportExcel}
         isImporting={isImporting}
         isImportingTripAdvisor={isImportingTripAdvisor}
         isImportingTomTom={isImportingTomTom}
@@ -649,7 +698,7 @@ export default function AdminVenues() {
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Location</Typography>
               <LocationAutocomplete
                 value={formData.address}
-                onChange={(address, coordinates) => {
+                onChange={(address, coordinates, components) => {
                   setFormData(prev => ({
                     ...prev,
                     address,
@@ -657,9 +706,9 @@ export default function AdminVenues() {
                     longitude: coordinates ? coordinates.lng.toString() : ""
                   }));
 
-                  // Auto-extract city, state, country from address if coordinates are provided
-                  if (coordinates) {
-                    parseAddressComponents(address);
+                  // Auto-fill city, state, country from structured components + resolve FKs
+                  if (components) {
+                    handleAddressComponentsAndResolve(components, coordinates);
                   }
                 }}
                 onValidation={setIsAddressValidated}

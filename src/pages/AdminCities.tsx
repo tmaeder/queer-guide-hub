@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ExportExcelButton } from "@/components/admin/ExportExcelButton";
+import { exportToExcel, fetchAllRows, formatBoolean, generateFilename, type ExportColumnDef } from "@/utils/excelExport";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -222,13 +224,30 @@ export default function AdminCities() {
             <p style={{ color: 'var(--muted-foreground)' }}>Manage cities in the directory</p>
           </div>
         </Box>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
-              Add City
-            </Button>
-          </DialogTrigger>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <ExportExcelButton onExport={async () => {
+            const columns: ExportColumnDef<any>[] = [
+              { header: 'Name', accessor: r => r.name },
+              { header: 'Country', accessor: r => r.countries?.name },
+              { header: 'Region', accessor: r => r.region_name },
+              { header: 'Population', accessor: r => r.population },
+              { header: 'Latitude', accessor: r => r.latitude },
+              { header: 'Longitude', accessor: r => r.longitude },
+              { header: 'Timezone', accessor: r => r.timezone },
+              { header: 'Is Capital', accessor: r => formatBoolean(r.is_capital) },
+              { header: 'Is Major City', accessor: r => formatBoolean(r.is_major_city) },
+              { header: 'Airport Code', accessor: r => r.major_airport_code },
+            ];
+            const allData = await fetchAllRows('cities', '*, countries(name)', { column: 'name', ascending: true });
+            await exportToExcel(allData, columns, generateFilename('cities'));
+          }} />
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm}>
+                <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
+                Add City
+              </Button>
+            </DialogTrigger>
           <DialogContent sx={{ maxWidth: 672 }}>
             <DialogHeader>
               <DialogTitle>{editingCity ? "Edit City" : "Add New City"}</DialogTitle>
@@ -346,6 +365,7 @@ export default function AdminCities() {
             </Box>
           </DialogContent>
         </Dialog>
+        </Box>
       </Box>
 
       {/* Filters */}

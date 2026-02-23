@@ -1,32 +1,47 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { MapPin, Calendar, Star, Eye, Heart, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, Search, Filter, ArrowUpDown, Grid, List, TrendingUp, Clock, Sparkles } from 'lucide-react';
+import { MapPin, Calendar, Star, Eye, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, Search, Filter, ArrowUpDown, Grid, List, TrendingUp, Clock, Sparkles, Tag, User, Hotel, Tent, HelpCircle } from 'lucide-react';
 import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
+import { useTheme } from '@mui/material/styles';
 
-const contentTypeIcons = {
+const contentTypeIcons: Record<string, any> = {
   venue: MapPin,
+  venues: MapPin,
   event: Calendar,
+  events: Calendar,
   marketplace: ShoppingBag,
   user: Users,
   news: Newspaper,
   location: Globe,
+  cities: Globe,
+  countries: Globe,
   content: FileText,
-  travel: Plane
+  ressource: FileText,
+  travel: Plane,
+  personality: User,
+  personalities: User,
+  tag: Tag,
+  tags: Tag,
+  group: Users,
+  hotels: Hotel,
+  queer_villages: MapPin,
+  festivals: Tent,
 };
 
 export default function SearchResults() {
+  const theme = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
@@ -131,12 +146,63 @@ export default function SearchResults() {
     setSearchParams(params);
   };
 
+  const navigateToResult = (result: SearchResult) => {
+    const slug = result.metadata?.slug || result.objectID;
+    switch (result.type) {
+      case 'venue':
+      case 'venues':
+        navigate(`/venues/${result.objectID}`);
+        break;
+      case 'event':
+      case 'events':
+        navigate(`/events/${result.objectID}`);
+        break;
+      case 'marketplace':
+        navigate(`/marketplace/${result.objectID}`);
+        break;
+      case 'user':
+      case 'personalities':
+      case 'personality':
+        navigate(`/personalities/${slug}`);
+        break;
+      case 'news':
+        navigate(`/news/${result.objectID}`);
+        break;
+      case 'cities':
+      case 'location':
+        if (result.metadata?.isCountry) {
+          navigate(`/country/${slug}`);
+        } else {
+          navigate(`/city/${slug}`);
+        }
+        break;
+      case 'countries':
+        navigate(`/country/${slug}`);
+        break;
+      case 'content':
+      case 'ressource':
+      case 'tags':
+      case 'tag':
+        navigate(`/resources/${slug}`);
+        break;
+      case 'hotels':
+      case 'festivals':
+      case 'queer_villages':
+      case 'travel':
+        navigate('/places');
+        break;
+      default:
+        navigate(`/search?q=${encodeURIComponent(result.title)}`);
+        break;
+    }
+  };
+
   const renderResultCard = (result: SearchResult) => {
-    const Icon = contentTypeIcons[result.type];
+    const Icon = contentTypeIcons[result.type] || HelpCircle;
 
     if (viewMode === 'grid') {
       return (
-        <Card key={`${result.type}-${result.objectID}`} sx={{ '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' }, transition: 'all 0.2s' }}>
+        <Card key={`${result.type}-${result.objectID}`} sx={{ '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' }, transition: 'all 0.2s', cursor: 'pointer' }} onClick={() => navigateToResult(result)}>
           <Box sx={{ position: 'relative' }}>
             {result.imageUrl ? (
               <Box sx={{ aspectRatio: '16/9', position: 'relative', overflow: 'hidden', borderRadius: '8px 8px 0 0' }}>
@@ -147,14 +213,14 @@ export default function SearchResults() {
                   sx={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.2s' }}
                 />
                 <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
-                  <Badge variant="secondary" style={{ fontSize: '0.75rem', backdropFilter: 'blur(4px)', background: 'rgba(var(--background), 0.8)' }}>
+                  <Badge variant="secondary" style={{ fontSize: '0.75rem', background: theme.palette.background.paper }}>
                     <Icon style={{ width: 12, height: 12, marginRight: 4 }} />
                     {result.type}
                   </Badge>
                 </Box>
                 {result.metadata?.featured && (
                   <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
-                    <Badge style={{ fontSize: '0.75rem', backdropFilter: 'blur(4px)' }}>
+                    <Badge style={{ fontSize: '0.75rem' }}>
                       <Sparkles style={{ width: 12, height: 12, marginRight: 4 }} />
                       Featured
                     </Badge>
@@ -163,7 +229,7 @@ export default function SearchResults() {
               </Box>
             ) : (
               <Box sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', borderRadius: '8px 8px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon style={{ width: 48, height: 48, color: 'var(--muted-foreground)' }} />
+                <Icon style={{ width: 48, height: 48, color: theme.palette.text.secondary }} />
               </Box>
             )}
           </Box>
@@ -208,7 +274,7 @@ export default function SearchResults() {
     }
 
     return (
-      <Card key={`${result.type}-${result.objectID}`} sx={{ '&:hover': { boxShadow: 4, borderColor: 'primary.main' }, transition: 'all 0.2s' }}>
+      <Card key={`${result.type}-${result.objectID}`} sx={{ '&:hover': { boxShadow: 4, borderColor: 'primary.main' }, transition: 'all 0.2s', cursor: 'pointer' }} onClick={() => navigateToResult(result)}>
         <CardContent style={{ padding: 16 }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             {result.imageUrl && (
@@ -225,7 +291,7 @@ export default function SearchResults() {
               <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
                 <Box sx={{ flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Icon style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                    <Icon style={{ width: 16, height: 16, color: theme.palette.text.secondary }} />
                     <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
                       {result.type}
                     </Badge>
@@ -316,48 +382,35 @@ export default function SearchResults() {
   return (
     <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2, alignItems: { lg: 'center' }, justifyContent: { lg: 'space-between' }, mb: 3 }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-              Search Results
-            </Typography>
-            <Typography color="text.secondary" variant="body1">
-              {loading ? (
-                <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CircularProgress size={16} />
-                  Searching across all content...
-                </Box>
-              ) : (
-                <>
-                  <Box component="span" sx={{ fontWeight: 600 }}>{totalResults}</Box> results found for{' '}
-                  <Box component="span" sx={{ fontWeight: 500, color: 'primary.main' }}>"{query}"</Box>
-                </>
-              )}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-            >
-              <Filter style={{ width: 16, height: 16 }} />
-              Filters
-              {Object.values(filters).some(v => v && (Array.isArray(v) ? v.length > 0 : true)) && (
-                <Badge variant="destructive" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>
-                  !
-                </Badge>
-              )}
-            </Button>
-          </Box>
-        </Box>
-
+      <PageHeader
+        title="Search Results"
+        subtitle={
+          loading
+            ? 'Searching across all content...'
+            : query
+              ? `${totalResults} results found for "${query}"`
+              : undefined
+        }
+        actions={
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <Filter style={{ width: 16, height: 16 }} />
+            Filters
+            {Object.values(filters).some(v => v && (Array.isArray(v) ? v.length > 0 : true)) && (
+              <Badge variant="destructive" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>
+                !
+              </Badge>
+            )}
+          </Button>
+        }
+      >
         {/* Enhanced Search Bar */}
-        <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
           <Box sx={{ flex: 1, position: 'relative' }}>
-            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: theme.palette.text.secondary }} />
             <Input
               placeholder="Refine your search..."
               value={searchQuery}
@@ -370,107 +423,102 @@ export default function SearchResults() {
             Search
           </Button>
         </Box>
+      </PageHeader>
 
-        {/* Filters Panel */}
-        {showFilters && (
-          <Card sx={{ mb: 3, borderColor: 'primary.main', opacity: 0.8, boxShadow: 6 }}>
-            <SearchFiltersPanel filters={filters} onFiltersChange={handleFiltersChange} />
-          </Card>
-        )}
+      {/* Filters Panel */}
+      {showFilters && (
+        <Card sx={{ mb: 3, borderColor: 'primary.main', boxShadow: 6 }}>
+          <SearchFiltersPanel filters={filters} onFiltersChange={handleFiltersChange} />
+        </Card>
+      )}
 
-        {/* Results Controls */}
-        {!loading && results.length > 0 && (
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', gap: 2, mb: 3, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>Sort by:</Typography>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger style={{ width: 160 }}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent style={{ zIndex: 50, backgroundColor: 'var(--background)' }}>
-                    <SelectItem value="relevance">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <TrendingUp style={{ width: 12, height: 12 }} />
-                        Relevance
-                      </Box>
-                    </SelectItem>
-                    <SelectItem value="newest">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Clock style={{ width: 12, height: 12 }} />
-                        Newest
-                      </Box>
-                    </SelectItem>
-                    <SelectItem value="oldest">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Clock style={{ width: 12, height: 12, transform: 'rotate(180deg)' }} />
-                        Oldest
-                      </Box>
-                    </SelectItem>
-                    <SelectItem value="rating">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Star style={{ width: 12, height: 12 }} />
-                        Highest Rated
-                      </Box>
-                    </SelectItem>
-                    <SelectItem value="popular">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Eye style={{ width: 12, height: 12 }} />
-                        Most Popular
-                      </Box>
-                    </SelectItem>
-                    <SelectItem value="price-low">Price: Low to High</SelectItem>
-                    <SelectItem value="price-high">Price: High to Low</SelectItem>
-                    <SelectItem value="alpha-asc">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <ArrowUpDown style={{ width: 12, height: 12 }} />
-                        A - Z
-                      </Box>
-                    </SelectItem>
-                    <SelectItem value="alpha-desc">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <ArrowUpDown style={{ width: 12, height: 12, transform: 'rotate(180deg)' }} />
-                        Z - A
-                      </Box>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </Box>
-            </Box>
-
+      {/* Results Controls */}
+      {!loading && results.length > 0 && (
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', gap: 2, mb: 3, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>View:</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2 }}>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
-                >
-                  <List style={{ width: 16, height: 16 }} />
-                </Button>
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-                >
-                  <Grid style={{ width: 16, height: 16 }} />
-                </Button>
-              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Sort by:</Typography>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger style={{ width: 160 }}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent style={{ zIndex: 50, backgroundColor: theme.palette.background.paper }}>
+                  <SelectItem value="relevance">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <TrendingUp style={{ width: 12, height: 12 }} />
+                      Relevance
+                    </Box>
+                  </SelectItem>
+                  <SelectItem value="newest">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Clock style={{ width: 12, height: 12 }} />
+                      Newest
+                    </Box>
+                  </SelectItem>
+                  <SelectItem value="oldest">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Clock style={{ width: 12, height: 12, transform: 'rotate(180deg)' }} />
+                      Oldest
+                    </Box>
+                  </SelectItem>
+                  <SelectItem value="rating">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Star style={{ width: 12, height: 12 }} />
+                      Highest Rated
+                    </Box>
+                  </SelectItem>
+                  <SelectItem value="popular">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Eye style={{ width: 12, height: 12 }} />
+                      Most Popular
+                    </Box>
+                  </SelectItem>
+                  <SelectItem value="price-low">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="alpha-asc">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <ArrowUpDown style={{ width: 12, height: 12 }} />
+                      A - Z
+                    </Box>
+                  </SelectItem>
+                  <SelectItem value="alpha-desc">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <ArrowUpDown style={{ width: 12, height: 12, transform: 'rotate(180deg)' }} />
+                      Z - A
+                    </Box>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </Box>
           </Box>
-        )}
-      </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>View:</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2 }}>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+              >
+                <List style={{ width: 16, height: 16 }} />
+              </Button>
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+              >
+                <Grid style={{ width: 16, height: 16 }} />
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      )}
 
       {/* Results */}
       {loading ? (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-            <CircularProgress size={32} />
-            <Typography color="text.secondary">Searching across all content types...</Typography>
-          </Box>
-        </Box>
+        <PageLoadingState count={6} variant={viewMode === 'grid' ? 'card' : 'list'} />
       ) : results.length === 0 ? (
         <>
           {/* Search Suggestions -- shown when query is empty */}
@@ -520,7 +568,7 @@ export default function SearchResults() {
           {/* No results -- shown when there IS a query but no results */}
           {query && query.trim() !== '' && (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, textAlign: 'center' }}>
-              <Search style={{ width: 48, height: 48, color: 'var(--muted-foreground)', marginBottom: 16 }} />
+              <Search style={{ width: 48, height: 48, color: theme.palette.text.secondary, marginBottom: 16 }} />
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No results found</Typography>
               <Typography color="text.secondary" sx={{ mb: 2 }}>
                 Try adjusting your search query or filters
@@ -559,7 +607,7 @@ export default function SearchResults() {
           <TabsList style={{ marginBottom: 24 }}>
             <TabsTrigger value="all">All ({totalResults})</TabsTrigger>
             {Object.entries(resultsByType).map(([type, typeResults]) => {
-              const Icon = contentTypeIcons[type as keyof typeof contentTypeIcons];
+              const Icon = contentTypeIcons[type] || HelpCircle;
               return (
                 <TabsTrigger key={type} value={type} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Icon style={{ width: 12, height: 12 }} />

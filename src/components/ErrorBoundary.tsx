@@ -82,11 +82,11 @@ export class ErrorBoundary extends Component<Props, State> {
                 p: 1.5,
                 bgcolor: 'action.hover',
                 borderRadius: 1,
-                maxHeight: 120,
+                maxHeight: 160,
                 overflow: 'auto',
                 wordBreak: 'break-all',
               }}>
-                {this.state.error.message}
+                {this.state.error.name}: {this.state.error.message}
               </Typography>
             )}
             <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>

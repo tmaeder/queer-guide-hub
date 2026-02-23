@@ -22,7 +22,7 @@ export function Loading({ size = "md", text }: LoadingProps) {
               width: d,
               height: d,
               borderRadius: '50%',
-              backgroundColor: '#333333',
+              backgroundColor: 'currentColor',
               animation: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               animationDelay: `${i * 0.2}s`,
             }}
@@ -53,7 +53,7 @@ export function LoadingSpinner({ size = "md" }: LoadingSpinnerProps) {
         height: s,
         borderRadius: '50%',
         border: '2px solid #e5e5e5',
-        borderTopColor: '#333333',
+        borderTopColor: 'currentColor',
         animation: 'spin 1s linear infinite',
       }}
     />
@@ -78,7 +78,7 @@ export function PageLoading({ text = "Loading..." }: PageLoadingProps) {
                   width: 12,
                   height: 12,
                   borderRadius: '50%',
-                  backgroundColor: '#333333',
+                  backgroundColor: 'currentColor',
                   animation: 'bounce 0.8s ease-in-out infinite',
                   animationDelay: `${i * 0.1}s`,
                 }}

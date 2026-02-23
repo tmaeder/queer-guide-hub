@@ -1,242 +1,374 @@
-import React, { useState, useEffect } from "react";
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, Shield, Heart, Scale, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
-import { useILGAData, LGBTJurisdiction } from "@/hooks/useILGAData";
+import {
+  ExternalLink, Shield, Heart, Scale, AlertTriangle, CheckCircle,
+  XCircle, Clock, Ban, Users, Gavel, BookOpen, Home, Briefcase,
+  Stethoscope, ShoppingBag, GraduationCap, Fingerprint
+} from "lucide-react";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import EqualityScoreBadge from './EqualityScoreBadge';
+import {
+  parseSsuDetails, parseSsuSummary, getProtectionStatus,
+  isCriminalized, hasDeathPenalty
+} from '@/utils/equalityScore';
 
 interface LGBTJurisdictionInfoProps {
-  countryName: string;
-  countryCode?: string;
+  country: any;
   className?: string;
+  // Legacy props (no longer used but kept for backward compat)
+  countryName?: string;
+  countryCode?: string;
+  style?: React.CSSProperties;
 }
 
-export default function LGBTJurisdictionInfo({ countryName, countryCode, className = "" }: LGBTJurisdictionInfoProps) {
-  const [jurisdictionData, setJurisdictionData] = useState<LGBTJurisdiction | null>(null);
-  const { fetchILGAData, loading, error } = useILGAData();
-
-  useEffect(() => {
-    const loadData = async () => {
-      const data = await fetchILGAData(countryCode, countryName);
-      if (data) {
-        setJurisdictionData(data);
-      }
-    };
-
-    loadData();
-  }, [countryCode, countryName, fetchILGAData]);
-
-  const getStatusIcon = (status: string) => {
-    const lowerStatus = status.toLowerCase();
-    if (lowerStatus.includes('legal') || lowerStatus.includes('protected')) {
-      return <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />;
-    } else if (lowerStatus.includes('criminalised') || lowerStatus.includes('prohibited')) {
-      return <XCircle style={{ height: 16, width: 16, color: '#ef4444' }} />;
-    } else if (lowerStatus.includes('partial') || lowerStatus.includes('limited')) {
-      return <AlertTriangle style={{ height: 16, width: 16, color: '#eab308' }} />;
-    } else {
-      return <Clock style={{ height: 16, width: 16, color: '#6b7280' }} />;
-    }
-  };
-
-  const getStatusStyle = (status: string): React.CSSProperties => {
-    const lowerStatus = status.toLowerCase();
-    if (lowerStatus.includes('legal') || lowerStatus.includes('protected')) {
-      return { backgroundColor: '#dcfce7', color: '#166534', borderColor: '#bbf7d0' };
-    } else if (lowerStatus.includes('criminalised') || lowerStatus.includes('prohibited')) {
-      return { backgroundColor: '#fee2e2', color: '#991b1b', borderColor: '#fecaca' };
-    } else if (lowerStatus.includes('partial') || lowerStatus.includes('limited')) {
-      return { backgroundColor: '#fef9c3', color: '#854d0e', borderColor: '#fde68a' };
-    } else {
-      return { backgroundColor: '#f3f4f6', color: '#1f2937', borderColor: '#e5e7eb' };
-    }
-  };
-
-  if (loading) {
-    return (
-      <Card className={`${className}`}>
-        <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Shield style={{ height: 20, width: 20 }} />
-            LGBT+ Rights & Legal Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ height: 16, bgcolor: '#e5e7eb', borderRadius: 1, width: '75%' }} />
-            <Box sx={{ height: 16, bgcolor: '#e5e7eb', borderRadius: 1, width: '50%' }} />
-            <Box sx={{ height: 16, bgcolor: '#e5e7eb', borderRadius: 1, width: '66%' }} />
-          </Box>
-        </CardContent>
-      </Card>
-    );
+/** Status icon based on value */
+function StatusIcon({ value, size = 16 }: { value: string | boolean | null | undefined; size?: number }) {
+  if (value === true || value === 'Yes' || value === 'Legal' || value === 'Protected' || value === 'Banned') {
+    return <CheckCircle style={{ height: size, width: size, color: '#22c55e', flexShrink: 0 }} />;
   }
-
-  if (error) {
-    return (
-      <Card className={`${className}`}>
-        <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Shield style={{ height: 20, width: 20 }} />
-            LGBT+ Rights & Legal Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p style={{ color: 'var(--muted-foreground)' }}>Unable to load LGBT+ rights data at this time.</p>
-        </CardContent>
-      </Card>
-    );
+  if (value === false || value === 'No' || value === 'Criminalised' || value === 'Prohibited' || value === 'Not banned') {
+    return <XCircle style={{ height: size, width: size, color: '#ef4444', flexShrink: 0 }} />;
   }
-
-  if (!jurisdictionData) {
-    return null;
+  if (typeof value === 'string' && (value.includes('Partial') || value.includes('Limited') || value.includes('Varies') || value.includes('Civil Union'))) {
+    return <AlertTriangle style={{ height: size, width: size, color: '#eab308', flexShrink: 0 }} />;
   }
+  return <Clock style={{ height: size, width: size, color: '#9ca3af', flexShrink: 0 }} />;
+}
+
+/** Badge style based on value */
+function statusBadgeStyle(value: string | null | undefined): React.CSSProperties {
+  const v = (value || '').toLowerCase();
+  if (v.includes('legal') || v.includes('yes') || v.includes('protected') || v.includes('banned') || v.includes('marriage')) {
+    return { backgroundColor: '#dcfce7', color: '#166534', borderColor: '#bbf7d0' };
+  }
+  if (v.includes('criminalised') || v.includes('prohibited') || v.includes('not banned') || v === 'no') {
+    return { backgroundColor: '#fee2e2', color: '#991b1b', borderColor: '#fecaca' };
+  }
+  if (v.includes('partial') || v.includes('limited') || v.includes('varies') || v.includes('civil union')) {
+    return { backgroundColor: '#fef9c3', color: '#854d0e', borderColor: '#fde68a' };
+  }
+  return { backgroundColor: '#f3f4f6', color: '#374151', borderColor: '#e5e7eb' };
+}
+
+/** Protection grid row: shows SO/GI/GE/SC */
+function ProtectionRow({ label, icon: Icon, data }: {
+  label: string;
+  icon: React.ElementType;
+  data: Record<string, any> | null | undefined;
+}) {
+  const status = getProtectionStatus(data);
+  const since = data?.so_since || data?.gi_since;
+
+  // Determine overall status
+  const yesCount = [status.so, status.gi, status.ge, status.sc].filter(s => s === 'Yes').length;
+  const overallValue = yesCount >= 3 ? 'Yes' : yesCount >= 1 ? 'Partial' : (status.so === 'No data' ? null : 'No');
 
   return (
-    <Card className={`${className}`}>
-      <CardHeader>
-        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Shield style={{ height: 20, width: 20, color: 'hsl(var(--primary))' }} />
-          LGBT+ Rights & Legal Status
-        </CardTitle>
-        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-          Based on data from ILGA World Database • Last updated: {jurisdictionData.lastUpdated}
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
+      <Icon style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, lineHeight: 1.3 }}>{label}</Typography>
+      </Box>
+      <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+        {['SO', 'GI', 'GE', 'SC'].map((dim) => {
+          const val = status[dim.toLowerCase() as keyof typeof status];
+          const isYes = val === 'Yes';
+          const isNo = val === 'No';
+          return (
+            <Box
+              key={dim}
+              title={`${dim}: ${val}`}
+              sx={{
+                width: 24,
+                height: 20,
+                borderRadius: 0.5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.625rem',
+                fontWeight: 600,
+                bgcolor: isYes ? '#dcfce7' : isNo ? '#fee2e2' : '#f3f4f6',
+                color: isYes ? '#166534' : isNo ? '#991b1b' : '#9ca3af',
+                border: '1px solid',
+                borderColor: isYes ? '#bbf7d0' : isNo ? '#fecaca' : '#e5e7eb',
+              }}
+            >
+              {dim}
+            </Box>
+          );
+        })}
+      </Box>
+      {since && (
+        <Typography sx={{ fontSize: '0.6875rem', color: '#9ca3af', flexShrink: 0 }}>
+          {since}
         </Typography>
-      </CardHeader>
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {/* Criminalization Status */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Scale style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-            <Typography variant="h4" sx={{ fontWeight: 600 }}>Same-Sex Activity</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {getStatusIcon(jurisdictionData.criminalisation.status)}
-            <Badge variant="outline" style={getStatusStyle(jurisdictionData.criminalisation.status)}>
-              {jurisdictionData.criminalisation.status}
-            </Badge>
-          </Box>
-          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', pl: 3 }}>
-            {jurisdictionData.criminalisation.description}
+      )}
+    </Box>
+  );
+}
+
+/** Simple status row for TEXT columns */
+function SimpleRow({ label, icon: Icon, value, detail }: {
+  label: string;
+  icon: React.ElementType;
+  value: string | null | undefined;
+  detail?: string | null;
+}) {
+  const displayValue = value && value !== 'No data' ? value : null;
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
+      <Icon style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, lineHeight: 1.3 }}>{label}</Typography>
+      </Box>
+      {displayValue ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+          <StatusIcon value={displayValue} size={14} />
+          <Badge variant="outline" style={{ ...statusBadgeStyle(displayValue), fontSize: '0.6875rem', padding: '1px 6px' }}>
+            {displayValue}
+          </Badge>
+        </Box>
+      ) : (
+        <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af' }}>No data</Typography>
+      )}
+    </Box>
+  );
+}
+
+export default function LGBTJurisdictionInfo({ country, className = '', countryName, countryCode, style }: LGBTJurisdictionInfoProps) {
+  // If no country object passed, show nothing (legacy usage without data)
+  if (!country) return null;
+
+  const crim = country.lgbti_criminalization as Record<string, any> | null;
+  const foe = country.lgbti_expression_restrictions as Record<string, any> | null;
+  const foa = country.lgbti_association_restrictions as Record<string, any> | null;
+  const ssuDetails = parseSsuDetails(country.lgbti_same_sex_unions);
+  const lastUpdated = country.lgbti_data_last_updated
+    ? new Date(country.lgbti_data_last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    : null;
+
+  const crimLegal = crim?.legal;
+  const crimStatus = crimLegal === true ? 'Legal' : crimLegal === false ? 'Criminalised' : 'Unknown';
+
+  return (
+    <Card className={className} style={style}>
+      <CardHeader sx={{ pb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Shield style={{ height: 20, width: 20, color: 'hsl(var(--primary))' }} />
+            LGBTI Rights Overview
+          </CardTitle>
+          <EqualityScoreBadge score={country.equality_score} size="sm" />
+        </Box>
+        {lastUpdated && (
+          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            Source: ILGA World Database &middot; Updated {lastUpdated}
           </Typography>
-          {jurisdictionData.criminalisation.penalty !== "None" && jurisdictionData.criminalisation.penalty !== "Unknown" && (
-            <Typography sx={{ fontSize: '0.875rem', color: '#dc2626', pl: 3, fontWeight: 500 }}>
-              Penalty: {jurisdictionData.criminalisation.penalty}
-            </Typography>
-          )}
+        )}
+      </CardHeader>
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 0 }}>
+        {/* Section 1: Criminalisation & Freedoms */}
+        <Box>
+          <Typography sx={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280', mb: 1 }}>
+            Criminalisation & Freedoms
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            {/* Criminalisation */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
+              <Scale style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500 }}>Same-Sex Activity</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                <StatusIcon value={crimLegal} />
+                <Badge variant="outline" style={{ ...statusBadgeStyle(crimStatus), fontSize: '0.6875rem', padding: '1px 6px' }}>
+                  {crimStatus}
+                </Badge>
+              </Box>
+            </Box>
+            {crimLegal === false && crim?.penalty && (
+              <Typography sx={{ fontSize: '0.75rem', color: '#dc2626', pl: 4, fontWeight: 500 }}>
+                Penalty: {crim.penalty}{crim.max_prison ? ` (${crim.max_prison})` : ''}
+                {hasDeathPenalty(crim) ? ' - Death penalty possible' : ''}
+              </Typography>
+            )}
+            {crimLegal === true && crim?.decrim_year_1 && (
+              <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af', pl: 4 }}>
+                Decriminalized: {crim.decrim_year_1}{crim.decrim_year_2 ? ` / ${crim.decrim_year_2}` : ''}
+              </Typography>
+            )}
+
+            {/* Expression */}
+            <SimpleRow
+              label="Freedom of Expression"
+              icon={BookOpen}
+              value={foe?.summary}
+            />
+
+            {/* Association */}
+            <SimpleRow
+              label="Freedom of Association"
+              icon={Users}
+              value={foa?.status}
+            />
+          </Box>
         </Box>
 
         <Separator />
 
-        {/* Same-Sex Marriage */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Heart style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-            <Typography variant="h4" sx={{ fontWeight: 600 }}>Same-Sex Marriage</Typography>
+        {/* Section 2: Protection Against Discrimination */}
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+            <Typography sx={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280' }}>
+              Anti-Discrimination Protection
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
+              {['SO', 'GI', 'GE', 'SC'].map(dim => (
+                <Typography key={dim} sx={{ fontSize: '0.5625rem', fontWeight: 600, color: '#9ca3af', width: 24, textAlign: 'center' }}>
+                  {dim}
+                </Typography>
+              ))}
+            </Box>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {getStatusIcon(jurisdictionData.sameSeMarriage.status)}
-            <Badge variant="outline" style={getStatusStyle(jurisdictionData.sameSeMarriage.status)}>
-              {jurisdictionData.sameSeMarriage.status}
-            </Badge>
-            {jurisdictionData.sameSeMarriage.date && (
-              <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                (Since {new Date(jurisdictionData.sameSeMarriage.date).getFullYear()})
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <ProtectionRow label="Constitutional" icon={Shield} data={country.lgbti_constitutional_protection} />
+            <ProtectionRow label="Employment" icon={Briefcase} data={country.lgbti_employment_protection} />
+            <ProtectionRow label="Housing" icon={Home} data={country.lgbti_housing_protection} />
+            <ProtectionRow label="Education" icon={GraduationCap} data={country.lgbti_education_protection} />
+            <ProtectionRow label="Health" icon={Stethoscope} data={country.lgbti_health_protection} />
+            <ProtectionRow label="Goods & Services" icon={ShoppingBag} data={country.lgbti_goods_services_protection} />
+            <ProtectionRow label="Bullying" icon={AlertTriangle} data={country.lgbti_bullying_protection} />
+          </Box>
+        </Box>
+
+        <Separator />
+
+        {/* Section 3: Criminal Justice */}
+        <Box>
+          <Typography sx={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280', mb: 1 }}>
+            Criminal Justice
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <ProtectionRow label="Hate Crime Laws" icon={Gavel} data={country.lgbti_hate_crime_law} />
+            <ProtectionRow label="Incitement Prohibition" icon={Ban} data={country.lgbti_incitement_prohibition} />
+          </Box>
+        </Box>
+
+        <Separator />
+
+        {/* Section 4: Family & Relationships */}
+        <Box>
+          <Typography sx={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280', mb: 1 }}>
+            Family & Relationships
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            {/* Same-sex unions */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
+              <Heart style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500 }}>Same-Sex Unions</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                <StatusIcon value={ssuDetails.summary} />
+                <Badge variant="outline" style={{ ...statusBadgeStyle(ssuDetails.summary), fontSize: '0.6875rem', padding: '1px 6px' }}>
+                  {ssuDetails.summary}
+                </Badge>
+              </Box>
+            </Box>
+            {ssuDetails.marriage_since && (
+              <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af', pl: 4 }}>
+                Marriage since {ssuDetails.marriage_since}
+                {ssuDetails.civil_union_since ? ` | Civil union since ${ssuDetails.civil_union_since}` : ''}
+              </Typography>
+            )}
+
+            {/* Adoption */}
+            <SimpleRow
+              label="Adoption Rights"
+              icon={Users}
+              value={country.lgbti_adoption_rights}
+            />
+          </Box>
+        </Box>
+
+        <Separator />
+
+        {/* Section 5: Identity & Health */}
+        <Box>
+          <Typography sx={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280', mb: 1 }}>
+            Identity & Health
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            {/* Gender Recognition */}
+            {country.lgbti_gender_recognition && Object.keys(country.lgbti_gender_recognition).length > 0 && (
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, py: 1 }}>
+                <Fingerprint style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0, marginTop: 2 }} />
+                <Box sx={{ flex: 1 }}>
+                  <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500 }}>Gender Recognition</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                    {country.lgbti_gender_recognition.gender_marker && (
+                      <Badge variant="outline" style={{ ...statusBadgeStyle(country.lgbti_gender_recognition.gender_marker), fontSize: '0.625rem', padding: '0px 4px' }}>
+                        Marker: {country.lgbti_gender_recognition.gender_marker}
+                      </Badge>
+                    )}
+                    {country.lgbti_gender_recognition.self_id === 'Yes' && (
+                      <Badge variant="outline" style={{ backgroundColor: '#dcfce7', color: '#166534', borderColor: '#bbf7d0', fontSize: '0.625rem', padding: '0px 4px' }}>
+                        Self-ID
+                      </Badge>
+                    )}
+                    {country.lgbti_gender_recognition.requires_surgery === 'Yes' && (
+                      <Badge variant="outline" style={{ backgroundColor: '#fee2e2', color: '#991b1b', borderColor: '#fecaca', fontSize: '0.625rem', padding: '0px 4px' }}>
+                        Requires Surgery
+                      </Badge>
+                    )}
+                    {country.lgbti_gender_recognition.requires_diagnosis === 'Yes' && (
+                      <Badge variant="outline" style={{ backgroundColor: '#fef9c3', color: '#854d0e', borderColor: '#fde68a', fontSize: '0.625rem', padding: '0px 4px' }}>
+                        Requires Diagnosis
+                      </Badge>
+                    )}
+                  </Box>
+                </Box>
               </Box>
             )}
-          </Box>
-          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', pl: 3 }}>
-            {jurisdictionData.sameSeMarriage.description}
-          </Typography>
-        </Box>
 
-        <Separator />
+            {/* Conversion Therapy */}
+            <SimpleRow
+              label="Conversion Therapy"
+              icon={Ban}
+              value={country.lgbti_conversion_therapy_regulation}
+            />
 
-        {/* Anti-Discrimination */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Shield style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-            <Typography variant="h4" sx={{ fontWeight: 600 }}>Anti-Discrimination Protection</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {getStatusIcon(jurisdictionData.antidiscrimination.status)}
-            <Badge variant="outline" style={getStatusStyle(jurisdictionData.antidiscrimination.status)}>
-              {jurisdictionData.antidiscrimination.status}
-            </Badge>
-          </Box>
-          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', pl: 3 }}>
-            {jurisdictionData.antidiscrimination.description}
-          </Typography>
-          {jurisdictionData.antidiscrimination.scope.length > 0 && (
-            <Box sx={{ pl: 3 }}>
-              <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1 }}>Protected areas:</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {jurisdictionData.antidiscrimination.scope.map((area) => (
-                  <Badge key={area} variant="secondary" sx={{ fontSize: '0.75rem' }}>
-                    {area}
-                  </Badge>
-                ))}
-              </Box>
-            </Box>
-          )}
-        </Box>
-
-        <Separator />
-
-        {/* Additional Protections */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Constitutional Protection</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {jurisdictionData.constitutionalProtection ? (
-                <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
-              ) : (
-                <XCircle style={{ height: 16, width: 16, color: '#ef4444' }} />
-              )}
-              <Box component="span" sx={{ fontSize: '0.875rem' }}>
-                {jurisdictionData.constitutionalProtection ? 'Yes' : 'No'}
-              </Box>
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Hate Crime Laws</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {jurisdictionData.hateClimeLaws ? (
-                <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
-              ) : (
-                <XCircle style={{ height: 16, width: 16, color: '#ef4444' }} />
-              )}
-              <Box component="span" sx={{ fontSize: '0.875rem' }}>
-                {jurisdictionData.hateClimeLaws ? 'Yes' : 'No'}
-              </Box>
-            </Box>
+            {/* Intersex Protection */}
+            <SimpleRow
+              label="Intersex Bodily Integrity"
+              icon={Shield}
+              value={country.lgbti_intersex_protection}
+            />
           </Box>
         </Box>
 
-        {/* Sources */}
-        <Box sx={{ pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <ExternalLink style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-            <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Sources:</Box>
-          </Box>
-          <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-            {jurisdictionData.sources.map((source, index) => (
-              <div key={index}>• {source}</div>
-            ))}
-            <Box sx={{ pt: 1 }}>
-              <Box
-                component="a"
-                href="https://database.ilga.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ color: 'primary.main', '&:hover': { textDecoration: 'underline' }, display: 'flex', alignItems: 'center', gap: 0.5 }}
-              >
-                View full ILGA World Database
-                <ExternalLink style={{ height: 12, width: 12 }} />
-              </Box>
-            </Box>
+        {/* Source */}
+        <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
+          <Box
+            component="a"
+            href="https://database.ilga.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              fontSize: '0.6875rem',
+              color: 'primary.main',
+              '&:hover': { textDecoration: 'underline' },
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+            }}
+          >
+            <ExternalLink style={{ height: 10, width: 10 }} />
+            ILGA World Database
           </Box>
         </Box>
       </CardContent>

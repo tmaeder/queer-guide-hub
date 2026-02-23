@@ -78,6 +78,9 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
         open={isOpen && Boolean(anchorEl)}
         anchorEl={anchorEl}
         onClose={handleClose}
+        disableAutoFocus
+        disableEnforceFocus
+        disableRestoreFocus
         anchorOrigin={{ vertical: 'bottom', horizontal: align === 'start' ? 'left' : align === 'end' ? 'right' : 'center' }}
         transformOrigin={{ vertical: 'top', horizontal: align === 'start' ? 'left' : align === 'end' ? 'right' : 'center' }}
         slotProps={{ paper: { ref: ref as any, className, style: { marginTop: sideOffset, ...style }, sx: { borderRadius: 1.25, minWidth: 288, p: 2 } } }}

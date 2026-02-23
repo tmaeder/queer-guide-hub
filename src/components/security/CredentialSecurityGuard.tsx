@@ -3,7 +3,6 @@ import { useToast } from '@/hooks/use-toast';
 
 interface SecureCredentials {
   stripePublishableKey?: string;
-  mapboxToken?: string;
 }
 
 interface CredentialContextType {
@@ -33,7 +32,6 @@ export function CredentialSecurityGuard({ children }: CredentialSecurityGuardPro
     // Clear any legacy localStorage credentials on initialization
     const legacyKeys = [
       'STRIPE_PUBLISHABLE_KEY',
-      'MAPBOX_TOKEN',
       'STRIPE_SECRET_KEY', // This should never exist client-side but clear just in case
       'API_KEY',
       'SECRET_KEY'

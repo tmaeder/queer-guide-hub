@@ -20,6 +20,8 @@ import { toast } from "@/hooks/use-toast";
 import { PersonalitiesCsvImport } from "@/components/personalities/PersonalitiesCsvImport";
 import { AdultModelsCsvImport } from "@/components/personalities/AdultModelsCsvImport";
 import { BulkCreatePersonalities } from "@/components/personalities/BulkCreatePersonalities";
+import { ExportExcelButton } from "@/components/admin/ExportExcelButton";
+import { exportToExcel, fetchAllRows, formatDate, formatDateTime, formatArray, formatBoolean, generateFilename, type ExportColumnDef } from "@/utils/excelExport";
 import {
   Users,
   Search,
@@ -137,29 +139,26 @@ export default function AdminPersonalities() {
     }
   };
 
-  const exportPersonalities = () => {
-    const csv = [
-      ['Name', 'Pronouns', 'Profession', 'Nationality', 'Verification', 'Visibility', 'Featured', 'Views', 'Created At'].join(','),
-      ...personalities.map(p => [
-        p.name,
-        p.pronouns || '',
-        p.profession || '',
-        p.nationality || '',
-        p.verification_status,
-        p.visibility,
-        p.is_featured ? 'Yes' : 'No',
-        p.view_count,
-        new Date(p.created_at).toLocaleDateString()
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'personalities.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExportExcel = async () => {
+    const columns: ExportColumnDef<any>[] = [
+      { header: 'Name', accessor: r => r.name },
+      { header: 'Pronouns', accessor: r => r.pronouns },
+      { header: 'Profession', accessor: r => r.profession },
+      { header: 'Nationality', accessor: r => r.nationality },
+      { header: 'Birth Place', accessor: r => r.birth_place },
+      { header: 'Birth Date', accessor: r => formatDate(r.birth_date) },
+      { header: 'Death Date', accessor: r => formatDate(r.death_date) },
+      { header: 'Is Living', accessor: r => formatBoolean(r.is_living) },
+      { header: 'Verification', accessor: r => r.verification_status },
+      { header: 'Visibility', accessor: r => r.visibility },
+      { header: 'Featured', accessor: r => formatBoolean(r.is_featured) },
+      { header: 'View Count', accessor: r => r.view_count },
+      { header: 'Tags', accessor: r => formatArray(r.tags) },
+      { header: 'Website', accessor: r => r.website_url },
+      { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
+    ];
+    const allData = await fetchAllRows('personalities', '*', { column: 'name', ascending: true });
+    await exportToExcel(allData, columns, generateFilename('personalities'));
   };
 
   const getStats = () => {
@@ -186,10 +185,7 @@ export default function AdminPersonalities() {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <PersonalitiesCsvImport onImportComplete={refetchPersonalities} />
           <AdultModelsCsvImport onImportComplete={refetchPersonalities} />
-          <Button onClick={exportPersonalities} variant="outline" sx={{ gap: 1 }}>
-            <Download style={{ height: 16, width: 16 }} />
-            Export CSV
-          </Button>
+          <ExportExcelButton onExport={handleExportExcel} />
         </Box>
       </Box>
 
@@ -229,7 +225,7 @@ export default function AdminPersonalities() {
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>Featured</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#333333' }}>{stats.featured}</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>{stats.featured}</Typography>
               </Box>
               <Star style={{ height: 32, width: 32, color: '#555555' }} />
             </Box>

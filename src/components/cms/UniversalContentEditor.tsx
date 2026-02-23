@@ -20,6 +20,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { ProfessionAutocomplete } from '@/components/ui/profession-autocomplete';
 import { CountryAutocomplete } from '@/components/ui/country-autocomplete';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { AutoTagPanel } from '@/components/cms/AutoTagPanel';
+import { GeoLinkPanel } from '@/components/cms/GeoLinkPanel';
 
 interface UniversalContentEditorProps {
   content: any;
@@ -1048,6 +1050,26 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               </Button>
             </CardContent>
           </Card>
+
+          {/* AI Tag Suggestions */}
+          {content?.id && content?.content_type && (
+            <AutoTagPanel
+              contentType={content.content_type}
+              contentId={content.id}
+            />
+          )}
+
+          {/* Geo Location Linking */}
+          {content?.id && content?.content_type && (
+            <GeoLinkPanel
+              contentType={content.content_type}
+              contentId={content.id}
+              cityName={content.city || content.birth_place}
+              countryName={content.country || content.nationality}
+              hasCityId={!!content.city_id}
+              hasCountryId={!!content.country_id}
+            />
+          )}
 
           {/* Raw Data Preview */}
           <Card>

@@ -8,6 +8,7 @@ import { BookOpen, Calendar, User, Search, Heart, ArrowRight, Tag } from "lucide
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 
 export default function Blog() {
@@ -20,7 +21,7 @@ export default function Blog() {
   const categories = ["All Posts", "Community", "Travel", "Business", "Events", "Resources"];
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Hero Section */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 2 }}>
@@ -228,6 +229,6 @@ export default function Blog() {
           </Box>
         </>
       )}
-    </Box>
+    </Container>
   );
 }

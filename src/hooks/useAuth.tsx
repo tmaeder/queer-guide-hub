@@ -39,30 +39,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [hasPasskey, setHasPasskey] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // onAuthStateChange is the single source of truth for auth state.
+    // It fires INITIAL_SESSION synchronously during setup with the
+    // session from localStorage (or null if none). All subsequent
+    // events (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED) are also
+    // delivered through this callback.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
+
         // Check for existing passkey enrollment when user signs in
         if (session?.user) {
           checkPasskeyEnrollment();
         }
       }
     );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
-      if (session?.user) {
-        checkPasskeyEnrollment();
-      }
-    });
 
     return () => subscription.unsubscribe();
   }, []);

@@ -22,9 +22,8 @@ export const PlacesCard = ({
   data,
   onClick
 }: PlacesCardProps) => {
-  const [countryImage, setCountryImage] = useState<string | null>(null);
+  const [countryImage, setCountryImage] = useState<string | null>(data?.image_url || null);
   const [imageLoading, setImageLoading] = useState(false);
-  const [imageKey, setImageKey] = useState(0); // Force refresh mechanism
 
   // City images hook
   const {
@@ -34,77 +33,69 @@ export const PlacesCard = ({
   const [cityImageUrl, setCityImageUrl] = useState<string | null>(data?.image_url || null);
   const [cityImageError, setCityImageError] = useState(false);
 
+  // Fetch country image: use DB image_url first, fall back to Pexels, save result
   useEffect(() => {
-    if (type === "country" && name) {
-      setImageLoading(true);
-      const fetchCountryImage = async () => {
-        try {
-          // Create more specific country queries for better representative images
-          const countrySpecificQueries = {
-            'France': 'France Eiffel Tower Paris landmarks',
-            'Italy': 'Italy Colosseum Rome landmarks',
-            'Japan': 'Japan Mount Fuji Tokyo landmarks',
-            'United States': 'USA Statue of Liberty New York landmarks',
-            'United Kingdom': 'UK Big Ben London landmarks',
-            'Germany': 'Germany Brandenburg Gate Berlin landmarks',
-            'Spain': 'Spain Sagrada Familia Barcelona landmarks',
-            'China': 'China Great Wall Beijing landmarks',
-            'India': 'India Taj Mahal Delhi landmarks',
-            'Brazil': 'Brazil Christ Redeemer Rio landmarks',
-            'Australia': 'Australia Sydney Opera House landmarks',
-            'Canada': 'Canada CN Tower Toronto landmarks',
-            'Russia': 'Russia Red Square Moscow landmarks',
-            'Greece': 'Greece Parthenon Athens landmarks',
-            'Egypt': 'Egypt Pyramids Cairo landmarks',
-            'Thailand': 'Thailand Bangkok temples landmarks',
-            'Turkey': 'Turkey Hagia Sophia Istanbul landmarks',
-            'Mexico': 'Mexico Chichen Itza landmarks',
-            'Netherlands': 'Netherlands Amsterdam canals landmarks',
-            'Switzerland': 'Switzerland Alps Matterhorn landmarks'
-          };
-
-          // Use specific query if available, otherwise use generic country query
-          const specificQuery = countrySpecificQueries[name as keyof typeof countrySpecificQueries];
-          const query = specificQuery || `${name} famous landmarks architecture cityscape`;
-
-          // Add a small random element to ensure different images for each country
-          const randomSeed = Math.floor(Math.random() * 5) + 1;
-          const finalQuery = `${query} ${randomSeed}`;
-
-          const {
-            data: imageData,
-            error
-          } = await supabase.functions.invoke('get-pexels-images', {
-            body: {
-              query: finalQuery,
-              type: 'country',
-              page: 1 // Use first page for most relevant results
-            }
-          });
-
-          if (error) {
-            console.error('Error fetching country image:', error);
-            return;
-          }
-
-          if (imageData?.images && imageData.images.length > 0) {
-            // Use a deterministic but unique index based on country name
-            const countryHash = name.split('').reduce((a, b) => {
-              a = (a << 5) - a + b.charCodeAt(0);
-              return a & a;
-            }, 0);
-            const imageIndex = Math.abs(countryHash) % imageData.images.length;
-            setCountryImage(imageData.images[imageIndex].url);
-          }
-        } catch (error) {
-          console.error('Error fetching country image:', error);
-        } finally {
-          setImageLoading(false);
-        }
-      };
-      fetchCountryImage();
+    if (type !== "country" || !name || !data?.id) return;
+    // Already have image from DB
+    if (data?.image_url) {
+      setCountryImage(data.image_url);
+      return;
     }
-  }, [type, name, imageKey]); // Include imageKey to trigger refresh
+
+    setImageLoading(true);
+    const fetchCountryImage = async () => {
+      try {
+        const countrySpecificQueries: Record<string, string> = {
+          'France': 'France Eiffel Tower Paris landmarks',
+          'Italy': 'Italy Colosseum Rome landmarks',
+          'Japan': 'Japan Mount Fuji Tokyo landmarks',
+          'United States': 'USA Statue of Liberty New York landmarks',
+          'United Kingdom': 'UK Big Ben London landmarks',
+          'Germany': 'Germany Brandenburg Gate Berlin landmarks',
+          'Spain': 'Spain Sagrada Familia Barcelona landmarks',
+          'China': 'China Great Wall Beijing landmarks',
+          'India': 'India Taj Mahal Delhi landmarks',
+          'Brazil': 'Brazil Christ Redeemer Rio landmarks',
+          'Australia': 'Australia Sydney Opera House landmarks',
+          'Canada': 'Canada CN Tower Toronto landmarks',
+          'Russia': 'Russia Red Square Moscow landmarks',
+          'Greece': 'Greece Parthenon Athens landmarks',
+          'Egypt': 'Egypt Pyramids Cairo landmarks',
+          'Thailand': 'Thailand Bangkok temples landmarks',
+          'Turkey': 'Turkey Hagia Sophia Istanbul landmarks',
+          'Mexico': 'Mexico Chichen Itza landmarks',
+          'Netherlands': 'Netherlands Amsterdam canals landmarks',
+          'Switzerland': 'Switzerland Alps Matterhorn landmarks',
+        };
+
+        const specificQuery = countrySpecificQueries[name];
+        const query = specificQuery || `${name} famous landmarks architecture cityscape`;
+
+        const { data: imageData, error } = await supabase.functions.invoke('get-pexels-images', {
+          body: { query, type: 'country', page: 1 }
+        });
+
+        if (error || !imageData?.images?.length) return;
+
+        // Deterministic index based on country name
+        const countryHash = name.split('').reduce((a, b) => {
+          a = (a << 5) - a + b.charCodeAt(0);
+          return a & a;
+        }, 0);
+        const imageIndex = Math.abs(countryHash) % imageData.images.length;
+        const imageUrl = imageData.images[imageIndex].url;
+        setCountryImage(imageUrl);
+
+        // Save to DB so future visits don't need Pexels
+        supabase.from('countries').update({ image_url: imageUrl }).eq('id', data.id).then();
+      } catch (err) {
+        // Silently fail — fallback image handles it
+      } finally {
+        setImageLoading(false);
+      }
+    };
+    fetchCountryImage();
+  }, [type, name, data?.id, data?.image_url]);
 
   // Fetch city image if it's a city and doesn't have an image
   useEffect(() => {
@@ -118,17 +109,12 @@ export const PlacesCard = ({
             setCityImageError(true);
           }
         } catch (error) {
-          console.error('Failed to load city image:', error);
           setCityImageError(true);
         }
       };
       loadCityImage();
     }
   }, [type, data?.id, name, cityImageUrl, cityImageError, fetchCityImage, data?.countries?.name, data?.country_name]);
-
-  const refreshImage = () => {
-    setImageKey(prev => prev + 1);
-  };
 
   const formatPopulation = (population?: number | null) => {
     if (!population) return null;
@@ -143,11 +129,11 @@ export const PlacesCard = ({
   const getIcon = () => {
     switch (type) {
       case "continent":
-        return <Globe style={{ height: 20, width: 20, color: '#333333' }} />;
+        return <Globe style={{ height: 20, width: 20 }} />;
       case "country":
-        return <MapPin style={{ height: 20, width: 20, color: '#333333' }} />;
+        return <MapPin style={{ height: 20, width: 20 }} />;
       case "city":
-        return <Building2 style={{ height: 20, width: 20, color: '#333333' }} />;
+        return <Building2 style={{ height: 20, width: 20 }} />;
       default:
         return null;
     }
@@ -176,7 +162,7 @@ export const PlacesCard = ({
           <Box sx={{ display: 'flex', gap: 1 }}>
             {city.is_capital && (
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', bgcolor: 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)' }}>
-                <Crown style={{ height: 12, width: 12, color: '#333333' }} />
+                <Crown style={{ height: 12, width: 12 }} />
               </Box>
             )}
             {city.is_major_city && (
@@ -209,20 +195,23 @@ export const PlacesCard = ({
       {/* Country Image */}
       {type === "country" && (
         <Box sx={{ aspectRatio: '4/3', width: '100%', overflow: 'hidden', borderTopLeftRadius: 8, borderTopRightRadius: 8, bgcolor: 'action.hover' }}>
-          {imageLoading ? (
+          {imageLoading && !countryImage ? (
             <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', bgcolor: 'rgba(var(--muted-foreground-rgb, 107, 114, 128), 0.2)', width: '100%', height: '100%' }} />
             </Box>
-          ) : (
+          ) : countryImage ? (
             <img
-              src={countryImage || `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`}
+              src={countryImage}
               alt={`${name} landscape`}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => {
-                // Fallback to default image if Pexels image fails to load
-                e.currentTarget.src = `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`;
+                e.currentTarget.style.display = 'none';
               }}
             />
+          ) : (
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Globe style={{ height: 32, width: 32, color: 'var(--muted-foreground)' }} />
+            </Box>
           )}
         </Box>
       )}

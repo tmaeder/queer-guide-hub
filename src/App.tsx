@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import "./i18n";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AccessibilityProvider } from "@/hooks/useAccessibility";
@@ -15,28 +15,27 @@ import { Footer } from "@/components/layout/Footer";
 import { AdminRouteGuard } from "@/components/security/AdminRouteGuard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-const Aurora = lazy(() => import("@/components/ui/Aurora"));
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { createOptimizedQueryClient } from "@/utils/queryOptimizations";
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
+const Aurora = lazy(() => import("@/components/ui/Aurora"));
 
-const Index = lazy(() => import("./pages/Index"));
-const Venues = lazy(() => import("./pages/Venues"));
-const VenueDetail = lazy(() => import("./pages/VenueDetail"));
-const Events = lazy(() => import("./pages/Events"));
-const EventDetail = lazy(() => import("./pages/EventDetail"));
-const Marketplace = lazy(() => import("./pages/Marketplace"));
-const MarketplaceItemDetail = lazy(() => import("./pages/MarketplaceItemDetail"));
+const Index = lazyRetry(() => import("./pages/Index"));
+const Venues = lazyRetry(() => import("./pages/Venues"));
+const VenueDetail = lazyRetry(() => import("./pages/VenueDetail"));
+const Events = lazyRetry(() => import("./pages/Events"));
+const EventDetail = lazyRetry(() => import("./pages/EventDetail"));
+const Marketplace = lazyRetry(() => import("./pages/Marketplace"));
+const MarketplaceItemDetail = lazyRetry(() => import("./pages/MarketplaceItemDetail"));
 
-const Places = lazy(() => import("./pages/Places"));
-const Resources = lazy(() => import("./pages/Ressources"));
-const UserDirectory = lazy(() => import("./pages/UserDirectory"));
-const Personalities = lazy(() => import("./pages/Personalities"));
-const PersonalityDetail = lazy(() => import("./pages/PersonalityDetail"));
+const Places = lazyRetry(() => import("./pages/Places"));
+const Resources = lazyRetry(() => import("./pages/Ressources"));
+const UserDirectory = lazyRetry(() => import("./pages/UserDirectory"));
+const Personalities = lazyRetry(() => import("./pages/Personalities"));
+const PersonalityDetail = lazyRetry(() => import("./pages/PersonalityDetail"));
 // CMS-managed pages (content from cms_pages table)
-const CMSRoutePage = lazy(() => import("./pages/CMSRoutePage"));
-const Auth = lazy(() => import("./pages/Auth"));
+const CMSRoutePage = lazyRetry(() => import("./pages/CMSRoutePage"));
+const Auth = lazyRetry(() => import("./pages/Auth"));
 
 // Unified Admin Shell (wraps all /admin/* routes)
 const AdminShell = lazy(() => import("./components/admin/shell/AdminShell").then(m => ({ default: m.AdminShell })));
@@ -49,9 +48,10 @@ const AdminCountries = lazy(() => import("./pages/AdminCountries"));
 const AdminTags = lazy(() => import("./pages/AdminTags"));
 const AdminCities = lazy(() => import("./pages/AdminCities"));
 const AdminGroups = lazy(() => import("./pages/AdminGroups"));
-const CityDetail = lazy(() => import("./pages/CityDetail"));
-const CountryDetail = lazy(() => import("./pages/CountryDetail"));
-const Travel = lazy(() => import("./pages/Travel"));
+const CityDetail = lazyRetry(() => import("./pages/CityDetail"));
+const CountryDetail = lazyRetry(() => import("./pages/CountryDetail"));
+const Travel = lazyRetry(() => import("./pages/Travel"));
+const MapPage = lazyRetry(() => import("./pages/Map"));
 const AdminVenues = lazy(() => import("./pages/AdminVenues"));
 const AdminVenueCategories = lazy(() => import("./pages/AdminVenueCategories"));
 const AdminVenueAmenities = lazy(() => import("./pages/AdminVenueAmenities"));
@@ -69,11 +69,23 @@ const AdminPersonalities = lazy(() => import("./pages/AdminPersonalities"));
 const AdminImportHub = lazy(() => import("./pages/AdminImportHub"));
 const AdminRedirects = lazy(() => import("./pages/AdminRedirects"));
 
+// New feature pages
+const Hotels = lazyRetry(() => import("./pages/Hotels"));
+const HotelDetail = lazyRetry(() => import("./pages/HotelDetail"));
+const QueerVillageDetail = lazyRetry(() => import("./pages/QueerVillageDetail"));
+// Festivals routes now redirect to /events (festivals integrated into events)
+
+// New admin pages
+const AdminHotels = lazy(() => import("./pages/AdminHotels"));
+const AdminQueerVillages = lazy(() => import("./pages/AdminQueerVillages"));
+// AdminFestivals removed — festivals integrated into events
+const AdminReview = lazy(() => import("./pages/AdminReview"));
+
 // CMS components rendered as admin views
 const AdminCMS = lazy(() => import("./pages/AdminCMS"));
 const ContentListPanel = lazy(() => import("./components/cms/ContentListPanel").then(m => ({ default: m.ContentListPanel })));
 const CMSOverview = lazy(() => import("./components/cms/CMSOverview").then(m => ({ default: m.CMSOverview })));
-const ReviewQueue = lazy(() => import("./components/cms/ReviewQueue").then(m => ({ default: m.ReviewQueue })));
+// ReviewQueue (CMS) is now loaded inside AdminReview page
 const MediaLibrary = lazy(() => import("./components/cms/MediaLibrary").then(m => ({ default: m.MediaLibrary })));
 const AuditLog = lazy(() => import("./components/cms/AuditLog").then(m => ({ default: m.AuditLog })));
 
@@ -83,72 +95,107 @@ const NewsSourcesManager = lazy(() => import("./components/admin/NewsSourcesMana
 const PipelineMonitor = lazy(() => import("./components/admin/PipelineMonitor").then(m => ({ default: m.PipelineMonitor })));
 const VenueImportQuickActions = lazy(() => import("./components/admin/VenueImportQuickActions").then(m => ({ default: m.VenueImportQuickActions })));
 const ApiKeysManager = lazy(() => import("./components/admin/ApiKeysManager").then(m => ({ default: m.ApiKeysManager })));
+const AffiliatePartnersManager = lazy(() => import("./components/admin/AffiliatePartnersManager").then(m => ({ default: m.AffiliatePartnersManager })));
+const LinkHealthDashboard = lazy(() => import("./components/admin/LinkHealthDashboard").then(m => ({ default: m.LinkHealthDashboard })));
 
 // Dashboard sub-views
 const SecurityMonitoringDashboard = lazy(() => import("./components/admin/SecurityMonitoringDashboard").then(m => ({ default: m.SecurityMonitoringDashboard })));
 const CloudflareDashboard = lazy(() => import("./components/admin/CloudflareDashboard").then(m => ({ default: m.CloudflareDashboard })));
 const UmamiAnalyticsDashboard = lazy(() => import("./components/analytics/UmamiAnalyticsDashboard").then(m => ({ default: m.UmamiAnalyticsDashboard })));
-const ProfessionDetail = lazy(() => import("./pages/ProfessionDetail"));
-const News = lazy(() => import("./pages/News"));
+const ProfessionDetail = lazyRetry(() => import("./pages/ProfessionDetail"));
+const News = lazyRetry(() => import("./pages/News"));
+const NewsDetail = lazyRetry(() => import("./pages/NewsDetail"));
 
 
-const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
-const UserProfile = lazy(() => import("./pages/UserProfile"));
-const Feed = lazy(() => import("./pages/Feed"));
+const ProfileSettings = lazyRetry(() => import("./pages/ProfileSettings"));
+const UserProfile = lazyRetry(() => import("./pages/UserProfile"));
+const Feed = lazyRetry(() => import("./pages/Feed"));
 
-const Messages = lazy(() => import("./pages/Messages"));
-const Friends = lazy(() => import("./pages/Friends"));
-const Groups = lazy(() => import("./pages/Groups"));
-const GroupDetail = lazy(() => import("./pages/GroupDetail"));
-const MyGroups = lazy(() => import("./pages/MyGroups"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const SearchResults = lazy(() => import("./pages/SearchResults"));
-const Favorites = lazy(() => import("./pages/Favorites"));
+const Messages = lazyRetry(() => import("./pages/Messages"));
+const Friends = lazyRetry(() => import("./pages/Friends"));
+const Groups = lazyRetry(() => import("./pages/Groups"));
+const GroupDetail = lazyRetry(() => import("./pages/GroupDetail"));
+const MyGroups = lazyRetry(() => import("./pages/MyGroups"));
+const NotFound = lazyRetry(() => import("./pages/NotFound"));
+const SearchResults = lazyRetry(() => import("./pages/SearchResults"));
+const Favorites = lazyRetry(() => import("./pages/Favorites"));
 
-const Sitemap = lazy(() => import("./pages/Sitemap"));
-const SubmitVenue = lazy(() => import("./pages/SubmitVenue"));
-const SubmitEvent = lazy(() => import("./pages/SubmitEvent"));
-const CMSPage = lazy(() => import("./pages/Page"));
+const Sitemap = lazyRetry(() => import("./pages/Sitemap"));
+const SubmitVenue = lazyRetry(() => import("./pages/SubmitVenue"));
+const SubmitEvent = lazyRetry(() => import("./pages/SubmitEvent"));
+const CMSPage = lazyRetry(() => import("./pages/Page"));
 
 const queryClient = createOptimizedQueryClient();
 
-const App = () => {
+// Retry wrapper for React.lazy — handles chunk load failures after deploys
+function lazyRetry<T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>,
+): React.LazyExoticComponent<T> {
+  return lazy(() =>
+    factory().catch((err) => {
+      // If the chunk failed to load (e.g. after a new deploy changed hashes),
+      // try a hard reload once. Use sessionStorage to prevent infinite loops.
+      const key = 'chunk-reload-' + window.location.pathname;
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, '1');
+        window.location.reload();
+        // Return a never-resolving promise so React doesn't render the error
+        return new Promise(() => {});
+      }
+      // Already tried reloading — surface the real error
+      sessionStorage.removeItem(key);
+      throw err;
+    }),
+  );
+}
+
+/** Inner shell — uses useLocation (requires BrowserRouter ancestor) */
+const AppRoutes = () => {
+  const location = useLocation();
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="queer-guide-theme">
-        <AccessibilityProvider>
-          <CookieConsentProvider>
-            <AuthProvider>
-              <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-               <Box sx={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-                 <Suspense fallback={null}>
-                   <Aurora
-                     colorStops={["#EF4444", "#22C55E", "#8B5CF6"]}
-                     blend={0.35}
-                     amplitude={1.0}
-                     speed={0.25}
-                   />
-                 </Suspense>
-               </Box>
-              <AnalyticsTracker />
-              <Box sx={{ position: 'relative', zIndex: 10 }}>
-                <Header />
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+      {/* Rainbow aurora background — fixed behind all content.
+          bgcolor matches the theme so the transparent aurora edges
+          blend into white (light) or black (dark). */}
+      <Box sx={(theme) => ({
+        position: 'fixed',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        bgcolor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
+      })}>
+        <Suspense fallback={null}>
+          <Aurora
+            colorStops={[
+              "#E40303",
+              "#FF8C00",
+              "#FFED00",
+              "#008026",
+              "#004DFF",
+              "#750787",
+            ]}
+            blend={0.4}
+            amplitude={1.0}
+            speed={0.3}
+          />
+        </Suspense>
+      </Box>
+      <AnalyticsTracker />
+      <Box sx={{ position: 'relative', zIndex: 1 }}>
+        <Header />
+      </Box>
+      <Box component="main" sx={{ flex: 1, position: 'relative', zIndex: 1 }}>
+          {/* key={location.pathname} resets ErrorBoundary on every route change */}
+          <ErrorBoundary key={location.pathname}>
+          <Suspense fallback={
+            <Box sx={{ py: 5, px: { xs: 2, sm: 3 }, maxWidth: 'lg', mx: 'auto' }}>
+              <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+                <Skeleton sx={{ height: 192 }} />
+                <Skeleton sx={{ height: 192 }} />
               </Box>
-              <Box component="main" sx={{ flex: 1, position: 'relative', zIndex: 10 }}>
-                <Container maxWidth="lg" sx={{ px: { xs: 1, sm: 2 } }}>
-                  <ErrorBoundary>
-                  <Suspense fallback={
-                    <Box sx={{ py: 5 }}>
-                      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-                        <Skeleton sx={{ height: 192 }} />
-                        <Skeleton sx={{ height: 192 }} />
-                      </Box>
-                    </Box>
-                  }>
+            </Box>
+          }>
                   <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/venues" element={<Venues />} />
@@ -158,8 +205,15 @@ const App = () => {
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/marketplace/:id" element={<MarketplaceItemDetail />} />
 
+                  <Route path="/hotels" element={<Hotels />} />
+                  <Route path="/hotels/:id" element={<HotelDetail />} />
+                  <Route path="/villages" element={<Navigate to="/places" replace />} />
+                  <Route path="/villages/:slug" element={<QueerVillageDetail />} />
+                  <Route path="/festivals" element={<Navigate to="/events" replace />} />
+                  <Route path="/festivals/:id" element={<Navigate to="/events" replace />} />
                   <Route path="/places" element={<Places />} />
                   <Route path="/travel" element={<Travel />} />
+                  <Route path="/map" element={<MapPage />} />
                   <Route path="/flights" element={<Navigate to="/travel" replace />} />
                   <Route path="/city/:id" element={<CityDetail />} />
                   <Route path="/country/:id" element={<CountryDetail />} />
@@ -216,9 +270,17 @@ const App = () => {
                     <Route path="imports/venues" element={<VenueImportQuickActions />} />
                     <Route path="imports/history" element={<AdminImportHub />} />
 
-                    {/* Review & Workflow section */}
-                    <Route path="review" element={<ReviewQueue />} />
+                    {/* Review & Workflow section — unified dashboard */}
+                    <Route path="review" element={<AdminReview />} />
+                    <Route path="moderation" element={<Navigate to="/admin/review?tab=moderation" replace />} />
                     <Route path="audit" element={<AuditLog />} />
+                    <Route path="links" element={<LinkHealthDashboard />} />
+                    <Route path="affiliates" element={<AffiliatePartnersManager />} />
+
+                    {/* New content type admin pages */}
+                    <Route path="hotels" element={<AdminHotels />} />
+                    <Route path="villages" element={<AdminQueerVillages />} />
+                    <Route path="festivals" element={<Navigate to="/admin/events" replace />} />
 
                     {/* System section */}
                     <Route path="users" element={<AdminUsers />} />
@@ -261,6 +323,7 @@ const App = () => {
                     <Route path="target-groups" element={<Navigate to="/admin/settings/target-groups" replace />} />
                   </Route>
                    <Route path="/news" element={<News />} />
+                   <Route path="/news/:id" element={<NewsDetail />} />
                    <Route path="/search" element={<SearchResults />} />
 
                     <Route path="/groups" element={<Groups />} />
@@ -284,13 +347,27 @@ const App = () => {
                   </Routes>
                   </Suspense>
                   </ErrorBoundary>
-                </Container>
               </Box>
-              <Box sx={{ position: 'relative', zIndex: 10 }}>
+              <Box sx={{ position: 'relative', zIndex: 1 }}>
                 <Footer />
               </Box>
               <CookieConsentBanner />
             </Box>
+  );
+};
+
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="system" storageKey="queer-guide-theme">
+        <AccessibilityProvider>
+          <CookieConsentProvider>
+            <AuthProvider>
+              <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppRoutes />
           </BrowserRouter>
               </TooltipProvider>
             </AuthProvider>

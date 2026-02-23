@@ -1,4 +1,5 @@
 import { format, parseISO } from 'date-fns';
+import { formatTimeInZone, formatDateInZone, getTimezoneAbbr } from '@/utils/timezone';
 
 /**
  * Determines whether an event should be treated as "All Day" based on its UTC times.
@@ -46,15 +47,27 @@ function isAllDayEvent(start: Date, end: Date | null): boolean {
 /**
  * Format an event's time portion for display.
  * Returns "All Day" for all-day events, otherwise "h:mm a - h:mm a".
+ *
+ * When `timezone` is provided, times are shown in the event's local timezone.
+ * Otherwise uses browser local time.
  */
 export function formatEventTime(
   startDate: string,
   endDate?: string | null,
+  timezone?: string | null,
 ): string {
   const start = new Date(startDate);
   const end = endDate ? new Date(endDate) : null;
 
   if (isAllDayEvent(start, end)) return 'All Day';
+
+  if (timezone) {
+    const startStr = formatTimeInZone(startDate, timezone);
+    const endStr = end ? formatTimeInZone(endDate!, timezone) : null;
+    const abbr = getTimezoneAbbr(timezone);
+    const suffix = abbr ? ` ${abbr}` : '';
+    return endStr ? `${startStr} - ${endStr}${suffix}` : `${startStr}${suffix}`;
+  }
 
   if (end) {
     return `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`;
@@ -65,14 +78,39 @@ export function formatEventTime(
 /**
  * Format an event date + time for combined display (used in GroupEventCard).
  * Multi-day events show date range; single-day events show "date - time".
+ *
+ * When `timezone` is provided, dates/times are shown in that timezone.
  */
 export function formatEventDateTime(
   startDate: string,
   endDate?: string | null,
+  timezone?: string | null,
 ): string {
   const start = new Date(startDate);
   const end = endDate ? new Date(endDate) : null;
   const allDay = isAllDayEvent(start, end);
+
+  if (timezone) {
+    const startDateStr = formatDateInZone(startDate, timezone);
+    const endDateStr = end ? formatDateInZone(endDate!, timezone) : null;
+    const abbr = getTimezoneAbbr(timezone);
+    const suffix = abbr ? ` ${abbr}` : '';
+
+    // Check if same day in the event timezone
+    const sameDay = endDateStr && startDateStr === endDateStr;
+
+    if (end && !sameDay) {
+      return `${startDateStr} - ${endDateStr}`;
+    }
+    if (allDay) {
+      return `${startDateStr} \u2022 All Day`;
+    }
+    const startTimeStr = formatTimeInZone(startDate, timezone);
+    const endTimeStr = end ? formatTimeInZone(endDate!, timezone) : null;
+    return endTimeStr
+      ? `${startDateStr} \u2022 ${startTimeStr} - ${endTimeStr}${suffix}`
+      : `${startDateStr} \u2022 ${startTimeStr}${suffix}`;
+  }
 
   if (end && start.toDateString() !== end.toDateString()) {
     // Multi-day event

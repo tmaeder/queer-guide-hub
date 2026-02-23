@@ -176,7 +176,7 @@ const SubmitEvent = () => {
       </Button>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-        <Calendar style={{ width: 28, height: 28, color: '#333333' }} />
+        <Calendar style={{ width: 28, height: 28 }} />
         <Typography variant="h4" sx={{ fontWeight: 700 }}>
           Submit an Event
         </Typography>
@@ -186,14 +186,14 @@ const SubmitEvent = () => {
       </Typography>
 
       {!user && (
-        <Card sx={{ mb: 3, bgcolor: '#f5f5f5' }}>
+        <Card sx={{ mb: 3, bgcolor: 'action.hover' }}>
           <CardContent sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary">
               <strong>Tip:</strong>{' '}
               <Box
                 component="span"
                 onClick={() => navigate('/auth')}
-                sx={{ color: '#333333', textDecoration: 'underline', cursor: 'pointer' }}
+                sx={{ color: 'text.primary', textDecoration: 'underline', cursor: 'pointer' }}
               >
                 Sign in or create an account
               </Box>{' '}

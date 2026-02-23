@@ -14,33 +14,45 @@ import { useSearchSuggestions, SearchSuggestion } from "@/hooks/useSearchSuggest
 import { SearchFiltersPanel } from "./SearchFiltersPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const contentTypeIcons = {
+const contentTypeIcons: Record<string, any> = {
   venue: MapPin,
+  venues: MapPin,
   event: Calendar,
+  events: Calendar,
   marketplace: ShoppingBag,
   user: Users,
   news: Newspaper,
   location: Globe,
+  cities: Globe,
+  countries: Globe,
   content: FileText,
   travel: Plane,
   ressource: Tag,
   personality: User,
+  personalities: User,
   tag: Tag,
-  group: Users
+  tags: Tag,
+  group: Users,
 };
-const contentTypeLabels = {
+const contentTypeLabels: Record<string, string> = {
   venue: "Venues",
+  venues: "Venues",
   event: "Events",
+  events: "Events",
   marketplace: "Marketplace",
   user: "Members",
   news: "News",
   location: "Places",
+  cities: "Cities",
+  countries: "Countries",
   content: "Resources",
   travel: "Places",
   ressource: "Resources",
   personality: "Personalities",
+  personalities: "Personalities",
   tag: "Tags",
-  group: "Groups"
+  tags: "Tags",
+  group: "Groups",
 };
 
 export const UniversalSearchBar = () => {
@@ -58,8 +70,12 @@ export const UniversalSearchBar = () => {
   const isMobile = useIsMobile();
 
   // Reset search state when navigating away from search results
+  const prevPathRef = useRef(location.pathname);
   useEffect(() => {
-    if (!location.pathname.startsWith('/search')) {
+    const prevPath = prevPathRef.current;
+    prevPathRef.current = location.pathname;
+    // Only clear when actually navigating away from search (not on every re-render)
+    if (prevPath !== location.pathname && prevPath.startsWith('/search') && !location.pathname.startsWith('/search')) {
       setQuery("");
       setIsOpen(false);
       setShowFilters(false);
@@ -117,11 +133,14 @@ export const UniversalSearchBar = () => {
 
   const handleSelectResult = (result: SearchResult) => {
     setQuery(result.title);
+    const slug = result.metadata?.slug || result.objectID;
     switch (result.type) {
       case 'venue':
+      case 'venues':
         navigate(`/venues/${result.objectID}`);
         break;
       case 'event':
+      case 'events':
         navigate(`/events/${result.objectID}`);
         break;
       case 'marketplace':
@@ -131,7 +150,8 @@ export const UniversalSearchBar = () => {
         navigate(`/user/${result.objectID}`);
         break;
       case 'personality':
-        navigate(`/personalities/${result.objectID}`);
+      case 'personalities':
+        navigate(`/personalities/${slug}`);
         break;
       case 'group':
         navigate(`/groups/${result.objectID}`);
@@ -139,30 +159,22 @@ export const UniversalSearchBar = () => {
       case 'news':
         navigate(`/news/${result.objectID}`);
         break;
+      case 'cities':
       case 'location':
         if (result.metadata?.isCountry) {
-          navigate(`/country/${result.objectID}`);
+          navigate(`/country/${slug}`);
         } else {
-          navigate(`/city/${result.objectID}`);
+          navigate(`/city/${slug}`);
         }
+        break;
+      case 'countries':
+        navigate(`/country/${slug}`);
         break;
       case 'content':
-        if (result.metadata?.slug) {
-          navigate(`/resources/${result.metadata.slug}`);
-        } else {
-          navigate(`/resources/${result.objectID}`);
-        }
-        break;
       case 'ressource':
-        if (result.metadata?.slug) {
-          navigate(`/resources/${result.metadata.slug}`);
-        } else {
-          navigate(`/resources/${result.objectID}`);
-        }
-        break;
+      case 'tags':
       case 'tag':
-        const tagSlug = result.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '%20');
-        navigate(`/resources/${tagSlug}`);
+        navigate(`/resources/${slug}`);
         break;
       case 'travel':
         navigate(`/places`);
@@ -224,8 +236,8 @@ export const UniversalSearchBar = () => {
     localStorage.removeItem('recent-searches');
   };
 
-  const getResultIcon = (type: SearchResult['type']) => {
-    const Icon = contentTypeIcons[type];
+  const getResultIcon = (type: string) => {
+    const Icon = contentTypeIcons[type] || Search;
     return <Icon style={{ height: 16, width: 16 }} />;
   };
 
@@ -366,7 +378,7 @@ export const UniversalSearchBar = () => {
                   height: isMobile ? 48 : 40,
                   paddingLeft: isMobile ? 16 : 12,
                   paddingRight: isMobile ? 16 : 12,
-                  color: activeFiltersCount > 0 ? '#333333' : '#666666',
+                  color: 'inherit',
                   position: 'relative',
                   flexShrink: 0,
                 }}
@@ -408,6 +420,8 @@ export const UniversalSearchBar = () => {
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
           }}
           align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <Command shouldFilter={false} style={{ background: 'transparent' }}>
             {showFilters && (

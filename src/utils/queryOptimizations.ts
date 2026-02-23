@@ -11,6 +11,10 @@ export const createOptimizedQueryClient = () => {
         gcTime: 15 * 60 * 1000,
         // Don't refetch on window focus in production
         refetchOnWindowFocus: process.env.NODE_ENV === 'development',
+        // Refetch stale queries when component mounts (e.g., route navigation)
+        refetchOnMount: 'always',
+        // Refetch when network reconnects after offline
+        refetchOnReconnect: true,
         // Aggressive retry strategy with better error handling
         retry: (failureCount, error: any) => {
           // Don't retry on authentication errors

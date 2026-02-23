@@ -98,7 +98,7 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
       {/* Search Bar */}
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Box sx={{ position: 'relative', flex: 1 }}>
-          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: '#999999' }} />
           <Input
             placeholder="Search products and services..."
             value={search}

@@ -77,7 +77,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
           <CardContent sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}>
-                <CalendarIcon style={{ height: 20, width: 20, color: '#333333' }} />
+                <CalendarIcon style={{ height: 20, width: 20 }} />
               </Box>
               <Box>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{monthlyStats.totalEvents}</Typography>
@@ -125,7 +125,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <CardTitle sx={{ fontSize: '1.25rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 3 }}>
                   <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}>
-                    <CalendarIcon style={{ height: 20, width: 20, color: '#333333' }} />
+                    <CalendarIcon style={{ height: 20, width: 20 }} />
                   </Box>
                   {format(currentMonth, 'MMMM yyyy')}
                 </CardTitle>

@@ -191,7 +191,7 @@ export default function OurValues() {
       {/* Values in Action */}
       <Box component="section" sx={{ mb: 8 }}>
         <Typography variant="h4" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>Values in Action</Typography>
-        <Box sx={{ background: 'linear-gradient(to right, rgba(var(--mui-palette-primary-mainChannel) / 0.1), rgba(var(--mui-palette-secondary-mainChannel) / 0.1))', borderRadius: 2, p: 4 }}>
+        <Box sx={{ bgcolor: 'action.hover', borderRadius: 2, p: 4 }}>
           <Box sx={{ textAlign: 'center', maxWidth: '42rem', mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }} color="primary">Zero Tolerance</Typography>
             <Typography color="text.secondary">
@@ -216,7 +216,7 @@ export default function OurValues() {
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>Our actions:</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {commitment.actions.map((action, idx) => (
-                      <Typography key={idx} component="span" variant="caption" color="primary" sx={{ bgcolor: 'rgba(var(--mui-palette-primary-mainChannel) / 0.1)', px: 1, py: 0.5, borderRadius: 1 }}>
+                      <Typography key={idx} component="span" variant="caption" color="primary" sx={{ bgcolor: 'action.selected', px: 1, py: 0.5, borderRadius: 1 }}>
                         {action}
                       </Typography>
                     ))}
@@ -268,7 +268,7 @@ export default function OurValues() {
           <CardContent sx={{ p: 3 }}>
             <Typography color="text.secondary">
               Have feedback about how we're living up to our values? We want to hear from you.
-              Contact us at <a href="mailto:values@queer.guide" style={{ color: '#333333', textDecoration: 'underline' }}>values@queer.guide</a>
+              Contact us at <a href="mailto:values@queer.guide" style={{ color: 'inherit', textDecoration: 'underline' }}>values@queer.guide</a>
             </Typography>
           </CardContent>
         </Card>

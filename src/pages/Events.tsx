@@ -7,14 +7,14 @@ import { EventCard } from '@/components/events/EventCard';
 import { EventsCalendarView } from '@/components/events/EventsCalendarView';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { SearchInputTyped } from '@/components/ui/search-input-typed';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import { Calendar, Plus, Loader, Search, Filter, X, CalendarIcon, Check, ChevronDown, Grid, List, MapPin } from 'lucide-react';
+import { Calendar, Plus, Loader, Search, Filter, X, CalendarIcon, Check, ChevronDown, Grid, MapPin } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -24,11 +24,14 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { format } from 'date-fns';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import { useTheme } from '@mui/material/styles';
 
 type Event = Database['public']['Tables']['events']['Row'];
-const eventTypes = ['party', 'workshop', 'meetup', 'pride', 'rally', 'conference', 'social', 'fundraiser', 'performance'];
+const eventTypes = ['party', 'workshop', 'meetup', 'pride', 'festival', 'rally', 'conference', 'social', 'fundraiser', 'performance'];
 const Events = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const {
     events,
     loading,
@@ -215,45 +218,36 @@ const Events = () => {
     })();
   }, []);
   return <Box sx={{ minHeight: '100vh' }}>
-      <Box sx={{ width: '100%', px: 2, py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
-        <Card sx={{ mb: 4 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box>
-                <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-                  Events
-                </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
-                  Discover and join community events in your area
-                </Typography>
+        <PageHeader
+          title="Events"
+          subtitle="Discover and join community events in your area"
+          actions={
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, p: 0.5, bgcolor: 'action.hover', borderRadius: 2 }} role="group" aria-label="View mode">
+                <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" aria-label="Grid view" onClick={() => setViewMode('grid')}>
+                  <Grid style={{ width: 16, height: 16 }} />
+                </Button>
+                <Button variant={viewMode === 'calendar' ? 'default' : 'ghost'} size="icon" aria-label="Calendar view" onClick={() => setViewMode('calendar')}>
+                  <CalendarIcon style={{ width: 16, height: 16 }} />
+                </Button>
               </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                {/* View Toggle */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, p: 0.5, bgcolor: 'action.hover', borderRadius: 2 }} role="group" aria-label="View mode">
-                  <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" aria-label="Grid view" onClick={() => setViewMode('grid')}>
-                    <Grid style={{ width: 16, height: 16 }} />
-                  </Button>
-                  <Button variant={viewMode === 'calendar' ? 'default' : 'ghost'} size="icon" aria-label="Calendar view" onClick={() => setViewMode('calendar')}>
-                    <CalendarIcon style={{ width: 16, height: 16 }} />
-                  </Button>
-                </Box>
-                <Button onClick={() => navigate('/submit/event')} style={{ display: 'flex', gap: 8 }}>
-                    <Plus style={{ width: 16, height: 16 }} />
-                    Submit Event
-                  </Button>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
+              <Button onClick={() => navigate('/submit/event')} style={{ display: 'flex', gap: 8 }}>
+                <Plus style={{ width: 16, height: 16 }} />
+                Submit Event
+              </Button>
+            </>
+          }
+        />
 
         {/* Filters */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider', mb: 4 }}>
           {/* Search Bar */}
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap' }}>
             <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1, border: 1, borderColor: 'divider', borderRadius: 1, px: 1.5, py: 1, bgcolor: 'background.default' }}>
-              <Search style={{ width: 16, height: 16, color: 'var(--muted-foreground)', flexShrink: 0 }} />
-              <SearchInputTyped placeholders={["Search for events...", "Find parties near you...", "Discover LGBTQ+ meetups...", "Look for workshops...", "Search pride events...", "Find social gatherings..."]} value={search} onValueChange={setSearch} onKeyDown={e => e.key === 'Enter' && handleFiltersChange()} style={{ border: 0, boxShadow: 'none', padding: 0, height: 'auto', background: 'transparent', outline: 'none', flex: 1, minWidth: 0, width: '100%' }} typingSpeed={75} pauseDuration={1500} />
+              <Search style={{ width: 16, height: 16, color: theme.palette.text.secondary, flexShrink: 0 }} />
+              <SearchInputTyped placeholders={["Search for events...", "Find parties near you...", "Discover LGBTQ+ meetups...", "Look for workshops...", "Search pride events...", "Find social gatherings..."]} value={search} onValueChange={setSearch} onKeyDown={e => e.key === 'Enter' && handleFiltersChange()} style={{ border: 0, boxShadow: 'none', padding: 0, height: 'auto', background: 'inherit', outline: 'none', flex: 1, minWidth: 0, width: '100%' }} typingSpeed={75} pauseDuration={1500} />
             </Box>
             <Button onClick={handleNearMe} variant={nearMe ? "default" : "outline"} disabled={locationLoading} size="icon" aria-label="Find events near me">
               {locationLoading ? <Loader style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} /> : <MapPin style={{ width: 16, height: 16 }} />}
@@ -275,7 +269,7 @@ const Events = () => {
                     <PopoverTrigger asChild>
                       <Button variant="outline" role="combobox" aria-expanded={cityOpen} style={{ width: '100%', justifyContent: 'space-between' }}>
                         {city || "Select city..."}
-                        <ChevronDown style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }} />
+                        <ChevronDown style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, color: '#999999' }} />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent style={{ width: '100%', padding: 0 }}>
@@ -315,7 +309,7 @@ const Events = () => {
                   <Label>Start Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" style={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 400, ...(!startDate ? { color: 'var(--muted-foreground)' } : {}) }}>
+                      <Button variant="outline" style={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 400, ...(!startDate ? { color: theme.palette.text.secondary } : {}) }}>
                         <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
                         {startDate ? format(startDate, "PPP") : <span>Pick start date</span>}
                       </Button>
@@ -329,7 +323,7 @@ const Events = () => {
                   <Label>End Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" style={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 400, ...(!endDate ? { color: 'var(--muted-foreground)' } : {}) }}>
+                      <Button variant="outline" style={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 400, ...(!endDate ? { color: theme.palette.text.secondary } : {}) }}>
                         <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
                         {endDate ? format(endDate, "PPP") : <span>Pick end date</span>}
                       </Button>
@@ -394,12 +388,7 @@ const Events = () => {
         {error && !loading && <ErrorState message={error} onRetry={() => fetchEvents()} />}
 
         {/* Loading State */}
-        {loading && <Card sx={{ p: 4 }}>
-            <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
-              <Loader style={{ width: 32, height: 32, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
-              <Typography color="text.secondary" sx={{ ml: 1 }}>Loading events...</Typography>
-            </CardContent>
-          </Card>}
+        {loading && <PageLoadingState count={6} />}
         {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchEvents()} />}
 
         {/* Empty State */}
@@ -413,10 +402,6 @@ const Events = () => {
 
         {/* Event Content */}
         {!loading && events.length > 0 && <>
-            <Card sx={{ mb: 3 }}>
-
-            </Card>
-
             {viewMode === 'grid' ? <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
                 {events.map(event => <EventCard key={event.id} event={event} onViewDetails={handleViewDetails} onUpdateAttendance={user ? handleAttendanceUpdate : undefined} />)}
               </Box> : <EventsCalendarView events={events} onEventSelect={handleViewDetails} onAttendanceUpdate={handleAttendanceUpdate} />}
@@ -437,7 +422,7 @@ const Events = () => {
                 Load More Events
               </Button>}
           </Box>}
-      </Box>
+      </Container>
     </Box>;
 };
 export default Events;

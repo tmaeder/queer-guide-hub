@@ -1,33 +1,36 @@
 import { createTheme, type ThemeOptions } from '@mui/material/styles';
 
-// Convert HSL to hex for MUI palette
-// Light mode values from CSS custom properties
+// ─── Palettes ─────────────────────────────────────────────────────────────────
+// All colors are solid (alpha = 1). No rgba/hsla with transparency allowed.
+
 const lightPalette = {
-  primary: { main: '#222222', contrastText: '#ffffff' },       // near-black
-  secondary: { main: '#f4f4f5', contrastText: '#18181b' },     // hsl(240 5% 96%)
-  error: { main: '#ef4444', contrastText: '#ffffff' },          // hsl(0 84% 60%)
-  warning: { main: '#f59e0b', contrastText: '#ffffff' },        // hsl(38 92% 50%)
-  success: { main: '#22c55e', contrastText: '#ffffff' },        // hsl(142 71% 45%)
-  background: { default: '#fcfcfc', paper: '#ffffff' },         // hsl(0 0% 99%), hsl(0 0% 100%)
-  text: { primary: '#171717', secondary: '#666666' },           // hsl(240 10% 8%), hsl(240 4% 40%)
-  divider: '#e4e4e7',                                           // hsl(240 6% 90%)
+  primary: { main: '#222222', contrastText: '#ffffff' },
+  secondary: { main: '#f4f4f5', contrastText: '#18181b' },
+  error: { main: '#ef4444', contrastText: '#ffffff' },
+  warning: { main: '#f59e0b', contrastText: '#ffffff' },
+  success: { main: '#22c55e', contrastText: '#ffffff' },
+  background: { default: '#fcfcfc', paper: '#ffffff' },
+  text: { primary: '#171717', secondary: '#666666' },
+  divider: '#e4e4e7',
 };
 
 const darkPalette = {
-  primary: { main: '#ffffff', contrastText: '#111111' },        // white on dark
-  secondary: { main: '#27272a', contrastText: '#f2f2f2' },      // hsl(240 4% 16%)
-  error: { main: '#dc2626', contrastText: '#ffffff' },          // hsl(0 63% 56%)
-  warning: { main: '#f59e0b', contrastText: '#ffffff' },        // hsl(38 92% 50%)
-  success: { main: '#22c55e', contrastText: '#ffffff' },        // hsl(142 71% 45%)
-  background: { default: '#0c0c0f', paper: '#111114' },         // hsl(240 10% 4%), hsl(240 10% 6%)
-  text: { primary: '#f2f2f2', secondary: '#a8a8b3' },           // hsl(0 0% 95%), hsl(240 5% 72%)
-  divider: '#27272a',                                           // hsl(240 4% 16%)
+  primary: { main: '#ffffff', contrastText: '#111111' },
+  secondary: { main: '#27272a', contrastText: '#f2f2f2' },
+  error: { main: '#dc2626', contrastText: '#ffffff' },
+  warning: { main: '#f59e0b', contrastText: '#ffffff' },
+  success: { main: '#22c55e', contrastText: '#ffffff' },
+  background: { default: '#0c0c0f', paper: '#111114' },
+  text: { primary: '#f2f2f2', secondary: '#a8a8b3' },
+  divider: '#27272a',
 };
 
-// Shared theme options
+// ─── Shared theme options ─────────────────────────────────────────────────────
+// Rule: NO transparent, NO rgba() with alpha<1, NO backdropFilter, NO blur.
+
 const baseThemeOptions: ThemeOptions = {
   shape: {
-    borderRadius: 10, // 0.625rem = 10px (matches --radius)
+    borderRadius: 10,
   },
   typography: {
     fontFamily: "'Noto Sans', system-ui, -apple-system, sans-serif",
@@ -54,9 +57,6 @@ const baseThemeOptions: ThemeOptions = {
         root: {
           borderRadius: 10,
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            backdropFilter: 'blur(8px)',
-          },
         },
         sizeSmall: {
           height: 36,
@@ -79,10 +79,7 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           borderRadius: 10,
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            backdropFilter: 'blur(8px)',
-          },
+          transition: 'box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         },
       },
       defaultProps: {
@@ -206,12 +203,12 @@ const baseThemeOptions: ThemeOptions = {
   },
 };
 
-// Custom shadows matching the current design
+// ─── Shadows (solid only — no rgba) ───────────────────────────────────────────
 const customShadows = [
   'none',
-  '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',   // shadow-card
-  '0 10px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.06)', // shadow-card-hover
-  '0 0 20px -5px rgba(0, 0, 0, 0.15)',                                      // shadow-glow
+  '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
+  '0 10px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.06)',
+  '0 4px 12px 0 rgb(0 0 0 / 0.12)',
   ...Array(21).fill('none'),
 ] as unknown as ThemeOptions['shadows'];
 

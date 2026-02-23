@@ -6,6 +6,37 @@ const corsHeaders = {
 };
 
 const MARKER = '452012';
+const IATA_RE = /^[A-Z]{3}$/;
+
+function extractDDMM(dateStr?: string | null): string {
+  if (!dateStr) return '';
+  const iso = dateStr.split('T')[0];
+  const parts = iso.split('-');
+  if (parts.length !== 3) return '';
+  const [, mm, dd] = parts;
+  const month = parseInt(mm, 10);
+  const day = parseInt(dd, 10);
+  if (isNaN(month) || isNaN(day) || month < 1 || month > 12 || day < 1 || day > 31) return '';
+  return `${dd.padStart(2, '0')}${mm.padStart(2, '0')}`;
+}
+
+function buildAffiliateUrl(
+  origin: string, destination: string, departDate?: string | null, returnDate?: string | null, adults = 1
+): string {
+  const o = (origin || '').toUpperCase().trim();
+  const d = (destination || '').toUpperCase().trim();
+  if (!IATA_RE.test(o) || !IATA_RE.test(d) || o === d) {
+    return `https://www.aviasales.com/?marker=${MARKER}`;
+  }
+  let params = o;
+  const departDDMM = extractDDMM(departDate);
+  if (departDDMM) params += departDDMM;
+  params += d;
+  const returnDDMM = extractDDMM(returnDate);
+  if (returnDDMM) params += returnDDMM;
+  params += String(Math.max(1, Math.min(9, adults)));
+  return `https://www.aviasales.com/?params=${params}&marker=${MARKER}`;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -74,30 +105,20 @@ serve(async (req) => {
 
     const data = await response.json();
 
-    const flights = (data.data || []).map((flight: any) => {
-      const affiliateUrl = new URL('https://search.aviasales.com/flights/');
-      affiliateUrl.searchParams.set('origin_iata', flight.origin);
-      affiliateUrl.searchParams.set('destination_iata', flight.destination);
-      if (flight.departure_at) affiliateUrl.searchParams.set('depart_date', flight.departure_at.split('T')[0]);
-      if (flight.return_at) affiliateUrl.searchParams.set('return_date', flight.return_at.split('T')[0]);
-      affiliateUrl.searchParams.set('adults', String(passengers));
-      affiliateUrl.searchParams.set('marker', MARKER);
-
-      return {
-        id: `${flight.origin}-${flight.destination}-${flight.departure_at}`,
-        origin: flight.origin,
-        destination: flight.destination,
-        departureDate: flight.departure_at,
-        returnDate: flight.return_at,
-        price: flight.price,
-        currency: data.currency,
-        airline: flight.airline,
-        flightNumber: flight.flight_number,
-        duration: flight.duration,
-        stops: flight.transfers || 0,
-        link: affiliateUrl.toString(),
-      };
-    });
+    const flights = (data.data || []).map((flight: any) => ({
+      id: `${flight.origin}-${flight.destination}-${flight.departure_at}`,
+      origin: flight.origin,
+      destination: flight.destination,
+      departureDate: flight.departure_at,
+      returnDate: flight.return_at,
+      price: flight.price,
+      currency: data.currency,
+      airline: flight.airline,
+      flightNumber: flight.flight_number,
+      duration: flight.duration,
+      stops: flight.transfers || 0,
+      link: buildAffiliateUrl(flight.origin, flight.destination, flight.departure_at, flight.return_at, passengers),
+    }));
 
     return new Response(
       JSON.stringify({

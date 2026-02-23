@@ -17,6 +17,8 @@ interface EmptyStateProps {
   description: string;
   primaryAction?: EmptyStateAction;
   secondaryAction?: EmptyStateAction;
+  /** Optional custom content below the description (e.g., dialog triggers) */
+  children?: React.ReactNode;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -25,6 +27,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   description,
   primaryAction,
   secondaryAction,
+  children,
 }) => {
   return (
     <Card>
@@ -65,6 +68,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               {secondaryAction.label}
             </Button>
           )}
+          {children}
         </Box>
       </CardContent>
     </Card>

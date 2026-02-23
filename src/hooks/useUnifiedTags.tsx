@@ -38,6 +38,7 @@ export const useUnifiedTags = () => {
       let query = supabase
         .from('unified_tags')
         .select('*')
+        .eq('status', 'active')
         .order('usage_count', { ascending: false });
 
       if (category) {

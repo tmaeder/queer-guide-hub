@@ -105,6 +105,75 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const method = req.method;
+    const action = url.searchParams.get('action');
+
+    if (method === 'GET' && action === 'status') {
+      // Return status of all required API keys (from ingestion_sources + env vars)
+      // Never exposes actual secret values
+      const { data: sources } = await supabase
+        .from('ingestion_sources')
+        .select('name, slug, requires_api_key, is_enabled, source_type')
+        .not('requires_api_key', 'is', null);
+
+      const requiredKeys: any[] = [];
+      const seen = new Set<string>();
+
+      for (const source of (sources || [])) {
+        const keyName = source.requires_api_key;
+        if (seen.has(keyName)) continue;
+        seen.add(keyName);
+
+        const envValue = Deno.env.get(keyName);
+        let status: 'configured' | 'missing' | 'error' = 'missing';
+        let hint = '';
+
+        if (envValue) {
+          status = 'configured';
+          hint = `${envValue.substring(0, 4)}...${envValue.slice(-4)}`;
+          // Known broken keys
+          if (keyName === 'FOURSQUARE_API_KEY') {
+            status = 'error';
+            hint = 'Key returns 401 — may be expired';
+          }
+        }
+
+        requiredKeys.push({
+          key_name: keyName,
+          status,
+          hint,
+          used_by: (sources || []).filter(s => s.requires_api_key === keyName).map(s => ({
+            name: s.name,
+            slug: s.slug,
+            source_type: s.source_type,
+            is_enabled: s.is_enabled,
+          })),
+        });
+      }
+
+      // Also check common keys not in ingestion_sources
+      const extraKeys = ['ANTHROPIC_API_KEY', 'FIRECRAWL_API_KEY', 'GIPHY_API_KEY', 'MASTER_ENCRYPTION_KEY'];
+      for (const keyName of extraKeys) {
+        if (seen.has(keyName)) continue;
+        const envValue = Deno.env.get(keyName);
+        requiredKeys.push({
+          key_name: keyName,
+          status: envValue ? 'configured' : 'missing',
+          hint: envValue ? `${envValue.substring(0, 4)}...${envValue.slice(-4)}` : '',
+          used_by: [],
+        });
+      }
+
+      // Also include custom keys from admin_api_keys table
+      const { data: customKeys } = await supabase
+        .from('admin_api_keys')
+        .select('id, service_name, key_name, description, is_active, created_at, updated_at, last_used_at')
+        .order('created_at', { ascending: false });
+
+      return new Response(
+        JSON.stringify({ required_keys: requiredKeys, custom_keys: customKeys || [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (method === 'GET') {
       // List all API keys (without decrypted values)

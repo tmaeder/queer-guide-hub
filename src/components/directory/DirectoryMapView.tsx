@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { MapPin, Loader2, Globe, Building2 } from 'lucide-react';
 import { DirectoryCard } from './DirectoryCard';
-import { useSecureMapbox } from '@/hooks/useSecureMapbox';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { mapStyle } from '@/config/mapStyle';
 
 interface Country {
   id: string;
@@ -50,44 +50,28 @@ export function DirectoryMapView({
   className
 }: DirectoryMapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const map = useRef<maplibregl.Map | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
   const [showCities, setShowCities] = useState(true);
-  const [mapboxToken] = useState('');
-
-
-  const { token: secureToken } = useSecureMapbox();
-  // Use hook token by default, allow manual override
-  const activeToken = mapboxToken || secureToken || '';
+  const [mapReady, setMapReady] = useState(false);
 
   const initializeMap = () => {
-    if (!mapContainer.current || !activeToken) {
-      console.error('Mapbox token not configured. Please add VITE_MAPBOX_ACCESS_TOKEN to your environment or enter it below.');
-      return;
-    }
+    if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = activeToken;
-
-    map.current = new mapboxgl.Map({
+    map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/tmaeder/clvmrc8pj015p01o05wd581tt',
-      center: [0, 20], // Center on world view
+      style: mapStyle,
+      center: [0, 20],
       zoom: 2,
-      projection: 'globe' as any
     });
 
     map.current.addControl(
-      new mapboxgl.NavigationControl(),
+      new maplibregl.NavigationControl(),
       'top-right'
     );
 
-    // Add atmosphere and fog effects for globe
-    map.current.on('style.load', () => {
-      map.current?.setFog({
-        color: 'rgb(255, 255, 255)',
-        'high-color': 'rgb(200, 200, 225)',
-        'horizon-blend': 0.02,
-      });
+    map.current.on('load', () => {
+      setMapReady(true);
     });
   };
 
@@ -100,36 +84,32 @@ export function DirectoryMapView({
   };
 
   useEffect(() => {
-    if (activeToken) {
-      initializeMap();
-    }
+    initializeMap();
     return () => {
       map.current?.remove();
     };
-  }, [activeToken]);
+  }, []);
 
   useEffect(() => {
-    if (map.current && activeToken && (countries.length > 0 || cities.length > 0)) {
+    if (map.current && mapReady && (countries.length > 0 || cities.length > 0)) {
       // Clear existing markers
-      const markers = document.querySelectorAll('.mapboxgl-marker');
+      const markers = document.querySelectorAll('.maplibregl-marker');
       markers.forEach(marker => marker.remove());
 
-      // Add markers based on switch state
       if (showCities) {
-        // Show cities
         cities.forEach((city) => {
           if (city.latitude && city.longitude) {
             const isCapital = city.is_capital;
             const isMajor = city.is_major_city;
 
-            const marker = new mapboxgl.Marker({
-              color: isCapital ? '#f59e0b' : isMajor ? '#3b82f6' : '#6b7280', // amber for capitals, blue for major cities, gray for others
+            const marker = new maplibregl.Marker({
+              color: isCapital ? '#f59e0b' : isMajor ? '#3b82f6' : '#6b7280',
               scale: isCapital ? 0.9 : isMajor ? 0.7 : 0.5
             })
               .setLngLat([city.longitude, city.latitude])
               .addTo(map.current!);
 
-            const popup = new mapboxgl.Popup({ offset: 25 })
+            const popup = new maplibregl.Popup({ offset: 25 })
               .setHTML(`
                 <div class="p-3">
                   <h3 class="font-semibold flex items-center gap-2">
@@ -151,17 +131,16 @@ export function DirectoryMapView({
           }
         });
       } else {
-        // Show countries
         countries.forEach((country) => {
           if (country.latitude && country.longitude) {
-            const marker = new mapboxgl.Marker({
-              color: '#dc2626', // red for countries
+            const marker = new maplibregl.Marker({
+              color: '#dc2626',
               scale: 0.8
             })
               .setLngLat([country.longitude, country.latitude])
               .addTo(map.current!);
 
-            const popup = new mapboxgl.Popup({ offset: 25 })
+            const popup = new maplibregl.Popup({ offset: 25 })
               .setHTML(`
                 <div class="p-3">
                   <h3 class="font-semibold flex items-center gap-2">
@@ -182,7 +161,6 @@ export function DirectoryMapView({
         });
       }
 
-      // Fit map to show all points
       const allCoordinates: [number, number][] = [];
 
       if (showCities) {
@@ -200,12 +178,12 @@ export function DirectoryMapView({
       }
 
       if (allCoordinates.length > 0) {
-        const bounds = new mapboxgl.LngLatBounds();
+        const bounds = new maplibregl.LngLatBounds();
         allCoordinates.forEach(coord => bounds.extend(coord));
         map.current.fitBounds(bounds, { padding: 50, maxZoom: 6 });
       }
     }
-  }, [countries, cities, showCities, activeToken]);
+  }, [countries, cities, showCities, mapReady]);
 
 
   return (
@@ -214,10 +192,9 @@ export function DirectoryMapView({
         <CardContent style={{ padding: 24 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Globe style={{ height: 20, width: 20, color: '#333333' }} />
+              <Globe style={{ height: 20, width: 20 }} />
               <Typography variant="h3" component="h3" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Geographic Map View</Typography>
             </Box>
-
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -254,18 +231,9 @@ export function DirectoryMapView({
               </Box>
             )}
 
-            {!activeToken ? (
-              <Box sx={{ height: 600, width: '100%', borderRadius: 2, border: 1, borderColor: 'divider', bgcolor: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Globe style={{ height: 48, width: 48, color: '#9ca3af', margin: '0 auto 16px' }} />
-                  <p style={{ color: '#999999' }}>Map is unavailable right now.</p>
-                </Box>
-              </Box>
-            ) : (
-              <Box sx={{ height: 600, width: '100%', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
-                <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
-              </Box>
-            )}
+            <Box sx={{ height: 600, width: '100%', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
+              <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
+            </Box>
 
             {selectedItem && (
               <Box sx={{ mt: 2 }}>

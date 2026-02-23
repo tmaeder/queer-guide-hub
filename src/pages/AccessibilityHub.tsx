@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { AccessibilityControls } from '@/components/accessibility/AccessibilityControls';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Accessibility, Heart, Shield, Users } from 'lucide-react';
 
 export default function AccessibilityHub() {
   return (
-    <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
       {/* Header */}
       <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -22,7 +23,7 @@ export default function AccessibilityHub() {
       </Box>
 
       {/* Commitment Card */}
-      <Card sx={{ borderColor: 'primary.main', borderWidth: 1, borderStyle: 'solid', opacity: 0.8 }}>
+      <Card sx={{ borderColor: 'primary.main', borderWidth: 1, borderStyle: 'solid' }}>
         <CardHeader>
           <CardTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -106,6 +107,6 @@ export default function AccessibilityHub() {
           </Box>
         </CardContent>
       </Card>
-    </Box>
+    </Container>
   );
 }

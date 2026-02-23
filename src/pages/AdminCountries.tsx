@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Globe, Search, Plus, Edit, Trash2, Users, BarChart3 } from "lucide-react";
+import { ExportExcelButton } from "@/components/admin/ExportExcelButton";
+import { exportToExcel, fetchAllRows, generateFilename, type ExportColumnDef } from "@/utils/excelExport";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -214,12 +216,30 @@ export default function AdminCountries() {
               Manage countries, their information, and geographical data
             </Typography>
           </Box>
-          {(isAdmin || isModerator) && (
-            <Button onClick={() => handleAddCountry()}>
-              <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
-              Add Country
-            </Button>
-          )}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <ExportExcelButton onExport={async () => {
+              const columns: ExportColumnDef<any>[] = [
+                { header: 'Name', accessor: r => r.name },
+                { header: 'Code', accessor: r => r.code },
+                { header: 'Continent', accessor: r => r.continents?.name },
+                { header: 'Capital', accessor: r => r.capital },
+                { header: 'Population', accessor: r => r.population },
+                { header: 'Area (km²)', accessor: r => r.area_km2 },
+                { header: 'GDP (USD)', accessor: r => r.gdp_usd },
+                { header: 'Currency', accessor: r => r.currency },
+                { header: 'Equality Score', accessor: r => r.equality_score },
+                { header: 'LGBT Legal Status', accessor: r => r.lgbt_legal_status },
+              ];
+              const allData = await fetchAllRows('countries', '*, continents(name)', { column: 'name', ascending: true });
+              await exportToExcel(allData, columns, generateFilename('countries'));
+            }} />
+            {(isAdmin || isModerator) && (
+              <Button onClick={() => handleAddCountry()}>
+                <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
+                Add Country
+              </Button>
+            )}
+          </Box>
         </Box>
       </Box>
 

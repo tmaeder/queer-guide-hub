@@ -9,7 +9,7 @@ type EventInsert = Database['public']['Tables']['events']['Insert'];
 
 export function useEvents(autoFetch: boolean = true) {
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);

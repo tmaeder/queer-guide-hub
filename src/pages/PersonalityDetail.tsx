@@ -1,23 +1,39 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ExternalLink, Calendar, MapPin, Briefcase, Users, Eye, Star, Share2, Heart, Verified } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Calendar, MapPin, Briefcase, Star, Share2, Heart, Verified, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ReportButton } from '@/components/moderation/ReportButton';
+import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { usePersonalities, type Personality } from '@/hooks/usePersonalities';
-import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
+import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+
+interface SimilarPersonality {
+  id: string;
+  name: string;
+  profession: string | null;
+  nationality: string | null;
+  image_url: string | null;
+  is_living: boolean;
+  birth_date: string | null;
+  death_date: string | null;
+  description: string | null;
+  similarity: number;
+}
 
 export default function PersonalityDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [personality, setPersonality] = useState<Personality | null>(null);
   const [loading, setLoading] = useState(true);
+  const [similarPersonalities, setSimilarPersonalities] = useState<SimilarPersonality[]>([]);
+  const [countryId, setCountryId] = useState<string | null>(null);
   const { incrementViews } = usePersonalities();
 
   useEffect(() => {
@@ -30,8 +46,6 @@ export default function PersonalityDetail() {
       try {
         setLoading(true);
 
-        // Fetch from Supabase
-        const { supabase } = await import('@/integrations/supabase/client');
         const { data, error } = await supabase
           .from('personalities')
           .select('*')
@@ -60,7 +74,6 @@ export default function PersonalityDetail() {
           return;
         }
 
-        // Transform data to match interface
         const transformedData: Personality = {
           ...data,
           fields: Array.isArray(data.fields) ? data.fields as string[] : [],
@@ -73,10 +86,7 @@ export default function PersonalityDetail() {
 
         setPersonality(transformedData);
 
-        // Set page title for SEO
         document.title = `${transformedData.name} - Queer Guide`;
-
-        // Set meta description
         const metaDescription = transformedData.description || transformedData.bio?.substring(0, 160) || `Learn about ${transformedData.name}, a notable LGBTQ+ personality.`;
         const existingMeta = document.querySelector('meta[name="description"]');
         if (existingMeta) {
@@ -87,6 +97,24 @@ export default function PersonalityDetail() {
           meta.content = metaDescription;
           document.head.appendChild(meta);
         }
+
+        // Look up country ID for nationality link
+        if (transformedData.nationality) {
+          const { data: countryData } = await supabase
+            .from('countries')
+            .select('id')
+            .eq('name', transformedData.nationality)
+            .maybeSingle();
+          if (countryData) setCountryId(countryData.id);
+        }
+
+        // Fetch similar personalities via embedding similarity
+        const { data: similarData } = await supabase.rpc('get_similar_personalities', {
+          personality_uuid: id,
+          result_limit: 6,
+          min_similarity: 0.3
+        });
+        if (similarData) setSimilarPersonalities(similarData);
 
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -104,7 +132,6 @@ export default function PersonalityDetail() {
     fetchPersonality();
   }, [id, navigate]);
 
-  // Separate effect for incrementing views to avoid infinite loops
   useEffect(() => {
     if (personality?.id) {
       incrementViews(personality.id);
@@ -116,7 +143,6 @@ export default function PersonalityDetail() {
     const end = deathDate ? new Date(deathDate) : new Date();
     const age = end.getFullYear() - birth.getFullYear();
     const monthDiff = end.getMonth() - birth.getMonth();
-
     if (monthDiff < 0 || (monthDiff === 0 && end.getDate() < birth.getDate())) {
       return age - 1;
     }
@@ -124,12 +150,7 @@ export default function PersonalityDetail() {
   };
 
   const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const getVerificationBadge = () => {
@@ -137,7 +158,7 @@ export default function PersonalityDetail() {
       case 'verified':
         return <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Verified style={{ height: 12, width: 12 }} />Verified</Badge>;
       case 'disputed':
-        return <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(234,179,8,0.1)', color: '#a16207' }}>Disputed</Badge>;
+        return <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#fef9e7', color: '#a16207' }}>Disputed</Badge>;
       default:
         return null;
     }
@@ -155,7 +176,6 @@ export default function PersonalityDetail() {
         console.log('Error sharing:', error);
       }
     } else {
-      // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href);
       toast({
         title: "Link Copied",
@@ -239,18 +259,37 @@ export default function PersonalityDetail() {
                 <Typography sx={{ color: 'text.secondary', mb: 1 }}>({personality.pronouns})</Typography>
               )}
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', mb: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', mb: 1.5, flexWrap: 'wrap' }}>
                 {personality.profession && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box
+                    component="a"
+                    href={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
+                    onClick={(e: React.MouseEvent) => {
+                      e.preventDefault();
+                      navigate(`/personalities?profession=${encodeURIComponent(personality.profession!)}`);
+                    }}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'primary.main', textDecoration: 'none', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                  >
                     <Briefcase style={{ height: 16, width: 16 }} />
                     <span>{personality.profession}</span>
                   </Box>
                 )}
                 {personality.nationality && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <MapPin style={{ height: 16, width: 16 }} />
-                    <span>{personality.nationality}</span>
-                  </Box>
+                  countryId ? (
+                    <Box
+                      component={Link}
+                      to={`/country/${countryId}`}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                    >
+                      <MapPin style={{ height: 16, width: 16 }} />
+                      <span>{personality.nationality}</span>
+                    </Box>
+                  ) : (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <MapPin style={{ height: 16, width: 16 }} />
+                      <span>{personality.nationality}</span>
+                    </Box>
+                  )
                 )}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   {personality.is_living ? (
@@ -287,10 +326,8 @@ export default function PersonalityDetail() {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
-              <Eye style={{ height: 16, width: 16 }} />
-              <Box component="span" sx={{ fontSize: '0.875rem' }}>{personality.view_count.toLocaleString()}</Box>
-            </Box>
+            <ReportButton contentType="personalities" contentId={personality.id} contentName={personality.name} />
+            <AdminEditButton contentType="personalities" contentId={personality.id} contentName={personality.name} currentData={personality as Record<string, unknown>} onSaved={() => window.location.reload()} />
             <Button variant="outline" size="sm" onClick={handleShare}>
               <Share2 style={{ height: 16, width: 16, marginRight: 8 }} />
               Share
@@ -360,6 +397,56 @@ export default function PersonalityDetail() {
               </CardContent>
             </Card>
           )}
+
+          {/* Similar Personalities */}
+          {similarPersonalities.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Similar Personalities</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+                  {similarPersonalities.map((similar) => (
+                    <Box
+                      key={similar.id}
+                      component={Link}
+                      to={`/personalities/${similar.id}`}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        p: 1.5,
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        transition: 'all 0.2s',
+                        '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' }
+                      }}
+                    >
+                      <Avatar style={{ height: 40, width: 40, flexShrink: 0 }}>
+                        <AvatarImage src={similar.image_url || ''} alt={similar.name} style={{ objectFit: 'cover' }} />
+                        <AvatarFallback style={{ fontSize: '0.75rem' }}>
+                          {similar.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {similar.name}
+                        </Typography>
+                        {similar.profession && (
+                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {similar.profession}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
+          )}
         </Box>
 
         {/* Sidebar */}
@@ -397,7 +484,17 @@ export default function PersonalityDetail() {
                   <MapPin style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Nationality</Typography>
-                    <Typography sx={{ fontWeight: 500 }}>{personality.nationality}</Typography>
+                    {countryId ? (
+                      <Typography
+                        component={Link}
+                        to={`/country/${countryId}`}
+                        sx={{ fontWeight: 500, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      >
+                        {personality.nationality}
+                      </Typography>
+                    ) : (
+                      <Typography sx={{ fontWeight: 500 }}>{personality.nationality}</Typography>
+                    )}
                   </div>
                 </Box>
               )}
@@ -406,7 +503,22 @@ export default function PersonalityDetail() {
                   <Briefcase style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Profession</Typography>
-                    <Typography sx={{ fontWeight: 500 }}>{personality.profession}</Typography>
+                    <Typography
+                      component={Link}
+                      to={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
+                      sx={{ fontWeight: 500, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                    >
+                      {personality.profession}
+                    </Typography>
+                  </div>
+                </Box>
+              )}
+              {personality.birth_place && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <MapPin style={{ height: 16, width: 16, color: '#999999' }} />
+                  <div>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Birth Place</Typography>
+                    <Typography sx={{ fontWeight: 500 }}>{personality.birth_place}</Typography>
                   </div>
                 </Box>
               )}
@@ -432,12 +544,20 @@ export default function PersonalityDetail() {
           {personality.tags && personality.tags.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Tags</CardTitle>
+                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Tag style={{ height: 16, width: 16 }} />
+                  Tags
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {personality.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      style={{ fontSize: '0.75rem', cursor: 'pointer' }}
+                      onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
+                    >
                       {tag}
                     </Badge>
                   ))}
@@ -445,18 +565,6 @@ export default function PersonalityDetail() {
               </CardContent>
             </Card>
           )}
-
-          {/* View Count */}
-          <Card>
-            <CardContent style={{ paddingTop: '24px' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-                <Eye style={{ height: 16, width: 16 }} />
-                <Box component="span" sx={{ fontSize: '0.875rem' }}>
-                  {personality.view_count.toLocaleString()} profile views
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
         </Box>
       </Box>
     </Box>

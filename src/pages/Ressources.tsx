@@ -1,25 +1,44 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { useCentralizedTags } from "@/hooks/useCentralizedTags";
-import { DirectorySearch } from "@/components/directory/DirectorySearch";
+import { useCentralizedTags, type CategoryTreeNode, type CategoryTreeChild } from "@/hooks/useCentralizedTags";
+import { useComputeTagSimilarities } from "@/hooks/useTagRelationships";
+import { RelatedTagsCard } from "@/components/tags/RelatedTagsCard";
+import { TagLinkedContent } from "@/components/tags/TagLinkedContent";
 import { supabase } from "@/integrations/supabase/client";
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Tag, Users, Calendar, MapPin, ShoppingBag, Heart, Brain, Upload, Search, Grid3X3, List, Filter, TrendingUp, Sparkles, Eye, Clock, BarChart3, Briefcase } from "lucide-react";
+import { ArrowLeft, Tag, Users, Calendar, Heart, Brain, Upload, Search, Grid3X3, Filter, TrendingUp, BarChart3, Briefcase, ChevronRight, Network, Shield, MessageCircle, Pill, Scale, Sparkles, BookOpen, Flame, Handshake, Zap, LayoutGrid, List, Image, SortAsc, SortDesc } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-type ViewMode = "overview" | "category" | "subcategory" | "search" | "tag-detail" | "professions";
-type DisplayMode = "grid" | "list";
-type SortOption = "alphabetical" | "usage" | "recent" | "popular";
+import { PageHeader } from '@/components/layout/PageHeader';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
+const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
+type ViewMode = "overview" | "category" | "subcategory" | "search" | "tag-detail" | "professions" | "graph";
+type DisplayMode = "chips" | "grid" | "list";
+type SortOption = "alphabetical" | "usage" | "recent";
+function ComputeRelationshipsButton() {
+  const { mutate, isPending } = useComputeTagSimilarities();
+  return (
+    <Button
+      onClick={() => mutate()}
+      disabled={isPending}
+      variant="secondary"
+      size="sm"
+      style={{ transition: 'all 0.2s' }}
+    >
+      <Network style={{ width: 14, height: 14, marginRight: 6 }} />
+      {isPending ? 'Computing...' : 'Compute Relationships'}
+    </Button>
+  );
+}
+
 export default function Ressources() {
   const {
     tagName
@@ -31,19 +50,23 @@ export default function Ressources() {
   const {
     allTags,
     tagsByCategory,
+    categoriesTree,
     loading,
     error,
     searchTags
   } = useCentralizedTags();
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
-  const [displayMode, setDisplayMode] = useState<DisplayMode>("grid");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
   const [selectedTag, setSelectedTag] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<SortOption>("alphabetical");
+  const [sortBy, setSortBy] = useState<SortOption>("usage");
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("chips");
+  const [usageFilter, setUsageFilter] = useState<string>("all");
+  const [hasImageFilter, setHasImageFilter] = useState(false);
   const [processingImages, setProcessingImages] = useState(false);
   const [categorizingTags, setCategorizingTags] = useState(false);
   const [tagUsageCounts, setTagUsageCounts] = useState<Record<string, number>>({});
@@ -116,15 +139,59 @@ export default function Ressources() {
 
   // Handle route parameter for individual tag pages
   useEffect(() => {
-    if (tagName && allTags.length > 0) {
-      const decodedTagName = decodeURIComponent(tagName);
+    if (!tagName) return;
+    const decodedTagName = decodeURIComponent(tagName);
+
+    // First try the preloaded list (fast path)
+    if (allTags.length > 0) {
       const foundTag = allTags.find(tag => tag.name.toLowerCase() === decodedTagName.toLowerCase());
       if (foundTag) {
         setSelectedTag(foundTag);
         setViewMode("tag-detail");
+        return;
       }
     }
-  }, [tagName, allTags]);
+
+    // If not found in preloaded list (could be outside top-1000 by usage_count),
+    // fetch directly from Supabase
+    if (allTags.length > 0 || !loading) {
+      const fetchTagDirect = async () => {
+        const { data } = await supabase
+          .from('unified_tags')
+          .select('*')
+          .ilike('name', decodedTagName)
+          .eq('status', 'active')
+          .limit(1)
+          .maybeSingle();
+        if (data) {
+          // Fetch category info for this tag
+          const { data: catAssignments } = await supabase
+            .from('tag_category_assignments')
+            .select('tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)')
+            .eq('tag_id', data.id);
+          const categories = (catAssignments || []).map((a: any) => {
+            const cat = a.tag_categories;
+            return cat ? { id: cat.id, name: cat.name, slug: cat.slug, level: cat.level, parent_id: cat.parent_id, parent_name: null, is_primary: a.is_primary } : null;
+          }).filter(Boolean);
+          // Look up parent names
+          if (categories.length > 0) {
+            const parentIds = categories.filter((c: any) => c.parent_id).map((c: any) => c.parent_id);
+            if (parentIds.length > 0) {
+              const { data: parents } = await supabase
+                .from('tag_categories')
+                .select('id, name')
+                .in('id', parentIds);
+              const parentMap = new Map((parents || []).map((p: any) => [p.id, p.name]));
+              categories.forEach((c: any) => { if (c.parent_id) c.parent_name = parentMap.get(c.parent_id) || null; });
+            }
+          }
+          setSelectedTag({ ...data, categories });
+          setViewMode("tag-detail");
+        }
+      };
+      fetchTagDirect();
+    }
+  }, [tagName, allTags, loading]);
 
   // Memoized filtered and sorted tags
   const filteredAndSortedTags = useMemo(() => {
@@ -135,124 +202,100 @@ export default function Ressources() {
 
     let filtered = viewMode === "search" ? searchResults : allTags;
 
-    // Filter by category
+    // Filter by category (supports multi-category tags)
     if (filterCategory !== "all") {
-      filtered = filtered.filter(tag => tag.category === filterCategory);
+      filtered = filtered.filter(tag => {
+        if (tag.categories && tag.categories.length > 0) {
+          return tag.categories.some(c => c.name === filterCategory);
+        }
+        return tag.category === filterCategory;
+      });
+    }
+
+    // Filter by usage
+    if (usageFilter === "used") {
+      filtered = filtered.filter(tag => (tagUsageCounts[tag.name] || 0) > 0);
+    } else if (usageFilter === "unused") {
+      filtered = filtered.filter(tag => (tagUsageCounts[tag.name] || 0) === 0);
+    }
+
+    // Filter by has image
+    if (hasImageFilter) {
+      filtered = filtered.filter(tag => tag.image_url);
     }
 
     // Sort tags
+    const dir = sortDirection === 'asc' ? 1 : -1;
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case "usage":
-          return (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0);
-        case "popular":
-          return (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0);
+          return dir * ((tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0));
         case "recent":
-          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+          return dir * (new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
         case "alphabetical":
-        default:
-          return a.name.localeCompare(b.name);
+        default: {
+          const cmp = a.name.localeCompare(b.name);
+          return sortDirection === 'asc' ? cmp : -cmp;
+        }
       }
     });
     return sorted;
-  }, [allTags, searchResults, filterCategory, sortBy, tagUsageCounts, viewMode]);
+  }, [allTags, searchResults, filterCategory, sortBy, sortDirection, tagUsageCounts, viewMode, usageFilter, hasImageFilter]);
 
-  // Get unique categories
+  // Get unique categories (from multi-category assignments)
   const categories = useMemo(() => {
-    const cats = [...new Set(allTags.map(tag => tag.category).filter(Boolean))];
-    return cats.sort();
+    const catSet = new Set<string>();
+    allTags.forEach(tag => {
+      if (tag.categories && tag.categories.length > 0) {
+        tag.categories.forEach(c => catSet.add(c.name));
+      } else if (tag.category) {
+        catSet.add(tag.category);
+      }
+    });
+    return [...catSet].sort();
   }, [allTags]);
 
-  // Define subcategories for better organization
-  const subcategories = useMemo(() => {
-    const subCats: Record<string, Record<string, string[]>> = {};
-
-    categories.forEach(category => {
-      const categoryTags = allTags.filter(tag => tag.category === category);
-      subCats[category] = {};
-
-      // Create semantic subcategories based on tag names
-      categoryTags.forEach(tag => {
-        const name = tag.name.toLowerCase();
-        let subCategory = 'Other';
-
-        // Define subcategory rules based on category
-        switch (category) {
-          case 'Identity':
-            if (name.includes('gay') || name.includes('lesbian') || name.includes('bisexual') || name.includes('heterosexual') || name.includes('pansexual') || name.includes('asexual') || name.includes('demisexual') || name.includes('queer') || name.includes('questioning')) {
-              subCategory = 'Sexual Orientation';
-            } else if (name.includes('trans') || name.includes('non-binary') || name.includes('gender') || name.includes('agender') || name.includes('genderfluid') || name.includes('bigender')) {
-              subCategory = 'Gender Identity';
-            } else if (name.includes('pronoun') || name.includes('he/') || name.includes('she/') || name.includes('they/')) {
-              subCategory = 'Pronouns';
-            } else if (name.includes('relationship') || name.includes('polyamor') || name.includes('monogam') || name.includes('aromantic')) {
-              subCategory = 'Relationship Style';
-            }
-            break;
-
-          case 'Health':
-            if (name.includes('mental') || name.includes('therapy') || name.includes('depression') || name.includes('anxiety') || name.includes('counseling')) {
-              subCategory = 'Mental Health';
-            } else if (name.includes('sexual') || name.includes('std') || name.includes('hiv') || name.includes('prep') || name.includes('reproductive')) {
-              subCategory = 'Sexual Health';
-            } else if (name.includes('hormone') || name.includes('transition') || name.includes('surgery') || name.includes('medical')) {
-              subCategory = 'Medical Care';
-            }
-            break;
-
-          case 'Events':
-            if (name.includes('pride') || name.includes('parade') || name.includes('march') || name.includes('rally')) {
-              subCategory = 'Pride & Activism';
-            } else if (name.includes('party') || name.includes('club') || name.includes('dance') || name.includes('music')) {
-              subCategory = 'Social & Entertainment';
-            } else if (name.includes('workshop') || name.includes('education') || name.includes('seminar') || name.includes('conference')) {
-              subCategory = 'Educational';
-            } else if (name.includes('support') || name.includes('group') || name.includes('meeting')) {
-              subCategory = 'Support Groups';
-            }
-            break;
-
-          case 'Venues':
-            if (name.includes('bar') || name.includes('club') || name.includes('pub') || name.includes('nightlife')) {
-              subCategory = 'Nightlife';
-            } else if (name.includes('restaurant') || name.includes('cafe') || name.includes('food') || name.includes('dining')) {
-              subCategory = 'Food & Dining';
-            } else if (name.includes('shop') || name.includes('store') || name.includes('retail') || name.includes('market')) {
-              subCategory = 'Shopping';
-            } else if (name.includes('gym') || name.includes('sport') || name.includes('fitness') || name.includes('recreation')) {
-              subCategory = 'Recreation & Sports';
-            } else if (name.includes('hotel') || name.includes('accommodation') || name.includes('lodging')) {
-              subCategory = 'Accommodation';
-            }
-            break;
-
-          case 'Community':
-            if (name.includes('advocacy') || name.includes('activism') || name.includes('rights') || name.includes('political')) {
-              subCategory = 'Advocacy & Rights';
-            } else if (name.includes('support') || name.includes('help') || name.includes('crisis') || name.includes('counseling')) {
-              subCategory = 'Support Services';
-            } else if (name.includes('youth') || name.includes('teen') || name.includes('young') || name.includes('student')) {
-              subCategory = 'Youth & Students';
-            } else if (name.includes('senior') || name.includes('elder') || name.includes('older')) {
-              subCategory = 'Seniors';
-            }
-            break;
-
-          default:
-            // No alphabetical grouping - keep all in "Other" category
-            subCategory = 'Other';
-            break;
+  const categoryTags = useMemo(() => {
+    if (!selectedCategory) return [];
+    return allTags
+      .filter(tag => {
+        if (tag.categories && tag.categories.length > 0) {
+          return tag.categories.some(c => c.name === selectedCategory);
         }
+        return tag.category === selectedCategory;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [allTags, selectedCategory]);
 
-        if (!subCats[category][subCategory]) {
-          subCats[category][subCategory] = [];
-        }
-        subCats[category][subCategory].push(tag.name);
-      });
-    });
+  // Categories sorted by tag count, with top tags for each
+  const sortedCategories = useMemo(() => {
+    return categories
+      .filter(cat => cat !== 'Miscellaneous')
+      .map(cat => {
+        const tags = allTags.filter(t => {
+          if (t.categories && t.categories.length > 0) {
+            return t.categories.some(c => c.name === cat);
+          }
+          return t.category === cat;
+        });
+        // Sort by usage, then alphabetically for unused
+        const topTags = [...tags].sort((a, b) => {
+          const ua = tagUsageCounts[a.name] || 0;
+          const ub = tagUsageCounts[b.name] || 0;
+          return ub - ua || a.name.localeCompare(b.name);
+        }).slice(0, 6);
+        return { name: cat, count: tags.length, topTags };
+      })
+      .sort((a, b) => b.count - a.count);
+  }, [categories, allTags, tagUsageCounts]);
 
-    return subCats;
-  }, [allTags, categories]);
+  // Popular tags = most used across venues/events/groups
+  const popularTags = useMemo(() => {
+    return [...allTags]
+      .filter(t => (tagUsageCounts[t.name] || 0) > 0)
+      .sort((a, b) => (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0))
+      .slice(0, 24);
+  }, [allTags, tagUsageCounts]);
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.trim()) {
@@ -271,7 +314,13 @@ export default function Ressources() {
   };
   const handleBack = () => {
     if (viewMode === "tag-detail") {
-      setViewMode(selectedSubcategory ? "subcategory" : selectedCategory ? "category" : "overview");
+      if (selectedSubcategory) {
+        setViewMode("subcategory");
+      } else if (selectedCategory) {
+        setViewMode("category");
+      } else {
+        setViewMode("overview");
+      }
       navigate('/resources');
     } else if (viewMode === "subcategory") {
       setViewMode("category");
@@ -279,7 +328,10 @@ export default function Ressources() {
     } else if (viewMode === "category") {
       setViewMode("overview");
       setSelectedCategory("");
+      setSelectedSubcategory("");
     } else if (viewMode === "professions") {
+      setViewMode("overview");
+    } else if (viewMode === "graph") {
       setViewMode("overview");
     } else if (viewMode === "search") {
       setViewMode("overview");
@@ -287,56 +339,50 @@ export default function Ressources() {
       setSearchResults([]);
     }
   };
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "events":
-        return Calendar;
-      case "venues":
-        return MapPin;
-      case "marketplace":
-        return ShoppingBag;
-      case "community":
-        return Users;
-      case "gender-identity":
-        return Heart;
-      case "health":
-        return Brain;
-      case "sexuality":
-        return Heart;
-      case "relationships":
-        return Users;
-      case "activism":
-        return Tag;
-      case "support":
-        return Users;
-      case "lifestyle":
-        return Tag;
-      case "dating":
-        return Heart;
-      case "family":
-        return Users;
-      case "workplace":
-        return Tag;
-      case "legal":
-        return Tag;
-      case "education":
-        return Tag;
-      case "arts":
-        return Tag;
-      case "sports":
-        return Tag;
-      case "technology":
-        return Tag;
-      case "travel":
-        return MapPin;
-      case "fashion":
-        return Tag;
-      case "content":
-        return Tag;
-      default:
-        return Tag;
-    }
+  // Map category names to short display names and icons
+  const categoryMeta: Record<string, { short: string; icon: typeof Tag }> = {
+    // Parent categories
+    'Identity & Orientation': { short: 'Identity', icon: Heart },
+    'Kink & Fetish': { short: 'Kink & Fetish', icon: Flame },
+    'Roles & Dynamics': { short: 'Roles', icon: Shield },
+    'Health & Wellness': { short: 'Health', icon: Brain },
+    'Substances & Harm Reduction': { short: 'Harm Reduction', icon: Pill },
+    'Rights & Activism': { short: 'Activism', icon: Scale },
+    'Relationships': { short: 'Relationships', icon: Heart },
+    'Community & Events': { short: 'Community', icon: Calendar },
+    'Culture & Slang': { short: 'Culture', icon: MessageCircle },
+    'Venue & Travel': { short: 'Venues', icon: Briefcase },
+    'News Topics': { short: 'News', icon: TrendingUp },
+    'Safety & Practices': { short: 'Safety', icon: Shield },
+    'Support & Resources': { short: 'Support', icon: Handshake },
+    'Miscellaneous': { short: 'Other', icon: Tag },
+    // Subcategories
+    'Sexual Orientation': { short: 'Orientation', icon: Heart },
+    'Gender Identity': { short: 'Gender', icon: Users },
+    'Expression & Presentation': { short: 'Expression', icon: Sparkles },
+    'Intersex': { short: 'Intersex', icon: Heart },
+    'BDSM': { short: 'BDSM', icon: Flame },
+    'Leather & Gear': { short: 'Leather & Gear', icon: Shield },
+    'Fetish Practices': { short: 'Fetish', icon: Flame },
+    'Body Modification': { short: 'Body Mod', icon: Zap },
+    'Power Exchange': { short: 'Power Exchange', icon: Shield },
+    'Relationship Roles': { short: 'Rel. Roles', icon: Users },
+    'Sexual Roles': { short: 'Sexual Roles', icon: Shield },
+    'Sexual Health': { short: 'Sexual Health', icon: Brain },
+    'Mental Health': { short: 'Mental Health', icon: Brain },
+    'Physical Wellness': { short: 'Physical', icon: Brain },
+    'Reproductive Health': { short: 'Reproductive', icon: Brain },
+    'Legal Rights': { short: 'Legal', icon: Scale },
+    'Political Activism': { short: 'Political', icon: Scale },
+    'Historical Movements': { short: 'Historical', icon: BookOpen },
+    'Workplace & Education': { short: 'Workplace', icon: Briefcase },
+    'Slang & Terminology': { short: 'Slang', icon: MessageCircle },
+    'Media & Entertainment': { short: 'Media', icon: MessageCircle },
+    'Art & Literature': { short: 'Art', icon: BookOpen },
+    'History & Heritage': { short: 'Heritage', icon: BookOpen },
   };
+  const getCategoryIcon = (category: string) => categoryMeta[category]?.icon || Tag;
+  const getCategoryShortName = (category: string) => categoryMeta[category]?.short || category;
   const storeTagImages = async () => {
     if (allTags.length === 0) return;
     setProcessingImages(true);
@@ -428,613 +474,874 @@ export default function Ressources() {
     }
   };
   if (loading) {
-    return <Container maxWidth="lg" sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Skeleton style={{ height: 32, width: 192 }} />
-            <Skeleton style={{ height: 40, width: 128 }} />
-          </Box>
-          <Skeleton style={{ height: 48, width: '100%' }} />
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)', lg: 'repeat(6, 1fr)' }, gap: 2 }}>
-            {Array.from({
-            length: 12
-          }).map((_, i) => <Card key={i} style={{ overflow: 'hidden' }}>
-                <Skeleton style={{ aspectRatio: '4/3', width: '100%' }} />
-                <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Skeleton style={{ height: 16, width: '100%' }} />
-                  <Skeleton style={{ height: 12, width: 64 }} />
-                </Box>
-              </Card>)}
-          </Box>
-        </Box>
-      </Container>;
+    return (
+      <Container maxWidth="lg" sx={{ p: 3 }}>
+        <PageLoadingState count={12} />
+      </Container>
+    );
   }
   if (error) {
-    return <Container maxWidth="lg" sx={{ p: 3 }}>
-        <Card style={{ borderColor: 'var(--destructive)' }}>
-          <CardContent style={{ padding: 24, textAlign: 'center' }}>
-            <Typography color="error">Something went wrong while loading resources. Please try again later.</Typography>
-          </CardContent>
-        </Card>
-      </Container>;
+    return (
+      <Container maxWidth="lg" sx={{ p: 3 }}>
+        <ErrorState
+          message="Something went wrong while loading resources. Please try again later."
+          onRetry={() => window.location.reload()}
+        />
+      </Container>
+    );
   }
 
   // Render Tag Detail View
   if (viewMode === "tag-detail" && selectedTag) {
-    return <Container maxWidth="lg" sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Button variant="outline" onClick={handleBack} style={{ flexShrink: 0 }}>
-              <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
-              Back
-            </Button>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0 }} style={{ backgroundColor: selectedTag.color }} />
-              <Typography variant="h4" sx={{ fontWeight: 700 }}>#{selectedTag.name}</Typography>
-              <Badge variant="secondary">
-                {tagUsageCounts[selectedTag.name] || 0} uses
-              </Badge>
-            </Box>
+    const primaryCatInfo = selectedTag.categories?.find((c: any) => c.is_primary);
+    const primaryCat = primaryCatInfo?.name || selectedTag.category;
+    const parentCatName = primaryCatInfo?.parent_name;
+
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* Breadcrumb (3-level: Resources > Parent > Subcategory > Tag) */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
+          <Box
+            component="button"
+            onClick={() => { navigate('/resources'); setViewMode("overview"); }}
+            sx={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', p: 0 }}
+          >
+            <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
+            <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>Resources</Typography>
           </Box>
+          {parentCatName && (
+            <>
+              <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+              <Box
+                component="button"
+                onClick={() => {
+                  setFilterCategory(parentCatName);
+                  setViewMode("category");
+                  setSelectedCategory(parentCatName);
+                  setSelectedSubcategory("");
+                  navigate('/resources');
+                }}
+                sx={{ background: 'none', border: 'none', cursor: 'pointer', p: 0 }}
+              >
+                <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>
+                  {getCategoryShortName(parentCatName)}
+                </Typography>
+              </Box>
+            </>
+          )}
+          {primaryCat && (
+            <>
+              <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+              <Box
+                component="button"
+                onClick={() => {
+                  if (parentCatName) {
+                    // This is a subcategory
+                    setSelectedSubcategory(primaryCat);
+                    setViewMode("subcategory");
+                  } else {
+                    setFilterCategory(primaryCat);
+                    setViewMode("category");
+                    setSelectedCategory(primaryCat);
+                  }
+                  navigate('/resources');
+                }}
+                sx={{ background: 'none', border: 'none', cursor: 'pointer', p: 0 }}
+              >
+                <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>
+                  {getCategoryShortName(primaryCat)}
+                </Typography>
+              </Box>
+            </>
+          )}
+          <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>{selectedTag.name}</Typography>
+        </Box>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {selectedTag.image_url && <Card style={{ overflow: 'hidden' }}>
-                  <Box sx={{ aspectRatio: '16/9' }}>
-                    <Box
-                      component="img"
-                      src={selectedTag.image_url}
-                      alt={`${selectedTag.name} themed image`}
-                      sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </Box>
-                </Card>}
+        {/* Hero Image */}
+        {selectedTag.image_url && (
+          <Box sx={{
+            width: '100%',
+            height: { xs: 160, md: 200 },
+            borderRadius: 3,
+            overflow: 'hidden',
+            mb: 3,
+          }}>
+            <Box
+              component="img"
+              src={selectedTag.image_url}
+              alt={selectedTag.name}
+              sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </Box>
+        )}
 
-              {selectedTag.description && <Card>
-                  <CardHeader>
-                    <CardTitle>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Eye style={{ width: 20, height: 20 }} />
-                        Description
-                      </Box>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Typography color="text.secondary">{selectedTag.description}</Typography>
-                  </CardContent>
-                </Card>}
-            </Box>
+        {/* Title + Category */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>{selectedTag.name}</Typography>
+          {primaryCat && (
+            <Typography variant="body2" color="text.secondary">
+              {parentCatName ? `${getCategoryShortName(parentCatName)} › ` : ''}{getCategoryShortName(primaryCat)}
+              {selectedTag.categories && selectedTag.categories.length > 1 && (
+                <>
+                  {' · '}
+                  {selectedTag.categories
+                    .filter((c: any) => !c.is_primary)
+                    .map((c: any) => {
+                      const pName = c.parent_name ? `${getCategoryShortName(c.parent_name)} › ` : '';
+                      return `${pName}${getCategoryShortName(c.name)}`;
+                    })
+                    .join(' · ')}
+                </>
+              )}
+            </Typography>
+          )}
+        </Box>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <BarChart3 style={{ width: 20, height: 20 }} />
-                      Usage Statistics
-                    </Box>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography variant="body2">Total Usage</Typography>
-                      <Badge variant="outline">{tagUsageCounts[selectedTag.name] || 0}</Badge>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography variant="body2">Category</Typography>
-                      <Badge variant="secondary">{selectedTag.category || 'Uncategorized'}</Badge>
-                    </Box>
-                    {selectedTag.created_at && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="body2">Created</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(selectedTag.created_at).toLocaleDateString()}
-                        </Typography>
-                      </Box>}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
+        {/* Description (if exists, rendered inline before grid) */}
+        {selectedTag.description && (
+          <Typography color="text.secondary" sx={{ lineHeight: 1.7, mb: 3 }}>
+            {selectedTag.description}
+          </Typography>
+        )}
+
+        {/* 2-Column Layout: Linked content + Sidebar */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
+          {/* Left: Linked Content */}
+          <TagLinkedContent tagId={selectedTag.id} tagName={selectedTag.name} />
+
+          {/* Right: Related Tags */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <RelatedTagsCard
+              tagId={selectedTag.id}
+              onTagClick={(tag) => handleTagClick({ name: tag.name, id: tag.id })}
+            />
           </Box>
         </Box>
-      </Container>;
+      </Container>
+    );
   }
-  return <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="xl" sx={{ px: 2, py: 4 }}>
-        {/* Header */}
-        <Card style={{ marginBottom: 32 }}>
-          <CardContent style={{ padding: 32, textAlign: 'center' }}>
-            <Typography variant="h3" sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
-              Resources
-            </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: '42rem', mx: 'auto' }}>
-              Discover and explore LGBTQ+ community tags, resources, and professions
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-              <Badge variant="outline">
-                {allTags.length} Total Tags
-              </Badge>
-              <Badge variant="outline">
-                {categories.length} Categories
-              </Badge>
-            </Box>
-          </CardContent>
-        </Card>
+  // Render tags in the selected display mode
+  const renderTagList = (tags: any[]) => {
+    if (tags.length === 0) return null;
 
-        {/* Content */}
-        <Box sx={{ width: '100%' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Categories Overview */}
-            {viewMode === "overview" && (
-              <Card style={{ marginBottom: 32 }}>
-                <CardHeader>
-                  <CardTitle>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Grid3X3 style={{ width: 24, height: 24, color: '#333333' }} />
-                      <Typography variant="h5" component="span">Browse by Category</Typography>
-                    </Box>
-                  </CardTitle>
-                  <Typography color="text.secondary">
-                    Explore tags organized by different categories
+    if (displayMode === "grid") {
+      return (
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }, gap: 2 }}>
+          {tags.map((tag) => (
+            <Box
+              key={tag.id}
+              onClick={() => handleTagClick(tag)}
+              sx={{
+                borderRadius: 2, cursor: 'pointer', overflow: 'hidden',
+                bgcolor: 'background.paper',
+                border: '1px solid', borderColor: 'divider',
+                '&:hover': { borderColor: 'primary.main', transform: 'translateY(-2px)', boxShadow: 2 },
+                transition: 'all 0.2s',
+              }}
+            >
+              <Box sx={{ width: '100%', height: 120, bgcolor: 'secondary.main', position: 'relative' }}>
+                {tag.image_url ? (
+                  <Box
+                    component="img"
+                    src={tag.image_url}
+                    alt={tag.name}
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Tag style={{ width: 32, height: 32, opacity: 0.2 }} />
+                  </Box>
+                )}
+              </Box>
+              <Box sx={{ p: 1.5 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {tag.name}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.5 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', textTransform: 'capitalize' }}>
+                    {getCategoryShortName(tag.category || '')}
                   </Typography>
-                </CardHeader>
-                <CardContent>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
-                    {categories.map((category, index) => {
-                      const Icon = getCategoryIcon(category);
-                      const categoryTags = allTags.filter(tag => tag.category === category);
-                      return (
-                        <Card
-                          key={category}
-                          style={{ cursor: 'pointer', transition: 'all 0.2s' }}
-                          onClick={() => {
-                            setFilterCategory(category);
-                            setViewMode("category");
-                            setSelectedCategory(category);
-                          }}
-                        >
-                          <CardContent style={{ padding: 24, textAlign: 'center' }}>
-                            <Box sx={{ mb: 2 }}>
-                              <Icon style={{ width: 48, height: 48, margin: '0 auto', color: '#333333' }} />
-                            </Box>
-                            <Typography sx={{ fontWeight: 600, fontSize: '1rem', mb: 1, textTransform: 'capitalize', transition: 'color 0.2s' }}>
-                              {category}
-                            </Typography>
-                            <Badge variant="secondary">
-                              {categoryTags.length} tags
-                            </Badge>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
+                  {(tagUsageCounts[tag.name] || 0) > 0 && (
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                      {tagUsageCounts[tag.name]} uses
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      );
+    }
 
-                    {/* Professions Category */}
-                    <Card
-                      style={{ cursor: 'pointer', transition: 'all 0.2s' }}
-                      onClick={() => {
-                        setViewMode("professions");
-                      }}
-                    >
-                      <CardContent style={{ padding: 24, textAlign: 'center' }}>
-                        <Box sx={{ mb: 2 }}>
-                          <Briefcase style={{ width: 48, height: 48, margin: '0 auto', color: '#333333' }} />
-                        </Box>
-                        <Typography sx={{ fontWeight: 600, fontSize: '1rem', mb: 1, textTransform: 'capitalize', transition: 'color 0.2s' }}>
-                          Professions
-                        </Typography>
-                        <Badge variant="secondary">
-                          {professions.length} professions
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  </Box>
-                </CardContent>
-              </Card>
+    if (displayMode === "list") {
+      return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          {tags.map((tag) => (
+            <Box
+              key={tag.id}
+              onClick={() => handleTagClick(tag)}
+              sx={{
+                display: 'flex', alignItems: 'center', gap: 2,
+                px: 2, py: 1.25, borderRadius: 2, cursor: 'pointer',
+                bgcolor: 'background.paper',
+                border: '1px solid', borderColor: 'divider',
+                '&:hover': { borderColor: 'primary.main', bgcolor: 'secondary.main' },
+                transition: 'all 0.15s',
+              }}
+            >
+              {tag.image_url && (
+                <Box sx={{ width: 40, height: 40, borderRadius: 1.5, overflow: 'hidden', flexShrink: 0, bgcolor: 'secondary.main' }}>
+                  <Box
+                    component="img"
+                    src={tag.image_url}
+                    alt={tag.name}
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                </Box>
+              )}
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>{tag.name}</Typography>
+                {tag.description && (
+                  <Typography variant="caption" color="text.secondary" sx={{
+                    display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden', fontSize: '0.75rem',
+                  }}>
+                    {tag.description}
+                  </Typography>
+                )}
+              </Box>
+              <Badge variant="secondary" style={{ textTransform: 'capitalize', flexShrink: 0 }}>
+                {getCategoryShortName(tag.category || '')}
+              </Badge>
+              {(tagUsageCounts[tag.name] || 0) > 0 && (
+                <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0, fontSize: '0.75rem' }}>
+                  {tagUsageCounts[tag.name]} uses
+                </Typography>
+              )}
+              <ChevronRight style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }} />
+            </Box>
+          ))}
+        </Box>
+      );
+    }
+
+    // Default: chips view
+    return (
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        {tags.map((tag) => (
+          <Box
+            key={tag.id}
+            onClick={() => handleTagClick(tag)}
+            sx={{
+              display: 'inline-flex', alignItems: 'center', gap: 0.75,
+              px: 1.5, py: 0.75, borderRadius: 2, cursor: 'pointer',
+              bgcolor: 'background.paper',
+              border: '1px solid', borderColor: 'divider',
+              '&:hover': { borderColor: 'primary.main', bgcolor: 'secondary.main' },
+              transition: 'all 0.15s',
+            }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>{tag.name}</Typography>
+            {(tagUsageCounts[tag.name] || 0) > 0 && (
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                {tagUsageCounts[tag.name]}
+              </Typography>
             )}
+          </Box>
+        ))}
+      </Box>
+    );
+  };
 
-            {/* Category View with Subcategories */}
-            {viewMode === "category" && selectedCategory && (
-              <Card style={{ marginBottom: 32 }}>
-                <CardHeader>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Button variant="outline" onClick={handleBack}>
-                      <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
-                      Back
-                    </Button>
-                    <Box>
-                      <CardTitle>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, textTransform: 'capitalize' }}>
-                          {(() => {
-                            const IconComponent = getCategoryIcon(selectedCategory);
-                            return <IconComponent style={{ width: 24, height: 24, color: '#333333' }} />;
-                          })()}
-                          <Typography variant="h5" component="span">{selectedCategory} Subcategories</Typography>
-                        </Box>
-                      </CardTitle>
-                      <Typography color="text.secondary">
-                        Browse subcategories within {selectedCategory}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardHeader>
-                <CardContent>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
-                    {Object.entries(subcategories[selectedCategory] || {}).map(([subCategory, tagNames]) => (
-                      <Card
-                        key={subCategory}
-                        style={{ cursor: 'pointer', transition: 'all 0.2s' }}
-                        onClick={() => {
-                          setSelectedSubcategory(subCategory);
-                          setViewMode("subcategory");
-                        }}
-                      >
-                        <CardContent style={{ padding: 24 }}>
-                          <Typography sx={{ fontWeight: 600, fontSize: '1.125rem', mb: 1, transition: 'color 0.2s' }}>
-                            {subCategory}
-                          </Typography>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                            <Badge variant="secondary">
-                              {tagNames.length} tags
-                            </Badge>
-                            <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                              {tagNames.slice(0, 3).join(", ")}
-                              {tagNames.length > 3 && ` and ${tagNames.length - 3} more...`}
-                            </Typography>
-                          </Box>
-                        </CardContent>
-                      </Card>
+  return <Box sx={{ minHeight: '100vh' }}>
+      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
+        {/* Header */}
+        <PageHeader
+          title="Resources"
+          subtitle="Discover and explore LGBTQ+ community tags, resources, and professions"
+          center
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+            <Badge variant="secondary">
+              {allTags.length} Total Tags
+            </Badge>
+            <Badge variant="secondary">
+              {categories.length} Categories
+            </Badge>
+          </Box>
+        </PageHeader>
+
+        {/* Search and Filters — always visible at top */}
+        <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 }, mb: 3, bgcolor: 'background.paper' }}>
+          {/* Row 1: Search + View toggles */}
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2 }}>
+            <Box sx={{ position: 'relative', flex: 1 }}>
+              <Search style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 20, height: 20, color: '#999999' }} />
+              <Input
+                placeholder="Search tags, categories, descriptions..."
+                value={searchQuery}
+                onChange={e => handleSearch(e.target.value)}
+                style={{ paddingLeft: 48, height: 44, fontSize: '1rem' }}
+              />
+            </Box>
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
+              {([
+                { mode: 'chips' as DisplayMode, icon: Tag, label: 'Chips' },
+                { mode: 'grid' as DisplayMode, icon: LayoutGrid, label: 'Grid' },
+                { mode: 'list' as DisplayMode, icon: List, label: 'List' },
+              ]).map(({ mode, icon: Icon, label }) => (
+                <Button
+                  key={mode}
+                  variant={displayMode === mode ? "default" : "secondary"}
+                  size="lg"
+                  style={{ height: 44, width: 44, padding: 0 }}
+                  onClick={() => setDisplayMode(mode)}
+                  title={`${label} view`}
+                >
+                  <Icon style={{ width: 18, height: 18 }} />
+                </Button>
+              ))}
+              <Box sx={{ width: '1px', bgcolor: 'divider', mx: 0.5 }} />
+              <Button
+                variant={viewMode === "graph" ? "default" : "secondary"}
+                size="lg"
+                style={{ height: 44, width: 44, padding: 0 }}
+                onClick={() => setViewMode(viewMode === "graph" ? "overview" : "graph")}
+                title="Tag Relationship Graph"
+              >
+                <Network style={{ width: 18, height: 18 }} />
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Row 2: Filters + Sort */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger style={{ width: 220, height: 40 }}>
+                <Filter style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categoriesTree.map(cat => (
+                  <React.Fragment key={cat.id}>
+                    <SelectItem value={cat.name}>
+                      {getCategoryShortName(cat.name)}
+                    </SelectItem>
+                    {cat.children.map(child => (
+                      <SelectItem key={child.id} value={child.name}>
+                        <span style={{ paddingLeft: 16, fontSize: '0.85em', opacity: 0.85 }}>
+                          {getCategoryShortName(child.name)}
+                        </span>
+                      </SelectItem>
                     ))}
-                  </Box>
-                </CardContent>
-              </Card>
-            )}
+                  </React.Fragment>
+                ))}
+              </SelectContent>
+            </Select>
 
-            {/* Subcategory View */}
-            {viewMode === "subcategory" && selectedCategory && selectedSubcategory && (
-              <Card style={{ marginBottom: 32 }}>
-                <CardHeader>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Button variant="outline" onClick={handleBack}>
-                      <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
-                      Back
-                    </Button>
-                    <Box>
-                      <CardTitle>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Tag style={{ width: 24, height: 24, color: '#333333' }} />
-                          <Typography variant="h5" component="span">{selectedSubcategory}</Typography>
-                        </Box>
-                      </CardTitle>
-                      <Typography color="text.secondary">
-                        Tags in {selectedCategory} &rarr; {selectedSubcategory}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardHeader>
-                <CardContent>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
-                    {(subcategories[selectedCategory]?.[selectedSubcategory] || []).map((tagName) => {
-                      const tag = allTags.find(t => t.name === tagName);
-                      if (!tag) return null;
+            <Select value={usageFilter} onValueChange={setUsageFilter}>
+              <SelectTrigger style={{ width: 140, height: 40 }}>
+                <BarChart3 style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+                <SelectValue placeholder="Usage" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tags</SelectItem>
+                <SelectItem value="used">Used</SelectItem>
+                <SelectItem value="unused">Unused</SelectItem>
+              </SelectContent>
+            </Select>
 
-                      return (
-                        <Card
-                          key={tag.id}
-                          style={{ cursor: 'pointer', transition: 'all 0.3s', overflow: 'hidden' }}
-                          onClick={() => handleTagClick(tag)}
-                        >
-                          <Box sx={{ aspectRatio: '4/3', width: '100%', overflow: 'hidden', position: 'relative' }}>
-                            {tag.image_url ? (
-                              <Box
-                                component="img"
-                                src={tag.image_url}
-                                alt={`${tag.name} themed image`}
-                                sx={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.2s' }}
-                                onError={(e: any) => {
-                                  e.currentTarget.src = '/placeholder.svg';
-                                }}
-                              />
-                            ) : (
-                              <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover' }}>
-                                <Tag style={{ width: 48, height: 48, opacity: 0.6, color: '#999999' }} />
-                              </Box>
-                            )}
-                            <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.2), transparent)', opacity: 0, transition: 'opacity 0.2s' }} />
-                          </Box>
-                          <CardContent style={{ padding: 16 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                              <Box
-                                sx={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0, transition: 'transform 0.2s' }}
-                                style={{ backgroundColor: tag.color }}
-                              />
-                              <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.2s' }}>
-                                {tag.name}
-                              </Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-                                {selectedSubcategory}
-                              </Typography>
-                              {tagUsageCounts[tag.name] > 0 && (
-                                <Badge variant="outline" style={{ transition: 'color 0.2s, background-color 0.2s' }}>
-                                  {tagUsageCounts[tag.name]} uses
-                                </Badge>
-                              )}
-                            </Box>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </Box>
-                </CardContent>
-              </Card>
-            )}
+            <Button
+              variant={hasImageFilter ? "default" : "secondary"}
+              size="sm"
+              style={{ height: 40 }}
+              onClick={() => setHasImageFilter(!hasImageFilter)}
+              title="Only show tags with images"
+            >
+              <Image style={{ width: 16, height: 16, marginRight: 6 }} />
+              Has Image
+            </Button>
 
-            {/* Professions View */}
-            {viewMode === "professions" && (
-              <Card style={{ marginBottom: 32 }}>
-                <CardHeader>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Button variant="outline" onClick={handleBack}>
-                      <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
-                      Back
-                    </Button>
-                    <Box>
-                      <CardTitle>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Briefcase style={{ width: 24, height: 24, color: '#333333' }} />
-                          <Typography variant="h5" component="span">LGBTQ+ Personalities by Profession</Typography>
-                        </Box>
-                      </CardTitle>
-                      <Typography color="text.secondary">
-                        Explore different professions represented by LGBTQ+ personalities in our directory
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardHeader>
-                <CardContent>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 2 }}>
-                    {professions.map((profession, index) => (
-                      <Button
-                        key={profession}
-                        variant={selectedProfession === profession ? "default" : "outline"}
-                        style={{ height: 'auto', padding: 16, textAlign: 'left', justifyContent: 'flex-start', transition: 'all 0.3s', animationDelay: `${index * 30}ms` }}
-                        onClick={() => {
-                          if (selectedProfession === profession) {
-                            setSelectedProfession("");
-                            navigate('/personalities');
-                          } else {
-                            setSelectedProfession(profession);
-                            navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
-                          }
-                        }}
-                      >
-                        <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500, transition: 'color 0.2s' }}>
-                          {profession}
-                        </Box>
-                      </Button>
-                    ))}
-                  </Box>
-                </CardContent>
-              </Card>
-            )}
+            <Box sx={{ ml: 'auto', display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+                <SelectTrigger style={{ width: 150, height: 40 }}>
+                  <TrendingUp style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="usage">Most Used</SelectItem>
+                  <SelectItem value="alphabetical">A–Z</SelectItem>
+                  <SelectItem value="recent">Newest</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="secondary"
+                size="sm"
+                style={{ height: 40, width: 40, padding: 0 }}
+                onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')}
+                title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+              >
+                {sortDirection === 'asc' ? <SortAsc style={{ width: 16, height: 16 }} /> : <SortDesc style={{ width: 16, height: 16 }} />}
+              </Button>
+            </Box>
+          </Box>
 
-            {/* Search and Filters */}
-            <Card style={{ marginBottom: 32 }}>
-              <CardContent style={{ padding: 24 }}>
-                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-                  <Box sx={{ position: 'relative', flex: 1 }}>
-                    <Search style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 20, height: 20, color: '#999999' }} />
-                    <Input
-                      placeholder="Search tags, categories, descriptions..."
-                      value={searchQuery}
-                      onChange={e => handleSearch(e.target.value)}
-                      style={{ paddingLeft: 48, height: 48, fontSize: '1rem' }}
-                    />
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 1.5 }}>
-                    <Select value={filterCategory} onValueChange={setFilterCategory}>
-                      <SelectTrigger style={{ width: 192, height: 48 }}>
-                        <Filter style={{ width: 16, height: 16, marginRight: 8 }} />
-                        <SelectValue placeholder="Filter by category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        {categories.map(category => (
-                          <SelectItem key={category} value={category} style={{ textTransform: 'capitalize' }}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+          {/* Active filters summary */}
+          {(filterCategory !== 'all' || usageFilter !== 'all' || hasImageFilter) && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2, alignItems: 'center' }}>
+              <Typography variant="caption" color="text.secondary">Active:</Typography>
+              {filterCategory !== 'all' && (
+                <Box
+                  onClick={() => setFilterCategory('all')}
+                  sx={{
+                    display: 'inline-flex', alignItems: 'center', gap: 0.5,
+                    px: 1, py: 0.25, borderRadius: 1, cursor: 'pointer',
+                    bgcolor: 'secondary.main', fontSize: '0.75rem',
+                    '&:hover': { opacity: 0.8 },
+                  }}
+                >
+                  {getCategoryShortName(filterCategory)} ✕
+                </Box>
+              )}
+              {usageFilter !== 'all' && (
+                <Box
+                  onClick={() => setUsageFilter('all')}
+                  sx={{
+                    display: 'inline-flex', alignItems: 'center', gap: 0.5,
+                    px: 1, py: 0.25, borderRadius: 1, cursor: 'pointer',
+                    bgcolor: 'secondary.main', fontSize: '0.75rem',
+                    '&:hover': { opacity: 0.8 },
+                  }}
+                >
+                  {usageFilter === 'used' ? 'Used' : 'Unused'} ✕
+                </Box>
+              )}
+              {hasImageFilter && (
+                <Box
+                  onClick={() => setHasImageFilter(false)}
+                  sx={{
+                    display: 'inline-flex', alignItems: 'center', gap: 0.5,
+                    px: 1, py: 0.25, borderRadius: 1, cursor: 'pointer',
+                    bgcolor: 'secondary.main', fontSize: '0.75rem',
+                    '&:hover': { opacity: 0.8 },
+                  }}
+                >
+                  Has Image ✕
+                </Box>
+              )}
+              <Box
+                onClick={() => { setFilterCategory('all'); setUsageFilter('all'); setHasImageFilter(false); }}
+                sx={{ cursor: 'pointer', fontSize: '0.75rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+              >
+                Clear all
+              </Box>
+            </Box>
+          )}
+        </Paper>
 
-                    <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                      <SelectTrigger style={{ width: 192, height: 48 }}>
-                        <TrendingUp style={{ width: 16, height: 16, marginRight: 8 }} />
-                        <SelectValue placeholder="Sort by" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="alphabetical">Alphabetical</SelectItem>
-                        <SelectItem value="usage">Most Used</SelectItem>
-                        <SelectItem value="popular">Popular</SelectItem>
-                        <SelectItem value="recent">Recent</SelectItem>
-                      </SelectContent>
-                    </Select>
+        {/* Graph View */}
+        {viewMode === "graph" && (
+          <Suspense fallback={<PageLoadingState count={1} />}>
+            <Card style={{ marginBottom: 24 }}>
+              <CardHeader>
+                <CardTitle>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Network style={{ width: 24, height: 24 }} />
+                    <Typography variant="h5" component="span">Tag Relationship Graph</Typography>
                   </Box>
+                </CardTitle>
+                <Typography color="text.secondary">
+                  Explore how tags relate to each other based on semantic similarity and co-occurrence
+                </Typography>
+              </CardHeader>
+              <CardContent>
+                <Box sx={{ width: '100%', height: { xs: 400, md: 600 } }}>
+                  <TagRelationshipGraph
+                    onTagClick={(tag) => handleTagClick({ name: tag.name, id: tag.id })}
+                    categoryFilter={filterCategory !== 'all' ? filterCategory : null}
+                    categories={categories}
+                  />
                 </Box>
               </CardContent>
             </Card>
-            </Box>
-        </Box>
-
-        {/* Admin Controls with enhanced design */}
-        {viewMode === "overview" && (
-          <Card style={{ border: 0, boxShadow: '0px 3px 5px -1px rgba(0,0,0,0.2), 0px 6px 10px 0px rgba(0,0,0,0.14), 0px 1px 18px 0px rgba(0,0,0,0.12)' }}>
-            <CardHeader>
-              <CardTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Brain style={{ width: 24, height: 24, color: '#333333' }} />
-                  <Typography variant="h6" component="span">Admin Controls</Typography>
-                </Box>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                <Button
-                  onClick={storeTagImages}
-                  disabled={processingImages}
-                  variant="outline"
-                  size="lg"
-                  style={{ transition: 'all 0.2s' }}
-                >
-                  <Upload style={{ width: 16, height: 16, marginRight: 8 }} />
-                  {processingImages ? 'Processing...' : 'Reimport All Images'}
-                </Button>
-                <Button
-                  onClick={categorizeAllTags}
-                  disabled={categorizingTags}
-                  variant="outline"
-                  size="lg"
-                  style={{ transition: 'all 0.2s' }}
-                >
-                  <Brain style={{ width: 16, height: 16, marginRight: 8 }} />
-                  {categorizingTags ? 'Categorizing...' : 'AI Auto-Categorize'}
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
+          </Suspense>
         )}
 
-        {/* Enhanced Results Info */}
-        {(viewMode === "search" || (viewMode === "overview" && (searchQuery || filterCategory !== "all"))) && (
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                {viewMode === "search" ? "Search Results" : filterCategory !== "all" ? `${filterCategory} Tags` : "All Tags"}
-              </Typography>
-              <Badge variant="secondary">
-                {filteredAndSortedTags.length} tags
-              </Badge>
+        {/* Overview — curated landing page (only when no filters active) */}
+        {viewMode === "overview" && !searchQuery && filterCategory === "all" && usageFilter === "all" && !hasImageFilter && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {/* Popular Tags */}
+            {popularTags.length > 0 && (
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Zap style={{ width: 18, height: 18 }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Popular Tags</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {popularTags.map((tag) => (
+                    <Box
+                      key={tag.id}
+                      onClick={() => handleTagClick(tag)}
+                      sx={{
+                        display: 'inline-flex', alignItems: 'center', gap: 0.75,
+                        px: 1.5, py: 0.75, borderRadius: 2, cursor: 'pointer',
+                        bgcolor: 'background.paper',
+                        border: '1px solid', borderColor: 'divider',
+                        '&:hover': { borderColor: 'primary.main', bgcolor: 'secondary.main' },
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>{tag.name}</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                        {tagUsageCounts[tag.name]}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* Browse by Category — hierarchical with subcategory counts */}
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Grid3X3 style={{ width: 18, height: 18 }} />
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>Browse by Category</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {categoriesTree.filter(cat => cat.name !== 'Miscellaneous').map((cat) => {
+                  const Icon = getCategoryIcon(cat.name);
+                  const hasChildren = cat.children && cat.children.length > 0;
+                  return (
+                    <Box
+                      key={cat.id}
+                      onClick={() => {
+                        setFilterCategory(cat.name);
+                        setViewMode("category");
+                        setSelectedCategory(cat.name);
+                      }}
+                      sx={{
+                        display: 'flex', alignItems: 'center', gap: 2,
+                        px: 2, py: 1.5, borderRadius: 2, cursor: 'pointer',
+                        bgcolor: 'background.paper',
+                        border: '1px solid', borderColor: 'divider',
+                        '&:hover': { borderColor: 'primary.main', bgcolor: 'secondary.main' },
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <Icon style={{ width: 18, height: 18, flexShrink: 0, opacity: 0.7 }} />
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{getCategoryShortName(cat.name)}</Typography>
+                          <Typography variant="caption" color="text.secondary">{cat.total_tag_count}</Typography>
+                        </Box>
+                        {hasChildren ? (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {cat.children.map((child, idx) => (
+                              <Typography key={child.id} variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                {child.name} ({child.tag_count}){idx < cat.children.length - 1 ? ',' : ''}
+                              </Typography>
+                            ))}
+                            {cat.tag_count > 0 && (
+                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                + {cat.tag_count} general
+                              </Typography>
+                            )}
+                          </Box>
+                        ) : (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {sortedCategories.find(sc => sc.name === cat.name)?.topTags.map((tag, idx, arr) => (
+                              <Typography key={tag.id} variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                {tag.name}{idx < arr.length - 1 ? ',' : ''}
+                              </Typography>
+                            ))}
+                          </Box>
+                        )}
+                      </Box>
+                      <ChevronRight style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.4 }} />
+                    </Box>
+                  );
+                })}
+                {/* Professions row */}
+                <Box
+                  onClick={() => setViewMode("professions")}
+                  sx={{
+                    display: 'flex', alignItems: 'center', gap: 2,
+                    px: 2, py: 1.5, borderRadius: 2, cursor: 'pointer',
+                    bgcolor: 'background.paper',
+                    border: '1px solid', borderColor: 'divider',
+                    '&:hover': { borderColor: 'primary.main', bgcolor: 'secondary.main' },
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <Briefcase style={{ width: 18, height: 18, flexShrink: 0, opacity: 0.7 }} />
+                  <Box sx={{ flex: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>Professions</Typography>
+                      <Typography variant="caption" color="text.secondary">{professions.length}</Typography>
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                      Browse LGBTQ+ personalities by profession
+                    </Typography>
+                  </Box>
+                  <ChevronRight style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.4 }} />
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Admin Controls — only in dev mode */}
+            {import.meta.env.DEV && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                <Button onClick={storeTagImages} disabled={processingImages} variant="secondary" size="sm">
+                  <Upload style={{ width: 14, height: 14, marginRight: 6 }} />
+                  {processingImages ? 'Processing...' : 'Reimport Images'}
+                </Button>
+                <Button onClick={categorizeAllTags} disabled={categorizingTags} variant="secondary" size="sm">
+                  <Brain style={{ width: 14, height: 14, marginRight: 6 }} />
+                  {categorizingTags ? 'Categorizing...' : 'AI Categorize'}
+                </Button>
+                <ComputeRelationshipsButton />
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {/* Category View — with subcategory sections */}
+        {viewMode === "category" && selectedCategory && (
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+              <Button variant="secondary" size="sm" onClick={handleBack}>
+                <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
+                Back
+              </Button>
+              {(() => {
+                const IconComponent = getCategoryIcon(selectedCategory);
+                return <IconComponent style={{ width: 18, height: 18 }} />;
+              })()}
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>{getCategoryShortName(selectedCategory)}</Typography>
+              <Badge variant="secondary">{categoryTags.length}</Badge>
+            </Box>
+
+            {/* Subcategory navigation cards (if this category has subcategories) */}
+            {(() => {
+              const treeNode = categoriesTree.find(c => c.name === selectedCategory);
+              if (!treeNode || !treeNode.children || treeNode.children.length === 0) {
+                // No subcategories — show flat tag list
+                return renderTagList(categoryTags);
+              }
+
+              return (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {/* Subcategory cards */}
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 1.5 }}>
+                    {treeNode.children.map((child) => {
+                      const SubIcon = getCategoryIcon(child.name);
+                      return (
+                        <Box
+                          key={child.id}
+                          onClick={() => {
+                            setSelectedSubcategory(child.name);
+                            setViewMode("subcategory");
+                          }}
+                          sx={{
+                            display: 'flex', alignItems: 'center', gap: 1.5,
+                            px: 2, py: 1.5, borderRadius: 2, cursor: 'pointer',
+                            bgcolor: 'background.paper',
+                            border: '1px solid', borderColor: 'divider',
+                            '&:hover': { borderColor: 'primary.main', bgcolor: 'secondary.main' },
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          <SubIcon style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.6 }} />
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                              {getCategoryShortName(child.name)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {child.tag_count} tags
+                            </Typography>
+                          </Box>
+                          <ChevronRight style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }} />
+                        </Box>
+                      );
+                    })}
+                  </Box>
+
+                  {/* Tags directly assigned to parent (not in any subcategory) */}
+                  {treeNode.tag_count > 0 && (
+                    <Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                          General {getCategoryShortName(selectedCategory)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {treeNode.tag_count}
+                        </Typography>
+                      </Box>
+                      {renderTagList(
+                        categoryTags.filter(tag => {
+                          // Only tags assigned directly to parent, not to any subcategory
+                          const tagCats = tag.categories || [];
+                          const childIds = new Set(treeNode.children.map(c => c.id));
+                          return tagCats.some(c => c.id === treeNode.id) && !tagCats.some(c => childIds.has(c.id));
+                        })
+                      )}
+                    </Box>
+                  )}
+
+                  {/* Preview: top tags from each subcategory */}
+                  {treeNode.children.filter(c => c.tag_count > 0).map((child) => {
+                    const childTags = allTags.filter(tag =>
+                      tag.categories?.some(c => c.id === child.id)
+                    ).sort((a, b) => b.usage_count - a.usage_count).slice(0, 8);
+                    if (childTags.length === 0) return null;
+                    return (
+                      <Box key={child.id}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                            {child.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {child.tag_count}
+                          </Typography>
+                          <Box
+                            component="button"
+                            onClick={(e: React.MouseEvent) => {
+                              e.stopPropagation();
+                              setSelectedSubcategory(child.name);
+                              setViewMode("subcategory");
+                            }}
+                            sx={{ ml: 'auto', background: 'none', border: 'none', cursor: 'pointer', p: 0, color: 'primary.main', fontSize: '0.75rem', '&:hover': { textDecoration: 'underline' } }}
+                          >
+                            View all →
+                          </Box>
+                        </Box>
+                        {renderTagList(childTags)}
+                      </Box>
+                    );
+                  })}
+                </Box>
+              );
+            })()}
+          </Box>
+        )}
+
+        {/* Subcategory View — all tags in a specific subcategory */}
+        {viewMode === "subcategory" && selectedSubcategory && (
+          <Box>
+            {/* Breadcrumb */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 3, flexWrap: 'wrap' }}>
+              <Button variant="secondary" size="sm" onClick={handleBack}>
+                <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
+                Back
+              </Button>
+              {(() => {
+                const parentCat = categoriesTree.find(c =>
+                  c.children.some(ch => ch.name === selectedSubcategory)
+                );
+                const IconComponent = getCategoryIcon(selectedSubcategory);
+                const subcatTags = allTags.filter(tag =>
+                  tag.categories?.some(c => c.name === selectedSubcategory)
+                ).sort((a, b) => a.name.localeCompare(b.name));
+                return (
+                  <>
+                    {parentCat && (
+                      <Box
+                        component="button"
+                        onClick={() => {
+                          setSelectedCategory(parentCat.name);
+                          setSelectedSubcategory("");
+                          setViewMode("category");
+                          setFilterCategory(parentCat.name);
+                        }}
+                        sx={{ background: 'none', border: 'none', cursor: 'pointer', p: 0, display: 'inline-flex', alignItems: 'center' }}
+                      >
+                        <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>
+                          {getCategoryShortName(parentCat.name)}
+                        </Typography>
+                      </Box>
+                    )}
+                    <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+                    <IconComponent style={{ width: 16, height: 16 }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>{getCategoryShortName(selectedSubcategory)}</Typography>
+                    <Badge variant="secondary">{subcatTags.length}</Badge>
+                  </>
+                );
+              })()}
+            </Box>
+            {renderTagList(
+              allTags.filter(tag =>
+                tag.categories?.some(c => c.name === selectedSubcategory)
+              ).sort((a, b) => a.name.localeCompare(b.name))
+            )}
+          </Box>
+        )}
+
+        {/* Professions View */}
+        {viewMode === "professions" && (
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+              <Button variant="secondary" size="sm" onClick={handleBack}>
+                <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
+                Back
+              </Button>
+              <Briefcase style={{ width: 18, height: 18 }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>Professions</Typography>
+              <Badge variant="secondary">{professions.length}</Badge>
+            </Box>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {professions.map((profession) => (
+                <Box
+                  key={profession}
+                  onClick={() => {
+                    setSelectedProfession(profession);
+                    navigate(`/personalities?profession=${encodeURIComponent(profession)}`);
+                  }}
+                  sx={{
+                    display: 'inline-flex', alignItems: 'center',
+                    px: 1.5, py: 0.75, borderRadius: 2, cursor: 'pointer',
+                    bgcolor: 'background.paper',
+                    border: '1px solid', borderColor: 'divider',
+                    '&:hover': { borderColor: 'primary.main', bgcolor: 'secondary.main' },
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>{profession}</Typography>
+                </Box>
+              ))}
             </Box>
           </Box>
         )}
 
-        {/* Enhanced Tags Display */}
-        <Box sx={displayMode === "grid" ? { display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 3 } : { display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          {filteredAndSortedTags.map((tag, index) => (
-            <Card
-              key={`${tag.id}-${index}`}
-              style={{
-                cursor: 'pointer',
-                transition: 'all 0.3s',
-                animationDelay: `${index * 20}ms`,
-                overflow: displayMode === "grid" ? 'hidden' : undefined,
-                ...(displayMode === "list" ? { display: 'flex', alignItems: 'center', padding: 16 } : {})
-              }}
-              onClick={() => handleTagClick(tag)}
-            >
-              {displayMode === "grid" ? (
-                <>
-                  <Box sx={{ aspectRatio: '4/3', width: '100%', overflow: 'hidden', position: 'relative' }}>
-                    {tag.image_url ? (
-                      <Box
-                        component="img"
-                        src={tag.image_url}
-                        alt={`${tag.name} themed image`}
-                        sx={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.2s' }}
-                        onError={(e: any) => {
-                          e.currentTarget.src = '/placeholder.svg';
-                        }}
-                      />
-                    ) : (
-                      <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover' }}>
-                        <Tag style={{ width: 48, height: 48, opacity: 0.6, color: '#999999' }} />
-                      </Box>
-                    )}
-                    <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.2), transparent)', opacity: 0, transition: 'opacity 0.2s' }} />
-                  </Box>
-                  <CardContent style={{ padding: 16 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                      <Box
-                        sx={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0, transition: 'transform 0.2s' }}
-                        style={{ backgroundColor: tag.color }}
-                      />
-                      <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.2s' }}>
-                        {tag.name}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
-                        {tag.category || 'Uncategorized'}
-                      </Typography>
-                      {tagUsageCounts[tag.name] > 0 && (
-                        <Badge variant="outline" style={{ transition: 'color 0.2s, background-color 0.2s' }}>
-                          {tagUsageCounts[tag.name]} uses
-                        </Badge>
-                      )}
-                    </Box>
-                  </CardContent>
-                </>
-              ) : (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-                  <Box sx={{ width: 80, height: 80, borderRadius: 2, overflow: 'hidden', flexShrink: 0, transition: 'transform 0.2s', bgcolor: 'action.hover' }}>
-                    {tag.image_url ? (
-                      <Box
-                        component="img"
-                        src={tag.image_url}
-                        alt={`${tag.name} themed image`}
-                        sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Tag style={{ width: 32, height: 32, opacity: 0.6, color: '#999999' }} />
-                      </Box>
-                    )}
-                  </Box>
-                  <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Box
-                        sx={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0 }}
-                        style={{ backgroundColor: tag.color }}
-                      />
-                      <Typography sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '1rem', transition: 'color 0.2s' }}>
-                        {tag.name}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {tag.description || tag.category || 'No description'}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flexShrink: 0 }}>
-                    <Badge variant="outline" style={{ textTransform: 'capitalize' }}>
-                      {tag.category || 'Uncategorized'}
-                    </Badge>
-                    {tagUsageCounts[tag.name] > 0 && (
-                      <Badge variant="secondary">
-                        {tagUsageCounts[tag.name]} uses
-                      </Badge>
-                    )}
-                  </Box>
-                </Box>
-              )}
-            </Card>
-          ))}
-        </Box>
-
-        {filteredAndSortedTags.length === 0 && (
-          <Card style={{ borderWidth: 2, borderStyle: 'dashed' }}>
-            <CardContent style={{ padding: 64, textAlign: 'center' }}>
-              <Box sx={{ mx: 'auto', mb: 3, width: 80, height: 80, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Tag style={{ width: 40, height: 40, opacity: 0.5, color: '#999999' }} />
-              </Box>
-              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1.5 }} color="text.secondary">No tags found</Typography>
-              <Typography color="text.secondary" sx={{ maxWidth: '28rem', mx: 'auto' }}>
-                {viewMode === "search"
-                  ? "Try adjusting your search terms or filters to find what you're looking for"
-                  : "No tags are available yet. Check back later or contact support if this seems incorrect"}
+        {/* Search results / filtered tags */}
+        {(viewMode === "search" || (viewMode === "overview" && (searchQuery || filterCategory !== "all" || usageFilter !== "all" || hasImageFilter))) && (
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                {viewMode === "search" ? "Search Results" : filterCategory !== "all" ? `${getCategoryShortName(filterCategory)} Tags` : "Filtered Tags"}
               </Typography>
-            </CardContent>
-          </Card>
+              <Badge variant="secondary">{filteredAndSortedTags.length}</Badge>
+            </Box>
+            {renderTagList(filteredAndSortedTags)}
+            {filteredAndSortedTags.length === 0 && (
+              <EmptyState
+                icon={Tag}
+                title="No tags found"
+                description="Try adjusting your search terms or filters"
+              />
+            )}
+          </Box>
         )}
       </Container>
     </Box>;

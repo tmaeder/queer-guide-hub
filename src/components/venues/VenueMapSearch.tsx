@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,8 @@ import { useRestrooms } from '@/hooks/useRestrooms';
 import { VenueCard } from './VenueCard';
 import { VenueFilters } from '@/components/venues/VenueFilters';
 import { Database } from '@/integrations/supabase/types';
-import { useSecureMapbox } from '@/hooks/useSecureMapbox';
+import { mapStyle } from '@/config/mapStyle';
+
 type Venue = Database['public']['Tables']['venues']['Row'];
 type SelectedItem = Venue | {
   type: 'restroom';
@@ -45,16 +46,13 @@ export function VenueMapSearch({
   filters
 }: VenueMapSearchProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
-const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
-const [showRestrooms, setShowRestrooms] = useState(false);
-const [mode, setMode] = useState<'venues' | 'organizations'>('venues');
-const [filtersOpen, setFiltersOpen] = useState(false);
-  const {
-    token: mapboxToken,
-    loading: mapTokenLoading
-  } = useSecureMapbox();
+  const map = useRef<maplibregl.Map | null>(null);
+  const [searchTerm, setSearchTerm] = useState(externalSearchTerm);
+  const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
+  const [showRestrooms, setShowRestrooms] = useState(false);
+  const [mode, setMode] = useState<'venues' | 'organizations'>('venues');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const {
     venues,
     loading: venuesLoading,
@@ -66,22 +64,16 @@ const [filtersOpen, setFiltersOpen] = useState(false);
     fetchRestrooms
   } = useRestrooms();
 
-  // Mapbox token is provided by useSecureMapbox hook
-
   const initializeMap = () => {
-    if (!mapContainer.current || !mapboxToken) {
-      console.error('Mapbox token not available');
-      return;
-    }
-    mapboxgl.accessToken = mapboxToken;
-    map.current = new mapboxgl.Map({
+    if (!mapContainer.current) return;
+    map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/tmaeder/clvmrc8pj015p01o05wd581tt',
+      style: mapStyle,
       center: [-74.006, 40.7128],
-      // NYC default
       zoom: 12
     });
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.current.on('load', () => setMapReady(true));
   };
   const handleSearch = () => {
     const searchFilters = {
@@ -91,7 +83,6 @@ const [filtersOpen, setFiltersOpen] = useState(false);
     fetchVenues(searchFilters);
     onSearchChange?.(searchTerm);
 
-    // Also fetch restrooms for the current map bounds
     if (map.current && showRestrooms) {
       const center = map.current.getCenter();
       fetchRestrooms({
@@ -115,19 +106,16 @@ const [filtersOpen, setFiltersOpen] = useState(false);
   };
   const loading = venuesLoading || restroomsLoading;
   useEffect(() => {
-    if (mapboxToken) {
-      initializeMap();
-      // Fetch initial restrooms for a general area (NYC)
-      fetchRestrooms({
-        lat: 40.7128,
-        lng: -74.006,
-        per_page: 50
-      });
-    }
+    initializeMap();
+    fetchRestrooms({
+      lat: 40.7128,
+      lng: -74.006,
+      per_page: 50
+    });
     return () => {
       map.current?.remove();
     };
-  }, [mapboxToken]);
+  }, []);
 
   // Apply filters when they change
   useEffect(() => {
@@ -136,18 +124,18 @@ const [filtersOpen, setFiltersOpen] = useState(false);
     }
   }, [filters]);
   useEffect(() => {
-    if (map.current && (venues.length > 0 || restrooms.length > 0)) {
+    if (map.current && mapReady && (venues.length > 0 || restrooms.length > 0)) {
       // Clear existing markers
-      const markers = document.querySelectorAll('.mapboxgl-marker');
+      const markers = document.querySelectorAll('.maplibregl-marker');
       markers.forEach(marker => marker.remove());
 
       // Add venue markers
       venues.forEach(venue => {
         if (venue.latitude && venue.longitude) {
-          const marker = new mapboxgl.Marker({
+          const marker = new maplibregl.Marker({
             color: '#6366f1'
           }).setLngLat([venue.longitude, venue.latitude]).addTo(map.current!);
-          const popup = new mapboxgl.Popup({
+          const popup = new maplibregl.Popup({
             offset: 25
           }).setHTML(`
               <div class="p-2">
@@ -167,10 +155,10 @@ const [filtersOpen, setFiltersOpen] = useState(false);
       if (showRestrooms) {
         restrooms.forEach(restroom => {
           if (restroom.latitude && restroom.longitude) {
-            const marker = new mapboxgl.Marker({
-              color: '#10b981' // green for restrooms
+            const marker = new maplibregl.Marker({
+              color: '#10b981'
             }).setLngLat([restroom.longitude, restroom.latitude]).addTo(map.current!);
-            const popup = new mapboxgl.Popup({
+            const popup = new maplibregl.Popup({
               offset: 25
             }).setHTML(`
                 <div class="p-2">
@@ -202,14 +190,14 @@ const [filtersOpen, setFiltersOpen] = useState(false);
       // Fit map to show all points
       const allCoordinates = [...venues.filter(v => v.latitude && v.longitude).map(v => [v.longitude!, v.latitude!] as [number, number]), ...restrooms.filter(r => r.latitude && r.longitude).map(r => [r.longitude, r.latitude] as [number, number])];
       if (allCoordinates.length > 0) {
-        const bounds = new mapboxgl.LngLatBounds();
+        const bounds = new maplibregl.LngLatBounds();
         allCoordinates.forEach(coord => bounds.extend(coord));
         map.current.fitBounds(bounds, {
           padding: 50
         });
       }
     }
-  }, [venues, restrooms, showRestrooms]);
+  }, [venues, restrooms, showRestrooms, mapReady]);
 
   // Sync with external search term
   useEffect(() => {

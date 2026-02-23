@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "./useDebounce";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeWithRetry } from '@/utils/fetchWithRetry';
@@ -7,7 +7,7 @@ export interface SearchResult {
   objectID: string;
   title: string;
   description?: string;
-  type: 'venue' | 'event' | 'user' | 'news' | 'marketplace' | 'location' | 'content' | 'ressource' | 'personality' | 'travel' | 'tag' | 'group';
+  type: string;
   category?: string;
   location?: string;
   price?: number;
@@ -46,6 +46,13 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
 
   const debouncedQuery = useDebounce(query, 300);
 
+  // Stable serialization of filters to avoid re-firing on every render
+  const filtersKey = JSON.stringify(filters);
+  const filtersRef = useRef(filters);
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filtersKey]);
+
   const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
@@ -59,7 +66,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
       const { data, error } = await invokeWithRetry('search', {
         body: {
           query: searchQuery,
-          filters,
+          filters: filtersRef.current,
           hitsPerPage: 20,
         },
       });
@@ -68,8 +75,8 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
         throw error;
       }
 
-      setResults(data.hits || []);
-      setSuggestions(data.suggestions || []);
+      setResults(data?.hits || []);
+      setSuggestions(data?.suggestions || []);
     } catch (error) {
       console.error('Search error:', error);
       setResults([]);
@@ -86,7 +93,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
       setResults([]);
       setSuggestions([]);
     }
-  }, [debouncedQuery, filters]);
+  }, [debouncedQuery, filtersKey]);
 
   return {
     results,

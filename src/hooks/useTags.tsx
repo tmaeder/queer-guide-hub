@@ -34,7 +34,24 @@ export const useTags = () => {
       const { data: centralizedTags, error: centralizedError } = await supabase
         .from("unified_tags")
         .select("*")
+        .eq("status", "active")
         .gt("usage_count", 0);
+
+      // Fetch multi-category assignments
+      const { data: catAssignments } = await supabase
+        .from("tag_category_assignments")
+        .select("tag_id, category_id, is_primary, tag_categories(id, name)");
+
+      // Build tag_id -> category names map
+      const tagCatsMap = new Map<string, string[]>();
+      if (catAssignments) {
+        for (const a of catAssignments) {
+          const cat = (a as any).tag_categories;
+          if (!cat) continue;
+          if (!tagCatsMap.has(a.tag_id)) tagCatsMap.set(a.tag_id, []);
+          tagCatsMap.get(a.tag_id)!.push(cat.name);
+        }
+      }
 
       if (!centralizedError && centralizedTags && centralizedTags.length > 0) {
         // Use centralized tags if available
@@ -42,27 +59,23 @@ export const useTags = () => {
           id: tag.id,
           name: tag.name,
           total_count: tag.usage_count,
-          categories: [tag.category],
+          categories: tagCatsMap.get(tag.id) || (tag.category ? [tag.category] : []),
           description: tag.description,
           image_url: tag.image_url
         }));
 
         setAllTags(allTagsArray);
 
-        // Group by category
+        // Group by category (multi-category: tag appears in each assigned category)
         const categorized: Record<string, Tag[]> = {};
-        centralizedTags.forEach(tag => {
-          if (!categorized[tag.category]) {
-            categorized[tag.category] = [];
+        allTagsArray.forEach(tag => {
+          const cats = tag.categories && tag.categories.length > 0 ? tag.categories : ['Uncategorized'];
+          for (const cat of cats) {
+            if (!categorized[cat]) {
+              categorized[cat] = [];
+            }
+            categorized[cat].push(tag);
           }
-          categorized[tag.category].push({
-            id: tag.id,
-            name: tag.name,
-            total_count: tag.usage_count,
-            categories: [tag.category],
-            description: tag.description,
-            image_url: tag.image_url
-          });
         });
 
         setTagsByCategory(categorized);

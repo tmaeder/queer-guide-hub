@@ -54,6 +54,15 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/date-fns/')) {
             return 'utils';
           }
+          if (id.includes('node_modules/react-force-graph') || id.includes('node_modules/force-graph') || id.includes('node_modules/d3-')) {
+            return 'graph';
+          }
+          if (id.includes('node_modules/xlsx/')) {
+            return 'xlsx';
+          }
+          if (id.includes('node_modules/maplibre-gl/') || id.includes('node_modules/@protomaps/')) {
+            return 'maplibre';
+          }
           // Keep scheduler with React
           if (id.includes('node_modules/scheduler/')) {
             return 'vendor';

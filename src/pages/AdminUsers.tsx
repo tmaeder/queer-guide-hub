@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Users, Search, UserPlus, Shield, Eye, MoreHorizontal } from "lucide-react";
+import { ExportExcelButton } from "@/components/admin/ExportExcelButton";
+import { exportToExcel, fetchAllRows, formatDateTime, generateFilename, type ExportColumnDef } from "@/utils/excelExport";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -105,11 +107,25 @@ export default function AdminUsers() {
 
   return (
     <Box sx={{ width: '100%', p: 3 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>User Management</Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage user accounts, roles, and permissions
-        </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>User Management</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Manage user accounts, roles, and permissions
+          </Typography>
+        </Box>
+        <ExportExcelButton onExport={async () => {
+          const columns: ExportColumnDef<any>[] = [
+            { header: 'Display Name', accessor: r => r.display_name },
+            { header: 'Email', accessor: r => r.email },
+            { header: 'Location', accessor: r => r.location },
+            { header: 'Profile Completion %', accessor: r => r.profile_completion_percentage },
+            { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
+            { header: 'Last Seen', accessor: r => formatDateTime(r.last_seen_at) },
+          ];
+          const allData = await fetchAllRows('profiles', 'id, display_name, email, location, profile_completion_percentage, created_at, last_seen_at', { column: 'display_name', ascending: true });
+          await exportToExcel(allData, columns, generateFilename('users'));
+        }} />
       </Box>
 
       {/* Quick Stats */}

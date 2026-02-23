@@ -15,7 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { User, Camera, Save, ArrowLeft, Loader2, CheckCircle, AlertCircle, Heart, Users, Lock, Globe, Settings, CalendarIcon } from 'lucide-react';
+import { User, Save, ArrowLeft, Loader2, AlertCircle, Heart, Users, Lock, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -27,7 +27,10 @@ import { PasskeyButton } from '@/components/auth/PasskeyButton';
 import { SocialLinksManager } from '@/components/profile/SocialLinksManager';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function ProfileSettings() {
   const navigate = useNavigate();
@@ -321,26 +324,26 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
 
 
   return (
-    <Box sx={{ width: '100%', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header with Progress */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button variant="outline" onClick={() => navigate(-1)}>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
-            Back
-          </Button>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>Profile Settings</Typography>
-            <Typography color="text.secondary">Manage your account information and privacy settings</Typography>
-          </Box>
-          {hasUnsavedChanges && (
-            <Alert style={{ width: 'auto' }}>
-              <AlertCircle style={{ width: 16, height: 16 }} />
-              <AlertDescription>You have unsaved changes</AlertDescription>
-            </Alert>
-          )}
-        </Box>
-
+      <PageHeader
+        title="Profile Settings"
+        subtitle="Manage your account information and privacy settings"
+        actions={
+          <>
+            <Button variant="outline" onClick={() => navigate(-1)}>
+              <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+              Back
+            </Button>
+            {hasUnsavedChanges && (
+              <Alert style={{ width: 'auto' }}>
+                <AlertCircle style={{ width: 16, height: 16 }} />
+                <AlertDescription>You have unsaved changes</AlertDescription>
+              </Alert>
+            )}
+          </>
+        }
+      >
         {/* Profile Completion Progress */}
         <Card>
           <CardContent sx={{ p: 2 }}>
@@ -354,9 +357,10 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
             </Typography>
           </CardContent>
         </Card>
-      </Box>
+      </PageHeader>
 
       {/* Tabbed Interface */}
+      <Paper elevation={0} sx={{ bgcolor: 'background.paper', borderRadius: 2, p: 3 }}>
       <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
         <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
           <TabsTrigger value="basic">
@@ -826,12 +830,14 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
           </Box>
         </TabsContent>
       </Tabs>
+      </Paper>
 
       {/* Save Button */}
+      <Paper elevation={0} sx={{ bgcolor: 'background.paper', borderRadius: 2, p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {hasUnsavedChanges && (
-            <Badge variant="outline" style={{ color: '#ea580c' }}>
+            <Badge variant="outline" className="text-orange-600">
               <AlertCircle style={{ width: 12, height: 12, marginRight: 4 }} />
               Unsaved changes
             </Badge>
@@ -854,6 +860,7 @@ function ProfileSettingsContent({ profile, updateProfile, uploadAvatar, toast, n
           )}
         </Button>
       </Box>
-    </Box>
+      </Paper>
+    </Container>
   );
 }

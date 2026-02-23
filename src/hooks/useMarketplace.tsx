@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { queryWithRetry } from '@/utils/fetchWithRetry';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 type MarketplaceListingInsert = Database['public']['Tables']['marketplace_listings']['Insert'];
@@ -9,6 +10,16 @@ export function useMarketplace() {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTimedOut(true), 15000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const fetchListings = async (filters?: {
     category?: string;
@@ -21,6 +32,8 @@ export function useMarketplace() {
   }) => {
     try {
       setLoading(true);
+      setLoadingTimedOut(false);
+      setError(null);
       let query = supabase
         .from('marketplace_listings')
         .select(`
@@ -63,10 +76,23 @@ export function useMarketplace() {
         query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,business_name.ilike.%${filters.search}%`);
       }
 
-      const { data, error } = await query;
+      // Fetch listings and broken IDs in parallel
+      const [listingsResult, brokenResult] = await Promise.all([
+        queryWithRetry(() => query) as any,
+        supabase.rpc('get_broken_marketplace_ids'),
+      ]);
 
-      if (error) throw error;
-      setListings(data || []);
+      if (listingsResult.error) throw listingsResult.error;
+
+      const brokenIds = new Set<string>(
+        (brokenResult.data ?? []).map((id: string) => id)
+      );
+
+      // Filter out listings with broken website links
+      const filtered = (listingsResult.data || []).filter(
+        (l: MarketplaceListing) => !brokenIds.has(l.id)
+      );
+      setListings(filtered);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch listings');
     } finally {
@@ -147,6 +173,7 @@ export function useMarketplace() {
   return {
     listings,
     loading,
+    loadingTimedOut,
     error,
     fetchListings,
     createListing,

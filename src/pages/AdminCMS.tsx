@@ -1,5 +1,5 @@
-import { CMSDashboard } from '@/components/cms/CMSDashboard';
+import { CMSShell } from '@/components/cms/CMSShell';
 
 export default function AdminCMS() {
-  return <CMSDashboard />;
+  return <CMSShell />;
 }

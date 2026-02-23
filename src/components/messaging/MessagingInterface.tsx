@@ -42,7 +42,7 @@ const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
     case 'delivered':
       return <CheckCheck style={{ height: 12, width: 12, color: '#999999' }} />;
     case 'read':
-      return <Eye style={{ height: 12, width: 12, color: '#333333' }} />;
+      return <Eye style={{ height: 12, width: 12 }} />;
     default:
       return null;
   }

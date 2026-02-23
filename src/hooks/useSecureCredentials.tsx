@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface SecureCredentials {
   stripePublishableKey?: string;
-  mapboxToken?: string;
 }
 
 /**
@@ -24,17 +23,10 @@ export function useSecureCredentials() {
       setLoading(true);
       setError(null);
 
-      // Attempt to load credentials from secure edge functions
-      const promises = [
-        supabase.functions.invoke('get-stripe-publishable-key').catch(() => ({ data: null, error: null })),
-        supabase.functions.invoke('secure-mapbox-token').catch(() => ({ data: null, error: null }))
-      ];
-
-      const [stripeResult, mapboxResult] = await Promise.all(promises);
+      const stripeResult = await supabase.functions.invoke('get-stripe-publishable-key').catch(() => ({ data: null, error: null }));
 
       setCredentials({
         stripePublishableKey: stripeResult.data?.publishable_key || undefined,
-        mapboxToken: mapboxResult.data?.token || undefined
       });
 
     } catch (err) {
@@ -47,10 +39,7 @@ export function useSecureCredentials() {
 
   const setTemporaryCredential = (key: keyof SecureCredentials, value: string) => {
     // Only allow setting for current session, no persistence
-    if (value && (
-      (key === 'stripePublishableKey' && value.startsWith('pk_')) ||
-      (key === 'mapboxToken' && value.startsWith('pk.'))
-    )) {
+    if (value && key === 'stripePublishableKey' && value.startsWith('pk_')) {
       setCredentials(prev => ({ ...prev, [key]: value }));
     }
   };
@@ -59,7 +48,6 @@ export function useSecureCredentials() {
     setCredentials({});
     // Also clear any legacy localStorage items
     localStorage.removeItem('STRIPE_PUBLISHABLE_KEY');
-    localStorage.removeItem('MAPBOX_TOKEN');
   };
 
   return {

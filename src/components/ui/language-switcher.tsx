@@ -60,7 +60,7 @@ export function LanguageSwitcher({ variant = "default" }: LanguageSwitcherProps)
                   gap: 8,
                   fontSize: '0.875rem',
                   width: '100%',
-                  ...(currentLanguage.code === language.code ? { backgroundColor: '#f5f5f5' } : {}),
+                  ...(currentLanguage.code === language.code ? { backgroundColor: 'var(--mui-palette-action-hover, rgba(0,0,0,0.04))' } : {}),
                 }}
                 onClick={() => handleLanguageChange(language.code)}
               >
@@ -106,7 +106,7 @@ export function LanguageSwitcher({ variant = "default" }: LanguageSwitcherProps)
                   justifyContent: 'flex-start',
                   gap: 8,
                   width: '100%',
-                  ...(currentLanguage.code === language.code ? { backgroundColor: '#f5f5f5' } : {}),
+                  ...(currentLanguage.code === language.code ? { backgroundColor: 'var(--mui-palette-action-hover, rgba(0,0,0,0.04))' } : {}),
                 }}
                 onClick={() => handleLanguageChange(language.code)}
               >

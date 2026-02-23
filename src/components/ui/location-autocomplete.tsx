@@ -11,11 +11,21 @@ interface LocationSuggestion {
   place_name: string;
   center: [number, number];
   context?: Array<{ id: string; text: string }>;
+  properties?: Record<string, any>;
+}
+
+export interface AddressComponents {
+  city?: string;
+  state?: string;
+  country?: string;
+  postcode?: string;
+  street?: string;
+  housenumber?: string;
 }
 
 interface LocationAutocompleteProps {
   value: string;
-  onChange: (address: string, coordinates?: { lat: number; lng: number }) => void;
+  onChange: (address: string, coordinates?: { lat: number; lng: number }, components?: AddressComponents) => void;
   onValidation?: (isValid: boolean) => void;
   placeholder?: string;
   required?: boolean;
@@ -71,19 +81,11 @@ export function LocationAutocomplete({
     } catch (error: any) {
       console.error('Geocoding error:', error);
 
-      if (error.message?.includes('non-2xx status code')) {
-        toast({
-          title: "Configuration Required",
-          description: "Mapbox API key needs to be configured. Using basic address input for now.",
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "Search Error",
-          description: "Failed to search addresses. Please try again.",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Search Error",
+        description: "Failed to search addresses. Please try again.",
+        variant: "destructive"
+      });
 
       setSuggestions([]);
       setShowSuggestions(false);
@@ -114,14 +116,38 @@ export function LocationAutocomplete({
     }, 300);
   };
 
+  const extractComponents = (suggestion: LocationSuggestion): AddressComponents => {
+    const props = suggestion.properties || {};
+    const components: AddressComponents = {};
+    if (props.city) components.city = props.city;
+    if (props.state) components.state = props.state;
+    if (props.country) components.country = props.country;
+    if (props.postcode) components.postcode = props.postcode;
+    if (props.street) components.street = props.street;
+    if (props.housenumber) components.housenumber = props.housenumber;
+    // Fallback: extract from context array if properties are missing
+    // Mapbox context IDs have format "place.12345", "region.67890", etc.
+    if (!components.city || !components.country) {
+      for (const ctx of suggestion.context || []) {
+        const ctxType = ctx.id.split('.')[0];
+        if (ctxType === 'place' && !components.city) components.city = ctx.text;
+        if (ctxType === 'region' && !components.state) components.state = ctx.text;
+        if (ctxType === 'country' && !components.country) components.country = ctx.text;
+        if (ctxType === 'postcode' && !components.postcode) components.postcode = ctx.text;
+      }
+    }
+    return components;
+  };
+
   const handleSuggestionSelect = (suggestion: LocationSuggestion) => {
     const coordinates = {
       lat: suggestion.center[1],
       lng: suggestion.center[0]
     };
+    const components = extractComponents(suggestion);
 
     setInputValue(suggestion.place_name);
-    onChange(suggestion.place_name, coordinates);
+    onChange(suggestion.place_name, coordinates, components);
     setIsValidated(true);
     setShowSuggestions(false);
     onValidation?.(true);
@@ -176,13 +202,14 @@ export function LocationAutocomplete({
       if (error) throw error;
 
       if (data.features && data.features.length > 0) {
-        const firstResult = data.features[0];
+        const firstResult = data.features[0] as LocationSuggestion;
         const coordinates = {
           lat: firstResult.center[1],
           lng: firstResult.center[0]
         };
+        const components = extractComponents(firstResult);
 
-        onChange(firstResult.place_name, coordinates);
+        onChange(firstResult.place_name, coordinates, components);
         setInputValue(firstResult.place_name);
         setIsValidated(true);
         onValidation?.(true);
@@ -245,14 +272,15 @@ export function LocationAutocomplete({
       if (error) throw error;
 
       if (data.features && data.features.length > 0) {
-        const location = data.features[0];
+        const location = data.features[0] as LocationSuggestion;
         const coordinates = {
           lat: latitude,
           lng: longitude
         };
+        const components = extractComponents(location);
 
         setInputValue(location.place_name);
-        onChange(location.place_name, coordinates);
+        onChange(location.place_name, coordinates, components);
         setIsValidated(true);
         onValidation?.(true);
 

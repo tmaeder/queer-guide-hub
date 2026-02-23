@@ -2,8 +2,10 @@ import { useState, useMemo, Suspense, lazy, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useOptimizedCountries, useOptimizedCities } from "@/hooks/useOptimizedPlaces";
 import { usePlaces } from "@/hooks/usePlaces";
+import { useQueerVillages } from "@/hooks/useQueerVillages";
 import { supabase } from "@/integrations/supabase/client";
 import { PlacesCard } from "@/components/places/PlacesCard";
+import { VillageCard } from "@/components/villages/VillageCard";
 import { PlacesSearch, type PlacesFilters } from "@/components/places/PlacesSearch";
 import { WeatherForecast } from "@/components/weather/WeatherForecast";
 import { LocationInfo } from "@/components/location/LocationInfo";
@@ -12,11 +14,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Crown } from "lucide-react";
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Crown, Landmark } from "lucide-react";
 
 // Lazy load the map component
-const PlacesMapView = lazy(() => import("@/components/places/PlacesMapView").then(m => ({ default: m.PlacesMapView })));
+const ExploreMap = lazy(() => import("@/components/map/ExploreMap"));
 
 type ViewMode = "overview" | "country" | "city" | "search";
 
@@ -25,6 +29,7 @@ export default function Places() {
   const { countries, loading: countriesLoading, error: countriesError } = useOptimizedCountries();
   const { cities, loading: citiesLoading, error: citiesError } = useOptimizedCities();
   const { fetchCitiesByCountry, searchLocations, findNearbyCities } = usePlaces();
+  const { villages, loading: villagesLoading } = useQueerVillages(true);
   const loading = countriesLoading || citiesLoading;
   const error = countriesError || citiesError || null;
 
@@ -188,15 +193,14 @@ export default function Places() {
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 480, mx: 'auto' }}>
-          <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-            <Globe style={{ height: 48, width: 48, margin: '0 auto', color: '#555555', opacity: 0.6 }} />
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <PageLoadingState count={8} />
+        {loadingTimedOut && (
+          <Box sx={{ mt: 3 }}>
+            <LoadingTimeout onRetry={() => window.location.reload()} />
           </Box>
-          <Typography sx={{ color: 'var(--muted-foreground)' }}>Loading places...</Typography>
-          {loadingTimedOut && <LoadingTimeout onRetry={() => window.location.reload()} />}
-        </Box>
-      </Box>
+        )}
+      </Container>
     );
   }
 
@@ -211,9 +215,9 @@ export default function Places() {
   }
 
   return (
-    <Box sx={{ width: '100%', transition: 'opacity 300ms', opacity: isTransitioning ? 0.5 : 1 }}>
+    <Box sx={{ width: '100%' }}>
       {/* Hero Section */}
-      <Box sx={{ mx: 'auto', maxWidth: 1280, px: 3, pt: { xs: 3, lg: 5 }, pb: 2 }}>
+      <Container maxWidth="lg" sx={{ pt: { xs: 3, lg: 5 }, pb: 2 }}>
         <Box sx={{ bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider', p: { xs: 3, lg: 4 }, mb: 3 }}>
           {/* Navigation Header */}
           <Box sx={{ mb: 3 }}>
@@ -260,10 +264,10 @@ export default function Places() {
             placeholder="Search countries, cities, or regions..."
           />
         </Box>
-      </Box>
+      </Container>
 
       {/* Main Content Area */}
-      <Box sx={{ mx: 'auto', maxWidth: 1280, px: 3, pb: 6 }}>
+      <Container maxWidth="lg" sx={{ pb: 6 }}>
         {/* Breadcrumb Navigation */}
         {viewMode !== "overview" && viewMode !== "search" && (
           <Box sx={{ mb: 3 }}>
@@ -271,17 +275,17 @@ export default function Places() {
               <Box
                 component="button"
                 onClick={() => setViewMode("overview")}
-                sx={{ color: 'var(--muted-foreground)', '&:hover': { color: 'var(--foreground)', bgcolor: 'rgba(var(--accent), 0.5)' }, transition: 'color 150ms', px: 1, py: 0.5, borderRadius: 1, border: 'none', bgcolor: 'transparent', cursor: 'pointer' }}
+                sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary', bgcolor: 'action.hover' }, transition: 'color 150ms', px: 1, py: 0.5, borderRadius: 1, border: 'none', bgcolor: 'background.paper', cursor: 'pointer' }}
               >
                 Places
               </Box>
               {selectedCountry && (
                 <>
-                  <Box component="span" sx={{ color: 'var(--muted-foreground)', opacity: 0.5 }}>/</Box>
+                  <Box component="span" sx={{ color: 'text.disabled' }}>/</Box>
                   <Box
                     component="button"
                     onClick={() => setViewMode("country")}
-                    sx={{ color: 'var(--muted-foreground)', '&:hover': { color: 'var(--foreground)', bgcolor: 'rgba(var(--accent), 0.5)' }, transition: 'color 150ms', px: 1, py: 0.5, borderRadius: 1, border: 'none', bgcolor: 'transparent', cursor: 'pointer' }}
+                    sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary', bgcolor: 'action.hover' }, transition: 'color 150ms', px: 1, py: 0.5, borderRadius: 1, border: 'none', bgcolor: 'background.paper', cursor: 'pointer' }}
                   >
                     {selectedCountry.name}
                   </Box>
@@ -289,8 +293,8 @@ export default function Places() {
               )}
               {selectedCity && (
                 <>
-                  <Box component="span" sx={{ color: 'var(--muted-foreground)', opacity: 0.5 }}>/</Box>
-                  <Box component="span" sx={{ color: 'var(--foreground)', fontWeight: 500, px: 1, py: 0.5 }}>{selectedCity.name}</Box>
+                  <Box component="span" sx={{ color: 'text.disabled' }}>/</Box>
+                  <Box component="span" sx={{ color: 'text.primary', fontWeight: 500, px: 1, py: 0.5 }}>{selectedCity.name}</Box>
                 </>
               )}
             </Box>
@@ -303,7 +307,7 @@ export default function Places() {
             <Tabs defaultValue="countries" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
               {/* Enhanced Tab Navigation */}
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <TabsList style={{ display: 'grid', width: '100%', maxWidth: 448, gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                <TabsList style={{ display: 'grid', width: '100%', maxWidth: 600, gridTemplateColumns: 'repeat(4, 1fr)' }}>
                   <TabsTrigger value="countries">
                     <MapPin style={{ height: 16, width: 16 }} />
                     <span>Countries</span>
@@ -312,6 +316,10 @@ export default function Places() {
                     <Building2 style={{ height: 16, width: 16 }} />
                     <span>Cities</span>
                   </TabsTrigger>
+                  <TabsTrigger value="neighborhoods">
+                    <Landmark style={{ height: 16, width: 16 }} />
+                    <span>Neighborhoods</span>
+                  </TabsTrigger>
                   <TabsTrigger value="map">
                     <Map style={{ height: 16, width: 16 }} />
                     <span>Map</span>
@@ -319,7 +327,7 @@ export default function Places() {
                 </TabsList>
 
                 {/* Stats Overview */}
-                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'text.secondary' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <MapPin style={{ height: 16, width: 16 }} />
                     <span>{countries.length} countries</span>
@@ -327,6 +335,10 @@ export default function Places() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Building2 style={{ height: 16, width: 16 }} />
                     <span>{cities.length} cities</span>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Landmark style={{ height: 16, width: 16 }} />
+                    <span>{villages.length} neighborhoods</span>
                   </Box>
                 </Box>
               </Box>
@@ -345,7 +357,7 @@ export default function Places() {
                   {loading ? (
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
                       {Array.from({ length: 12 }).map((_, i) => (
-                        <Box key={i} sx={{ height: 128, bgcolor: 'rgba(var(--muted), 0.5)', borderRadius: 2, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
+                        <Box key={i} sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 2, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
                       ))}
                     </Box>
                   ) : continents.length > 0 ? (
@@ -358,19 +370,19 @@ export default function Places() {
 
                       return (
                         <Box key={continent.id} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'rgba(var(--muted), 0.4)' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.06)' }}>
-                                <Globe style={{ height: 20, width: 20, color: '#333333' }} />
+                              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.selected' }}>
+                                <Globe style={{ height: 20, width: 20 }} />
                               </Box>
                               <Box>
                                 <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>{continent.name}</Typography>
-                                <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>{continentCountries.length} countries to explore</Typography>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>{continentCountries.length} countries to explore</Typography>
                               </Box>
                             </Box>
                           </Box>
 
-                          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2, pl: 3 }}>
+                          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
                             {continentCountries.map((country, index) => (
                               <Box
                                 key={country.id}
@@ -432,19 +444,19 @@ export default function Places() {
 
                     return (
                       <Box key={continent.id} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'rgba(var(--muted), 0.4)' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.06)' }}>
-                              <Building2 style={{ height: 20, width: 20, color: '#333333' }} />
+                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.selected' }}>
+                              <Building2 style={{ height: 20, width: 20 }} />
                             </Box>
                             <Box>
                               <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>{continent.name}</Typography>
-                              <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>{continentCities.length} cities to discover</Typography>
+                              <Typography variant="body2" sx={{ color: 'text.secondary' }}>{continentCities.length} cities to discover</Typography>
                             </Box>
                           </Box>
                         </Box>
 
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2, pl: 3 }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
                           {continentCities.map((city, index) => (
                             <Box
                               key={city.id}
@@ -465,23 +477,55 @@ export default function Places() {
                 </Box>
               </TabsContent>
 
+              <TabsContent value="neighborhoods" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>LGBTQ+ Neighborhoods</Typography>
+                    <Badge variant="secondary" style={{ paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 }}>
+                      {villages.length} found
+                    </Badge>
+                  </Box>
+                </Box>
+
+                {villagesLoading && villages.length === 0 ? (
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <Box key={i} sx={{ height: 240, bgcolor: 'action.hover', borderRadius: 2 }} />
+                    ))}
+                  </Box>
+                ) : villages.length > 0 ? (
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
+                    {villages.map((village) => (
+                      <VillageCard key={village.id} village={village} />
+                    ))}
+                  </Box>
+                ) : (
+                  <Box sx={{ textAlign: 'center', py: 6 }}>
+                    <Landmark style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }} />
+                    <Typography color="text.secondary">No neighborhoods found yet</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Check back later as we continue to add LGBTQ+ neighborhoods.
+                    </Typography>
+                  </Box>
+                )}
+              </TabsContent>
+
               <TabsContent value="map">
                 <Suspense
                   fallback={
-                    <Box sx={{ height: 600, bgcolor: 'rgba(var(--muted), 0.5)', borderRadius: 2, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Box sx={{ height: 600, bgcolor: 'action.hover', borderRadius: 2, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <Map style={{ height: 32, width: 32, margin: '0 auto', color: 'var(--muted-foreground)' }} />
-                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Loading map...</Typography>
+                        <Map style={{ height: 32, width: 32, margin: '0 auto', color: 'text.secondary' }} />
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>Loading map...</Typography>
                       </Box>
                     </Box>
                   }
                 >
-                  <PlacesMapView
-                    countries={countries}
-                    cities={cities}
-                    loading={loading}
-                    onCountryClick={handleCountryClick}
-                    onCityClick={handleCityClick}
+                  <ExploreMap
+                    height={600}
+                    defaultLayers={['cities', 'countries']}
+                    showLayerToggles
+                    showFilters={false}
                   />
                 </Suspense>
               </TabsContent>
@@ -538,8 +582,8 @@ export default function Places() {
                     ))}
                   </Box>
                 ) : (
-                  <Box sx={{ textAlign: 'center', py: 6, color: 'var(--muted-foreground)' }}>
-                    <Building2 style={{ height: 48, width: 48, margin: '0 auto 16px', opacity: 0.5 }} />
+                  <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+                    <Building2 style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }} />
                     <Typography>No cities found in this country</Typography>
                   </Box>
                 )}
@@ -638,7 +682,7 @@ export default function Places() {
             </Box>
           )}
         </Box>
-      </Box>
+      </Container>
     </Box>
   );
 }

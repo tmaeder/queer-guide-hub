@@ -6,7 +6,7 @@ import {
   Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane,
   Newspaper, Settings, Users, MessageSquare, LogOut, Accessibility,
   Tags, UserCheck, Map, Smile, Handshake, Home, UsersRound, Rss,
-  Plus, Shield, Info, Scale, Mail, ChevronRight,
+  Plus, Shield, Info, Scale, Mail, ChevronRight, Building,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -41,11 +41,13 @@ const navigationSections = [
       { to: '/events', icon: Calendar, label: 'Events' },
       { to: '/places', icon: Globe, label: 'Places' },
       { to: '/venues', icon: MapPin, label: 'Venues' },
+      { to: '/map', icon: Map, label: 'Map' },
       { to: '/marketplace', icon: Store, label: 'Marketplace' },
       { to: '/resources', icon: Tags, label: 'Resources' },
       { to: '/news', icon: Newspaper, label: 'News' },
       { to: '/travel', icon: Plane, label: 'Travel' },
       { to: '/personalities', icon: Users, label: 'Personalities' },
+      { to: '/hotels', icon: Building, label: 'Hotels' },
     ],
   },
   {
@@ -599,7 +601,7 @@ export function Header() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--destructive)' }}
+                      style={{ width: '100%', justifyContent: 'flex-start', color: '#d32f2f' }}
                       onClick={signOut}
                     >
                       <LogOut style={{ width: 16, height: 16, marginRight: 8 }} />
@@ -644,9 +646,9 @@ export function Header() {
                               gap: 4,
                               ...(isActiveRoute(item.to)
                                 ? {
-                                    backgroundColor: 'rgba(var(--primary-rgb, 124, 58, 237), 0.15)',
-                                    color: 'var(--primary)',
-                                    border: '1px solid rgba(var(--primary-rgb, 124, 58, 237), 0.2)',
+                                    backgroundColor: 'var(--mui-palette-action-hover, rgba(124,58,237,0.08))',
+                                    color: '#7c3aed',
+                                    border: '1px solid var(--mui-palette-divider, #e0d6ff)',
                                   }
                                 : {}),
                             }}

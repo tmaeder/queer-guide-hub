@@ -95,13 +95,13 @@ export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
                       py: 0.75,
                       borderRadius: 1,
                       border: 'none',
-                      bgcolor: activeSection === s.id ? '#f5f5f5' : 'transparent',
-                      color: activeSection === s.id ? '#222222' : '#666666',
+                      bgcolor: activeSection === s.id ? 'action.hover' : 'transparent',
+                      color: activeSection === s.id ? 'text.primary' : 'text.secondary',
                       fontWeight: activeSection === s.id ? 600 : 400,
                       fontSize: '0.8125rem',
                       cursor: 'pointer',
                       transition: 'all 0.15s',
-                      '&:hover': { bgcolor: '#f5f5f5', color: '#222222' },
+                      '&:hover': { bgcolor: 'action.hover', color: 'text.primary' },
                     }}
                   >
                     {s.title}
@@ -145,7 +145,7 @@ export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
                       bgcolor: 'transparent',
                       fontSize: '0.875rem',
                       cursor: 'pointer',
-                      '&:hover': { bgcolor: '#f5f5f5' },
+                      '&:hover': { bgcolor: 'action.hover' },
                     }}
                   >
                     {s.title}

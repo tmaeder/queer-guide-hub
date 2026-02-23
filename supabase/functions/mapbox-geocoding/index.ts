@@ -40,6 +40,49 @@ function buildCors(origin: string) {
   } as Record<string, string>;
 }
 
+/**
+ * Build a Mapbox-compatible place_name string from Photon properties.
+ */
+function buildPlaceName(props: Record<string, any>): string {
+  const parts: string[] = [];
+  if (props.housenumber && props.street) {
+    parts.push(`${props.street} ${props.housenumber}`);
+  } else if (props.street) {
+    parts.push(props.street);
+  } else if (props.name) {
+    parts.push(props.name);
+  }
+  if (props.city && !parts.includes(props.city)) parts.push(props.city);
+  if (props.state && !parts.includes(props.state)) parts.push(props.state);
+  if (props.country && !parts.includes(props.country)) parts.push(props.country);
+  return parts.join(', ') || props.name || 'Unknown';
+}
+
+/**
+ * Transform a Photon GeoJSON feature into a Mapbox-compatible feature.
+ * The frontend expects: { id, place_name, center: [lng, lat], context }
+ */
+function photonToMapbox(feature: any): any {
+  const props = feature.properties || {};
+  const coords = feature.geometry?.coordinates || [0, 0]; // [lng, lat]
+
+  const context: Array<{ id: string; text: string }> = [];
+  if (props.city) context.push({ id: 'place', text: props.city });
+  if (props.state) context.push({ id: 'region', text: props.state });
+  if (props.country) context.push({ id: 'country', text: props.country });
+  if (props.postcode) context.push({ id: 'postcode', text: props.postcode });
+
+  return {
+    id: `photon.${props.osm_id || Math.random().toString(36).slice(2)}`,
+    place_name: buildPlaceName(props),
+    center: coords, // [lng, lat] — same order as Mapbox
+    context,
+    properties: props,
+    geometry: feature.geometry,
+    type: 'Feature',
+  };
+}
+
 serve(async (req) => {
   const origin = getOrigin(req);
 
@@ -56,7 +99,7 @@ serve(async (req) => {
     });
   }
 
-  // Supabase client for rate limiting/logging
+  // Supabase client for rate limiting
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
   const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
   const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
@@ -73,15 +116,7 @@ serve(async (req) => {
       );
     }
 
-    const mapboxToken = Deno.env.get('MAPBOX_PUBLIC_TOKEN');
-    if (!mapboxToken) {
-      return new Response(
-        JSON.stringify({ error: 'Mapbox token not configured' }),
-        { status: 500, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Basic IP-based rate limiting via RPC (SECURITY DEFINER)
+    // Basic IP-based rate limiting via RPC
     const ip = getClientIp(req);
     if (supabase) {
       const { data: allowed, error: rlError } = await supabase.rpc('check_rate_limit_key', {
@@ -98,25 +133,35 @@ serve(async (req) => {
       }
     }
 
-    let mapboxUrl: string;
+    let photonUrl: string;
     if (isReverseGeocode) {
-      mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxToken}&types=place,locality,neighborhood,address&limit=1`;
+      // query format: "lng,lat" (Mapbox convention) — split and use Photon reverse
+      const [lng, lat] = query.split(',').map((s: string) => s.trim());
+      photonUrl = `https://photon.komoot.io/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&limit=1`;
     } else {
-      mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxToken}&types=place,locality,neighborhood,address&limit=5`;
+      photonUrl = `https://photon.komoot.io/api?q=${encodeURIComponent(query)}&limit=5&lang=en`;
     }
 
-    const mapboxResponse = await fetch(mapboxUrl);
-    if (!mapboxResponse.ok) {
-      throw new Error(`Mapbox API error: ${mapboxResponse.status}`);
+    const photonResponse = await fetch(photonUrl);
+    if (!photonResponse.ok) {
+      throw new Error(`Photon API error: ${photonResponse.status}`);
     }
 
-    const data = await mapboxResponse.json();
+    const photonData = await photonResponse.json();
 
-    return new Response(JSON.stringify(data), {
+    // Transform Photon response to Mapbox-compatible format
+    const transformedFeatures = (photonData.features || []).map(photonToMapbox);
+
+    const response = {
+      type: 'FeatureCollection',
+      features: transformedFeatures,
+    };
+
+    return new Response(JSON.stringify(response), {
       headers: { ...buildCors(origin), 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in mapbox-geocoding function:', error);
+    console.error('Error in geocoding function:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }

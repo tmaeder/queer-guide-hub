@@ -30,6 +30,8 @@ import {
   Tags
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ExportExcelButton } from "@/components/admin/ExportExcelButton";
+import { exportToExcel, fetchAllRows, formatDateTime, formatBoolean, generateFilename, type ExportColumnDef } from "@/utils/excelExport";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -355,6 +357,21 @@ export default function AdminNewsSources() {
           </div>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <ExportExcelButton onExport={async () => {
+            const columns: ExportColumnDef<any>[] = [
+              { header: 'Name', accessor: r => r.name },
+              { header: 'URL', accessor: r => r.url },
+              { header: 'Source Type', accessor: r => r.source_type },
+              { header: 'Category', accessor: r => r.category },
+              { header: 'Active', accessor: r => formatBoolean(r.is_active) },
+              { header: 'Fetch Frequency (hrs)', accessor: r => r.fetch_frequency },
+              { header: 'Last Fetched', accessor: r => formatDateTime(r.last_fetched_at) },
+              { header: 'Last Error', accessor: r => r.last_error },
+              { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
+            ];
+            const allData = await fetchAllRows('news_sources', '*', { column: 'name', ascending: true });
+            await exportToExcel(allData, columns, generateFilename('news-sources'));
+          }} />
           <Button
             disabled={true}
             variant="outline"

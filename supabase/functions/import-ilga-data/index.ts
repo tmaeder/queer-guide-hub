@@ -6,37 +6,356 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// List of countries to import data for
-const COUNTRIES_TO_IMPORT = [
-  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Argentina', 'Armenia', 'Australia',
-  'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium',
-  'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil',
-  'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Canada',
-  'Cape Verde', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros',
-  'Congo', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic', 'Denmark',
-  'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador',
-  'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland',
-  'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada',
-  'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary',
-  'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy',
-  'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan',
-  'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania',
-  'Luxembourg', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands',
-  'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia',
-  'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal',
-  'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia',
-  'Norway', 'Oman', 'Pakistan', 'Palau', 'Panama', 'Papua New Guinea', 'Paraguay',
-  'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda',
-  'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa',
-  'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles',
-  'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia',
-  'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname',
-  'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand',
-  'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan',
-  'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States',
-  'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen',
-  'Zambia', 'Zimbabwe'
-];
+const ILGA_GRAPHQL = 'https://database.ilga.org/graphql';
+
+// ── GraphQL helpers ────────────────────────────────────────────────
+
+async function gql(query: string): Promise<any> {
+  const resp = await fetch(ILGA_GRAPHQL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query }),
+  });
+  if (!resp.ok) throw new Error(`ILGA GraphQL ${resp.status}: ${resp.statusText}`);
+  const json = await resp.json();
+  if (json.errors) throw new Error(`GraphQL error: ${json.errors[0].message}`);
+  return json.data;
+}
+
+/** Filter to national-level entries only (no subjurisdictions) */
+function national<T extends { motherEntry?: { subjurisdiction?: any } }>(entries: T[]): T[] {
+  return entries.filter(e => !e.motherEntry?.subjurisdiction);
+}
+
+/** Build a2_code → entry map from national-level entries */
+function byA2<T extends { motherEntry?: { jurisdiction?: { a2_code?: string } } }>(entries: T[]): Map<string, T> {
+  const map = new Map<string, T>();
+  for (const e of national(entries)) {
+    const code = e.motherEntry?.jurisdiction?.a2_code;
+    if (code) map.set(code, e);
+  }
+  return map;
+}
+
+// ── Data fetchers ──────────────────────────────────────────────────
+
+async function fetchCriminalization() {
+  const data = await gql(`{
+    entriesCsssa(lang: "en") {
+      id legal illegal_since decrim_date_1 decrim_date_2
+      entry_csssa_penalty { id name }
+      entry_csssa_death_penalty_value { id name }
+      entry_csssa_max_prison_value { id name }
+      max_prison_years has_fine fine enforcement
+      entry_csssa_other_punishment_value { id name }
+      other
+      motherEntry { jurisdiction { id name a2_code } subjurisdiction { id } }
+    }
+  }`);
+  return byA2(data.entriesCsssa);
+}
+
+async function fetchFreedomOfExpression() {
+  const data = await gql(`{
+    entriesFoe(lang: "en") {
+      id
+      entry_foe_barrier_summary_value { id name }
+      entry_foe_barrier_general_value { id name }
+      entry_foe_barrier_education_value { id name }
+      entry_foe_barrier_media_value { id name }
+      motherEntry { jurisdiction { id name a2_code } subjurisdiction { id } }
+    }
+  }`);
+  return byA2(data.entriesFoe);
+}
+
+async function fetchFreedomOfAssociation() {
+  const data = await gql(`{
+    entriesFoa(lang: "en") {
+      id barrier_value { id name }
+      motherEntry { jurisdiction { id name a2_code } subjurisdiction { id } }
+    }
+  }`);
+  return byA2(data.entriesFoa);
+}
+
+async function fetchProtection(type: string) {
+  const data = await gql(`{
+    entriesProtection(lang: "en", type: "${type}") {
+      id
+      so_protection_type { id name }
+      gi_protection_type { id name }
+      ge_protection_type { id name }
+      sc_protection_type { id name }
+      so_critical_date_1 gi_critical_date_1 ge_critical_date_1 sc_critical_date_1
+      motherEntry { jurisdiction { id name a2_code } subjurisdiction { id } }
+    }
+  }`);
+  return byA2(data.entriesProtection);
+}
+
+async function fetchConversionTherapy() {
+  const data = await gql(`{
+    entriesCt(lang: "en") {
+      id
+      general_ban_type { id name }
+      so_value { id name }
+      gi_value { id name }
+      minors_value { id name }
+      all_adults_value { id name }
+      motherEntry { jurisdiction { id name a2_code } subjurisdiction { id } }
+    }
+  }`);
+  return byA2(data.entriesCt);
+}
+
+async function fetchSameSexUnions() {
+  const data = await gql(`{
+    entriesSsu(lang: "en") {
+      id
+      summary_type { id name }
+      marriage_type { id name }
+      marriage_critical_date_1 marriage_critical_date_2
+      civil_type { id name }
+      civil_critical_date_1 civil_critical_date_2
+      motherEntry { jurisdiction { id name a2_code } subjurisdiction { id } }
+    }
+  }`);
+  return byA2(data.entriesSsu);
+}
+
+async function fetchAdoption() {
+  const data = await gql(`{
+    entriesAdo(lang: "en") {
+      id
+      map_type { id name }
+      joint_adoption_type { id name }
+      joint_critical_date_1
+      second_parent_adoption_type { id name }
+      second_parent_critical_date_1
+      motherEntry { jurisdiction { id name a2_code } subjurisdiction { id } }
+    }
+  }`);
+  return byA2(data.entriesAdo);
+}
+
+async function fetchIntersex() {
+  const data = await gql(`{
+    entriesPnc(lang: "en") {
+      id pnc_type { id name }
+      motherEntry { entry_type_id jurisdiction { id name a2_code } subjurisdiction { id } }
+    }
+  }`);
+  // Filter to entry_type_id A1-17 (intersex) at national level
+  const filtered = data.entriesPnc.filter(
+    (e: any) => !e.motherEntry?.subjurisdiction && e.motherEntry?.entry_type_id === 'A1-17'
+  );
+  const map = new Map<string, any>();
+  for (const e of filtered) {
+    const code = e.motherEntry?.jurisdiction?.a2_code;
+    if (code) map.set(code, e);
+  }
+  return map;
+}
+
+async function fetchGenderRecognition() {
+  const data = await gql(`{
+    entriesLgr(lang: "en") {
+      id
+      name_change_lgr_type { id name }
+      gender_marker_lgr_type { id name }
+      established_procedure { id name }
+      gm_selfid_value { id name }
+      gm_selfid_since
+      gm_diagnosis_gm_value { id name }
+      gm_surgery_gm_value { id name }
+      motherEntry { jurisdiction { id name a2_code } subjurisdiction { id } }
+    }
+  }`);
+  return byA2(data.entriesLgr);
+}
+
+// ── Mappers: ILGA GraphQL → DB column format ──────────────────────
+
+function mapCriminalization(entry: any): Record<string, any> {
+  if (!entry) return {};
+  return {
+    legal: entry.legal,
+    penalty: entry.entry_csssa_penalty?.name || null,
+    death_penalty: entry.entry_csssa_death_penalty_value?.name || null,
+    max_prison: entry.entry_csssa_max_prison_value?.name || null,
+    max_prison_years: entry.max_prison_years,
+    has_fine: entry.has_fine,
+    fine: entry.fine || null,
+    other_punishment: entry.entry_csssa_other_punishment_value?.name || null,
+    other: entry.other || null,
+    enforcement: entry.enforcement || null,
+    decrim_year_1: entry.decrim_date_1,
+    decrim_year_2: entry.decrim_date_2,
+    illegal_since: entry.illegal_since,
+  };
+}
+
+function mapProtection(entry: any): Record<string, any> {
+  if (!entry) return {};
+  return {
+    so: entry.so_protection_type?.name || null,
+    gi: entry.gi_protection_type?.name || null,
+    ge: entry.ge_protection_type?.name || null,
+    sc: entry.sc_protection_type?.name || null,
+    so_since: entry.so_critical_date_1 || null,
+    gi_since: entry.gi_critical_date_1 || null,
+    ge_since: entry.ge_critical_date_1 || null,
+    sc_since: entry.sc_critical_date_1 || null,
+  };
+}
+
+function mapFoe(entry: any): Record<string, any> {
+  if (!entry) return {};
+  return {
+    summary: entry.entry_foe_barrier_summary_value?.name || null,
+    general: entry.entry_foe_barrier_general_value?.name || null,
+    education: entry.entry_foe_barrier_education_value?.name || null,
+    media: entry.entry_foe_barrier_media_value?.name || null,
+  };
+}
+
+function mapFoa(entry: any): Record<string, any> {
+  if (!entry) return {};
+  return {
+    status: entry.barrier_value?.name || null,
+  };
+}
+
+function mapSsu(entry: any): string {
+  if (!entry) return 'No data';
+  return entry.summary_type?.name || 'No data';
+}
+
+function mapSsuFull(entry: any): Record<string, any> {
+  if (!entry) return {};
+  return {
+    summary: entry.summary_type?.name || null,
+    marriage: entry.marriage_type?.name || null,
+    marriage_since: entry.marriage_critical_date_1 || null,
+    civil_union: entry.civil_type?.name || null,
+    civil_union_since: entry.civil_critical_date_1 || null,
+  };
+}
+
+function mapAdoption(entry: any): string {
+  if (!entry) return 'No data';
+  return entry.map_type?.name || 'No data';
+}
+
+function mapCt(entry: any): string {
+  if (!entry) return 'No data';
+  const ban = entry.general_ban_type?.name;
+  if (!ban) return 'No data';
+  // "Yes" = banned, "No" = not banned, "Partially" etc.
+  if (ban === 'Yes') return 'Banned';
+  if (ban === 'No') return 'Not banned';
+  return ban;
+}
+
+function mapIntersex(entry: any): string {
+  if (!entry) return 'No data';
+  return entry.pnc_type?.name || 'No data';
+}
+
+function mapGenderRecognition(entry: any): Record<string, any> {
+  if (!entry) return {};
+  return {
+    name_change: entry.name_change_lgr_type?.name || null,
+    gender_marker: entry.gender_marker_lgr_type?.name || null,
+    established_procedure: entry.established_procedure?.name || null,
+    self_id: entry.gm_selfid_value?.name || null,
+    self_id_since: entry.gm_selfid_since || null,
+    requires_diagnosis: entry.gm_diagnosis_gm_value?.name || null,
+    requires_surgery: entry.gm_surgery_gm_value?.name || null,
+  };
+}
+
+// ── Equality score calculator ─────────────────────────────────────
+
+function calculateEqualityScore(row: Record<string, any>): number {
+  let score = 50; // Start from middle
+
+  // Criminalization (biggest factor)
+  const crim = row.lgbti_criminalization;
+  if (crim?.legal === true) score += 15;
+  else if (crim?.legal === false) {
+    score -= 25;
+    const penalty = crim?.penalty || '';
+    if (penalty.includes('Death')) score -= 15;
+    else if (penalty.includes('life')) score -= 10;
+    else if (penalty.includes('8 years')) score -= 5;
+  }
+
+  // Same-sex unions (stored as JSON string with summary field)
+  const ssuRaw = row.lgbti_same_sex_unions || '';
+  let ssuSummary = '';
+  if (typeof ssuRaw === 'string') {
+    try {
+      const parsed = JSON.parse(ssuRaw);
+      ssuSummary = parsed.summary || '';
+    } catch {
+      ssuSummary = ssuRaw; // plain string fallback
+    }
+  }
+  if (ssuSummary === 'Marriage' || ssuSummary === 'Marriage & Civil Union') score += 10;
+  else if (ssuSummary === 'Civil Union Only') score += 5;
+
+  // Protection categories (each worth up to 3 points based on SO coverage)
+  const protectionCols = [
+    'lgbti_constitutional_protection', 'lgbti_employment_protection',
+    'lgbti_housing_protection', 'lgbti_education_protection',
+    'lgbti_health_protection', 'lgbti_goods_services_protection',
+    'lgbti_bullying_protection',
+  ];
+  for (const col of protectionCols) {
+    const p = row[col];
+    if (p?.so === 'Yes') score += 2;
+    if (p?.gi === 'Yes') score += 1;
+  }
+
+  // Hate crime & incitement (important)
+  if (row.lgbti_hate_crime_law?.so === 'Yes') score += 3;
+  if (row.lgbti_incitement_prohibition?.so === 'Yes') score += 2;
+
+  // Freedom of expression/association
+  const foe = row.lgbti_expression_restrictions;
+  if (foe?.summary === 'No Known Legal Barriers') score += 3;
+  else if (foe?.summary?.includes('Explicit') || foe?.summary?.includes('Non-Explicit')) score -= 5;
+
+  const foa = row.lgbti_association_restrictions;
+  if (foa?.status === 'No Known Legal Barriers') score += 2;
+  else if (foa?.status?.includes('Explicit')) score -= 5;
+
+  // Adoption
+  const ado = row.lgbti_adoption_rights || '';
+  if (typeof ado === 'string') {
+    if (ado.includes('Joint')) score += 3;
+    else if (ado.includes('Second Parent')) score += 2;
+  }
+
+  // Conversion therapy
+  const ct = row.lgbti_conversion_therapy_regulation || '';
+  if (typeof ct === 'string' && ct === 'Banned') score += 3;
+
+  // Gender recognition
+  const lgr = row.lgbti_gender_recognition;
+  if (lgr?.self_id === 'Yes') score += 3;
+  else if (lgr?.gender_marker === 'Possible') score += 1;
+
+  // Intersex
+  const isx = row.lgbti_intersex_protection || '';
+  if (typeof isx === 'string' && isx === 'Yes') score += 2;
+
+  return Math.max(0, Math.min(100, score));
+}
+
+// ── Main handler ──────────────────────────────────────────────────
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -48,122 +367,157 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { batchSize = 10, startIndex = 0 } = await req.json().catch(() => ({}));
-
-    console.log(`Starting ILGA data import from index ${startIndex}, batch size ${batchSize}`);
-
-    const results = [];
-    const errors = [];
-    
-    // Process countries in batches to avoid overwhelming the ILGA server
-    const endIndex = Math.min(startIndex + batchSize, COUNTRIES_TO_IMPORT.length);
-    const batch = COUNTRIES_TO_IMPORT.slice(startIndex, endIndex);
-
-    for (const countryName of batch) {
+    // Support both GET (cron) and POST
+    let dryRun = false;
+    let countryCode: string | null = null;
+    if (req.method === 'POST') {
       try {
-        console.log(`Importing data for ${countryName}...`);
+        const body = await req.json();
+        dryRun = body.dry_run === true;
+        countryCode = body.country_code || null;
+      } catch { /* empty body is fine */ }
+    }
 
-        // Get country data from database to get country code
-        const { data: countryData } = await supabase
-          .from('countries')
-          .select('code, name')
-          .ilike('name', `%${countryName}%`)
-          .single();
+    console.log(`Starting ILGA GraphQL import. dry_run=${dryRun}, country_code=${countryCode}`);
 
-        if (!countryData) {
-          console.log(`Country not found in database: ${countryName}`);
-          continue;
-        }
+    // 1. Fetch all data from ILGA GraphQL (17 queries in parallel)
+    console.log('Fetching data from ILGA GraphQL API...');
+    const [
+      crimMap, foeMap, foaMap,
+      constMap, goodsMap, healthMap, eduMap, bullyMap, empMap, housingMap,
+      hateMap, inciteMap,
+      ctMap, ssuMap, adoMap, isxMap, lgrMap,
+    ] = await Promise.all([
+      fetchCriminalization(),
+      fetchFreedomOfExpression(),
+      fetchFreedomOfAssociation(),
+      fetchProtection('A1-5'),  // Constitutional
+      fetchProtection('A1-6'),  // Goods & Services
+      fetchProtection('A1-7'),  // Health
+      fetchProtection('A1-8'),  // Education
+      fetchProtection('A1-9'),  // Bullying
+      fetchProtection('A1-10'), // Employment
+      fetchProtection('A1-11'), // Housing
+      fetchProtection('A1-12'), // Hate crime
+      fetchProtection('A1-13'), // Incitement
+      fetchConversionTherapy(),
+      fetchSameSexUnions(),
+      fetchAdoption(),
+      fetchIntersex(),
+      fetchGenderRecognition(),
+    ]);
 
-        // Call the fetch-ilga-data function to get real data
-        const { data: ilgaResponse, error: ilgaError } = await supabase.functions.invoke('fetch-ilga-data', {
-          body: {
-            countryCode: countryData.code,
-            countryName: countryData.name,
-            forceUpdate: true
-          }
-        });
+    console.log(`Fetched: crim=${crimMap.size}, foe=${foeMap.size}, foa=${foaMap.size}, ssu=${ssuMap.size}, ado=${adoMap.size}, ct=${ctMap.size}, lgr=${lgrMap.size}`);
 
-        if (ilgaError) {
-          console.error(`Error fetching ILGA data for ${countryName}:`, ilgaError);
-          errors.push({ country: countryName, error: ilgaError.message });
-          continue;
-        }
+    // 2. Get all countries from our DB
+    const { data: countries, error: dbError } = await supabase
+      .from('countries')
+      .select('id, code, name');
 
-        if (!ilgaResponse?.success) {
-          console.error(`Failed to fetch ILGA data for ${countryName}:`, ilgaResponse?.error);
-          errors.push({ country: countryName, error: ilgaResponse?.error || 'Unknown error' });
-          continue;
-        }
+    if (dbError) throw new Error(`DB error: ${dbError.message}`);
+    if (!countries?.length) throw new Error('No countries found in database');
 
-        const jurisdictionData = ilgaResponse.data;
+    console.log(`Found ${countries.length} countries in DB`);
 
-        // Update the country record with LGBTI data
-        const { error: updateError } = await supabase
-          .from('countries')
-          .update({
-            lgbti_criminalization: jurisdictionData.criminalisation,
-            lgbti_same_sex_unions: jurisdictionData.sameSeMarriage,
-            lgbti_employment_protection: {
-              status: jurisdictionData.antidiscrimination.scope.includes('employment') ? 'Protected' : 'None',
-              description: jurisdictionData.antidiscrimination.description
-            },
-            lgbti_housing_protection: {
-              status: jurisdictionData.antidiscrimination.scope.includes('housing') ? 'Protected' : 'None',
-              description: jurisdictionData.antidiscrimination.description
-            },
-            lgbti_education_protection: {
-              status: jurisdictionData.antidiscrimination.scope.includes('education') ? 'Protected' : 'None',
-              description: jurisdictionData.antidiscrimination.description
-            },
-            lgbti_health_protection: {
-              status: jurisdictionData.antidiscrimination.scope.includes('healthcare') ? 'Protected' : 'None',
-              description: jurisdictionData.antidiscrimination.description
-            },
-            lgbti_goods_services_protection: {
-              status: jurisdictionData.antidiscrimination.scope.includes('public services') ? 'Protected' : 'None',
-              description: jurisdictionData.antidiscrimination.description
-            },
-            lgbti_constitutional_protection: {
-              status: jurisdictionData.constitutionalProtection ? 'Protected' : 'None',
-              description: 'Constitutional protection status'
-            },
-            lgbti_hate_crime_law: {
-              status: jurisdictionData.hateClimeLaws ? 'Protected' : 'None',
-              description: 'Hate crime legislation status'
-            },
-            lgbti_data_last_updated: new Date().toISOString()
-          })
-          .eq('code', countryData.code);
+    // 3. Match and build update rows
+    let updated = 0;
+    let skipped = 0;
+    const errors: string[] = [];
+    const unmatched: string[] = [];
 
-        if (updateError) {
-          console.error(`Error updating country ${countryName}:`, updateError);
-          errors.push({ country: countryName, error: updateError.message });
-        } else {
-          console.log(`Successfully updated ${countryName}`);
-          results.push({ country: countryName, status: 'success' });
-        }
+    // If filtering to one country
+    const countriesToProcess = countryCode
+      ? countries.filter((c: any) => c.code === countryCode.toUpperCase())
+      : countries;
 
-        // Add delay between requests to be respectful to ILGA server
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    for (const country of countriesToProcess) {
+      const code = country.code;
+      if (!code) { skipped++; continue; }
 
-      } catch (error) {
-        console.error(`Error processing ${countryName}:`, error);
-        errors.push({ country: countryName, error: error.message });
+      // Check if ILGA has data for this country
+      const hasCrim = crimMap.has(code);
+      if (!hasCrim && !ssuMap.has(code)) {
+        unmatched.push(`${country.name} (${code})`);
+        skipped++;
+        continue;
+      }
+
+      const row: Record<string, any> = {
+        lgbti_criminalization: mapCriminalization(crimMap.get(code)),
+        lgbti_expression_restrictions: mapFoe(foeMap.get(code)),
+        lgbti_association_restrictions: mapFoa(foaMap.get(code)),
+        lgbti_constitutional_protection: mapProtection(constMap.get(code)),
+        lgbti_goods_services_protection: mapProtection(goodsMap.get(code)),
+        lgbti_health_protection: mapProtection(healthMap.get(code)),
+        lgbti_education_protection: mapProtection(eduMap.get(code)),
+        lgbti_bullying_protection: mapProtection(bullyMap.get(code)),
+        lgbti_employment_protection: mapProtection(empMap.get(code)),
+        lgbti_housing_protection: mapProtection(housingMap.get(code)),
+        lgbti_hate_crime_law: mapProtection(hateMap.get(code)),
+        lgbti_incitement_prohibition: mapProtection(inciteMap.get(code)),
+        lgbti_conversion_therapy_regulation: mapCt(ctMap.get(code)),
+        lgbti_same_sex_unions: mapSsu(ssuMap.get(code)),
+        lgbti_adoption_rights: mapAdoption(adoMap.get(code)),
+        lgbti_intersex_protection: mapIntersex(isxMap.get(code)),
+        lgbti_gender_recognition: mapGenderRecognition(lgrMap.get(code)),
+        lgbti_data_last_updated: new Date().toISOString(),
+      };
+
+      // Store full SSU data in criminalization json for richer display (marriage dates etc.)
+      // Actually store it separately — we keep the TEXT column simple, and add full data to the JSONB
+      const ssuEntry = ssuMap.get(code);
+      if (ssuEntry) {
+        // Store detailed SSU data as part of the same_sex_unions info
+        // The TEXT column gets the summary, the details go elsewhere
+        // For now, let's enrich the criminalization JSONB with SSU details
+        // Actually better: store the full SSU as a JSON string in the TEXT column
+        const ssuFull = mapSsuFull(ssuEntry);
+        row.lgbti_same_sex_unions = JSON.stringify(ssuFull);
+      }
+
+      // Calculate equality score
+      row.equality_score = calculateEqualityScore(row);
+
+      if (dryRun) {
+        console.log(`[DRY RUN] Would update ${country.name} (${code}): score=${row.equality_score}`);
+        updated++;
+        continue;
+      }
+
+      const { error: updateError } = await supabase
+        .from('countries')
+        .update(row)
+        .eq('id', country.id);
+
+      if (updateError) {
+        errors.push(`${country.name}: ${updateError.message}`);
+      } else {
+        updated++;
       }
     }
 
     const response = {
       success: true,
-      processed: results.length,
-      errors: errors.length,
-      results,
-      errors,
-      nextBatchIndex: endIndex < COUNTRIES_TO_IMPORT.length ? endIndex : null,
-      totalCountries: COUNTRIES_TO_IMPORT.length
+      dry_run: dryRun,
+      total_countries: countriesToProcess.length,
+      updated,
+      skipped,
+      errors_count: errors.length,
+      errors: errors.slice(0, 20),
+      unmatched: unmatched.slice(0, 20),
+      ilga_coverage: {
+        criminalization: crimMap.size,
+        expression: foeMap.size,
+        association: foaMap.size,
+        same_sex_unions: ssuMap.size,
+        adoption: adoMap.size,
+        conversion_therapy: ctMap.size,
+        gender_recognition: lgrMap.size,
+        intersex: isxMap.size,
+      },
     };
 
-    console.log('Import batch completed:', response);
+    console.log('Import completed:', JSON.stringify(response));
 
     return new Response(
       JSON.stringify(response),
@@ -171,12 +525,9 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in ILGA import:', error);
+    console.error('ILGA import error:', error);
     return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error.message 
-      }),
+      JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

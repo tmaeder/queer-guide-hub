@@ -152,7 +152,7 @@ export default function PrivacyPolicy() {
 
         <section id="contact">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>14. Contact Us</Typography>
-          <Typography>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:privacy@queer.guide" style={{ color: '#333333', textDecoration: 'underline' }}>privacy@queer.guide</a> or through our Contact page.</Typography>
+          <Typography>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:privacy@queer.guide" style={{ color: 'inherit', textDecoration: 'underline' }}>privacy@queer.guide</a> or through our Contact page.</Typography>
         </section>
       </Box>
     </LegalPageLayout>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminRoles } from "@/hooks/useAdminRoles";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,10 +28,14 @@ import {
   RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ExportExcelButton } from "@/components/admin/ExportExcelButton";
+import { exportToExcel, fetchAllRows, formatDateTime, generateFilename, type ExportColumnDef } from "@/utils/excelExport";
 import { TagCategorizer } from "@/components/admin/TagCategorizer";
 import { TagsCsvImport } from "@/components/admin/TagsCsvImport";
 import { TagImageUpload } from "@/components/admin/TagImageUpload";
 import BulkCreateAITags from "@/components/admin/BulkCreateAITags";
+import BatchAutoTagDialog from "@/components/admin/BatchAutoTagDialog";
+import BatchGeoLinkDialog from "@/components/admin/BatchGeoLinkDialog";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -40,14 +44,15 @@ export default function AdminTags() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { canManageContent, loading: rolesLoading } = useAdminRoles();
-  const { 
-    allTags: tags, 
-    tagsByCategory: categories, 
-    loading, 
-    searchTags, 
-    createTag, 
-    updateTag, 
-    deleteTag 
+  const {
+    allTags: tags,
+    tagsByCategory: categories,
+    categoriesTree,
+    loading,
+    searchTags,
+    createTag,
+    updateTag,
+    deleteTag
   } = useCentralizedTags();
   const { toast } = useToast();
 
@@ -86,9 +91,14 @@ export default function AdminTags() {
       const results = await searchTags(searchQuery, selectedCategory !== "all" ? selectedCategory : undefined);
       setFilteredTags(results);
     } else {
-      const filtered = selectedCategory === "all" 
-        ? tags 
-        : tags.filter(tag => tag.category === selectedCategory);
+      const filtered = selectedCategory === "all"
+        ? tags
+        : tags.filter(tag => {
+            if (tag.categories && tag.categories.length > 0) {
+              return tag.categories.some(c => c.name === selectedCategory);
+            }
+            return tag.category === selectedCategory;
+          });
       setFilteredTags(filtered);
     }
   };
@@ -246,9 +256,25 @@ export default function AdminTags() {
             <Typography variant="body2" color="text.secondary">Create and manage content tags</Typography>
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           <TagsCsvImport onImportComplete={() => window.location.reload()} />
+          <ExportExcelButton onExport={async () => {
+            const columns: ExportColumnDef<any>[] = [
+              { header: 'Name', accessor: r => r.name },
+              { header: 'Slug', accessor: r => r.slug },
+              { header: 'Category', accessor: r => r.category },
+              { header: 'Status', accessor: r => r.status },
+              { header: 'Description', accessor: r => r.description },
+              { header: 'Usage Count', accessor: r => r.usage_count },
+              { header: 'Deprecation Reason', accessor: r => r.deprecation_reason },
+              { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
+            ];
+            const allData = await fetchAllRows('unified_tags', '*', { column: 'name', ascending: true });
+            await exportToExcel(allData, columns, generateFilename('tags'));
+          }} />
           <BulkCreateAITags onComplete={() => window.location.reload()} />
+          <BatchAutoTagDialog onComplete={() => window.location.reload()} />
+          <BatchGeoLinkDialog onComplete={() => window.location.reload()} />
           <Button variant="outline" onClick={handleBulkEdit}>
             <Edit style={{ height: 16, width: 16, marginRight: 8 }} />
             Bulk Edit Descriptions
@@ -284,24 +310,20 @@ export default function AdminTags() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="consent">Consent</SelectItem>
-                    <SelectItem value="genders">Genders</SelectItem>
-                    <SelectItem value="sexual-orientations">Sexual Orientations</SelectItem>
-                    <SelectItem value="romantic-orientations">Romantic Orientations</SelectItem>
-                    <SelectItem value="relationships">Relationships</SelectItem>
-                    <SelectItem value="roles">Roles</SelectItem>
-                    <SelectItem value="gay-culture">Gay Culture</SelectItem>
-                    <SelectItem value="kink-activities">Kink Activities</SelectItem>
-                    <SelectItem value="sexual-activities">Sexual Activities</SelectItem>
-                    <SelectItem value="philia">Philia</SelectItem>
-                    <SelectItem value="toys-equipment">Toys & Equipment</SelectItem>
-                    <SelectItem value="play-spaces">Play Spaces</SelectItem>
-                    <SelectItem value="events">Events</SelectItem>
-                    <SelectItem value="holidays">Holidays</SelectItem>
-                    <SelectItem value="sexual-health">Sexual Health</SelectItem>
-                    <SelectItem value="mental-health">Mental Health</SelectItem>
-                    <SelectItem value="scene-safety">Scene Safety</SelectItem>
-                    <SelectItem value="safety-resources">Safety Resources</SelectItem>
+                    {categoriesTree.map(cat => (
+                      <React.Fragment key={cat.id}>
+                        <SelectItem value={cat.name}>
+                          {cat.name}
+                        </SelectItem>
+                        {cat.children.map(child => (
+                          <SelectItem key={child.id} value={child.name}>
+                            <span style={{ paddingLeft: 16, fontSize: '0.9em' }}>
+                              ↳ {child.name}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </React.Fragment>
+                    ))}
                   </SelectContent>
                 </Select>
               </Box>
@@ -398,15 +420,24 @@ export default function AdminTags() {
                 </Box>
               </Box>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger style={{ width: 192 }}>
+                <SelectTrigger style={{ width: 220 }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {uniqueCategories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category.charAt(0).toUpperCase() + category.slice(1)}
-                    </SelectItem>
+                  {categoriesTree.map(cat => (
+                    <React.Fragment key={cat.id}>
+                      <SelectItem value={cat.name}>
+                        {cat.name}
+                      </SelectItem>
+                      {cat.children.map(child => (
+                        <SelectItem key={child.id} value={child.name}>
+                          <span style={{ paddingLeft: 12, fontSize: '0.9em', opacity: 0.85 }}>
+                            {child.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </React.Fragment>
                   ))}
                 </SelectContent>
               </Select>
@@ -499,10 +530,16 @@ export default function AdminTags() {
                   </Box>
                 )}
 
-                <Box sx={{ mb: 1 }}>
-                  <Badge variant="outline">
-                    {tag.category}
-                  </Badge>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                  {tag.categories && tag.categories.length > 0 ? (
+                    tag.categories.map((c: any) => (
+                      <Badge key={c.id} variant={c.is_primary ? "default" : "outline"}>
+                        {c.parent_name ? `${c.parent_name} › ` : ''}{c.name}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge variant="outline">{tag.category}</Badge>
+                  )}
                 </Box>
 
                 {tag.description && (

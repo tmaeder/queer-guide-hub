@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,8 @@ import { useImportHub, ImportJob } from '@/hooks/useImportHub';
 import {
   Upload, Database, TrendingUp, TrendingDown, AlertTriangle, CheckCircle,
   Clock, RefreshCw, Eye, Download, X, Play, Pause,
-  FileText, Search, BarChart3, Activity, Zap, Package, MapPin, Rss, Key
+  FileText, Search, BarChart3, Activity, Zap, Package, MapPin, Rss, Key,
+  Inbox, GitMerge, Settings, ArrowRight, Shield
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ImportJobCreator } from './ImportJobCreator';
@@ -18,9 +20,14 @@ import { ValidationReport } from './ValidationReport';
 import { VenueImportQuickActions } from './VenueImportQuickActions';
 import { NewsSourcesManager } from './NewsSourcesManager';
 import { ApiKeysManager } from './ApiKeysManager';
+import { DuplicatesPanel } from './import-hub/DuplicatesPanel';
+import { IngestionSourcesManager } from './IngestionSourcesManager';
+import { PipelineMonitor } from './PipelineMonitor';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useReviewCounts } from '@/hooks/useReviewCounts';
 
 export const ImportHubDashboard = () => {
+  const navigate = useNavigate();
   const {
     jobs,
     statistics,
@@ -31,6 +38,7 @@ export const ImportHubDashboard = () => {
     refreshJobs: loadJobs,
     refreshStatistics: loadStatistics
   } = useImportHub();
+  const { data: reviewCounts } = useReviewCounts();
 
   const [showValidation, setShowValidation] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -136,7 +144,7 @@ export const ImportHubDashboard = () => {
         </Box>
 
         {/* Statistics Grid */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', lg: 'repeat(5, 1fr)' }, gap: 2, mb: 3 }}>
           <Card>
             <CardContent sx={{ p: 2, textAlign: 'center' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
@@ -174,6 +182,22 @@ export const ImportHubDashboard = () => {
                 <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{statistics?.total_records_processed?.toLocaleString() || 0}</Typography>
               </Box>
               <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Records Processed</Typography>
+            </CardContent>
+          </Card>
+
+          <Card
+            onClick={() => navigate('/admin/review')}
+            style={{ cursor: 'pointer', borderColor: '#ea580c', borderWidth: 2, transition: 'box-shadow 0.15s' }}
+          >
+            <CardContent sx={{ p: 2, textAlign: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
+                <Inbox style={{ height: 20, width: 20, color: '#ea580c' }} />
+                <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{reviewCounts?.staging ?? statistics?.items_pending_review ?? 0}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                <Typography variant="caption" sx={{ color: '#ea580c', fontWeight: 600 }}>Review Queue</Typography>
+                <ArrowRight style={{ height: 12, width: 12, color: '#ea580c' }} />
+              </Box>
             </CardContent>
           </Card>
         </Box>
@@ -260,35 +284,17 @@ export const ImportHubDashboard = () => {
         </Card>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'var(--card)' }}>
-            <TabsTrigger value="overview" style={{ display: 'flex', gap: 8 }}>
-              <BarChart3 style={{ height: 16, width: 16 }} />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="venues" style={{ display: 'flex', gap: 8 }}>
-              <MapPin style={{ height: 16, width: 16 }} />
-              Venues
-            </TabsTrigger>
-            <TabsTrigger value="news" style={{ display: 'flex', gap: 8 }}>
-              <Rss style={{ height: 16, width: 16 }} />
-              News Sources
-            </TabsTrigger>
-            <TabsTrigger value="api-keys" style={{ display: 'flex', gap: 8 }}>
-              <Key style={{ height: 16, width: 16 }} />
-              API Keys
-            </TabsTrigger>
-            <TabsTrigger value="active" style={{ display: 'flex', gap: 8 }}>
-              <Activity style={{ height: 16, width: 16 }} />
-              Active ({activeJobs.length})
-            </TabsTrigger>
-            <TabsTrigger value="create" style={{ display: 'flex', gap: 8 }}>
-              <Zap style={{ height: 16, width: 16 }} />
-              Create Import
-            </TabsTrigger>
-            <TabsTrigger value="history" style={{ display: 'flex', gap: 8 }}>
-              <FileText style={{ height: 16, width: 16 }} />
-              History ({filteredJobs.length})
-            </TabsTrigger>
+          <TabsList style={{ backgroundColor: 'var(--card)' }}>
+            <TabsTrigger value="overview">Analytics</TabsTrigger>
+            <TabsTrigger value="sources">Sources</TabsTrigger>
+            <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
+            <TabsTrigger value="duplicates">Duplicates</TabsTrigger>
+            <TabsTrigger value="create">Create Import</TabsTrigger>
+            <TabsTrigger value="venues">Venues</TabsTrigger>
+            <TabsTrigger value="news">News Sources</TabsTrigger>
+            <TabsTrigger value="api-keys">API Keys</TabsTrigger>
+            <TabsTrigger value="active">Active ({activeJobs.length})</TabsTrigger>
+            <TabsTrigger value="history">History ({filteredJobs.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -339,6 +345,18 @@ export const ImportHubDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="sources" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <IngestionSourcesManager />
+          </TabsContent>
+
+          <TabsContent value="pipeline" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <PipelineMonitor />
+          </TabsContent>
+
+          <TabsContent value="duplicates" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <DuplicatesPanel />
           </TabsContent>
 
           <TabsContent value="venues" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>

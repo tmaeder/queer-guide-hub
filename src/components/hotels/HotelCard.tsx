@@ -1,0 +1,131 @@
+import { Link } from 'react-router-dom';
+import { MapPin, Star, Wifi, DollarSign } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import type { Hotel } from '@/hooks/useHotels';
+
+interface HotelCardProps {
+  hotel: Hotel;
+}
+
+const TYPE_LABELS: Record<string, string> = {
+  hotel: 'Hotel',
+  bnb: 'B&B',
+  hostel: 'Hostel',
+  guesthouse: 'Guesthouse',
+  apartment: 'Apartment',
+  resort: 'Resort',
+  other: 'Other',
+};
+
+function PriceIndicator({ range }: { range: number | null }) {
+  if (!range) return null;
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+      {Array.from({ length: 4 }, (_, i) => (
+        <DollarSign
+          key={i}
+          style={{ width: 12, height: 12, color: i < range ? 'currentColor' : '#cccccc' }}
+        />
+      ))}
+    </Box>
+  );
+}
+
+export function HotelCard({ hotel }: HotelCardProps) {
+  const imageUrl = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
+
+  return (
+    <Link to={`/hotels/${hotel.id}`} style={{ textDecoration: 'none' }}>
+      <Paper
+        elevation={1}
+        sx={{
+          overflow: 'hidden',
+          borderRadius: 3,
+          transition: 'all 0.2s',
+          '&:hover': { transform: 'translateY(-2px)', boxShadow: 4 },
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Image */}
+        <Box sx={{ position: 'relative', height: 180, overflow: 'hidden', bgcolor: 'action.hover' }}>
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={hotel.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              loading="lazy"
+            />
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+              <MapPin style={{ width: 32, height: 32, color: '#999999' }} />
+            </Box>
+          )}
+          {hotel.featured && (
+            <Badge
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                backgroundColor: 'hsl(var(--primary))',
+                color: 'white',
+              }}
+            >
+              Featured
+            </Badge>
+          )}
+          {hotel.hotel_type && (
+            <Badge
+              variant="outline"
+              style={{
+                position: 'absolute',
+                top: 8,
+                left: 8,
+                backgroundColor: '#ffffff',
+              }}
+            >
+              {TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type}
+            </Badge>
+          )}
+        </Box>
+
+        {/* Content */}
+        <Box sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }} noWrap>
+            {hotel.name}
+          </Typography>
+
+          {(hotel.city || hotel.country) && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+              <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
+              <Typography variant="body2" noWrap>
+                {[hotel.city, hotel.country].filter(Boolean).join(', ')}
+              </Typography>
+            </Box>
+          )}
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto', pt: 1 }}>
+            {hotel.star_rating && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                <Star style={{ width: 14, height: 14, fill: '#f59e0b', color: '#f59e0b' }} />
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {hotel.star_rating}
+                </Typography>
+              </Box>
+            )}
+            <PriceIndicator range={hotel.price_range} />
+            {hotel.lgbtq_friendly && (
+              <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+                LGBTQ+
+              </Badge>
+            )}
+          </Box>
+        </Box>
+      </Paper>
+    </Link>
+  );
+}

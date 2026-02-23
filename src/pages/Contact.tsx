@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, MapPin, Clock, MessageCircle, Shield, Bug } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Mail, MapPin, Clock, MessageCircle, Shield, Bug, HelpCircle, ChevronDown, ChevronRight } from "lucide-react";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 export default function Contact() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const contactMethods = [{
     icon: Mail,
     title: "Email Support",
@@ -124,8 +127,33 @@ export default function Contact() {
 
       {/* FAQ Section */}
       <Box component="section">
-
-
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <HelpCircle style={{ width: 24, height: 24 }} color="var(--mui-palette-primary-main)" />
+            Frequently Asked Questions
+          </Box>
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          {faqs.map((faq, index) => (
+            <Card key={index}>
+              <Collapsible open={openFaq === index} onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}>
+                <CollapsibleTrigger asChild>
+                  <CardHeader sx={{ cursor: 'pointer', py: 2, '&:hover': { bgcolor: 'action.hover' }, transition: 'background-color 0.2s' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.9375rem' }}>{faq.question}</Typography>
+                      {openFaq === index ? <ChevronDown style={{ width: 18, height: 18, flexShrink: 0 }} /> : <ChevronRight style={{ width: 18, height: 18, flexShrink: 0 }} />}
+                    </Box>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent sx={{ pt: 0, pb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">{faq.answer}</Typography>
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </Card>
+          ))}
+        </Box>
       </Box>
       </Container>
     </Box>;

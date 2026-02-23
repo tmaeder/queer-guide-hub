@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,10 +10,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { useImportHub } from '@/hooks/useImportHub';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Upload, FileText, Globe, Database, AlertTriangle, Info, Eye,
   Settings, Filter, CheckCircle, X, Plus, RefreshCw, MapPin, Calendar,
-  Users, Building, Shield, Tag, ShoppingCart, BookOpen, Newspaper
+  Users, Building, Shield, Tag, ShoppingCart, BookOpen, Newspaper, Sliders
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -227,7 +228,44 @@ export const ImportJobCreator = () => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showVenueImportDialog, setShowVenueImportDialog] = useState(false);
 
+  // Scraper config state
+  const [scraperConfig, setScraperConfig] = useState<{
+    events: { cities: string[]; maxCities: number };
+    spartacus: { venueTypes: string[]; countries: string[]; maxCitiesPerCountry: number; discoverCities: boolean };
+  }>({
+    events: {
+      cities: ['berlin', 'amsterdam', 'barcelona', 'london', 'paris', 'new-york', 'san-francisco', 'los-angeles', 'miami', 'chicago'],
+      maxCities: 10
+    },
+    spartacus: {
+      venueTypes: ['saunas', 'goingout'],
+      countries: ['germany', 'spain', 'uk', 'usa'],
+      maxCitiesPerCountry: 5,
+      discoverCities: false,
+    }
+  });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load cities from DB for event scraper city picker
+  const [allCities, setAllCities] = useState<{ name: string; country: string }[]>([]);
+  const [citySearch, setCitySearch] = useState('');
+
+  useEffect(() => {
+    const loadCities = async () => {
+      const { data } = await supabase
+        .from('cities')
+        .select('name, countries!inner(name)')
+        .order('name');
+      if (data) {
+        setAllCities(data.map((c: any) => ({
+          name: c.name,
+          country: (c.countries as any)?.name || ''
+        })));
+      }
+    };
+    loadCities();
+  }, []);
 
   const isVenueApiImport = importType.startsWith('venues-') && !importType.endsWith('-csv');
 
@@ -332,6 +370,53 @@ export const ImportJobCreator = () => {
     if (isVenueApiImport) {
       setShowVenueImportDialog(true);
       return;
+    }
+
+    // Handle web scraping imports — invoke the scraper edge function with config
+    if (sourceType === 'web_scraping' && importType) {
+      try {
+        let body: Record<string, any> = {};
+        let description = '';
+        if (importType === 'scrape-gaycities-events') {
+          // Build city_info map from allCities for any cities not in the hardcoded list
+          const cityInfoMap: Record<string, { displayName: string; country: string }> = {};
+          for (const slug of scraperConfig.events.cities) {
+            const match = allCities.find(c => c.name.toLowerCase().replace(/\s+/g, '-') === slug);
+            if (match) {
+              cityInfoMap[slug] = { displayName: match.name, country: match.country };
+            }
+          }
+          body = {
+            cities: scraperConfig.events.cities,
+            max_cities: scraperConfig.events.maxCities,
+            city_info: cityInfoMap,
+          };
+          description = `Event scraper triggered for ${scraperConfig.events.cities.length} cities`;
+        } else if (importType === 'scrape-spartacus') {
+          body = {
+            venue_types: scraperConfig.spartacus.venueTypes,
+            countries: scraperConfig.spartacus.countries,
+            max_cities_per_country: scraperConfig.spartacus.maxCitiesPerCountry,
+            discover_cities: scraperConfig.spartacus.discoverCities,
+          };
+          description = `Spartacus scraper triggered for ${scraperConfig.spartacus.countries.length} countries × ${scraperConfig.spartacus.venueTypes.length} venue types`;
+        }
+        const { data, error } = await supabase.functions.invoke(importType, { body });
+        if (error) throw error;
+        toast({
+          title: 'Scraper Started',
+          description: `${description}. Check the Pipeline tab for progress.`,
+        });
+        setImportType('');
+        return;
+      } catch (error) {
+        toast({
+          title: 'Scraper Failed',
+          description: error instanceof Error ? error.message : 'Failed to trigger scraper',
+          variant: 'destructive',
+        });
+        return;
+      }
     }
 
     if (sourceType === 'csv' && !csvData) {
@@ -566,11 +651,263 @@ export const ImportJobCreator = () => {
 
               <TabsContent value="web_scraping" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Alert>
-                  <AlertTriangle style={{ height: 16, width: 16 }} />
+                  <Info style={{ height: 16, width: 16 }} />
                   <AlertDescription>
-                    Web scraping functionality is currently in development. Please use CSV or API import for now.
+                    Web scraping imports use the ingestion pipeline with AI validation, deduplication, and review queue support.
                   </AlertDescription>
                 </Alert>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Label>Scraper Source</Label>
+                  <Select value={importType} onValueChange={setImportType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a scraper source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="scrape-gaycities-events">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Calendar style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <div>
+                            <Box sx={{ fontWeight: 500 }}>LGBTQ+ Events (GayTravel4u)</Box>
+                            <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Scrape LGBTQ+ events from 35+ cities worldwide</Box>
+                          </div>
+                        </Box>
+                      </SelectItem>
+                      <SelectItem value="scrape-spartacus">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <MapPin style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+                          <div>
+                            <Box sx={{ fontWeight: 500 }}>Spartacus Venues</Box>
+                            <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Scrape saunas and bars from Spartacus Gay Guide by country/city</Box>
+                          </div>
+                        </Box>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Box>
+
+                {/* Events Scraper Config (GayTravel4u) */}
+                {importType === 'scrape-gaycities-events' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Sliders style={{ height: 16, width: 16 }} />
+                        Events Scraper Configuration
+                      </CardTitle>
+                      <CardDescription>Select cities to scrape LGBTQ+ events from GayTravel4u</CardDescription>
+                    </CardHeader>
+                    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Label>Selected Cities ({scraperConfig.events.cities.length})</Label>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {scraperConfig.events.cities.map((city) => (
+                            <Badge key={city} variant="secondary" sx={{ gap: 0.5 }}>
+                              {city}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                sx={{ height: 'auto', p: 0, '&:hover': { bgcolor: 'transparent' } }}
+                                onClick={() => setScraperConfig(prev => ({
+                                  ...prev,
+                                  events: {
+                                    ...prev.events,
+                                    cities: prev.events.cities.filter(c => c !== city)
+                                  }
+                                }))}
+                              >
+                                <X style={{ height: 12, width: 12 }} />
+                              </Button>
+                            </Badge>
+                          ))}
+                        </Box>
+                        <Input
+                          placeholder="Search cities to add..."
+                          value={citySearch}
+                          onChange={(e) => setCitySearch(e.target.value)}
+                          sx={{ maxWidth: 300 }}
+                        />
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxHeight: 200, overflowY: 'auto' }}>
+                          {allCities
+                            .filter(c => {
+                              const slug = c.name.toLowerCase().replace(/\s+/g, '-');
+                              return !scraperConfig.events.cities.includes(slug) &&
+                                (citySearch === '' || c.name.toLowerCase().includes(citySearch.toLowerCase()) || c.country.toLowerCase().includes(citySearch.toLowerCase()));
+                            })
+                            .slice(0, citySearch ? 50 : 30)
+                            .map((city) => {
+                              const slug = city.name.toLowerCase().replace(/\s+/g, '-');
+                              return (
+                                <Button
+                                  key={slug}
+                                  variant="outline"
+                                  size="sm"
+                                  sx={{ fontSize: '0.75rem', height: 28 }}
+                                  onClick={() => setScraperConfig(prev => ({
+                                    ...prev,
+                                    events: {
+                                      ...prev.events,
+                                      cities: [...prev.events.cities, slug]
+                                    }
+                                  }))}
+                                >
+                                  <Plus style={{ height: 10, width: 10, marginRight: 2 }} />
+                                  {city.name} <span style={{ opacity: 0.5, marginLeft: 4 }}>{city.country}</span>
+                                </Button>
+                              );
+                            })}
+                          {allCities.length === 0 && (
+                            <Typography variant="body2" sx={{ color: 'text.secondary', py: 1 }}>Loading cities...</Typography>
+                          )}
+                        </Box>
+                      </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Label>Max Cities to Scrape</Label>
+                        <Select
+                          value={scraperConfig.events.maxCities.toString()}
+                          onValueChange={(v) => setScraperConfig(prev => ({
+                            ...prev,
+                            events: { ...prev.events, maxCities: parseInt(v) }
+                          }))}
+                        >
+                          <SelectTrigger sx={{ width: 160 }}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="5">5 cities</SelectItem>
+                            <SelectItem value="10">10 cities</SelectItem>
+                            <SelectItem value="15">15 cities</SelectItem>
+                            <SelectItem value="20">20 cities</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Spartacus Config */}
+                {importType === 'scrape-spartacus' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Sliders style={{ height: 16, width: 16 }} />
+                        Spartacus Scraper Configuration
+                      </CardTitle>
+                      <CardDescription>Scrape venues by country and city from Spartacus Gay Guide</CardDescription>
+                    </CardHeader>
+                    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Label>Venue Types</Label>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          {[
+                            { type: 'saunas', label: 'Saunas' },
+                            { type: 'goingout', label: 'Bars & Clubs (Going Out)' },
+                          ].map(({ type, label }) => (
+                            <Box key={type} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Checkbox
+                                id={`vtype-${type}`}
+                                checked={scraperConfig.spartacus.venueTypes.includes(type)}
+                                onCheckedChange={(checked) => {
+                                  setScraperConfig(prev => ({
+                                    ...prev,
+                                    spartacus: {
+                                      ...prev.spartacus,
+                                      venueTypes: checked
+                                        ? [...prev.spartacus.venueTypes, type]
+                                        : prev.spartacus.venueTypes.filter(t => t !== type)
+                                    }
+                                  }));
+                                }}
+                              />
+                              <Label htmlFor={`vtype-${type}`}>{label}</Label>
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Label>Countries ({scraperConfig.spartacus.countries.length})</Label>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {scraperConfig.spartacus.countries.map((country) => (
+                            <Badge key={country} variant="secondary" sx={{ gap: 0.5 }}>
+                              {country}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                sx={{ height: 'auto', p: 0, '&:hover': { bgcolor: 'transparent' } }}
+                                onClick={() => setScraperConfig(prev => ({
+                                  ...prev,
+                                  spartacus: {
+                                    ...prev.spartacus,
+                                    countries: prev.spartacus.countries.filter(c => c !== country)
+                                  }
+                                }))}
+                              >
+                                <X style={{ height: 12, width: 12 }} />
+                              </Button>
+                            </Badge>
+                          ))}
+                        </Box>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {['germany', 'spain', 'uk', 'france', 'netherlands', 'thailand', 'usa']
+                            .filter(c => !scraperConfig.spartacus.countries.includes(c))
+                            .map((country) => (
+                              <Button
+                                key={country}
+                                variant="outline"
+                                size="sm"
+                                sx={{ fontSize: '0.75rem', height: 28 }}
+                                onClick={() => setScraperConfig(prev => ({
+                                  ...prev,
+                                  spartacus: {
+                                    ...prev.spartacus,
+                                    countries: [...prev.spartacus.countries, country]
+                                  }
+                                }))}
+                              >
+                                <Plus style={{ height: 10, width: 10, marginRight: 2 }} />
+                                {country}
+                              </Button>
+                            ))}
+                        </Box>
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
+                          <Label>Max Cities per Country</Label>
+                          <Select
+                            value={scraperConfig.spartacus.maxCitiesPerCountry.toString()}
+                            onValueChange={(v) => setScraperConfig(prev => ({
+                              ...prev,
+                              spartacus: { ...prev.spartacus, maxCitiesPerCountry: parseInt(v) }
+                            }))}
+                          >
+                            <SelectTrigger sx={{ width: 160 }}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="3">3 cities</SelectItem>
+                              <SelectItem value="5">5 cities</SelectItem>
+                              <SelectItem value="10">10 cities</SelectItem>
+                              <SelectItem value="20">All cities</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-end', pb: 0.25 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Checkbox
+                              id="discover-cities"
+                              checked={scraperConfig.spartacus.discoverCities}
+                              onCheckedChange={(checked) => {
+                                setScraperConfig(prev => ({
+                                  ...prev,
+                                  spartacus: { ...prev.spartacus, discoverCities: !!checked }
+                                }));
+                              }}
+                            />
+                            <Label htmlFor="discover-cities" style={{ fontSize: '0.875rem' }}>Discover cities from country pages</Label>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
             </Tabs>
           </Box>

@@ -52,7 +52,7 @@ const InputOTPSlot = React.forwardRef<
         transition: 'all 0.15s',
         ...(isActive ? {
           zIndex: 10,
-          boxShadow: '0 0 0 2px #333333',
+          boxShadow: '0 0 0 2px currentColor',
         } : {}),
         ...style,
       }}
@@ -71,7 +71,7 @@ const InputOTPSlot = React.forwardRef<
           <div style={{
             height: 16,
             width: 1,
-            backgroundColor: '#333333',
+            backgroundColor: 'currentColor',
             animation: 'caretBlink 1s step-end infinite',
           }} />
         </div>

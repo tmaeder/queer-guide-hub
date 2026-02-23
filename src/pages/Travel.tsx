@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Plane, TrendingUp } from 'lucide-react';
 import { FlightSearchForm } from '@/components/travel/FlightSearchForm';
@@ -27,7 +28,7 @@ export default function Travel() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Hero */}
-      <Box sx={{ textAlign: 'center', mb: 4 }}>
+      <Paper variant="outlined" sx={{ p: { xs: 3, sm: 4 }, mb: 4, bgcolor: 'background.paper', textAlign: 'center' }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Box sx={{
             width: 56, height: 56, borderRadius: '50%',
@@ -42,7 +43,7 @@ export default function Travel() {
         <Typography sx={{ color: 'text.secondary', maxWidth: 480, mx: 'auto' }}>
           Discover the best flight deals to LGBTQ+ friendly destinations worldwide
         </Typography>
-      </Box>
+      </Paper>
 
       {/* Search Form */}
       <Box sx={{ mb: 5 }}>
@@ -50,9 +51,9 @@ export default function Travel() {
       </Box>
 
       {/* Popular Deals */}
-      <Box sx={{ mb: 4 }}>
+      <Paper variant="outlined" sx={{ p: 3, mb: 4, bgcolor: 'background.paper' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <TrendingUp style={{ height: 20, width: 20, color: 'var(--primary)' }} />
+          <TrendingUp style={{ height: 20, width: 20, color: '#7c3aed' }} />
           <Typography variant="h5" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
             {originCity ? `Popular Deals from ${originCity}` : 'Popular Flight Deals'}
           </Typography>
@@ -81,10 +82,10 @@ export default function Travel() {
             </Typography>
           </Box>
         )}
-      </Box>
+      </Paper>
 
       {/* CTA */}
-      <Box sx={{ textAlign: 'center', py: 3, bgcolor: 'action.hover', borderRadius: 2 }}>
+      <Paper variant="outlined" sx={{ textAlign: 'center', py: 3, px: 3, bgcolor: 'background.paper' }}>
         <Typography sx={{ fontWeight: 600, mb: 1 }}>
           Explore LGBTQ+ Friendly Destinations
         </Typography>
@@ -94,7 +95,7 @@ export default function Travel() {
         <Link to="/places">
           <Button variant="outline">Browse Destinations</Button>
         </Link>
-      </Box>
+      </Paper>
     </Container>
   );
 }

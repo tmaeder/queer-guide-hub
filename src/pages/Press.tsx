@@ -4,6 +4,7 @@ import { Newspaper, Mail, Globe, MapPin, Calendar, Users, BookOpen, TrendingUp }
 import { useConsolidatedStats } from "@/hooks/useConsolidatedStats";
 import { useMeta } from "@/hooks/useMeta";
 import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 
 export default function Press() {
@@ -32,7 +33,7 @@ export default function Press() {
       ];
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Hero Section */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 2 }}>
@@ -187,6 +188,6 @@ export default function Press() {
           </Card>
         </Box>
       </Box>
-    </Box>
+    </Container>
   );
 }

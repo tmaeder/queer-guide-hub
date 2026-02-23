@@ -32,6 +32,11 @@ import {
   Key,
   Mail,
   Link2,
+  Flag,
+  Hotel,
+  Home,
+  LinkIcon,
+  Handshake,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -186,6 +191,22 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#f97316',
       },
       {
+        id: 'hotels',
+        label: 'Hotels & BnBs',
+        icon: Hotel,
+        route: '/admin/hotels',
+        countTable: 'hotels',
+        color: '#0ea5e9',
+      },
+      {
+        id: 'villages',
+        label: 'Queer Villages',
+        icon: Home,
+        route: '/admin/villages',
+        countTable: 'queer_villages',
+        color: '#d946ef',
+      },
+      {
         id: 'groups',
         label: 'Groups',
         icon: UsersRound,
@@ -268,13 +289,13 @@ export const adminNavSections: AdminNavSection[] = [
   // ── Review & Workflow ──────────────────────────────────────────
   {
     id: 'review',
-    label: 'Review & Workflow',
+    label: 'Review & Moderation',
     icon: ClipboardCheck,
     color: '#f59e0b',
     items: [
       {
         id: 'review-queue',
-        label: 'Review Queue',
+        label: 'Review & Moderation',
         icon: ClipboardCheck,
         route: '/admin/review',
         color: '#f59e0b',
@@ -285,6 +306,22 @@ export const adminNavSections: AdminNavSection[] = [
         icon: History,
         route: '/admin/audit',
         color: '#6366f1',
+      },
+      {
+        id: 'link-health',
+        label: 'Link Health',
+        icon: LinkIcon,
+        route: '/admin/links',
+        countTable: 'content_links',
+        color: '#0ea5e9',
+      },
+      {
+        id: 'affiliates',
+        label: 'Affiliates',
+        icon: Handshake,
+        route: '/admin/affiliates',
+        adminOnly: true,
+        color: '#10b981',
       },
     ],
   },

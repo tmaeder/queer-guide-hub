@@ -1,20 +1,25 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Calendar, MapPin, Users, Clock, DollarSign, ExternalLink, Mail, Phone, Globe, Share2, Download } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, DollarSign, ExternalLink, Phone, Globe, Share2, Download, ChevronRight, Tag, Music } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { useEvents } from '@/hooks/useEvents';
+import { FavoriteButton } from '@/components/ui/favorite-button';
+import { ReportButton } from '@/components/moderation/ReportButton';
+import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { useAuth } from '@/hooks/useAuth';
 import { Database } from '@/integrations/supabase/types';
 import { formatEventTime } from '@/lib/event-time';
+import { getTimezoneAbbr } from '@/utils/timezone';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
+import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -28,6 +33,9 @@ type Event = Database['public']['Tables']['events']['Row'] & {
     website: string | null;
     email: string | null;
   } | null;
+  cities?: { id: string; name: string } | null;
+  countries?: { id: string; name: string; equality_score: number | null; lgbti_criminalization: Record<string, any> | null } | null;
+  festivals?: { id: string; name: string } | null;
   event_attendees?: Array<{
     id: string;
     status: string;
@@ -46,158 +54,76 @@ export default function EventDetail() {
   const [event, setEvent] = useState<Event | null>(null);
   const [userAttendance, setUserAttendance] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showEventTz, setShowEventTz] = useState(true);
+
+  const fetchEventData = async () => {
+    if (!id) return;
+    try {
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select(`
+          *,
+          venues (id, name, address, city, state, country, phone, website, email),
+          cities:city_id(id, name),
+          countries:country_id(id, name, equality_score, lgbti_criminalization),
+          festivals:festival_id(id, name)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (eventError) throw eventError;
+
+      if (user) {
+        const { data: attendeesData } = await supabase
+          .from('event_attendees')
+          .select(`id, status, user_id, profiles:user_id (display_name, avatar_url)`)
+          .eq('event_id', id);
+
+        const fullEvent = { ...eventData, event_attendees: attendeesData || [] };
+        setEvent(fullEvent);
+
+        const userAttendee = attendeesData?.find((a: any) => a.user_id === user.id);
+        setUserAttendance(userAttendee?.status || null);
+      } else {
+        setEvent({ ...eventData, event_attendees: [] });
+      }
+    } catch (error) {
+      console.error('Error fetching event:', error);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
-
-    const fetchEvent = async () => {
-      try {
-        setLoading(true);
-
-        const { data: eventData, error: eventError } = await supabase
-          .from('events')
-          .select(`
-            *,
-            venues (
-              id,
-              name,
-              address,
-              city,
-              state,
-              country,
-              phone,
-              website,
-              email
-            )
-          `)
-          .eq('id', id)
-          .single();
-
-        if (eventError) throw eventError;
-
-        if (user) {
-          const { data: attendeesData } = await supabase
-            .from('event_attendees')
-            .select(`
-              id,
-              status,
-              user_id,
-              profiles:user_id (
-                display_name,
-                avatar_url
-              )
-            `)
-            .eq('event_id', id);
-
-          const fullEvent = { ...eventData, event_attendees: attendeesData || [] };
-          setEvent(fullEvent);
-
-          const userAttendee = attendeesData?.find(
-            (attendee: any) => attendee.user_id === user.id
-          );
-          setUserAttendance(userAttendee?.status || null);
-        } else {
-          setEvent({ ...eventData, event_attendees: [] });
-        }
-
-      } catch (error) {
-        console.error('Error fetching event:', error);
-      } finally {
-        setLoading(false);
-      }
+    const load = async () => {
+      setLoading(true);
+      await fetchEventData();
+      setLoading(false);
     };
-
-    fetchEvent();
+    load();
   }, [id, user]);
 
   const handleAttendanceUpdate = async (status: 'going' | 'interested' | 'not_going') => {
     if (!user || !event) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to update your attendance",
-        variant: "destructive",
-      });
+      toast({ title: "Authentication required", description: "Please sign in to update your attendance", variant: "destructive" });
       return;
     }
-
     try {
-      const { error } = await supabase
-        .from('event_attendees')
-        .upsert({
-          event_id: event.id,
-          user_id: user.id,
-          status
-        });
-
+      const { error } = await supabase.from('event_attendees').upsert({ event_id: event.id, user_id: user.id, status });
       if (error) throw error;
-
       setUserAttendance(status);
-      toast({
-        title: "Attendance updated",
-        description: `You're now marked as ${status.replace('_', ' ')} for this event`,
-      });
-
-      if (id) {
-        try {
-          const { data: eventData, error: eventError } = await supabase
-            .from('events')
-            .select(`
-              *,
-              venues (
-                id,
-                name,
-                address,
-                city,
-                state,
-                country,
-                phone,
-                website,
-                email
-              )
-            `)
-            .eq('id', id)
-            .single();
-
-          if (eventError) throw eventError;
-
-          const { data: attendeesData } = await supabase
-            .from('event_attendees')
-            .select(`
-              id,
-              status,
-              user_id,
-              profiles:user_id (
-                display_name,
-                avatar_url
-              )
-            `)
-            .eq('event_id', id);
-
-          setEvent({ ...eventData, event_attendees: attendeesData || [] });
-        } catch (error) {
-          console.error('Error refreshing event:', error);
-        }
-      }
+      toast({ title: "Attendance updated", description: `You're now marked as ${status.replace('_', ' ')} for this event` });
+      await fetchEventData();
     } catch (error) {
       console.error('Error updating attendance:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update attendance",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update attendance", variant: "destructive" });
     }
   };
 
   const handleExportToCalendar = async () => {
     if (!event) return;
-
     try {
-      const { data, error } = await supabase.functions.invoke('calendar-export', {
-        body: { eventId: event.id }
-      });
-
+      const { data, error } = await supabase.functions.invoke('calendar-export', { body: { eventId: event.id } });
       if (error) throw error;
-
       const blob = new Blob([data], { type: 'text/calendar' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -207,35 +133,41 @@ export default function EventDetail() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-
-      toast({
-        title: "Calendar export successful",
-        description: "Event has been exported to your calendar",
-      });
+      toast({ title: "Calendar export successful", description: "Event has been exported to your calendar" });
     } catch (error) {
       console.error('Error exporting calendar:', error);
-      toast({
-        title: "Export failed",
-        description: "Failed to export event to calendar",
-        variant: "destructive",
-      });
+      toast({ title: "Export failed", description: "Failed to export event to calendar", variant: "destructive" });
+    }
+  };
+
+  const handleShare = async () => {
+    if (!event) return;
+    const shareUrl = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: event.title, url: shareUrl });
+      } catch { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({ title: "Link copied", description: "Event link copied to clipboard" });
     }
   };
 
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-          <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%', mb: 3 }} />
+        <Box sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+          <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: '40%', mb: 2 }} />
+          <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 3, mb: 3 }} />
+          <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '60%', mb: 2 }} />
+          <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+            {[1, 2, 3, 4].map(i => (
+              <Box key={i} sx={{ height: 32, width: 80, bgcolor: 'action.hover', borderRadius: 4 }} />
+            ))}
+          </Box>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }} />
-              <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Box sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }} />
-              <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
-            </Box>
+            <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 2 }} />
+            <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 2 }} />
           </Box>
         </Box>
       </Container>
@@ -260,23 +192,11 @@ export default function EventDetail() {
   const attendeesGoing = event.event_attendees?.filter(a => a.status === 'going') || [];
   const attendeesInterested = event.event_attendees?.filter(a => a.status === 'interested') || [];
 
-  const getEventTypeSx = (type: string) => {
-    const colors: Record<string, object> = {
-      party: { bgcolor: 'rgba(var(--primary-rgb), 0.1)', color: 'primary.main' },
-      workshop: { bgcolor: 'rgba(var(--accent-rgb), 0.1)', color: 'secondary.main' },
-      meetup: { bgcolor: 'rgba(var(--secondary-rgb), 0.1)', color: 'text.secondary' },
-      pride: { bgcolor: 'primary.main', color: 'primary.contrastText' },
-      rally: { bgcolor: 'rgba(var(--destructive-rgb), 0.1)', color: 'error.main' },
-    };
-    return colors[type] || { bgcolor: 'action.hover', color: 'text.secondary' };
-  };
-
   const formatEventDate = (startDate: string, endDate?: string | null) => {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : null;
-
     if (end && format(start, 'yyyy-MM-dd') !== format(end, 'yyyy-MM-dd')) {
-      return `${format(start, 'EEEE, MMMM d')} - ${format(end, 'EEEE, MMMM d, yyyy')}`;
+      return `${format(start, 'EEE, MMM d')} - ${format(end, 'EEE, MMM d, yyyy')}`;
     }
     return format(start, 'EEEE, MMMM d, yyyy');
   };
@@ -284,137 +204,227 @@ export default function EventDetail() {
   const getPriceDisplay = () => {
     if (event.is_free) return 'Free';
     if (event.price_min && event.price_max) {
-      if (event.price_min === event.price_max) {
-        return `$${event.price_min}`;
-      }
-      return `$${event.price_min} - $${event.price_max}`;
+      return event.price_min === event.price_max ? `$${event.price_min}` : `$${event.price_min} - $${event.price_max}`;
     }
     if (event.price_min) return `From $${event.price_min}`;
     return 'Price TBA';
   };
 
+  const heroImage = event.images && event.images.length > 0 ? event.images[0] : null;
+  const cityName = event.cities?.name || event.city;
+  const countryName = event.countries?.name || event.country;
+  const cityLink = event.cities?.id ? `/city/${event.cities.id}` : null;
+  const countryLink = event.countries?.id ? `/country/${event.countries.id}` : null;
+  const locationLabel = event.venues?.name || event.venue_name || 'Location TBA';
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Link to="/events" style={{ display: 'inline-flex', alignItems: 'center', color: 'inherit', textDecoration: 'none', marginBottom: 24 }}>
-          <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
-          <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>Back to Events</Typography>
+      {/* Breadcrumb */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
+        <Link to="/events" style={{ display: 'inline-flex', alignItems: 'center', color: 'inherit', textDecoration: 'none' }}>
+          <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>Events</Typography>
         </Link>
-
-        {/* Hero Section */}
-        {event.images && event.images.length > 0 && (
-          <Box sx={{ position: 'relative', mb: 4 }}>
-            <Box sx={{ aspectRatio: '21/9', borderRadius: 4, overflow: 'hidden', background: 'linear-gradient(to right, var(--primary-alpha-20, rgba(0,0,0,0.05)), var(--accent-alpha-20, rgba(0,0,0,0.05)))' }}>
-              <Box
-                component="img"
-                src={event.images[0]}
-                alt={event.title}
-                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
-            </Box>
-          </Box>
-        )}
-
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: { lg: 'flex-start' }, justifyContent: { lg: 'space-between' }, gap: 3 }}>
-          <Box sx={{ flex: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-              <Box>
-                <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>{event.title}</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                  <Badge sx={getEventTypeSx(event.event_type)} variant="secondary">
-                    {event.event_type}
-                  </Badge>
-                  <Badge variant="outline" style={{ fontWeight: 500, borderColor: event.is_free ? 'var(--success)' : 'var(--primary)', color: event.is_free ? 'var(--success)' : 'var(--primary)' }}>
-                    {getPriceDisplay()}
-                  </Badge>
-                  {event.featured && (
-                    <Badge style={{ background: 'linear-gradient(to right, var(--primary), var(--accent))', color: 'var(--primary-foreground)' }}>Featured</Badge>
-                  )}
-                  {event.age_restriction && (
-                    <Badge variant="outline">
-                      {event.age_restriction}
-                    </Badge>
-                  )}
-                </Box>
-              </Box>
-            </Box>
-
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, bgcolor: 'action.hover' }}>
-                <Calendar style={{ width: 20, height: 20, color: 'var(--primary)' }} />
-                <Box>
-                  <Typography variant="body2" color="text.secondary">Date</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>{formatEventDate(event.start_date, event.end_date)}</Typography>
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, bgcolor: 'action.hover' }}>
-                <Clock style={{ width: 20, height: 20, color: 'var(--primary)' }} />
-                <Box>
-                  <Typography variant="body2" color="text.secondary">Time</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>{formatEventTime(event.start_date, event.end_date)}</Typography>
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, bgcolor: 'action.hover' }}>
-                <MapPin style={{ width: 20, height: 20, color: 'var(--primary)' }} />
-                <Box>
-                  <Typography variant="body2" color="text.secondary">Location</Typography>
-                  {event.venues?.id ? (
-                    <Link
-                      to={`/venues/${event.venues.id}`}
-                      style={{ textDecoration: 'none' }}
-                    >
-                      <Typography variant="body2" color="primary" sx={{ fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}>
-                        {event.venues.name}
-                      </Typography>
-                    </Link>
-                  ) : (
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>{event.venue_name || 'Location TBA'}</Typography>
-                  )}
-                  <Typography variant="body2" color="text.secondary">
-                    <Link
-                      to={`/cities/${event.city?.toLowerCase().replace(/\s+/g, '-')}`}
-                      style={{ textDecoration: 'none', color: 'inherit' }}
-                    >
-                      <Typography component="span" variant="body2" color="primary" sx={{ '&:hover': { textDecoration: 'underline' } }}>
-                        {event.city}
-                      </Typography>
-                    </Link>
-                    {event.state && `, ${event.state}`}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: { lg: 200 } }}>
-            {event.ticket_url && (
-              <Button size="lg" style={{ width: '100%' }} asChild>
-                <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
-                  Get Tickets
-                </a>
-              </Button>
+        {countryName && (
+          <>
+            <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+            {countryLink ? (
+              <Link to={countryLink} style={{ textDecoration: 'none' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>{countryName}</Typography>
+              </Link>
+            ) : (
+              <Typography variant="body2" color="text.secondary">{countryName}</Typography>
             )}
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button variant="outline" size="sm" onClick={handleExportToCalendar} style={{ flex: 1 }}>
-                <Download style={{ width: 16, height: 16 }} />
-              </Button>
-              <Button variant="outline" size="sm" style={{ flex: 1 }}>
-                <Share2 style={{ width: 16, height: 16 }} />
-              </Button>
-            </Box>
+          </>
+        )}
+        {cityName && (
+          <>
+            <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+            {cityLink ? (
+              <Link to={cityLink} style={{ textDecoration: 'none' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>{cityName}</Typography>
+              </Link>
+            ) : (
+              <Typography variant="body2" color="text.secondary">{cityName}</Typography>
+            )}
+          </>
+        )}
+        <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>{event.title}</Typography>
+      </Box>
+
+      {/* Compact Hero Image */}
+      {heroImage && (
+        <Box sx={{
+          width: '100%',
+          height: { xs: 160, md: 192 },
+          borderRadius: 3,
+          overflow: 'hidden',
+          mb: 3,
+        }}>
+          <Box
+            component="img"
+            src={heroImage}
+            alt={event.title}
+            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        </Box>
+      )}
+
+      {/* Safety Alert Banner */}
+      {event.countries?.lgbti_criminalization && (
+        <SafetyAlertBanner
+          criminalization={event.countries.lgbti_criminalization}
+          countryName={event.countries.name}
+        />
+      )}
+
+      {/* Title Row */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        alignItems: { md: 'flex-start' },
+        justifyContent: { md: 'space-between' },
+        gap: 2,
+        mb: 2,
+      }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5, flexWrap: 'wrap' }}>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>{event.title}</Typography>
+            {event.featured && (
+              <Badge style={{ backgroundColor: '#333333', color: '#ffffff' }}>Featured</Badge>
+            )}
+            {event.countries?.equality_score != null && (
+              <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
+            )}
           </Box>
+          {event.festivals?.id && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+              <Music style={{ width: 14, height: 14, color: '#9ca3af' }} />
+              <Typography variant="body2" color="text.secondary">
+                Part of{' '}
+                <Typography component="span" variant="body2" sx={{ fontWeight: 600 }}>
+                  {event.festivals.name}
+                </Typography>
+              </Typography>
+            </Box>
+          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+            <MapPin style={{ width: 14, height: 14, color: '#9ca3af', flexShrink: 0 }} />
+            <Typography variant="body2" color="text.secondary">
+              {event.venues?.id ? (
+                <Link to={`/venues/${event.venues.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  <Typography component="span" variant="body2" sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}>{event.venues.name}</Typography>
+                </Link>
+              ) : (event.venue_name || '')}
+              {cityName && (
+                <>
+                  {(event.venues?.name || event.venue_name) ? ', ' : ''}
+                  {cityLink ? (
+                    <Link to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
+                      <Typography component="span" variant="body2" sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}>{cityName}</Typography>
+                    </Link>
+                  ) : cityName}
+                </>
+              )}
+              {countryName && (
+                <>
+                  {', '}
+                  {countryLink ? (
+                    <Link to={countryLink} style={{ color: 'inherit', textDecoration: 'none' }}>
+                      <Typography component="span" variant="body2" sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}>{countryName}</Typography>
+                    </Link>
+                  ) : countryName}
+                </>
+              )}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}>
+          <FavoriteButton itemId={event.id} type="event" size="md" />
+          <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
+          <AdminEditButton contentType="events" contentId={event.id} contentName={event.title} currentData={event as Record<string, unknown>} onSaved={() => window.location.reload()} />
+          {event.ticket_url && (
+            <Button size="sm" asChild>
+              <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                Get Tickets
+              </a>
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={handleExportToCalendar}>
+            <Download style={{ width: 16, height: 16, marginRight: 6 }} />
+            Calendar
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleShare}>
+            <Share2 style={{ width: 16, height: 16, marginRight: 6 }} />
+            Share
+          </Button>
         </Box>
       </Box>
 
+      {/* Stat Chips */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+        <Chip
+          icon={<Calendar style={{ width: 14, height: 14 }} />}
+          label={formatEventDate(event.start_date, event.end_date)}
+          size="small"
+          variant="outlined"
+        />
+        <Chip
+          icon={<Clock style={{ width: 14, height: 14 }} />}
+          label={formatEventTime(event.start_date, event.end_date, showEventTz ? event.timezone : null)}
+          size="small"
+          variant="outlined"
+          onClick={event.timezone ? () => setShowEventTz(prev => !prev) : undefined}
+          sx={event.timezone ? { cursor: 'pointer' } : undefined}
+          title={event.timezone ? `Click to toggle between event timezone and your local time` : undefined}
+        />
+        <Chip
+          icon={<MapPin style={{ width: 14, height: 14 }} />}
+          label={locationLabel}
+          size="small"
+          variant="outlined"
+        />
+        <Chip
+          icon={<DollarSign style={{ width: 14, height: 14 }} />}
+          label={getPriceDisplay()}
+          size="small"
+          variant="outlined"
+        />
+        {event.event_type && (
+          <Chip
+            icon={<Tag style={{ width: 14, height: 14 }} />}
+            label={event.event_type}
+            size="small"
+            sx={{ textTransform: 'capitalize' }}
+          />
+        )}
+        {event.age_restriction && (
+          <Chip label={event.age_restriction} size="small" variant="outlined" />
+        )}
+      </Box>
+
+      {/* 2-Column Layout */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
         {/* Main Content */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {/* Description */}
+          {event.description && (
+            <Card>
+              <CardHeader>
+                <CardTitle>About This Event</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{event.description}</Typography>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Attendance Actions */}
           {user && (
             <Card>
@@ -441,92 +451,8 @@ export default function EventDetail() {
             </Card>
           )}
 
-          {/* Event Images */}
-          {event.images && event.images.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Event Photos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                  {event.images.map((imageUrl, index) => (
-                    <Box key={index} sx={{ aspectRatio: '16/9', borderRadius: 2, overflow: 'hidden', bgcolor: 'action.hover' }}>
-                      <Box
-                        component="img"
-                        src={imageUrl}
-                        alt={`${event.title} - Image ${index + 1}`}
-                        sx={{ width: '100%', height: '100%', objectFit: 'cover', '&:hover': { transform: 'scale(1.05)' }, transition: 'transform 300ms', cursor: 'pointer' }}
-                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder.svg';
-                        }}
-                        onClick={() => {
-                          window.open(imageUrl, '_blank');
-                        }}
-                      />
-                    </Box>
-                  ))}
-                </Box>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Description */}
-          {event.description && (
-            <Card>
-              <CardHeader>
-                <CardTitle>About This Event</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>{event.description}</Typography>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Venue Information */}
-          {event.venues && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Venue</CardTitle>
-              </CardHeader>
-              <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <Box>
-                  <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>{event.venues.name}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                    {event.venues.address}<br />
-                    {event.venues.city}, {event.venues.state} {event.venues.country}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ display: 'flex', gap: 1.5 }}>
-                  {event.venues.phone && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={`tel:${event.venues.phone}`}>
-                        <Phone style={{ width: 16, height: 16, marginRight: 8 }} />
-                        Call
-                      </a>
-                    </Button>
-                  )}
-                  {event.venues.website && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={event.venues.website} target="_blank" rel="noopener noreferrer">
-                        <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
-                        Website
-                      </a>
-                    </Button>
-                  )}
-                  <Link to={`/venues/${event.venues.id}`}>
-                    <Button variant="outline" size="sm">
-                      View Venue Details
-                    </Button>
-                  </Link>
-                </Box>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Attendees */}
-          {user && (
+          {user && (attendeesGoing.length > 0 || attendeesInterested.length > 0) && (
             <Card>
               <CardHeader>
                 <CardTitle>
@@ -535,7 +461,7 @@ export default function EventDetail() {
               </CardHeader>
               <CardContent>
                 {attendeesGoing.length > 0 && (
-                  <Box sx={{ mb: 2 }}>
+                  <Box sx={{ mb: attendeesInterested.length > 0 ? 2 : 0 }}>
                     <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Going</Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {attendeesGoing.slice(0, 12).map((attendee) => (
@@ -547,14 +473,11 @@ export default function EventDetail() {
                         </Box>
                       ))}
                       {attendeesGoing.length > 12 && (
-                        <Typography variant="caption" color="text.secondary" sx={{ px: 1.5, py: 0.5 }}>
-                          +{attendeesGoing.length - 12} more
-                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ px: 1.5, py: 0.5 }}>+{attendeesGoing.length - 12} more</Typography>
                       )}
                     </Box>
                   </Box>
                 )}
-
                 {attendeesInterested.length > 0 && (
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Interested</Typography>
@@ -568,16 +491,10 @@ export default function EventDetail() {
                         </Box>
                       ))}
                       {attendeesInterested.length > 8 && (
-                        <Typography variant="caption" color="text.secondary" sx={{ px: 1.5, py: 0.5 }}>
-                          +{attendeesInterested.length - 8} more
-                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ px: 1.5, py: 0.5 }}>+{attendeesInterested.length - 8} more</Typography>
                       )}
                     </Box>
                   </Box>
-                )}
-
-                {attendeesGoing.length === 0 && attendeesInterested.length === 0 && (
-                  <Typography color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>No attendees yet. Be the first!</Typography>
                 )}
               </CardContent>
             </Card>
@@ -591,21 +508,27 @@ export default function EventDetail() {
             <CardHeader>
               <CardTitle>Event Details</CardTitle>
             </CardHeader>
-            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <DollarSign style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                <Calendar style={{ width: 16, height: 16, color: '#999999' }} />
+                <Typography variant="body2">{formatEventDate(event.start_date, event.end_date)}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Clock style={{ width: 16, height: 16, color: '#999999' }} />
+                <Typography variant="body2">{formatEventTime(event.start_date, event.end_date)}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <DollarSign style={{ width: 16, height: 16, color: '#999999' }} />
                 <Typography variant="body2" sx={{ fontWeight: 500 }}>{getPriceDisplay()}</Typography>
               </Box>
-
               {event.max_attendees && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Users style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+                  <Users style={{ width: 16, height: 16, color: '#999999' }} />
                   <Typography variant="body2">Max {event.max_attendees} attendees</Typography>
                 </Box>
               )}
-
               {event.organizer_name && (
-                <Box>
+                <Box sx={{ mt: 1, pt: 1.5, borderTop: 1, borderColor: 'divider' }}>
                   <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Organizer</Typography>
                   <Box
                     component="button"
@@ -615,7 +538,7 @@ export default function EventDetail() {
                     {event.organizer_name}
                   </Box>
                   {event.organizer_contact && (
-                    <Typography variant="caption" color="text.secondary">{event.organizer_contact}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>{event.organizer_contact}</Typography>
                   )}
                 </Box>
               )}
@@ -623,30 +546,60 @@ export default function EventDetail() {
           </Card>
 
           {/* Links */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Links</CardTitle>
-            </CardHeader>
-            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {event.website && (
-                <Button variant="outline" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} asChild>
-                  <a href={event.website} target="_blank" rel="noopener noreferrer">
-                    <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
-                    Event Website
-                  </a>
-                </Button>
-              )}
+          {(event.website || event.ticket_url) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Links</CardTitle>
+              </CardHeader>
+              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {event.website && (
+                  <Button variant="outline" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} asChild>
+                    <a href={event.website} target="_blank" rel="noopener noreferrer">
+                      <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
+                      Event Website
+                    </a>
+                  </Button>
+                )}
+                {event.ticket_url && (
+                  <Button variant="outline" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} asChild>
+                    <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                      Get Tickets
+                    </a>
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-              {event.ticket_url && (
-                <Button variant="outline" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} asChild>
-                  <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
-                    Get Tickets
-                  </a>
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          {/* Venue Card */}
+          {event.venues && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Venue</CardTitle>
+              </CardHeader>
+              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>{event.venues.name}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {event.venues.address}<br />
+                  {event.venues.city}{event.venues.state ? `, ${event.venues.state}` : ''} {event.venues.country}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                  {event.venues.phone && (
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={`tel:${event.venues.phone}`}>
+                        <Phone style={{ width: 14, height: 14, marginRight: 6 }} />
+                        Call
+                      </a>
+                    </Button>
+                  )}
+                  <Link to={`/venues/${event.venues.id}`}>
+                    <Button variant="outline" size="sm">View Venue</Button>
+                  </Link>
+                </Box>
+              </CardContent>
+            </Card>
+          )}
         </Box>
       </Box>
     </Container>

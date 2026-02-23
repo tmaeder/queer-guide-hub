@@ -5,17 +5,20 @@ import { useMeta } from '@/hooks/useMeta';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Store, Plus, Loader, Heart, Grid, List, Grid3X3 } from 'lucide-react';
+import { Store, Plus, Grid, List } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { EmptyState, ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 const Marketplace = () => {
@@ -23,6 +26,7 @@ const Marketplace = () => {
   const {
     listings,
     loading,
+    loadingTimedOut,
     error,
     fetchListings,
     toggleFavorite,
@@ -129,110 +133,95 @@ const Marketplace = () => {
   }];
   if (error) {
     return <Box sx={{ minHeight: '100vh' }}>
-        <Box sx={{ width: '100%', px: 2, py: 4 }}>
-          <Card sx={{ p: 4, textAlign: 'center' }}>
-            <CardContent>
-              <Typography color="error" sx={{ mb: 2 }}>Something went wrong while loading the marketplace. Please try again.</Typography>
-              <Button onClick={() => fetchListings()}>Try Again</Button>
-            </CardContent>
-          </Card>
-        </Box>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <ErrorState
+            message="Something went wrong while loading the marketplace. Please try again."
+            onRetry={() => fetchListings()}
+          />
+        </Container>
       </Box>;
   }
   return <Box sx={{ minHeight: '100vh' }}>
-      <Box sx={{ width: '100%', px: 2, py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
-        <Card sx={{ mb: 4 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box>
-                <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-                  Marketplace
-                </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
-                  Discover and support local businesses offering products and services
-                </Typography>
-              </Box>
-              <Button
-                style={{ display: 'flex', gap: 8 }}
-                onClick={() => {
-                  if (!user) {
-                    toast({ title: 'Sign in required', description: 'Create a free account to list your business.', variant: 'default' });
-                    navigate('/auth');
-                    return;
-                  }
-                  navigate('/marketplace/submit');
-                }}
-              >
-                <Plus style={{ width: 16, height: 16 }} aria-hidden="true" />
-                List Your Business
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
+        <PageHeader
+          title="Marketplace"
+          subtitle="Discover and support local businesses offering products and services"
+          actions={
+            <Button
+              style={{ display: 'flex', gap: 8 }}
+              onClick={() => {
+                if (!user) {
+                  toast({ title: 'Sign in required', description: 'Create a free account to list your business.', variant: 'default' });
+                  navigate('/auth');
+                  return;
+                }
+                navigate('/marketplace/submit');
+              }}
+            >
+              <Plus style={{ width: 16, height: 16 }} aria-hidden="true" />
+              List Your Business
+            </Button>
+          }
+        />
 
-        {/* Filters */}
-        <Box sx={{ mb: 4 }}>
-          <MarketplaceFilters onFiltersChange={handleFiltersChange} />
-        </Box>
-
-        {/* Category Tabs & View Toggle */}
+        {/* Filters & Category Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} style={{ marginBottom: 24 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <TabsList style={{ display: 'grid', width: '100%', maxWidth: '28rem', gridTemplateColumns: '1fr 1fr 1fr' }}>
-              {categories.map(category => <TabsTrigger key={category.id} value={category.id} style={{ fontSize: '0.75rem' }}>
-                  {category.label}
-                  <span style={{ marginLeft: 4, fontSize: '0.75rem', opacity: 0.6 }}>({category.count})</span>
-                </TabsTrigger>)}
-            </TabsList>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger style={{ width: 160 }} aria-label="Sort listings">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sortOptions.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
-                <Grid style={{ width: 16, height: 16 }} />
-              </Button>
-              <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view">
-                <List style={{ width: 16, height: 16 }} />
-              </Button>
+          <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
+            {/* Filters */}
+            <Box sx={{ mb: 2 }}>
+              <MarketplaceFilters onFiltersChange={handleFiltersChange} />
             </Box>
-          </Box>
+
+            {/* Category Tabs & View Toggle */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <TabsList style={{ display: 'grid', width: '100%', maxWidth: '28rem', gridTemplateColumns: '1fr 1fr 1fr' }}>
+                {categories.map(category => <TabsTrigger key={category.id} value={category.id} style={{ fontSize: '0.75rem' }}>
+                    {category.label}
+                    <span style={{ marginLeft: 4, fontSize: '0.75rem', color: '#999999' }}>({category.count})</span>
+                  </TabsTrigger>)}
+              </TabsList>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger style={{ width: 160 }} aria-label="Sort listings">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
+                  <Grid style={{ width: 16, height: 16 }} />
+                </Button>
+                <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view">
+                  <List style={{ width: 16, height: 16 }} />
+                </Button>
+              </Box>
+            </Box>
+          </Paper>
 
           {/* Loading State */}
-          {loading && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
-              <Loader style={{ width: 32, height: 32, color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />
-              <Typography color="text.secondary" sx={{ ml: 1 }}>Loading marketplace...</Typography>
-            </Box>}
+          {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchListings()} />}
+          {loading && !loadingTimedOut && <PageLoadingState count={6} />}
 
           {/* Empty State */}
-          {!loading && sortedListings.length === 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
-              <CardContent>
-                <Store style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No listings found</Typography>
-                <Typography color="text.secondary" sx={{ mb: 2 }}>
-                  We couldn't find any listings matching your criteria. Try adjusting your filters or be the first to add your business!
-                </Typography>
-                <Button onClick={() => {
-                  if (!user) {
-                    toast({ title: 'Sign in required', description: 'Create a free account to list your business.', variant: 'default' });
-                    navigate('/auth');
-                    return;
-                  }
-                  navigate('/marketplace/submit');
-                }}>
-                  <Plus style={{ width: 16, height: 16, marginRight: 8 }} aria-hidden="true" />
-                  List Your Business
-                </Button>
-              </CardContent>
-            </Card>}
+          {!loading && sortedListings.length === 0 && <EmptyState
+              icon={Store}
+              title="No listings found"
+              description="We couldn't find any listings matching your criteria. Try adjusting your filters or be the first to add your business!"
+              primaryAction={{ label: 'List Your Business', onClick: () => {
+                if (!user) {
+                  toast({ title: 'Sign in required', description: 'Create a free account to list your business.', variant: 'default' });
+                  navigate('/auth');
+                  return;
+                }
+                navigate('/marketplace/submit');
+              }}}
+              secondaryAction={{ label: 'Clear Filters', onClick: () => handleFiltersChange({}) }}
+            />}
 
           {/* Tab Contents */}
           {categories.map(category => <TabsContent key={category.id} value={category.id}>
@@ -261,22 +250,16 @@ const Marketplace = () => {
                 </>}
 
               {/* Category-specific empty state */}
-              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length === 0 && sortedListings.length > 0 && <Card sx={{ p: 4, textAlign: 'center' }}>
-                  <CardContent>
-                    <Store style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No {category.label.toLowerCase()} found</Typography>
-                    <Typography color="text.secondary" sx={{ mb: 2 }}>
-                      There are no {category.label.toLowerCase()} matching your current filters.
-                    </Typography>
-                    <Button variant="outline" onClick={() => handleFiltersChange({})}>
-                      Clear Filters
-                    </Button>
-                  </CardContent>
-                </Card>}
+              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length === 0 && sortedListings.length > 0 && <EmptyState
+                  icon={Store}
+                  title={`No ${category.label.toLowerCase()} found`}
+                  description={`There are no ${category.label.toLowerCase()} matching your current filters.`}
+                  primaryAction={{ label: 'Clear Filters', onClick: () => handleFiltersChange({}), variant: 'outline' }}
+                />}
             </TabsContent>)}
         </Tabs>
 
-      </Box>
+      </Container>
     </Box>;
 };
 export default Marketplace;

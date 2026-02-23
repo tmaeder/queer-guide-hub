@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
+import Paper from "@mui/material/Paper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +22,8 @@ import { UserModeBadge } from "@/components/profile/UserModeBadge";
 import { Tables } from "@/integrations/supabase/types";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { PageLoadingState } from "@/components/layout/PageLoadingState";
 import useScreenSize from "@/hooks/use-screen-size";
-import Gravity, { MatterBody } from "@/fancy/components/physics/cursor-attractor-and-gravity";
 
 type Profile = { user_id: string; display_name?: string | null; avatar_url?: string | null; pronouns?: string | null; age_range?: string | null; verified_identity?: boolean | null; user_mode?: string | null; is_business?: boolean | null; bio?: string | null; location?: string | null; occupation?: string | null; education?: string | null; created_at?: string | null; last_active_at?: string | null; relationship_status?: string | null; has_children?: boolean | null; has_pets?: boolean | null; gender_identity?: string | null; website?: string | null; interests?: string[] | null; };
 
@@ -303,54 +305,30 @@ const UserDirectory = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <Box sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
         {/* Hero Section */}
-        <Card>
-          <CardContent style={{ padding: 32, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ position: 'relative', height: 80 }}>
-                <Gravity
-                  attractorPoint={{ x: "50%", y: "50%" }}
-                  attractorStrength={0.0008}
-                  cursorStrength={-0.006}
-                  cursorFieldRadius={screenSize.lessThan("sm") ? 100 : 200}
-                  style={{ width: '100%', height: '100%' }}
-                >
-                  <MatterBody x="50%" y="50%">
-                    <Typography variant="h3" sx={{ fontWeight: 700, color: 'text.primary', fontSize: { xs: '2.25rem', md: '3rem' } }}>
-                      Community Directory
-                    </Typography>
-                  </MatterBody>
-                </Gravity>
-              </Box>
-              <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary', maxWidth: '48rem', mx: 'auto', lineHeight: 1.75 }}>
-                Discover amazing people, build meaningful connections, and grow your network within our
-                inclusive LGBTQ+ community.
-              </Typography>
+        <Paper variant="outlined" sx={{ p: { xs: 3, md: 4 }, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2, bgcolor: 'background.paper' }}>
+          <Typography variant="h3" sx={{ fontWeight: 700, color: 'text.primary', fontSize: { xs: '2rem', md: '2.5rem' } }}>
+            Members
+          </Typography>
+          <Typography sx={{ fontSize: '1.05rem', color: 'text.secondary', maxWidth: '40rem', mx: 'auto', lineHeight: 1.6 }}>
+            Discover amazing people, build meaningful connections, and grow your network within our inclusive LGBTQ+ community.
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 1.5, fontSize: '0.875rem' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, px: 1.5, py: 0.75, bgcolor: 'action.hover', borderRadius: '9999px' }}>
+              <Users style={{ height: 14, width: 14 }} />
+              <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>{profiles?.length || 0} Members</Typography>
             </Box>
-
-            {/* Stats */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 3, fontSize: '0.875rem' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: 'rgba(var(--primary-rgb, 34, 34, 34), 0.1)', borderRadius: '9999px' }}>
-                <Users style={{ height: 16, width: 16, color: '#333333' }} />
-                <Typography component="span" sx={{ fontWeight: 500 }}>{profiles?.length || 0} Members</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: 'rgba(59, 130, 246, 0.1)', borderRadius: '9999px' }}>
-                <Sparkles style={{ height: 16, width: 16, color: '#2563eb' }} />
-                <Typography component="span" sx={{ fontWeight: 500 }}>Active Community</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: 'rgba(34, 197, 94, 0.1)', borderRadius: '9999px' }}>
-                <TrendingUp style={{ height: 16, width: 16, color: '#16a34a' }} />
-                <Typography component="span" sx={{ fontWeight: 500 }}>Growing Daily</Typography>
-              </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, px: 1.5, py: 0.75, bgcolor: 'action.hover', borderRadius: '9999px' }}>
+              <Sparkles style={{ height: 14, width: 14, color: '#2563eb' }} />
+              <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>Active Community</Typography>
             </Box>
-          </CardContent>
-        </Card>
+          </Box>
+        </Paper>
 
         {/* Privacy notice for logged-out users */}
         {!user && (
-          <Card sx={{ mb: 4, bgcolor: '#f5f5f5' }}>
+          <Card sx={{ mb: 4, bgcolor: 'action.hover' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
               <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
                 Community Directory
@@ -366,8 +344,8 @@ const UserDirectory = () => {
         )}
 
         {/* Search and Filter Section */}
-        <Card style={{ background: 'linear-gradient(to right, var(--card), rgba(var(--card-rgb), 0.9))', border: '2px solid', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
-          <CardContent style={{ padding: 24 }}>
+        <Paper variant="outlined" sx={{ bgcolor: 'background.paper' }}>
+          <CardContent style={{ padding: 20 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
                 <Box sx={{ position: 'relative', flex: 1 }}>
@@ -385,7 +363,7 @@ const UserDirectory = () => {
                     onClick={handleNearMeToggle}
                     disabled={isDetectingLocation}
                     size="icon"
-                    style={nearMe ? { background: 'linear-gradient(135deg, #333333, #555555)', height: 48, width: 48 } : { height: 48, width: 48 }}
+                    style={nearMe ? { backgroundColor: '#333333', color: '#ffffff', height: 48, width: 48 } : { height: 48, width: 48 }}
                   >
                     {isDetectingLocation ? (
                       <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
@@ -401,7 +379,7 @@ const UserDirectory = () => {
                   >
                     <Filter style={{ height: 16, width: 16 }} />
                     {activeFiltersCount > 0 && (
-                      <Badge variant="secondary" style={{ position: 'absolute', top: -8, right: -8, height: 20, width: 20, padding: 0, fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
+                      <Badge variant="secondary" style={{ position: 'absolute', top: -8, right: -8, height: 20, width: 20, padding: 0, fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#333333', color: '#ffffff' }}>
                         {activeFiltersCount}
                       </Badge>
                     )}
@@ -412,12 +390,12 @@ const UserDirectory = () => {
               {/* Advanced Filters */}
               {showFilters && user && (
                 <Box>
-                  <Card style={{ backgroundColor: 'rgba(var(--background-rgb), 0.8)', backdropFilter: 'blur(8px)', border: '2px dashed', borderColor: 'var(--border)' }}>
+                  <Card style={{}}>
                     <CardContent style={{ padding: 24 }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Star style={{ height: 20, width: 20, color: '#333333' }} />
+                            <Star style={{ height: 20, width: 20 }} />
                             <Typography variant="h6" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Advanced Filters</Typography>
                           </Box>
                           {activeFiltersCount > 0 && (
@@ -432,28 +410,28 @@ const UserDirectory = () => {
                           {/* Location Filter */}
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <MapPin style={{ height: 16, width: 16, color: '#333333' }} />
+                              <MapPin style={{ height: 16, width: 16 }} />
                               Location
                             </Label>
                             <Input
                               placeholder="Enter city or region"
                               value={filters.location}
                               onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
-                              style={{ border: '2px solid' }}
+                              style={{}}
                             />
                           </Box>
 
                           {/* Age Range Filter */}
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <Calendar style={{ height: 16, width: 16, color: '#333333' }} />
+                              <Calendar style={{ height: 16, width: 16 }} />
                               Age Range
                             </Label>
                             <Select value={filters.ageRange} onValueChange={(value) => setFilters(prev => ({ ...prev, ageRange: value }))}>
-                              <SelectTrigger style={{ border: '2px solid' }}>
+                              <SelectTrigger style={{}}>
                                 <SelectValue placeholder="Select age range" />
                               </SelectTrigger>
-                              <SelectContent style={{ backgroundColor: 'var(--background)', backdropFilter: 'blur(8px)', border: '2px solid' }}>
+                              <SelectContent style={{}}>
                                 <SelectItem value="all">All ages</SelectItem>
                                 {ageRanges.map((range) => (
                                   <SelectItem key={range} value={range}>{range}</SelectItem>
@@ -465,14 +443,14 @@ const UserDirectory = () => {
                           {/* Relationship Status */}
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <Heart style={{ height: 16, width: 16, color: '#333333' }} />
+                              <Heart style={{ height: 16, width: 16 }} />
                               Relationship Status
                             </Label>
                             <Select value={filters.relationshipStatus} onValueChange={(value) => setFilters(prev => ({ ...prev, relationshipStatus: value }))}>
-                              <SelectTrigger style={{ border: '2px solid' }}>
+                              <SelectTrigger style={{}}>
                                 <SelectValue placeholder="Select status" />
                               </SelectTrigger>
-                              <SelectContent style={{ backgroundColor: 'var(--background)', backdropFilter: 'blur(8px)', border: '2px solid' }}>
+                              <SelectContent style={{}}>
                                 <SelectItem value="all">Any status</SelectItem>
                                 {relationshipStatuses.map((status) => (
                                   <SelectItem key={status} value={status}>{status}</SelectItem>
@@ -484,28 +462,28 @@ const UserDirectory = () => {
                           {/* Occupation */}
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <Briefcase style={{ height: 16, width: 16, color: '#333333' }} />
+                              <Briefcase style={{ height: 16, width: 16 }} />
                               Occupation
                             </Label>
                             <Input
                               placeholder="Enter occupation"
                               value={filters.occupation}
                               onChange={(e) => setFilters(prev => ({ ...prev, occupation: e.target.value }))}
-                              style={{ border: '2px solid' }}
+                              style={{}}
                             />
                           </Box>
 
                           {/* Education */}
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <GraduationCap style={{ height: 16, width: 16, color: '#333333' }} />
+                              <GraduationCap style={{ height: 16, width: 16 }} />
                               Education
                             </Label>
                             <Select value={filters.education} onValueChange={(value) => setFilters(prev => ({ ...prev, education: value }))}>
-                              <SelectTrigger style={{ border: '2px solid' }}>
+                              <SelectTrigger style={{}}>
                                 <SelectValue placeholder="Select education" />
                               </SelectTrigger>
-                              <SelectContent style={{ backgroundColor: 'var(--background)', backdropFilter: 'blur(8px)', border: '2px solid' }}>
+                              <SelectContent style={{}}>
                                 <SelectItem value="all">Any education</SelectItem>
                                 {educationLevels.map((level) => (
                                   <SelectItem key={level} value={level}>{level}</SelectItem>
@@ -517,14 +495,14 @@ const UserDirectory = () => {
                           {/* Gender Identity */}
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <Users style={{ height: 16, width: 16, color: '#333333' }} />
+                              <Users style={{ height: 16, width: 16 }} />
                               Gender Identity
                             </Label>
                             <Select value={filters.genderIdentity} onValueChange={(value) => setFilters(prev => ({ ...prev, genderIdentity: value }))}>
-                              <SelectTrigger style={{ border: '2px solid' }}>
+                              <SelectTrigger style={{}}>
                                 <SelectValue placeholder="Select gender" />
                               </SelectTrigger>
-                              <SelectContent style={{ backgroundColor: 'var(--background)', backdropFilter: 'blur(8px)', border: '2px solid' }}>
+                              <SelectContent style={{}}>
                                 <SelectItem value="all">Any gender</SelectItem>
                                 {genderIdentities.map((gender) => (
                                   <SelectItem key={gender} value={gender}>{gender}</SelectItem>
@@ -537,7 +515,7 @@ const UserDirectory = () => {
                         {/* Interests Filter */}
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                           <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Sparkles style={{ height: 16, width: 16, color: '#333333' }} />
+                            <Sparkles style={{ height: 16, width: 16 }} />
                             Interests
                           </Label>
                           <Popover open={interestsOpen} onOpenChange={setInterestsOpen}>
@@ -551,10 +529,10 @@ const UserDirectory = () => {
                                 {filters.interests.length > 0
                                   ? `${filters.interests.length} interest${filters.interests.length !== 1 ? 's' : ''} selected`
                                   : "Select interests..."}
-                                <ChevronDown style={{ marginLeft: 8, height: 16, width: 16, flexShrink: 0, opacity: 0.5 }} />
+                                <ChevronDown style={{ marginLeft: 8, height: 16, width: 16, flexShrink: 0, color: '#999999' }} />
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent style={{ width: '100%', padding: 0, backgroundColor: 'var(--background)', backdropFilter: 'blur(8px)', border: '2px solid' }}>
+                            <PopoverContent style={{ width: '100%', padding: 0, border: '2px solid' }}>
                               <Command>
                                 <CommandInput placeholder="Search interests..." />
                                 <CommandList>
@@ -571,7 +549,7 @@ const UserDirectory = () => {
                                             marginRight: 8,
                                             height: 16,
                                             width: 16,
-                                            opacity: filters.interests.includes(interest) ? 1 : 0,
+                                            visibility: filters.interests.includes(interest) ? 'visible' : 'hidden',
                                           }}
                                         />
                                         {interest}
@@ -585,7 +563,7 @@ const UserDirectory = () => {
                           {filters.interests.length > 0 && (
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
                               {filters.interests.map((interest) => (
-                                <Badge key={interest} variant="secondary" style={{ gap: 4, backgroundColor: 'rgba(var(--primary-rgb, 34, 34, 34), 0.1)', color: '#333333', borderColor: 'rgba(var(--primary-rgb, 34, 34, 34), 0.2)' }}>
+                                <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
                                   <Sparkles style={{ height: 12, width: 12 }} />
                                   {interest}
                                   <X
@@ -637,14 +615,14 @@ const UserDirectory = () => {
                         {/* Sort Options */}
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                           <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <TrendingUp style={{ height: 16, width: 16, color: '#333333' }} />
+                            <TrendingUp style={{ height: 16, width: 16 }} />
                             Sort By
                           </Label>
                           <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value as any }))}>
                             <SelectTrigger style={{ width: 200, border: '2px solid' }}>
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent style={{ backgroundColor: 'var(--background)', backdropFilter: 'blur(8px)', border: '2px solid' }}>
+                            <SelectContent style={{}}>
                               <SelectItem value="newest">Newest members</SelectItem>
                               <SelectItem value="oldest">Oldest members</SelectItem>
                               <SelectItem value="alphabetical">Alphabetical</SelectItem>
@@ -667,7 +645,7 @@ const UserDirectory = () => {
                       Active filters:
                     </Typography>
                     {nearMe && (
-                      <Badge variant="secondary" style={{ gap: 4, backgroundColor: 'rgba(59,130,246,0.1)', color: '#1d4ed8', borderColor: '#bfdbfe' }}>
+                      <Badge variant="secondary" style={{ gap: 4, backgroundColor: '#eff6ff', color: '#1d4ed8', borderColor: '#bfdbfe' }}>
                         <Navigation style={{ height: 12, width: 12 }} />
                         Near Me
                         <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={handleNearMeToggle} />
@@ -688,7 +666,7 @@ const UserDirectory = () => {
                       </Badge>
                     )}
                     {filters.interests.map((interest) => (
-                      <Badge key={interest} variant="secondary" style={{ gap: 4, backgroundColor: 'rgba(var(--primary-rgb, 34, 34, 34), 0.1)', color: '#333333', borderColor: 'rgba(var(--primary-rgb, 34, 34, 34), 0.2)' }}>
+                      <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
                         <Sparkles style={{ height: 12, width: 12 }} />
                         {interest}
                         <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => handleInterestToggle(interest)} />
@@ -699,46 +677,18 @@ const UserDirectory = () => {
               )}
             </Box>
           </CardContent>
-        </Card>
+        </Paper>
 
         {/* Loading State */}
         {isLoading ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2, py: 1, bgcolor: 'rgba(var(--primary-rgb, 34, 34, 34), 0.1)', borderRadius: '9999px' }}>
-                <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite', color: '#333333' }} />
-                <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'primary.main' }}>Finding amazing people...</Typography>
-              </Box>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: '1fr 1fr 1fr' }, gap: 3 }}>
-              {[...Array(6)].map((_, i) => (
-                <Card key={i} style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', border: '2px solid', padding: 24 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <Box sx={{ width: 64, height: 64, bgcolor: 'action.hover', borderRadius: '50%' }} />
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
-                      <Box sx={{ height: 20, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }} />
-                      <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '50%' }} />
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1 }} />
-                    <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '66%' }} />
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: 64 }} />
-                      <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: 80 }} />
-                    </Box>
-                  </Box>
-                </Card>
-              ))}
-            </Box>
-          </Box>
+          <PageLoadingState count={6} />
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Results Header */}
             {profiles && profiles.length > 0 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: 'action.hover', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+              <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: 'action.hover', borderRadius: 2, borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Users style={{ height: 20, width: 20, color: '#333333' }} />
+                  <Users style={{ height: 20, width: 20 }} />
                   <Typography component="span" sx={{ fontWeight: 500 }}>
                     {profiles.length} member{profiles.length !== 1 ? 's' : ''} found
                   </Typography>
@@ -749,7 +699,7 @@ const UserDirectory = () => {
                   )}
                 </Box>
                 <Select value={filters.sortBy} onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value as any }))}>
-                  <SelectTrigger style={{ width: 'auto', border: 0, backgroundColor: 'transparent' }}>
+                  <SelectTrigger style={{ width: 'auto', border: 0 }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -759,7 +709,7 @@ const UserDirectory = () => {
                     <SelectItem value="last_active">Last active</SelectItem>
                   </SelectContent>
                 </Select>
-              </Box>
+              </Paper>
             )}
 
             {/* User Grid */}
@@ -769,15 +719,15 @@ const UserDirectory = () => {
                   <Card style={{ height: '100%', transition: 'all 0.3s', border: '2px solid', padding: 24 }}>
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
                       <Box sx={{ position: 'relative' }}>
-                        <Avatar style={{ height: 64, width: 64, border: '4px solid var(--background)', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+                        <Avatar style={{ height: 64, width: 64 }}>
                           <AvatarImage src={profile.avatar_url || undefined} />
-                          <AvatarFallback style={{ background: 'var(--gradient-primary)', color: 'var(--primary-foreground)', fontSize: '1.125rem', fontWeight: 700 }}>
+                          <AvatarFallback style={{ backgroundColor: '#333333', color: '#ffffff', fontSize: '1.125rem', fontWeight: 700 }}>
                             {profile.display_name?.charAt(0)?.toUpperCase() || "U"}
                           </AvatarFallback>
                         </Avatar>
                         {profile.verified_identity && (
-                          <Box sx={{ position: 'absolute', top: -4, right: -4, width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 3, background: 'var(--gradient-primary)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-                            <Check style={{ height: 12, width: 12, color: 'var(--primary-foreground)' }} />
+                          <Box sx={{ position: 'absolute', top: -4, right: -4, width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 3, bgcolor: '#333333', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+                            <Check style={{ height: 12, width: 12, color: '#ffffff' }} />
                           </Box>
                         )}
                       </Box>
@@ -801,13 +751,13 @@ const UserDirectory = () => {
                             <UserModeBadge mode={(profile as any).user_mode} size="sm" />
                           )}
                           {profile.is_business && (
-                            <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: 'rgba(59,130,246,0.1)', borderColor: '#bfdbfe', color: '#1d4ed8' }}>
+                            <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: '#eff6ff', borderColor: '#bfdbfe', color: '#1d4ed8' }}>
                               <Briefcase style={{ height: 12, width: 12, marginRight: 4 }} />
                               Business
                             </Badge>
                           )}
                           {profile.verified_identity && (
-                            <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: 'rgba(34,197,94,0.1)', borderColor: '#bbf7d0', color: '#15803d' }}>
+                            <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: '#f0fdf4', borderColor: '#bbf7d0', color: '#15803d' }}>
                               <Check style={{ height: 12, width: 12, marginRight: 4 }} />
                               Verified
                             </Badge>
@@ -856,23 +806,23 @@ const UserDirectory = () => {
                     {user && (
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
                       {profile.relationship_status && (
-                        <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: 'rgba(236,72,153,0.1)', borderColor: '#fbcfe8', color: '#be185d' }}>
+                        <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: '#fdf2f8', borderColor: '#fbcfe8', color: '#be185d' }}>
                           <Heart style={{ height: 12, width: 12, marginRight: 4 }} />
                           {profile.relationship_status}
                         </Badge>
                       )}
                       {profile.has_children && (
-                        <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: 'rgba(249,115,22,0.1)', borderColor: '#fed7aa', color: '#c2410c' }}>
+                        <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: '#fff7ed', borderColor: '#fed7aa', color: '#c2410c' }}>
                           Children
                         </Badge>
                       )}
                       {profile.has_pets && (
-                        <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: 'rgba(245,158,11,0.1)', borderColor: '#fde68a', color: '#b45309' }}>
+                        <Badge variant="outline" style={{ fontSize: '0.75rem', backgroundColor: '#fffbeb', borderColor: '#fde68a', color: '#b45309' }}>
                           Pets
                         </Badge>
                       )}
                       {profile.gender_identity && (
-                        <Badge variant="secondary" style={{ fontSize: '0.75rem', backgroundColor: 'rgba(0,0,0,0.06)', borderColor: '#e9d5ff', color: '#333333' }}>
+                        <Badge variant="secondary" style={{ fontSize: '0.75rem', borderColor: '#e9d5ff' }}>
                           {profile.gender_identity}
                         </Badge>
                       )}
@@ -916,12 +866,12 @@ const UserDirectory = () => {
 
         {/* Empty State */}
         {profiles && profiles.length === 0 && (
-          <Card style={{ border: '2px dashed', borderColor: 'var(--border)' }}>
+          <Card style={{}}>
             <CardContent style={{ padding: 48, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 24 }}>
               <Box sx={{ position: 'relative', display: 'inline-block', mx: 'auto' }}>
-                <Users style={{ height: 64, width: 64, color: '#999999', opacity: 0.5 }} />
-                <Box sx={{ position: 'absolute', top: -8, right: -8, width: 32, height: 32, bgcolor: 'rgba(var(--primary-rgb, 34, 34, 34), 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Search style={{ height: 16, width: 16, color: '#333333' }} />
+                <Users style={{ height: 64, width: 64 }} />
+                <Box sx={{ position: 'absolute', top: -8, right: -8, width: 32, height: 32, bgcolor: 'action.hover', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Search style={{ height: 16, width: 16 }} />
                 </Box>
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -941,8 +891,7 @@ const UserDirectory = () => {
             </CardContent>
           </Card>
         )}
-      </Box>
-    </Box>
+    </Container>
   );
 };
 

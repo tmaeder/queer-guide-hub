@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Eye, Clock, MapPin, Tag, Newspaper } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Tables } from "@/integrations/supabase/types";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +44,7 @@ export const NewsCard = ({
   countryNames = {},
   sourcesMap = {},
 }: NewsCardProps) => {
+  const navigate = useNavigate();
   const [tags, setTags] = useState<string[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
 
@@ -145,7 +146,7 @@ export const NewsCard = ({
   const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
 
   return (
-    <Card style={{ boxShadow: 'var(--shadow-card)', transition: 'all 0.3s', borderColor: 'rgba(var(--border-rgb, 0,0,0), 0.5)' }}>
+    <Card style={{ boxShadow: 'var(--shadow-card)', transition: 'all 0.3s', borderColor: 'rgba(var(--border-rgb, 0,0,0), 0.5)', cursor: 'pointer' }} onClick={() => navigate(`/news/${article.id}`)}>
       <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
           {article.image_url ? (
@@ -179,7 +180,10 @@ export const NewsCard = ({
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.125rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 600, fontSize: '1.125rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          >
             {decodeHtmlEntities(article.title)}
           </Typography>
         </Box>
@@ -193,7 +197,7 @@ export const NewsCard = ({
                 textTransform: 'capitalize',
                 cursor: onFilterByCategory ? 'pointer' : 'default',
               }}
-              onClick={() => onFilterByCategory?.(displayCategory)}
+              onClick={(e) => { e.stopPropagation(); onFilterByCategory?.(displayCategory); }}
             >
               {getCategoryLabel(displayCategory)}
             </Badge>
@@ -205,7 +209,7 @@ export const NewsCard = ({
                 color: '#ffffff',
                 cursor: onFilterByCategory ? 'pointer' : 'default',
               }}
-              onClick={() => onFilterByCategory?.(fallbackCategoryFromTag)}
+              onClick={(e) => { e.stopPropagation(); onFilterByCategory?.(fallbackCategoryFromTag); }}
             >
               {fallbackCategoryFromTag}
             </Badge>
@@ -214,7 +218,8 @@ export const NewsCard = ({
           <Badge
             variant="outline"
             style={{ fontSize: '0.75rem', cursor: onFilterBySource ? 'pointer' : 'default' }}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               const src = sourcesMap[article.source_id];
               if (onFilterBySource && src?.id) {
                 onFilterBySource(src.id, src.name);
@@ -278,7 +283,7 @@ export const NewsCard = ({
                   key={tag}
                   variant="outline"
                   style={{ fontSize: '0.7rem', padding: '2px 8px', cursor: onFilterByTag ? 'pointer' : 'default' }}
-                  onClick={() => onFilterByTag?.(tag)}
+                  onClick={(e) => { e.stopPropagation(); onFilterByTag?.(tag); }}
                 >
                   {tag}
                 </Badge>
@@ -294,7 +299,7 @@ export const NewsCard = ({
 
         {/* Location — show linked city/country names */}
         {hasLocation && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted-foreground)' }} onClick={(e) => e.stopPropagation()}>
             <MapPin style={{ height: 14, width: 14, flexShrink: 0 }} />
             {linkedCities.map((city: any, i: number) => (
               <span key={city.id}>
@@ -324,13 +329,13 @@ export const NewsCard = ({
               cursor: onFilterByAuthor ? 'pointer' : 'default',
               '&:hover': onFilterByAuthor ? { color: 'var(--primary)' } : {},
             }}
-            onClick={() => onFilterByAuthor?.(authorName)}
+            onClick={(e) => { e.stopPropagation(); onFilterByAuthor?.(authorName); }}
           >
             By {authorName}
           </Typography>
         )}
 
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }} onClick={(e) => e.stopPropagation()}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <FavoriteButton itemId={article.id} type="news" />
           </Box>

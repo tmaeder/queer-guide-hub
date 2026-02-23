@@ -35,6 +35,8 @@ import { useRedirects, type Redirect, type RedirectFormData, type RedirectType, 
 import { validateSlug, validateTarget, validateSourcePath, detectLoop, mergeQueryParams } from '@/lib/redirects/validation';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
+import { exportToExcel, fetchAllRows, formatDateTime, formatBoolean, generateFilename, type ExportColumnDef } from '@/utils/excelExport';
 
 const SUPABASE_URL = 'https://xqeacpakadqfxjxjcewc.supabase.co';
 
@@ -125,33 +127,20 @@ export default function AdminRedirects() {
     setEventsLoading(false);
   };
 
-  const handleExport = async () => {
-    try {
-      const all = await exportAll();
-      const headers = ['type', 'slug', 'source_path', 'target', 'status_code', 'is_enabled', 'click_count', 'notes'];
-      const csv = [
-        headers.join(','),
-        ...all.map(r =>
-          headers.map(h => {
-            const val = (r as any)[h];
-            if (val === null || val === undefined) return '';
-            const s = String(val);
-            return s.includes(',') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
-          }).join(',')
-        ),
-      ].join('\n');
-
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `redirects-export-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      setSnackMsg('CSV exported');
-    } catch (err: any) {
-      toast({ title: 'Export failed', description: err.message, variant: 'destructive' });
-    }
+  const handleExportExcel = async () => {
+    const columns: ExportColumnDef<any>[] = [
+      { header: 'Type', accessor: r => r.type },
+      { header: 'Slug', accessor: r => r.slug },
+      { header: 'Source Path', accessor: r => r.source_path },
+      { header: 'Target', accessor: r => r.target },
+      { header: 'Status Code', accessor: r => r.status_code },
+      { header: 'Enabled', accessor: r => formatBoolean(r.is_enabled) },
+      { header: 'Click Count', accessor: r => r.click_count },
+      { header: 'Notes', accessor: r => r.notes },
+      { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
+    ];
+    const allData = await fetchAllRows('redirects', '*', { column: 'created_at', ascending: false });
+    await exportToExcel(allData, columns, generateFilename('redirects'));
   };
 
   // ── Render ────────────────────────────────────────────────────────────
@@ -164,9 +153,7 @@ export default function AdminRedirects() {
           <Button size="small" variant="outlined" startIcon={<Upload size={16} />} onClick={() => setBulkDialogOpen(true)}>
             Import
           </Button>
-          <Button size="small" variant="outlined" startIcon={<Download size={16} />} onClick={handleExport}>
-            Export
-          </Button>
+          <ExportExcelButton onExport={handleExportExcel} />
           <Button size="small" variant="outlined" startIcon={<Eye size={16} />} onClick={() => setPreviewOpen(true)}>
             Preview
           </Button>

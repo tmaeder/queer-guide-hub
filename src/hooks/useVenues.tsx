@@ -9,7 +9,7 @@ type VenueInsert = Database['public']['Tables']['venues']['Insert'];
 
 export function useVenues(autoFetch: boolean = true) {
   const [venues, setVenues] = useState<Venue[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);

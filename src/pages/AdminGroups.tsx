@@ -16,6 +16,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Search, Users, Lock, Globe, Calendar, Trash2, Edit, Eye, MoreVertical, MessageSquare, Tag, TrendingUp, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ExportExcelButton } from "@/components/admin/ExportExcelButton";
+import { exportToExcel, fetchAllRows, formatDateTime, formatBoolean, formatArray, generateFilename, type ExportColumnDef } from "@/utils/excelExport";
 
 export default function AdminGroups() {
   const navigate = useNavigate();
@@ -273,6 +275,18 @@ export default function AdminGroups() {
                   )}
                 </>
               )}
+              <ExportExcelButton onExport={async () => {
+                const columns: ExportColumnDef<any>[] = [
+                  { header: 'Name', accessor: r => r.name },
+                  { header: 'Description', accessor: r => r.description },
+                  { header: 'Private', accessor: r => formatBoolean(r.is_private) },
+                  { header: 'Featured', accessor: r => formatBoolean(r.featured) },
+                  { header: 'Tags', accessor: r => formatArray(r.tags) },
+                  { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
+                ];
+                const allData = await fetchAllRows('community_groups', '*', { column: 'name', ascending: true });
+                await exportToExcel(allData, columns, generateFilename('groups'));
+              }} />
               <Button
                 variant="outline"
                 size="sm"

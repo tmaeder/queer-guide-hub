@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ExportExcelButton } from "@/components/admin/ExportExcelButton";
+import { exportToExcel, fetchAllRows, formatDateTime, formatBoolean, generateFilename, type ExportColumnDef } from "@/utils/excelExport";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
@@ -231,6 +233,24 @@ export default function AdminMarketplace() {
           </Box>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <ExportExcelButton onExport={async () => {
+            const columns: ExportColumnDef<any>[] = [
+              { header: 'Title', accessor: r => r.title },
+              { header: 'Business Name', accessor: r => r.business_name },
+              { header: 'Category', accessor: r => r.category },
+              { header: 'Business Type', accessor: r => r.business_type },
+              { header: 'Price', accessor: r => r.price },
+              { header: 'Currency', accessor: r => r.currency },
+              { header: 'Location', accessor: r => r.location },
+              { header: 'Contact Email', accessor: r => r.contact_email },
+              { header: 'Contact Phone', accessor: r => r.contact_phone },
+              { header: 'Website', accessor: r => r.website },
+              { header: 'Featured', accessor: r => formatBoolean(r.featured) },
+              { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
+            ];
+            const allData = await fetchAllRows('marketplace_listings', '*', { column: 'title', ascending: true });
+            await exportToExcel(allData, columns, generateFilename('marketplace'));
+          }} />
           <Dialog open={isAwinImportOpen} onOpenChange={setIsAwinImportOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">

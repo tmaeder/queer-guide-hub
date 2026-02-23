@@ -147,7 +147,7 @@ export default function CookiePolicy() {
 
         <section id="contact">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>11. Contact Us</Typography>
-          <Typography>If you have questions about our use of cookies, please contact us at <a href="mailto:privacy@queer.guide" style={{ color: '#333333', textDecoration: 'underline' }}>privacy@queer.guide</a> or through our Contact page.</Typography>
+          <Typography>If you have questions about our use of cookies, please contact us at <a href="mailto:privacy@queer.guide" style={{ color: 'inherit', textDecoration: 'underline' }}>privacy@queer.guide</a> or through our Contact page.</Typography>
         </section>
       </Box>
     </LegalPageLayout>

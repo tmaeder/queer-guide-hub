@@ -53,7 +53,7 @@ export default function DMCA() {
           <Paper sx={{ bgcolor: 'action.hover', p: 2, borderRadius: 2 }}>
             <Typography><strong>DMCA Agent</strong><br />
             The Queer Guide<br />
-            Email: <a href="mailto:dmca@queer.guide" style={{ color: '#333333', textDecoration: 'underline' }}>dmca@queer.guide</a><br />
+            Email: <a href="mailto:dmca@queer.guide" style={{ color: 'inherit', textDecoration: 'underline' }}>dmca@queer.guide</a><br />
             Subject Line: DMCA Takedown Notice</Typography>
           </Paper>
 
@@ -124,7 +124,7 @@ export default function DMCA() {
 
         <Box component="section" id="contact">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>12. Contact for Questions</Typography>
-          <Typography>If you have questions about this DMCA policy or need clarification about copyright issues on our platform, please contact us at <a href="mailto:legal@queer.guide" style={{ color: '#333333', textDecoration: 'underline' }}>legal@queer.guide</a></Typography>
+          <Typography>If you have questions about this DMCA policy or need clarification about copyright issues on our platform, please contact us at <a href="mailto:legal@queer.guide" style={{ color: 'inherit', textDecoration: 'underline' }}>legal@queer.guide</a></Typography>
         </Box>
 
         <Box component="section" id="policy-updates">

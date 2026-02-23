@@ -103,7 +103,7 @@ export default function TermsOfService() {
 
         <section id="contact">
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>12. Contact Information</Typography>
-          <Typography>If you have any questions about these Terms of Service, please contact us through our Contact page or email us at <a href="mailto:legal@queer.guide" style={{ color: '#333333', textDecoration: 'underline' }}>legal@queer.guide</a></Typography>
+          <Typography>If you have any questions about these Terms of Service, please contact us through our Contact page or email us at <a href="mailto:legal@queer.guide" style={{ color: 'inherit', textDecoration: 'underline' }}>legal@queer.guide</a></Typography>
         </section>
       </Box>
     </LegalPageLayout>

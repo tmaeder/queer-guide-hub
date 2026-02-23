@@ -29,6 +29,11 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // Sync internal state when external value prop changes
+    useEffect(() => {
+      setInputValue(value || "");
+    }, [value]);
+
     useEffect(() => {
       if (ref) {
         if (typeof ref === 'function') {

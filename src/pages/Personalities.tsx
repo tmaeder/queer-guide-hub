@@ -1,8 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMeta } from '@/hooks/useMeta';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PersonalityCard } from "@/components/personalities/PersonalityCard";
@@ -10,11 +8,13 @@ import { PersonalitiesFilters } from "@/components/personalities/PersonalitiesFi
 import { AddPersonalityDialog } from "@/components/personalities/AddPersonalityDialog";
 import { usePersonalities, PersonalityFilters } from "@/hooks/usePersonalities";
 import { useAuth } from "@/hooks/useAuth";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Plus } from "lucide-react";
+import { Users } from "lucide-react";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 
 export default function Personalities() {
   const { user } = useAuth();
@@ -79,11 +79,7 @@ export default function Personalities() {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} style={{ height: 320, width: '100%' }} />
-          ))}
-        </Box>
+        <PageLoadingState count={8} />
       </Container>
     );
   }
@@ -91,15 +87,7 @@ export default function Personalities() {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
-        <Card>
-          <CardContent style={{ paddingTop: 48, paddingBottom: 48 }}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Users style={{ height: 48, width: 48, margin: '0 auto 16px auto', display: 'block', color: 'var(--muted-foreground)' }} />
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Error Loading Personalities</Typography>
-              <Typography sx={{ color: 'var(--muted-foreground)' }}>{error}</Typography>
-            </Box>
-          </CardContent>
-        </Card>
+        <ErrorState message={error} onRetry={() => window.location.reload()} />
       </Container>
     );
   }
@@ -108,21 +96,12 @@ export default function Personalities() {
     <Box sx={{ minHeight: '100vh' }}>
       <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
         {/* Header */}
-        <Card style={{ marginBottom: 32 }}>
-          <CardContent style={{ padding: 32, textAlign: 'center' }}>
-            <Typography variant="h2" sx={{ fontSize: '3rem', fontWeight: 700, color: 'var(--foreground)', mb: 2 }}>
-              Personalities
-            </Typography>
-            <Typography sx={{ fontSize: '1.25rem', color: 'var(--muted-foreground)', maxWidth: 672, mx: 'auto' }}>
-              Discover inspiring LGBTQ+ personalities who have made significant contributions to society
-            </Typography>
-            {user && (
-              <Box sx={{ mt: 3 }}>
-                <AddPersonalityDialog onSuccess={() => window.location.reload()} />
-              </Box>
-            )}
-          </CardContent>
-        </Card>
+        <PageHeader
+          title="Personalities"
+          subtitle="Discover inspiring LGBTQ+ personalities who have made significant contributions to society"
+          center
+          actions={user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : undefined}
+        />
 
         <Box sx={{ mb: 4 }}>
           <PersonalitiesFilters
@@ -133,9 +112,9 @@ export default function Personalities() {
 
         {/* Results */}
         {!loading && sortedPersonalities.length > 0 && (
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'var(--card)', borderRadius: 2, border: '1px solid var(--border)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>
+              <Typography sx={{ color: 'text.secondary', fontWeight: 500 }}>
                 Found {totalCount} result{totalCount !== 1 ? 's' : ''}
               </Typography>
               {filters.search && (
@@ -162,17 +141,11 @@ export default function Personalities() {
         )}
 
         {sortedPersonalities.length === 0 ? (
-          <Card>
-            <CardContent style={{ paddingTop: 48, paddingBottom: 48 }}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Users style={{ height: 48, width: 48, margin: '0 auto 16px auto', display: 'block', color: 'var(--muted-foreground)' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No personalities found</Typography>
-                <Typography sx={{ color: 'var(--muted-foreground)' }}>
-                  Try adjusting your search criteria or filters.
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Users}
+            title="No personalities found"
+            description="Try adjusting your search criteria or filters."
+          />
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
             {sortedPersonalities.map((personality) => (

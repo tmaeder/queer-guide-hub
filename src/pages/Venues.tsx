@@ -6,13 +6,14 @@ import { useMeta } from '@/hooks/useMeta';
 import { useAuth } from '@/hooks/useAuth';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { VenueFilters } from '@/components/venues/VenueFilters';
-import { VenueMapSearch } from '@/components/venues/VenueMapSearch';
+import { ExploreMap } from '@/components/map/ExploreMap';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import { MapPin, Plus, Loader, Grid, Map, SortAsc, SortDesc, Filter } from 'lucide-react';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { MapPin, Plus, Grid, Map, SortAsc, SortDesc, Filter } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -166,25 +167,22 @@ const Venues = () => {
   }, [page, loading, hasMore, currentFilters, autoLoadedCount]);
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
-        <Card sx={{ mb: 4 }}>
-          <CardContent sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant="h3" sx={{ fontWeight: 700, mb: 2, '@keyframes fadeIn': { from: { opacity: 0 }, to: { opacity: 1 } }, animation: 'fadeIn 0.5s ease-in' }}>
-              Venues
-            </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: '42rem', mx: 'auto' }}>
-              Discover queer-friendly venues, businesses, and organizations in your area
-            </Typography>
+        <PageHeader
+          title="Venues"
+          subtitle="Discover queer-friendly venues, businesses, and organizations in your area"
+          center
+          actions={
             <Button
-                style={{ display: 'inline-flex', gap: 8, paddingLeft: 24, paddingRight: 24, paddingTop: 12, paddingBottom: 12, fontSize: '1.125rem' }}
-                onClick={() => navigate('/submit/venue')}
-              >
-                <Plus style={{ width: 20, height: 20 }} />
-                Submit a Venue
-              </Button>
-          </CardContent>
-        </Card>
+              style={{ display: 'inline-flex', gap: 8, paddingLeft: 24, paddingRight: 24, paddingTop: 12, paddingBottom: 12, fontSize: '1.125rem' }}
+              onClick={() => navigate('/submit/venue')}
+            >
+              <Plus style={{ width: 20, height: 20 }} />
+              Submit a Venue
+            </Button>
+          }
+        />
 
         {/* Filters Section */}
         <Box sx={{ mb: 4 }}>
@@ -253,12 +251,7 @@ const Venues = () => {
               {error && !loading && <ErrorState message={error} onRetry={() => fetchVenues()} />}
 
               {/* Loading State */}
-              {loading && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10 }}>
-                  <Loader style={{ width: 48, height: 48, color: 'var(--primary)', marginBottom: 16, animation: 'spin 1s linear infinite' }} />
-                  <Typography variant="subtitle1" color="text.secondary">Finding amazing places for you...</Typography>
-                </Box>
-              )}
+              {loading && <PageLoadingState count={8} />}
               {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchVenues()} />}
 
               {/* Empty State */}
@@ -321,7 +314,12 @@ const Venues = () => {
           <TabsContent value="map">
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Box sx={{ height: 700, width: '100%', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
-                <VenueMapSearch filters={currentFilters} />
+                <ExploreMap
+                  height={700}
+                  defaultLayers={['venues']}
+                  showLayerToggles
+                  showFilters
+                />
               </Box>
             </Box>
           </TabsContent>

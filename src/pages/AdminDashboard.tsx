@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
@@ -18,22 +15,12 @@ import { DashboardOverview } from '@/components/admin/dashboard/DashboardOvervie
 import { QuickActions } from '@/components/admin/dashboard/QuickActions';
 import { RecentActivity } from '@/components/admin/dashboard/RecentActivity';
 
-// Feature Components
-import { SecurityMonitoringDashboard } from '@/components/admin/SecurityMonitoringDashboard';
-import { UmamiAnalyticsDashboard } from '@/components/analytics/UmamiAnalyticsDashboard';
-import { CloudflareDashboard } from '@/components/admin/CloudflareDashboard';
-
 import {
   Shield,
   Calendar,
-  MapPin,
   ShoppingBag,
   Building,
   MessageSquare,
-  Star,
-  BarChart3,
-  TrendingUp,
-  Activity,
   Users,
   Grid3X3,
   List,
@@ -363,25 +350,21 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
-        <Box sx={{ textAlign: 'center' }}>Loading admin dashboard...</Box>
-      </Box>
+      <Box sx={{ textAlign: 'center', py: 4 }}>Loading admin dashboard...</Box>
     );
   }
 
   if (!canManageContent()) {
     return (
-      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Access Denied</Typography>
-          <p>You don't have permission to access the admin dashboard.</p>
-        </Box>
+      <Box sx={{ textAlign: 'center', py: 4 }}>
+        <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Access Denied</Typography>
+        <p>You don't have permission to access the admin dashboard.</p>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 1280, mx: 'auto', px: 3, py: 4 }}>
+    <>
       {/* Header Section */}
       <Box component="header" sx={{ mb: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Title & Role */}
@@ -483,58 +466,24 @@ export default function AdminDashboard() {
         </Box>
       </Box>
 
-      <Tabs defaultValue="overview" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <TabsTrigger value="overview" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BarChart3 style={{ height: 16, width: 16 }} />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value="analytics" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Activity style={{ height: 16, width: 16 }} />
-            Analytics
-          </TabsTrigger>
-          <TabsTrigger value="security" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Shield style={{ height: 16, width: 16 }} />
-            Security
-          </TabsTrigger>
-          <TabsTrigger value="cloudflare" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <TrendingUp style={{ height: 16, width: 16 }} />
-            Cloudflare
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <Box sx={{ display: 'grid', gap: { xs: 3, xl: 4 }, gridTemplateColumns: { lg: 'repeat(12, 1fr)' } }}>
-            <Box sx={{ gridColumn: { lg: 'span 8', xl: 'span 9' } }}>
-              <DashboardOverview
-                stats={stats}
-                systemHealth={systemHealth}
-                statsLoading={statsLoading}
-              />
-            </Box>
-            <Box sx={{ gridColumn: { lg: 'span 4', xl: 'span 3' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <QuickActions />
-              <RecentActivity
-                activities={recentActivity}
-                loading={statsLoading}
-                onRefresh={fetchRecentActivity}
-              />
-            </Box>
-          </Box>
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <UmamiAnalyticsDashboard />
-        </TabsContent>
-
-        <TabsContent value="security">
-          <SecurityMonitoringDashboard />
-        </TabsContent>
-
-        <TabsContent value="cloudflare">
-          <CloudflareDashboard />
-        </TabsContent>
-      </Tabs>
-    </Box>
+      {/* Overview + Quick Actions side-by-side */}
+      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { lg: '1fr 320px' } }}>
+        <Box sx={{ minWidth: 0 }}>
+          <DashboardOverview
+            stats={stats}
+            systemHealth={systemHealth}
+            statsLoading={statsLoading}
+          />
+        </Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <QuickActions />
+          <RecentActivity
+            activities={recentActivity}
+            loading={statsLoading}
+            onRefresh={fetchRecentActivity}
+          />
+        </Box>
+      </Box>
+    </>
   );
 }

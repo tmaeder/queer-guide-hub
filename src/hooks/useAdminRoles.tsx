@@ -7,13 +7,18 @@ type UserRole = Database['public']['Tables']['user_roles']['Row'];
 type AppRole = Database['public']['Enums']['app_role'];
 
 export function useAdminRoles() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
 
   useEffect(() => {
+    // Don't resolve roles until auth has finished loading
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
     if (user) {
       fetchUserRoles();
     } else {
@@ -22,7 +27,7 @@ export function useAdminRoles() {
       setIsModerator(false);
       setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const fetchUserRoles = async () => {
     if (!user) return;
@@ -37,7 +42,7 @@ export function useAdminRoles() {
       if (error) throw error;
 
       setUserRoles(data || []);
-      
+
       const roles = (data || []).map(r => r.role);
       setIsAdmin(roles.includes('admin'));
       setIsModerator(roles.includes('moderator'));

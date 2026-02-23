@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Box, Typography } from '@mui/material';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -9,8 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, X, Upload, ImageIcon, Search, Loader2 } from "lucide-react";
+import { Plus, X, Upload, ImageIcon, Search, Loader2, Check, Globe } from "lucide-react";
 import { usePersonalities, Personality } from "@/hooks/usePersonalities";
+import { useAddressResolver } from "@/hooks/useAddressResolver";
+import { CountryAutocomplete } from "@/components/ui/country-autocomplete";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PersonalitySelectionDialog } from "./PersonalitySelectionDialog";
@@ -27,8 +29,12 @@ const FIELD_OPTIONS = [
 
 export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const { createPersonality } = usePersonalities();
+  const { resolveNationality, resolveBirthPlace, resolving: resolvingGeo } = useAddressResolver();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resolvedCountryId, setResolvedCountryId] = useState<string | null>(null);
+  const [resolvedCityId, setResolvedCityId] = useState<string | null>(null);
+  const [resolvedCountryName, setResolvedCountryName] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<{
@@ -121,6 +127,37 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
       tags: prev.tags.filter((_, i) => i !== index)
     }));
   };
+
+  const handleNationalityChange = useCallback(async (value: string) => {
+    setFormData(prev => ({ ...prev, nationality: value }));
+    setResolvedCountryId(null);
+    setResolvedCountryName(null);
+
+    if (value.trim()) {
+      const resolved = await resolveNationality(value);
+      if (resolved?.country_id) {
+        setResolvedCountryId(resolved.country_id);
+        setResolvedCountryName(resolved.country_name);
+      }
+    }
+  }, [resolveNationality]);
+
+  const handleBirthPlaceChange = useCallback(async (value: string) => {
+    setFormData(prev => ({ ...prev, birth_place: value }));
+    setResolvedCityId(null);
+
+    if (value.trim() && value.includes(',')) {
+      const resolved = await resolveBirthPlace(value);
+      if (resolved?.city_id) {
+        setResolvedCityId(resolved.city_id);
+        // If nationality wasn't resolved yet but birth place has a country, use it
+        if (!resolvedCountryId && resolved.country_id) {
+          setResolvedCountryId(resolved.country_id);
+          setResolvedCountryName(resolved.country_name);
+        }
+      }
+    }
+  }, [resolveBirthPlace, resolvedCountryId]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -281,6 +318,14 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
       title: "Success",
       description: `Data found and prefilled for ${personalityData.name}`,
     });
+
+    // Auto-resolve nationality and birth_place from prefilled data
+    if (personalityData.nationality) {
+      handleNationalityChange(personalityData.nationality);
+    }
+    if (personalityData.birth_place) {
+      handleBirthPlaceChange(personalityData.birth_place);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -303,10 +348,13 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
     try {
       console.log('Calling createPersonality...');
-      const personalityData = {
+      const personalityData: Record<string, any> = {
         ...formData,
-        social_links: {}
+        social_links: {},
       };
+      // Attach resolved FK IDs
+      if (resolvedCountryId) personalityData.country_id = resolvedCountryId;
+      if (resolvedCityId) personalityData.city_id = resolvedCityId;
       console.log('Personality data to create:', personalityData);
 
       await createPersonality(personalityData);
@@ -335,6 +383,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         is_featured: false
       });
 
+      setResolvedCountryId(null);
+      setResolvedCityId(null);
+      setResolvedCountryName(null);
       setOpen(false);
       onSuccess?.();
 
@@ -436,22 +487,44 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
                 <Box>
                   <Label htmlFor="nationality">Nationality</Label>
-                  <Input
+                  <CountryAutocomplete
                     id="nationality"
                     value={formData.nationality}
-                    onChange={(e) => setFormData(prev => ({ ...prev, nationality: e.target.value }))}
-                    placeholder="Country of origin"
+                    onValueChange={handleNationalityChange}
+                    placeholder="Select country / nationality..."
                   />
+                  {resolvedCountryName && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                      <Check style={{ width: 12, height: 12, color: '#22c55e' }} />
+                      <Typography variant="caption" sx={{ color: '#22c55e' }}>
+                        Linked to {resolvedCountryName}
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
 
                 <Box>
                   <Label htmlFor="birth_place">Birth Place</Label>
-                  <Input
-                    id="birth_place"
-                    value={formData.birth_place}
-                    onChange={(e) => setFormData(prev => ({ ...prev, birth_place: e.target.value }))}
-                    placeholder="City, Country"
-                  />
+                  <Box sx={{ position: 'relative' }}>
+                    <Input
+                      id="birth_place"
+                      value={formData.birth_place}
+                      onChange={(e) => setFormData(prev => ({ ...prev, birth_place: e.target.value }))}
+                      onBlur={() => handleBirthPlaceChange(formData.birth_place)}
+                      placeholder="City, Country (e.g. New York, United States)"
+                    />
+                    {resolvingGeo && (
+                      <Loader2 style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, animation: 'spin 1s linear infinite', color: '#999' }} />
+                    )}
+                  </Box>
+                  {resolvedCityId && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                      <Check style={{ width: 12, height: 12, color: '#22c55e' }} />
+                      <Typography variant="caption" sx={{ color: '#22c55e' }}>
+                        City linked in database
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
               </CardContent>
             </Card>

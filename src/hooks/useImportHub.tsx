@@ -45,6 +45,70 @@ export interface ImportStatistics {
   total_failed_records: number;
   total_duplicate_records: number;
   last_import_date?: string;
+  items_pending_review?: number;
+}
+
+export interface IngestionSource {
+  id: string;
+  name: string;
+  slug: string;
+  source_type: 'api' | 'scraper' | 'csv' | 'rss';
+  target_table: string;
+  edge_function: string;
+  config: Record<string, any>;
+  schedule: string | null;
+  is_enabled: boolean;
+  requires_api_key: string | null;
+  rate_limit_per_minute: number;
+  rate_limit_per_day: number;
+  requests_today: number;
+  last_run_at: string | null;
+  last_success_at: string | null;
+  last_error: string | null;
+  total_items_fetched: number;
+  total_items_approved: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StagingItem {
+  id: string;
+  job_id: string;
+  source_type: string;
+  target_table: string;
+  raw_data: Record<string, any>;
+  normalized_data: Record<string, any> | null;
+  ai_validation_status: string;
+  ai_confidence_score: number | null;
+  ai_validation_result: Record<string, any>;
+  dedup_status: string;
+  dedup_match_id: string | null;
+  dedup_match_score: number | null;
+  dedup_details: Record<string, any>;
+  review_status: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_notes: string | null;
+  disposition: string;
+  created_at: string;
+}
+
+export interface PipelineJob {
+  id: string;
+  type: string;
+  source_type: string;
+  status: string;
+  pipeline_stage: string;
+  items_fetched: number;
+  items_ai_approved: number;
+  items_ai_rejected: number;
+  items_needs_review: number;
+  items_deduplicated: number;
+  items_committed: number;
+  ai_cost_usd: number;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
 }
 
 export interface ValidationResult {
@@ -99,20 +163,22 @@ export const useImportHub = () => {
   const loadStatistics = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('get_import_statistics');
-      
+
       if (error) throw error;
-      
-      // Safely handle the RPC response
-      const statsData = data as unknown as ImportStatistics;
-      setStatistics(statsData || {
-        total_jobs: 0,
-        completed_jobs: 0,
-        failed_jobs: 0,
-        pending_jobs: 0,
-        total_records_processed: 0,
-        total_successful_records: 0,
-        total_failed_records: 0,
-        total_duplicate_records: 0
+
+      // Map RPC response fields to our interface fields
+      const raw = data as Record<string, any> || {};
+      setStatistics({
+        total_jobs: raw.total_imports || 0,
+        completed_jobs: raw.successful_imports || 0,
+        failed_jobs: raw.failed_imports || 0,
+        pending_jobs: raw.pending_imports || 0,
+        total_records_processed: raw.total_records_processed || 0,
+        total_successful_records: raw.total_successful_records || 0,
+        total_failed_records: raw.total_failed_records || 0,
+        total_duplicate_records: raw.total_duplicate_records || 0,
+        items_pending_review: raw.items_pending_review || 0,
+        last_import_date: raw.last_import_date || undefined,
       });
     } catch (error) {
       console.error('Failed to load statistics:', error);
@@ -393,6 +459,164 @@ export const useImportHub = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPolling]);
 
+  // ========== Ingestion Sources ==========
+  const fetchSources = useCallback(async (): Promise<IngestionSource[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('ingestion_sources')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return (data || []) as IngestionSource[];
+    } catch (error) {
+      console.error('Failed to fetch ingestion sources:', error);
+      return [];
+    }
+  }, []);
+
+  const toggleSource = useCallback(async (sourceId: string, enabled: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('ingestion_sources')
+        .update({ is_enabled: enabled, updated_at: new Date().toISOString() })
+        .eq('id', sourceId);
+      if (error) throw error;
+      toast({
+        title: enabled ? 'Source Enabled' : 'Source Disabled',
+        description: `Source has been ${enabled ? 'enabled' : 'disabled'}.`,
+      });
+    } catch (error) {
+      console.error('Failed to toggle source:', error);
+      toast({ title: 'Error', description: 'Failed to update source', variant: 'destructive' });
+    }
+  }, [toast]);
+
+  const triggerSource = useCallback(async (source: IngestionSource) => {
+    try {
+      const { data, error } = await supabase.functions.invoke(source.edge_function, {
+        body: {}
+      });
+      if (error) throw error;
+      toast({
+        title: 'Source Triggered',
+        description: `${source.name} import has been started.`,
+      });
+      await loadJobs();
+    } catch (error) {
+      console.error('Failed to trigger source:', error);
+      toast({ title: 'Trigger Failed', description: `Failed to trigger ${source.name}`, variant: 'destructive' });
+    }
+  }, [toast, loadJobs]);
+
+  // ========== Review Queue ==========
+  const fetchReviewQueue = useCallback(async (filters?: {
+    target_table?: string;
+    source_type?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ items: StagingItem[]; total: number }> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('ingestion-review-api', {
+        body: {
+          action: 'list',
+          filters: {
+            target_table: filters?.target_table,
+            source_type: filters?.source_type,
+          },
+          page: filters?.page || 1,
+          limit: filters?.limit || 20,
+        }
+      });
+      if (error) throw error;
+      return { items: data?.items || [], total: data?.total || 0 };
+    } catch (error) {
+      console.error('Failed to fetch review queue:', error);
+      return { items: [], total: 0 };
+    }
+  }, []);
+
+  const fetchReviewStats = useCallback(async (): Promise<Record<string, any>> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('ingestion-review-api', {
+        body: { action: 'stats' }
+      });
+      if (error) throw error;
+      return data?.stats || {};
+    } catch (error) {
+      console.error('Failed to fetch review stats:', error);
+      return {};
+    }
+  }, []);
+
+  const approveItem = useCallback(async (stagingId: string, notes?: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+        body: { action: 'approve', staging_id: stagingId, notes }
+      });
+      if (error) throw error;
+      toast({ title: 'Item Approved', description: 'Item has been approved and will be committed.' });
+    } catch (error) {
+      console.error('Failed to approve item:', error);
+      toast({ title: 'Approval Failed', description: 'Failed to approve item', variant: 'destructive' });
+    }
+  }, [toast]);
+
+  const rejectItem = useCallback(async (stagingId: string, notes?: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+        body: { action: 'reject', staging_id: stagingId, notes }
+      });
+      if (error) throw error;
+      toast({ title: 'Item Rejected', description: 'Item has been rejected.' });
+    } catch (error) {
+      console.error('Failed to reject item:', error);
+      toast({ title: 'Rejection Failed', description: 'Failed to reject item', variant: 'destructive' });
+    }
+  }, [toast]);
+
+  const bulkApprove = useCallback(async (stagingIds: string[]) => {
+    try {
+      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+        body: { action: 'bulk_approve', staging_ids: stagingIds }
+      });
+      if (error) throw error;
+      toast({ title: 'Bulk Approved', description: `${stagingIds.length} items approved.` });
+    } catch (error) {
+      console.error('Failed to bulk approve:', error);
+      toast({ title: 'Bulk Approval Failed', description: 'Failed to approve items', variant: 'destructive' });
+    }
+  }, [toast]);
+
+  const bulkReject = useCallback(async (stagingIds: string[]) => {
+    try {
+      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+        body: { action: 'bulk_reject', staging_ids: stagingIds }
+      });
+      if (error) throw error;
+      toast({ title: 'Bulk Rejected', description: `${stagingIds.length} items rejected.` });
+    } catch (error) {
+      console.error('Failed to bulk reject:', error);
+      toast({ title: 'Bulk Rejection Failed', description: 'Failed to reject items', variant: 'destructive' });
+    }
+  }, [toast]);
+
+  // ========== Pipeline Monitor ==========
+  const fetchPipelineJobs = useCallback(async (): Promise<PipelineJob[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('import_jobs_enhanced')
+        .select('id, type, source_type, status, pipeline_stage, items_fetched, items_ai_approved, items_ai_rejected, items_needs_review, items_deduplicated, items_committed, ai_cost_usd, created_at, updated_at, completed_at')
+        .in('status', ['processing', 'pending'])
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return (data || []) as PipelineJob[];
+    } catch (error) {
+      console.error('Failed to fetch pipeline jobs:', error);
+      return [];
+    }
+  }, []);
+
   // Get venue import stats by data source
   const getVenueImportStats = useCallback(async () => {
     try {
@@ -432,6 +656,22 @@ export const useImportHub = () => {
     togglePolling,
     refreshJobs: loadJobs,
     refreshStatistics: loadStatistics,
-    getVenueImportStats
+    getVenueImportStats,
+
+    // Ingestion Sources
+    fetchSources,
+    toggleSource,
+    triggerSource,
+
+    // Review Queue
+    fetchReviewQueue,
+    fetchReviewStats,
+    approveItem,
+    rejectItem,
+    bulkApprove,
+    bulkReject,
+
+    // Pipeline Monitor
+    fetchPipelineJobs,
   };
 };

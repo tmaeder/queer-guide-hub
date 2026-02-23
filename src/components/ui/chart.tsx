@@ -304,7 +304,7 @@ const ChartTooltipContent = React.forwardRef<
                           fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
                           fontWeight: 500,
                           fontVariantNumeric: 'tabular-nums',
-                          color: '#333333',
+                          color: 'inherit',
                         }}>
                           {item.value.toLocaleString()}
                         </span>

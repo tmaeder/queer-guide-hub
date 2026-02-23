@@ -88,10 +88,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.search-flights]
-verify_jwt = false
+verify_jwt = true
 
 [functions.search-hotels]
-verify_jwt = false
+verify_jwt = true
 
 [functions.store-tag-images]
 verify_jwt = false
@@ -184,4 +184,10 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.cloudflare-api]
+verify_jwt = true
+
+[functions.scrape-gaycities-events]
+verify_jwt = true
+
+[functions.scrape-spartacus]
 verify_jwt = true
