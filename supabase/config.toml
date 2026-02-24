@@ -9,12 +9,10 @@ max_rows = 1000
 
 [auth]
 enabled = true
-port = 54324
 site_url = "http://localhost:3000"
 additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
 enable_signup = true
-email_double_confirm_changes = true
 enable_manual_linking = false
 
 [auth.email]
@@ -41,8 +39,7 @@ max_client_conn = 100
 
 [realtime]
 enabled = true
-port = 54323
-ip_version = "ipv4"
+ip_version = "IPv4"
 
 [studio]
 enabled = true
@@ -57,9 +54,7 @@ pop3_port = 54327
 
 [storage]
 enabled = true
-port = 54328
 file_size_limit = "50MiB"
-file_transform_limit = "20MiB"
 
 [analytics]
 enabled = false
@@ -181,7 +176,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.get-api-key]
-verify_jwt = false
+verify_jwt = true
 
 [functions.cloudflare-api]
 verify_jwt = true

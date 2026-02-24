@@ -18,7 +18,6 @@ function errorResponse(message: string, status = 500): Response {
 }
 
 const URLSCAN_API = 'https://urlscan.io/api/v1'
-const URLSCAN_KEY_FALLBACK = '019c8993-7d7f-72b4-81ea-c5fabd5aa76a'
 const SCAN_VISIBILITY = 'unlisted'
 const POLL_INITIAL_WAIT = 12_000
 const POLL_INTERVAL = 5_000
@@ -60,14 +59,13 @@ serve(async (req: Request) => {
   }
 
   try {
-    const apiKey = Deno.env.get('URLSCAN_API_KEY') || URLSCAN_KEY_FALLBACK
-    console.log(`[scan-links] Using API key: ${apiKey.substring(0, 8)}...`)
+    const apiKey = Deno.env.get('URLSCAN_API_KEY')
+    if (!apiKey) {
+      return errorResponse('URLSCAN_API_KEY environment variable is not configured', 500)
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    console.log(`[scan-links] Supabase URL: ${supabaseUrl}`)
-    console.log(`[scan-links] Service role key present: ${!!supabaseKey}`)
-    console.log(`[scan-links] Service role key starts with: ${supabaseKey?.substring(0, 20)}...`)
     const supabase = createClient(supabaseUrl, supabaseKey, {
       auth: {
         autoRefreshToken: false,

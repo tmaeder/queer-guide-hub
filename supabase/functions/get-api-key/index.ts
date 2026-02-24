@@ -8,7 +8,8 @@ const corsHeaders = {
 
 // SECURITY FIX: Proper AES encryption for API keys
 async function secureEncrypt(text: string): Promise<string> {
-  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY') || 'default-dev-key-change-in-production';
+  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY');
+  if (!masterKey) throw new Error('MASTER_ENCRYPTION_KEY environment variable is not configured');
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(masterKey.padEnd(32, '0').slice(0, 32)),
@@ -35,7 +36,8 @@ async function secureEncrypt(text: string): Promise<string> {
 }
 
 async function secureDecrypt(encryptedText: string): Promise<string> {
-  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY') || 'default-dev-key-change-in-production';
+  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY');
+  if (!masterKey) throw new Error('MASTER_ENCRYPTION_KEY environment variable is not configured');
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(masterKey.padEnd(32, '0').slice(0, 32)),
@@ -75,6 +77,39 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // SECURITY: Require authentication and admin role
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !userData.user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authorization' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userData.user.id)
+      .eq('role', 'admin')
+      .single();
+
+    if (!roleData) {
+      return new Response(
+        JSON.stringify({ error: 'Admin access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const { service_name, key_name } = await req.json();
 
@@ -119,7 +154,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in get-api-key function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

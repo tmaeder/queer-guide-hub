@@ -8,7 +8,8 @@ const corsHeaders = {
 
 // SECURITY FIX: Proper AES encryption for API keys
 async function secureEncrypt(text: string): Promise<string> {
-  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY') || 'default-dev-key-change-in-production';
+  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY');
+  if (!masterKey) throw new Error('MASTER_ENCRYPTION_KEY environment variable is not configured');
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(masterKey.padEnd(32, '0').slice(0, 32)),
@@ -35,7 +36,8 @@ async function secureEncrypt(text: string): Promise<string> {
 }
 
 async function secureDecrypt(encryptedText: string): Promise<string> {
-  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY') || 'default-dev-key-change-in-production';
+  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY');
+  if (!masterKey) throw new Error('MASTER_ENCRYPTION_KEY environment variable is not configured');
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(masterKey.padEnd(32, '0').slice(0, 32)),
@@ -129,7 +131,7 @@ serve(async (req) => {
 
         if (envValue) {
           status = 'configured';
-          hint = `${envValue.substring(0, 4)}...${envValue.slice(-4)}`;
+          hint = 'configured';
           // Known broken keys
           if (keyName === 'FOURSQUARE_API_KEY') {
             status = 'error';
@@ -158,7 +160,7 @@ serve(async (req) => {
         requiredKeys.push({
           key_name: keyName,
           status: envValue ? 'configured' : 'missing',
-          hint: envValue ? `${envValue.substring(0, 4)}...${envValue.slice(-4)}` : '',
+          hint: envValue ? 'configured' : '',
           used_by: [],
         });
       }
@@ -305,7 +307,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in manage-api-keys function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
