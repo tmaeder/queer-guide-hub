@@ -68,6 +68,7 @@ const EmailTemplates = lazy(() => import("./pages/admin/EmailTemplates"));
 const AdminPersonalities = lazy(() => import("./pages/AdminPersonalities"));
 const AdminImportHub = lazy(() => import("./pages/AdminImportHub"));
 const AdminRedirects = lazy(() => import("./pages/AdminRedirects"));
+const AdminWorkflows = lazy(() => import("./pages/AdminWorkflows"));
 
 // New feature pages
 const Hotels = lazyRetry(() => import("./pages/Hotels"));
@@ -80,6 +81,7 @@ const AdminHotels = lazy(() => import("./pages/AdminHotels"));
 const AdminQueerVillages = lazy(() => import("./pages/AdminQueerVillages"));
 // AdminFestivals removed — festivals integrated into events
 const AdminReview = lazy(() => import("./pages/AdminReview"));
+const AdminSubmissions = lazy(() => import("./pages/AdminSubmissions"));
 
 // CMS components rendered as admin views
 const AdminCMS = lazy(() => import("./pages/AdminCMS"));
@@ -121,8 +123,8 @@ const SearchResults = lazyRetry(() => import("./pages/SearchResults"));
 const Favorites = lazyRetry(() => import("./pages/Favorites"));
 
 const Sitemap = lazyRetry(() => import("./pages/Sitemap"));
-const SubmitVenue = lazyRetry(() => import("./pages/SubmitVenue"));
-const SubmitEvent = lazyRetry(() => import("./pages/SubmitEvent"));
+const SubmitHub = lazyRetry(() => import("./pages/SubmitHub"));
+const SubmitForm = lazyRetry(() => import("./pages/SubmitForm"));
 const CMSPage = lazyRetry(() => import("./pages/Page"));
 
 const queryClient = createOptimizedQueryClient();
@@ -269,6 +271,7 @@ const AppRoutes = () => {
                     <Route path="imports/pipeline" element={<PipelineMonitor />} />
                     <Route path="imports/venues" element={<VenueImportQuickActions />} />
                     <Route path="imports/history" element={<AdminImportHub />} />
+                    <Route path="workflows" element={<AdminWorkflows />} />
 
                     {/* Review & Workflow section — unified dashboard */}
                     <Route path="review" element={<AdminReview />} />
@@ -276,6 +279,7 @@ const AppRoutes = () => {
                     <Route path="audit" element={<AuditLog />} />
                     <Route path="links" element={<LinkHealthDashboard />} />
                     <Route path="affiliates" element={<AffiliatePartnersManager />} />
+                    <Route path="submissions" element={<AdminSubmissions />} />
 
                     {/* New content type admin pages */}
                     <Route path="hotels" element={<AdminHotels />} />
@@ -339,8 +343,8 @@ const AppRoutes = () => {
                      <Route path="/profile/settings" element={<ProfileSettings />} />
                      <Route path="/user/:userId" element={<UserProfile />} />
                      <Route path="/sitemap" element={<Sitemap />} />
-                    <Route path="/submit/venue" element={<SubmitVenue />} />
-                    <Route path="/submit/event" element={<SubmitEvent />} />
+                    <Route path="/submit" element={<SubmitHub />} />
+                    <Route path="/submit/:contentType" element={<SubmitForm />} />
                     <Route path="/p/:slug" element={<CMSPage />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />

@@ -37,6 +37,8 @@ import {
   Home,
   LinkIcon,
   Handshake,
+  Inbox,
+  Workflow,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -283,6 +285,15 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/imports/history',
         color: '#6366f1',
       },
+      {
+        id: 'workflows',
+        label: 'Workflows',
+        icon: Workflow,
+        route: '/admin/workflows',
+        countTable: 'workflow_runs',
+        adminOnly: true,
+        color: '#8b5cf6',
+      },
     ],
   },
 
@@ -322,6 +333,14 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/affiliates',
         adminOnly: true,
         color: '#10b981',
+      },
+      {
+        id: 'submissions',
+        label: 'Submissions',
+        icon: Inbox,
+        route: '/admin/submissions',
+        countTable: 'community_submissions',
+        color: '#3b82f6',
       },
     ],
   },
