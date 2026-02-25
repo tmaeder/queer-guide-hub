@@ -98,7 +98,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Travel deals error:', error);
-    return errorResponse(`Internal error: ${error.message}`);
+    return errorResponse('Internal server error');
   }
 });
 

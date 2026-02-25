@@ -87,6 +87,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Import airports error:', error);
-    return errorResponse(`Internal error: ${error.message}`);
+    return errorResponse('Internal server error');
   }
 });

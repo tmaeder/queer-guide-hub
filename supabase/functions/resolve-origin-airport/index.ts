@@ -73,7 +73,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Resolve origin airport error:', error);
-    return errorResponse(`Internal error: ${error.message}`);
+    return errorResponse('Internal server error');
   }
 });
 

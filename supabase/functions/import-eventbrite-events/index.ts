@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts';
 
 interface EventbriteEvent {
   id: string;
@@ -84,6 +80,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Require admin authentication
+    const authResult = await requireAdmin(req, supabaseClient);
+    if (authResult instanceof Response) return authResult;
 
     const { query, location, categoryId } = await req.json();
     
@@ -182,8 +182,8 @@ serve(async (req) => {
               country: country,
               latitude: latitude,
               longitude: longitude,
-              website: event.url,
-              ticket_url: event.url,
+              website: event.organizer?.url || null, // Use organizer's website, not the Eventbrite listing URL
+              ticket_url: event.url, // Eventbrite URL is correct for ticket purchases
               organizer_name: event.organizer?.name || null,
               organizer_contact: event.organizer?.url || null,
               is_free: isFree,
@@ -239,18 +239,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Import error:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: 'Check the function logs for more details'
-      }),
-      { 
-        status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
+    return errorResponse('Internal server error');
   }
 });

@@ -1,10 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts'
 
 const USER_AGENTS = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
@@ -148,14 +144,12 @@ function parseCityPage(html: string, pageUrl: string, venueType: string, cityNam
         if (existingNames.has(name.toLowerCase())) continue
         existingNames.add(name.toLowerCase())
 
-        // Extract URL and spartacus ID from popup HTML
+        // Extract spartacus ID from popup HTML (but NOT the URL — it's a scraper source, not the venue's website)
         // Format: <b><a href="https://spartacus.gayguide.travel/goingout/berlin/37240_Bärenhöhle">Name</a></b>
-        let website = ''
         let spartacusId = ''
         const hrefMatch = popupHtml.match(/href=["']([^"']+)["']/)
         if (hrefMatch) {
-          website = hrefMatch[1]
-          const idMatch = website.match(/\/(\d+)_/)
+          const idMatch = hrefMatch[1].match(/\/(\d+)_/)
           if (idMatch) spartacusId = idMatch[1]
         }
 
@@ -170,7 +164,7 @@ function parseCityPage(html: string, pageUrl: string, venueType: string, cityNam
           longitude: isNaN(lng) ? undefined : lng,
           category: defaultCategory,
           venue_subtype: subtype,
-          website: website || undefined,
+          website: undefined, // Never store scraper source URLs
           source_url: pageUrl,
           spartacus_id: spartacusId || undefined,
         })
@@ -217,8 +211,7 @@ function parseCityPage(html: string, pageUrl: string, venueType: string, cityNam
     const idMatch = venueLink.match(/\/(\d+)_/)
     if (idMatch) spartacusId = idMatch[1]
 
-    const website = venueLink.startsWith('http') ? venueLink :
-      venueLink ? `${BASE_URL}${venueLink.startsWith('/') ? '' : '/'}${venueLink}` : ''
+    // venueLink is a Spartacus directory URL — never store as venue website
 
     if (existingIdx >= 0) {
       // Enrich existing marker venue with description, address, amenities
@@ -226,7 +219,6 @@ function parseCityPage(html: string, pageUrl: string, venueType: string, cityNam
       if (description) venues[existingIdx].description = description.slice(0, 1000)
       if (amenities.length > 0) venues[existingIdx].amenities = amenities
       if (spartacusId && !venues[existingIdx].spartacus_id) venues[existingIdx].spartacus_id = spartacusId
-      if (website && !venues[existingIdx].website) venues[existingIdx].website = website
     } else {
       // New venue not in markers
       existingNames.add(name.toLowerCase())
@@ -237,7 +229,7 @@ function parseCityPage(html: string, pageUrl: string, venueType: string, cityNam
         city: cityName,
         country: countryName,
         category: defaultCategory,
-        website: website || undefined,
+        website: undefined, // Never store scraper source URLs
         amenities: amenities.length > 0 ? amenities : undefined,
         source_url: pageUrl,
         spartacus_id: spartacusId || undefined,
@@ -301,6 +293,10 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // Require admin authentication
+    const authResult = await requireAdmin(req, supabase)
+    if (authResult instanceof Response) return authResult
+
     const body = await req.json().catch(() => ({}))
 
     // Config options:
@@ -313,7 +309,7 @@ Deno.serve(async (req) => {
       p.includes('saunas') ? 'saunas' : 'goingout'
     ) || ['saunas', 'goingout']
     const countries = body.countries || Object.keys(DEFAULT_CITIES)
-    const maxCitiesPerCountry = body.max_cities_per_country || 5
+    const maxCitiesPerCountry = Math.min(Math.max(1, body.max_cities_per_country || 5), 20)
     const discoverCities = body.discover_cities || false
 
     // Get source
@@ -481,9 +477,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Spartacus scraper error:', error)
-    return new Response(JSON.stringify({ error: (error as Error).message, success: false }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return errorResponse('Internal server error')
   }
 })

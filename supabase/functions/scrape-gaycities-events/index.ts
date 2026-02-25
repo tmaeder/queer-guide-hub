@@ -1,10 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts'
 
 const USER_AGENTS = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
@@ -178,7 +174,7 @@ function parseEventsPage(html: string, pageUrl: string, citySlug: string): Scrap
             city: item.location?.address?.addressLocality || cityInfo.displayName,
             country: item.location?.address?.addressCountry || cityInfo.country,
             address: item.location?.address?.streetAddress || undefined,
-            website: item.url || pageUrl,
+            website: null, // Never store scraper source URLs — only real event websites
             images: item.image ? [typeof item.image === 'string' ? item.image : item.image.url] : [],
             event_type: 'LGBTQ+ Event',
             source_url: pageUrl,
@@ -280,7 +276,7 @@ function parseEventsPage(html: string, pageUrl: string, citySlug: string): Scrap
       end_date: parseGT4UDate(endDate) || undefined,
       city: cityInfo.displayName,
       country: cityInfo.country,
-      website: eventLink.startsWith('http') ? eventLink : eventLink ? `${BASE_URL}${eventLink}` : pageUrl,
+      website: null, // Never store scraper source URLs — only real event websites
       images: image ? [image.startsWith('http') ? image : `${BASE_URL}${image}`] : [],
       event_type: 'LGBTQ+ Event',
       source_url: pageUrl,
@@ -301,14 +297,19 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // Require admin authentication
+    const authResult = await requireAdmin(req, supabase)
+    if (authResult instanceof Response) return authResult
+
     const body = await req.json().catch(() => ({}))
 
     // Config options:
     // cities: string[] — city slugs to scrape (default: top 20 LGBTQ+ cities)
     // city_info: Record<string, {displayName, country}> — optional overrides for city display names/countries
     // max_cities: number — limit number of cities to scrape (default: 20)
+    const rawMaxCities = body.max_cities || 20
     const cities = body.cities || DEFAULT_CITIES
-    const maxCities = body.max_cities || 20
+    const maxCities = Math.min(Math.max(1, rawMaxCities), 50)
 
     // Merge any city_info from frontend into CITY_INFO lookup
     if (body.city_info && typeof body.city_info === 'object') {
@@ -443,9 +444,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Event scraper error:', error)
-    return new Response(JSON.stringify({ error: (error as Error).message, success: false }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return errorResponse('Internal server error')
   }
 })

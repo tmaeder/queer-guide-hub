@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Search error:', error)
     return new Response(
-      JSON.stringify({ error: 'Search failed', details: error.message }),
+      JSON.stringify({ error: 'Search failed' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
