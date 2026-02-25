@@ -1,10 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts';
 
 interface WikidataSearchResult {
   id: string;
@@ -38,6 +35,14 @@ serve(async (req) => {
   }
 
   try {
+    // SECURITY: Require admin — this function calls multiple external APIs (Wikidata, OpenAI, etc.)
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+    const authResult = await requireAdmin(req, supabase);
+    if (authResult instanceof Response) return authResult;
+
     const { searchTerm, selectedId } = await req.json()
     
     if (!searchTerm || searchTerm.trim().length < 2) {
@@ -302,13 +307,17 @@ serve(async (req) => {
 
     // Step 3: Get Wikipedia extract
     let bio = ''
+    // Use Wikidata's official website property (P856) — never use Wikipedia article URL as website_url
     let websiteUrl = ''
+    if (claims.P856 && claims.P856[0]?.mainsnak?.datavalue?.value) {
+      websiteUrl = claims.P856[0].mainsnak.datavalue.value
+    }
     if (wikipediaTitle) {
       try {
         const wikipediaUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(wikipediaTitle)}&prop=extracts&exintro=true&explaintext=true&exsectionformat=plain`
         const wikipediaResponse = await fetch(wikipediaUrl)
         const wikipediaData = await wikipediaResponse.json()
-        
+
         const pages = wikipediaData.query?.pages
         if (pages) {
           const pageId = Object.keys(pages)[0]
@@ -321,9 +330,6 @@ serve(async (req) => {
             }
           }
         }
-        
-        // Set Wikipedia URL as website
-        websiteUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(wikipediaTitle)}`
       } catch (e) {
         console.warn('Failed to fetch Wikipedia data:', e)
       }
@@ -392,9 +398,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error fetching personality data:', error)
     return new Response(
-      JSON.stringify({ 
-        error: 'Failed to fetch data from Wikipedia/Wikidata',
-        details: error.message 
+      JSON.stringify({
+        error: 'Internal server error',
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )

@@ -1,9 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts'
 
 // --- AI Validator (inlined from _shared/ai-validator.ts for edge function compatibility) ---
 
@@ -467,6 +463,10 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // SECURITY: Require admin — pipeline writes to DB via service_role
+    const authResult = await requireAdmin(req, supabase)
+    if (authResult instanceof Response) return authResult
+
     const body = await req.json()
     const { job_id: jobId, stage, action } = body
 
@@ -587,7 +587,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Pipeline error:', error)
-    return new Response(JSON.stringify({ error: (error as Error).message, success: false }), {
+    return new Response(JSON.stringify({ error: 'Internal server error', success: false }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

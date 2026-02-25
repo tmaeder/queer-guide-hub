@@ -33,3 +33,36 @@ export function errorResponse(message: string, status = 500): Response {
 export function corsResponse(): Response {
   return new Response('ok', { headers: corsHeaders })
 }
+
+/**
+ * Verify the request comes from an authenticated admin user.
+ * Returns the user ID on success, or a Response to return on failure.
+ */
+export async function requireAdmin(
+  req: Request,
+  serviceClient: SupabaseClient
+): Promise<{ userId: string } | Response> {
+  const authHeader = req.headers.get('Authorization')
+  if (!authHeader) {
+    return errorResponse('Missing authorization header', 401)
+  }
+
+  const token = authHeader.replace('Bearer ', '')
+  const { data: userData, error: userError } = await serviceClient.auth.getUser(token)
+  if (userError || !userData.user) {
+    return errorResponse('Invalid authorization', 401)
+  }
+
+  const { data: roleData } = await serviceClient
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userData.user.id)
+    .eq('role', 'admin')
+    .single()
+
+  if (!roleData) {
+    return errorResponse('Admin access required', 403)
+  }
+
+  return { userId: userData.user.id }
+}

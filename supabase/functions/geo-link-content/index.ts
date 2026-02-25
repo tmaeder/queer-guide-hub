@@ -7,11 +7,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -568,15 +564,22 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // SECURITY: Require admin for all operations (writes to DB via service_role)
+    const authResult = await requireAdmin(req, supabase);
+    if (authResult instanceof Response) return authResult;
+
     const body = await req.json();
     const {
       content_type,
       content_id,
       batch = false,
       batch_all = false,
-      batch_limit = 200,
+      batch_limit: rawBatchLimit = 200,
       dry_run = false,
     } = body;
+
+    // Cap batch_limit to prevent unbounded processing
+    const batch_limit = Math.min(Math.max(1, rawBatchLimit), 500);
 
     // Load reference data
     await loadReferenceData();
@@ -702,7 +705,7 @@ Deno.serve(async (req) => {
     console.error('Error in geo-link-content:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: (error as Error).message,
+      error: 'Internal server error',
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

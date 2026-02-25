@@ -1,11 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -137,16 +133,22 @@ serve(async (req) => {
   }
 
   try {
+    // SECURITY: Require admin — this function calls OpenAI (costs money)
+    const authResult = await requireAdmin(req, supabase);
+    if (authResult instanceof Response) return authResult;
+
     const body = await req.json();
     const {
       content_type,
       content_id,
       batch = false,
-      batch_limit = 50,
+      batch_limit: rawBatchLimit = 50,
       dry_run = false,
       auto_approve_threshold = 0.85,
       max_tags_per_item = 8,
     } = body;
+
+    const batch_limit = Math.min(Math.max(1, rawBatchLimit), 100);
 
     // Validate content type
     const config = CONTENT_TYPES[content_type];
@@ -457,7 +459,7 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
     console.error('Error in auto-tag-content:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: (error as Error).message,
+      error: 'Internal server error',
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
