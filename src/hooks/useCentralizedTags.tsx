@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface TagCategoryInfo {
@@ -57,125 +57,126 @@ export interface TagCategory {
   count: number;
 }
 
-export const useCentralizedTags = () => {
-  const [allTags, setAllTags] = useState<CentralizedTag[]>([]);
-  const [tagsByCategory, setTagsByCategory] = useState<TagCategory[]>([]);
-  const [categoriesTree, setCategoriesTree] = useState<CategoryTreeNode[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface CentralizedTagsData {
+  allTags: CentralizedTag[];
+  tagsByCategory: TagCategory[];
+  categoriesTree: CategoryTreeNode[];
+}
 
-  const fetchTags = async (retryCount = 0) => {
-    try {
-      setLoading(true);
-      setError(null);
+/**
+ * Core fetch function — parallelises independent queries and enriches tags
+ * with multi-category assignments.
+ */
+async function fetchAllTagsWithCategories(): Promise<CentralizedTagsData> {
+  // Run independent queries in parallel
+  const [tagsResult, catAssignmentsResult, allCatsResult, treeResult] = await Promise.all([
+    supabase
+      .from("unified_tags")
+      .select("*")
+      .eq("status", "active")
+      .order("usage_count", { ascending: false })
+      .limit(10000),
+    supabase
+      .from("tag_category_assignments")
+      .select("tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)"),
+    supabase
+      .from("tag_categories")
+      .select("id, name, slug, level, parent_id"),
+    supabase.rpc("get_category_tree"),
+  ]);
 
-      // Fetch active tags
-      const { data, error: fetchError } = await supabase
-        .from("unified_tags")
-        .select("*")
-        .eq("status", "active")
-        .order("usage_count", { ascending: false })
-        .limit(10000);
+  if (tagsResult.error) throw tagsResult.error;
 
-      if (fetchError) {
-        console.error("Supabase fetch error:", fetchError);
-        throw fetchError;
-      }
+  const data = tagsResult.data || [];
+  const catAssignments = catAssignmentsResult.data;
+  const allCats = allCatsResult.data;
+  const treeData = treeResult.data;
 
-      // Fetch multi-category assignments with hierarchy info
-      const { data: catAssignments } = await supabase
-        .from("tag_category_assignments")
-        .select("tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)");
-
-      // Fetch all categories for parent name lookup
-      const { data: allCats } = await supabase
-        .from("tag_categories")
-        .select("id, name, slug, level, parent_id");
-      const catLookup = new Map<string, { name: string; slug: string; level: number; parent_id: string | null }>();
-      if (allCats) {
-        for (const c of allCats) {
-          catLookup.set(c.id, { name: c.name, slug: c.slug, level: c.level, parent_id: c.parent_id });
-        }
-      }
-
-      // Fetch category tree via RPC
-      const { data: treeData } = await supabase.rpc("get_category_tree");
-      if (treeData) {
-        setCategoriesTree(treeData as unknown as CategoryTreeNode[]);
-      }
-
-      // Build a map of tag_id -> categories
-      const tagCatsMap = new Map<string, TagCategoryInfo[]>();
-      if (catAssignments) {
-        for (const a of catAssignments) {
-          const cat = (a as any).tag_categories;
-          if (!cat) continue;
-          const parentInfo = cat.parent_id ? catLookup.get(cat.parent_id) : null;
-          if (!tagCatsMap.has(a.tag_id)) tagCatsMap.set(a.tag_id, []);
-          tagCatsMap.get(a.tag_id)!.push({
-            id: cat.id,
-            name: cat.name,
-            slug: cat.slug,
-            level: cat.level,
-            parent_id: cat.parent_id,
-            parent_name: parentInfo?.name || null,
-            is_primary: a.is_primary,
-          });
-        }
-        // Sort: primary first, then by level (parents before children)
-        for (const [, cats] of tagCatsMap) {
-          cats.sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0));
-        }
-      }
-
-      // Enrich tags with categories array
-      const enrichedTags: CentralizedTag[] = (data || []).map(tag => ({
-        ...tag,
-        categories: tagCatsMap.get(tag.id) || [],
-      }));
-
-      setAllTags(enrichedTags);
-
-      // Group tags by category (multi-category: a tag appears under each of its categories)
-      const categoryMap = new Map<string, CentralizedTag[]>();
-
-      enrichedTags.forEach((tag) => {
-        const cats = tag.categories && tag.categories.length > 0
-          ? tag.categories.map(c => c.name)
-          : tag.category ? [tag.category] : [];
-
-        for (const catName of cats) {
-          if (catName && catName !== 'general') {
-            if (!categoryMap.has(catName)) {
-              categoryMap.set(catName, []);
-            }
-            categoryMap.get(catName)!.push(tag);
-          }
-        }
-      });
-
-      const categories: TagCategory[] = Array.from(categoryMap.entries()).map(([category, tags]) => ({
-        category,
-        tags: tags.sort((a, b) => b.usage_count - a.usage_count),
-        count: tags.length
-      })).sort((a, b) => b.count - a.count);
-
-      setTagsByCategory(categories);
-    } catch (err) {
-      console.error("Error fetching tags:", err);
-      
-      // Retry logic for network errors
-      if (retryCount < 3 && err instanceof Error && err.message.includes("Failed to fetch")) {
-        console.log(`Retrying tag fetch, attempt ${retryCount + 1}`);
-        setTimeout(() => fetchTags(retryCount + 1), 1000 * (retryCount + 1));
-        return;
-      }
-      
-      setError(err instanceof Error ? err.message : "Failed to fetch tags");
-    } finally {
-      setLoading(false);
+  // Parent name lookup
+  const catLookup = new Map<string, { name: string; slug: string; level: number; parent_id: string | null }>();
+  if (allCats) {
+    for (const c of allCats) {
+      catLookup.set(c.id, { name: c.name, slug: c.slug, level: c.level, parent_id: c.parent_id });
     }
-  };
+  }
+
+  // Build tag_id → categories map
+  const tagCatsMap = new Map<string, TagCategoryInfo[]>();
+  if (catAssignments) {
+    for (const a of catAssignments) {
+      const cat = (a as any).tag_categories;
+      if (!cat) continue;
+      const parentInfo = cat.parent_id ? catLookup.get(cat.parent_id) : null;
+      if (!tagCatsMap.has(a.tag_id)) tagCatsMap.set(a.tag_id, []);
+      tagCatsMap.get(a.tag_id)!.push({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        level: cat.level,
+        parent_id: cat.parent_id,
+        parent_name: parentInfo?.name || null,
+        is_primary: a.is_primary,
+      });
+    }
+    // Sort: primary first
+    for (const [, cats] of tagCatsMap) {
+      cats.sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0));
+    }
+  }
+
+  // Enrich tags with categories array
+  const enrichedTags: CentralizedTag[] = data.map(tag => ({
+    ...tag,
+    categories: tagCatsMap.get(tag.id) || [],
+  }));
+
+  // Group tags by category name
+  const categoryMap = new Map<string, CentralizedTag[]>();
+  for (const tag of enrichedTags) {
+    const cats = tag.categories && tag.categories.length > 0
+      ? tag.categories.map(c => c.name)
+      : tag.category ? [tag.category] : [];
+
+    for (const catName of cats) {
+      if (catName && catName !== 'general') {
+        if (!categoryMap.has(catName)) categoryMap.set(catName, []);
+        categoryMap.get(catName)!.push(tag);
+      }
+    }
+  }
+
+  const tagsByCategory: TagCategory[] = Array.from(categoryMap.entries())
+    .map(([category, tags]) => ({
+      category,
+      tags: tags.sort((a, b) => b.usage_count - a.usage_count),
+      count: tags.length,
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  const categoriesTree = (treeData as unknown as CategoryTreeNode[]) || [];
+
+  return { allTags: enrichedTags, tagsByCategory, categoriesTree };
+}
+
+/**
+ * Primary hook — uses React Query for caching, deduplication, and stale-while-revalidate.
+ * Returns the same shape as the old useState-based hook for backwards compatibility.
+ */
+export const useCentralizedTags = () => {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, error: queryError } = useQuery({
+    queryKey: ['centralized-tags'],
+    queryFn: fetchAllTagsWithCategories,
+    staleTime: 5 * 60 * 1000,     // 5 min
+    gcTime: 15 * 60 * 1000,       // 15 min
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * (attempt + 1), 5000),
+  });
+
+  const allTags = data?.allTags ?? [];
+  const tagsByCategory = data?.tagsByCategory ?? [];
+  const categoriesTree = data?.categoriesTree ?? [];
 
   const searchTags = async (query: string, category?: string): Promise<CentralizedTag[]> => {
     try {
@@ -183,7 +184,7 @@ export const useCentralizedTags = () => {
         .from("unified_tags")
         .select("*")
         .eq("status", "active")
-        .ilike("name", `%${query}%`);
+        .or(`name.ilike.%${query}%,description.ilike.%${query}%`);
 
       if (category) {
         queryBuilder = queryBuilder.eq("category", category);
@@ -203,16 +204,13 @@ export const useCentralizedTags = () => {
 
   const getTagsByCategory = (category: string): CentralizedTag[] => {
     return allTags.filter(tag => {
-      // Check multi-category assignments first
       if (tag.categories && tag.categories.length > 0) {
         return tag.categories.some(c => c.name === category);
       }
-      // Fallback to primary category
       return tag.category === category || (!tag.category && category === 'general');
     });
   };
 
-  // Get tags assigned to a specific category (including subcategory)
   const getTagsBySubcategory = (categoryId: string): CentralizedTag[] => {
     return allTags.filter(tag => {
       if (tag.categories && tag.categories.length > 0) {
@@ -222,7 +220,6 @@ export const useCentralizedTags = () => {
     });
   };
 
-  // Get parent category for a given category name (returns null if already a parent)
   const getParentCategory = (categoryName: string): CategoryTreeNode | null => {
     for (const parent of categoriesTree) {
       if (parent.children.some(c => c.name === categoryName)) {
@@ -236,6 +233,10 @@ export const useCentralizedTags = () => {
     return allTags
       .filter(tag => tag.usage_count > 0)
       .slice(0, limit);
+  };
+
+  const refreshTags = () => {
+    queryClient.invalidateQueries({ queryKey: ['centralized-tags'] });
   };
 
   const createTag = async (tagData: {
@@ -256,9 +257,7 @@ export const useCentralizedTags = () => {
         .single();
 
       if (error) throw error;
-
-      // Refresh tags after creation
-      await fetchTags();
+      refreshTags();
       return data;
     } catch (err) {
       console.error("Error creating tag:", err);
@@ -274,9 +273,7 @@ export const useCentralizedTags = () => {
         .eq("id", id);
 
       if (error) throw error;
-
-      // Refresh tags after update
-      await fetchTags();
+      refreshTags();
     } catch (err) {
       console.error("Error updating tag:", err);
       throw err;
@@ -291,25 +288,19 @@ export const useCentralizedTags = () => {
         .eq("id", id);
 
       if (error) throw error;
-
-      // Refresh tags after deletion
-      await fetchTags();
+      refreshTags();
     } catch (err) {
       console.error("Error deleting tag:", err);
       throw err;
     }
   };
 
-  useEffect(() => {
-    fetchTags();
-  }, []);
-
   return {
     allTags,
     tagsByCategory,
     categoriesTree,
-    loading,
-    error,
+    loading: isLoading,
+    error: queryError ? (queryError instanceof Error ? queryError.message : "Failed to fetch tags") : null,
     searchTags,
     getTagsByCategory,
     getTagsBySubcategory,
@@ -318,6 +309,46 @@ export const useCentralizedTags = () => {
     createTag,
     updateTag,
     deleteTag,
-    refreshTags: fetchTags
+    refreshTags,
   };
 };
+
+/**
+ * Efficient usage counts from the DB view — replaces the O(n²) client-side
+ * computation that fetched all venues/groups/events and looped over all tags.
+ */
+export function useTagUsageCounts() {
+  return useQuery({
+    queryKey: ['tag-usage-counts'],
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from('tag_usage_summary' as any)
+        .select('name, usage_count, venue_count, event_count, group_count');
+
+      if (error) {
+        console.error('Error fetching tag usage counts:', error);
+        // Fallback: use usage_count from unified_tags
+        const { data: tags } = await supabase
+          .from('unified_tags')
+          .select('name, usage_count')
+          .eq('status', 'active');
+
+        const map: Record<string, number> = {};
+        for (const row of tags || []) {
+          map[row.name] = row.usage_count || 0;
+        }
+        return map;
+      }
+
+      const map: Record<string, number> = {};
+      for (const row of (data || []) as any[]) {
+        // Sum all entity-type counts for a true cross-content usage count
+        const total = (row.venue_count || 0) + (row.event_count || 0) + (row.group_count || 0);
+        map[row.name] = total > 0 ? total : (row.usage_count || 0);
+      }
+      return map;
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+}

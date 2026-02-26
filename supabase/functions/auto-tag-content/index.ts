@@ -375,6 +375,16 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
             newTagsCreated++;
             // Add to cache for subsequent items
             tagMap.set(slug, { id: newTag.id, name: s.name });
+
+            // Create tag_category_assignment for proper multi-category support
+            if (catId) {
+              await supabase
+                .from('tag_category_assignments')
+                .upsert(
+                  { tag_id: newTag.id, category_id: catId, is_primary: true },
+                  { onConflict: 'tag_id,category_id' }
+                );
+            }
           } else if (createErr) {
             console.error(`Failed to create tag "${s.name}":`, createErr.message);
           }

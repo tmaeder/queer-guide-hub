@@ -38,13 +38,19 @@ serve(async (req) => {
     // Create background task for processing
     const backgroundTask = async () => {
       console.log(`Starting background task to process ${terms.length} terms`);
-      
+
       const results = [];
-      const categories = [
-        'identity', 'relationships', 'health', 'culture', 'politics', 'entertainment',
-        'business', 'technology', 'education', 'travel', 'food', 'sports',
-        'arts', 'community', 'activism', 'legal', 'history', 'literature'
-      ];
+
+      // Load categories dynamically from the DB
+      const { data: dbCategories } = await supabaseClient
+        .from('tag_categories')
+        .select('id, slug, name, level, parent_id')
+        .order('sort_order');
+
+      const categoryRows = dbCategories || [];
+      const categories = categoryRows.map(c => c.slug);
+      const slugToId = new Map(categoryRows.map(c => [c.slug, c.id]));
+      const validSlugs = new Set(categories);
 
       for (const term of terms) {
         if (!term.trim()) continue;
@@ -78,6 +84,9 @@ serve(async (req) => {
           // Fetch and upload image
           const imageUrl = await fetchAndStoreImage(cleanTerm, supabaseClient);
           
+          // Resolve category_id from slug
+          const categoryId = slugToId.get(aiResponse.category) || null;
+
           // Create the tag
           const { data: newTag, error: tagError } = await supabaseClient
             .from('unified_tags')
@@ -85,6 +94,7 @@ serve(async (req) => {
               name: cleanTerm,
               slug: slug,
               category: aiResponse.category,
+              category_id: categoryId,
               description: aiResponse.description,
               image_url: imageUrl,
               wikipedia_url: wikiData.url,
@@ -101,6 +111,19 @@ serve(async (req) => {
               error: tagError.message
             });
           } else {
+            // Create tag_category_assignment for proper multi-category support
+            if (newTag && categoryId) {
+              const { error: assignError } = await supabaseClient
+                .from('tag_category_assignments')
+                .upsert(
+                  { tag_id: newTag.id, category_id: categoryId, is_primary: true },
+                  { onConflict: 'tag_id,category_id' }
+                );
+              if (assignError) {
+                console.error(`Failed to create category assignment for "${cleanTerm}":`, assignError.message);
+              }
+            }
+
             results.push({
               term: cleanTerm,
               status: 'created',
@@ -225,9 +248,15 @@ Respond with JSON in this format:
     try {
       const parsed = JSON.parse(content);
       
-      // Validate category
+      // Validate category against the DB slugs
       if (!categories.includes(parsed.category)) {
-        parsed.category = 'general';
+        // Try to find a close match by checking if the AI returned a name instead of slug
+        const slugified = parsed.category?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        if (slugified && categories.includes(slugified)) {
+          parsed.category = slugified;
+        } else {
+          parsed.category = categories.includes('general') ? 'general' : categories[0] || 'general';
+        }
       }
       
       // Use original description if AI didn't provide one
