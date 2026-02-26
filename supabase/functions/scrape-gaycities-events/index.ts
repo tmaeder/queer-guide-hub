@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
 import { corsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts'
+import { normalizeScrapedContent } from '../_shared/ai-enrichment.ts'
 
 const USER_AGENTS = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
@@ -369,13 +370,10 @@ Deno.serve(async (req) => {
 
         log.push(`Found ${events.length} events in ${CITY_INFO[city]?.displayName || city}`)
 
-        // Write to staging
-        const rows = events.map(event => ({
-          job_id: jobId,
-          source_type: 'gaytravel4u',
-          target_table: 'events',
-          raw_data: event,
-          normalized_data: {
+        // AI enrichment — normalize scraped content before staging
+        const rows = []
+        for (const event of events) {
+          const normalized: Record<string, any> = {
             title: event.title,
             description: event.description || null,
             event_type: event.event_type,
@@ -390,8 +388,26 @@ Deno.serve(async (req) => {
             featured: false,
             status: 'active',
             is_public: true,
-          },
-        }))
+          }
+
+          // Enrich with AI if available
+          try {
+            const aiNormalized = await normalizeScrapedContent(supabase, event, 'events')
+            if (aiNormalized) {
+              if (aiNormalized.description && !normalized.description) normalized.description = aiNormalized.description
+              if (aiNormalized.tags) normalized.tags = aiNormalized.tags
+              if (aiNormalized.title) normalized.title = aiNormalized.title
+            }
+          } catch (e) { console.warn('AI normalization skipped for event:', event.title, e) }
+
+          rows.push({
+            job_id: jobId,
+            source_type: 'gaytravel4u',
+            target_table: 'events',
+            raw_data: event,
+            normalized_data: normalized,
+          })
+        }
 
         const { error: insertError } = await supabase.from('ingestion_staging').insert(rows)
         if (insertError) {

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { corsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts';
+import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
 
 interface EventbriteEvent {
   id: string;
@@ -193,6 +194,15 @@ serve(async (req) => {
               status: 'active',
               featured: false
             };
+
+            // AI enrichment — enhance description and classify event type
+            try {
+              const aiEnrichment = await enrichEventWithAI(supabaseClient, eventData)
+              if (aiEnrichment) {
+                if (aiEnrichment.description && !eventData.description) eventData.description = aiEnrichment.description as string
+                if (aiEnrichment.event_type && eventData.event_type === 'other') eventData.event_type = aiEnrichment.event_type as string
+              }
+            } catch (e) { console.warn('AI enrichment skipped:', e) }
 
             console.log('Inserting event:', eventData.title);
 

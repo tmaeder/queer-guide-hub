@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { DOMParser } from "https://deno.land/x/deno_dom/deno-dom-wasm.ts";
+import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -274,6 +275,19 @@ serve(async (req) => {
         preview: normalized.slice(0, 50),
         message: `Dry run: extracted ${normalized.length} unique events`,
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // AI enrichment — enhance events missing descriptions
+    for (const event of normalized) {
+      if (!event.description) {
+        try {
+          const aiEnrichment = await enrichEventWithAI(supabase, event)
+          if (aiEnrichment) {
+            if (aiEnrichment.description) event.description = aiEnrichment.description as string
+            if (aiEnrichment.event_type && !event.event_type) event.event_type = aiEnrichment.event_type as string
+          }
+        } catch (e) { console.warn('AI enrichment skipped:', e) }
+      }
     }
 
     // Insert in chunks

@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApiKeys, ApiKey, CreateApiKeyRequest, RequiredKeyStatus } from '@/hooks/useApiKeys';
+import { ChatGPTConnection } from './ChatGPTConnection';
 import { Plus, Key, Edit, Trash2, RefreshCw, CheckCircle, XCircle, AlertTriangle, Server, Shield } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -117,6 +118,9 @@ export const ApiKeysManager = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {/* ChatGPT OAuth Connection */}
+      <ChatGPTConnection />
+
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>

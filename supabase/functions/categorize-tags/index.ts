@@ -1,13 +1,11 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { chatCompletion } from '../_shared/openai-client.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -57,7 +55,7 @@ function buildCategoryPromptSection(categories: CategoryRow[]): string {
   return lines.join('\n');
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -179,35 +177,17 @@ Tags to categorize: ${tagNames.join(', ')}
 Return ONLY valid JSON — tag names as keys, category slugs as values:
 {"example-tag": "category-slug"}`;
 
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: 'You are an expert AI categorization system for an inclusive LGBTQ+ community platform. Always respond with valid JSON only, no markdown fences.' },
-              { role: 'user', content: prompt }
-            ],
-            temperature: 0.1,
-            max_tokens: 2000,
-          }),
+        const aiResult = await chatCompletion(supabase, {
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are an expert AI categorization system for an inclusive LGBTQ+ community platform. Always respond with valid JSON only, no markdown fences.' },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.1,
+          max_tokens: 2000,
         });
 
-        if (!response.ok) {
-          if (response.status === 429) {
-            console.log(`Rate limit hit on batch ${batchIndex + 1}, waiting 60 seconds...`);
-            await new Promise(resolve => setTimeout(resolve, 60000));
-            batchIndex--;
-            continue;
-          }
-          throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
-        }
-
-        const aiData = await response.json();
-        const rawContent = aiData.choices[0].message.content
+        const rawContent = aiResult.content
           .replace(/```json\n?/g, '')
           .replace(/```\n?/g, '')
           .trim();
