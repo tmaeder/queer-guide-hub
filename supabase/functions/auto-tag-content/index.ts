@@ -145,12 +145,12 @@ Deno.serve(async (req) => {
 
     // ── Pre-load reference data (cached for entire request) ──
 
-    // Top 500 existing tags by usage
+    // Load all active tags for name/slug matching
     const { data: existingTags } = await supabase
       .from('unified_tags')
       .select('id, name, slug')
-      .order('usage_count', { ascending: false })
-      .limit(500);
+      .eq('status', 'active')
+      .order('usage_count', { ascending: false });
 
     const tagMap = new Map<string, { id: string; name: string }>();
     for (const tag of existingTags || []) {
@@ -290,7 +290,7 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
       try {
         aiContent = await callOpenAI(prompt, systemPrompt);
       } catch (err) {
-        if ((err as Error).message === 'RATE_LIMIT') {
+        if ((err as Error).message?.includes('429') || (err as Error).message?.includes('Rate limited')) {
           console.log(`Rate limit hit on item ${i + 1}, waiting 60s...`);
           await new Promise(r => setTimeout(r, 60000));
           try {

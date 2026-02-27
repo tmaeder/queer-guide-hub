@@ -205,6 +205,7 @@ Return ONLY valid JSON — tag names as keys, category slugs as values:
           }
 
           const categoryId = slugToId.get(categorySlug)!;
+          const previousCategoryId = tag.category_id;
 
           // 1. Update unified_tags.category_id for backwards compatibility
           const { error: updateError } = await supabase
@@ -236,11 +237,15 @@ Return ONLY valid JSON — tag names as keys, category slugs as values:
 
           if (assignError) {
             console.error(`Failed to create assignment for "${tag.name}":`, assignError.message);
+            // Revert the tag update to keep data consistent
+            await supabase
+              .from('unified_tags')
+              .update({ category_id: previousCategoryId })
+              .eq('id', tag.id);
           } else {
             totalAssignments++;
+            totalCategorized++;
           }
-
-          totalCategorized++;
         }
 
         // Rate limit delay between batches

@@ -472,7 +472,7 @@ CRITICAL RULES:
 Return ONLY valid JSON, no additional text.`;
 
     const aiResult = await chatCompletion(_supabaseClient, {
-      model: 'gpt-4.1-2025-04-14',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: 'You are an expert LGBTI historian and researcher with access to comprehensive academic and community databases. Provide accurate, factual, well-researched information about people\'s relationship to the LGBTI/queer community. Always distinguish between documented facts and speculation.' },
         { role: 'user', content: prompt }

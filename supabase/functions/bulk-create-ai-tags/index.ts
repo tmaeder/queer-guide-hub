@@ -1,9 +1,6 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { chatCompletion } from '../_shared/openai-client.ts';
 import { requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts';
-
-// Reference to supabase client — set inside the handler for the AI helper
-let _supabaseClient: any = null;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -28,8 +25,6 @@ Deno.serve(async (req) => {
         { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 400 }
       );
     }
-
-    _supabaseClient = supabaseClient;
 
     // Create background task for processing
     const backgroundTask = async () => {
@@ -75,7 +70,7 @@ Deno.serve(async (req) => {
           const wikiData = await getWikipediaData(cleanTerm);
           
           // Use AI to categorize and enhance description
-          const aiResponse = await categorizeWithAI(cleanTerm, wikiData.description, categories);
+          const aiResponse = await categorizeWithAI(supabaseClient, cleanTerm, wikiData.description, categories);
           
           // Fetch and upload image
           const imageUrl = await fetchAndStoreImage(cleanTerm, supabaseClient);
@@ -197,7 +192,7 @@ async function getWikipediaData(term: string) {
   };
 }
 
-async function categorizeWithAI(term: string, wikiDescription: string, categories: string[]) {
+async function categorizeWithAI(client: SupabaseClient, term: string, wikiDescription: string, categories: string[]) {
   try {
     const prompt = `Analyze the term "${term}" and its description: "${wikiDescription}"
 
@@ -211,7 +206,7 @@ Respond with JSON in this format:
   "description": "enhanced description"
 }`;
 
-    const result = await chatCompletion(_supabaseClient, {
+    const result = await chatCompletion(client, {
       model: 'gpt-4o-mini',
       messages: [
         {
