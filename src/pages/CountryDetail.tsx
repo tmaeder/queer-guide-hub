@@ -24,7 +24,9 @@ import LGBTJurisdictionInfo from "@/components/country/LGBTJurisdictionInfo";
 import EqualityScoreBadge from "@/components/country/EqualityScoreBadge";
 import SafetyAlertBanner from "@/components/country/SafetyAlertBanner";
 import { WorldBankDataPanel } from "@/components/country/WorldBankDataPanel";
+import { SDGDataPanel } from "@/components/country/SDGDataPanel";
 import { useWorldBankData } from "@/hooks/useWorldBankData";
+import { useSDGData } from "@/hooks/useSDGData";
 import { TravelDealsSection } from "@/components/travel/TravelDealsSection";
 import { ActivitiesWidget } from "@/components/activities/ActivitiesWidget";
 import { useOptimizedCountry, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
@@ -95,6 +97,7 @@ export default function CountryDetail() {
   }, [localNews, country]);
 
   const worldBankData = useWorldBankData(country);
+  const sdgData = useSDGData(country);
   const loading = countryLoading;
 
   // Fetch weather data for header indicator
@@ -394,6 +397,9 @@ export default function CountryDetail() {
 
                 {/* World Bank Data — Economy, Demographics, Society, Environment */}
                 <WorldBankDataPanel data={worldBankData} countryName={country.name} />
+
+                {/* UN SDG Data — Sustainable Development Goals */}
+                <SDGDataPanel data={sdgData} countryName={country.name} />
               </TabsContent>
 
               {/* ===== RIGHTS TAB ===== */}
