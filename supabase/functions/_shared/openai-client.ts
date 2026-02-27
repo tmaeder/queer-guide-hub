@@ -14,17 +14,35 @@ import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5
 // AES-GCM encryption helpers (same pattern as manage-api-keys)
 // ---------------------------------------------------------------------------
 
-async function decrypt(encryptedBase64: string): Promise<string> {
+/**
+ * Derive a 256-bit AES key from the master key using HKDF.
+ * This avoids the zero-padding weakness when the key is shorter than 32 bytes.
+ */
+async function deriveKey(usage: KeyUsage[]): Promise<CryptoKey> {
   const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY')
   if (!masterKey) throw new Error('MASTER_ENCRYPTION_KEY not configured')
+  if (masterKey.length < 32) {
+    throw new Error('MASTER_ENCRYPTION_KEY must be at least 32 characters')
+  }
 
-  const key = await crypto.subtle.importKey(
+  const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(masterKey.padEnd(32, '0').slice(0, 32)),
-    { name: 'AES-GCM' },
+    new TextEncoder().encode(masterKey),
+    'HKDF',
     false,
-    ['decrypt'],
+    ['deriveKey'],
   )
+  return crypto.subtle.deriveKey(
+    { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(32), info: new TextEncoder().encode('queer-guide-aes') },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    usage,
+  )
+}
+
+async function decrypt(encryptedBase64: string): Promise<string> {
+  const key = await deriveKey(['decrypt'])
 
   const combined = new Uint8Array(
     atob(encryptedBase64).split('').map(c => c.charCodeAt(0)),
@@ -37,16 +55,7 @@ async function decrypt(encryptedBase64: string): Promise<string> {
 }
 
 async function encrypt(text: string): Promise<string> {
-  const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY')
-  if (!masterKey) throw new Error('MASTER_ENCRYPTION_KEY not configured')
-
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(masterKey.padEnd(32, '0').slice(0, 32)),
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt'],
-  )
+  const key = await deriveKey(['encrypt'])
 
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const encrypted = await crypto.subtle.encrypt(

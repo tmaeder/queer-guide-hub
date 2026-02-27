@@ -1,5 +1,29 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
+const ALLOWED_ORIGINS = new Set<string>([
+  'https://queer.guide',
+  'https://www.queer.guide',
+  'http://localhost:5173',
+  'http://localhost:3000',
+])
+
+const baseCorsHeaders = {
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+/**
+ * Build CORS headers with origin validation.
+ * Returns the request origin only if it's in the allowlist.
+ */
+export function getCorsHeaders(req?: Request): Record<string, string> {
+  const origin = req?.headers.get('Origin') ?? ''
+  return {
+    ...baseCorsHeaders,
+    'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : '',
+  }
+}
+
+/** @deprecated Use getCorsHeaders(req) for origin-validated CORS. Kept for backward compat. */
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -19,19 +43,19 @@ export function getAnonClient(): SupabaseClient {
   )
 }
 
-export function jsonResponse(data: unknown, status = 200): Response {
+export function jsonResponse(data: unknown, status = 200, req?: Request): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...(req ? getCorsHeaders(req) : corsHeaders), 'Content-Type': 'application/json' },
   })
 }
 
-export function errorResponse(message: string, status = 500): Response {
-  return jsonResponse({ error: message, success: false }, status)
+export function errorResponse(message: string, status = 500, req?: Request): Response {
+  return jsonResponse({ error: message, success: false }, status, req)
 }
 
-export function corsResponse(): Response {
-  return new Response('ok', { headers: corsHeaders })
+export function corsResponse(req?: Request): Response {
+  return new Response('ok', { headers: req ? getCorsHeaders(req) : corsHeaders })
 }
 
 /**
@@ -44,13 +68,13 @@ export async function requireAdmin(
 ): Promise<{ userId: string } | Response> {
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
-    return errorResponse('Missing authorization header', 401)
+    return errorResponse('Missing authorization header', 401, req)
   }
 
   const token = authHeader.replace('Bearer ', '')
   const { data: userData, error: userError } = await serviceClient.auth.getUser(token)
   if (userError || !userData.user) {
-    return errorResponse('Invalid authorization', 401)
+    return errorResponse('Invalid authorization', 401, req)
   }
 
   const { data: roleData } = await serviceClient
@@ -61,7 +85,7 @@ export async function requireAdmin(
     .single()
 
   if (!roleData) {
-    return errorResponse('Admin access required', 403)
+    return errorResponse('Admin access required', 403, req)
   }
 
   return { userId: userData.user.id }

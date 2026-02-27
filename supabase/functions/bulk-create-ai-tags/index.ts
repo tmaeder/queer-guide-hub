@@ -1,33 +1,33 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { chatCompletion } from '../_shared/openai-client.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts';
 
 // Reference to supabase client — set inside the handler for the AI helper
 let _supabaseClient: any = null;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
-    const { terms } = await req.json();
-    
-    if (!terms || !Array.isArray(terms)) {
-      return new Response(
-        JSON.stringify({ error: 'Terms array is required' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Require admin authentication
+    const authResult = await requireAdmin(req, supabaseClient);
+    if (authResult instanceof Response) return authResult;
+
+    const { terms } = await req.json();
+
+    if (!terms || !Array.isArray(terms)) {
+      return new Response(
+        JSON.stringify({ error: 'Terms array is required' }),
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
 
     _supabaseClient = supabaseClient;
 
@@ -159,14 +159,14 @@ Deno.serve(async (req) => {
         message: `Started processing ${terms.length} terms in background`,
         terms_count: terms.length
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in bulk-create-ai-tags:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({ error: 'Internal server error', success: false }),
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
