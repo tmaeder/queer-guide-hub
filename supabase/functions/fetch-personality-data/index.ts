@@ -1,7 +1,9 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts';
+import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
+
+// Module-level reference for helper functions that need supabase access
+let _supabaseClient: any = null;
 
 interface WikidataSearchResult {
   id: string;
@@ -28,7 +30,7 @@ interface PersonalityData {
   regulatory_notes?: string;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -40,6 +42,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
+    _supabaseClient = supabase;
     const authResult = await requireAdmin(req, supabase);
     if (authResult instanceof Response) return authResult;
 
@@ -408,9 +411,8 @@ serve(async (req) => {
 
 async function enhanceWithLGBTIContext(basicData: any): Promise<PersonalityData> {
   try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      console.log('OpenAI API key not found, returning basic data');
+    if (!_supabaseClient || !(await isOpenAIAvailable(_supabaseClient))) {
+      console.log('OpenAI not available, returning basic data');
       return basicData;
     }
 
@@ -469,36 +471,23 @@ CRITICAL RULES:
 
 Return ONLY valid JSON, no additional text.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: [
-          { role: 'system', content: 'You are an expert LGBTI historian and researcher with access to comprehensive academic and community databases. Provide accurate, factual, well-researched information about people\'s relationship to the LGBTI/queer community. Always distinguish between documented facts and speculation.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 1200,
-        temperature: 0.2
-      }),
+    const aiResult = await chatCompletion(_supabaseClient, {
+      model: 'gpt-4.1-2025-04-14',
+      messages: [
+        { role: 'system', content: 'You are an expert LGBTI historian and researcher with access to comprehensive academic and community databases. Provide accurate, factual, well-researched information about people\'s relationship to the LGBTI/queer community. Always distinguish between documented facts and speculation.' },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 1200,
+      temperature: 0.2
     });
 
-    if (!response.ok) {
-      console.error(`OpenAI API error: ${response.status}`);
-      return basicData;
-    }
-
-    const aiResponse = await response.json();
-    const enhancedContent = aiResponse.choices[0].message.content;
+    const enhancedContent = aiResult.content;
 
     try {
       // Remove potential markdown code blocks from AI response
       const cleanedResponse = enhancedContent.replace(/^```json\s*|\s*```$/g, '').trim();
       const enhancedData = JSON.parse(cleanedResponse);
-      
+
       // Merge enhanced data with basic data, keeping all original fields
       return {
         name: enhancedData.name || basicData.name,

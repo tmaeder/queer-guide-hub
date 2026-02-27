@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts'
+import { enrichVenueWithAI, enrichEventWithAI, enrichPersonalityWithAI, enrichNewsWithAI } from '../_shared/ai-enrichment.ts'
 
 // --- AI Validator (inlined from _shared/ai-validator.ts for edge function compatibility) ---
 
@@ -171,6 +172,8 @@ async function commitItem(supabase: any, targetTable: string, normalizedData: Re
 // --- Enrichment ---
 
 async function enrichItem(supabase: any, targetTable: string, normalizedData: Record<string, unknown>): Promise<Record<string, unknown> | null> {
+  const enriched: Record<string, unknown> = {}
+
   // For venues: fetch Pexels image if no images
   if (targetTable === 'venues' && (!normalizedData.images || (normalizedData.images as string[]).length === 0)) {
     try {
@@ -183,7 +186,7 @@ async function enrichItem(supabase: any, targetTable: string, normalizedData: Re
         if (resp.ok) {
           const data = await resp.json()
           if (data.photos?.[0]) {
-            return { images: [data.photos[0].src.medium] }
+            enriched.images = [data.photos[0].src.medium]
           }
         }
       }
@@ -191,7 +194,46 @@ async function enrichItem(supabase: any, targetTable: string, normalizedData: Re
       console.warn('Pexels enrichment failed:', e)
     }
   }
-  return null
+
+  // AI enrichment via ChatGPT (optional — gracefully skipped if unavailable)
+  try {
+    let aiEnrichment: Record<string, unknown> | null = null
+
+    switch (targetTable) {
+      case 'venues':
+        aiEnrichment = await enrichVenueWithAI(supabase, normalizedData) as Record<string, unknown> | null
+        break
+      case 'events':
+        aiEnrichment = await enrichEventWithAI(supabase, normalizedData) as Record<string, unknown> | null
+        break
+      case 'personalities':
+        aiEnrichment = await enrichPersonalityWithAI(supabase, normalizedData) as Record<string, unknown> | null
+        break
+      case 'news_articles':
+        aiEnrichment = await enrichNewsWithAI(supabase, normalizedData) as Record<string, unknown> | null
+        break
+    }
+
+    if (aiEnrichment) {
+      // Merge AI enrichment — only fill missing fields
+      for (const [key, value] of Object.entries(aiEnrichment)) {
+        if (value && !normalizedData[key] && !enriched[key]) {
+          enriched[key] = value
+        }
+      }
+      // Always include AI-generated tags if present
+      if (aiEnrichment.suggested_tags) {
+        enriched.ai_suggested_tags = aiEnrichment.suggested_tags
+      }
+    }
+
+    // Rate limit: 200ms between AI calls
+    await new Promise(r => setTimeout(r, 200))
+  } catch (e) {
+    console.warn(`AI enrichment failed for ${targetTable}:`, e)
+  }
+
+  return Object.keys(enriched).length > 0 ? enriched : null
 }
 
 // --- Pipeline stages ---

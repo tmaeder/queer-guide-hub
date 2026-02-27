@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -628,6 +629,15 @@ Deno.serve(async (req) => {
                   social_links: socialMedia
                 }
               }
+
+              // AI enrichment — enhance description and tags if available
+              try {
+                const aiEnrichment = await enrichVenueWithAI(supabase, venueData)
+                if (aiEnrichment) {
+                  if (aiEnrichment.description && !venueData.description) venueData.description = aiEnrichment.description as string
+                  if (aiEnrichment.tags) venueData.tags = [...new Set([...(venueData.tags || []), ...(aiEnrichment.tags as string[])])]
+                }
+              } catch (e) { console.warn('AI enrichment skipped:', e) }
 
               if (existingVenue) {
                 // Update existing venue

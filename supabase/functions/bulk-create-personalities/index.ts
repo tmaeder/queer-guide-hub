@@ -1,11 +1,13 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Module-level reference for helper functions that need supabase access
+let _supabaseClient: any = null;
 
 interface WikidataSearchResult {
   id: string;
@@ -28,7 +30,7 @@ interface PersonalityData {
   next_concerts?: any[] | null;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -36,7 +38,7 @@ serve(async (req) => {
 
   try {
     const { names, sources = {} } = await req.json();
-    
+
     if (!names || !Array.isArray(names)) {
       throw new Error('Names array is required');
     }
@@ -58,6 +60,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+    _supabaseClient = supabase;
 
     const results = [];
     const errors = [];
@@ -390,9 +393,8 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
 
 async function enhanceWithLGBTIContext(basicData: any): Promise<any> {
   try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      console.log('OpenAI API key not found, returning basic data');
+    if (!_supabaseClient || !(await isOpenAIAvailable(_supabaseClient))) {
+      console.log('OpenAI not available, returning basic data');
       return basicData;
     }
 
@@ -440,36 +442,23 @@ CRITICAL RULES:
 
 Return ONLY valid JSON, no additional text.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: [
-          { role: 'system', content: 'You are an expert LGBTI historian and researcher. Provide accurate, factual information about people\'s relationship to the LGBTI/queer community.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 1000,
-        temperature: 0.3
-      }),
+    const aiResult = await chatCompletion(_supabaseClient, {
+      model: 'gpt-4.1-2025-04-14',
+      messages: [
+        { role: 'system', content: 'You are an expert LGBTI historian and researcher. Provide accurate, factual information about people\'s relationship to the LGBTI/queer community.' },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 1000,
+      temperature: 0.3
     });
 
-    if (!response.ok) {
-      console.error(`OpenAI API error: ${response.status}`);
-      return basicData;
-    }
-
-    const aiResponse = await response.json();
-    const enhancedContent = aiResponse.choices[0].message.content;
+    const enhancedContent = aiResult.content;
 
     try {
       // Remove potential markdown code blocks from AI response
       const cleanedResponse = enhancedContent.replace(/^```json\s*|\s*```$/g, '').trim();
       const enhancedData = JSON.parse(cleanedResponse);
-      
+
       // Merge enhanced data with basic data, keeping all original fields
       return {
         ...basicData,

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { enrichEventWithAI } from '../_shared/ai-enrichment.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -345,6 +346,19 @@ serve(async (req) => {
         created_by: user.id,
         venue_id: venue_id
       });
+    }
+
+    // AI enrichment — enhance events missing descriptions
+    for (const event of eventsWithCreatorAndVenues) {
+      if (!event.description) {
+        try {
+          const aiEnrichment = await enrichEventWithAI(supabaseClient, event)
+          if (aiEnrichment) {
+            if (aiEnrichment.description) event.description = aiEnrichment.description as string
+            if (aiEnrichment.event_type && !event.event_type) event.event_type = aiEnrichment.event_type as string
+          }
+        } catch (e) { console.warn('AI enrichment skipped for event:', event.title, e) }
+      }
     }
 
     // Insert events into database

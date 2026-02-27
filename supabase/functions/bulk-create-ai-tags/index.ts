@@ -1,13 +1,15 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { chatCompletion } from '../_shared/openai-client.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+// Reference to supabase client — set inside the handler for the AI helper
+let _supabaseClient: any = null;
+
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -27,24 +29,24 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
-    }
+    _supabaseClient = supabaseClient;
 
     // Create background task for processing
     const backgroundTask = async () => {
       console.log(`Starting background task to process ${terms.length} terms`);
-      
+
       const results = [];
-      const categories = [
-        'identity', 'relationships', 'health', 'culture', 'politics', 'entertainment',
-        'business', 'technology', 'education', 'travel', 'food', 'sports',
-        'arts', 'community', 'activism', 'legal', 'history', 'literature'
-      ];
+
+      // Load categories dynamically from the DB
+      const { data: dbCategories } = await supabaseClient
+        .from('tag_categories')
+        .select('id, slug, name, level, parent_id')
+        .order('sort_order');
+
+      const categoryRows = dbCategories || [];
+      const categories = categoryRows.map(c => c.slug);
+      const slugToId = new Map(categoryRows.map(c => [c.slug, c.id]));
+      const validSlugs = new Set(categories);
 
       for (const term of terms) {
         if (!term.trim()) continue;
@@ -73,11 +75,14 @@ serve(async (req) => {
           const wikiData = await getWikipediaData(cleanTerm);
           
           // Use AI to categorize and enhance description
-          const aiResponse = await categorizeWithAI(cleanTerm, wikiData.description, categories, openAIApiKey);
+          const aiResponse = await categorizeWithAI(cleanTerm, wikiData.description, categories);
           
           // Fetch and upload image
           const imageUrl = await fetchAndStoreImage(cleanTerm, supabaseClient);
           
+          // Resolve category_id from slug
+          const categoryId = slugToId.get(aiResponse.category) || null;
+
           // Create the tag
           const { data: newTag, error: tagError } = await supabaseClient
             .from('unified_tags')
@@ -85,6 +90,7 @@ serve(async (req) => {
               name: cleanTerm,
               slug: slug,
               category: aiResponse.category,
+              category_id: categoryId,
               description: aiResponse.description,
               image_url: imageUrl,
               wikipedia_url: wikiData.url,
@@ -101,6 +107,19 @@ serve(async (req) => {
               error: tagError.message
             });
           } else {
+            // Create tag_category_assignment for proper multi-category support
+            if (newTag && categoryId) {
+              const { error: assignError } = await supabaseClient
+                .from('tag_category_assignments')
+                .upsert(
+                  { tag_id: newTag.id, category_id: categoryId, is_primary: true },
+                  { onConflict: 'tag_id,category_id' }
+                );
+              if (assignError) {
+                console.error(`Failed to create category assignment for "${cleanTerm}":`, assignError.message);
+              }
+            }
+
             results.push({
               term: cleanTerm,
               status: 'created',
@@ -178,7 +197,7 @@ async function getWikipediaData(term: string) {
   };
 }
 
-async function categorizeWithAI(term: string, wikiDescription: string, categories: string[], apiKey: string) {
+async function categorizeWithAI(term: string, wikiDescription: string, categories: string[]) {
   try {
     const prompt = `Analyze the term "${term}" and its description: "${wikiDescription}"
 
@@ -192,42 +211,36 @@ Respond with JSON in this format:
   "description": "enhanced description"
 }`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert at categorizing and describing terms for an LGBTQ+ community platform. Provide accurate, inclusive, and helpful categorizations and descriptions.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.3,
-        max_tokens: 200
-      }),
+    const result = await chatCompletion(_supabaseClient, {
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert at categorizing and describing terms for an LGBTQ+ community platform. Provide accurate, inclusive, and helpful categorizations and descriptions.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 200
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const content = data.choices[0].message.content;
+    const content = result.content;
     
     try {
       const parsed = JSON.parse(content);
       
-      // Validate category
+      // Validate category against the DB slugs
       if (!categories.includes(parsed.category)) {
-        parsed.category = 'general';
+        // Try to find a close match by checking if the AI returned a name instead of slug
+        const slugified = parsed.category?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        if (slugified && categories.includes(slugified)) {
+          parsed.category = slugified;
+        } else {
+          parsed.category = categories.includes('general') ? 'general' : categories[0] || 'general';
+        }
       }
       
       // Use original description if AI didn't provide one

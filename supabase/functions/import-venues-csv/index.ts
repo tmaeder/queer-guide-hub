@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -243,11 +244,24 @@ serve(async (req) => {
       );
     }
 
-    // Process venues and add creator
+    // Process venues, add creator, and enrich with AI
     const venuesWithCreator = venues.map(venue => ({
       ...venue,
       created_by: user.id
     }));
+
+    // AI enrichment — enhance venues missing descriptions
+    for (const venue of venuesWithCreator) {
+      if (!venue.description) {
+        try {
+          const aiEnrichment = await enrichVenueWithAI(supabaseClient, venue)
+          if (aiEnrichment) {
+            if (aiEnrichment.description) venue.description = aiEnrichment.description as string
+            if (aiEnrichment.tags && !venue.tags?.length) venue.tags = aiEnrichment.tags as string[]
+          }
+        } catch (e) { console.warn('AI enrichment skipped for venue:', venue.name, e) }
+      }
+    }
 
     // Insert venues into database
     const { data: insertedVenues, error: insertError } = await supabaseClient

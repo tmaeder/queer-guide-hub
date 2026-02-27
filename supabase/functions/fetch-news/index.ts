@@ -1,3 +1,5 @@
+import { enrichNewsWithAI } from '../_shared/ai-enrichment.ts';
+
 // CORS headers for web app compatibility
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -559,6 +561,17 @@ Deno.serve(async (req) => {
         }
 
         if (articles.length > 0) {
+          // AI enrichment — enhance articles with tags and summaries
+          for (const article of articles) {
+            try {
+              const aiEnrichment = await enrichNewsWithAI(supabase, article)
+              if (aiEnrichment) {
+                if (aiEnrichment.summary && !article.excerpt) article.excerpt = aiEnrichment.summary as string
+                if (aiEnrichment.tags) article.tags = [...(article.tags || []), ...(aiEnrichment.tags as string[])]
+              }
+            } catch (e) { console.warn('AI enrichment skipped for article:', article.title, e) }
+          }
+
           // Insert articles into database
           const { error: insertError } = await supabase
             .from('news_articles')
