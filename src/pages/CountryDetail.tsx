@@ -36,6 +36,7 @@ import { useNews } from "@/hooks/useNews";
 import { NewsCard } from "@/components/news/NewsCard";
 import { supabase } from "@/integrations/supabase/client";
 import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
 export default function CountryDetail() {
@@ -44,7 +45,16 @@ export default function CountryDetail() {
   const [weatherData, setWeatherData] = useState<any>(null);
 
   if (!countryId) {
-    return <Box>Country not found</Box>;
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Card>
+          <CardContent sx={{ textAlign: 'center', py: 6 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Country not found</Typography>
+            <Typography variant="body2" color="text.secondary">The requested country could not be loaded.</Typography>
+          </CardContent>
+        </Card>
+      </Container>
+    );
   }
 
   const { country, loading: countryLoading } = useOptimizedCountry(countryId);
@@ -152,18 +162,20 @@ export default function CountryDetail() {
 
   if (!country) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="h4" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Country not found</Typography>
-          <Typography sx={{ color: 'text.secondary' }}>The country you're looking for doesn't exist.</Typography>
-          <Button asChild>
-            <Link to="/users">
-              <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
-              Back to Directory
-            </Link>
-          </Button>
-        </Box>
-      </Box>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Card>
+          <CardContent sx={{ textAlign: 'center', py: 6 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Country not found</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>The country you're looking for doesn't exist.</Typography>
+            <Button asChild>
+              <Link to="/users">
+                <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+                Back to Directory
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </Container>
     );
   }
 

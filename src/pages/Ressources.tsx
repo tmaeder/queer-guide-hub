@@ -10,6 +10,7 @@ import { getCategoryIcon, getCategoryShortName } from "@/components/resources/ca
 import { supabase } from "@/integrations/supabase/client";
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -418,14 +419,14 @@ export default function Ressources() {
   };
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ p: 3 }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
         <PageLoadingState count={12} />
       </Container>
     );
   }
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ p: 3 }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
         <ErrorState
           message="Something went wrong while loading resources. Please try again later."
           onRetry={() => window.location.reload()}
@@ -522,9 +523,9 @@ export default function Ressources() {
           </Box>
         )}
 
-        {/* Title + Category */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>{selectedTag.name}</Typography>
+        {/* Title + Category + Description */}
+        <Paper variant="outlined" sx={{ p: { xs: 2.5, sm: 3 }, mb: 3, bgcolor: 'background.paper' }}>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 0.5 }}>{selectedTag.name}</Typography>
           {primaryCat && (
             <Typography variant="body2" color="text.secondary">
               {parentCatName ? `${getCategoryShortName(parentCatName)} › ` : ''}{getCategoryShortName(primaryCat)}
@@ -542,14 +543,12 @@ export default function Ressources() {
               )}
             </Typography>
           )}
-        </Box>
-
-        {/* Description (if exists, rendered inline before grid) */}
-        {selectedTag.description && (
-          <Typography color="text.secondary" sx={{ lineHeight: 1.7, mb: 3 }}>
-            {selectedTag.description}
-          </Typography>
-        )}
+          {selectedTag.description && (
+            <Typography color="text.secondary" sx={{ lineHeight: 1.7, mt: 1.5 }}>
+              {selectedTag.description}
+            </Typography>
+          )}
+        </Paper>
 
         {/* 2-Column Layout: Linked content + Sidebar */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
@@ -577,8 +576,7 @@ export default function Ressources() {
     />
   );
 
-  return <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
+  return <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
         <PageHeader
           title="Resources"
@@ -1008,6 +1006,5 @@ export default function Ressources() {
             )}
           </Box>
         )}
-      </Container>
-    </Box>;
+      </Container>;
 }

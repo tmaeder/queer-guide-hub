@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
+import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, ArrowLeft } from 'lucide-react';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Calendar, MapPin } from 'lucide-react';
 
 const contentTypes = [
   {
@@ -24,23 +25,12 @@ const SubmitHub = () => {
   const navigate = useNavigate();
 
   return (
-    <Box sx={{ maxWidth: '40rem', mx: 'auto', py: 4, px: 2 }}>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate(-1)}
-        style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}
-      >
-        <ArrowLeft style={{ width: 16, height: 16 }} />
-        Back
-      </Button>
-
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-        Submit Content
-      </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-        Help grow the community by sharing LGBTQ+ venues and events. All submissions are reviewed before publishing.
-      </Typography>
+    <Container maxWidth="sm" sx={{ py: 4 }}>
+      <PageHeader
+        title="Submit Content"
+        subtitle="Help grow the community by sharing LGBTQ+ venues and events. All submissions are reviewed before publishing."
+        center
+      />
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {contentTypes.map(({ type, label, description, icon: Icon }) => (
@@ -76,7 +66,7 @@ const SubmitHub = () => {
           </Card>
         ))}
       </Box>
-    </Box>
+    </Container>
   );
 };
 
