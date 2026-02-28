@@ -131,6 +131,36 @@ export function AutoModerationQueue() {
     }
   };
 
+  // All flags that have suggested values (for "Apply All Enrichments")
+  const allWithSuggestions = useMemo(() => {
+    return filteredFlags.filter(f => f.suggested_value);
+  }, [filteredFlags]);
+
+  const handleApplyAllEnrichments = async () => {
+    const ids = allWithSuggestions.map(f => f.id);
+    if (ids.length === 0) {
+      toast.info('No flags with suggested changes');
+      return;
+    }
+    try {
+      await bulkReviewFlags({ flagIds: ids, action: 'approved' });
+      setSelectedIds([]);
+    } catch {
+      // Error handled by mutation
+    }
+  };
+
+  const handleDismissAll = async () => {
+    const ids = filteredFlags.map(f => f.id);
+    if (ids.length === 0) return;
+    try {
+      await bulkReviewFlags({ flagIds: ids, action: 'rejected' });
+      setSelectedIds([]);
+    } catch {
+      // Error handled by mutation
+    }
+  };
+
   const handleBulkAction = async (action: 'approved' | 'rejected') => {
     if (selectedIds.length === 0) return;
     try {
@@ -209,13 +239,35 @@ export function AutoModerationQueue() {
                 />
               </Box>
             </Box>
-            <Button
-              onClick={handleAutoApproveAll}
-              disabled={isReviewing || autoApprovable.length === 0}
-            >
-              <Zap style={{ width: 14, height: 14, marginRight: 4 }} />
-              Auto-Approve ({autoApprovable.length})
-            </Button>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Button
+                onClick={handleAutoApproveAll}
+                disabled={isReviewing || autoApprovable.length === 0}
+              >
+                <Zap style={{ width: 14, height: 14, marginRight: 4 }} />
+                Auto-Approve ({autoApprovable.length})
+              </Button>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  onClick={handleApplyAllEnrichments}
+                  disabled={isReviewing || allWithSuggestions.length === 0}
+                  variant="outline"
+                  size="sm"
+                >
+                  <CheckCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                  Apply All Enrichments ({allWithSuggestions.length})
+                </Button>
+                <Button
+                  onClick={handleDismissAll}
+                  disabled={isReviewing || filteredFlags.length === 0}
+                  variant="outline"
+                  size="sm"
+                >
+                  <XCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                  Dismiss All ({filteredFlags.length})
+                </Button>
+              </Box>
+            </Box>
           </Box>
         </CardContent>
       </Card>
