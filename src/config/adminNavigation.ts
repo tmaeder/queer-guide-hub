@@ -1,5 +1,6 @@
 /**
  * Admin Navigation Configuration
+ * Simplified 4-section layout: Cockpit, Content, Import & Review, System.
  * Central config for the unified admin sidebar. Each section groups related nav items.
  * Used by AdminSidebar to render the navigation tree.
  */
@@ -22,24 +23,22 @@ import {
   FileText,
   Image,
   Download,
-  Plus,
   Rss,
   Activity,
-  History,
   ClipboardCheck,
-  Clock,
   Settings,
   Key,
   Mail,
   Link2,
-  Flag,
-  Hotel,
-  Home,
   LinkIcon,
   Handshake,
   Inbox,
   Workflow,
   Zap,
+  Hotel,
+  Home,
+  History,
+  Plus,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -72,10 +71,10 @@ export interface AdminNavSection {
 // ── Navigation Sections ────────────────────────────────────────────────────────
 
 export const adminNavSections: AdminNavSection[] = [
-  // ── Dashboard ──────────────────────────────────────────────────
+  // ── Cockpit (unified dashboard) ─────────────────────────────────
   {
-    id: 'dashboard',
-    label: 'Dashboard',
+    id: 'cockpit',
+    label: 'Cockpit',
     icon: LayoutDashboard,
     color: '#8b5cf6',
     items: [
@@ -86,34 +85,10 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin',
         color: '#8b5cf6',
       },
-      {
-        id: 'analytics',
-        label: 'Analytics',
-        icon: BarChart3,
-        route: '/admin/analytics',
-        adminOnly: true,
-        color: '#3b82f6',
-      },
-      {
-        id: 'security',
-        label: 'Security',
-        icon: Shield,
-        route: '/admin/security',
-        adminOnly: true,
-        color: '#ef4444',
-      },
-      {
-        id: 'cloudflare',
-        label: 'Cloudflare',
-        icon: Cloud,
-        route: '/admin/cloudflare',
-        adminOnly: true,
-        color: '#f59e0b',
-      },
     ],
   },
 
-  // ── Content ────────────────────────────────────────────────────
+  // ── Content (all content types unified) ─────────────────────────
   {
     id: 'content',
     label: 'Content',
@@ -178,12 +153,20 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#6366f1',
       },
       {
-        id: 'tags',
-        label: 'Tags',
-        icon: Tag,
-        route: '/admin/content/unified_tags',
-        countTable: 'unified_tags',
-        color: '#14b8a6',
+        id: 'hotels',
+        label: 'Hotels & BnBs',
+        icon: Hotel,
+        route: '/admin/content/hotels',
+        countTable: 'hotels',
+        color: '#0ea5e9',
+      },
+      {
+        id: 'villages',
+        label: 'Queer Villages',
+        icon: Home,
+        route: '/admin/content/queer_villages',
+        countTable: 'queer_villages',
+        color: '#d946ef',
       },
       {
         id: 'marketplace',
@@ -194,22 +177,6 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#f97316',
       },
       {
-        id: 'hotels',
-        label: 'Hotels & BnBs',
-        icon: Hotel,
-        route: '/admin/hotels',
-        countTable: 'hotels',
-        color: '#0ea5e9',
-      },
-      {
-        id: 'villages',
-        label: 'Queer Villages',
-        icon: Home,
-        route: '/admin/villages',
-        countTable: 'queer_villages',
-        color: '#d946ef',
-      },
-      {
         id: 'groups',
         label: 'Groups',
         icon: UsersRound,
@@ -218,10 +185,18 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#a855f7',
       },
       {
+        id: 'tags',
+        label: 'Tags',
+        icon: Tag,
+        route: '/admin/content/unified_tags',
+        countTable: 'unified_tags',
+        color: '#14b8a6',
+      },
+      {
         id: 'pages',
         label: 'Pages',
         icon: FileText,
-        route: '/admin/pages',
+        route: '/admin/content/cms_pages',
         countTable: 'cms_pages',
         color: '#64748b',
       },
@@ -235,32 +210,39 @@ export const adminNavSections: AdminNavSection[] = [
     ],
   },
 
-  // ── Imports & Data ─────────────────────────────────────────────
+  // ── Import & Review (combined pipeline) ─────────────────────────
   {
-    id: 'imports',
-    label: 'Imports & Data',
+    id: 'import-review',
+    label: 'Import & Review',
     icon: Download,
     color: '#10b981',
     collapsible: true,
-    defaultExpanded: false,
+    defaultExpanded: true,
     items: [
       {
+        id: 'review-queue',
+        label: 'Review Queue',
+        icon: ClipboardCheck,
+        route: '/admin/review',
+        color: '#f59e0b',
+      },
+      {
         id: 'import-dashboard',
-        label: 'Import Dashboard',
+        label: 'Imports',
         icon: Download,
         route: '/admin/imports',
         color: '#10b981',
       },
       {
         id: 'create-import',
-        label: 'Create Import',
+        label: 'New Import',
         icon: Plus,
         route: '/admin/imports/create',
         color: '#10b981',
       },
       {
         id: 'news-sources',
-        label: 'News Sources',
+        label: 'Sources',
         icon: Rss,
         route: '/admin/imports/news-sources',
         color: '#3b82f6',
@@ -346,12 +328,11 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#0ea5e9',
       },
       {
-        id: 'affiliates',
-        label: 'Affiliates',
-        icon: Handshake,
-        route: '/admin/affiliates',
-        adminOnly: true,
-        color: '#10b981',
+        id: 'audit-log',
+        label: 'Audit Log',
+        icon: History,
+        route: '/admin/audit',
+        color: '#6366f1',
       },
       {
         id: 'submissions',
@@ -364,7 +345,7 @@ export const adminNavSections: AdminNavSection[] = [
     ],
   },
 
-  // ── System ─────────────────────────────────────────────────────
+  // ── System (admin-only) ─────────────────────────────────────────
   {
     id: 'system',
     label: 'System',
@@ -380,6 +361,55 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/users',
         adminOnly: true,
         color: '#64748b',
+      },
+      {
+        id: 'analytics',
+        label: 'Analytics',
+        icon: BarChart3,
+        route: '/admin/analytics',
+        adminOnly: true,
+        color: '#3b82f6',
+      },
+      {
+        id: 'security',
+        label: 'Security',
+        icon: Shield,
+        route: '/admin/security',
+        adminOnly: true,
+        color: '#ef4444',
+      },
+      {
+        id: 'cloudflare',
+        label: 'Cloudflare',
+        icon: Cloud,
+        route: '/admin/cloudflare',
+        adminOnly: true,
+        color: '#f59e0b',
+      },
+      {
+        id: 'automation',
+        label: 'Automation',
+        icon: Zap,
+        route: '/admin/automation',
+        countTable: 'content_flags',
+        adminOnly: true,
+        color: '#f59e0b',
+      },
+      {
+        id: 'workflows',
+        label: 'Workflows',
+        icon: Workflow,
+        route: '/admin/workflows',
+        adminOnly: true,
+        color: '#8b5cf6',
+      },
+      {
+        id: 'affiliates',
+        label: 'Affiliates',
+        icon: Handshake,
+        route: '/admin/affiliates',
+        adminOnly: true,
+        color: '#10b981',
       },
       {
         id: 'api-keys',
@@ -446,14 +476,10 @@ export function getBreadcrumbsForRoute(
   for (const section of adminNavSections) {
     for (const item of section.items) {
       if (item.route === pathname) {
-        // If the item is directly under /admin (like /admin/analytics), add section + item
-        // If nested deeper (like /admin/content/venues), add section + item
-        if (section.id !== 'dashboard') {
-          // Find the section's "parent" route — use the first item's route or derive from section id
+        if (section.id !== 'cockpit') {
           const sectionRoute = section.items[0]?.route;
           crumbs.push({ label: section.label, route: sectionRoute });
         }
-        // Final crumb has no route (current page)
         crumbs.push({ label: item.label });
         return crumbs;
       }
@@ -462,10 +488,15 @@ export function getBreadcrumbsForRoute(
 
   // Fallback: if no exact match, try to match by section
   for (const section of adminNavSections) {
-    const sectionPrefix = `/admin/${section.id}`;
-    if (pathname.startsWith(sectionPrefix) && section.id !== 'dashboard') {
-      crumbs.push({ label: section.label });
-      return crumbs;
+    for (const item of section.items) {
+      if (pathname.startsWith(item.route) && item.route !== '/admin') {
+        if (section.id !== 'cockpit') {
+          const sectionRoute = section.items[0]?.route;
+          crumbs.push({ label: section.label, route: sectionRoute });
+        }
+        crumbs.push({ label: item.label });
+        return crumbs;
+      }
     }
   }
 

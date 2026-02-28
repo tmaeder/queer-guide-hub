@@ -144,17 +144,22 @@ export function TagSuggestionsQueue() {
             {total} pending suggestion{total !== 1 ? 's' : ''}
           </Typography>
         </Box>
-        {selectedIds.size > 0 && (
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary">{selectedIds.size} selected</Typography>
-            <Button size="sm" disabled={isPending} onClick={() => approveMutation.mutate(Array.from(selectedIds))} style={{ backgroundColor: '#16a34a', color: 'white', display: 'flex', gap: 6 }}>
-              <CheckCircle style={{ height: 14, width: 14 }} /> Approve
-            </Button>
-            <Button variant="destructive" size="sm" disabled={isPending} onClick={() => rejectMutation.mutate(Array.from(selectedIds))} style={{ display: 'flex', gap: 6 }}>
-              <XCircle style={{ height: 14, width: 14 }} /> Reject
-            </Button>
-          </Box>
-        )}
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          {selectedIds.size > 0 && (
+            <>
+              <Typography variant="body2" color="text.secondary">{selectedIds.size} selected</Typography>
+              <Button size="sm" disabled={isPending} onClick={() => approveMutation.mutate(Array.from(selectedIds))} style={{ backgroundColor: '#16a34a', color: 'white', display: 'flex', gap: 6 }}>
+                <CheckCircle style={{ height: 14, width: 14 }} /> Approve Selected
+              </Button>
+              <Button variant="destructive" size="sm" disabled={isPending} onClick={() => rejectMutation.mutate(Array.from(selectedIds))} style={{ display: 'flex', gap: 6 }}>
+                <XCircle style={{ height: 14, width: 14 }} /> Reject Selected
+              </Button>
+            </>
+          )}
+          <Button size="sm" disabled={isPending || items.length === 0} onClick={() => approveMutation.mutate(items.map(i => i.id))} style={{ backgroundColor: '#16a34a', color: 'white', display: 'flex', gap: 6 }}>
+            <CheckCircle style={{ height: 14, width: 14 }} /> Approve All ({items.length})
+          </Button>
+        </Box>
       </Box>
 
       {/* Items */}

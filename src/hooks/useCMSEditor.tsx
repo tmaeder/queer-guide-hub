@@ -214,6 +214,26 @@ export function useCMSEditor({
         savedId = inserted.id;
       }
 
+      // Ensure cms_content_metadata exists for ALL content types (workflow support)
+      if (savedId && !metadata) {
+        const { data: newMeta } = await supabase
+          .from('cms_content_metadata' as any)
+          .upsert({
+            source_table: config.tableName,
+            source_id: savedId,
+            workflow_state: 'draft',
+            visibility_level: 'public',
+            last_edited_by: user.id,
+            last_edited_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'source_table,source_id' })
+          .select()
+          .maybeSingle();
+
+        if (newMeta) setMetadata(newMeta as CMSContentMetadata);
+      }
+
       // Create revision snapshot
       if (savedId) {
         await createRevision(config.tableName, savedId, state.data, state.originalData);

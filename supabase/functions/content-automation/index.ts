@@ -68,6 +68,10 @@ Deno.serve(async (req) => {
       return errorResponse('Missing "module" parameter', 400, req)
     }
 
+    // Single-item enrichment mode — bypasses module config for on-demand enrichment
+    const singleContentId = payload.content_id as string | undefined
+    const singleContentType = payload.content_type as string | undefined
+
     // Load module config
     const { data: mod, error: modError } = await supabase
       .from('automation_modules')
@@ -79,7 +83,8 @@ Deno.serve(async (req) => {
       return errorResponse(`Unknown automation module: ${moduleName}`, 404, req)
     }
 
-    if (!mod.is_enabled) {
+    // For single-item mode, skip the is_enabled check (on-demand trigger)
+    if (!singleContentId && !mod.is_enabled) {
       return jsonResponse({ success: true, message: `Module ${moduleName} is disabled`, items_processed: 0 }, 200, req)
     }
 
@@ -124,7 +129,7 @@ async function runModule(
     case 'contact-normalizer':
       return runContactNormalization(supabase, mod)
     case 'ai-content-enhancer':
-      return runAIEnhancement(supabase, mod)
+      return runAIEnhancement(supabase, mod, payload)
     default:
       throw new Error(`No handler for module: ${mod.name}`)
   }
@@ -745,9 +750,10 @@ async function runContactNormalization(
 
 async function runAIEnhancement(
   supabase: SupabaseClient,
-  mod: AutomationModule
-): Promise<ProcessingResult> {
-  const result: ProcessingResult = {
+  mod: AutomationModule,
+  payload?: Record<string, unknown>
+): Promise<ProcessingResult & { suggestions?: Record<string, unknown> }> {
+  const result: ProcessingResult & { suggestions?: Record<string, unknown> } = {
     items_total: 0, items_processed: 0, items_succeeded: 0,
     items_failed: 0, flags_created: 0, auto_approved: 0, errors: [],
   }
@@ -758,7 +764,15 @@ async function runAIEnhancement(
     return { ...result, errors: ['OPENAI_API_KEY not configured'] }
   }
 
-  // Get venues with short descriptions
+  // Single-item mode: enrich a specific content item and return suggestions directly
+  const singleContentId = payload?.content_id as string | undefined
+  const singleContentType = payload?.content_type as string | undefined
+
+  if (singleContentId && singleContentType) {
+    return runSingleItemEnrichment(supabase, mod, singleContentType, singleContentId, openaiKey, config)
+  }
+
+  // Batch mode: process venues with short descriptions
   const { data: venues } = await supabase
     .from('venues')
     .select('id, name, description, address')
@@ -770,31 +784,12 @@ async function runAIEnhancement(
 
   for (const venue of venues || []) {
     try {
-      const prompt = `You are helping improve listings for a queer-friendly venue directory. Write a concise, welcoming, and inclusive description (2-3 sentences, max 200 words) for the following venue. Use inclusive language and be culturally sensitive.\n\nVenue: ${venue.name}\nAddress: ${venue.address || 'Unknown'}\nCurrent description: ${venue.description || 'None'}\n\nProvide only the improved description text, no other commentary.`
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: (config.model as string) || 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: (config.max_tokens as number) || 500,
-          temperature: (config.temperature as number) || 0.3,
-        }),
+      const improvedDescription = await getAIDescription(openaiKey, config, 'venues', {
+        name: venue.name, description: venue.description, address: venue.address,
       })
 
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`)
-      }
-
-      const data = await response.json()
-      const improvedDescription = data.choices?.[0]?.message?.content?.trim()
-
       if (improvedDescription) {
-        const confidence = 0.70 // AI-generated suggestions start at lower confidence
+        const confidence = 0.70
         const flags: Omit<ContentFlag, 'status'>[] = [{
           module_name: mod.name,
           content_type: 'venues',
@@ -825,6 +820,169 @@ async function runAIEnhancement(
   }
 
   return result
+}
+
+/** Single-item enrichment: fetch current data, generate AI suggestions, return them directly */
+async function runSingleItemEnrichment(
+  supabase: SupabaseClient,
+  mod: AutomationModule,
+  contentType: string,
+  contentId: string,
+  openaiKey: string,
+  config: Record<string, unknown>,
+): Promise<ProcessingResult & { suggestions?: Record<string, unknown> }> {
+  const result: ProcessingResult & { suggestions?: Record<string, unknown> } = {
+    items_total: 1, items_processed: 0, items_succeeded: 0,
+    items_failed: 0, flags_created: 0, auto_approved: 0, errors: [],
+  }
+
+  try {
+    // Fetch the content item
+    const { data: item, error } = await supabase
+      .from(contentType)
+      .select('*')
+      .eq('id', contentId)
+      .single()
+
+    if (error || !item) {
+      result.items_failed = 1
+      result.items_processed = 1
+      result.errors.push(`Item not found: ${contentType}/${contentId}`)
+      return result
+    }
+
+    // Build enrichment prompt based on content type
+    const suggestions = await generateEnrichmentSuggestions(openaiKey, config, contentType, item)
+
+    result.suggestions = suggestions
+    result.items_processed = 1
+    result.items_succeeded = 1
+    return result
+  } catch (e) {
+    result.items_failed = 1
+    result.items_processed = 1
+    result.errors.push((e as Error).message)
+    return result
+  }
+}
+
+/** Generate AI enrichment suggestions for any content type */
+async function generateEnrichmentSuggestions(
+  openaiKey: string,
+  config: Record<string, unknown>,
+  contentType: string,
+  item: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const name = (item.name || item.title || '') as string
+  const description = (item.description || item.content || '') as string
+  const address = (item.address || '') as string
+
+  const CONTENT_PROMPTS: Record<string, string> = {
+    venues: `You are improving listings for a queer-friendly venue directory. Given this venue data, suggest improvements. Return JSON with ONLY fields that can be improved (skip fields that are already good or empty/irrelevant):
+- "description": improved 2-3 sentence description (inclusive, welcoming)
+- "lgbtq_friendly_description": what makes this venue LGBTQ+ friendly (1-2 sentences)
+- "suggested_tags": array of 3-8 relevant tag strings
+
+Venue: ${name}
+Address: ${address}
+Current description: ${description || 'None'}`,
+
+    events: `You are improving listings for a queer event directory. Given this event data, suggest improvements. Return JSON with ONLY fields that can be improved:
+- "description": improved 2-3 sentence event description (inclusive, welcoming)
+- "suggested_tags": array of 3-8 relevant tag strings
+
+Event: ${name}
+Current description: ${description || 'None'}
+Start: ${item.start_time || 'Unknown'}`,
+
+    personalities: `You are improving entries for a directory of notable LGBTQ+ personalities. Return JSON with ONLY fields that can be improved:
+- "description": improved 2-3 sentence biography (respectful, factual)
+- "lgbtq_context": their significance to LGBTQ+ history/culture (1-2 sentences)
+- "suggested_tags": array of 3-8 relevant tag strings
+
+Name: ${name}
+Current bio: ${description || 'None'}
+Birth: ${item.birth_date || 'Unknown'}
+Nationality: ${item.nationality || 'Unknown'}`,
+
+    news_articles: `You are improving entries for an LGBTQ+ news platform. Return JSON with ONLY fields that can be improved:
+- "summary": improved 1-2 sentence summary
+- "suggested_tags": array of 3-8 relevant tag strings
+
+Title: ${name}
+Current content: ${(description || '').slice(0, 500)}`,
+
+    cities: `You are improving entries for an LGBTQ+ travel guide. Return JSON with ONLY fields that can be improved:
+- "description": improved 2-3 sentence description of the city's LGBTQ+ scene
+- "suggested_tags": array of 3-8 relevant tag strings
+
+City: ${name}
+Current description: ${description || 'None'}
+Country: ${item.country || 'Unknown'}`,
+  }
+
+  const prompt = CONTENT_PROMPTS[contentType] || `Improve this content for an LGBTQ+ directory. Return JSON with "description" (improved text) and "suggested_tags" (3-8 tags).\n\nName: ${name}\nCurrent: ${description || 'None'}`
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openaiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: (config.model as string) || 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are a helpful content editor for an LGBTQ+ community platform. Always respond with valid JSON only, no markdown fences or commentary. Use inclusive, respectful language.' },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: (config.max_tokens as number) || 500,
+      temperature: (config.temperature as number) || 0.3,
+      response_format: { type: 'json_object' },
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`OpenAI API error: ${response.status}`)
+  }
+
+  const data = await response.json()
+  const content = data.choices?.[0]?.message?.content?.trim()
+  if (!content) return {}
+
+  try {
+    return JSON.parse(content)
+  } catch {
+    return {}
+  }
+}
+
+/** Get AI-improved description for batch mode */
+async function getAIDescription(
+  openaiKey: string,
+  config: Record<string, unknown>,
+  _contentType: string,
+  item: { name: string; description?: string; address?: string },
+): Promise<string | null> {
+  const prompt = `You are helping improve listings for a queer-friendly venue directory. Write a concise, welcoming, and inclusive description (2-3 sentences, max 200 words) for the following venue. Use inclusive language and be culturally sensitive.\n\nVenue: ${item.name}\nAddress: ${item.address || 'Unknown'}\nCurrent description: ${item.description || 'None'}\n\nProvide only the improved description text, no other commentary.`
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openaiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: (config.model as string) || 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: (config.max_tokens as number) || 500,
+      temperature: (config.temperature as number) || 0.3,
+    }),
+  })
+
+  if (!response.ok) throw new Error(`OpenAI API error: ${response.status}`)
+
+  const data = await response.json()
+  return data.choices?.[0]?.message?.content?.trim() || null
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
