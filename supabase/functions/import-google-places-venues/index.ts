@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
 
 interface GooglePlacesResult {
   place_id: string;
@@ -198,10 +194,12 @@ async function getPlaceDetails(apiKey: string, placeId: string): Promise<GoogleP
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cors = getCorsHeaders(req);
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+
+  const supabase = getServiceClient();
+  const auth = await requireAdmin(req, supabase);
+  if (auth instanceof Response) return auth;
 
   try {
     console.log('Starting Google Places venues import...');
@@ -417,48 +415,22 @@ serve(async (req) => {
         skipped: totalSkipped
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...cors, 'Content-Type': 'application/json' },
         status: 200
       }
     );
 
   } catch (error) {
     console.error('Google Places import error:', error);
-    console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
-    
-    let errorMessage = 'Unknown error occurred';
-    let statusCode = 500;
-    
-    if (error instanceof Error) {
-      errorMessage = error.message;
-      
-      // Check for specific API errors
-      if (errorMessage.includes('API key invalid') || errorMessage.includes('REQUEST_DENIED')) {
-        statusCode = 401;
-        errorMessage = 'Google Places API key is invalid or unauthorized. Please check your API key.';
-      } else if (errorMessage.includes('OVER_QUERY_LIMIT')) {
-        statusCode = 429;
-        errorMessage = 'Google Places API quota exceeded. Please try again later.';
-      }
-    }
 
     return new Response(
       JSON.stringify({
         success: false,
-        error: errorMessage,
-        details: error instanceof Error ? {
-          message: error.message,
-          stack: error.stack,
-          name: error.name
-        } : String(error)
+        error: 'Internal server error'
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: statusCode
+        headers: { ...cors, 'Content-Type': 'application/json' },
+        status: 500
       }
     );
   }

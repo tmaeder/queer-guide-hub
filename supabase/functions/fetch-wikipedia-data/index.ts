@@ -1,9 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { getCorsHeaders, requireAdmin } from '../_shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const VALID_LANGS = new Set(['en','fr','de','es','pt','it','nl','ja','zh','ko','ar','ru','pl','sv','fi','da','no','hu','cs','ro','bg','hr','sk','sl','et','lv','lt','el','tr','he','th','vi','id','ms','tl','uk','be','sr','mk','sq','bs','mt','ga','cy','eu','ca','gl']);
 
 interface WikipediaData {
   title: string;
@@ -291,28 +289,36 @@ async function processBatchMode(supabase: any, entityType: 'city' | 'country', l
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabase = await initializeSupabaseClient();
+
+    const authResult = await requireAdmin(req, supabase);
+    if (authResult instanceof Response) return authResult;
+
     const requestData: WikipediaRequest = await req.json().catch(() => ({}));
-    const { query, type, entityId, batchMode, language = 'en' } = requestData;
-    
+    let { query, type, entityId, batchMode, language = 'en' } = requestData;
+
+    if (!VALID_LANGS.has(language)) language = 'en';
+
     if (!query && !batchMode) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           success: false,
-          error: 'Query parameter is required for single entity processing' 
+          error: 'Query parameter is required for single entity processing'
         }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
-    
-    const supabase = await initializeSupabaseClient();
+
     console.log('Wikipedia data fetch request:', { query, type, entityId, batchMode, language });
     
     let result;
@@ -351,10 +357,9 @@ Deno.serve(async (req) => {
     console.error('Error in fetch-wikipedia-data function:', error);
     
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
         error: 'Failed to fetch Wikipedia data',
-        details: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString()
       }),
       { 

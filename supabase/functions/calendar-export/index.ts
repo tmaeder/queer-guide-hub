@@ -1,12 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -61,7 +59,7 @@ serve(async (req) => {
     };
 
     // Generate unique UID
-    const uid = `event-${event.id}@yourapp.com`;
+    const uid = `event-${event.id}@queer.guide`;
 
     // Build location string
     const location = [
@@ -75,7 +73,7 @@ serve(async (req) => {
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Your App//Event Export//EN',
+      'PRODID:-//Queer Guide//Event Export//EN',
       'BEGIN:VEVENT',
       `UID:${uid}`,
       `DTSTART:${formatDate(event.start_date)}`,

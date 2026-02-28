@@ -1,31 +1,31 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { getCorsHeaders, requireAdmin } from '../_shared/supabase-client.ts';
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const authResult = await requireAdmin(req, supabase);
+    if (authResult instanceof Response) return authResult;
+
     const { tagId, tagName } = await req.json();
-    
+
     if (!tagId || !tagName) {
       return new Response(
         JSON.stringify({ error: 'Tag ID and name are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     console.log('Processing tag:', { tagId, tagName });
 
@@ -156,8 +156,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in store-tag-images function:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
+      JSON.stringify({
+        error: 'Internal server error',
         success: false
       }),
       { 

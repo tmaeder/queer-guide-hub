@@ -33,7 +33,7 @@ async function deriveKey(usage: KeyUsage[]): Promise<CryptoKey> {
     ['deriveKey'],
   )
   return crypto.subtle.deriveKey(
-    { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(32), info: new TextEncoder().encode('queer-guide-aes') },
+    { name: 'HKDF', hash: 'SHA-256', salt: new TextEncoder().encode('queer-guide-hkdf-salt-v1\0\0\0\0\0\0\0\0\0'), info: new TextEncoder().encode('queer-guide-aes') },
     keyMaterial,
     { name: 'AES-GCM', length: 256 },
     false,

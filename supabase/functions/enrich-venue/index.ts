@@ -1,9 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface VenueData {
   name?: string;
@@ -26,11 +22,17 @@ interface VenueData {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    const serviceClient = getServiceClient()
+    const authResult = await requireAdmin(req, serviceClient)
+    if (authResult instanceof Response) return authResult
+
     const { venueName, currentData = {} } = await req.json()
     
     if (!venueName) {
@@ -102,7 +104,7 @@ serve(async (req) => {
     console.error('Error in enrich-venue function:', error)
     
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

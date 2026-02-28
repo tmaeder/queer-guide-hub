@@ -1,13 +1,9 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { getCorsHeaders, requireAdmin } from '../_shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const CF_ACCOUNT_ID = '7aa3765cc5f50f2b681b782eb4a8d296';
+const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '';
 const CF_EMBEDDINGS_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/v1/embeddings`;
 const CF_CHAT_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/v1/chat/completions`;
 const CF_EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
@@ -29,11 +25,19 @@ interface RAGRequest {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+    const authResult = await requireAdmin(req, serviceClient);
+    if (authResult instanceof Response) return authResult;
+
     const { query: rawQuery, session_id, content_types = [], limit: rawLimit = 5 }: RAGRequest = await req.json();
 
     if (!rawQuery?.trim()) {
@@ -49,15 +53,13 @@ serve(async (req) => {
 
     console.log('Processing RAG query:', query.slice(0, 100));
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const cfApiToken = Deno.env.get('CLOUDFLARE_API_TOKEN');
 
     if (!cfApiToken) {
       throw new Error('CLOUDFLARE_API_TOKEN not configured');
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = serviceClient;
 
     // Step 1: Generate embedding for the query via CF Workers AI
     console.log('Generating query embedding via CF Workers AI...');

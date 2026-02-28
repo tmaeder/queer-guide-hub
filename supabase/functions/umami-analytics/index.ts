@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
 // Initialize Supabase client
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
@@ -27,9 +23,23 @@ interface AnalyticsPayload {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Rate limiting: check origin is allowed
+  const origin = req.headers.get('Origin') ?? '';
+  if (!origin || !corsHeaders['Access-Control-Allow-Origin']) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Forbidden' }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403,
+      }
+    );
   }
 
   try {
@@ -74,7 +84,7 @@ serve(async (req) => {
 
     // Parse URL for path and query
     const urlObj = new URL(payload.url, `http://${payload.hostname || 'localhost'}`);
-    
+
     // Insert website event
     const { data: eventData, error: eventError } = await supabase
       .from('umami.website_event')
@@ -139,10 +149,10 @@ serve(async (req) => {
     console.log('Analytics event recorded successfully');
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: 'Event tracked successfully',
-        eventId: eventData?.event_id 
+        eventId: eventData?.event_id
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -152,11 +162,11 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in umami-analytics function:', error);
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: 'Failed to process analytics event'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

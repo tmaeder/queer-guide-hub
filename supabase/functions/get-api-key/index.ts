@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
 // SECURITY FIX: Proper AES encryption for API keys
 async function secureEncrypt(text: string): Promise<string> {
@@ -60,15 +56,17 @@ async function secureDecrypt(encryptedText: string): Promise<string> {
 }
 
 serve(async (req) => {
+  const cors = getCorsHeaders(req);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: cors });
   }
 
   if (req.method !== 'POST') {
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
-      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 405, headers: { ...cors, 'Content-Type': 'application/json' } }
     );
   }
 
@@ -83,7 +81,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -93,7 +91,7 @@ serve(async (req) => {
     if (userError || !userData.user) {
       return new Response(
         JSON.stringify({ error: 'Invalid authorization' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -107,7 +105,7 @@ serve(async (req) => {
     if (!roleData) {
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 403, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -116,7 +114,7 @@ serve(async (req) => {
     if (!service_name || !key_name) {
       return new Response(
         JSON.stringify({ error: 'Missing service_name or key_name' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -132,7 +130,7 @@ serve(async (req) => {
     if (error || !keyData) {
       return new Response(
         JSON.stringify({ error: 'API key not found or inactive' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -148,14 +146,14 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ api_key: decrypted_key }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...cors, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in get-api-key function:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
     );
   }
 });

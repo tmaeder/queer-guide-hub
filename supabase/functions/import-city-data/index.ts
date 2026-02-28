@@ -1,9 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
 
 interface CityDataImportRequest {
   action: 'fetch_images' | 'fetch_wikipedia' | 'fetch_all';
@@ -206,17 +202,18 @@ async function processWikipediaFetch(cities: any[], language = 'en', batchSize =
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cors = getCorsHeaders(req);
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+
+  const supabase = getServiceClient();
+  const auth = await requireAdmin(req, supabase);
+  if (auth instanceof Response) return auth;
 
   try {
     const requestData: CityDataImportRequest = await req.json().catch(() => ({ action: 'fetch_all' }));
     const { action = 'fetch_all', cityIds, batchSize = 10, language = 'en' } = requestData;
-    
+
     console.log('City data import request:', { action, cityIds, batchSize, language });
-    
-    const supabase = await initializeSupabaseClient();
     
     // Get cities to process
     const cities = await getCitiesForProcessing(supabase, cityIds, action);
@@ -230,7 +227,7 @@ Deno.serve(async (req) => {
           timestamp: new Date().toISOString()
         }),
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...cors, 'Content-Type': 'application/json' },
           status: 200 
         }
       );
@@ -276,7 +273,7 @@ Deno.serve(async (req) => {
         details: results
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...cors, 'Content-Type': 'application/json' },
         status: 200 
       }
     );
@@ -285,15 +282,14 @@ Deno.serve(async (req) => {
     console.error('Error in city data import:', error);
     
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
-        error: 'Failed to import city data',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: 'Internal server error',
         timestamp: new Date().toISOString()
       }),
       { 
         status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...cors, 'Content-Type': 'application/json' } 
       }
     );
   }

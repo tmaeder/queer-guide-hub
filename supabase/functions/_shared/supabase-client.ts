@@ -23,10 +23,14 @@ export function getCorsHeaders(req?: Request): Record<string, string> {
   }
 }
 
-/** @deprecated Use getCorsHeaders(req) for origin-validated CORS. Kept for backward compat. */
+/**
+ * @deprecated Use getCorsHeaders(req) for origin-validated CORS.
+ * This is kept temporarily for backward compatibility but will be removed.
+ * All functions should migrate to getCorsHeaders(req).
+ */
 export const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  ...baseCorsHeaders,
+  'Access-Control-Allow-Origin': 'https://queer.guide',
 }
 
 export function getServiceClient(): SupabaseClient {

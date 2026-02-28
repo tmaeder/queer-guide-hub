@@ -1,9 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
 const MARKER = '452012';
 const IATA_RE = /^[A-Z]{3}$/;
@@ -39,6 +35,8 @@ function buildAffiliateUrl(
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -98,7 +96,7 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error('Travelpayouts API error:', response.status, errorText);
       return new Response(
-        JSON.stringify({ error: 'Failed to search flights', details: errorText }),
+        JSON.stringify({ error: 'Failed to search flights' }),
         { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

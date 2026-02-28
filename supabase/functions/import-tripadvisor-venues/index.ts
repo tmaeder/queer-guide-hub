@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
 
 interface TripAdvisorLocation {
   location_id: string;
@@ -262,10 +258,12 @@ async function mapVenueCategoryAndAmenities(supabase: any, venue: TripAdvisorLoc
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cors = getCorsHeaders(req);
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+
+  const supabase = getServiceClient();
+  const auth = await requireAdmin(req, supabase);
+  if (auth instanceof Response) return auth;
 
   try {
     console.log('Starting TripAdvisor venues import...');
@@ -541,7 +539,7 @@ serve(async (req) => {
         skipped: totalSkipped
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...cors, 'Content-Type': 'application/json' },
         status: 200
       }
     );
@@ -584,7 +582,7 @@ serve(async (req) => {
         } : String(error)
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...cors, 'Content-Type': 'application/json' },
         status: statusCode
       }
     );

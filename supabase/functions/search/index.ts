@@ -1,9 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders } from '../_shared/supabase-client.ts'
 
 // Map frontend type names to DB function content_types
 const TYPE_MAP: Record<string, string> = {
@@ -39,6 +35,8 @@ interface SearchRequest {
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -61,7 +59,7 @@ Deno.serve(async (req) => {
 
     // Map requested types to DB content_types
     const requestedTypes = filters.types?.length
-      ? [...new Set(filters.types.map(t => TYPE_MAP[t] || t))]
+      ? [...new Set(filters.types.map(t => TYPE_MAP[t]).filter(Boolean))]
       : ['venues', 'events', 'cities', 'countries', 'news', 'marketplace', 'personalities', 'tags']
 
     // Calculate per-type limit to stay within total hitsPerPage

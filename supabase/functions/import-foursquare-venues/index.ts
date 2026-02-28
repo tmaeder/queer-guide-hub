@@ -1,10 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts'
 
 // Input validation schema
 interface VenueImportRequest {
@@ -386,10 +382,12 @@ const FOURSQUARE_CATEGORIES = {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  const cors = getCorsHeaders(req)
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+
+  const supabaseAuth = getServiceClient()
+  const auth = await requireAdmin(req, supabaseAuth)
+  if (auth instanceof Response) return auth
 
   try {
     // Add request timeout - reduced for better reliability
@@ -700,7 +698,7 @@ Deno.serve(async (req) => {
     console.log(result.message)
 
     return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...cors, 'Content-Type': 'application/json' },
       status: 200
     })
 
@@ -709,12 +707,12 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        error: error.message,
+        error: 'Internal server error',
         success: false,
         timestamp: new Date().toISOString()
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...cors, 'Content-Type': 'application/json' },
         status: 500
       }
     )
