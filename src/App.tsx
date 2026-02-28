@@ -69,6 +69,7 @@ const AdminPersonalities = lazy(() => import("./pages/AdminPersonalities"));
 const AdminImportHub = lazy(() => import("./pages/AdminImportHub"));
 const AdminRedirects = lazy(() => import("./pages/AdminRedirects"));
 const AdminWorkflows = lazy(() => import("./pages/AdminWorkflows"));
+const AdminAutomation = lazy(() => import("./pages/AdminAutomation"));
 
 // New feature pages
 const Hotels = lazyRetry(() => import("./pages/Hotels"));
@@ -272,6 +273,7 @@ const AppRoutes = () => {
                     <Route path="imports/venues" element={<VenueImportQuickActions />} />
                     <Route path="imports/history" element={<AdminImportHub />} />
                     <Route path="workflows" element={<AdminWorkflows />} />
+                    <Route path="automation" element={<AdminAutomation />} />
 
                     {/* Review & Workflow section — unified dashboard */}
                     <Route path="review" element={<AdminReview />} />
