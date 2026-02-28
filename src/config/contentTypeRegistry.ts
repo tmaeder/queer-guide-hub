@@ -15,6 +15,8 @@ import {
   ShoppingBag,
   UsersRound,
   FileText,
+  Hotel,
+  Home,
 } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import {
@@ -326,6 +328,58 @@ const pageFields: FieldConfig[] = [
   { name: 'cover_image_alt', label: 'Cover Image Alt Text', type: 'text', group: 'media' },
 ];
 
+// ── Hotel Fields ──────────────────────────────────────────────────
+
+const hotelFields: FieldConfig[] = [
+  { name: 'name', label: 'Name', type: 'text', required: true, group: 'basic', searchable: true, sortable: true },
+  { name: 'description', label: 'Description', type: 'richtext', group: 'basic', colSpan: 2 },
+  { name: 'hotel_type', label: 'Type', type: 'select', required: true, group: 'basic', filterable: true, options: [
+    { value: 'hotel', label: 'Hotel' }, { value: 'bnb', label: 'B&B' }, { value: 'hostel', label: 'Hostel' },
+    { value: 'guesthouse', label: 'Guesthouse' }, { value: 'apartment', label: 'Apartment' },
+    { value: 'resort', label: 'Resort' }, { value: 'other', label: 'Other' },
+  ]},
+  { name: 'address', label: 'Address', type: 'location', group: 'location', resolverType: 'address',
+    relatedFields: { city: 'city', country: 'country', latitude: 'latitude', longitude: 'longitude', city_id: 'city_id', country_id: 'country_id' } },
+  { name: 'city', label: 'City', type: 'text', group: 'location', filterable: true },
+  { name: 'country', label: 'Country', type: 'text', group: 'location', filterable: true },
+  { name: 'latitude', label: 'Latitude', type: 'number', group: 'location', hidden: true, min: -90, max: 90 },
+  { name: 'longitude', label: 'Longitude', type: 'number', group: 'location', hidden: true, min: -180, max: 180 },
+  { name: 'phone', label: 'Phone', type: 'phone', group: 'details' },
+  { name: 'email', label: 'Email', type: 'email', group: 'details' },
+  { name: 'website', label: 'Website', type: 'url', group: 'details' },
+  { name: 'booking_url', label: 'Booking URL', type: 'url', group: 'details' },
+  { name: 'star_rating', label: 'Star Rating', type: 'number', group: 'details', min: 1, max: 5 },
+  { name: 'price_range', label: 'Price Range (1-4)', type: 'number', group: 'details', min: 1, max: 4 },
+  { name: 'amenities', label: 'Amenities', type: 'tags', group: 'details' },
+  { name: 'lgbtq_friendly', label: 'LGBTQ+ Friendly', type: 'boolean', group: 'lgbtq' },
+  { name: 'queer_safety_notes', label: 'Queer Safety Notes', type: 'textarea', group: 'lgbtq', colSpan: 2 },
+  { name: 'featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  { name: 'verified', label: 'Verified', type: 'boolean', group: 'settings' },
+  { name: 'images', label: 'Images', type: 'images', group: 'media' },
+  { name: 'tags', label: 'Tags', type: 'tags', group: 'settings' },
+  { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
+  { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
+];
+
+// ── Queer Village Fields ──────────────────────────────────────────
+
+const queerVillageFields: FieldConfig[] = [
+  { name: 'name', label: 'Name', type: 'text', required: true, group: 'basic', searchable: true, sortable: true },
+  { name: 'slug', label: 'Slug', type: 'text', required: true, group: 'basic' },
+  { name: 'description', label: 'Description', type: 'richtext', group: 'basic', colSpan: 2 },
+  { name: 'history', label: 'History', type: 'richtext', group: 'details', colSpan: 2 },
+  { name: 'website', label: 'Website', type: 'url', group: 'details' },
+  { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
+  { name: 'latitude', label: 'Latitude', type: 'number', group: 'location', min: -90, max: 90 },
+  { name: 'longitude', label: 'Longitude', type: 'number', group: 'location', min: -180, max: 180 },
+  { name: 'featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  { name: 'tags', label: 'Tags', type: 'tags', group: 'settings' },
+  { name: 'image_url', label: 'Primary Image', type: 'image', group: 'media' },
+  { name: 'images', label: 'Gallery', type: 'images', group: 'media' },
+  { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
+  { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
+];
+
 // ── Registry ───────────────────────────────────────────────────────
 
 export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
@@ -468,6 +522,34 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     hasRichText: true,
     defaults: { page_type: 'blog_post', workflow_state: 'draft', visibility_level: 'private' },
     fieldGroupOrder: ['basic', 'seo', 'media'],
+  },
+  hotels: {
+    id: 'hotels',
+    tableName: 'hotels',
+    primaryKey: 'id',
+    titleField: 'name',
+    descriptionField: 'description',
+    imageField: 'images',
+    icon: Hotel,
+    label: { singular: 'Hotel', plural: 'Hotels & BnBs' },
+    color: '#0ea5e9',
+    fields: hotelFields,
+    defaults: { featured: false, verified: false, lgbtq_friendly: false },
+    fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'settings'],
+  },
+  queer_villages: {
+    id: 'queer_villages',
+    tableName: 'queer_villages',
+    primaryKey: 'id',
+    titleField: 'name',
+    descriptionField: 'description',
+    imageField: 'image_url',
+    icon: Home,
+    label: { singular: 'Queer Village', plural: 'Queer Villages' },
+    color: '#d946ef',
+    fields: queerVillageFields,
+    defaults: { featured: false },
+    fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
   },
 };
 

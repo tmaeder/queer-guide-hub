@@ -400,6 +400,7 @@ export function ContentListPanel({ contentTypeId: propTypeId, onEdit: propOnEdit
     const configs = [
       'venues', 'events', 'personalities', 'news_articles', 'cities',
       'countries', 'unified_tags', 'marketplace_listings', 'community_groups',
+      'hotels', 'queer_villages', 'cms_pages',
     ]
       .map((id) => getContentType(id))
       .filter(Boolean) as ContentTypeConfig[];

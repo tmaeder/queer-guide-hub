@@ -1,489 +1,426 @@
-import { useState, useEffect } from 'react';
+/**
+ * AdminDashboard — Unified Cockpit Dashboard.
+ * Four-quadrant layout: System Status, Review Queue, Import Status, Quality Index.
+ * Plus content stats grid and quick actions.
+ */
+
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { supabase } from '@/integrations/supabase/client';
-
-// Dashboard Components
-import { DashboardOverview } from '@/components/admin/dashboard/DashboardOverview';
-import { QuickActions } from '@/components/admin/dashboard/QuickActions';
-import { RecentActivity } from '@/components/admin/dashboard/RecentActivity';
-
-import {
-  Shield,
-  Calendar,
-  ShoppingBag,
-  Building,
-  MessageSquare,
-  Users,
-  Grid3X3,
-  List,
-  RefreshCw,
-  Settings,
-  Filter
-} from "lucide-react";
-
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Skeleton from '@mui/material/Skeleton';
+import LinearProgress from '@mui/material/LinearProgress';
+import Chip from '@mui/material/Chip';
+import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import { alpha } from '@mui/material/styles';
+import {
+  LayoutDashboard,
+  Activity,
+  ClipboardCheck,
+  Download,
+  ShieldCheck,
+  Building,
+  Calendar,
+  Users,
+  Newspaper,
+  MapPin,
+  Globe,
+  Hotel,
+  Home,
+  ShoppingBag,
+  UsersRound,
+  Tag,
+  FileText,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle2,
+  RefreshCw,
+  Plus,
+  ArrowRight,
+  Inbox,
+  Flag,
+  Bot,
+  FileCheck,
+  Zap,
+} from 'lucide-react';
+import { useAdminCockpit } from '@/hooks/useAdminCockpit';
+import type { CockpitData } from '@/hooks/useAdminCockpit';
 
-interface DashboardStats {
-  totalContent: number;
-  activeVenues: number;
-  upcomingEvents: number;
-  marketplaceItems: number;
-  totalUsers: number;
-  totalGroups: number;
-  activeGroups: number;
-  totalPosts: number;
-  recentActivity: number;
-  weeklyGrowth: number;
-  monthlyUsers: number;
-  avgSessionTime: number;
-  conversionRate: number;
-}
+// ── Quadrant Card ──────────────────────────────────────────────────
 
-interface SystemHealth {
-  status: 'healthy' | 'warning' | 'error';
-  issues: string[];
-  uptime: string;
-  lastCheck: Date;
-  dbLatency: number;
-  storageUsed: number;
-  apiCalls: number;
-}
-
-interface ActivityItem {
-  id: string;
-  type: string;
+function QuadrantCard({
+  title,
+  icon: Icon,
+  color,
+  children,
+  action,
+}: {
   title: string;
-  description: string;
-  timestamp: string;
-  icon: any;
-  badge: string;
+  icon: React.ElementType;
+  color: string;
+  children: React.ReactNode;
+  action?: { label: string; route: string };
+}) {
+  const navigate = useNavigate();
+  return (
+    <Paper
+      variant="outlined"
+      sx={{
+        p: 2.5,
+        borderRadius: 2,
+        borderColor: 'divider',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        height: '100%',
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: 1.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: alpha(color, 0.1),
+            }}
+          >
+            <Icon size={15} style={{ color }} />
+          </Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+            {title}
+          </Typography>
+        </Box>
+        {action && (
+          <Button
+            size="small"
+            endIcon={<ArrowRight size={14} />}
+            onClick={() => navigate(action.route)}
+            sx={{ textTransform: 'none', fontSize: '0.75rem', fontWeight: 500 }}
+          >
+            {action.label}
+          </Button>
+        )}
+      </Box>
+      {children}
+    </Paper>
+  );
 }
 
-export default function AdminDashboard() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { isAdmin, isModerator, canManageContent, loading } = useAdminRoles();
-  const { toast } = useToast();
+// ── System Status ───────────────────────────────────────────────────
 
-  const [stats, setStats] = useState<DashboardStats>({
-    totalContent: 0,
-    activeVenues: 0,
-    upcomingEvents: 0,
-    marketplaceItems: 0,
-    totalUsers: 0,
-    totalGroups: 0,
-    activeGroups: 0,
-    totalPosts: 0,
-    recentActivity: 0,
-    weeklyGrowth: 0,
-    monthlyUsers: 0,
-    avgSessionTime: 0,
-    conversionRate: 0
-  });
-
-  const [statsLoading, setStatsLoading] = useState(true);
-  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
-  const [systemHealth, setSystemHealth] = useState<SystemHealth>({
-    status: 'healthy',
-    issues: [],
-    uptime: '99.9%',
-    lastCheck: new Date(),
-    dbLatency: 0,
-    storageUsed: 0,
-    apiCalls: 0
-  });
-
-  const [autoRefresh, setAutoRefresh] = useState(false);
-  const [refreshInterval, setRefreshInterval] = useState(30);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filterPeriod, setFilterPeriod] = useState('7d');
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
-
-  useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    if (!loading && !canManageContent()) {
-      navigate("/");
-      return;
-    }
-  }, [user, loading, canManageContent]);
-
-  useEffect(() => {
-    fetchStats();
-    fetchRecentActivity();
-    checkSystemHealth();
-    setLastUpdate(new Date());
-  }, [filterPeriod]);
-
-  useEffect(() => {
-    if (autoRefresh) {
-      const interval = setInterval(() => {
-        fetchStats();
-        fetchRecentActivity();
-        checkSystemHealth();
-        setLastUpdate(new Date());
-      }, refreshInterval * 1000);
-      return () => clearInterval(interval);
-    }
-  }, [autoRefresh, refreshInterval]);
-
-  const fetchStats = async () => {
-    try {
-      const daysAgo = filterPeriod === '7d' ? 7 : filterPeriod === '30d' ? 30 : 90;
-      const dateFilter = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
-
-      const results = await Promise.allSettled([
-        supabase.from('venues').select('id', { count: 'exact', head: true }),
-        supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('marketplace_listings').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('news_articles').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('community_groups').select('id', { count: 'exact', head: true }),
-        supabase.from('group_posts').select('id', { count: 'exact', head: true }),
-        supabase.from('community_groups').select('id', { count: 'exact', head: true }).gt('member_count', 0),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', dateFilter),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
-      ]);
-
-      const [venues, events, listings, articles, users, groups, posts, activeGroups, recentUsers, weekOldUsers] = results.map(
-        result => result.status === 'fulfilled' ? result.value : { count: 0 }
-      );
-
-      const totalContentCount = (articles.count || 0) + (events.count || 0) + (listings.count || 0) + (posts.count || 0);
-      const weeklyGrowth = ((recentUsers.count || 0) / Math.max(weekOldUsers.count || 1, 1)) * 100;
-
-      setStats({
-        totalContent: totalContentCount,
-        activeVenues: venues.count || 0,
-        upcomingEvents: events.count || 0,
-        marketplaceItems: listings.count || 0,
-        totalUsers: users.count || 0,
-        totalGroups: groups.count || 0,
-        activeGroups: activeGroups.count || 0,
-        totalPosts: posts.count || 0,
-        recentActivity: totalContentCount,
-        weeklyGrowth: Math.round(weeklyGrowth),
-        monthlyUsers: recentUsers.count || 0,
-        avgSessionTime: Math.round(Math.random() * 300 + 180),
-        conversionRate: Math.round(Math.random() * 5 + 2)
-      });
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-    } finally {
-      setStatsLoading(false);
-    }
-  };
-
-  const fetchRecentActivity = async () => {
-    try {
-      const now = new Date();
-      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-
-      const results = await Promise.allSettled([
-        supabase
-          .from('group_posts')
-          .select(`id, content, created_at, group_id, community_groups!inner(name)`)
-          .gte('created_at', sevenDaysAgo)
-          .order('created_at', { ascending: false })
-          .limit(3),
-
-        supabase
-          .from('events')
-          .select('id, title, created_at, event_type, city, country')
-          .gte('created_at', sevenDaysAgo)
-          .order('created_at', { ascending: false })
-          .limit(3),
-
-        supabase
-          .from('marketplace_listings')
-          .select('id, title, created_at, status')
-          .eq('status', 'active')
-          .gte('created_at', sevenDaysAgo)
-          .order('created_at', { ascending: false })
-          .limit(3),
-
-        supabase
-          .from('profiles')
-          .select('id, display_name, created_at')
-          .gte('created_at', sevenDaysAgo)
-          .order('created_at', { ascending: false })
-          .limit(3),
-
-        supabase
-          .from('venues')
-          .select('id, name, created_at, city, country')
-          .gte('created_at', sevenDaysAgo)
-          .order('created_at', { ascending: false })
-          .limit(3)
-      ]);
-
-      const [
-        recentPostsResult,
-        recentEventsResult,
-        recentListingsResult,
-        recentUsersResult,
-        recentVenuesResult
-      ] = results;
-
-      const recentPosts = recentPostsResult.status === 'fulfilled' ? recentPostsResult.value.data : [];
-      const recentEvents = recentEventsResult.status === 'fulfilled' ? recentEventsResult.value.data : [];
-      const recentListings = recentListingsResult.status === 'fulfilled' ? recentListingsResult.value.data : [];
-      const recentUsers = recentUsersResult.status === 'fulfilled' ? recentUsersResult.value.data : [];
-      const recentVenues = recentVenuesResult.status === 'fulfilled' ? recentVenuesResult.value.data : [];
-
-      const activities: ActivityItem[] = [
-        ...(recentPosts?.map(post => ({
-          id: post.id,
-          type: 'post',
-          title: `New post in ${post.community_groups?.name || 'Unknown Group'}`,
-          description: post.content?.substring(0, 60) + '...' || 'No content',
-          timestamp: post.created_at,
-          icon: MessageSquare,
-          badge: 'Community'
-        })) || []),
-        ...(recentEvents?.map(event => ({
-          id: event.id,
-          type: 'event',
-          title: `New ${event.event_type || 'event'}`,
-          description: `${event.title} in ${event.city || 'Unknown'}, ${event.country || 'Unknown'}`,
-          timestamp: event.created_at,
-          icon: Calendar,
-          badge: 'Events'
-        })) || []),
-        ...(recentListings?.map(listing => ({
-          id: listing.id,
-          type: 'marketplace',
-          title: `New marketplace listing`,
-          description: listing.title || 'Untitled listing',
-          timestamp: listing.created_at,
-          icon: ShoppingBag,
-          badge: 'Marketplace'
-        })) || []),
-        ...(recentUsers?.map(user => ({
-          id: user.id,
-          type: 'user',
-          title: 'New user registration',
-          description: user.display_name || 'Anonymous user',
-          timestamp: user.created_at,
-          icon: Users,
-          badge: 'Users'
-        })) || []),
-        ...(recentVenues?.map(venue => ({
-          id: venue.id,
-          type: 'venue',
-          title: 'New venue added',
-          description: `${venue.name} in ${venue.city || 'Unknown'}, ${venue.country || 'Unknown'}`,
-          timestamp: venue.created_at,
-          icon: Building,
-          badge: 'Venues'
-        })) || [])
-      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10);
-
-      setRecentActivity(activities);
-    } catch (error) {
-      console.error('Error fetching recent activity:', error);
-    }
-  };
-
-  const checkSystemHealth = async () => {
-    try {
-      const startTime = performance.now();
-      const { error } = await supabase.from('profiles').select('id').limit(1);
-      const endTime = performance.now();
-      const dbLatency = Math.round(endTime - startTime);
-
-      if (error) {
-        setSystemHealth({
-          status: 'error',
-          issues: ['Database connection error'],
-          uptime: '99.9%',
-          lastCheck: new Date(),
-          dbLatency: 0,
-          storageUsed: Math.round(Math.random() * 80 + 20),
-          apiCalls: Math.round(Math.random() * 10000 + 5000)
-        });
-      } else {
-        setSystemHealth({
-          status: dbLatency > 200 ? 'warning' : 'healthy',
-          issues: dbLatency > 200 ? ['High database latency'] : [],
-          uptime: '99.9%',
-          lastCheck: new Date(),
-          dbLatency,
-          storageUsed: Math.round(Math.random() * 80 + 20),
-          apiCalls: Math.round(Math.random() * 10000 + 5000)
-        });
-      }
-    } catch (error) {
-      setSystemHealth({
-        status: 'error',
-        issues: ['System health check failed'],
-        uptime: '99.9%',
-        lastCheck: new Date(),
-        dbLatency: 0,
-        storageUsed: 0,
-        apiCalls: 0
-      });
-    }
-  };
-
-  const handleRefresh = () => {
-    fetchStats();
-    fetchRecentActivity();
-    checkSystemHealth();
-    setLastUpdate(new Date());
-    toast({
-      title: "Dashboard Updated",
-      description: "All data has been refreshed successfully."
-    });
-  };
-
-  if (loading) {
-    return (
-      <Box sx={{ textAlign: 'center', py: 4 }}>Loading admin dashboard...</Box>
-    );
-  }
-
-  if (!canManageContent()) {
-    return (
-      <Box sx={{ textAlign: 'center', py: 4 }}>
-        <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Access Denied</Typography>
-        <p>You don't have permission to access the admin dashboard.</p>
-      </Box>
-    );
-  }
+function SystemStatus({ data }: { data: CockpitData }) {
+  const { system } = data;
+  const statusColors = { healthy: '#10b981', degraded: '#f59e0b', error: '#ef4444' };
+  const statusLabels = { healthy: 'All Systems Operational', degraded: 'Degraded Performance', error: 'System Issues' };
+  const StatusIcon = system.status === 'healthy' ? CheckCircle2 : system.status === 'degraded' ? AlertTriangle : AlertCircle;
 
   return (
-    <>
-      {/* Header Section */}
-      <Box component="header" sx={{ mb: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {/* Title & Role */}
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ p: 1.5, bgcolor: 'primary.main', borderRadius: 2 }}>
-              <Shield style={{ height: 32, width: 32, color: 'var(--primary-foreground)' }} />
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700, color: 'text.primary' }}>Admin Dashboard</Typography>
-              <p style={{ color: '#999999' }}>Monitor and manage your platform</p>
-            </Box>
-          </Box>
+    <QuadrantCard title="System Status" icon={Activity} color="#10b981">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+        <StatusIcon size={20} style={{ color: statusColors[system.status] }} />
+        <Typography variant="body2" sx={{ fontWeight: 600, color: statusColors[system.status] }}>
+          {statusLabels[system.status]}
+        </Typography>
+      </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+        <MetricBox label="DB Latency" value={`${system.dbLatencyMs}ms`} good={system.dbLatencyMs < 200} />
+        <MetricBox label="Errors" value={system.recentErrors.toString()} good={system.recentErrors === 0} />
+      </Box>
+    </QuadrantCard>
+  );
+}
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Badge variant={isAdmin ? "default" : "secondary"} style={{ fontWeight: 500 }}>
-              {isAdmin ? "Administrator" : isModerator ? "Moderator" : "Staff"}
-            </Badge>
-            {lastUpdate && (
-              <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                Updated: {lastUpdate.toLocaleTimeString()}
-              </Box>
-            )}
+function MetricBox({ label, value, good }: { label: string; value: string; good: boolean }) {
+  return (
+    <Box
+      sx={{
+        p: 1.5,
+        borderRadius: 1.5,
+        bgcolor: good ? alpha('#10b981', 0.06) : alpha('#f59e0b', 0.06),
+        textAlign: 'center',
+      }}
+    >
+      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+        {label}
+      </Typography>
+      <Typography variant="body1" sx={{ fontWeight: 700, color: good ? '#10b981' : '#f59e0b' }}>
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+// ── Review Queue ────────────────────────────────────────────────────
+
+function ReviewQueueWidget({ data }: { data: CockpitData }) {
+  const navigate = useNavigate();
+  const { review } = data;
+  const queues = [
+    { label: 'Staging', count: review.staging, color: '#ea580c', icon: Inbox, tab: 'staging' },
+    { label: 'Moderation', count: review.moderation, color: '#f59e0b', icon: Flag, tab: 'moderation' },
+    { label: 'Automation', count: review.automation, color: '#8b5cf6', icon: Bot, tab: 'automation' },
+    { label: 'Content', count: review.cmsReview, color: '#3b82f6', icon: FileCheck, tab: 'content' },
+    { label: 'Tags', count: review.tagSuggestions, color: '#a855f7', icon: Tag, tab: 'tags' },
+  ];
+
+  return (
+    <QuadrantCard title="Review Queue" icon={ClipboardCheck} color="#f59e0b" action={{ label: 'All Reviews', route: '/admin/review' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+        {queues.map((q) => (
+          <Box
+            key={q.label}
+            onClick={() => navigate(`/admin/review?tab=${q.tab}`)}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 1.5,
+              py: 0.75,
+              borderRadius: 1,
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+              '&:hover': { bgcolor: 'action.hover' },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <q.icon size={14} style={{ color: q.color }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>{q.label}</Typography>
+            </Box>
+            <Chip
+              label={q.count > 0 ? q.count.toLocaleString() : '0'}
+              size="small"
+              sx={{
+                height: 20,
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                bgcolor: q.count > 0 ? alpha(q.color, 0.12) : 'action.selected',
+                color: q.count > 0 ? q.color : 'text.secondary',
+              }}
+            />
           </Box>
+        ))}
+      </Box>
+      {review.total > 0 && (
+        <Typography variant="caption" sx={{ fontWeight: 600, color: '#f59e0b', mt: 0.5 }}>
+          {review.total.toLocaleString()} total items need attention
+        </Typography>
+      )}
+    </QuadrantCard>
+  );
+}
+
+// ── Import Status ───────────────────────────────────────────────────
+
+function ImportStatus({ data }: { data: CockpitData }) {
+  const { imports } = data;
+
+  return (
+    <QuadrantCard title="Import Status" icon={Download} color="#10b981" action={{ label: 'Imports', route: '/admin/imports' }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+        <MetricBox label="Active Jobs" value={imports.activeJobs.toString()} good={imports.activeJobs < 5} />
+        <MetricBox label="Completed Today" value={imports.completedToday.toString()} good={true} />
+        <MetricBox label="Failed Today" value={imports.failedToday.toString()} good={imports.failedToday === 0} />
+        <MetricBox label="Error Rate" value={`${imports.errorRate}%`} good={imports.errorRate < 10} />
+      </Box>
+    </QuadrantCard>
+  );
+}
+
+// ── Quality Index ───────────────────────────────────────────────────
+
+function QualityWidget({ data }: { data: CockpitData }) {
+  const { quality } = data;
+  const scoreColor = quality.overallScore >= 90 ? '#10b981' : quality.overallScore >= 70 ? '#f59e0b' : '#ef4444';
+
+  return (
+    <QuadrantCard title="Quality Index" icon={ShieldCheck} color="#3b82f6" action={{ label: 'Details', route: '/admin/review?tab=automation' }}>
+      <Box sx={{ textAlign: 'center', py: 1 }}>
+        <Typography variant="h3" sx={{ fontWeight: 800, color: scoreColor, lineHeight: 1 }}>
+          {quality.overallScore}%
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+          Overall Quality Score
+        </Typography>
+      </Box>
+      <LinearProgress
+        variant="determinate"
+        value={quality.overallScore}
+        sx={{
+          height: 6,
+          borderRadius: 3,
+          bgcolor: alpha(scoreColor, 0.12),
+          '& .MuiLinearProgress-bar': { bgcolor: scoreColor, borderRadius: 3 },
+        }}
+      />
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <AlertTriangle size={12} style={{ color: '#f59e0b' }} />
+          <Typography variant="caption" sx={{ fontWeight: 500 }}>{quality.warnings} warnings</Typography>
         </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <AlertCircle size={12} style={{ color: '#ef4444' }} />
+          <Typography variant="caption" sx={{ fontWeight: 500 }}>{quality.critical} critical</Typography>
+        </Box>
+      </Box>
+    </QuadrantCard>
+  );
+}
 
-        {/* Controls Bar */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            {/* Time Period Filter */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Filter style={{ height: 16, width: 16, color: '#999999' }} />
-              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>Period:</Box>
-              <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-                <SelectTrigger style={{ width: 128 }}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7d">Last 7 days</SelectItem>
-                  <SelectItem value="30d">Last 30 days</SelectItem>
-                  <SelectItem value="90d">Last 90 days</SelectItem>
-                </SelectContent>
-              </Select>
-            </Box>
+// ── Content Stats Grid ──────────────────────────────────────────────
 
-            {/* View Mode Toggle */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>View:</Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 2, p: 0.5 }}>
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  style={{ height: 28, width: 28, padding: 0 }}
-                >
-                  <Grid3X3 style={{ height: 16, width: 16 }} />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  style={{ height: 28, width: 28, padding: 0 }}
-                >
-                  <List style={{ height: 16, width: 16 }} />
-                </Button>
-              </Box>
-            </Box>
+const contentStatItems = [
+  { key: 'venues', label: 'Venues', icon: Building, color: '#8b5cf6', route: '/admin/content/venues' },
+  { key: 'events', label: 'Events', icon: Calendar, color: '#ec4899', route: '/admin/content/events' },
+  { key: 'personalities', label: 'Personalities', icon: Users, color: '#f59e0b', route: '/admin/content/personalities' },
+  { key: 'news', label: 'News', icon: Newspaper, color: '#3b82f6', route: '/admin/content/news_articles' },
+  { key: 'cities', label: 'Cities', icon: MapPin, color: '#10b981', route: '/admin/content/cities' },
+  { key: 'countries', label: 'Countries', icon: Globe, color: '#6366f1', route: '/admin/content/countries' },
+  { key: 'hotels', label: 'Hotels', icon: Hotel, color: '#0ea5e9', route: '/admin/content/hotels' },
+  { key: 'villages', label: 'Villages', icon: Home, color: '#d946ef', route: '/admin/content/queer_villages' },
+  { key: 'marketplace', label: 'Marketplace', icon: ShoppingBag, color: '#f97316', route: '/admin/content/marketplace_listings' },
+  { key: 'groups', label: 'Groups', icon: UsersRound, color: '#a855f7', route: '/admin/content/community_groups' },
+  { key: 'tags', label: 'Tags', icon: Tag, color: '#14b8a6', route: '/admin/content/unified_tags' },
+  { key: 'pages', label: 'Pages', icon: FileText, color: '#64748b', route: '/admin/content/cms_pages' },
+] as const;
+
+function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
+  const navigate = useNavigate();
+
+  return (
+    <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, borderColor: 'divider' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Content Overview</Typography>
+        <Typography variant="caption" color="text.secondary">
+          {Object.values(stats).reduce((a, b) => a + b, 0).toLocaleString()} total items
+        </Typography>
+      </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(4, 1fr)', md: 'repeat(6, 1fr)' }, gap: 1.5 }}>
+        {contentStatItems.map(({ key, label, icon: Icon, color, route }) => (
+          <Box
+            key={key}
+            onClick={() => navigate(route)}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 0.5,
+              p: 1.5,
+              borderRadius: 1.5,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              '&:hover': { bgcolor: alpha(color, 0.06), transform: 'translateY(-1px)' },
+            }}
+          >
+            <Icon size={18} style={{ color }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', lineHeight: 1 }}>
+              {(stats[key as keyof typeof stats] ?? 0).toLocaleString()}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
+              {label}
+            </Typography>
           </Box>
+        ))}
+      </Box>
+    </Paper>
+  );
+}
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {/* Auto Refresh Toggle */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Switch
-                id="auto-refresh"
-                checked={autoRefresh}
-                onCheckedChange={setAutoRefresh}
-              />
-              <Label htmlFor="auto-refresh" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                Auto-refresh
-              </Label>
-            </Box>
+// ── Quick Actions ───────────────────────────────────────────────────
 
-            {/* Action Buttons */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                style={{ display: 'flex', gap: '8px' }}
-              >
-                <RefreshCw style={{ height: 16, width: 16 }} />
-                Refresh
-              </Button>
-              <Button variant="outline" size="sm">
-                <Settings style={{ height: 16, width: 16 }} />
-              </Button>
-            </Box>
-          </Box>
+function QuickActionsBar() {
+  const navigate = useNavigate();
+  const actions = [
+    { label: 'New Content', icon: Plus, route: '/admin/content', color: '#8b5cf6' },
+    { label: 'Import Data', icon: Download, route: '/admin/imports/create', color: '#10b981' },
+    { label: 'Review Queue', icon: ClipboardCheck, route: '/admin/review', color: '#f59e0b' },
+    { label: 'Automation', icon: Zap, route: '/admin/automation', color: '#f59e0b' },
+  ];
+
+  return (
+    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      {actions.map((a) => (
+        <Button
+          key={a.label}
+          variant="outlined"
+          size="small"
+          startIcon={<a.icon size={15} />}
+          onClick={() => navigate(a.route)}
+          sx={{
+            textTransform: 'none',
+            fontWeight: 500,
+            borderColor: alpha(a.color, 0.3),
+            color: a.color,
+            display: { xs: 'none', sm: 'inline-flex' },
+            '&:hover': { borderColor: a.color, bgcolor: alpha(a.color, 0.04) },
+          }}
+        >
+          {a.label}
+        </Button>
+      ))}
+    </Box>
+  );
+}
+
+// ── Loading Skeleton ────────────────────────────────────────────────
+
+function CockpitSkeleton() {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} variant="rounded" height={220} sx={{ borderRadius: 2 }} />
+        ))}
+      </Box>
+      <Skeleton variant="rounded" height={160} sx={{ borderRadius: 2 }} />
+    </Box>
+  );
+}
+
+// ── Main Component ──────────────────────────────────────────────────
+
+export default function AdminDashboard() {
+  const { data, isLoading, refetch } = useAdminCockpit();
+
+  return (
+    <Box>
+      {/* Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <LayoutDashboard size={24} style={{ color: '#8b5cf6' }} />
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>Cockpit</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <QuickActionsBar />
+          <Tooltip title="Refresh">
+            <IconButton size="small" onClick={() => refetch()}>
+              <RefreshCw size={16} />
+            </IconButton>
+          </Tooltip>
         </Box>
       </Box>
 
-      {/* Overview + Quick Actions side-by-side */}
-      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { lg: '1fr 320px' } }}>
-        <Box sx={{ minWidth: 0 }}>
-          <DashboardOverview
-            stats={stats}
-            systemHealth={systemHealth}
-            statsLoading={statsLoading}
-          />
+      {isLoading || !data ? (
+        <CockpitSkeleton />
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          {/* Four quadrants */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <SystemStatus data={data} />
+            <ReviewQueueWidget data={data} />
+            <ImportStatus data={data} />
+            <QualityWidget data={data} />
+          </Box>
+
+          {/* Content stats */}
+          <ContentStatsGrid stats={data.stats} />
         </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <QuickActions />
-          <RecentActivity
-            activities={recentActivity}
-            loading={statsLoading}
-            onRefresh={fetchRecentActivity}
-          />
-        </Box>
-      </Box>
-    </>
+      )}
+    </Box>
   );
 }
