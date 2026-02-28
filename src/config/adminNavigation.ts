@@ -304,6 +304,15 @@ export const adminNavSections: AdminNavSection[] = [
         adminOnly: true,
         color: '#f59e0b',
       },
+      {
+        id: 'scraping',
+        label: 'Web Scraping',
+        icon: Globe,
+        route: '/admin/scraping',
+        countTable: 'scrape_sources',
+        adminOnly: true,
+        color: '#0ea5e9',
+      },
     ],
   },
 
