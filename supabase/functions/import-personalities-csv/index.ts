@@ -210,9 +210,8 @@ serve(async (req) => {
     console.log(`Parsed ${personalities.length} personalities with ${errors.length} errors`);
 
     if (personalities.length === 0) {
-      return new Response(JSON.stringify({ 
-        error: 'No valid personalities found in CSV',
-        details: errors
+      return new Response(JSON.stringify({
+        error: 'No valid personalities found in CSV'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -1,25 +1,19 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
+
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
   try {
     console.log('Starting musician concerts update job');
-
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
 
     // Get all personalities that are musicians (living ones only to avoid unnecessary API calls)
     const { data: musicians, error: fetchError } = await supabase
@@ -34,12 +28,12 @@ serve(async (req) => {
 
     if (!musicians || musicians.length === 0) {
       console.log('No musicians found to update');
-      return new Response(JSON.stringify({ 
-        success: true, 
+      return new Response(JSON.stringify({
+        success: true,
         message: 'No musicians found to update',
-        updated: 0 
+        updated: 0
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -53,18 +47,18 @@ serve(async (req) => {
     const batchSize = 5;
     for (let i = 0; i < musicians.length; i += batchSize) {
       const batch = musicians.slice(i, i + batchSize);
-      
+
       // Process each musician in the current batch
       const batchPromises = batch.map(async (musician) => {
         try {
           console.log(`Updating concerts for: ${musician.name}`);
-          
+
           const concerts = await fetchUpcomingConcerts(musician.name);
-          
+
           // Update the personality record with new concert data
           const { error: updateError } = await supabase
             .from('personalities')
-            .update({ 
+            .update({
               next_concerts: concerts || [],
               updated_at: new Date().toISOString()
             })
@@ -87,14 +81,14 @@ serve(async (req) => {
           errors.push({
             id: musician.id,
             name: musician.name,
-            error: error.message
+            error: 'Processing failed'
           });
         }
       });
 
       // Wait for current batch to complete
       await Promise.all(batchPromises);
-      
+
       // Add a small delay between batches to be respectful to the API
       if (i + batchSize < musicians.length) {
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -103,21 +97,21 @@ serve(async (req) => {
 
     console.log(`Concert update job completed: ${updated} updated, ${errors.length} errors`);
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       success: true,
       updated,
       errors: errors.length,
       results,
       errorDetails: errors
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Error in update-musician-concerts function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });
@@ -134,14 +128,14 @@ async function fetchUpcomingConcerts(artistName: string): Promise<any[] | null> 
     // Search for the artist on Bandsintown
     const artistSearchUrl = `https://rest.bandsintown.com/artists/${encodeURIComponent(cleanedName)}?app_id=queer-guide`;
     const artistResponse = await fetch(artistSearchUrl);
-    
+
     if (!artistResponse.ok) {
       console.log(`No artist found on Bandsintown for: ${cleanedName}`);
       return null;
     }
 
     const artistData = await artistResponse.json();
-    
+
     if (!artistData || artistData.error) {
       console.log(`Artist not found on Bandsintown: ${cleanedName}`);
       return null;
