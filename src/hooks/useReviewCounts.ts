@@ -10,12 +10,13 @@ export interface ReviewCounts {
   staging: number;
   cmsReview: number;
   moderation: number;
+  automation: number;
   tagSuggestions: number;
   total: number;
 }
 
 async function fetchReviewCounts(): Promise<ReviewCounts> {
-  const [stagingRes, cmsRes, modRes, tagRes] = await Promise.all([
+  const [stagingRes, cmsRes, modRes, autoRes, tagRes] = await Promise.all([
     // Staging items pending review
     supabase
       .from('ingestion_staging' as any)
@@ -32,6 +33,11 @@ async function fetchReviewCounts(): Promise<ReviewCounts> {
       .from('moderation_flags' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'OPEN'),
+    // Pending automation flags
+    supabase
+      .from('content_flags' as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
     // Pending tag suggestions
     supabase
       .from('tag_suggestions' as any)
@@ -42,14 +48,16 @@ async function fetchReviewCounts(): Promise<ReviewCounts> {
   const staging = stagingRes.count ?? 0;
   const cmsReview = cmsRes.count ?? 0;
   const moderation = modRes.count ?? 0;
+  const automation = autoRes.count ?? 0;
   const tagSuggestions = tagRes.count ?? 0;
 
   return {
     staging,
     cmsReview,
     moderation,
+    automation,
     tagSuggestions,
-    total: staging + cmsReview + moderation + tagSuggestions,
+    total: staging + cmsReview + moderation + automation + tagSuggestions,
   };
 }
 

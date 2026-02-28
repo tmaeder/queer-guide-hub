@@ -17,7 +17,7 @@ import Typography from '@mui/material/Typography';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import { ChevronDown, History, Check, Loader2 } from 'lucide-react';
+import { ChevronDown, History, Check, Loader2, Sparkles } from 'lucide-react';
 import {
   contentTypeRegistry,
   getFieldsByGroup,
@@ -27,6 +27,7 @@ import {
 import type { FieldConfig, FieldGroup } from '@/types/cms';
 import { LocationAutocomplete, type AddressComponents } from '@/components/ui/location-autocomplete';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AdminEditDialogProps {
   open: boolean;
@@ -59,6 +60,8 @@ export function AdminEditDialog({
   const [editLog, setEditLog] = useState<EditLogEntry[]>([]);
   const [logLoading, setLogLoading] = useState(false);
   const [resolvedFields, setResolvedFields] = useState<Record<string, boolean>>({});
+  const [enriching, setEnriching] = useState(false);
+  const [enrichedFields, setEnrichedFields] = useState<Set<string>>(new Set());
 
   const { resolveAddress, resolveNationality, resolveBirthPlace, resolving } = useAddressResolver();
 
@@ -277,6 +280,63 @@ export function AdminEditDialog({
     return changes;
   };
 
+  const handleEnrich = async () => {
+    setEnriching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('content-automation', {
+        body: {
+          module: 'ai-content-enhancer',
+          content_type: contentType,
+          content_id: contentId,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.suggestions || Object.keys(data.suggestions).length === 0) {
+        toast.info('No enrichment suggestions available');
+        return;
+      }
+
+      const suggestions = data.suggestions as Record<string, unknown>;
+      const newEnrichedFields = new Set<string>();
+
+      setFormData((prev) => {
+        const updates = { ...prev };
+        for (const [key, value] of Object.entries(suggestions)) {
+          // Only fill fields that are empty or explicitly match an editable field
+          if (key === 'suggested_tags') continue; // Handle tags separately
+          const field = editableFields.find(f => f.name === key);
+          if (field && !field.readOnly) {
+            const currentVal = prev[key];
+            // Only suggest if current value is empty or we have a clear improvement
+            if (!currentVal || String(currentVal).trim() === '') {
+              updates[key] = value;
+              newEnrichedFields.add(key);
+            } else if (typeof value === 'string' && typeof currentVal === 'string' &&
+                       value.length > currentVal.length * 1.3) {
+              // Suggest if AI version is significantly longer (30%+ more content)
+              updates[key] = value;
+              newEnrichedFields.add(key);
+            }
+          }
+        }
+        return updates;
+      });
+
+      setEnrichedFields(newEnrichedFields);
+      const count = newEnrichedFields.size;
+      if (count > 0) {
+        toast.success(`AI suggested improvements for ${count} field${count > 1 ? 's' : ''}`);
+      } else {
+        toast.info('Content already looks good — no changes suggested');
+      }
+    } catch (err: unknown) {
+      toast.error(`Enrichment failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setEnriching(false);
+    }
+  };
+
   const handleSubmit = async () => {
     const changes = getChangedFields();
     if (Object.keys(changes).length === 0) {
@@ -299,6 +359,8 @@ export function AdminEditDialog({
   const renderField = (field: FieldConfig) => {
     const value = formData[field.name];
     const isReadOnly = field.readOnly === true;
+    const isEnriched = enrichedFields.has(field.name);
+    const enrichedSx = isEnriched ? { '& .MuiOutlinedInput-root': { borderColor: '#8b5cf6', boxShadow: '0 0 0 1px #8b5cf6' } } : {};
 
     switch (field.type) {
       case 'boolean':
@@ -341,7 +403,7 @@ export function AdminEditDialog({
         return (
           <TextField
             key={field.name}
-            label={field.label}
+            label={isEnriched ? `${field.label} ✨` : field.label}
             multiline
             rows={6}
             value={String(value ?? '')}
@@ -349,8 +411,9 @@ export function AdminEditDialog({
             fullWidth
             size="small"
             disabled={isReadOnly}
-            helperText={field.helpText}
+            helperText={isEnriched ? 'AI-enriched — review before saving' : field.helpText}
             inputProps={{ maxLength: field.maxLength }}
+            sx={enrichedSx}
           />
         );
 
@@ -358,7 +421,7 @@ export function AdminEditDialog({
         return (
           <TextField
             key={field.name}
-            label={field.label}
+            label={isEnriched ? `${field.label} ✨` : field.label}
             multiline
             rows={3}
             value={String(value ?? '')}
@@ -366,8 +429,9 @@ export function AdminEditDialog({
             fullWidth
             size="small"
             disabled={isReadOnly}
-            helperText={field.helpText}
+            helperText={isEnriched ? 'AI-enriched — review before saving' : field.helpText}
             inputProps={{ maxLength: field.maxLength }}
+            sx={enrichedSx}
           />
         );
 
@@ -515,7 +579,7 @@ export function AdminEditDialog({
         return (
           <Box key={field.name} sx={{ position: 'relative' }}>
             <TextField
-              label={field.label}
+              label={isEnriched ? `${field.label} ✨` : field.label}
               value={String(value ?? '')}
               onChange={(e) => {
                 handleChange(field.name, e.target.value);
@@ -526,8 +590,9 @@ export function AdminEditDialog({
               size="small"
               disabled={isReadOnly}
               placeholder={field.placeholder}
-              helperText={field.helpText}
+              helperText={isEnriched ? 'AI-enriched — review before saving' : field.helpText}
               inputProps={{ maxLength: field.maxLength }}
+              sx={enrichedSx}
               InputProps={hasResolver ? {
                 endAdornment: (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -638,8 +703,16 @@ export function AdminEditDialog({
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading || enriching}>
             Cancel
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleEnrich}
+            disabled={loading || enriching}
+          >
+            {enriching ? <Loader2 style={{ width: 14, height: 14, marginRight: 4, animation: 'spin 1s linear infinite' }} /> : <Sparkles style={{ width: 14, height: 14, marginRight: 4 }} />}
+            {enriching ? 'Enriching...' : 'Enrich with AI'}
           </Button>
           <Button
             onClick={handleSubmit}

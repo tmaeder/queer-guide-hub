@@ -16,7 +16,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import {
-  Inbox, Flag, FileCheck, Tag, Shield,
+  Inbox, Flag, FileCheck, Tag, Shield, Bot,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,8 +35,11 @@ const ReviewQueue = lazy(() =>
 const TagSuggestionsQueue = lazy(() =>
   import('@/components/admin/TagSuggestionsQueue').then(m => ({ default: m.TagSuggestionsQueue }))
 );
+const AutoModerationQueue = lazy(() =>
+  import('@/components/admin/AutoModerationQueue').then(m => ({ default: m.AutoModerationQueue }))
+);
 
-const VALID_TABS = ['staging', 'moderation', 'content', 'tags'] as const;
+const VALID_TABS = ['staging', 'moderation', 'automation', 'content', 'tags'] as const;
 type TabId = typeof VALID_TABS[number];
 
 function isValidTab(value: string | null): value is TabId {
@@ -88,7 +91,7 @@ export default function AdminReview() {
   const activeTab = isValidTab(tabParam) ? tabParam : 'staging';
 
   const { data: counts } = useReviewCounts();
-  const c = counts ?? { staging: 0, cmsReview: 0, moderation: 0, tagSuggestions: 0, total: 0 };
+  const c = counts ?? { staging: 0, cmsReview: 0, moderation: 0, automation: 0, tagSuggestions: 0, total: 0 };
 
   const handleTabChange = (value: string) => {
     if (value === 'staging') {
@@ -121,11 +124,12 @@ export default function AdminReview() {
       </Box>
 
       {/* Summary Cards */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(5, 1fr)' }, gap: 2, mb: 3 }}>
         <StatCard icon={Inbox} label="Import Staging" count={c.staging} color="#ea580c" active={activeTab === 'staging'} onClick={() => handleTabChange('staging')} />
         <StatCard icon={Flag} label="Moderation Flags" count={c.moderation} color="#f59e0b" active={activeTab === 'moderation'} onClick={() => handleTabChange('moderation')} />
+        <StatCard icon={Bot} label="Automation" count={c.automation} color="#8b5cf6" active={activeTab === 'automation'} onClick={() => handleTabChange('automation')} />
         <StatCard icon={FileCheck} label="Content Review" count={c.cmsReview} color="#3b82f6" active={activeTab === 'content'} onClick={() => handleTabChange('content')} />
-        <StatCard icon={Tag} label="Tag Suggestions" count={c.tagSuggestions} color="#8b5cf6" active={activeTab === 'tags'} onClick={() => handleTabChange('tags')} />
+        <StatCard icon={Tag} label="Tag Suggestions" count={c.tagSuggestions} color="#a855f7" active={activeTab === 'tags'} onClick={() => handleTabChange('tags')} />
       </Box>
 
       {/* Tabs */}
@@ -133,6 +137,7 @@ export default function AdminReview() {
         <TabsList style={{ backgroundColor: 'var(--card)', marginBottom: 16 }}>
           <TabsTrigger value="staging">Import Staging{tabBadge(c.staging)}</TabsTrigger>
           <TabsTrigger value="moderation">Moderation{tabBadge(c.moderation)}</TabsTrigger>
+          <TabsTrigger value="automation">Automation{tabBadge(c.automation)}</TabsTrigger>
           <TabsTrigger value="content">Content Workflow{tabBadge(c.cmsReview)}</TabsTrigger>
           <TabsTrigger value="tags">Tag Suggestions{tabBadge(c.tagSuggestions)}</TabsTrigger>
         </TabsList>
@@ -146,6 +151,12 @@ export default function AdminReview() {
         <TabsContent value="moderation">
           <Suspense fallback={<Loading />}>
             <ModerationQueue />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="automation">
+          <Suspense fallback={<Loading />}>
+            <AutoModerationQueue />
           </Suspense>
         </TabsContent>
 

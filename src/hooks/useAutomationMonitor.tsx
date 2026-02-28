@@ -327,6 +327,47 @@ export function useAutomationMonitor() {
     },
   });
 
+  const bulkReviewFlags = useMutation({
+    mutationFn: async ({ flagIds, action }: { flagIds: string[]; action: 'approved' | 'rejected' }) => {
+      const updates: Record<string, unknown> = {
+        status: action,
+        reviewed_at: new Date().toISOString(),
+      };
+      if (action === 'approved') {
+        updates.applied_at = new Date().toISOString();
+      }
+      const { error } = await supabase
+        .from('content_flags' as never)
+        .update(updates as never)
+        .in('id', flagIds as never);
+      if (error) throw error;
+
+      // If approved, apply all suggested changes
+      if (action === 'approved') {
+        for (const flagId of flagIds) {
+          const flag = pendingFlags.find(f => f.id === flagId);
+          if (flag?.suggested_value) {
+            await supabase
+              .from(flag.content_type as never)
+              .update(flag.suggested_value as never)
+              .eq('id', flag.content_id as never);
+          }
+        }
+      }
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: `${variables.flagIds.length} flags ${variables.action}`,
+        description: variables.action === 'approved' ? 'Changes have been applied.' : undefined,
+      });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.flags });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.flagStats });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Bulk review failed', description: err.message, variant: 'destructive' });
+    },
+  });
+
   const triggerModule = useMutation({
     mutationFn: async (moduleName: string) => {
       const { data, error } = await supabase.functions.invoke(
@@ -376,6 +417,7 @@ export function useAutomationMonitor() {
     toggleModule: toggleModule.mutateAsync,
     updateModuleConfig: updateModuleConfig.mutateAsync,
     reviewFlag: reviewFlag.mutateAsync,
+    bulkReviewFlags: bulkReviewFlags.mutateAsync,
     triggerModule: triggerModule.mutateAsync,
 
     // Mutation states
