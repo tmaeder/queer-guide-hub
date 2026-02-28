@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts';
+import { requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts';
 import { chatCompletion } from '../_shared/openai-client.ts';
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -110,7 +110,7 @@ async function callOpenAI(prompt: string, systemPrompt: string): Promise<string>
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
         error: `Invalid content_type. Must be one of: ${Object.keys(CONTENT_TYPES).join(', ')}`,
       }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
           items_processed: 0,
           suggestions: [],
         }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
     } else if (content_id) {
@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
           error: `${content_type} with id ${content_id} not found`,
         }), {
           status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
       items = [item];
@@ -230,7 +230,7 @@ Deno.serve(async (req) => {
         error: 'Must provide content_id for single mode or batch: true for batch mode',
       }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -264,11 +264,14 @@ Deno.serve(async (req) => {
       }
 
       // Build AI prompt
+      const safeEntityName = entityName.replace(/<\/?user_data>/gi, '');
+      const safeEntityText = entityText.replace(/<\/?user_data>/gi, '');
+
       const prompt = `Suggest ${max_tags_per_item > 5 ? '3-' + max_tags_per_item : '2-' + max_tags_per_item} relevant tags for this ${content_type.replace('_', ' ')} item.
 
 ITEM:
-Name: ${entityName}
-Content: ${entityText}
+Name: <user_data>${safeEntityName}</user_data>
+Content: <user_data>${safeEntityText}</user_data>
 
 EXISTING TAGS (strongly prefer these over creating new tags):
 ${existingTagNames.slice(0, 300).join(', ')}
@@ -443,7 +446,7 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
       total_suggestions: totalSuggestions,
       total_auto_approved: totalAutoApproved,
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
@@ -453,7 +456,7 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
       error: 'Internal server error',
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

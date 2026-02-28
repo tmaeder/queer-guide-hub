@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getServiceClient, corsHeaders, corsResponse, jsonResponse, errorResponse } from "../_shared/supabase-client.ts";
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from "../_shared/supabase-client.ts";
 
 // FetLife Kinktionary category -> Queer Guide tag_categories slug mapping
 const CATEGORY_MAPPING: Record<string, string> = {
@@ -45,21 +45,23 @@ function generateSlug(name: string): string {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return corsResponse();
+  if (req.method === 'OPTIONS') return corsResponse(req);
 
   if (req.method !== 'POST') {
-    return errorResponse('POST required with { terms: [...] }', 405);
+    return errorResponse('POST required with { terms: [...] }', 405, req);
   }
 
   try {
     const supabase = getServiceClient();
+    const auth = await requireAdmin(req, supabase);
+    if (auth instanceof Response) return auth;
     const body = await req.json();
     const terms: KinktionaryTerm[] = body.terms || [];
     const dryRun = body.dry_run === true;
     const updateExisting = body.update_existing === true;
 
     if (!Array.isArray(terms) || terms.length === 0) {
-      return errorResponse('No terms provided. POST { terms: [{ name, description, fetlife_url, fetlife_category }] }', 400);
+      return errorResponse('No terms provided. POST { terms: [{ name, description, fetlife_url, fetlife_category }] }', 400, req);
     }
 
     console.log(`Kinktionary import: ${terms.length} terms, dry_run=${dryRun}, update_existing=${updateExisting}`);
@@ -268,10 +270,10 @@ serve(async (req) => {
 
     console.log('Kinktionary import complete:', JSON.stringify(stats));
 
-    return jsonResponse(response);
+    return jsonResponse(response, 200, req);
 
   } catch (error) {
     console.error('Kinktionary import error:', error);
-    return errorResponse('Internal server error');
+    return errorResponse('Internal server error', 500, req);
   }
 });

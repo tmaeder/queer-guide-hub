@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 interface CloudflareConfig {
   zoneId: string
@@ -14,8 +10,8 @@ interface CloudflareConfig {
 }
 
 const getCloudflareConfig = (): CloudflareConfig => ({
-  zoneId: 'fe9b9da8a08af32e10bb3ba7fdb04440',
-  accountId: '7aa3765cc5f50f2b681b782eb4a8d296',
+  zoneId: Deno.env.get('CLOUDFLARE_ZONE_ID') || '',
+  accountId: Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '',
   apiToken: Deno.env.get('CLOUDFLARE_API_TOKEN') || '',
   baseUrl: 'https://api.cloudflare.com/client/v4'
 })
@@ -36,6 +32,8 @@ const makeCloudflareRequest = async (endpoint: string, config: CloudflareConfig)
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -265,7 +263,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Cloudflare API error:', error)
     return new Response(
-      JSON.stringify({ error: error.message || 'Unknown error occurred' }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

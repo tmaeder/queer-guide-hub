@@ -1,21 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-function jsonResponse(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  })
-}
-
-function errorResponse(message: string, status = 500): Response {
-  return jsonResponse({ error: message, success: false }, status)
-}
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 const URLSCAN_API = 'https://urlscan.io/api/v1'
 const SCAN_VISIBILITY = 'unlisted'
@@ -55,23 +39,21 @@ function normalizeUrl(url: string): string {
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
+
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
   try {
     const apiKey = Deno.env.get('URLSCAN_API_KEY')
     if (!apiKey) {
-      return errorResponse('URLSCAN_API_KEY environment variable is not configured', 500)
+      return new Response(
+        JSON.stringify({ error: 'URLSCAN_API_KEY environment variable is not configured', success: false }),
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      )
     }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
 
     let linkIds: string[] | undefined
     let batch = false
@@ -142,12 +124,18 @@ serve(async (req: Request) => {
       links = data ?? []
       console.log(`[scan-links] Batch: fetched ${links.length} links`)
     } else {
-      return errorResponse('Provide link_ids or set batch=true', 400)
+      return new Response(
+        JSON.stringify({ error: 'Provide link_ids or set batch=true', success: false }),
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      )
     }
 
     if (!links.length) {
       console.log('[scan-links] No links to scan')
-      return jsonResponse({ scanned: 0, malicious: 0, errors: 0, message: 'No links to scan' })
+      return new Response(
+        JSON.stringify({ scanned: 0, malicious: 0, errors: 0, message: 'No links to scan' }),
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      )
     }
 
     let scanned = 0
@@ -176,10 +164,9 @@ serve(async (req: Request) => {
           try {
             submission = await submitScan(apiKey, scanUrl)
           } catch (submitErr) {
-            const errMsg = submitErr instanceof Error ? submitErr.message : String(submitErr)
             errorCount++
-            results.push({ id: link.id, url: scanUrl, verdict: null, error: errMsg })
-            console.error(`[scan-links] Submission failed for ${scanUrl}: ${errMsg}`)
+            results.push({ id: link.id, url: scanUrl, verdict: null, error: 'Scan submission failed' })
+            console.error(`[scan-links] Submission failed for ${scanUrl}:`, submitErr)
             continue
           }
           if (!submission) {
@@ -214,7 +201,7 @@ serve(async (req: Request) => {
         if (updateErr) {
           console.error(`[scan-links] DB update failed for ${link.id}:`, JSON.stringify(updateErr))
           errorCount++
-          results.push({ id: link.id, url: scanUrl, verdict: scanResult.verdict, error: `DB update failed: ${updateErr.message}` })
+          results.push({ id: link.id, url: scanUrl, verdict: scanResult.verdict, error: 'DB update failed' })
         } else {
           console.log(`[scan-links] DB update success for ${link.id} (count: ${count})`)
           scanned++
@@ -229,16 +216,22 @@ serve(async (req: Request) => {
       } catch (e) {
         console.error(`[scan-links] Error processing ${link.original_url}:`, e)
         errorCount++
-        results.push({ id: link.id, url: link.original_url, verdict: null, error: String(e) })
+        results.push({ id: link.id, url: link.original_url, verdict: null, error: 'Internal server error' })
       }
     }
 
     const response = { scanned, malicious: maliciousCount, errors: errorCount, total: links.length, results }
     console.log(`[scan-links] Final response:`, JSON.stringify(response))
-    return jsonResponse(response)
+    return new Response(
+      JSON.stringify(response),
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+    )
   } catch (e) {
     console.error('[scan-links] Fatal error:', e)
-    return errorResponse(e instanceof Error ? e.message : 'Internal error', 500)
+    return new Response(
+      JSON.stringify({ error: 'Internal server error', success: false }),
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+    )
   }
 })
 
@@ -297,7 +290,7 @@ async function submitScan(apiKey: string, url: string): Promise<ScanSubmission |
     if (!resp.ok) {
       const text = await resp.text()
       console.error(`[scan-links] Submit failed (${resp.status}): ${text}`)
-      throw new Error(`URLScan.io submit failed (${resp.status}): ${text.substring(0, 200)}`)
+      throw new Error(`URLScan.io submit failed (${resp.status})`)
     }
     const submission = await resp.json() as ScanSubmission
     console.log(`[scan-links] Submit success: uuid=${submission.uuid}`)

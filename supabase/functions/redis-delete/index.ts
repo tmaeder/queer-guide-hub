@@ -72,6 +72,13 @@ serve(async (req) => {
       )
     }
 
+    if (!key.startsWith('app:') && !key.startsWith('cache:')) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid key prefix' }),
+        { status: 400, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Rate limit by IP
     const ip = getClientIp(req);
     if (supabase) {
@@ -123,7 +130,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Redis DELETE error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error', message: (error as Error).message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }
     )
   }

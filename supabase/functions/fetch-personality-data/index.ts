@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts';
+import { requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts';
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
 
 // Module-level reference for helper functions that need supabase access
@@ -33,7 +33,7 @@ interface PersonalityData {
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: getCorsHeaders(req) })
   }
 
   try {
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     if (!searchTerm || searchTerm.trim().length < 2) {
       return new Response(
         JSON.stringify({ error: 'Search term must be at least 2 characters' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 400 }
       )
     }
 
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     if (!wikidataData.search || wikidataData.search.length === 0) {
       return new Response(
         JSON.stringify({ error: 'No results found in Wikidata' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 404 }
       )
     }
 
@@ -170,7 +170,7 @@ Deno.serve(async (req) => {
           candidates,
           source: 'wikidata_search'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -395,7 +395,7 @@ Deno.serve(async (req) => {
         data: enhancedData,
         source: 'wikidata_enhanced'
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
@@ -404,7 +404,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         error: 'Internal server error',
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 500 }
     )
   }
 })

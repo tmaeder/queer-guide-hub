@@ -1,15 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface EmailTemplateRequest {
   template_key?: string;
@@ -25,54 +15,14 @@ interface EmailTemplateRequest {
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
+
   try {
-    // Get the authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Authorization header required' }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
-    // Verify the user is authenticated and has admin role
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid authentication' }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
-    // Check if user has admin role
-    const { data: userRoles, error: roleError } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin');
-
-    if (roleError || !userRoles || userRoles.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
     const url = new URL(req.url);
     const templateId = url.searchParams.get('id');
     const method = req.method;
@@ -80,19 +30,19 @@ const handler = async (req: Request): Promise<Response> => {
     // Handle different HTTP methods
     switch (method) {
       case 'GET':
-        return await handleGet(templateId);
+        return await handleGet(req, supabase, templateId);
       case 'POST':
-        return await handlePost(req, user.id);
+        return await handlePost(req, supabase, (auth as { userId: string }).userId);
       case 'PUT':
-        return await handlePut(req, templateId, user.id);
+        return await handlePut(req, supabase, templateId, (auth as { userId: string }).userId);
       case 'DELETE':
-        return await handleDelete(templateId);
+        return await handleDelete(req, supabase, templateId);
       default:
         return new Response(
           JSON.stringify({ error: 'Method not allowed' }),
           {
             status: 405,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
+            headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
           }
         );
     }
@@ -100,19 +50,18 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in manage-email-templates function:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'An unexpected error occurred',
-        details: error.toString() 
+      JSON.stringify({
+        error: 'Internal server error'
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
       }
     );
   }
 };
 
-async function handleGet(templateId: string | null): Promise<Response> {
+async function handleGet(req: Request, supabase: any, templateId: string | null): Promise<Response> {
   if (templateId) {
     // Get single template
     const { data: template, error } = await supabase
@@ -126,7 +75,7 @@ async function handleGet(templateId: string | null): Promise<Response> {
         JSON.stringify({ error: 'Template not found' }),
         {
           status: 404,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
         }
       );
     }
@@ -135,7 +84,7 @@ async function handleGet(templateId: string | null): Promise<Response> {
       JSON.stringify({ template }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
       }
     );
   } else {
@@ -153,13 +102,13 @@ async function handleGet(templateId: string | null): Promise<Response> {
       JSON.stringify({ templates }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
       }
     );
   }
 }
 
-async function handlePost(req: Request, userId: string): Promise<Response> {
+async function handlePost(req: Request, supabase: any, userId: string): Promise<Response> {
   const templateData: EmailTemplateRequest = await req.json();
 
   // Validate required fields
@@ -168,7 +117,7 @@ async function handlePost(req: Request, userId: string): Promise<Response> {
       JSON.stringify({ error: 'Missing required fields: template_key, name, subject, html_content' }),
       {
         status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
       }
     );
   }
@@ -185,7 +134,7 @@ async function handlePost(req: Request, userId: string): Promise<Response> {
       JSON.stringify({ error: 'Template key already exists' }),
       {
         status: 409,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
       }
     );
   }
@@ -212,24 +161,24 @@ async function handlePost(req: Request, userId: string): Promise<Response> {
   }
 
   return new Response(
-    JSON.stringify({ 
+    JSON.stringify({
       message: 'Template created successfully',
-      template: newTemplate 
+      template: newTemplate
     }),
     {
       status: 201,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
     }
   );
 }
 
-async function handlePut(req: Request, templateId: string | null, userId: string): Promise<Response> {
+async function handlePut(req: Request, supabase: any, templateId: string | null, userId: string): Promise<Response> {
   if (!templateId) {
     return new Response(
       JSON.stringify({ error: 'Template ID required for update' }),
       {
         status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
       }
     );
   }
@@ -248,7 +197,7 @@ async function handlePut(req: Request, templateId: string | null, userId: string
       JSON.stringify({ error: 'Template not found' }),
       {
         status: 404,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
       }
     );
   }
@@ -267,7 +216,7 @@ async function handlePut(req: Request, templateId: string | null, userId: string
         JSON.stringify({ error: 'Template key already exists' }),
         {
           status: 409,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
         }
       );
     }
@@ -301,24 +250,24 @@ async function handlePut(req: Request, templateId: string | null, userId: string
   }
 
   return new Response(
-    JSON.stringify({ 
+    JSON.stringify({
       message: 'Template updated successfully',
-      template: updatedTemplate 
+      template: updatedTemplate
     }),
     {
       status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
     }
   );
 }
 
-async function handleDelete(templateId: string | null): Promise<Response> {
+async function handleDelete(req: Request, supabase: any, templateId: string | null): Promise<Response> {
   if (!templateId) {
     return new Response(
       JSON.stringify({ error: 'Template ID required for deletion' }),
       {
         status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
       }
     );
   }
@@ -335,7 +284,7 @@ async function handleDelete(templateId: string | null): Promise<Response> {
       JSON.stringify({ error: 'Template not found' }),
       {
         status: 404,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
       }
     );
   }
@@ -354,7 +303,7 @@ async function handleDelete(templateId: string | null): Promise<Response> {
     JSON.stringify({ message: 'Template deleted successfully' }),
     {
       status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
     }
   );
 }

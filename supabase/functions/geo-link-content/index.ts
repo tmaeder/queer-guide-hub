@@ -7,7 +7,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts';
+import { requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -560,7 +560,7 @@ async function fetchUnlinkedItems(
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -634,7 +634,7 @@ Deno.serve(async (req) => {
         dry_run,
         results: allResults,
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -645,7 +645,7 @@ Deno.serve(async (req) => {
         error: `Invalid content_type. Must be one of: ${VALID_TYPES.join(', ')}`,
       }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -655,7 +655,7 @@ Deno.serve(async (req) => {
         error: 'Must provide content_id for single mode or batch: true for batch mode',
       }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -698,7 +698,7 @@ Deno.serve(async (req) => {
       total_already_linked: alreadyLinked,
       results,
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
@@ -708,7 +708,7 @@ Deno.serve(async (req) => {
       error: 'Internal server error',
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

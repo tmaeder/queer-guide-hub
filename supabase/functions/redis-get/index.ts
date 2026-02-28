@@ -122,7 +122,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Redis GET error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error', message: (error as Error).message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }
     )
   }

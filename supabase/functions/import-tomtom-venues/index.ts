@@ -1,10 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 interface TomTomPOI {
   id: string
@@ -323,12 +319,18 @@ const TOMTOM_SEARCH_TERMS = [
 ]
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
+    const supabase = getServiceClient()
+    const auth = await requireAdmin(req, supabase)
+    if (auth instanceof Response) return auth
+
     console.log('Starting TomTom venues import...')
 
     // Parse request body for city selection
@@ -336,8 +338,6 @@ Deno.serve(async (req) => {
     const selectedCities = body.cities || ['New York']; // Default to single city
     const limit = Math.min(body.limit || 5, 15); // Reduced limit
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const tomtomApiKey = Deno.env.get('TOMTOM_API_KEY')!
 
     console.log('TomTom API Key configured:', tomtomApiKey ? 'Yes' : 'No')
@@ -345,8 +345,6 @@ Deno.serve(async (req) => {
     if (!tomtomApiKey) {
       throw new Error('TomTom API key not configured')
     }
-
-    const supabase = createClient(supabaseUrl, supabaseKey)
 
     let totalImported = 0
     let totalUpdated = 0
@@ -557,7 +555,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: 'Internal server error'
       }),
       {
         status: 500,

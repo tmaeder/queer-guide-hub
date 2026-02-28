@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface ProcessingConfig {
   progressive: {
@@ -47,20 +42,20 @@ const BITRATE_LADDER = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
+  try {
     const { action, videoId, jobId, config } = await req.json()
 
     if (action === 'start') {
       // Create processing job
       console.log(`🎬 Starting video processing for ${videoId}`)
-      
+
       const { data: video, error: videoError } = await supabase
         .from('videos')
         .select('*')
@@ -74,7 +69,7 @@ serve(async (req) => {
       // Create processing job
       const processingConfig = { ...DEFAULT_CONFIG, ...config }
       const jobId = crypto.randomUUID()
-      
+
       const { error: jobError } = await supabase
         .from('video_processing_jobs')
         .insert([{
@@ -90,7 +85,7 @@ serve(async (req) => {
       // Update video with job ID
       await supabase
         .from('videos')
-        .update({ 
+        .update({
           processing_job_id: jobId,
           status: 'processing'
         })
@@ -108,13 +103,13 @@ serve(async (req) => {
       EdgeRuntime.waitUntil(backgroundTask())
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           jobId,
           message: `Started video processing job`,
           estimatedTime: `${Math.ceil(calculateTotalRenditions(processingConfig) * 2)} minutes`
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -128,7 +123,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, job }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -145,7 +140,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, jobs }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -154,13 +149,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('Video processing error:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: 'Internal server error'
       }),
-      { 
+      {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     )
   }
@@ -168,11 +163,11 @@ serve(async (req) => {
 
 function calculateTotalRenditions(config: ProcessingConfig): number {
   let total = 0
-  
+
   // Progressive renditions
   const progressiveFormats = Object.values(config.progressive).filter(Boolean).length
   total += progressiveFormats
-  
+
   // Adaptive renditions
   if (config.adaptive.hls || config.adaptive.dash) {
     // Each resolution gets H.264 for sure, plus modern codecs if enabled
@@ -180,23 +175,23 @@ function calculateTotalRenditions(config: ProcessingConfig): number {
     total += config.resolutions.length * codecCount * (config.adaptive.hls ? 1 : 0)
     total += config.resolutions.length * codecCount * (config.adaptive.dash ? 1 : 0)
   }
-  
+
   return total
 }
 
 async function processVideoInBackground(
-  supabase: any, 
-  jobId: string, 
-  video: any, 
+  supabase: any,
+  jobId: string,
+  video: any,
   config: ProcessingConfig
 ) {
   try {
     console.log(`🎬 Processing video: ${video.original_filename}`)
-    
+
     // Update job status to processing
     await supabase
       .from('video_processing_jobs')
-      .update({ 
+      .update({
         status: 'processing',
         started_at: new Date().toISOString(),
         current_stage: 'analyzing'
@@ -209,7 +204,7 @@ async function processVideoInBackground(
     // Simulate video analysis
     console.log(`📊 Analyzing video properties...`)
     await new Promise(resolve => setTimeout(resolve, 2000))
-    
+
     // Update progress
     await updateJobProgress(supabase, jobId, 5, 'encoding_progressive')
 
@@ -235,7 +230,7 @@ async function processVideoInBackground(
     // Generate adaptive streaming renditions
     if (config.adaptive.hls) {
       await updateJobProgress(supabase, jobId, 85, 'encoding_adaptive')
-      
+
       for (const resolution of config.resolutions) {
         await generateHLSRendition(supabase, video.id, resolution, 'h264')
         completedRenditions++
@@ -277,13 +272,13 @@ async function processVideoInBackground(
 
   } catch (error) {
     console.error(`💥 Video processing failed for job ${jobId}:`, error)
-    
+
     // Mark job as failed
     await supabase
       .from('video_processing_jobs')
       .update({
         status: 'failed',
-        error_message: error.message,
+        error_message: error instanceof Error ? error.message : 'Unknown error',
         completed_at: new Date().toISOString()
       })
       .eq('id', jobId)
@@ -297,10 +292,10 @@ async function processVideoInBackground(
 }
 
 async function updateJobProgress(
-  supabase: any, 
-  jobId: string, 
-  percent: number, 
-  stage: string, 
+  supabase: any,
+  jobId: string,
+  percent: number,
+  stage: string,
   completedRenditions?: number
 ) {
   const updates: any = {
@@ -308,7 +303,7 @@ async function updateJobProgress(
     current_stage: stage,
     updated_at: new Date().toISOString()
   }
-  
+
   if (completedRenditions !== undefined) {
     updates.completed_renditions = completedRenditions
   }
@@ -320,25 +315,25 @@ async function updateJobProgress(
 }
 
 async function generateProgressiveRendition(
-  supabase: any, 
-  videoId: string, 
-  codec: string, 
+  supabase: any,
+  videoId: string,
+  codec: string,
   container: string
 ) {
   console.log(`🎥 Generating ${codec} progressive rendition...`)
-  
+
   // Simulate encoding time
   await new Promise(resolve => setTimeout(resolve, 3000))
-  
+
   // In real implementation, this would:
   // 1. Download source video from storage
   // 2. Run ffmpeg with appropriate codec settings
   // 3. Upload result back to storage
   // 4. Record rendition in database
-  
+
   const mockSize = Math.random() * 50000000 + 10000000 // 10-60MB
   const filePath = `${videoId}/progressive/video-${codec}.${container}`
-  
+
   await supabase
     .from('video_renditions')
     .insert([{
@@ -350,26 +345,26 @@ async function generateProgressiveRendition(
       file_size: Math.round(mockSize),
       file_path: filePath
     }])
-  
+
   console.log(`✅ Generated ${codec} progressive rendition`)
 }
 
 async function generateHLSRendition(
-  supabase: any, 
-  videoId: string, 
-  resolution: string, 
+  supabase: any,
+  videoId: string,
+  resolution: string,
   codec: string
 ) {
   console.log(`📺 Generating HLS ${resolution} ${codec} rendition...`)
-  
+
   // Simulate encoding time
   await new Promise(resolve => setTimeout(resolve, 4000))
-  
+
   const { width, height, bitrate } = BITRATE_LADDER[resolution] || BITRATE_LADDER['720p']
   const mockSize = Math.random() * 30000000 + 5000000 // 5-35MB
   const mockSegments = Math.floor(Math.random() * 100) + 20 // 20-120 segments
   const filePath = `${videoId}/hls/${resolution}/playlist.m3u8`
-  
+
   await supabase
     .from('video_renditions')
     .insert([{
@@ -385,49 +380,49 @@ async function generateHLSRendition(
       file_path: filePath,
       segment_count: mockSegments
     }])
-  
+
   console.log(`✅ Generated HLS ${resolution} ${codec} rendition`)
 }
 
 async function generateVideoThumbnails(supabase: any, videoId: string) {
   console.log(`🖼️ Generating video thumbnails...`)
-  
+
   // Simulate thumbnail generation
   await new Promise(resolve => setTimeout(resolve, 1000))
-  
+
   // In real implementation:
   // 1. Extract frames at intervals
   // 2. Generate poster image (AVIF + JPEG fallback)
   // 3. Generate preview sprites for scrubbing
   // 4. Upload to storage and update video record
-  
+
   const posterPath = `${videoId}/poster.avif`
-  
+
   await supabase
     .from('videos')
     .update({ poster_image_path: posterPath })
     .eq('id', videoId)
-    
+
   console.log(`✅ Generated video thumbnails`)
 }
 
 async function generateCaptionsPlaceholder(supabase: any, videoId: string) {
   console.log(`📝 Generating captions placeholder...`)
-  
+
   // Simulate caption processing
   await new Promise(resolve => setTimeout(resolve, 500))
-  
+
   // In real implementation:
   // 1. Use speech recognition API
   // 2. Generate VTT files
   // 3. Upload to storage
-  
+
   const captionsPath = `${videoId}/captions.vtt`
-  
+
   await supabase
     .from('videos')
     .update({ captions_path: captionsPath })
     .eq('id', videoId)
-    
+
   console.log(`✅ Generated captions placeholder`)
 }

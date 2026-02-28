@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { requireAdmin, corsHeaders, jsonResponse } from '../_shared/supabase-client.ts'
+import { requireAdmin, getCorsHeaders, jsonResponse } from '../_shared/supabase-client.ts'
 
 const WB_BASE = 'https://api.worldbank.org/v2'
 
@@ -213,7 +213,7 @@ async function syncAllCountries(supabase: any): Promise<{ synced: number; failed
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
   try {
@@ -231,10 +231,10 @@ Deno.serve(async (req) => {
 
     if (action === 'sync_one') {
       if (!country_code) {
-        return jsonResponse({ error: 'country_code is required for sync_one' }, 400)
+        return jsonResponse({ error: 'country_code is required for sync_one' }, 400, req)
       }
       const result = await syncCountry(supabase, country_code)
-      return jsonResponse({ success: result.success, ...result })
+      return jsonResponse({ success: result.success, ...result }, 200, req)
     }
 
     if (action === 'sync_all') {
@@ -243,15 +243,15 @@ Deno.serve(async (req) => {
         success: true,
         message: `World Bank sync complete: ${result.synced} synced, ${result.failed} failed`,
         ...result,
-      })
+      }, 200, req)
     }
 
-    return jsonResponse({ error: 'Invalid action. Use "sync_one" or "sync_all"' }, 400)
+    return jsonResponse({ error: 'Invalid action. Use "sync_one" or "sync_all"' }, 400, req)
   } catch (error) {
     console.error('World Bank fetch error:', error)
     return new Response(
       JSON.stringify({ error: 'Internal server error', success: false }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     )
   }
 })

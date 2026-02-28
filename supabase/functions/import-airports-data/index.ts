@@ -1,11 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getServiceClient, corsHeaders, corsResponse, jsonResponse, errorResponse } from "../_shared/supabase-client.ts";
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from "../_shared/supabase-client.ts";
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return corsResponse();
+  if (req.method === 'OPTIONS') return corsResponse(req);
 
   try {
     const supabase = getServiceClient();
+    const auth = await requireAdmin(req, supabase);
+    if (auth instanceof Response) return auth;
 
     // Fetch airports and cities reference data from Travelpayouts
     const [airportsRes, citiesRes] = await Promise.all([
@@ -14,7 +16,7 @@ serve(async (req) => {
     ]);
 
     if (!airportsRes.ok || !citiesRes.ok) {
-      return errorResponse('Failed to fetch Travelpayouts reference data', 502);
+      return errorResponse('Failed to fetch Travelpayouts reference data', 502, req);
     }
 
     const airportsRaw = await airportsRes.json();
@@ -62,7 +64,7 @@ serve(async (req) => {
 
       if (error) {
         console.error(`Batch ${i / batchSize} error:`, error);
-        return errorResponse(`Upsert failed at batch ${i / batchSize}: ${error.message}`);
+        return errorResponse('Internal server error', 500, req);
       }
       inserted += batch.length;
     }
@@ -83,10 +85,10 @@ serve(async (req) => {
       total_raw: airportsRaw.length,
       total_imported: inserted,
       cities_referenced: cityNameMap.size,
-    });
+    }, 200, req);
 
   } catch (error) {
     console.error('Import airports error:', error);
-    return errorResponse('Internal server error');
+    return errorResponse('Internal server error', 500, req);
   }
 });

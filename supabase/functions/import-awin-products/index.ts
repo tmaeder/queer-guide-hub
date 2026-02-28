@@ -1,9 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 interface AwinCsvRow {
   aw_deep_link?: string
@@ -182,6 +178,7 @@ async function getCategoryId(supabase: any, categoryName: string, subcategoryNam
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
   console.log('Starting Awin CSV products import...')
 
   // Handle CORS preflight requests
@@ -190,11 +187,14 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Initialize Supabase client and require admin
+    const supabase = getServiceClient()
+    const auth = await requireAdmin(req, supabase)
+    if (auth instanceof Response) return auth
+
     // Get environment variables
     const awinApiToken = Deno.env.get('AWIN_API_TOKEN')
     const awinAdvertiserId = Deno.env.get('AWIN_ADVERTISER_ID')
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
     if (!awinApiToken || !awinAdvertiserId) {
       console.error('Missing Awin API credentials')
@@ -203,17 +203,6 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase credentials')
-      return new Response(
-        JSON.stringify({ error: 'Missing Supabase credentials' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Parse request body for parameters
     let requestBody: any = {}
@@ -416,9 +405,8 @@ Deno.serve(async (req) => {
     } catch (decompressError) {
       console.error('Decompression error:', decompressError)
       return new Response(
-        JSON.stringify({ 
-          error: 'Failed to decompress CSV data',
-          details: decompressError.message 
+        JSON.stringify({
+          error: 'Internal server error'
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
@@ -427,9 +415,8 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in import-awin-products function:', error)
     return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error',
-        details: error.message 
+      JSON.stringify({
+        error: 'Internal server error'
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

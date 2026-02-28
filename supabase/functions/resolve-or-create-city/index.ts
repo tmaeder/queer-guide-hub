@@ -1,5 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { getServiceClient, corsHeaders, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, getCorsHeaders, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
 
 /**
  * resolve-or-create-city
@@ -84,16 +84,20 @@ function resolveCountryName(raw: string): string {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return corsResponse()
+  if (req.method === 'OPTIONS') return corsResponse(req)
 
   try {
+    const supabase = getServiceClient()
+
+    // Require admin authentication
+    const authResult = await requireAdmin(req, supabase)
+    if (authResult instanceof Response) return authResult
+
     const { city_name, country_name, latitude, longitude } = await req.json()
 
     if (!country_name) {
-      return errorResponse('country_name is required', 400)
+      return errorResponse('country_name is required', 400, req)
     }
-
-    const supabase = getServiceClient()
     const resolvedCountryName = resolveCountryName(country_name)
 
     // Step 1: Try the DB function first (fast path)
@@ -113,7 +117,7 @@ serve(async (req) => {
             country_id: r.resolved_country_id,
             country_name: r.resolved_country_name,
             created: false,
-          })
+          }, 200, req)
         }
 
         // Country found but city not found → create city
@@ -135,7 +139,7 @@ serve(async (req) => {
               country_id: r.resolved_country_id,
               country_name: r.resolved_country_name,
               created: true,
-            })
+            }, 200, req)
           }
         }
       }
@@ -174,7 +178,7 @@ serve(async (req) => {
             country_id: byCode[0].id,
             country_name: byCode[0].name,
             created: !!newCity,
-          })
+          }, 200, req)
         }
 
         return jsonResponse({
@@ -184,14 +188,14 @@ serve(async (req) => {
           country_id: byCode[0].id,
           country_name: byCode[0].name,
           created: false,
-        })
+        }, 200, req)
       }
 
       return jsonResponse({
         success: false,
         error: `Country not found: ${country_name}`,
         resolved_country_attempt: resolvedCountryName,
-      })
+      }, 200, req)
     }
 
     const country = countries[0]
@@ -204,7 +208,7 @@ serve(async (req) => {
         country_id: country.id,
         country_name: country.name,
         created: false,
-      })
+      }, 200, req)
     }
 
     // Create city under resolved country
@@ -224,10 +228,10 @@ serve(async (req) => {
       country_id: country.id,
       country_name: country.name,
       created: !!newCity,
-    })
+    }, 200, req)
   } catch (err: any) {
     console.error('resolve-or-create-city error:', err)
-    return errorResponse(err.message || 'Internal error', 500)
+    return errorResponse('Internal server error', 500, req)
   }
 })
 

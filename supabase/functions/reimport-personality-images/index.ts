@@ -1,11 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface Personality {
   id: string;
@@ -15,23 +10,24 @@ interface Personality {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
+
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
     const { batchSize = 5, offset = 0 } = await req.json();
+    const safeBatchSize = Math.min(batchSize || 5, 20);
 
-    console.log(`Starting Wikipedia image reimport - batch size: ${batchSize}, offset: ${offset}`);
+    console.log(`Starting Wikipedia image reimport - batch size: ${safeBatchSize}, offset: ${offset}`);
 
     // Fetch personalities in batches
     const { data: personalities, error: fetchError } = await supabase
       .from('personalities')
       .select('id, name, image_url')
-      .range(offset, offset + batchSize - 1);
+      .range(offset, offset + safeBatchSize - 1);
 
     if (fetchError) {
       console.error('Error fetching personalities:', fetchError);
@@ -40,13 +36,13 @@ serve(async (req) => {
 
     if (!personalities || personalities.length === 0) {
       console.log('No more personalities to process');
-      return new Response(JSON.stringify({ 
-        success: true, 
+      return new Response(JSON.stringify({
+        success: true,
         message: 'No more personalities to process',
         processed: 0,
         hasMore: false
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -61,14 +57,14 @@ serve(async (req) => {
 
         // Search for Wikipedia image
         const imageUrl = await getWikipediaImage(personality.name);
-        
+
         if (imageUrl && imageUrl !== personality.image_url) {
           console.log(`Found new image for ${personality.name}: ${imageUrl}`);
-          
+
           // Update personality with new image
           const { error: updateError } = await supabase
             .from('personalities')
-            .update({ 
+            .update({
               image_url: imageUrl,
               updated_at: new Date().toISOString()
             })
@@ -87,10 +83,10 @@ serve(async (req) => {
         }
 
         processedCount++;
-        
+
         // Small delay to avoid overwhelming Wikipedia API
         await new Promise(resolve => setTimeout(resolve, 100));
-        
+
       } catch (error) {
         console.error(`Error processing ${personality.name}:`, error);
         processedCount++;
@@ -102,29 +98,29 @@ serve(async (req) => {
       .from('personalities')
       .select('*', { count: 'exact', head: true });
 
-    const hasMore = count ? (offset + batchSize) < count : false;
+    const hasMore = count ? (offset + safeBatchSize) < count : false;
 
     console.log(`Batch completed. Processed: ${processedCount}, Updated: ${updatedCount}, Has more: ${hasMore}`);
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    return new Response(JSON.stringify({
+      success: true,
       processed: processedCount,
       updated: updatedCount,
       hasMore,
-      nextOffset: offset + batchSize,
+      nextOffset: offset + safeBatchSize,
       totalCount: count
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Error in reimport-personality-images function:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      success: false 
+    return new Response(JSON.stringify({
+      error: 'Internal server error',
+      success: false
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });
@@ -145,23 +141,23 @@ async function getWikipediaImage(name: string): Promise<string | null> {
     }
 
     const searchData = await searchResponse.json();
-    
+
     if (searchData.thumbnail && searchData.thumbnail.source) {
       // Get high-resolution version of the image
       let imageUrl = searchData.thumbnail.source;
-      
+
       // Convert to higher resolution if possible
       if (imageUrl.includes('/thumb/')) {
         // Remove size constraints to get full resolution
         imageUrl = imageUrl.replace(/\/\d+px-[^/]+$/, '');
         imageUrl = imageUrl.replace('/thumb/', '/');
-        
+
         // Try to get the original file
         const parts = imageUrl.split('/');
         const filename = parts[parts.length - 1];
         imageUrl = imageUrl.replace(filename, decodeURIComponent(filename));
       }
-      
+
       console.log(`Found Wikipedia image for ${name}: ${imageUrl}`);
       return imageUrl;
     }
@@ -178,9 +174,9 @@ async function getWikipediaImage(name: string): Promise<string | null> {
 
       if (imagesResponse.ok) {
         const imagesData = await imagesResponse.json();
-        const mainImage = imagesData.items?.find((item: any) => 
-          item.type === 'image' && 
-          item.srcset && 
+        const mainImage = imagesData.items?.find((item: any) =>
+          item.type === 'image' &&
+          item.srcset &&
           !item.title.toLowerCase().includes('commons-logo') &&
           !item.title.toLowerCase().includes('edit-icon')
         );
@@ -193,7 +189,7 @@ async function getWikipediaImage(name: string): Promise<string | null> {
             return { url, width };
           });
 
-          const highestRes = srcsetEntries.reduce((prev: any, current: any) => 
+          const highestRes = srcsetEntries.reduce((prev: any, current: any) =>
             current.width > prev.width ? current : prev
           );
 

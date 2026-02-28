@@ -1,9 +1,9 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { corsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts';
 
-const CF_ACCOUNT_ID = '7aa3765cc5f50f2b681b782eb4a8d296';
+const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '';
 const CF_EMBEDDINGS_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/v1/embeddings`;
 const CF_MODEL = '@cf/baai/bge-base-en-v1.5';
 const EMBEDDING_DIMENSION = 768;
@@ -61,7 +61,7 @@ function generateFallbackEmbedding(contentText: string): number[] {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -336,10 +336,10 @@ serve(async (req) => {
         model: CF_MODEL,
         dimensions: EMBEDDING_DIMENSION,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
     console.error('Error in populate-embeddings function:', error);
-    return errorResponse('Internal server error');
+    return errorResponse('Internal server error', 500, req);
   }
 });

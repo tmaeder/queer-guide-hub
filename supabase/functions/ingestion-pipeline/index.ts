@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { enrichVenueWithAI, enrichEventWithAI, enrichPersonalityWithAI, enrichNewsWithAI } from '../_shared/ai-enrichment.ts'
 
 // --- AI Validator (inlined from _shared/ai-validator.ts for edge function compatibility) ---
@@ -283,9 +283,9 @@ async function processAIValidation(supabase: any, jobId: string): Promise<{ proc
     } catch (err) {
       console.error(`AI validation failed for staging item ${item.id}:`, err)
       await supabase.from('ingestion_staging').update({
-        ai_validation_status: 'approved', // On AI failure, approve and let dedup/human review handle it
+        ai_validation_status: 'pending_review', // On AI failure, queue for human review
         ai_confidence_score: 0.5,
-        ai_validation_result: { error: (err as Error).message },
+        ai_validation_result: { error: 'AI validation unavailable' },
         ai_validated_at: new Date().toISOString(),
         review_status: 'pending_review',
       }).eq('id', item.id)
@@ -495,15 +495,14 @@ async function resumeStalledJobs(supabase: any): Promise<{ resumed: number }> {
 // --- Main handler ---
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+    const supabase = getServiceClient()
 
     // SECURITY: Require admin — pipeline writes to DB via service_role
     const authResult = await requireAdmin(req, supabase)

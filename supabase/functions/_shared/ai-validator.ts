@@ -19,16 +19,20 @@ Rules:
 
 Respond ONLY with valid JSON, no markdown code blocks.`
 
+function sanitizeUserData(value: string): string {
+  return value.replace(/<\/?user_data>/gi, '')
+}
+
 function buildUserPrompt(
   item: { name: string; description?: string; category?: string; source_url?: string; raw_data: Record<string, unknown> },
   targetTable: string
 ): string {
   return `Validate this ${targetTable} item for LGBTQ+ relevance:
 
-Name: ${item.name}
-Description: ${(item.description || 'N/A').slice(0, 500)}
-Category: ${item.category || 'N/A'}
-Source: ${item.source_url || 'N/A'}
+Name: <user_data>${sanitizeUserData(item.name)}</user_data>
+Description: <user_data>${sanitizeUserData((item.description || 'N/A').slice(0, 500))}</user_data>
+Category: <user_data>${sanitizeUserData(item.category || 'N/A')}</user_data>
+Source: <user_data>${sanitizeUserData(item.source_url || 'N/A')}</user_data>
 
 Raw data (truncated): ${JSON.stringify(item.raw_data).slice(0, 1500)}
 

@@ -63,7 +63,9 @@ serve(async (req) => {
     : null;
 
   try {
-    const { pattern = '*' } = await req.json()
+    let { pattern = '*' } = await req.json()
+
+    if (pattern === '*') pattern = 'app:*';
 
     // Rate limit by IP
     const ip = getClientIp(req);
@@ -122,9 +124,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('Redis KEYS error:', error)
     return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error',
-        message: (error as Error).message 
+      JSON.stringify({
+        error: 'Internal server error'
       }),
       { status: 500, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }
     )
