@@ -9,12 +9,17 @@ interface CloudflareConfig {
   baseUrl: string
 }
 
-const getCloudflareConfig = (): CloudflareConfig => ({
-  zoneId: Deno.env.get('CLOUDFLARE_ZONE_ID') || '',
-  accountId: Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '',
-  apiToken: Deno.env.get('CLOUDFLARE_API_TOKEN') || '',
-  baseUrl: 'https://api.cloudflare.com/client/v4'
-})
+const getCloudflareConfig = (): CloudflareConfig => {
+  const zoneId = Deno.env.get('CLOUDFLARE_ZONE_ID')
+  const accountId = Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
+  const apiToken = Deno.env.get('CLOUDFLARE_API_TOKEN')
+
+  if (!zoneId || !accountId || !apiToken) {
+    throw new Error('Missing required Cloudflare env vars: CLOUDFLARE_ZONE_ID, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN')
+  }
+
+  return { zoneId, accountId, apiToken, baseUrl: 'https://api.cloudflare.com/client/v4' }
+}
 
 const makeCloudflareRequest = async (endpoint: string, config: CloudflareConfig) => {
   const response = await fetch(`${config.baseUrl}${endpoint}`, {

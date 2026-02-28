@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { Resend } from "npm:resend@2.0.0";
 import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
@@ -10,13 +10,6 @@ function escapeHtml(s: string): string {
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const resendApiKey = Deno.env.get('RESEND_API_KEY');
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 interface SendEmailRequest {
   template_key: string;
@@ -32,6 +25,13 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response('ok', { headers: cors });
   }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const resendApiKey = Deno.env.get('RESEND_API_KEY');
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
   if (!resend) {
     console.error('RESEND_API_KEY not configured');

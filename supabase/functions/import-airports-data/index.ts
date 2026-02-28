@@ -69,15 +69,29 @@ serve(async (req) => {
       inserted += batch.length;
     }
 
-    // Mark major airports (airports in capital cities or large hubs)
-    // A simple heuristic: airports where city_iata matches the airport iata_code are typically the main airport
-    const { error: majorErr } = await supabase.rpc('exec_sql', {
-      sql: `UPDATE airports SET is_major = true WHERE iata_code = city_iata`
-    }).maybeSingle();
+    // Mark major airports (airports where city_iata matches the airport iata_code)
+    // Fetch matching codes and update them via the PostgREST API
+    const { data: majorAirports } = await supabase
+      .from('airports')
+      .select('iata_code, city_iata')
 
-    // If RPC doesn't exist, we can skip this step
-    if (majorErr) {
-      console.log('Could not mark major airports via RPC, skipping:', majorErr.message);
+    if (majorAirports) {
+      const majorCodes = majorAirports
+        .filter(a => a.iata_code && a.city_iata && a.iata_code === a.city_iata)
+        .map(a => a.iata_code)
+
+      if (majorCodes.length > 0) {
+        const { error: majorErr } = await supabase
+          .from('airports')
+          .update({ is_major: true })
+          .in('iata_code', majorCodes)
+
+        if (majorErr) {
+          console.log('Could not mark major airports, skipping:', majorErr.message)
+        } else {
+          console.log(`Marked ${majorCodes.length} airports as major`)
+        }
+      }
     }
 
     return jsonResponse({

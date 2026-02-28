@@ -1,5 +1,6 @@
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
 interface WikidataSearchResult {
   id: string;
@@ -52,7 +53,6 @@ Deno.serve(async (req) => {
 
     console.log(`Processing ${names.length} personality names with sources:`, sourceConfig);
     console.log('Input validation passed, starting processing...');
-    _supabaseClient = supabase;
 
     const results = [];
     const errors = [];
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
         console.log(`Processing: ${name}`);
         
         // Fetch personality data using the same logic as fetch-personality-data
-        const personalityData = await fetchPersonalityData(name.trim(), sourceConfig);
+        const personalityData = await fetchPersonalityData(supabase, name.trim(), sourceConfig);
         
         console.log(`Data fetched for ${name}:`, personalityData ? 'success' : 'failed');
         
@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function fetchPersonalityData(searchTerm: string, sources: any): Promise<PersonalityData | null> {
+async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: string, sources: any): Promise<PersonalityData | null> {
   try {
     if (!sources.wikidata) {
       console.log(`Wikidata source disabled for: ${searchTerm}`);
@@ -349,7 +349,7 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
     }
 
     // Enhanced AI-powered LGBTI/queer community description generation with all source data
-    const enhancedData = await enhanceWithLGBTIContext({
+    const enhancedData = await enhanceWithLGBTIContext(supabaseClient, {
       name,
       description,
       bio,
@@ -383,9 +383,9 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
   }
 }
 
-async function enhanceWithLGBTIContext(basicData: any): Promise<any> {
+async function enhanceWithLGBTIContext(supabaseClient: SupabaseClient, basicData: any): Promise<any> {
   try {
-    if (!_supabaseClient || !(await isOpenAIAvailable(_supabaseClient))) {
+    if (!(await isOpenAIAvailable(supabaseClient))) {
       console.log('OpenAI not available, returning basic data');
       return basicData;
     }
@@ -434,7 +434,7 @@ CRITICAL RULES:
 
 Return ONLY valid JSON, no additional text.`;
 
-    const aiResult = await chatCompletion(_supabaseClient, {
+    const aiResult = await chatCompletion(supabaseClient, {
       model: 'gpt-4.1-2025-04-14',
       messages: [
         { role: 'system', content: 'You are an expert LGBTI historian and researcher. Provide accurate, factual information about people\'s relationship to the LGBTI/queer community.' },

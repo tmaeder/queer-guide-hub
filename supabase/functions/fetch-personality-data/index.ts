@@ -1,9 +1,7 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts';
+import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
 
-// Module-level reference for helper functions that need supabase access
-let _supabaseClient: any = null;
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
 interface WikidataSearchResult {
   id: string;
@@ -38,11 +36,7 @@ Deno.serve(async (req) => {
 
   try {
     // SECURITY: Require admin — this function calls multiple external APIs (Wikidata, OpenAI, etc.)
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-    _supabaseClient = supabase;
+    const supabase = getServiceClient();
     const authResult = await requireAdmin(req, supabase);
     if (authResult instanceof Response) return authResult;
 
@@ -370,7 +364,7 @@ Deno.serve(async (req) => {
     const openSanctionsData = await fetchOpenSanctionsData(name);
 
     // Step 7: Enhanced AI-powered LGBTI/queer community analysis
-    const enhancedData = await enhanceWithLGBTIContext({
+    const enhancedData = await enhanceWithLGBTIContext(supabase, {
       name,
       description,
       bio,
@@ -409,9 +403,9 @@ Deno.serve(async (req) => {
   }
 })
 
-async function enhanceWithLGBTIContext(basicData: any): Promise<PersonalityData> {
+async function enhanceWithLGBTIContext(supabaseClient: SupabaseClient, basicData: any): Promise<PersonalityData> {
   try {
-    if (!_supabaseClient || !(await isOpenAIAvailable(_supabaseClient))) {
+    if (!(await isOpenAIAvailable(supabaseClient))) {
       console.log('OpenAI not available, returning basic data');
       return basicData;
     }
@@ -471,7 +465,7 @@ CRITICAL RULES:
 
 Return ONLY valid JSON, no additional text.`;
 
-    const aiResult = await chatCompletion(_supabaseClient, {
+    const aiResult = await chatCompletion(supabaseClient, {
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: 'You are an expert LGBTI historian and researcher with access to comprehensive academic and community databases. Provide accurate, factual, well-researched information about people\'s relationship to the LGBTI/queer community. Always distinguish between documented facts and speculation.' },
