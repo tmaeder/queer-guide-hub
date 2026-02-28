@@ -136,7 +136,7 @@ async function deduplicateItem(supabase: any, targetTable: string, data: Record<
     }
   } catch (error) {
     console.error(`Dedup error for ${targetTable}:`, error)
-    return { status: 'unique', details: { error: (error as Error).message } }
+    return { status: 'unique', details: { error: 'Dedup check failed' } }
   }
 }
 
