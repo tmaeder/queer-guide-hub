@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { formatICalDateTime, escapeICalText, generateVEvent, wrapICalendar } from '../_shared/ical-generator.ts'
 
 interface Event {
   id: string;
@@ -18,73 +19,51 @@ interface Event {
   website?: string;
 }
 
-const formatDateTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-};
-
-const escapeText = (text: string): string => {
-  return text
-    .replace(/\\/g, '\\\\')
-    .replace(/,/g, '\\,')
-    .replace(/;/g, '\\;')
-    .replace(/\n/g, '\\n')
-    .replace(/\r/g, '');
-};
-
-const generateICalEvent = (event: Event): string => {
-  const startDate = formatDateTime(event.start_date);
-  const endDate = event.end_date ? formatDateTime(event.end_date) : formatDateTime(new Date(new Date(event.start_date).getTime() + 2 * 60 * 60 * 1000).toISOString()); // Default 2 hours if no end date
-  
+const buildLocation = (event: Event): string => {
   let location = '';
   if (event.venue_name) location += event.venue_name;
   if (event.address) location += (location ? ', ' : '') + event.address;
   if (event.city) location += (location ? ', ' : '') + event.city;
   if (event.state) location += (location ? ', ' : '') + event.state;
   if (event.country) location += (location ? ', ' : '') + event.country;
+  return location;
+};
 
+const buildDescription = (event: Event): string => {
   let description = event.description || '';
   if (event.organizer_name) description += `\n\nOrganizer: ${event.organizer_name}`;
   if (event.organizer_contact) description += `\nContact: ${event.organizer_contact}`;
   if (event.website) description += `\nWebsite: ${event.website}`;
-
-  const uid = `event-${event.id}@favorites.calendar`;
-  const now = formatDateTime(new Date().toISOString());
-
-  return [
-    'BEGIN:VEVENT',
-    `UID:${uid}`,
-    `DTSTART:${startDate}`,
-    `DTEND:${endDate}`,
-    `DTSTAMP:${now}`,
-    `SUMMARY:${escapeText(event.title)}`,
-    description ? `DESCRIPTION:${escapeText(description)}` : '',
-    location ? `LOCATION:${escapeText(location)}` : '',
-    'STATUS:CONFIRMED',
-    'TRANSP:OPAQUE',
-    'END:VEVENT'
-  ].filter(Boolean).join('\r\n');
+  return description;
 };
 
-const generateICalendar = (events: Event[], userId: string): string => {
-  const now = formatDateTime(new Date().toISOString());
-  
-  const header = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Queer Guide//Favorites Calendar//EN',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
-    `X-WR-CALNAME:My Favorite Events`,
-    `X-WR-CALDESC:Events from your favorites list`,
-    `X-WR-TIMEZONE:UTC`
-  ].join('\r\n');
+const generateICalEvent = (event: Event): string => {
+  const startDate = formatICalDateTime(event.start_date);
+  // Default to 2 hours after start if no end date is provided
+  const endDate = event.end_date
+    ? formatICalDateTime(event.end_date)
+    : formatICalDateTime(new Date(new Date(event.start_date).getTime() + 2 * 60 * 60 * 1000).toISOString());
 
+  return generateVEvent({
+    uid: `event-${event.id}@favorites.calendar`,
+    summary: event.title,
+    dtstart: startDate,
+    dtend: endDate,
+    description: buildDescription(event) || undefined,
+    location: buildLocation(event) || undefined,
+    extraLines: ['STATUS:CONFIRMED', 'TRANSP:OPAQUE'],
+  });
+};
+
+const generateICalendar = (events: Event[]): string => {
   const eventBlocks = events.map(event => generateICalEvent(event));
-  
-  const footer = 'END:VCALENDAR';
 
-  return [header, ...eventBlocks, footer].join('\r\n');
+  return wrapICalendar(eventBlocks, {
+    prodId: '-//Queer Guide//Favorites Calendar//EN',
+    calendarName: 'My Favorite Events',
+    calendarDescription: 'Events from your favorites list',
+    timezone: 'UTC',
+  });
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -97,22 +76,22 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     console.log('Calendar feed request received');
-    
+
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
 
     if (!token) {
       console.error('Missing token parameter');
-      return new Response('Missing required parameters', { 
+      return new Response('Missing required parameters', {
         status: 400,
-        headers: corsHeaders 
+        headers: corsHeaders
       });
     }
 
     // Initialize Supabase client with service role key for admin access
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Validate token and resolve user_id
@@ -124,9 +103,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (tokenErr || !tokenRow || tokenRow.revoked) {
       console.error('Invalid or revoked token');
-      return new Response('Invalid token', { 
+      return new Response('Invalid token', {
         status: 401,
-        headers: corsHeaders 
+        headers: corsHeaders
       });
     }
 
@@ -154,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!favoriteEvents || favoriteEvents.length === 0) {
       console.log('No favorite events found for user');
       // Return empty calendar
-      const emptyCalendar = generateICalendar([], userId);
+      const emptyCalendar = generateICalendar([]);
       return new Response(emptyCalendar, {
         status: 200,
         headers: {
@@ -197,7 +176,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${events?.length || 0} events for calendar`);
 
-    const calendarData = generateICalendar(events || [], userId);
+    const calendarData = generateICalendar(events || []);
 
     return new Response(calendarData, {
       status: 200,
@@ -215,9 +194,9 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ error: 'Internal server error' }),
       {
         status: 500,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          ...corsHeaders 
+          ...corsHeaders
         },
       }
     );

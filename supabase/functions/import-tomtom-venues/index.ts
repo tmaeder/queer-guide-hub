@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
 import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateAmenity, getOrCreateService } from '../_shared/venue-import-helpers.ts'
 
 interface TomTomPOI {
   id: string
@@ -78,136 +79,6 @@ interface TomTomPOI {
   }
 }
 
-// Helper functions for data management
-async function getOrCreateCity(supabase: any, cityName: string, countryCode: string, lat: number, lon: number) {
-  const { data: existingCity } = await supabase
-    .from('cities')
-    .select('id')
-    .eq('name', cityName)
-    .maybeSingle()
-
-  if (existingCity) {
-    return existingCity.id
-  }
-
-  const { data: country } = await supabase
-    .from('countries')
-    .select('id')
-    .eq('code', countryCode)
-    .maybeSingle()
-
-  const { data: newCity, error } = await supabase
-    .from('cities')
-    .insert({
-      name: cityName,
-      country_id: country?.id || null,
-      latitude: lat,
-      longitude: lon,
-      is_major_city: false
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (!error && newCity) {
-    console.log(`Created new city: ${cityName}`)
-    return newCity.id
-  }
-
-  return null
-}
-
-async function getOrCreateVenueCategory(supabase: any, categoryName: string, categorySlug: string) {
-  const { data: existing } = await supabase
-    .from('venue_categories')
-    .select('id')
-    .eq('slug', categorySlug)
-    .maybeSingle()
-
-  if (existing) {
-    return existing.id
-  }
-
-  // Create new category
-  const { data: newCategory, error } = await supabase
-    .from('venue_categories')
-    .insert({
-      name: categoryName,
-      slug: categorySlug,
-      description: `Auto-created from TomTom import`,
-      icon: categorySlug.includes('bar') ? 'Wine' : categorySlug.includes('restaurant') ? 'UtensilsCrossed' : 'MapPin',
-      color: categorySlug.includes('bar') ? '#8b5cf6' : categorySlug.includes('restaurant') ? '#ef4444' : '#6366f1'
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (!error && newCategory) {
-    console.log(`Created new venue category: ${categoryName}`)
-    return newCategory.id
-  }
-
-  return null
-}
-
-async function getOrCreateAmenity(supabase: any, amenityName: string, amenitySlug: string) {
-  const { data: existing } = await supabase
-    .from('venue_amenities')
-    .select('id')
-    .eq('slug', amenitySlug)
-    .maybeSingle()
-
-  if (existing) {
-    return existing.id
-  }
-
-  const { data: newAmenity, error } = await supabase
-    .from('venue_amenities')
-    .insert({
-      name: amenityName,
-      slug: amenitySlug,
-      description: `Auto-created from TomTom import`,
-      icon: amenitySlug.includes('wifi') ? 'Wifi' : amenitySlug.includes('parking') ? 'Car' : 'MapPin'
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (!error && newAmenity) {
-    console.log(`Created new amenity: ${amenityName}`)
-    return newAmenity.id
-  }
-
-  return null
-}
-
-async function getOrCreateService(supabase: any, serviceName: string, serviceSlug: string) {
-  const { data: existing } = await supabase
-    .from('venue_services')
-    .select('id')
-    .eq('slug', serviceSlug)
-    .maybeSingle()
-
-  if (existing) {
-    return existing.id
-  }
-
-  const { data: newService, error } = await supabase
-    .from('venue_services')
-    .insert({
-      name: serviceName,
-      slug: serviceSlug,
-      description: `Auto-created from TomTom import`,
-      icon: serviceSlug.includes('beverage') ? 'Wine' : serviceSlug.includes('food') ? 'UtensilsCrossed' : 'MapPin'
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (!error && newService) {
-    console.log(`Created new service: ${serviceName}`)
-    return newService.id
-  }
-
-  return null
-}
-
 async function mapVenueCategory(supabase: any, classifications: any[], searchTerm: string) {
   let categoryName = 'Entertainment & Nightlife'
   let categorySlug = 'entertainment-nightlife'
@@ -238,10 +109,10 @@ async function mapVenueCategory(supabase: any, classifications: any[], searchTer
     categorySlug = 'health-wellness'
   }
 
-  const categoryId = await getOrCreateVenueCategory(supabase, categoryName, categorySlug)
+  const categoryId = await getOrCreateVenueCategory(supabase, categoryName, categorySlug, 'TomTom')
 
   return {
-    categorySlug: categorySlug.includes('entertainment') ? 'bar' : 
+    categorySlug: categorySlug.includes('entertainment') ? 'bar' :
                  categorySlug.includes('restaurants') ? 'restaurant' :
                  categorySlug.includes('community') ? 'organization' : 'other',
     categoryId
@@ -257,45 +128,45 @@ async function mapAmenitiesAndServices(supabase: any, poi: TomTomPOI, searchTerm
   // Basic amenities from POI data
   if (poi.poi.phone) {
     amenityNames.push('Phone Service')
-    const amenityId = await getOrCreateAmenity(supabase, 'Phone Service', 'phone-service')
+    const amenityId = await getOrCreateAmenity(supabase, 'Phone Service', 'phone-service', 'TomTom')
     if (amenityId) amenityIds.push(amenityId)
   }
-  
+
   if (poi.poi.url) {
     amenityNames.push('WiFi')
-    const amenityId = await getOrCreateAmenity(supabase, 'WiFi', 'wifi')
+    const amenityId = await getOrCreateAmenity(supabase, 'WiFi', 'wifi', 'TomTom')
     if (amenityId) amenityIds.push(amenityId)
   }
-  
+
   if (poi.entryPoints && poi.entryPoints.length > 1) {
     amenityNames.push('Multiple Entrances')
-    const amenityId = await getOrCreateAmenity(supabase, 'Multiple Entrances', 'multiple-entrances')
+    const amenityId = await getOrCreateAmenity(supabase, 'Multiple Entrances', 'multiple-entrances', 'TomTom')
     if (amenityId) amenityIds.push(amenityId)
   }
 
   // Services based on search term and classification
   if (searchTerm.includes('bar') || searchTerm.includes('club')) {
     serviceNames.push('Beverages', 'Entertainment')
-    const beverageId = await getOrCreateService(supabase, 'Beverages', 'beverages')
-    const entertainmentId = await getOrCreateService(supabase, 'Entertainment', 'entertainment')
+    const beverageId = await getOrCreateService(supabase, 'Beverages', 'beverages', 'TomTom')
+    const entertainmentId = await getOrCreateService(supabase, 'Entertainment', 'entertainment', 'TomTom')
     if (beverageId) serviceIds.push(beverageId)
     if (entertainmentId) serviceIds.push(entertainmentId)
   } else if (searchTerm.includes('restaurant') || searchTerm.includes('cafe')) {
     serviceNames.push('Dine-In', 'Food Service')
-    const dineInId = await getOrCreateService(supabase, 'Dine-In', 'dine-in')
-    const foodServiceId = await getOrCreateService(supabase, 'Food Service', 'food-service')
+    const dineInId = await getOrCreateService(supabase, 'Dine-In', 'dine-in', 'TomTom')
+    const foodServiceId = await getOrCreateService(supabase, 'Food Service', 'food-service', 'TomTom')
     if (dineInId) serviceIds.push(dineInId)
     if (foodServiceId) serviceIds.push(foodServiceId)
   } else if (searchTerm.includes('health') || searchTerm.includes('clinic')) {
     serviceNames.push('Health Services', 'Counseling')
-    const healthId = await getOrCreateService(supabase, 'Health Services', 'health-services')
-    const counselingId = await getOrCreateService(supabase, 'Counseling', 'counseling')
+    const healthId = await getOrCreateService(supabase, 'Health Services', 'health-services', 'TomTom')
+    const counselingId = await getOrCreateService(supabase, 'Counseling', 'counseling', 'TomTom')
     if (healthId) serviceIds.push(healthId)
     if (counselingId) serviceIds.push(counselingId)
   } else if (searchTerm.includes('center') || searchTerm.includes('organization')) {
     serviceNames.push('Community Support', 'Social Services')
-    const communityId = await getOrCreateService(supabase, 'Community Support', 'community-support')
-    const socialId = await getOrCreateService(supabase, 'Social Services', 'social-services')
+    const communityId = await getOrCreateService(supabase, 'Community Support', 'community-support', 'TomTom')
+    const socialId = await getOrCreateService(supabase, 'Social Services', 'social-services', 'TomTom')
     if (communityId) serviceIds.push(communityId)
     if (socialId) serviceIds.push(socialId)
   }

@@ -1,6 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
-import { getCorsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, requireAdmin, errorResponse, getServiceClient } from '../_shared/supabase-client.ts'
 
 const USER_AGENTS = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
@@ -288,10 +287,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+    const supabase = getServiceClient()
 
     // Require admin authentication
     const authResult = await requireAdmin(req, supabase)

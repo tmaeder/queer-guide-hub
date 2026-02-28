@@ -1,7 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { getCorsHeaders, requireAdmin } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -11,9 +10,7 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = getServiceClient();
 
     const authResult = await requireAdmin(req, supabase);
     if (authResult instanceof Response) return authResult;

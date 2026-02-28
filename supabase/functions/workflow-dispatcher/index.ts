@@ -1,5 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { getCorsHeaders, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { getCorsHeaders, jsonResponse, errorResponse, corsResponse, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts'
 
 // Queue configuration: name → visibility timeout in seconds
 const QUEUE_CONFIG: Record<string, number> = {
@@ -41,9 +41,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = getServiceClient()
 
   try {
     // Parse request — supports both cron (GET/POST with source=cron) and admin actions
@@ -101,7 +100,7 @@ Deno.serve(async (req) => {
 // ─── DISPATCH: Read queues and invoke edge functions ────────────────────────
 
 async function handleDispatch(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   supabaseUrl: string,
   anonKey: string
 ): Promise<Response> {
@@ -283,7 +282,7 @@ async function handleDispatch(
 
 // Fire-and-forget edge function invocation with result tracking
 async function dispatchEdgeFunction(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   supabaseUrl: string,
   anonKey: string,
   def: WorkflowDefinition,
@@ -400,7 +399,7 @@ async function dispatchEdgeFunction(
 // ─── MOVE TO DEAD LETTER ────────────────────────────────────────────────────
 
 async function moveToDeadLetter(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   sourceQueue: string,
   msg: QueueMessage,
   reason: string
@@ -422,7 +421,7 @@ async function moveToDeadLetter(
 // ─── ENQUEUE: Manually queue a workflow ─────────────────────────────────────
 
 async function handleEnqueue(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   payload: Record<string, unknown>
 ): Promise<Response> {
   const workflowName = payload.workflow as string
@@ -459,7 +458,7 @@ async function handleEnqueue(
 // ─── RETRY: Retry a dead-lettered or failed run ────────────────────────────
 
 async function handleRetry(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   payload: Record<string, unknown>
 ): Promise<Response> {
   const runId = payload.run_id as string
@@ -506,7 +505,7 @@ async function handleRetry(
 // ─── CANCEL: Cancel a queued run ────────────────────────────────────────────
 
 async function handleCancel(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   payload: Record<string, unknown>
 ): Promise<Response> {
   const runId = payload.run_id as string
@@ -535,7 +534,7 @@ async function handleCancel(
 // ─── HEALTH CHECK: Verify scheduled workflows ran recently ──────────────────
 
 async function handleHealthCheck(
-  supabase: ReturnType<typeof createClient>
+  supabase: SupabaseClient
 ): Promise<Response> {
   const { data: definitions } = await supabase
     .from('workflow_definitions')
@@ -578,7 +577,7 @@ async function handleHealthCheck(
 // ─── METRICS: Queue depths and recent run stats ─────────────────────────────
 
 async function handleMetrics(
-  supabase: ReturnType<typeof createClient>
+  supabase: SupabaseClient
 ): Promise<Response> {
   // Queue metrics
   const { data: queueMetrics } = await supabase.rpc('pgmq_metrics_all')

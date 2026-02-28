@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts';
 import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
+import { getOrCreateCity, getOrCreateVenueCategory } from '../_shared/venue-import-helpers.ts';
 
 interface GooglePlacesResult {
   place_id: string;
@@ -32,79 +33,6 @@ interface GooglePlacesResult {
   website?: string;
   formatted_phone_number?: string;
   international_phone_number?: string;
-}
-
-// Helper functions for data management
-async function getOrCreateCity(supabase: any, cityName: string, countryCode: string, lat: number, lng: number) {
-  const { data: existingCity } = await supabase
-    .from('cities')
-    .select('id')
-    .eq('name', cityName)
-    .maybeSingle();
-
-  if (existingCity) {
-    return existingCity.id;
-  }
-
-  const { data: country } = await supabase
-    .from('countries')
-    .select('id')
-    .eq('code', countryCode)
-    .maybeSingle();
-
-  const { data: newCity, error } = await supabase
-    .from('cities')
-    .insert({
-      name: cityName,
-      country_id: country?.id || null,
-      latitude: lat,
-      longitude: lng,
-      is_major_city: false
-    })
-    .select('id')
-    .maybeSingle();
-
-  if (!error && newCity) {
-    console.log(`Created new city: ${cityName}`);
-    return newCity.id;
-  }
-
-  return null;
-}
-
-async function getOrCreateVenueCategory(supabase: any, categoryName: string, categorySlug: string) {
-  const { data: existing } = await supabase
-    .from('venue_categories')
-    .select('id')
-    .eq('slug', categorySlug)
-    .maybeSingle();
-
-  if (existing) {
-    return existing.id;
-  }
-
-  const { data: newCategory, error } = await supabase
-    .from('venue_categories')
-    .insert({
-      name: categoryName,
-      slug: categorySlug,
-      description: `Auto-created from Google Places import`,
-      icon: categorySlug.includes('entertainment') ? 'Music' : 
-            categorySlug.includes('restaurant') ? 'UtensilsCrossed' : 
-            categorySlug.includes('lodging') ? 'Bed' : 'MapPin',
-      color: categorySlug.includes('entertainment') ? '#8b5cf6' : 
-             categorySlug.includes('restaurant') ? '#ef4444' : 
-             categorySlug.includes('lodging') ? '#f59e0b' : '#6366f1'
-    })
-    .select('id')
-    .maybeSingle();
-
-  if (!error && newCategory) {
-    console.log(`Created new venue category: ${categoryName}`);
-    return newCategory.id;
-  }
-
-  return null;
 }
 
 function mapGooglePlaceTypeToCategory(types: string[]) {
@@ -306,7 +234,7 @@ serve(async (req) => {
 
               // Map category
               const categoryMapping = mapGooglePlaceTypeToCategory(placeDetails.types);
-              const categoryId = await getOrCreateVenueCategory(supabase, categoryMapping.name, categoryMapping.slug);
+              const categoryId = await getOrCreateVenueCategory(supabase, categoryMapping.name, categoryMapping.slug, 'Google Places');
 
               // Prepare tags
               const tags = ['lgbt-friendly', 'google-places'];

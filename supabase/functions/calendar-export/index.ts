@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { formatICalDateTime, generateVEvent, wrapICalendar } from '../_shared/ical-generator.ts'
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
@@ -15,9 +16,9 @@ serve(async (req) => {
     if (!eventId) {
       return new Response(
         JSON.stringify({ error: 'Event ID is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
@@ -46,20 +47,12 @@ serve(async (req) => {
       console.error('Error fetching event:', error);
       return new Response(
         JSON.stringify({ error: 'Event not found' }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
-
-    // Format dates for iCalendar
-    const formatDate = (date: string) => {
-      return new Date(date).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    };
-
-    // Generate unique UID
-    const uid = `event-${event.id}@queer.guide`;
 
     // Build location string
     const location = [
@@ -69,24 +62,22 @@ serve(async (req) => {
       event.state
     ].filter(Boolean).join(', ');
 
-    // Generate iCalendar content
-    const icsContent = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//Queer Guide//Event Export//EN',
-      'BEGIN:VEVENT',
-      `UID:${uid}`,
-      `DTSTART:${formatDate(event.start_date)}`,
-      event.end_date ? `DTEND:${formatDate(event.end_date)}` : '',
-      `SUMMARY:${event.title}`,
-      event.description ? `DESCRIPTION:${event.description.replace(/\n/g, '\\n')}` : '',
-      location ? `LOCATION:${location}` : '',
-      event.organizer_name ? `ORGANIZER:CN=${event.organizer_name}` : '',
-      event.website ? `URL:${event.website}` : '',
-      `DTSTAMP:${formatDate(new Date().toISOString())}`,
-      'END:VEVENT',
-      'END:VCALENDAR'
-    ].filter(line => line !== '').join('\r\n');
+    // Build VEVENT using shared utility
+    const vevent = generateVEvent({
+      uid: `event-${event.id}@queer.guide`,
+      summary: event.title,
+      dtstart: formatICalDateTime(event.start_date),
+      dtend: event.end_date ? formatICalDateTime(event.end_date) : undefined,
+      description: event.description || undefined,
+      location: location || undefined,
+      organizer: event.organizer_name || undefined,
+      url: event.website || undefined,
+    });
+
+    // Wrap in VCALENDAR using shared utility
+    const icsContent = wrapICalendar([vevent], {
+      prodId: '-//Queer Guide//Event Export//EN',
+    });
 
     console.log('Generated calendar for event:', event.title);
 
@@ -102,9 +93,9 @@ serve(async (req) => {
     console.error('Error in calendar-export function:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }

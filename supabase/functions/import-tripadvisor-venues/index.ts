@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts';
 import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
+import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateAmenity, getOrCreateService } from '../_shared/venue-import-helpers.ts';
 
 interface TripAdvisorLocation {
   location_id: string;
@@ -52,145 +53,6 @@ interface TripAdvisorLocation {
   }>;
 }
 
-// Helper functions for data management
-async function getOrCreateCity(supabase: any, cityName: string, countryCode: string, lat: number, lon: number) {
-  const { data: existingCity } = await supabase
-    .from('cities')
-    .select('id')
-    .eq('name', cityName)
-    .maybeSingle()
-
-  if (existingCity) {
-    return existingCity.id
-  }
-
-  const { data: country } = await supabase
-    .from('countries')
-    .select('id')
-    .eq('code', countryCode)
-    .maybeSingle()
-
-  const { data: newCity, error } = await supabase
-    .from('cities')
-    .insert({
-      name: cityName,
-      country_id: country?.id || null,
-      latitude: lat,
-      longitude: lon,
-      is_major_city: false
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (!error && newCity) {
-    console.log(`Created new city: ${cityName}`)
-    return newCity.id
-  }
-
-  return null
-}
-
-async function getOrCreateVenueCategory(supabase: any, categoryName: string, categorySlug: string) {
-  const { data: existing } = await supabase
-    .from('venue_categories')
-    .select('id')
-    .eq('slug', categorySlug)
-    .maybeSingle()
-
-  if (existing) {
-    return existing.id
-  }
-
-  // Create new category
-  const { data: newCategory, error } = await supabase
-    .from('venue_categories')
-    .insert({
-      name: categoryName,
-      slug: categorySlug,
-      description: `Auto-created from TripAdvisor import`,
-      icon: categorySlug.includes('entertainment') ? 'Music' : 
-            categorySlug.includes('restaurant') ? 'UtensilsCrossed' : 
-            categorySlug.includes('hotel') ? 'Bed' : 'MapPin',
-      color: categorySlug.includes('entertainment') ? '#8b5cf6' : 
-             categorySlug.includes('restaurant') ? '#ef4444' : 
-             categorySlug.includes('hotel') ? '#f59e0b' : '#6366f1'
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (!error && newCategory) {
-    console.log(`Created new venue category: ${categoryName}`)
-    return newCategory.id
-  }
-
-  return null
-}
-
-async function getOrCreateAmenity(supabase: any, amenityName: string, amenitySlug: string) {
-  const { data: existing } = await supabase
-    .from('venue_amenities')
-    .select('id')
-    .eq('slug', amenitySlug)
-    .maybeSingle()
-
-  if (existing) {
-    return existing.id
-  }
-
-  const { data: newAmenity, error } = await supabase
-    .from('venue_amenities')
-    .insert({
-      name: amenityName,
-      slug: amenitySlug,
-      description: `Auto-created from TripAdvisor import`,
-      icon: amenitySlug.includes('wifi') ? 'Wifi' : 
-            amenitySlug.includes('parking') ? 'Car' : 
-            amenitySlug.includes('phone') ? 'Phone' : 'MapPin'
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (!error && newAmenity) {
-    console.log(`Created new amenity: ${amenityName}`)
-    return newAmenity.id
-  }
-
-  return null
-}
-
-async function getOrCreateService(supabase: any, serviceName: string, serviceSlug: string) {
-  const { data: existing } = await supabase
-    .from('venue_services')
-    .select('id')
-    .eq('slug', serviceSlug)
-    .maybeSingle()
-
-  if (existing) {
-    return existing.id
-  }
-
-  const { data: newService, error } = await supabase
-    .from('venue_services')
-    .insert({
-      name: serviceName,
-      slug: serviceSlug,
-      description: `Auto-created from TripAdvisor import`,
-      icon: serviceSlug.includes('dining') ? 'UtensilsCrossed' : 
-            serviceSlug.includes('beverage') ? 'Wine' : 
-            serviceSlug.includes('accommodation') ? 'Bed' : 
-            serviceSlug.includes('wellness') ? 'Heart' : 'MapPin'
-    })
-    .select('id')
-    .maybeSingle()
-
-  if (!error && newService) {
-    console.log(`Created new service: ${serviceName}`)
-    return newService.id
-  }
-
-  return null
-}
-
 async function mapVenueCategoryAndAmenities(supabase: any, venue: TripAdvisorLocation, keyword: string) {
   let categoryName = 'Entertainment & Nightlife'
   let categorySlug = 'entertainment-nightlife'
@@ -225,25 +87,25 @@ async function mapVenueCategoryAndAmenities(supabase: any, venue: TripAdvisorLoc
   }
 
   // Get or create category
-  const categoryId = await getOrCreateVenueCategory(supabase, categoryName, categorySlug)
+  const categoryId = await getOrCreateVenueCategory(supabase, categoryName, categorySlug, 'TripAdvisor')
 
   // Basic amenities
   if (venue.phone) {
     amenityNames.push('Phone Service')
-    const amenityId = await getOrCreateAmenity(supabase, 'Phone Service', 'phone-service')
+    const amenityId = await getOrCreateAmenity(supabase, 'Phone Service', 'phone-service', 'TripAdvisor')
     if (amenityId) amenityIds.push(amenityId)
   }
 
   if (venue.website) {
     amenityNames.push('WiFi')
-    const amenityId = await getOrCreateAmenity(supabase, 'WiFi', 'wifi')
+    const amenityId = await getOrCreateAmenity(supabase, 'WiFi', 'wifi', 'TripAdvisor')
     if (amenityId) amenityIds.push(amenityId)
   }
 
   // Create services
   for (const serviceName of serviceNames) {
     const serviceSlug = serviceName.toLowerCase().replace(/\s+/g, '-')
-    const serviceId = await getOrCreateService(supabase, serviceName, serviceSlug)
+    const serviceId = await getOrCreateService(supabase, serviceName, serviceSlug, 'TripAdvisor')
     if (serviceId) serviceIds.push(serviceId)
   }
 

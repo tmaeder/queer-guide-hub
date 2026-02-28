@@ -1,5 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { getCorsHeaders, requireAdmin } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
 
 const VALID_LANGS = new Set(['en','fr','de','es','pt','it','nl','ja','zh','ko','ar','ru','pl','sv','fi','da','no','hu','cs','ro','bg','hr','sk','sl','et','lv','lt','el','tr','he','th','vi','id','ms','tl','uk','be','sr','mk','sq','bs','mt','ga','cy','eu','ca','gl']);
 
@@ -22,17 +21,6 @@ interface WikipediaRequest {
   entityId?: string;
   batchMode?: boolean;
   language?: string;
-}
-
-async function initializeSupabaseClient() {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Missing required Supabase environment variables');
-  }
-  
-  return createClient(supabaseUrl, supabaseServiceKey);
 }
 
 async function fetchWikipediaSummary(query: string, language = 'en'): Promise<any> {
@@ -296,7 +284,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = await initializeSupabaseClient();
+    const supabase = getServiceClient();
 
     const authResult = await requireAdmin(req, supabase);
     if (authResult instanceof Response) return authResult;

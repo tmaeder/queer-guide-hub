@@ -1,5 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { getCorsHeaders } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts'
 
 Deno.serve(async (req) => {
   const cors = getCorsHeaders(req);
@@ -11,10 +10,7 @@ Deno.serve(async (req) => {
 
   try {
     // Create Supabase client
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabase = getServiceClient();
 
     const { token, action = 'login' } = await req.json();
     

@@ -1,6 +1,6 @@
-import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { chatCompletion } from '../_shared/openai-client.ts';
-import { requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts';
+import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -8,10 +8,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseClient = getServiceClient();
 
     // Require admin authentication
     const authResult = await requireAdmin(req, supabaseClient);

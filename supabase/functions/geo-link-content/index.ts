@@ -6,12 +6,9 @@
  * No AI / external APIs — pure DB matching against 351 cities + 199 countries.
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts';
+import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = getServiceClient();
 
 // ── Country alias map ────────────────────────────────────────────────
 // Maps common abbreviations, ISO codes, demonyms → canonical country name

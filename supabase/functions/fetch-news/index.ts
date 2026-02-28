@@ -1,5 +1,5 @@
 import { enrichNewsWithAI } from '../_shared/ai-enrichment.ts';
-import { getCorsHeaders, requireAdmin } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
 
 // Define interfaces
 interface NewsArticle {
@@ -494,11 +494,7 @@ Deno.serve(async (req) => {
 
   try {
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.50.5');
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = getServiceClient();
 
     const authResult = await requireAdmin(req, supabase);
     if (authResult instanceof Response) return authResult;

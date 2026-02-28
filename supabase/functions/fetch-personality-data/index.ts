@@ -1,5 +1,6 @@
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
+import { fetchOpenSanctionsData, fetchWikidataEntityLabel, formatWikidataDate, WIKIDATA_USER_AGENT } from '../_shared/personality-fetcher.ts'
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
@@ -108,27 +109,13 @@ Deno.serve(async (req) => {
             // Occupation (P106) - get first one
             if (entity.claims?.P106?.[0]?.mainsnak?.datavalue?.value?.id) {
               const occupationId = entity.claims.P106[0].mainsnak.datavalue.value.id;
-              try {
-                const occupationUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${occupationId}&format=json&props=labels`;
-                const occupationResponse = await fetch(occupationUrl);
-                const occupationData = await occupationResponse.json();
-                profession = occupationData.entities[occupationId]?.labels?.en?.value || '';
-              } catch (e) {
-                console.warn('Failed to fetch occupation for candidate:', e);
-              }
+              profession = await fetchWikidataEntityLabel(occupationId);
             }
 
             // Country (P27) - get first one
             if (entity.claims?.P27?.[0]?.mainsnak?.datavalue?.value?.id) {
               const countryId = entity.claims.P27[0].mainsnak.datavalue.value.id;
-              try {
-                const countryUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${countryId}&format=json&props=labels`;
-                const countryResponse = await fetch(countryUrl);
-                const countryData = await countryResponse.json();
-                nationality = countryData.entities[countryId]?.labels?.en?.value || '';
-              } catch (e) {
-                console.warn('Failed to fetch country for candidate:', e);
-              }
+              nationality = await fetchWikidataEntityLabel(countryId);
             }
 
             return {
@@ -230,44 +217,36 @@ Deno.serve(async (req) => {
       for (const occupation of claims.P106) {
         if (occupation.mainsnak?.datavalue?.value?.id) {
           const occupationId = occupation.mainsnak.datavalue.value.id
-          // Get occupation label
-          try {
-            const occupationUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${occupationId}&format=json&props=labels`
-            const occupationResponse = await fetch(occupationUrl)
-            const occupationData = await occupationResponse.json()
-            const occupationLabel = occupationData.entities[occupationId]?.labels?.en?.value
-            if (occupationLabel) {
-              occupations.push(occupationLabel)
-              
-              // Map to our field categories
-              const fieldMapping: { [key: string]: string } = {
-                'actor': 'entertainment',
-                'actress': 'entertainment',
-                'singer': 'music',
-                'musician': 'music',
-                'writer': 'literature',
-                'author': 'literature',
-                'politician': 'politics',
-                'activist': 'activism',
-                'artist': 'arts',
-                'painter': 'arts',
-                'scientist': 'science',
-                'researcher': 'science',
-                'journalist': 'journalism',
-                'director': 'film',
-                'producer': 'entertainment'
-              }
-              
-              for (const [key, field] of Object.entries(fieldMapping)) {
-                if (occupationLabel.toLowerCase().includes(key)) {
-                  if (!fields.includes(field)) {
-                    fields.push(field)
-                  }
+          const occupationLabel = await fetchWikidataEntityLabel(occupationId)
+          if (occupationLabel) {
+            occupations.push(occupationLabel)
+
+            // Map to our field categories
+            const fieldMapping: { [key: string]: string } = {
+              'actor': 'entertainment',
+              'actress': 'entertainment',
+              'singer': 'music',
+              'musician': 'music',
+              'writer': 'literature',
+              'author': 'literature',
+              'politician': 'politics',
+              'activist': 'activism',
+              'artist': 'arts',
+              'painter': 'arts',
+              'scientist': 'science',
+              'researcher': 'science',
+              'journalist': 'journalism',
+              'director': 'film',
+              'producer': 'entertainment'
+            }
+
+            for (const [key, field] of Object.entries(fieldMapping)) {
+              if (occupationLabel.toLowerCase().includes(key)) {
+                if (!fields.includes(field)) {
+                  fields.push(field)
                 }
               }
             }
-          } catch (e) {
-            console.warn('Failed to fetch occupation label:', e)
           }
         }
       }
@@ -278,28 +257,14 @@ Deno.serve(async (req) => {
     let nationality = ''
     if (claims.P27 && claims.P27[0]?.mainsnak?.datavalue?.value?.id) {
       const countryId = claims.P27[0].mainsnak.datavalue.value.id
-      try {
-        const countryUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${countryId}&format=json&props=labels`
-        const countryResponse = await fetch(countryUrl)
-        const countryData = await countryResponse.json()
-        nationality = countryData.entities[countryId]?.labels?.en?.value || ''
-      } catch (e) {
-        console.warn('Failed to fetch country label:', e)
-      }
+      nationality = await fetchWikidataEntityLabel(countryId)
     }
 
     // Parse place of birth (P19)
     let birthPlace = ''
     if (claims.P19 && claims.P19[0]?.mainsnak?.datavalue?.value?.id) {
       const placeId = claims.P19[0].mainsnak.datavalue.value.id
-      try {
-        const placeUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${placeId}&format=json&props=labels`
-        const placeResponse = await fetch(placeUrl)
-        const placeData = await placeResponse.json()
-        birthPlace = placeData.entities[placeId]?.labels?.en?.value || ''
-      } catch (e) {
-        console.warn('Failed to fetch birth place label:', e)
-      }
+      birthPlace = await fetchWikidataEntityLabel(placeId)
     }
 
     // Step 3: Get Wikipedia extract
@@ -510,76 +475,6 @@ Return ONLY valid JSON, no additional text.`;
   } catch (error) {
     console.error('Error enhancing with LGBTI context:', error);
     return basicData;
-  }
-}
-
-async function fetchOpenSanctionsData(name: string): Promise<any | null> {
-  try {
-    console.log(`Fetching OpenSanctions data for: ${name}`);
-    
-    // Search OpenSanctions API
-    const searchUrl = `https://api.opensanctions.org/search/default?q=${encodeURIComponent(name)}&limit=5`;
-    
-    const response = await fetch(searchUrl, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
-      }
-    });
-
-    if (!response.ok) {
-      console.log(`OpenSanctions API returned ${response.status} for: ${name}`);
-      return null;
-    }
-
-    const data = await response.json();
-    
-    if (!data.results || data.results.length === 0) {
-      console.log(`No OpenSanctions results found for: ${name}`);
-      return null;
-    }
-
-    // Find the best match (exact name match or highest score)
-    let bestMatch = null;
-    let bestScore = 0;
-
-    for (const result of data.results) {
-      const resultName = result.properties?.name?.[0] || '';
-      const score = result.score || 0;
-      
-      // Prefer exact name matches
-      if (resultName.toLowerCase() === name.toLowerCase()) {
-        bestMatch = result;
-        break;
-      }
-      
-      // Otherwise, take the highest scoring result
-      if (score > bestScore) {
-        bestMatch = result;
-        bestScore = score;
-      }
-    }
-
-    if (!bestMatch) {
-      console.log(`No suitable OpenSanctions match found for: ${name}`);
-      return null;
-    }
-
-    console.log(`Found OpenSanctions match for ${name}: ${bestMatch.properties?.name?.[0] || 'Unknown'}`);
-    
-    return {
-      id: bestMatch.id,
-      schema: bestMatch.schema,
-      properties: bestMatch.properties,
-      datasets: bestMatch.datasets || [],
-      first_seen: bestMatch.first_seen,
-      last_seen: bestMatch.last_seen,
-      score: bestMatch.score
-    };
-
-  } catch (error) {
-    console.error(`Error fetching OpenSanctions data for ${name}:`, error);
-    return null;
   }
 }
 
