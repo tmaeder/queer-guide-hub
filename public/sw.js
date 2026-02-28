@@ -1,7 +1,7 @@
 // Service Worker optimized for Cloudflare Pages
-const CACHE_NAME = 'queer-guide-v3';
-const STATIC_CACHE = 'static-v2';
-const DYNAMIC_CACHE = 'dynamic-v2';
+const CACHE_NAME = 'queer-guide-v4';
+const STATIC_CACHE = 'static-v3';
+const DYNAMIC_CACHE = 'dynamic-v3';
 
 // Only cache the HTML shell and manifest - JS/CSS have hashed filenames
 // and are cached via Cache-Control: immutable headers
