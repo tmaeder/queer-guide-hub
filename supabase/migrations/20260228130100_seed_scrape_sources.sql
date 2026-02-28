@@ -1,5 +1,7 @@
 -- ============================================================
 -- Seed scrape_sources with all target websites
+-- Uses native scrape methods (sitemap + native_crawl) that run
+-- entirely within the Edge Function — no external API needed.
 -- Applied: 2026-02-28
 -- ============================================================
 
@@ -8,132 +10,136 @@ INSERT INTO public.scrape_sources
 VALUES
   -- ═══════════════════════════════════════════════════════════
   -- PRODUCT SHOPS (→ marketplace_products)
+  -- Method: sitemap (parses /sitemap.xml → fetches product pages)
+  -- Fallback: native_crawl (BFS link-following) if no sitemap found
   -- ═══════════════════════════════════════════════════════════
   ('mr-s-leather', 'Mr. S Leather', 'https://www.mr-s-leather.com',
-   'products', 'marketplace_products', 'firecrawl',
-   '{"limit": 500, "include_paths": ["/products/*", "/collections/*"], "extract": "products", "selectors": {"name": "h1.product-title", "price": ".product-price", "image": ".product-image img", "description": ".product-description"}}',
+   'products', 'marketplace_products', 'sitemap',
+   '{"limit": 500, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 500),
 
   ('addicted-es', 'Addicted', 'https://addicted.es',
-   'products', 'marketplace_products', 'firecrawl',
-   '{"limit": 500, "include_paths": ["/*/products/*", "/*/collections/*"], "extract": "products"}',
+   'products', 'marketplace_products', 'sitemap',
+   '{"limit": 500, "include_paths": ["/*/products/*", "/*/collections/*", "/products/*"], "extract": "products"}',
    168, 5, 3000, 500),
 
   ('supergay-underwear', 'Super Gay Underwear', 'https://supergayunderwear.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 300, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 300),
 
   ('regulation-store', 'Regulation', 'https://regulation.store',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 500, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 500),
 
   ('es-collection', 'ES Collection', 'https://escollection.es',
-   'products', 'marketplace_products', 'firecrawl',
-   '{"limit": 500, "include_paths": ["/*/products/*", "/*/collections/*"], "extract": "products"}',
+   'products', 'marketplace_products', 'sitemap',
+   '{"limit": 500, "include_paths": ["/*/products/*", "/*/collections/*", "/products/*"], "extract": "products"}',
    168, 5, 3000, 500),
 
   ('unapologaytic', 'Unapologaytic', 'https://unapologaytic.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 200, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 200),
 
   ('tomboyx', 'TomboyX', 'https://tomboyx.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 300, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 300),
 
   ('joy-lgbt', 'JOY LGBT', 'https://www.joylgbt.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 200, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 200),
 
   ('gay-pride-apparel', 'Gay Pride Apparel', 'https://gayprideapparel.com/en-in',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 300, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 300),
 
   ('amorana-ch', 'Amorana', 'https://www.amorana.ch/en/',
-   'products', 'marketplace_products', 'firecrawl',
-   '{"limit": 500, "include_paths": ["/en/products/*", "/en/*/products/*"], "extract": "products"}',
+   'products', 'marketplace_products', 'sitemap',
+   '{"limit": 500, "include_paths": ["/en/products/*", "/en/*/products/*", "/products/*"], "extract": "products"}',
    168, 5, 3000, 500),
 
   ('lelo', 'LELO', 'https://www.lelo.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 300, "include_paths": ["/products/*", "/*/*-massager*"], "extract": "products"}',
    168, 5, 3000, 300),
 
   ('dildoking', 'Dildoking', 'https://dildoking.de/de/',
-   'products', 'marketplace_products', 'firecrawl',
-   '{"limit": 500, "include_paths": ["/de/*/", "/de/produkt/*"], "extract": "products"}',
+   'products', 'marketplace_products', 'sitemap',
+   '{"limit": 500, "include_paths": ["/de/*/", "/de/produkt/*", "/produkt/*"], "extract": "products"}',
    168, 5, 3000, 500),
 
   ('shebop-shop', 'She Bop', 'https://www.sheboptheshop.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 300, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 300),
 
   ('early2bed', 'Early to Bed', 'https://www.early2bed.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 300, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 300),
 
   ('boyzshop', 'Boyzshop', 'https://www.boyzshop.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 500, "include_paths": ["/products/*", "/collections/*", "/*-p-*"], "extract": "products"}',
    168, 5, 3000, 500),
 
   ('extreme-restraints', 'Extreme Restraints', 'https://www.extremerestraints.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 500, "include_paths": ["/products/*", "/*/"], "extract": "products"}',
    168, 5, 3000, 500),
 
   ('boneyard-toys', 'Boneyard Toys', 'https://boneyardtoys.com/collections/new-1',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 200, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 200),
 
   ('higher-desire', 'Higher Desire', 'https://www.higherdesire.co.uk/shop/',
-   'products', 'marketplace_products', 'firecrawl',
-   '{"limit": 200, "include_paths": ["/shop/*", "/product/*"], "extract": "products"}',
+   'products', 'marketplace_products', 'native_crawl',
+   '{"limit": 200, "include_paths": ["/shop/*", "/product/*"], "max_depth": 3, "extract": "products"}',
    168, 5, 3000, 200),
 
   ('kink3d', 'Kink3D', 'https://kink3d.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 100, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 100),
 
   ('cockblock-toys', 'Cockblock Toys', 'https://cockblocktoys.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 100, "include_paths": ["/products/*", "/collections/*"], "extract": "products"}',
    168, 5, 3000, 100),
 
   ('nasty-pig', 'Nasty Pig', 'https://store.nastypig.com/en-ch',
-   'products', 'marketplace_products', 'firecrawl',
-   '{"limit": 300, "include_paths": ["/en-ch/products/*", "/en-ch/collections/*"], "extract": "products"}',
+   'products', 'marketplace_products', 'sitemap',
+   '{"limit": 300, "include_paths": ["/en-ch/products/*", "/en-ch/collections/*", "/products/*"], "extract": "products"}',
    168, 5, 3000, 300),
 
   ('libidex', 'Libidex', 'https://libidex.com',
-   'products', 'marketplace_products', 'firecrawl',
+   'products', 'marketplace_products', 'sitemap',
    '{"limit": 300, "include_paths": ["/product/*", "/product-category/*"], "extract": "products"}',
    168, 5, 3000, 300),
 
   ('amorelie-ch', 'Amorelie (Gay)', 'https://www.amorelie.ch/sextoys-fuer-mann-und-mann',
-   'products', 'marketplace_products', 'firecrawl',
-   '{"limit": 200, "include_paths": ["/sextoys-fuer-mann-und-mann*", "/product/*"], "extract": "products"}',
+   'products', 'marketplace_products', 'native_crawl',
+   '{"limit": 200, "include_paths": ["/sextoys-fuer-mann-und-mann*", "/product/*"], "max_depth": 3, "extract": "products"}',
    168, 5, 3000, 200),
 
   -- ═══════════════════════════════════════════════════════════
   -- ACCOMMODATIONS (→ venues)
+  -- Method: native_crawl (misterb&b has dynamic content)
   -- ═══════════════════════════════════════════════════════════
   ('mister-bnb', 'misterb&b', 'https://www.misterbandb.com',
-   'accommodations', 'venues', 'firecrawl',
-   '{"limit": 500, "include_paths": ["/rooms/*", "/destinations/*"], "extract": "accommodations", "category": "accommodation"}',
+   'accommodations', 'venues', 'native_crawl',
+   '{"limit": 500, "include_paths": ["/rooms/*", "/destinations/*"], "max_depth": 3, "extract": "accommodations", "category": "accommodation"}',
    168, 4, 3000, 500),
 
   -- ═══════════════════════════════════════════════════════════
   -- EVENTS (→ events)
+  -- Method: html_fetch (single-page extraction)
   -- ═══════════════════════════════════════════════════════════
   ('wnbr-events', 'World Naked Bike Ride', 'https://wiki.worldnakedbikeride.org/wiki/List_of_rides',
    'events', 'events', 'html_fetch',
@@ -212,7 +218,7 @@ INSERT INTO public.workflow_definitions
    is_enabled, priority, tags)
 VALUES
   ('scrape-web-sources', 'Scrape Web Sources',
-   'Unified web scraper: crawls registered scrape_sources, extracts products/events/content, stages into ingestion pipeline',
+   'Unified native web scraper: discovers pages via sitemap/crawl, extracts products/events/content via JSON-LD/microdata, stages into ingestion pipeline. No external API needed.',
    'scrape-web-sources', 'scheduled_jobs',
    '{"mode": "scheduled"}',
    '0 3 * * 0',   -- every Sunday 03:00 UTC

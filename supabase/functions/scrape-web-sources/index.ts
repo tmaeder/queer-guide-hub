@@ -2,8 +2,15 @@
  * scrape-web-sources — unified web scraper edge function
  *
  * Reads scrape_sources from the database, crawls each target using the
- * configured method (Firecrawl, direct HTML fetch, or API), extracts
- * structured items, and stages them into the ingestion pipeline.
+ * configured method, extracts structured items, and stages them into the
+ * ingestion pipeline.
+ *
+ * Scrape methods (all run natively in the edge function, no external API):
+ *   - sitemap      — Parse /sitemap.xml, discover product/page URLs, fetch & extract
+ *   - native_crawl — BFS link-following crawler with depth/path limits
+ *   - html_fetch   — Single-page fetch + extraction (events, wiki, timelines)
+ *   - api          — REST API integration (Equaldex etc.)
+ *   - firecrawl    — (legacy) External Firecrawl API, requires FIRECRAWL_API_KEY
  *
  * Invocation modes:
  *   { "mode": "scheduled" }                       — process all due sources
@@ -15,7 +22,6 @@
 
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
 import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
-import { normalizeScrapedContent } from '../_shared/ai-enrichment.ts'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -196,6 +202,259 @@ async function pollFirecrawlJob(
   }
 
   return { pages: [], error: 'Crawl job timed out' }
+}
+
+// ─── Sitemap Crawl (native, no external API) ────────────────────────────────
+
+async function crawlViaSitemap(
+  source: ScrapeSource,
+): Promise<{ pages: { url: string; html: string }[]; error?: string }> {
+  const config = source.scrape_config
+  const maxPages = Math.min((config.limit as number) || 200, source.max_pages_per_run)
+  const includePatterns = (config.include_paths as string[]) || []
+  const baseUrl = source.url.replace(/\/+$/, '')
+  const pages: { url: string; html: string }[] = []
+
+  // 1. Try to find and parse sitemap(s)
+  const sitemapUrls = await discoverSitemapUrls(baseUrl, source.user_agent)
+  if (sitemapUrls.length === 0) {
+    return { pages: [], error: `No sitemap found at ${baseUrl}` }
+  }
+
+  // 2. Collect product URLs from sitemaps
+  const productUrls: string[] = []
+  for (const sitemapUrl of sitemapUrls) {
+    if (productUrls.length >= maxPages) break
+    const urls = await parseSitemap(sitemapUrl, source.user_agent, includePatterns, maxPages - productUrls.length)
+    productUrls.push(...urls)
+  }
+
+  if (productUrls.length === 0) {
+    return { pages: [], error: 'Sitemap found but no matching URLs' }
+  }
+
+  console.log(`[${source.slug}] Sitemap: found ${productUrls.length} URLs to scrape`)
+
+  // 3. Fetch each product page with rate limiting
+  const rateLimitMs = source.rate_limit_ms || 2000
+  for (const url of productUrls.slice(0, maxPages)) {
+    try {
+      const html = await fetchPage(url, source.user_agent)
+      pages.push({ url, html })
+    } catch (err) {
+      console.warn(`[${source.slug}] Failed to fetch ${url}: ${(err as Error).message}`)
+    }
+    if (pages.length < productUrls.length) {
+      await delay(rateLimitMs)
+    }
+  }
+
+  return { pages }
+}
+
+async function discoverSitemapUrls(baseUrl: string, userAgent: string): Promise<string[]> {
+  const candidates = [
+    `${baseUrl}/sitemap.xml`,
+    `${baseUrl}/sitemap_index.xml`,
+    `${baseUrl}/sitemap_products.xml`,
+    `${baseUrl}/sitemap-index.xml`,
+  ]
+
+  // Also check robots.txt for sitemap directives
+  try {
+    const robotsTxt = await fetchPage(`${baseUrl}/robots.txt`, userAgent)
+    const sitemapLines = robotsTxt.split('\n')
+      .filter(l => l.toLowerCase().startsWith('sitemap:'))
+      .map(l => l.split(':', 2).slice(1).join(':').trim())
+    if (sitemapLines.length > 0) return sitemapLines
+  } catch {
+    // robots.txt not found — continue with candidates
+  }
+
+  // Try each candidate URL
+  for (const url of candidates) {
+    try {
+      const xml = await fetchPage(url, userAgent)
+      if (xml.includes('<urlset') || xml.includes('<sitemapindex')) {
+        return [url]
+      }
+    } catch {
+      // not found — try next
+    }
+  }
+
+  return []
+}
+
+async function parseSitemap(
+  sitemapUrl: string,
+  userAgent: string,
+  includePatterns: string[],
+  limit: number,
+): Promise<string[]> {
+  const urls: string[] = []
+
+  try {
+    const xml = await fetchPage(sitemapUrl, userAgent)
+    const $ = cheerio.load(xml, { xmlMode: true })
+
+    // Handle sitemap index (contains links to other sitemaps)
+    const childSitemaps = $('sitemap > loc').map((_, el) => $(el).text().trim()).get()
+    if (childSitemaps.length > 0) {
+      // Filter for product-related sitemaps
+      const productSitemaps = childSitemaps.filter(url =>
+        /product|collection|shop|catalog|item/i.test(url)
+      )
+      // If no product-specific sitemaps found, use all of them
+      const targetSitemaps = productSitemaps.length > 0 ? productSitemaps : childSitemaps.slice(0, 5)
+
+      for (const childUrl of targetSitemaps) {
+        if (urls.length >= limit) break
+        const childUrls = await parseSitemap(childUrl, userAgent, includePatterns, limit - urls.length)
+        urls.push(...childUrls)
+        await delay(500) // polite delay between sitemap fetches
+      }
+      return urls
+    }
+
+    // Regular sitemap — extract URLs
+    $('url > loc').each((_, el) => {
+      if (urls.length >= limit) return
+      const url = $(el).text().trim()
+      if (!url) return
+
+      // Filter by include patterns
+      if (includePatterns.length > 0) {
+        const matches = includePatterns.some(pattern => {
+          // Convert glob-like pattern to regex
+          const regex = new RegExp(
+            pattern.replace(/\*/g, '.*').replace(/\//g, '\\/'),
+            'i'
+          )
+          return regex.test(new URL(url).pathname)
+        })
+        if (!matches) return
+      }
+
+      urls.push(url)
+    })
+  } catch (err) {
+    console.error(`Failed to parse sitemap ${sitemapUrl}:`, (err as Error).message)
+  }
+
+  return urls
+}
+
+// ─── Native Crawl (BFS link-following, no external API) ─────────────────────
+
+async function crawlNative(
+  source: ScrapeSource,
+): Promise<{ pages: { url: string; html: string }[]; error?: string }> {
+  const config = source.scrape_config
+  const maxPages = Math.min((config.limit as number) || 100, source.max_pages_per_run)
+  const maxDepth = (config.max_depth as number) || 3
+  const includePatterns = (config.include_paths as string[]) || []
+  const excludePatterns = (config.exclude_paths as string[]) || [
+    '/cart*', '/checkout*', '/account*', '/login*', '/register*',
+    '/privacy*', '/terms*', '/cookie*', '/faq*', '/contact*',
+    '*.pdf', '*.jpg', '*.png', '*.gif', '*.css', '*.js',
+  ]
+
+  const baseOrigin = new URL(source.url).origin
+  const visited = new Set<string>()
+  const pages: { url: string; html: string }[] = []
+  const queue: { url: string; depth: number }[] = [{ url: source.url, depth: 0 }]
+
+  const rateLimitMs = source.rate_limit_ms || 2000
+
+  while (queue.length > 0 && pages.length < maxPages) {
+    const { url, depth } = queue.shift()!
+
+    // Normalize URL (remove fragments, trailing slashes)
+    const normalizedUrl = normalizeUrl(url)
+    if (visited.has(normalizedUrl)) continue
+    visited.add(normalizedUrl)
+
+    // Check URL is on same origin
+    try {
+      if (new URL(normalizedUrl).origin !== baseOrigin) continue
+    } catch { continue }
+
+    // Check exclude patterns
+    const pathname = new URL(normalizedUrl).pathname
+    if (excludePatterns.some(p => {
+      const regex = new RegExp(p.replace(/\*/g, '.*').replace(/\//g, '\\/'), 'i')
+      return regex.test(pathname)
+    })) continue
+
+    // Fetch page
+    try {
+      const html = await fetchPage(normalizedUrl, source.user_agent)
+
+      // Only keep pages matching include patterns (if set) for extraction
+      const matchesInclude = includePatterns.length === 0 || includePatterns.some(p => {
+        const regex = new RegExp(p.replace(/\*/g, '.*').replace(/\//g, '\\/'), 'i')
+        return regex.test(pathname)
+      })
+
+      if (matchesInclude) {
+        pages.push({ url: normalizedUrl, html })
+      }
+
+      // Discover links for further crawling (up to maxDepth)
+      if (depth < maxDepth) {
+        const $ = cheerio.load(html)
+        $('a[href]').each((_, el) => {
+          const href = $(el).attr('href')
+          if (!href) return
+
+          let absoluteUrl: string
+          try {
+            absoluteUrl = new URL(href, normalizedUrl).href
+          } catch { return }
+
+          // Only follow links on same origin
+          if (new URL(absoluteUrl).origin !== baseOrigin) return
+
+          const nextNorm = normalizeUrl(absoluteUrl)
+          if (!visited.has(nextNorm) && queue.length < maxPages * 3) {
+            queue.push({ url: nextNorm, depth: depth + 1 })
+          }
+        })
+      }
+
+      // Rate limit
+      await delay(rateLimitMs)
+    } catch (err) {
+      console.warn(`[${source.slug}] Crawl failed for ${normalizedUrl}: ${(err as Error).message}`)
+    }
+  }
+
+  console.log(`[${source.slug}] Native crawl: visited ${visited.size} URLs, kept ${pages.length} pages`)
+  return { pages }
+}
+
+function normalizeUrl(url: string): string {
+  try {
+    const u = new URL(url)
+    u.hash = ''
+    // Remove common tracking params
+    u.searchParams.delete('utm_source')
+    u.searchParams.delete('utm_medium')
+    u.searchParams.delete('utm_campaign')
+    u.searchParams.delete('ref')
+    u.searchParams.delete('fbclid')
+    u.searchParams.delete('gclid')
+    // Normalize trailing slash
+    let path = u.pathname
+    if (path.length > 1 && path.endsWith('/')) {
+      path = path.slice(0, -1)
+    }
+    u.pathname = path
+    return u.href
+  } catch {
+    return url
+  }
 }
 
 // ─── Product Extraction ─────────────────────────────────────────────────────
@@ -670,6 +929,23 @@ function normalizeItem(
   }
 }
 
+// ─── Unified page extraction router ─────────────────────────────────────────
+
+function extractFromPage(html: string, pageUrl: string, source: ScrapeSource): ExtractedItem[] {
+  const config = source.scrape_config
+  if (config.extract === 'products' || source.content_type === 'products') {
+    return extractProductsFromPage(html, pageUrl, source)
+  } else if (config.extract === 'accommodations' || source.content_type === 'accommodations') {
+    return extractProductsFromPage(html, pageUrl, source)
+  } else if (config.extract === 'wiki_table') {
+    return extractWikiTable(html, pageUrl, source)
+  } else if (config.extract === 'timeline_items') {
+    return extractTimelineItems(html, pageUrl, source)
+  } else {
+    return extractEventsFromPage(html, pageUrl, source)
+  }
+}
+
 // ─── Deduplicate within batch ───────────────────────────────────────────────
 
 function dedupeItems(items: ExtractedItem[]): ExtractedItem[] {
@@ -705,7 +981,66 @@ async function processSource(
   try {
     // ── Crawl / Fetch ─────────────────────────────────────────
     switch (source.scrape_method) {
+      case 'sitemap': {
+        // Native sitemap-based crawl — no external API needed
+        const { pages, error } = await crawlViaSitemap(source)
+        if (error) {
+          console.error(`[${source.slug}] Sitemap error: ${error}`)
+          // Fallback to native_crawl if sitemap fails
+          console.log(`[${source.slug}] Falling back to native_crawl`)
+          const fallback = await crawlNative(source)
+          if (fallback.error || fallback.pages.length === 0) {
+            return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: 0, error: error + ' (native_crawl fallback also failed)' }
+          }
+          pagesCrawled = fallback.pages.length
+          for (const page of fallback.pages) {
+            allItems.push(...extractFromPage(page.html, page.url, source))
+          }
+        } else {
+          pagesCrawled = pages.length
+          for (const page of pages) {
+            allItems.push(...extractFromPage(page.html, page.url, source))
+          }
+        }
+        break
+      }
+
+      case 'native_crawl': {
+        // BFS link-following crawler — no external API needed
+        const { pages, error } = await crawlNative(source)
+        if (error) {
+          console.error(`[${source.slug}] Native crawl error: ${error}`)
+          return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: 0, error }
+        }
+        pagesCrawled = pages.length
+        for (const page of pages) {
+          allItems.push(...extractFromPage(page.html, page.url, source))
+        }
+        break
+      }
+
       case 'firecrawl': {
+        // Legacy: External Firecrawl API (requires FIRECRAWL_API_KEY)
+        // Falls back to sitemap → native_crawl if key not set
+        const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
+        if (!firecrawlKey) {
+          console.log(`[${source.slug}] FIRECRAWL_API_KEY not set, using sitemap fallback`)
+          const { pages, error } = await crawlViaSitemap(source)
+          if (error) {
+            const fallback = await crawlNative(source)
+            pagesCrawled = fallback.pages.length
+            for (const page of fallback.pages) {
+              allItems.push(...extractFromPage(page.html, page.url, source))
+            }
+          } else {
+            pagesCrawled = pages.length
+            for (const page of pages) {
+              allItems.push(...extractFromPage(page.html, page.url, source))
+            }
+          }
+          break
+        }
+
         const { pages, error } = await crawlWithFirecrawl(source)
         if (error) {
           console.error(`[${source.slug}] Firecrawl error: ${error}`)
@@ -714,15 +1049,7 @@ async function processSource(
         pagesCrawled = pages.length
         for (const page of pages) {
           if (!page.html) continue
-          const config = source.scrape_config
-          if (config.extract === 'products') {
-            allItems.push(...extractProductsFromPage(page.html, page.url, source))
-          } else if (config.extract === 'accommodations') {
-            // Treat accommodations similar to products but target venues
-            allItems.push(...extractProductsFromPage(page.html, page.url, source))
-          } else {
-            allItems.push(...extractEventsFromPage(page.html, page.url, source))
-          }
+          allItems.push(...extractFromPage(page.html, page.url, source))
         }
         break
       }

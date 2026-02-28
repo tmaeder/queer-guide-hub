@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS public.scrape_sources (
   )),
 
   -- Scraping configuration
-  scrape_method TEXT NOT NULL DEFAULT 'firecrawl' CHECK (scrape_method IN (
-    'firecrawl', 'html_fetch', 'api', 'rss', 'sitemap'
+  scrape_method TEXT NOT NULL DEFAULT 'sitemap' CHECK (scrape_method IN (
+    'sitemap', 'native_crawl', 'html_fetch', 'api', 'rss', 'firecrawl'
   )),
   scrape_config JSONB NOT NULL DEFAULT '{}',
   -- scrape_config examples:
