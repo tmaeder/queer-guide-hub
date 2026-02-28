@@ -7,7 +7,7 @@
  * Features: Ctrl/Cmd+S save shortcut, required-field progress bar, dark-mode aware.
  */
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import MuiTabs from '@mui/material/Tabs';
@@ -37,6 +37,8 @@ import {
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { EditorHeader } from './EditorHeader';
 import { EditorSidebar } from './EditorSidebar';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import type { FieldGroup } from '@/types/cms';
 
 /** Map field groups to Lucide icons for tab labels */
@@ -123,6 +125,58 @@ export function CMSEditorLayout({
     });
     return Math.round((filled.length / requiredFields.length) * 100);
   }, [config, state.data]);
+
+  // ── Enrichment ────────────────────────────────────────────
+  const [isEnriching, setIsEnriching] = useState(false);
+
+  const handleEnrich = useCallback(async () => {
+    if (!state.itemId || !config) return;
+    setIsEnriching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('content-automation', {
+        body: {
+          module: 'ai-content-enhancer',
+          content_type: contentType,
+          content_id: state.itemId,
+        },
+      });
+      if (error) throw error;
+      if (!data?.suggestions || Object.keys(data.suggestions).length === 0) {
+        toast.info('No enrichment suggestions available for this item');
+        return;
+      }
+      const suggestions = data.suggestions as Record<string, unknown>;
+      const updates: Record<string, unknown> = {};
+      let count = 0;
+      for (const [key, value] of Object.entries(suggestions)) {
+        if (key === 'suggested_tags') continue;
+        const field = config.fields.find(f => f.name === key);
+        if (!field || field.readOnly || field.hidden) continue;
+        const current = state.data[key];
+        if (!current || String(current).trim() === '') {
+          updates[key] = value;
+          count++;
+        } else if (
+          typeof value === 'string' &&
+          typeof current === 'string' &&
+          value.length > current.length * 1.3
+        ) {
+          updates[key] = value;
+          count++;
+        }
+      }
+      if (count > 0) {
+        setFields(updates);
+        toast.success(`AI suggested improvements for ${count} field${count > 1 ? 's' : ''}`);
+      } else {
+        toast.info('Content already looks good — no changes suggested');
+      }
+    } catch (err: unknown) {
+      toast.error(`Enrichment failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsEnriching(false);
+    }
+  }, [state.itemId, contentType, config, state.data, setFields]);
 
   // Handle save
   const handleSave = useCallback(async () => {
@@ -254,6 +308,8 @@ export function CMSEditorLayout({
           onSave={handleSave}
           onReset={reset}
           onClose={onClose}
+          onEnrich={handleEnrich}
+          isEnriching={isEnriching}
         />
 
         {/* ── Progress bar ─────────────────────────────────────── */}

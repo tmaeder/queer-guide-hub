@@ -40,8 +40,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useParams } from 'react-router-dom';
 import { getContentType } from '@/config/contentTypeRegistry';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';
-import { useContext } from 'react';
+import { useContext, lazy, Suspense } from 'react';
 import type { ContentTypeConfig } from '@/types/cms';
+
+const BulkEnrichDialog = lazy(() => import('@/components/admin/BulkEnrichDialog'));
 
 /** Safe hook: returns AdminShell context or no-op fallback (for use outside AdminShell) */
 function useAdminShellSafe() {
@@ -555,6 +557,9 @@ export function ContentListPanel({ contentTypeId: propTypeId, onEdit: propOnEdit
               <RefreshCw size={16} />
             </IconButton>
           </Tooltip>
+          <Suspense fallback={null}>
+            <BulkEnrichDialog onComplete={() => loadItems()} />
+          </Suspense>
           {config && (
             <Button
               variant="contained"
