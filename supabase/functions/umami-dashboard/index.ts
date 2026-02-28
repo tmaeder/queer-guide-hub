@@ -1,56 +1,23 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { getCorsHeaders, requireAdmin, getServiceClient, corsResponse } from '../_shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
 
-// Initialize Supabase client
-const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsResponse(req);
   }
 
   try {
+    const supabase = getServiceClient();
     const url = new URL(req.url);
     const path = url.pathname;
-
-    // Helper function to check if user is admin
-    const checkAdminAccess = async (authHeader: string | null) => {
-      if (!authHeader) return false;
-      
-      try {
-        const token = authHeader.replace('Bearer ', '');
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        
-        if (error || !user) return false;
-        
-        // Check if user has admin role
-        const { data: userRoles } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .single();
-          
-        return !!userRoles;
-      } catch {
-        return false;
-      }
-    };
 
     // Serve the umami tracking script
     if (path === '/umami.js') {
       const script = `
 (function() {
   'use strict';
-  
+
   const website = 'queer-guide';
   const hostUrl = '${Deno.env.get('SUPABASE_URL')}/functions/v1';
   const autoTrack = true;
@@ -99,7 +66,7 @@ serve(async (req) => {
     if (trackingDisabled()) return;
 
     const { browser, os, device } = getBrowserInfo();
-    
+
     const payload = {
       url: location.pathname + location.search,
       title: document.title,
@@ -146,7 +113,7 @@ serve(async (req) => {
     };
 
     window.addEventListener('popstate', handlePageView);
-    
+
     // Initial page load
     handlePageView();
   }
@@ -165,8 +132,12 @@ serve(async (req) => {
       });
     }
 
-    // Analytics dashboard endpoint
+    // Analytics dashboard endpoint - require admin auth for GET requests too
     if (path === '/analytics' && req.method === 'GET') {
+      // Require admin authentication
+      const authResult = await requireAdmin(req, supabase);
+      if (authResult instanceof Response) return authResult;
+
       const { data: stats, error } = await supabase
         .rpc('get_umami_analytics');
 
@@ -182,24 +153,14 @@ serve(async (req) => {
     // Handle stats request from React app
     if (req.method === 'POST') {
       // Check admin access for analytics data
-      const authHeader = req.headers.get('authorization');
-      const isAdmin = await checkAdminAccess(authHeader);
-      
-      if (!isAdmin) {
-        return new Response(
-          JSON.stringify({ error: 'Admin access required' }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 403 
-          }
-        );
-      }
-      
+      const authResult = await requireAdmin(req, supabase);
+      if (authResult instanceof Response) return authResult;
+
       const body = await req.json();
-      
+
       if (body.action === 'get_enhanced_stats' || body.action === 'get_stats') {
         const { dateRange = '7d', deviceFilter = 'all', countryFilter = 'all' } = body;
-        
+
         // Try to get website ID, create one if it doesn't exist
         let { data: website } = await supabase
           .schema('umami')
@@ -314,8 +275,8 @@ serve(async (req) => {
           return (lastEvent.getTime() - firstEvent.getTime()) / 1000;
         });
 
-        const avgSessionDuration = sessionDurations.length > 0 
-          ? sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length 
+        const avgSessionDuration = sessionDurations.length > 0
+          ? sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length
           : 0;
 
         // Calculate bounce rate (sessions with only 1 page view)
@@ -350,10 +311,10 @@ serve(async (req) => {
         const topPages = Object.entries(pageCounts)
           .sort(([,a], [,b]) => b - a)
           .slice(0, 10)
-          .map(([path, views]) => ({ 
-            path, 
-            views, 
-            percentage: Math.round((views / totalPageViews) * 100) 
+          .map(([path, views]) => ({
+            path,
+            views,
+            percentage: Math.round((views / totalPageViews) * 100)
           }));
 
         // Top browsers with percentages
@@ -365,10 +326,10 @@ serve(async (req) => {
         const topBrowsers = Object.entries(browserCounts)
           .sort(([,a], [,b]) => b - a)
           .slice(0, 5)
-          .map(([browser, count]) => ({ 
-            browser, 
-            count, 
-            percentage: Math.round((count / totalSessions) * 100) 
+          .map(([browser, count]) => ({
+            browser,
+            count,
+            percentage: Math.round((count / totalSessions) * 100)
           }));
 
         // Top countries with percentages
@@ -382,10 +343,10 @@ serve(async (req) => {
         const topCountries = Object.entries(countryCounts)
           .sort(([,a], [,b]) => b - a)
           .slice(0, 5)
-          .map(([country, count]) => ({ 
-            country, 
-            count, 
-            percentage: Math.round((count / totalSessions) * 100) 
+          .map(([country, count]) => ({
+            country,
+            count,
+            percentage: Math.round((count / totalSessions) * 100)
           }));
 
         // Top devices
@@ -397,10 +358,10 @@ serve(async (req) => {
         const topDevices = Object.entries(deviceCounts)
           .sort(([,a], [,b]) => b - a)
           .slice(0, 5)
-          .map(([device, count]) => ({ 
-            device, 
-            count, 
-            percentage: Math.round((count / totalSessions) * 100) 
+          .map(([device, count]) => ({
+            device,
+            count,
+            percentage: Math.round((count / totalSessions) * 100)
           }));
 
         // Top languages
@@ -414,10 +375,10 @@ serve(async (req) => {
         const topLanguages = Object.entries(languageCounts)
           .sort(([,a], [,b]) => b - a)
           .slice(0, 5)
-          .map(([language, count]) => ({ 
-            language, 
-            count, 
-            percentage: Math.round((count / totalSessions) * 100) 
+          .map(([language, count]) => ({
+            language,
+            count,
+            percentage: Math.round((count / totalSessions) * 100)
           }));
 
         // Top screen resolutions
@@ -431,10 +392,10 @@ serve(async (req) => {
         const topScreens = Object.entries(screenCounts)
           .sort(([,a], [,b]) => b - a)
           .slice(0, 5)
-          .map(([screen, count]) => ({ 
-            screen, 
-            count, 
-            percentage: Math.round((count / totalSessions) * 100) 
+          .map(([screen, count]) => ({
+            screen,
+            count,
+            percentage: Math.round((count / totalSessions) * 100)
           }));
 
         // Hourly data
@@ -458,19 +419,19 @@ serve(async (req) => {
         const dailyData = Array.from({ length: daysBack }, (_, i) => {
           const date = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
           const dateStr = date.toISOString().split('T')[0];
-          
+
           const dayEvents = events.filter(e => {
             const eventDate = new Date(e.created_at).toISOString().split('T')[0];
             return eventDate === dateStr && e.event_type === 1;
           });
-          
+
           const daySessions = sessions.filter(s => {
             const sessionDate = new Date(s.created_at).toISOString().split('T')[0];
             return sessionDate === dateStr;
           });
-          
+
           const dayVisitors = new Set(daySessions.map(s => s.session_id)).size;
-          
+
           return {
             date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             views: dayEvents.length,
@@ -519,7 +480,7 @@ serve(async (req) => {
 
       if (body.action === 'export_data') {
         const { dateRange = '7d', deviceFilter = 'all', countryFilter = 'all' } = body;
-        
+
         // Try to get website ID
         let { data: website } = await supabase
           .schema('umami')
@@ -590,11 +551,11 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in umami-dashboard function:', error);
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: 'Internal server error'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

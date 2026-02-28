@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface ImageInfo {
   fileName: string;
@@ -16,32 +11,32 @@ interface ImageInfo {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
+  try {
     console.log('🔍 Scanning for stored images...')
-    
+
     const foundImages: ImageInfo[] = []
-    
+
     // Get list of storage buckets
     const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
-    
+
     if (bucketsError) {
       console.error('Error listing buckets:', bucketsError)
       throw bucketsError
     }
 
     console.log(`📁 Found ${buckets?.length || 0} storage buckets`)
-    
+
     // Scan each bucket for images
     for (const bucket of buckets || []) {
       console.log(`📂 Scanning bucket: ${bucket.name}`)
-      
+
       try {
         const { data: files, error: filesError } = await supabase.storage
           .from(bucket.name)
@@ -58,12 +53,12 @@ serve(async (req) => {
         // Filter for image files
         const imageFiles = files?.filter(file => {
           const ext = file.name.toLowerCase()
-          return ext.endsWith('.jpg') || 
-                 ext.endsWith('.jpeg') || 
-                 ext.endsWith('.png') || 
-                 ext.endsWith('.webp') || 
-                 ext.endsWith('.avif') || 
-                 ext.endsWith('.gif') || 
+          return ext.endsWith('.jpg') ||
+                 ext.endsWith('.jpeg') ||
+                 ext.endsWith('.png') ||
+                 ext.endsWith('.webp') ||
+                 ext.endsWith('.avif') ||
+                 ext.endsWith('.gif') ||
                  ext.endsWith('.svg')
         }) || []
 
@@ -71,7 +66,7 @@ serve(async (req) => {
 
         for (const file of imageFiles) {
           const baseName = file.name.replace(/\.[^/.]+$/, '') // Remove extension
-          
+
           foundImages.push({
             fileName: file.name,
             baseName,
@@ -88,25 +83,26 @@ serve(async (req) => {
     console.log(`✅ Total images found: ${foundImages.length}`)
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
         images: foundImages,
         scannedBuckets: buckets?.map(b => b.name) || [],
         totalFound: foundImages.length
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         status: 200,
       },
     )
   } catch (error) {
+    console.error('Error in scan-project-images:', error)
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
-        error: error.message 
+        error: 'Internal server error'
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         status: 500,
       },
     )

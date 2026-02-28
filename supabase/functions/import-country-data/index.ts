@@ -1,9 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
 
 interface RestCountry {
   name: {
@@ -309,15 +305,15 @@ async function clearExistingData(supabase: any) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const cors = getCorsHeaders(req);
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+
+  const supabase = getServiceClient();
+  const auth = await requireAdmin(req, supabase);
+  if (auth instanceof Response) return auth;
 
   try {
     console.log('Starting country data import...');
-    
-    // Initialize Supabase client
-    const supabase = await initializeSupabaseClient();
     console.log('Supabase client initialized');
 
     // Fetch data from REST Countries API
@@ -353,7 +349,7 @@ Deno.serve(async (req) => {
         timestamp: new Date().toISOString()
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...cors, 'Content-Type': 'application/json' },
         status: 200 
       }
     );
@@ -363,14 +359,13 @@ Deno.serve(async (req) => {
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
-        error: 'Failed to import country data',
-        details: error instanceof Error ? error.message : String(error),
+        error: 'Internal server error',
         timestamp: new Date().toISOString()
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...cors, 'Content-Type': 'application/json' },
         status: 500 
       }
     );

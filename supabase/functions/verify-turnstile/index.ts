@@ -1,22 +1,16 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts'
 
 Deno.serve(async (req) => {
+  const cors = getCorsHeaders(req);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: cors });
   }
 
   try {
     // Create Supabase client
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabase = getServiceClient();
 
     const { token, action = 'login' } = await req.json();
     
@@ -25,7 +19,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ success: false, error: 'Token is required' }),
         { 
           status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...cors, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -37,7 +31,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ success: false, error: 'Turnstile not configured' }),
         { 
           status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...cors, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -75,7 +69,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ success: false, error: 'Rate limit exceeded' }),
         { 
           status: 429, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...cors, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -97,7 +91,9 @@ Deno.serve(async (req) => {
     const verifyResult = await verifyResponse.json();
     
     // Log the verification attempt
-    const { data: authData } = await supabase.auth.getUser();
+    const authHeader = req.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const { data: authData } = token ? await supabase.auth.getUser(token) : { data: { user: null } };
     
     await supabase
       .from('captcha_verifications')
@@ -138,7 +134,7 @@ Deno.serve(async (req) => {
         }),
         { 
           status: 200, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...cors, 'Content-Type': 'application/json' } 
         }
       );
     } else {
@@ -165,7 +161,7 @@ Deno.serve(async (req) => {
         }),
         { 
           status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...cors, 'Content-Type': 'application/json' } 
         }
       );
     }
@@ -178,7 +174,7 @@ Deno.serve(async (req) => {
       }),
       { 
         status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...cors, 'Content-Type': 'application/json' } 
       }
     );
   }

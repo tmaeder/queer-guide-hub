@@ -180,11 +180,16 @@ export const useCentralizedTags = () => {
 
   const searchTags = async (query: string, category?: string): Promise<CentralizedTag[]> => {
     try {
+      // Sanitize query to prevent PostgREST filter injection —
+      // strip characters that have special meaning in PostgREST filter syntax.
+      const sanitized = query.replace(/[,%()\\]/g, '');
+      if (!sanitized) return [];
+
       let queryBuilder = supabase
         .from("unified_tags")
         .select("*")
         .eq("status", "active")
-        .or(`name.ilike.%${query}%,description.ilike.%${query}%`);
+        .or(`name.ilike.%${sanitized}%,description.ilike.%${sanitized}%`);
 
       if (category) {
         queryBuilder = queryBuilder.eq("category", category);

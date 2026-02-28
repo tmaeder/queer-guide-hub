@@ -42,7 +42,7 @@ export function SecurityMonitoringDashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_role_audit_log')
-        .select('*')
+        .select('id, admin_user_id, target_user_id, action, role_name, timestamp')
         .order('timestamp', { ascending: false })
         .limit(20);
 
@@ -237,14 +237,14 @@ export function SecurityMonitoringDashboard() {
                   <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Box component="span" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
-                        Role {log.action_type}: {log.role_changed}
+                        Role {log.action}: {log.role_name}
                       </Box>
                       <Badge variant="outline">
-                        {log.action_type}
+                        {log.action}
                       </Badge>
                     </Box>
                     <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                      Admin: {log.admin_user_id} → Target: {log.target_user_id}
+                      Admin: {log.admin_user_id?.slice(0, 8)}... → Target: {log.target_user_id?.slice(0, 8)}...
                     </Typography>
                     <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}

@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 interface RefugeRestroom {
   id: number;
@@ -27,16 +22,17 @@ interface RefugeRestroom {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    const supabaseClient = getServiceClient()
+    const auth = await requireAdmin(req, supabaseClient)
+    if (auth instanceof Response) return auth
 
     console.log('Starting Refuge Restrooms import...')
 
@@ -135,10 +131,11 @@ serve(async (req) => {
             // City doesn't exist, need to get country first
             let countryId = null;
             if (restroom.country) {
+              const safeCountry = (restroom.country || '').replace(/[,%()\\]/g, '')
               const { data: country } = await supabaseClient
                 .from('countries')
                 .select('id')
-                .or(`code.eq.${restroom.country},name.ilike.%${restroom.country}%`)
+                .or(`code.eq.${safeCountry},name.ilike.%${safeCountry}%`)
                 .single()
               countryId = country?.id
             }
@@ -259,12 +256,12 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error importing restrooms:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       {
         status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
         },
       },
     )

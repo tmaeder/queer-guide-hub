@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
-import { corsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts';
+import { corsHeaders, requireAdmin, errorResponse, getServiceClient } from '../_shared/supabase-client.ts';
 import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
 
 interface EventbriteEvent {
@@ -77,10 +76,7 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseClient = getServiceClient();
 
     // Require admin authentication
     const authResult = await requireAdmin(req, supabaseClient);

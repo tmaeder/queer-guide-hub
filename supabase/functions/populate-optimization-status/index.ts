@@ -1,26 +1,20 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: getCorsHeaders(req) })
   }
 
-  try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
+  try {
     // Get request parameters
     const url = new URL(req.url)
     const batchSize = parseInt(url.searchParams.get('batchSize') || '50')
     const offset = parseInt(url.searchParams.get('offset') || '0')
-    
+
     console.log(`Processing batch: offset=${offset}, batchSize=${batchSize}`)
 
     // Get all files from storage buckets
@@ -49,7 +43,7 @@ Deno.serve(async (req) => {
 
         const ext = file.name.split('.').pop()?.toLowerCase() || ''
         const isOptimized = ['webp', 'avif'].includes(ext)
-        
+
         // Check if record already exists (batch check)
         const { data: existing } = await supabase
           .from('media_optimization_status')
@@ -63,7 +57,7 @@ Deno.serve(async (req) => {
           const optimizedFormats = isOptimized ? [ext] : []
           const originalSize = file.metadata?.size || 0
           const compressedSize = isOptimized ? Math.floor(originalSize * 0.7) : originalSize
-          
+
           insertBatch.push({
             bucket_name: bucketName,
             file_path: file.name,
@@ -93,7 +87,7 @@ Deno.serve(async (req) => {
         const { error: insertError } = await supabase
           .from('media_optimization_status')
           .insert(insertBatch)
-        
+
         if (insertError) {
           console.error('Batch insert error:', insertError)
         }
@@ -105,24 +99,24 @@ Deno.serve(async (req) => {
         success: true,
         message: `Populated ${totalProcessed} files, ${totalOptimized} optimized`
       }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+      {
+        headers: {
+          ...getCorsHeaders(req),
+          'Content-Type': 'application/json'
+        }
       }
     )
 
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        }, 
-        status: 500 
+      JSON.stringify({ error: 'Internal server error' }),
+      {
+        headers: {
+          ...getCorsHeaders(req),
+          'Content-Type': 'application/json'
+        },
+        status: 500
       }
     )
   }

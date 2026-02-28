@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface ProcessingConfig {
   progressive: {
@@ -44,19 +39,19 @@ const BITRATE_SETTINGS = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
+  try {
     const { action, audioId, jobId, config } = await req.json()
 
     if (action === 'start') {
       console.log(`🎵 Starting audio processing for ${audioId}`)
-      
+
       const { data: audio, error: audioError } = await supabase
         .from('audio_files')
         .select('*')
@@ -69,7 +64,7 @@ serve(async (req) => {
 
       const processingConfig = { ...DEFAULT_CONFIG, ...config }
       const jobId = crypto.randomUUID()
-      
+
       const { error: jobError } = await supabase
         .from('audio_processing_jobs')
         .insert([{
@@ -84,7 +79,7 @@ serve(async (req) => {
 
       await supabase
         .from('audio_files')
-        .update({ 
+        .update({
           processing_job_id: jobId,
           status: 'processing'
         })
@@ -100,13 +95,13 @@ serve(async (req) => {
       EdgeRuntime.waitUntil(backgroundTask())
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           jobId,
           message: 'Started audio processing job',
           estimatedTime: `${Math.ceil(calculateTotalRenditions(processingConfig) * 1)} minutes`
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -119,7 +114,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, job }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -135,7 +130,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, jobs }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -144,13 +139,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('Audio processing error:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: 'Internal server error'
       }),
-      { 
+      {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     )
   }
@@ -158,28 +153,28 @@ serve(async (req) => {
 
 function calculateTotalRenditions(config: ProcessingConfig): number {
   let total = 0
-  
+
   // Progressive renditions
   if (config.progressive.opus) total++
   if (config.progressive.aac) total++
   if (config.progressive.mp3) total++
-  
+
   // Adaptive not implemented for audio yet
   return total
 }
 
 async function processAudioInBackground(
-  supabase: any, 
-  jobId: string, 
-  audio: any, 
+  supabase: any,
+  jobId: string,
+  audio: any,
   config: ProcessingConfig
 ) {
   try {
     console.log(`🎵 Processing audio: ${audio.original_filename}`)
-    
+
     await supabase
       .from('audio_processing_jobs')
-      .update({ 
+      .update({
         status: 'processing',
         started_at: new Date().toISOString(),
         current_stage: 'analyzing'
@@ -193,7 +188,7 @@ async function processAudioInBackground(
     // Simulate audio analysis
     console.log(`📊 Analyzing audio properties...`)
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     await updateJobProgress(supabase, jobId, 10, 'encoding_progressive')
 
     // Generate progressive renditions
@@ -246,12 +241,12 @@ async function processAudioInBackground(
 
   } catch (error) {
     console.error(`💥 Audio processing failed for job ${jobId}:`, error)
-    
+
     await supabase
       .from('audio_processing_jobs')
       .update({
         status: 'failed',
-        error_message: error.message,
+        error_message: error instanceof Error ? error.message : 'Unknown error',
         completed_at: new Date().toISOString()
       })
       .eq('id', jobId)
@@ -264,10 +259,10 @@ async function processAudioInBackground(
 }
 
 async function updateJobProgress(
-  supabase: any, 
-  jobId: string, 
-  percent: number, 
-  stage: string, 
+  supabase: any,
+  jobId: string,
+  percent: number,
+  stage: string,
   completedRenditions?: number
 ) {
   const updates: any = {
@@ -275,7 +270,7 @@ async function updateJobProgress(
     current_stage: stage,
     updated_at: new Date().toISOString()
   }
-  
+
   if (completedRenditions !== undefined) {
     updates.completed_renditions = completedRenditions
   }
@@ -287,26 +282,26 @@ async function updateJobProgress(
 }
 
 async function generateProgressiveRendition(
-  supabase: any, 
-  audioId: string, 
-  codec: string, 
+  supabase: any,
+  audioId: string,
+  codec: string,
   container: string,
   bitrate: number
 ) {
   console.log(`🎧 Generating ${codec} progressive rendition at ${bitrate}kbps...`)
-  
+
   // Simulate encoding time
   await new Promise(resolve => setTimeout(resolve, 2000))
-  
+
   // In real implementation, this would:
   // 1. Download source audio from storage
   // 2. Run ffmpeg with appropriate codec settings
   // 3. Upload result back to storage
   // 4. Record rendition in database
-  
+
   const mockSize = Math.random() * 10000000 + 2000000 // 2-12MB
   const filePath = `${audioId}/progressive/audio-${codec}.${container}`
-  
+
   await supabase
     .from('audio_renditions')
     .insert([{
@@ -318,52 +313,52 @@ async function generateProgressiveRendition(
       file_size: Math.round(mockSize),
       file_path: filePath
     }])
-  
+
   console.log(`✅ Generated ${codec} progressive rendition`)
 }
 
 async function generateTranscript(supabase: any, audioId: string) {
   console.log(`📝 Generating transcript...`)
-  
+
   // Simulate transcript generation
   await new Promise(resolve => setTimeout(resolve, 1000))
-  
+
   // In real implementation:
   // 1. Use speech recognition API (Whisper, Google Speech-to-Text, etc.)
   // 2. Generate VTT or SRT files
   // 3. Upload to storage
-  
+
   const transcriptPath = `${audioId}/transcript.vtt`
-  
+
   await supabase
     .from('audio_files')
     .update({ transcript_path: transcriptPath })
     .eq('id', audioId)
-    
+
   console.log(`✅ Generated transcript`)
 }
 
 async function extractAudioMetadata(supabase: any, audioId: string) {
   console.log(`🎶 Extracting audio metadata...`)
-  
+
   // Simulate metadata extraction
   await new Promise(resolve => setTimeout(resolve, 500))
-  
+
   // In real implementation:
   // 1. Extract metadata (title, artist, album, duration)
   // 2. Generate waveform visualization
   // 3. Create album art or waveform poster
-  
+
   const mockDuration = Math.floor(Math.random() * 300) + 60 // 1-6 minutes
   const posterPath = `${audioId}/poster.webp`
-  
+
   await supabase
     .from('audio_files')
-    .update({ 
+    .update({
       duration_seconds: mockDuration,
-      poster_image_path: posterPath 
+      poster_image_path: posterPath
     })
     .eq('id', audioId)
-    
+
   console.log(`✅ Extracted audio metadata`)
 }

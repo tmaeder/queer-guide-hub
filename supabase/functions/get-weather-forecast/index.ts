@@ -1,20 +1,18 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { lat, lon, cityName } = await req.json();
-    
-    if (!lat || !lon) {
+
+    if (lat == null || lon == null) {
       return new Response(
         JSON.stringify({ error: 'Latitude and longitude are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

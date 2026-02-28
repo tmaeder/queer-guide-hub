@@ -1,6 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
-import { corsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, requireAdmin, errorResponse, getServiceClient } from '../_shared/supabase-client.ts'
 import { normalizeScrapedContent } from '../_shared/ai-enrichment.ts'
 
 const USER_AGENTS = [
@@ -61,16 +60,16 @@ const CITY_INFO: Record<string, { displayName: string; country: string }> = {
   'prague': { displayName: 'Prague', country: 'Czech Republic' },
 }
 
-let fetchAttemptCounter = 0
+const fetchAttemptCounter = { value: 0 }
 
 async function fetchPage(url: string, attempt = 0): Promise<string> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 30000)
   try {
-    fetchAttemptCounter++
+    fetchAttemptCounter.value++
     const response = await fetch(url, {
       headers: {
-        'User-Agent': USER_AGENTS[fetchAttemptCounter % USER_AGENTS.length],
+        'User-Agent': USER_AGENTS[fetchAttemptCounter.value % USER_AGENTS.length],
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
         'Referer': BASE_URL,
@@ -289,14 +288,11 @@ function parseEventsPage(html: string, pageUrl: string, citySlug: string): Scrap
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+    const supabase = getServiceClient()
 
     // Require admin authentication
     const authResult = await requireAdmin(req, supabase)
@@ -312,11 +308,12 @@ Deno.serve(async (req) => {
     const cities = body.cities || DEFAULT_CITIES
     const maxCities = Math.min(Math.max(1, rawMaxCities), 50)
 
-    // Merge any city_info from frontend into CITY_INFO lookup
+    // Create a local copy of CITY_INFO merged with any overrides from the request
+    const cityInfoLookup: Record<string, { displayName: string; country: string }> = { ...CITY_INFO }
     if (body.city_info && typeof body.city_info === 'object') {
       for (const [slug, info] of Object.entries(body.city_info)) {
-        if (!CITY_INFO[slug] && info && typeof info === 'object') {
-          CITY_INFO[slug] = info as { displayName: string; country: string }
+        if (!cityInfoLookup[slug] && info && typeof info === 'object') {
+          cityInfoLookup[slug] = info as { displayName: string; country: string }
         }
       }
     }
@@ -368,7 +365,7 @@ Deno.serve(async (req) => {
           continue
         }
 
-        log.push(`Found ${events.length} events in ${CITY_INFO[city]?.displayName || city}`)
+        log.push(`Found ${events.length} events in ${cityInfoLookup[city]?.displayName || city}`)
 
         // AI enrichment — normalize scraped content before staging
         const rows = []
@@ -455,7 +452,7 @@ Deno.serve(async (req) => {
       log: log.slice(0, 50),
       errors: errors.length > 0 ? errors : undefined,
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
 
   } catch (error) {

@@ -1,21 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-function jsonResponse(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  })
-}
-
-function errorResponse(message: string, status = 500): Response {
-  return jsonResponse({ error: message, success: false }, status)
-}
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 const HEAD_TIMEOUT = 5_000
 const GET_TIMEOUT = 10_000
@@ -108,16 +92,14 @@ async function fetchWithTimeout(url: string, method: string, timeoutMs: number):
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    })
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
+  try {
     let mode = 'validate'
     let linkIds: string[] | undefined
     let batchLimit = DEFAULT_BATCH_LIMIT
@@ -167,14 +149,20 @@ serve(async (req: Request) => {
       links = data ?? []
       console.log(`[validate-links] Validate: found ${links.length} PENDING links`)
     } else {
-      return errorResponse(`Invalid mode: ${mode}. Use "validate", "recheck", or "single".`, 400)
+      return new Response(
+        JSON.stringify({ error: `Invalid mode: ${mode}. Use "validate", "recheck", or "single".`, success: false }),
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      )
     }
 
     if (!links.length) {
-      return jsonResponse({
-        checked: 0, recovered: 0, still_broken: 0, auto_removed: 0, errors: 0,
-        message: 'No links to process',
-      })
+      return new Response(
+        JSON.stringify({
+          checked: 0, recovered: 0, still_broken: 0, auto_removed: 0, errors: 0,
+          message: 'No links to process',
+        }),
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+      )
     }
 
     let checked = 0
@@ -223,7 +211,7 @@ serve(async (req: Request) => {
               results.push({
                 id: link.id, url: link.original_url, status: 'ERROR',
                 previous_status: previousStatus, check_count: newCheckCount,
-                error: `Auto-remove failed: ${rpcErr.message}`,
+                error: 'Auto-remove failed',
               })
             } else {
               autoRemoved++
@@ -267,7 +255,7 @@ serve(async (req: Request) => {
           errorCount++
           results.push({
             id: link.id, url: link.original_url, status: 'ERROR',
-            error: `DB update: ${updateErr.message}`,
+            error: 'DB update failed',
           })
         } else {
           checked++
@@ -282,16 +270,22 @@ serve(async (req: Request) => {
       } catch (e) {
         console.error(`[validate-links] Error processing ${link.original_url}:`, e)
         errorCount++
-        results.push({ id: link.id, url: link.original_url, status: 'ERROR', error: String(e) })
+        results.push({ id: link.id, url: link.original_url, status: 'ERROR', error: 'Internal server error' })
       }
     }
 
     const response = { checked, recovered, still_broken: stillBroken, auto_removed: autoRemoved, errors: errorCount, total: links.length, results }
     console.log(`[validate-links] Done: checked=${checked} recovered=${recovered} still_broken=${stillBroken} auto_removed=${autoRemoved} errors=${errorCount}`)
-    return jsonResponse(response)
+    return new Response(
+      JSON.stringify(response),
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+    )
   } catch (e) {
     console.error('[validate-links] Fatal error:', e)
-    return errorResponse(e instanceof Error ? e.message : 'Internal error', 500)
+    return new Response(
+      JSON.stringify({ error: 'Internal server error', success: false }),
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+    )
   }
 })
 

@@ -1,15 +1,7 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { chatCompletion } from '../_shared/openai-client.ts';
+import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = getServiceClient();
 
 interface CategoryRow {
   id: string;
@@ -57,10 +49,14 @@ function buildCategoryPromptSection(categories: CategoryRow[]): string {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
+    // Require admin authentication
+    const authResult = await requireAdmin(req, supabase);
+    if (authResult instanceof Response) return authResult;
+
     // Parse optional body params
     let recategorize = false;
     let batchSize = 20;
@@ -134,7 +130,7 @@ Deno.serve(async (req) => {
         message: 'No tags found that need categorization',
         categorized_count: 0
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -205,6 +201,7 @@ Return ONLY valid JSON — tag names as keys, category slugs as values:
           }
 
           const categoryId = slugToId.get(categorySlug)!;
+          const previousCategoryId = tag.category_id;
 
           // 1. Update unified_tags.category_id for backwards compatibility
           const { error: updateError } = await supabase
@@ -236,11 +233,15 @@ Return ONLY valid JSON — tag names as keys, category slugs as values:
 
           if (assignError) {
             console.error(`Failed to create assignment for "${tag.name}":`, assignError.message);
+            // Revert the tag update to keep data consistent
+            await supabase
+              .from('unified_tags')
+              .update({ category_id: previousCategoryId })
+              .eq('id', tag.id);
           } else {
             totalAssignments++;
+            totalCategorized++;
           }
-
-          totalCategorized++;
         }
 
         // Rate limit delay between batches
@@ -264,17 +265,17 @@ Return ONLY valid JSON — tag names as keys, category slugs as values:
       batches_processed: batches.length,
       message: `Successfully categorized ${totalCategorized} out of ${tagsToProcess.length} tags (${totalAssignments} assignments created)`
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Error in categorize-tags function:', error);
     return new Response(JSON.stringify({
-      error: error.message,
+      error: 'Internal server error',
       success: false
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

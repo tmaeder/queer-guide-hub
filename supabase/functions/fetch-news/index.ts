@@ -1,10 +1,5 @@
 import { enrichNewsWithAI } from '../_shared/ai-enrichment.ts';
-
-// CORS headers for web app compatibility
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
 
 // Define interfaces
 interface NewsArticle {
@@ -490,6 +485,8 @@ async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, supabaseCli
 
 // Main Edge Function
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -497,11 +494,10 @@ Deno.serve(async (req) => {
 
   try {
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = getServiceClient();
+
+    const authResult = await requireAdmin(req, supabase);
+    if (authResult instanceof Response) return authResult;
 
     console.log('Starting news fetch process...');
 
@@ -670,9 +666,9 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in news fetch function:', error);
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message,
+      JSON.stringify({
+        success: false,
+        error: 'Internal server error',
         processed_articles: 0,
         processed_sources: 0
       }),

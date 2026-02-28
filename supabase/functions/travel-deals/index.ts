@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, corsResponse, jsonResponse, errorResponse } from "../_shared/supabase-client.ts";
+import { getCorsHeaders, corsResponse, jsonResponse, errorResponse } from "../_shared/supabase-client.ts";
 
 /**
  * Aviasales affiliate URL builder — params query format.
@@ -47,7 +47,7 @@ function buildAffiliateUrl(
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return corsResponse();
+  if (req.method === 'OPTIONS') return corsResponse(req);
 
   try {
     let origin: string, destination: string | undefined, type: string, currency: string, limit: number;
@@ -69,14 +69,14 @@ serve(async (req) => {
     }
 
     if (!origin || !IATA_RE.test(origin.toUpperCase().trim())) {
-      return errorResponse('Valid origin IATA code is required (e.g. "ZRH")', 400);
+      return errorResponse('Valid origin IATA code is required (e.g. "ZRH")', 400, req);
     }
     origin = origin.toUpperCase().trim();
     if (destination) destination = destination.toUpperCase().trim();
 
     const apiToken = Deno.env.get('TRAVELPAYOUTS_API_TOKEN');
     if (!apiToken) {
-      return errorResponse('TRAVELPAYOUTS_API_TOKEN not configured', 500);
+      return errorResponse('Internal server error', 500, req);
     }
 
     let deals: any[] = [];
@@ -90,7 +90,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true, deals, origin, destination }), {
       status: 200,
       headers: {
-        ...corsHeaders,
+        ...getCorsHeaders(req),
         'Content-Type': 'application/json',
         'Cache-Control': 'public, max-age=1800, s-maxage=1800',
       },
@@ -98,7 +98,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Travel deals error:', error);
-    return errorResponse('Internal server error');
+    return errorResponse('Internal server error', 500, req);
   }
 });
 

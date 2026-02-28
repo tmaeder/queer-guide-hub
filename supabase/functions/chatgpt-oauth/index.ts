@@ -10,8 +10,28 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { corsHeaders, requireAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, requireAdmin } from '../_shared/supabase-client.ts'
 import { encrypt, decrypt, getOpenAIAccessToken } from '../_shared/openai-client.ts'
+
+// ---------------------------------------------------------------------------
+// Request-scoped CORS helpers — set once per request in the main handler
+// ---------------------------------------------------------------------------
+let _corsHeaders: Record<string, string> = {}
+
+function jsonResponse(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ..._corsHeaders, 'Content-Type': 'application/json' },
+  })
+}
+
+function errorResponse(message: string, status = 500): Response {
+  return jsonResponse({ error: message, success: false }, status)
+}
+
+function corsResponse(): Response {
+  return new Response('ok', { headers: _corsHeaders })
+}
 
 // ---------------------------------------------------------------------------
 // OAuth configuration from env vars
@@ -31,6 +51,50 @@ function getOAuthConfig() {
 // Action: authorize — generate OAuth URL
 // ---------------------------------------------------------------------------
 
+/**
+ * Sign a state payload with HMAC-SHA256 using the OAuth client secret.
+ * Returns base64url(JSON({ data, sig })).
+ */
+async function signState(payload: Record<string, string>): Promise<string> {
+  const config = getOAuthConfig()
+  const secret = config.clientSecret || Deno.env.get('MASTER_ENCRYPTION_KEY') || ''
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+  const data = JSON.stringify(payload)
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data))
+  const sigHex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
+  return btoa(JSON.stringify({ data, sig: sigHex }))
+}
+
+/**
+ * Verify an HMAC-signed state payload. Returns the original payload or null if invalid.
+ */
+async function verifyState(stateToken: string): Promise<Record<string, string> | null> {
+  try {
+    const config = getOAuthConfig()
+    const secret = config.clientSecret || Deno.env.get('MASTER_ENCRYPTION_KEY') || ''
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify'],
+    )
+    const { data, sig: sigHex } = JSON.parse(atob(stateToken))
+    const sigBytes = new Uint8Array((sigHex as string).match(/.{2}/g)!.map((b: string) => parseInt(b, 16)))
+    const valid = await crypto.subtle.verify('HMAC', key, sigBytes, new TextEncoder().encode(data))
+    if (!valid) return null
+    return JSON.parse(data)
+  } catch {
+    return null
+  }
+}
+
 async function handleAuthorize(supabase: any) {
   const config = getOAuthConfig()
   if (!config.clientId || !config.redirectUri) {
@@ -42,11 +106,10 @@ async function handleAuthorize(supabase: any) {
   const codeChallenge = await generateCodeChallenge(codeVerifier)
 
   // Generate state parameter for CSRF protection
-  const state = generateRandomString(32)
+  const nonce = generateRandomString(32)
 
-  // Store state + verifier temporarily (in-memory for edge function lifetime,
-  // or we could store in DB — we'll encode in state param for stateless approach)
-  const statePayload = btoa(JSON.stringify({ state, codeVerifier }))
+  // HMAC-sign the state so we can verify it on callback (stateless CSRF protection)
+  const statePayload = await signState({ nonce, codeVerifier })
 
   const params = new URLSearchParams({
     response_type: 'code',
@@ -83,16 +146,16 @@ async function handleCallback(supabase: any, body: any, userId: string) {
     return errorResponse('OAuth not configured: missing client credentials', 400)
   }
 
-  // Decode state to get PKCE code verifier
+  // Verify HMAC-signed state to prevent CSRF and extract PKCE code verifier
   let codeVerifier = ''
-  if (statePayload) {
-    try {
-      const decoded = JSON.parse(atob(statePayload))
-      codeVerifier = decoded.codeVerifier || ''
-    } catch {
-      return errorResponse('Invalid state parameter', 400)
-    }
+  if (!statePayload) {
+    return errorResponse('Missing state parameter', 400)
   }
+  const stateData = await verifyState(statePayload)
+  if (!stateData) {
+    return errorResponse('Invalid or tampered state parameter', 400)
+  }
+  codeVerifier = stateData.codeVerifier || ''
 
   // Exchange authorization code for tokens
   const tokenParams: Record<string, string> = {
@@ -114,8 +177,8 @@ async function handleCallback(supabase: any, body: any, userId: string) {
 
   if (!tokenResponse.ok) {
     const err = await tokenResponse.text()
-    console.error('OAuth token exchange failed:', err)
-    return errorResponse(`Token exchange failed: ${tokenResponse.status}`, 400)
+    console.error('OAuth token exchange failed:', tokenResponse.status, err)
+    return errorResponse('Token exchange failed', 400)
   }
 
   const tokenData = await tokenResponse.json()
@@ -291,6 +354,8 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 Deno.serve(async (req) => {
+  _corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') return corsResponse()
 
   try {

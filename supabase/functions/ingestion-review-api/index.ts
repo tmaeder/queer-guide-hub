@@ -1,41 +1,18 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-// Verify the caller is an admin
-async function verifyAdmin(supabase: any, authHeader: string): Promise<string> {
-  const token = authHeader.replace('Bearer ', '')
-  const { data: { user }, error } = await supabase.auth.getUser(token)
-  if (error || !user) throw new Error('Unauthorized')
-
-  const { data: roles } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', user.id)
-
-  const isAdmin = roles?.some((r: { role: string }) => r.role === 'admin')
-  if (!isAdmin) throw new Error('Admin access required')
-
-  return user.id
-}
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
-
-    // Verify admin access
-    const authHeader = req.headers.get('Authorization') || ''
-    const userId = await verifyAdmin(supabase, authHeader)
+    const supabase = getServiceClient()
+    const auth = await requireAdmin(req, supabase)
+    if (auth instanceof Response) return auth
+    const userId = auth.userId
 
     const body = await req.json()
     const { action } = body
@@ -159,6 +136,7 @@ Deno.serve(async (req) => {
         if (!Array.isArray(staging_ids) || staging_ids.length === 0) {
           throw new Error('staging_ids array is required')
         }
+        if (staging_ids.length > 1000) return errorResponse('Too many IDs', 400, req)
 
         const { error } = await supabase
           .from('ingestion_staging')
@@ -200,6 +178,7 @@ Deno.serve(async (req) => {
         if (!Array.isArray(staging_ids) || staging_ids.length === 0) {
           throw new Error('staging_ids array is required')
         }
+        if (staging_ids.length > 1000) return errorResponse('Too many IDs', 400, req)
 
         const { error } = await supabase
           .from('ingestion_staging')
@@ -232,9 +211,8 @@ Deno.serve(async (req) => {
     }
   } catch (error) {
     console.error('Review API error:', error)
-    const status = (error as Error).message?.includes('Unauthorized') || (error as Error).message?.includes('Admin') ? 403 : 500
-    return new Response(JSON.stringify({ error: (error as Error).message, success: false }), {
-      status,
+    return new Response(JSON.stringify({ error: 'Internal server error', success: false }), {
+      status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

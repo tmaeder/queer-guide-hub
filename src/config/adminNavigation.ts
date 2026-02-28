@@ -39,6 +39,7 @@ import {
   Handshake,
   Inbox,
   Workflow,
+  Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -293,6 +294,15 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'workflow_runs',
         adminOnly: true,
         color: '#8b5cf6',
+      },
+      {
+        id: 'automation',
+        label: 'Automation',
+        icon: Zap,
+        route: '/admin/automation',
+        countTable: 'content_flags',
+        adminOnly: true,
+        color: '#f59e0b',
       },
     ],
   },
