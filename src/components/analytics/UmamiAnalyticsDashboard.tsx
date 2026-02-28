@@ -249,7 +249,7 @@ export const UmamiAnalyticsDashboard = () => {
           <CardHeader>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ p: 1, bgcolor: 'error.light', opacity: 0.1, borderRadius: 2 }}>
-                <Activity sx={{ height: 24, width: 24, color: 'error.main' }} />
+                <Activity style={{ height: 24, width: 24 }} />
               </Box>
               <Box>
                 <CardTitle>Analytics Unavailable</CardTitle>
@@ -269,8 +269,8 @@ export const UmamiAnalyticsDashboard = () => {
                 <li>Configure the database connection</li>
               </Box>
               <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
-                  <RefreshCw sx={{ height: 16, width: 16, mr: 1, ...(refreshing && { animation: 'spin 1s linear infinite' }) }} />
+                <Button variant="outline" onClick={handleRefresh} disabled={refreshing} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <RefreshCw style={{ height: 16, width: 16, ...(refreshing ? { animation: 'spin 1s linear infinite' } : {}) }} />
                   Retry
                 </Button>
               </Box>
@@ -292,11 +292,11 @@ export const UmamiAnalyticsDashboard = () => {
             {stats.liveVisitors} Live
           </Badge>
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} sx={{ gap: 1 }}>
-            <RefreshCw sx={{ height: 12, width: 12, ...(refreshing && { animation: 'spin 1s linear infinite' }) }} />
+            <RefreshCw style={{ height: 12, width: 12, ...(refreshing ? { animation: 'spin 1s linear infinite' } : {}) }} />
             Refresh
           </Button>
           <Button variant="outline" size="sm" onClick={handleExport} sx={{ gap: 1 }}>
-            <Download sx={{ height: 12, width: 12 }} />
+            <Download style={{ height: 12, width: 12 }} />
             Export
           </Button>
         </Box>
@@ -306,7 +306,7 @@ export const UmamiAnalyticsDashboard = () => {
       <Card>
         <CardHeader>
           <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Filter sx={{ height: 16, width: 16 }} />
+            <Filter style={{ height: 16, width: 16 }} />
             Filters & Controls
           </CardTitle>
         </CardHeader>
@@ -357,40 +357,40 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Page Views</CardTitle>
-            <Eye sx={{ height: 16, width: 16, color: 'text.secondary' }} />
+            <Eye style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
             <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.totalPageViews.toLocaleString()}</Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>+12.5% from last period</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Total page views</Typography>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Sessions</CardTitle>
-            <Users sx={{ height: 16, width: 16, color: 'text.secondary' }} />
+            <Users style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
             <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.totalSessions.toLocaleString()}</Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>+8.2% from last period</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Total sessions</Typography>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Unique Visitors</CardTitle>
-            <Monitor sx={{ height: 16, width: 16, color: 'text.secondary' }} />
+            <Monitor style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
             <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.uniqueVisitors.toLocaleString()}</Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>+15.3% from last period</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Unique visitors</Typography>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Avg. Duration</CardTitle>
-            <Clock sx={{ height: 16, width: 16, color: 'text.secondary' }} />
+            <Clock style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
             <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{Math.round(stats.avgSessionDuration / 60)}m</Typography>
@@ -401,7 +401,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Bounce Rate</CardTitle>
-            <TrendingUp sx={{ height: 16, width: 16, color: 'text.secondary' }} />
+            <TrendingUp style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
             <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.bounceRate}%</Typography>
@@ -412,7 +412,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
             <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Conversion</CardTitle>
-            <Globe sx={{ height: 16, width: 16, color: 'text.secondary' }} />
+            <Globe style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
             <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.conversionRate}%</Typography>
@@ -625,7 +625,7 @@ export const UmamiAnalyticsDashboard = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   {stats.topDevices.map((device, index) => <Box key={device.device} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                        <Smartphone sx={{ height: 16, width: 16, color: 'text.secondary' }} />
+                        <Smartphone style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                         <Box component="span" sx={{ fontSize: '0.875rem' }}>{device.device}</Box>
                       </Box>
                       <Box sx={{ textAlign: 'right' }}>
@@ -647,7 +647,7 @@ export const UmamiAnalyticsDashboard = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   {stats.topScreens.map((screen, index) => <Box key={screen.screen} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                        <Monitor sx={{ height: 16, width: 16, color: 'text.secondary' }} />
+                        <Monitor style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                         <Box component="span" sx={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>{screen.screen}</Box>
                       </Box>
                       <Box sx={{ textAlign: 'right' }}>
@@ -696,7 +696,7 @@ export const UmamiAnalyticsDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Activity sx={{ height: 16, width: 16 }} />
+                  <Activity style={{ height: 16, width: 16 }} />
                   Recent Activity
                 </CardTitle>
                 <CardDescription>Latest page views and events</CardDescription>

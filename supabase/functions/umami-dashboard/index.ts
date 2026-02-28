@@ -1,18 +1,14 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, requireAdmin, getServiceClient, corsResponse } from '../_shared/supabase-client.ts';
 
-// Initialize Supabase client
-const supabase = getServiceClient();
-
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
 
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsResponse(req);
   }
 
   try {
+    const supabase = getServiceClient();
     const url = new URL(req.url);
     const path = url.pathname;
 

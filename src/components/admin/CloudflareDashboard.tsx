@@ -379,8 +379,7 @@ export function CloudflareDashboard() {
             <CardHeader>
               <CardTitle>Cloudflare Configuration</CardTitle>
               <CardDescription>
-                Zone ID: fe9b9da8a08af32e10bb3ba7fdb04440<br />
-                Account ID: 7aa3765cc5f50f2b681b782eb4a8d296
+                Zone: {zoneInfo?.result?.name || 'Not connected'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -404,12 +403,12 @@ export function CloudflareDashboard() {
                     <Box sx={{ mt: 2, p: 2, bgcolor: '#fefce8', border: 1, borderColor: '#fde047', borderRadius: 2 }}>
                       <Typography variant="h5" sx={{ fontWeight: 500, color: '#854d0e', mb: 1 }}>Setup Required</Typography>
                       <Typography sx={{ fontSize: '0.875rem', color: '#a16207', mb: 1.5 }}>
-                        To use the Cloudflare dashboard, you need to set your Cloudflare API token in Supabase secrets.
+                        To use the Cloudflare dashboard, configure the following Supabase secrets:
                       </Typography>
                       <Box component="ol" sx={{ fontSize: '0.875rem', color: '#a16207', listStyleType: 'decimal', listStylePosition: 'inside', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                         <li>Go to Cloudflare Dashboard &rarr; My Profile &rarr; API Tokens</li>
                         <li>Create a token with Zone:Read permissions for your zone</li>
-                        <li>Add it as CLOUDFLARE_API_TOKEN in Supabase secrets</li>
+                        <li>Set CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, and CLOUDFLARE_ACCOUNT_ID in Supabase secrets</li>
                         <li>Refresh this page</li>
                       </Box>
                     </Box>

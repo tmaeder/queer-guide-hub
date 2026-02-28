@@ -1,6 +1,4 @@
-import { serve } from "https://deno.land/std@0.208.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 interface CloudflareConfig {
   zoneId: string
@@ -9,19 +7,17 @@ interface CloudflareConfig {
   baseUrl: string
 }
 
-const getCloudflareConfig = (): CloudflareConfig => {
+function getCloudflareConfig(): CloudflareConfig | null {
   const zoneId = Deno.env.get('CLOUDFLARE_ZONE_ID')
   const accountId = Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
   const apiToken = Deno.env.get('CLOUDFLARE_API_TOKEN')
 
-  if (!zoneId || !accountId || !apiToken) {
-    throw new Error('Missing required Cloudflare env vars: CLOUDFLARE_ZONE_ID, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN')
-  }
+  if (!zoneId || !accountId || !apiToken) return null
 
   return { zoneId, accountId, apiToken, baseUrl: 'https://api.cloudflare.com/client/v4' }
 }
 
-const makeCloudflareRequest = async (endpoint: string, config: CloudflareConfig) => {
+async function makeCloudflareRequest(endpoint: string, config: CloudflareConfig) {
   const response = await fetch(`${config.baseUrl}${endpoint}`, {
     headers: {
       'Authorization': `Bearer ${config.apiToken}`,
@@ -36,103 +32,56 @@ const makeCloudflareRequest = async (endpoint: string, config: CloudflareConfig)
   return await response.json()
 }
 
-serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req)
-
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return corsResponse(req)
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    )
+    const supabase = getServiceClient()
+    const authResult = await requireAdmin(req, supabase)
+    if (authResult instanceof Response) return authResult
 
-    // Verify user authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      console.log('Authentication failed:', authError)
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Check if user is admin
-    const { data: userRole } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!userRole || userRole.role !== 'admin') {
-      console.log('Access denied for user:', user.id, 'role:', userRole?.role)
-      return new Response(
-        JSON.stringify({ error: 'Access denied. Admin role required.' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Parse request body for action and params
-    let body: any = {}
+    let body: Record<string, unknown> = {}
     try {
       const rawBody = await req.text()
-      if (rawBody) {
-        body = JSON.parse(rawBody)
-      }
-    } catch (e) {
-      console.error('Failed to parse request body:', e)
-      return new Response(
-        JSON.stringify({ error: 'Invalid request body' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      if (rawBody) body = JSON.parse(rawBody)
+    } catch {
+      return errorResponse('Invalid request body', 400, req)
     }
 
-    const { action, params = {} } = body
+    const { action, params = {} } = body as { action?: string; params?: Record<string, string> }
     const config = getCloudflareConfig()
 
-    console.log('Processing Cloudflare API request:', action, 'for user:', user.id)
-
-    if (!config.apiToken) {
-      console.error('Cloudflare API token not configured')
-      return new Response(
-        JSON.stringify({ error: 'Cloudflare API token not configured. Please set CLOUDFLARE_API_TOKEN secret.' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    if (!config) {
+      return errorResponse(
+        'Cloudflare API not configured. Set CLOUDFLARE_ZONE_ID, CLOUDFLARE_ACCOUNT_ID, and CLOUDFLARE_API_TOKEN in Supabase secrets.',
+        503,
+        req
       )
     }
 
-    let result: any
+    let result: unknown
 
     switch (action) {
       case 'zone-info':
         result = await makeCloudflareRequest(`/zones/${config.zoneId}`, config)
         break
 
-      case 'analytics':
-        const since = params.since || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        const until = params.until || new Date().toISOString()
+      case 'analytics': {
+        const since = (params as Record<string, string>).since || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        const until = (params as Record<string, string>).until || new Date().toISOString()
         try {
           result = await makeCloudflareRequest(
             `/zones/${config.zoneId}/analytics/dashboard?since=${since}&until=${until}`,
             config
           )
         } catch (error) {
-          console.log('Analytics endpoint failed, trying alternative endpoint:', error.message)
+          console.log('Analytics endpoint failed, trying alternative:', (error as Error).message)
           try {
-            // Try the simpler analytics endpoint
             result = await makeCloudflareRequest(
               `/zones/${config.zoneId}/analytics/colos?since=${since}&until=${until}`,
               config
             )
-          } catch (fallbackError) {
-            console.log('Fallback analytics endpoint also failed, returning mock data')
+          } catch {
             result = {
               success: true,
               result: {
@@ -147,6 +96,7 @@ serve(async (req) => {
           }
         }
         break
+      }
 
       case 'dns-records':
         result = await makeCloudflareRequest(`/zones/${config.zoneId}/dns_records`, config)
@@ -163,7 +113,7 @@ serve(async (req) => {
         )
         break
 
-      case 'security-settings':
+      case 'security-settings': {
         const securitySettings = await Promise.all([
           makeCloudflareRequest(`/zones/${config.zoneId}/settings/security_level`, config),
           makeCloudflareRequest(`/zones/${config.zoneId}/settings/ssl`, config),
@@ -180,8 +130,9 @@ serve(async (req) => {
           }
         }
         break
+      }
 
-      case 'performance-settings':
+      case 'performance-settings': {
         const performanceSettings = await Promise.all([
           makeCloudflareRequest(`/zones/${config.zoneId}/settings/browser_cache_ttl`, config),
           makeCloudflareRequest(`/zones/${config.zoneId}/settings/cache_level`, config),
@@ -198,46 +149,43 @@ serve(async (req) => {
           }
         }
         break
+      }
 
-      case 'bandwidth-stats':
-        const bandwidthSince = params.since || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        const bandwidthUntil = params.until || new Date().toISOString()
+      case 'bandwidth-stats': {
+        const bandwidthSince = (params as Record<string, string>).since || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+        const bandwidthUntil = (params as Record<string, string>).until || new Date().toISOString()
         result = await makeCloudflareRequest(
           `/zones/${config.zoneId}/analytics/dashboard?since=${bandwidthSince}&until=${bandwidthUntil}&continuous=false`,
           config
         )
         break
+      }
 
-      case 'threat-analytics':
-        const threatSince = params.since || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        const threatUntil = params.until || new Date().toISOString()
+      case 'threat-analytics': {
+        const threatSince = (params as Record<string, string>).since || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        const threatUntil = (params as Record<string, string>).until || new Date().toISOString()
         try {
           result = await makeCloudflareRequest(
             `/zones/${config.zoneId}/firewall/events?since=${threatSince}&until=${threatUntil}`,
             config
           )
         } catch (error) {
-          console.log('Threat analytics endpoint failed, trying alternative:', error.message)
+          console.log('Threat analytics endpoint failed, trying alternative:', (error as Error).message)
           try {
-            // Try the security events endpoint
             result = await makeCloudflareRequest(
               `/zones/${config.zoneId}/security/events?since=${threatSince}&until=${threatUntil}`,
               config
             )
-          } catch (fallbackError) {
-            console.log('Security events endpoint also failed, returning mock data')
+          } catch {
             result = {
               success: true,
               result: [],
-              result_info: {
-                total_count: 0,
-                page: 1,
-                per_page: 20
-              }
+              result_info: { total_count: 0, page: 1, per_page: 20 }
             }
           }
         }
         break
+      }
 
       case 'edge-certificates':
         result = await makeCloudflareRequest(`/zones/${config.zoneId}/ssl/certificate_packs`, config)
@@ -252,24 +200,16 @@ serve(async (req) => {
         break
 
       default:
-        return new Response(
-          JSON.stringify({ error: 'Invalid action. Available actions: zone-info, analytics, dns-records, page-rules, cache-stats, security-settings, performance-settings, bandwidth-stats, threat-analytics, edge-certificates, workers, account-info' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        return errorResponse(
+          'Invalid action. Available: zone-info, analytics, dns-records, page-rules, cache-stats, security-settings, performance-settings, bandwidth-stats, threat-analytics, edge-certificates, workers, account-info',
+          400,
+          req
         )
     }
 
-    console.log(`Cloudflare API ${action} request successful for user ${user.id}`)
-
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
+    return jsonResponse(result, 200, req)
   } catch (error) {
     console.error('Cloudflare API error:', error)
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    return errorResponse('Internal server error', 500, req)
   }
 })
