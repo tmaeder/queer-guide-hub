@@ -1,13 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-// Module-level reference for helper functions that need supabase access
-let _supabaseClient: any = null;
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface WikidataSearchResult {
   id: string;
@@ -31,10 +23,15 @@ interface PersonalityData {
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
   try {
     const { names, sources = {} } = await req.json();
@@ -55,11 +52,6 @@ Deno.serve(async (req) => {
 
     console.log(`Processing ${names.length} personality names with sources:`, sourceConfig);
     console.log('Input validation passed, starting processing...');
-
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
     _supabaseClient = supabase;
 
     const results = [];
@@ -176,7 +168,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error in bulk-create-personalities function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

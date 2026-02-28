@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { corsHeaders, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
 
 // Queue configuration: name → visibility timeout in seconds
 const QUEUE_CONFIG: Record<string, number> = {
@@ -38,7 +38,7 @@ interface WorkflowDefinition {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return corsResponse()
+  if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -90,11 +90,11 @@ Deno.serve(async (req) => {
         return await handleMetrics(supabase)
 
       default:
-        return errorResponse(`Unknown action: ${action}`, 400)
+        return errorResponse(`Unknown action: ${action}`, 400, req)
     }
   } catch (error) {
     console.error('workflow-dispatcher error:', error)
-    return errorResponse('Internal server error')
+    return errorResponse('Internal server error', 500, req)
   }
 })
 

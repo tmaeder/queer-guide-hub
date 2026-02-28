@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
-import { corsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts'
 
 const USER_AGENTS = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
@@ -20,16 +20,16 @@ const DEFAULT_CITIES: Record<string, { continent: string; country: string; citie
   usa: { continent: 'northamerica', country: 'usa', cities: ['newyork', 'sanfrancisco', 'losangeles', 'chicago', 'miami', 'fortlauderdale'] },
 }
 
-let fetchAttemptCounter = 0
+const fetchAttemptCounter = { value: 0 }
 
 async function fetchPage(url: string, attempt = 0): Promise<string> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 30000)
   try {
-    fetchAttemptCounter++
+    fetchAttemptCounter.value++
     const response = await fetch(url, {
       headers: {
-        'User-Agent': USER_AGENTS[fetchAttemptCounter % USER_AGENTS.length],
+        'User-Agent': USER_AGENTS[fetchAttemptCounter.value % USER_AGENTS.length],
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
         'Referer': BASE_URL,
@@ -284,7 +284,7 @@ function formatName(slug: string): string {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
   try {
@@ -472,7 +472,7 @@ Deno.serve(async (req) => {
       log: log.slice(0, 50),
       errors: errors.length > 0 ? errors : undefined,
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
 
   } catch (error) {
