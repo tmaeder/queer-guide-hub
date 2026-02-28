@@ -186,3 +186,6 @@ verify_jwt = true
 
 [functions.scrape-spartacus]
 verify_jwt = true
+
+[functions.scrape-web-sources]
+verify_jwt = false
